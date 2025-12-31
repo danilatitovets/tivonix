@@ -87,11 +87,11 @@ const NAV: NavItem[] = [
 
 // ✅ через сколько px от ВЕРХА страницы начинается опускание
 const START_AFTER = 350;
-// ✅ опускание (0 → vh) на этом диапазоне
+// ✅ опускание (0 → 1) на этом диапазоне
 const OPEN_RANGE = 900;
 // ✅ пауза, когда полностью открыта
 const HOLD_PX = 500;
-// ✅ подъем (vh → 0) на этом диапазоне
+// ✅ подъем (1 → 0) на этом диапазоне
 const CLOSE_RANGE = 800;
 
 const BAR_H = 76;
@@ -126,6 +126,24 @@ function usePrefersReducedMotion() {
   return reduced;
 }
 
+function useLowPowerDevice() {
+  const [low, setLow] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const navAny = navigator as any;
+    const dm: number | undefined = navAny.deviceMemory;
+    const hc: number | undefined = navigator.hardwareConcurrency;
+
+    // очень грубая эвристика, но хорошо спасает телефоны
+    const isLow =
+      (typeof dm === "number" && dm <= 4) ||
+      (typeof hc === "number" && hc <= 4);
+
+    setLow(!!isLow);
+  }, []);
+  return low;
+}
+
 type AshParticle = {
   id: string;
   top: number;
@@ -150,7 +168,13 @@ function mulberry32(seed: number) {
 
 export default function Header() {
   const reducedMotion = usePrefersReducedMotion();
+  const lowPower = useLowPowerDevice();
+
   const [open, setOpen] = useState(false);
+  const openRef = useRef(open);
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
 
   const { lang, setLang, dict } = useLang();
   const tHeader = dict.header;
@@ -158,18 +182,18 @@ export default function Header() {
   const [openRaw, setOpenRaw] = useState(0);
   const [closeRaw, setCloseRaw] = useState(0);
 
-  const [vh, setVh] = useState(() =>
-    typeof window !== "undefined" ? window.innerHeight : 900
-  );
-
   const rafRef = useRef<number | null>(null);
 
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  );
+
   useEffect(() => {
     const onResize = () => {
-      setVh(window.innerHeight);
+      setIsMobile(window.innerWidth < 768);
       if (window.innerWidth >= 768) setOpen(false);
     };
     window.addEventListener("resize", onResize);
@@ -185,11 +209,18 @@ export default function Header() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // ✅ “low FX” режим: телефоны + слабые устройства + reduced motion
+  const lowFx = reducedMotion || isMobile || lowPower;
+
+  // меньше ререндеров при скролле
+  const lastOpenRef = useRef(0);
+  const lastCloseRef = useRef(0);
+
   useEffect(() => {
     const getY = () =>
       window.scrollY ||
       document.documentElement.scrollTop ||
-      (document.body ? (document.body as any).scrollTop : 0) ||
+      ((document.body as any)?.scrollTop ?? 0) ||
       0;
 
     const onScroll = () => {
@@ -200,8 +231,10 @@ export default function Header() {
         const shifted = y - START_AFTER;
 
         if (shifted <= 0) {
-          setOpenRaw(0);
-          setCloseRaw(0);
+          if (lastOpenRef.current !== 0) setOpenRaw(0);
+          if (lastCloseRef.current !== 0) setCloseRaw(0);
+          lastOpenRef.current = 0;
+          lastCloseRef.current = 0;
           return;
         }
 
@@ -209,11 +242,18 @@ export default function Header() {
         const closeStart = OPEN_RANGE + HOLD_PX;
         const cR = clamp((shifted - closeStart) / CLOSE_RANGE, 0, 1);
 
-        setOpenRaw(oR);
-        setCloseRaw(cR);
+        // ✅ обновляем стейт только если реально изменилось (сильно снижает лаг)
+        if (Math.abs(oR - lastOpenRef.current) > 0.002) {
+          lastOpenRef.current = oR;
+          setOpenRaw(oR);
+        }
+        if (Math.abs(cR - lastCloseRef.current) > 0.002) {
+          lastCloseRef.current = cR;
+          setCloseRaw(cR);
+        }
 
-        // если начала ехать шторка — закрываем моб.меню
-        if (oR > 0.03) setOpen(false);
+        // если начала ехать шторка — закрываем моб.меню (только если оно открыто)
+        if (oR > 0.03 && openRef.current) setOpen(false);
       });
     };
 
@@ -232,21 +272,16 @@ export default function Header() {
   const curtainFactor = clamp(openP * (1 - closeP), 0, 1);
   const curtainVisible = curtainFactor > 0.001;
 
-  const curtainH = useMemo(() => {
-    if (!curtainVisible) return 0;
-    const target = Math.max(vh, BAR_H);
-    return lerp(0, target, curtainFactor);
-  }, [curtainVisible, curtainFactor, vh]);
-
   const fullyOpen = openRaw >= 0.999 && closeRaw < 0.02;
 
   const headerHide = curtainVisible
     ? clamp(openP * 18, 0, 1) * clamp(1 - closeP * 1.2, 0, 1)
     : 0;
 
-  const blurPx = 10 + 14 * curtainFactor;
-  const topA = lerp(0.4, 0.72, curtainFactor);
-  const bottomA = lerp(0.52, 0.82, curtainFactor);
+  // ✅ меньше blur на lowFx, или вообще без backdrop-filter
+  const blurPx = lowFx ? 0 : 10 + 14 * curtainFactor;
+  const topA = lerp(0.42, 0.72, curtainFactor);
+  const bottomA = lerp(0.55, 0.84, curtainFactor);
 
   const staticLineOpacity = clamp(1 - curtainFactor * 1.2, 0, 1);
 
@@ -255,9 +290,9 @@ export default function Header() {
   const lineScaleStr = lineScale.toFixed(4);
 
   const ash = useMemo<AshParticle[]>(() => {
-    if (reducedMotion) return [];
+    if (lowFx) return []; // ✅ на телефонах/low power отключаем
     const rnd = mulberry32(1337);
-    const count = 60;
+    const count = 44; // было 60
     const out: AshParticle[] = [];
     for (let i = 0; i < count; i++) {
       out.push({
@@ -273,42 +308,54 @@ export default function Header() {
       });
     }
     return out;
-  }, [reducedMotion]);
+  }, [lowFx]);
 
+  // ✅ ГЛАВНОЕ: вместо height — transform (GPU), без пересчёта layout
   const curtainStyle: CSSProperties = {
-    height: `${curtainH}px`,
+    transform: `translate3d(0, ${(-100 + curtainFactor * 100).toFixed(3)}%, 0)`,
     opacity: curtainVisible ? 1 : 0,
-    willChange: "height, opacity",
+    willChange: "transform, opacity",
   };
 
-  const planetImgStyle: CSSProperties = {
-    opacity: 0.85,
-    filter: "blur(0.9px) saturate(1.35) contrast(1.22) brightness(1.18)",
-    transform: "scale(1.08)",
-    mixBlendMode: "screen" as any,
-  };
+  const planetImgStyle: CSSProperties = lowFx
+    ? {
+        opacity: 0.72,
+        filter: "saturate(1.18) contrast(1.12) brightness(1.12)",
+        transform: "scale(1.06)",
+        mixBlendMode: "normal" as any,
+        willChange: "transform",
+      }
+    : {
+        opacity: 0.85,
+        filter: "blur(0.9px) saturate(1.35) contrast(1.22) brightness(1.18)",
+        transform: "scale(1.08)",
+        mixBlendMode: "screen" as any,
+        willChange: "transform, filter",
+      };
 
   const dotsStyle: CSSProperties = {
-    opacity: 0.04 + 0.08 * curtainFactor,
+    opacity: lowFx ? 0.03 : 0.04 + 0.08 * curtainFactor,
   };
 
   const lineLeftTransformStyle: CSSProperties = {
     transform: `scaleX(${lineScaleStr})`,
+    willChange: "transform",
   };
   const lineRightTransformStyle: CSSProperties = {
     transform: `scaleX(${lineScaleStr})`,
+    willChange: "transform",
   };
 
   const lineLeftBarStyle: CSSProperties = {
     backgroundImage: ORANGE_LEFT,
     backgroundSize: "220% 100%",
-    animation: reducedMotion ? "none" : "lineFlow 2.2s linear infinite",
+    animation: lowFx ? "none" : "lineFlow 2.2s linear infinite",
   };
 
   const lineRightBarStyle: CSSProperties = {
     backgroundImage: ORANGE_RIGHT,
     backgroundSize: "220% 100%",
-    animation: reducedMotion ? "none" : "lineFlow 2.2s linear infinite",
+    animation: lowFx ? "none" : "lineFlow 2.2s linear infinite",
   };
 
   const goStart = () => {
@@ -351,6 +398,7 @@ export default function Header() {
         alt="TIVONIX"
         className="block h-9 sm:h-10 w-auto opacity-90 group-hover:opacity-100 transition-opacity"
         draggable={false}
+        decoding="async"
       />
     </Link>
   );
@@ -413,6 +461,7 @@ export default function Header() {
             opacity: 1 - headerHide,
             pointerEvents: headerHide > 0.92 ? "none" : "auto",
             transition: "opacity 120ms linear",
+            transform: "translateZ(0)",
           } as CSSProperties
         }
       >
@@ -578,9 +627,7 @@ export default function Header() {
                 </div>
 
                 <div className="mt-4 flex items-center justify-between">
-                  <div className="text-xs text-white/60">
-                    {tHeader.language}
-                  </div>
+                  <div className="text-xs text-white/60">{tHeader.language}</div>
                   <LangToggle
                     lang={lang}
                     onChange={setLang}
@@ -612,7 +659,7 @@ export default function Header() {
       {/* ШТОРКА */}
       <div
         className={cx(
-          "fixed inset-x-0 top-0 z-40 overflow-hidden",
+          "fixed inset-0 z-40 overflow-hidden",
           curtainVisible ? "" : "pointer-events-none"
         )}
         style={curtainStyle}
@@ -625,6 +672,7 @@ export default function Header() {
             draggable={false}
             className="absolute inset-0 h-full w-full object-cover"
             style={planetImgStyle}
+            decoding="async"
           />
         </div>
 
@@ -635,8 +683,18 @@ export default function Header() {
               background: `linear-gradient(180deg,
                 rgba(0,0,0,${topA.toFixed(3)}) 0%,
                 rgba(0,0,0,${bottomA.toFixed(3)}) 100%)`,
-              backdropFilter: `blur(${blurPx.toFixed(2)}px) saturate(1.15)`,
-              WebkitBackdropFilter: `blur(${blurPx.toFixed(2)}px) saturate(1.15)`,
+              // ✅ backdrop-filter — главный убийца FPS на телефоне
+              ...(blurPx > 0
+                ? {
+                    backdropFilter: `blur(${blurPx.toFixed(
+                      2
+                    )}px) saturate(1.15)`,
+                    WebkitBackdropFilter: `blur(${blurPx.toFixed(
+                      2
+                    )}px) saturate(1.15)`,
+                  }
+                : {}),
+              transform: "translateZ(0)",
             } as CSSProperties
           }
         />
@@ -646,7 +704,7 @@ export default function Header() {
           style={dotsStyle}
         />
 
-        {!reducedMotion && (
+        {!lowFx && (
           <div className="pointer-events-none absolute inset-0 z-[3]">
             {ash.map((pp) => (
               <span
@@ -686,7 +744,8 @@ export default function Header() {
                   } as CSSProperties
                 }
               >
-                <CurtainContent />
+                {/* ✅ можно монтировать контент только когда реально открыто */}
+                {fullyOpen ? <CurtainContent /> : null}
               </div>
             </div>
           </Container>
@@ -696,13 +755,13 @@ export default function Header() {
 
             <div className="mt-[-2px] h-[2px] w-full flex overflow-hidden">
               <div
-                className="h-[2px] w-1/2 origin-right will-change-transform"
+                className="h-[2px] w-1/2 origin-right"
                 style={lineLeftTransformStyle}
               >
                 <div className="h-full" style={lineLeftBarStyle} />
               </div>
               <div
-                className="h-[2px] w-1/2 origin-left will-change-transform"
+                className="h-[2px] w-1/2 origin-left"
                 style={lineRightTransformStyle}
               >
                 <div className="h-full" style={lineRightBarStyle} />
@@ -710,16 +769,10 @@ export default function Header() {
             </div>
 
             <div className="mt-[-2px] h-10 w-full flex overflow-hidden blur-2xl opacity-55">
-              <div
-                className="h-10 w-1/2 origin-right will-change-transform"
-                style={lineLeftTransformStyle}
-              >
+              <div className="h-10 w-1/2 origin-right" style={lineLeftTransformStyle}>
                 <div className="h-full" style={lineLeftBarStyle} />
               </div>
-              <div
-                className="h-10 w-1/2 origin-left will-change-transform"
-                style={lineRightTransformStyle}
-              >
+              <div className="h-10 w-1/2 origin-left" style={lineRightTransformStyle}>
                 <div className="h-full" style={lineRightBarStyle} />
               </div>
             </div>
