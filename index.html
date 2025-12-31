@@ -45,6 +45,56 @@
       content="Сайты и веб-продукты: дизайн, разработка, запуск и поддержка."
     />
     <meta name="twitter:image" content="https://tivonix.tech/og.jpg" />
+
+    <!-- ✅ Schema.org (важно для красивого отображения в поиске) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://tivonix.tech/#org",
+            "name": "TIVONIX",
+            "url": "https://tivonix.tech/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://tivonix.tech/logo.png",
+              "width": 512,
+              "height": 512
+            },
+            "description": "TIVONIX — делаем сайты, лендинги и веб-продукты: от идеи и прототипа до запуска, поддержки и развития.",
+            "sameAs": [
+              "https://t.me/yourtelegram",
+              "https://github.com/yourgithub",
+              "https://www.behance.net/yourbehance"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://tivonix.tech/#website",
+            "url": "https://tivonix.tech/",
+            "name": "TIVONIX",
+            "publisher": { "@id": "https://tivonix.tech/#org" },
+            "inLanguage": "ru",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://tivonix.tech/?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          },
+          {
+            "@type": "WebPage",
+            "@id": "https://tivonix.tech/#home",
+            "url": "https://tivonix.tech/",
+            "name": "TIVONIX — сайты и цифровые продукты",
+            "description": "TIVONIX — делаем сайты, лендинги и веб-продукты: от идеи и прототипа до запуска, поддержки и развития.",
+            "isPartOf": { "@id": "https://tivonix.tech/#website" },
+            "about": { "@id": "https://tivonix.tech/#org" },
+            "inLanguage": "ru"
+          }
+        ]
+      }
+    </script>
   </head>
 
   <body>
