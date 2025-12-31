@@ -5,6 +5,7 @@ import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider"; // ✅ твой провайдер языка
 
 // ====== типы / хелперы ======
+const LOGO_VIDEO_MP4 = "/images/animation.mp4"; // положи в public/images
 
 type Cat =
   | "start"
@@ -515,17 +516,27 @@ export default function FAQSection() {
       <Container>
         {/* шапка */}
         <div className="relative mx-auto max-w-2xl text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 shadow-[0_20px_80px_rgba(0,0,0,0.6)]">
-            <img
-              src={LOGO_ICON}
-              alt="Tivonix"
-              className="h-8 w-8 object-contain"
-              draggable={false}
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).style.display = "none";
-              }}
-            />
-          </div>
+
+<div className="relative mx-auto h-20 w-20 overflow-hidden rounded-full border border-white/10 bg-black/40 shadow-[0_20px_80px_rgba(0,0,0,0.6)]">
+  <video
+    muted
+    playsInline
+    loop
+    autoPlay
+    preload="auto"
+    className="
+      absolute left-1/2 top-1/2
+      h-[130%] w-[130%]
+      -translate-x-1/2 -translate-y-1/2
+      object-cover
+    "
+    onError={(e) => {
+      (e.currentTarget as HTMLVideoElement).style.display = "none";
+    }}
+  >
+    <source src={LOGO_VIDEO_MP4} type="video/mp4" />
+  </video>
+</div>
 
           <h2 className="mt-5 font-display text-[30px] leading-[34px] sm:text-[40px] sm:leading-[44px] font-extrabold tracking-tight">
             {title}

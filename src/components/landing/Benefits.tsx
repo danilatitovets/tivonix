@@ -8,7 +8,8 @@ function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
 
-const HERO_IMG = "/images/hero.png";
+// ✅ фотка (public/images/mak.png)
+const RIGHT_IMG = "/images/mak.png";
 
 function IconRocket() {
   return (
@@ -93,47 +94,47 @@ function BenefitRow({ b, rowLabel, rowMeta }: { b: Benefit; rowLabel: string; ro
   return (
     <div
       className={cx(
-        "group relative overflow-hidden rounded-[28px]",
-        "border border-white/10 bg-white/[0.06] backdrop-blur-2xl",
-        "shadow-[0_30px_120px_rgba(0,0,0,0.55)]"
+        "group relative overflow-hidden rounded-[22px]",
+        "border border-white/10 bg-white/[0.05] backdrop-blur-2xl",
+        "shadow-[0_22px_80px_rgba(0,0,0,0.50)]"
       )}
     >
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -inset-12 opacity-[0.55] blur-2xl" style={{ background: b.glow }} />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.55),rgba(0,0,0,0.88))]" />
+        <div className="absolute -inset-10 opacity-[0.55] blur-2xl" style={{ background: b.glow }} />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.52),rgba(0,0,0,0.86))]" />
         <div className="absolute inset-0 opacity-[0.10] [background-image:radial-gradient(rgba(255,255,255,0.22)_1px,transparent_1px)] [background-size:16px_16px]" />
         <div className="absolute inset-0 ring-1 ring-white/10" />
       </div>
 
-      <div className="relative z-10 p-5 sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex items-start gap-4">
+      <div className="relative z-10 p-4 sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-3">
             <div
               className={cx(
-                "grid place-items-center h-12 w-12 shrink-0 rounded-2xl",
+                "grid place-items-center h-10 w-10 shrink-0 rounded-2xl",
                 "border border-white/12 bg-black/25 backdrop-blur-xl",
-                "text-[#FF9A3D] shadow-[0_18px_60px_rgba(0,0,0,0.45)]"
+                "text-[#FF9A3D] shadow-[0_14px_44px_rgba(0,0,0,0.42)]"
               )}
             >
               {b.icon}
             </div>
 
             <div className="min-w-0">
-              <div className="text-[16px] sm:text-[17px] font-[820] tracking-tight text-white/92">
+              <div className="text-[15px] sm:text-[16px] font-[820] tracking-tight text-white/92">
                 {b.title}
               </div>
-              <div className="mt-1 text-[13px] sm:text-[14px] leading-relaxed text-white/60">
+              <div className="mt-1 text-[12.5px] sm:text-[13px] leading-relaxed text-white/60">
                 {b.desc}
               </div>
             </div>
           </div>
 
-          <div className="sm:pt-1">
+          <div className="sm:pt-0.5">
             <span
               className={cx(
-                "inline-flex items-center rounded-full px-3 py-1",
+                "inline-flex items-center rounded-full px-2.5 py-1",
                 "border border-white/12 bg-black/25",
-                "text-[12px] font-[780] text-white/80"
+                "text-[11px] font-[780] text-white/80"
               )}
             >
               {b.badge}
@@ -141,19 +142,19 @@ function BenefitRow({ b, rowLabel, rowMeta }: { b: Benefit; rowLabel: string; ro
           </div>
         </div>
 
-        <div className="mt-5 h-px w-full bg-white/10 overflow-hidden">
+        <div className="mt-4 h-px w-full bg-white/10 overflow-hidden">
           <div
             className="h-px w-full opacity-80"
             style={{
               background:
-                "linear-gradient(90deg, transparent 0%, rgba(255,215,176,0.65) 30%, rgba(255,154,61,0.9) 55%, rgba(255,106,26,0.9) 75%, transparent 100%)",
+                "linear-gradient(90deg, transparent 0%, rgba(255,215,176,0.60) 30%, rgba(255,154,61,0.90) 55%, rgba(255,106,26,0.90) 75%, transparent 100%)",
             }}
           />
         </div>
 
-        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-[11px] tracking-[0.22em] text-white/45">{rowLabel}</div>
-          <div className="text-[12px] text-white/55">{rowMeta}</div>
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-[10.5px] tracking-[0.22em] text-white/45">{rowLabel}</div>
+          <div className="text-[11.5px] text-white/55">{rowMeta}</div>
         </div>
       </div>
     </div>
@@ -213,48 +214,73 @@ export default function Benefits() {
   );
 
   return (
-    <Section id="benefits" className="relative overflow-hidden pt-16 sm:pt-20 pb-16 sm:pb-20">
-      <div className="pointer-events-none absolute inset-0">
-        <img
-          src={HERO_IMG}
-          alt=""
-          draggable={false}
-          className="absolute inset-0 h-full w-full object-cover opacity-20 blur-[12px] scale-[1.06]"
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.55),rgba(0,0,0,0.92))]" />
+    <Section id="benefits" className="relative pt-16 sm:pt-20 pb-16 sm:pb-20">
+      {/* ✅ НЕТ hero.png — фон уже видео. Тут только “читаемость” поверх видео */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.38),rgba(0,0,0,0.92))]" />
         <div
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(1200px 650px at 18% 10%, rgba(255,154,61,0.20), transparent 60%)," +
-              "radial-gradient(900px 520px at 85% 18%, rgba(255,106,26,0.16), transparent 62%)",
+              "radial-gradient(1200px 650px at 18% 10%, rgba(255,154,61,0.14), transparent 60%)," +
+              "radial-gradient(900px 520px at 85% 18%, rgba(255,106,26,0.10), transparent 62%)",
           }}
         />
-        <div className="absolute inset-0 opacity-[0.10] [background-image:radial-gradient(rgba(255,255,255,0.22)_1px,transparent_1px)] [background-size:16px_16px]" />
-        <div className="absolute inset-x-0 top-0 h-px opacity-60 bg-[linear-gradient(90deg,transparent,rgba(255,215,176,0.45),rgba(255,154,61,0.65),rgba(255,106,26,0.55),transparent)]" />
+        <div className="absolute inset-0 opacity-[0.10] [background-image:radial-gradient(rgba(255,255,255,0.20)_1px,transparent_1px)] [background-size:16px_16px]" />
+        <div className="absolute inset-x-0 top-0 h-px opacity-60 bg-[linear-gradient(90deg,transparent,rgba(255,215,176,0.35),rgba(255,154,61,0.55),rgba(255,106,26,0.45),transparent)]" />
       </div>
 
       <Container>
-        <div className="relative">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="text-[12px] tracking-[0.22em] text-white/45">{bDict.badge}</div>
-            <h2 className="mt-3 text-[34px] sm:text-[44px] font-[820] tracking-[-0.03em] text-white leading-[1.06]">
-              {bDict.titlePrefix}{" "}
-              <span className="bg-[linear-gradient(90deg,#FFD7B0,#FF9A3D,#FF6A1A)] bg-clip-text text-transparent">
-                {bDict.titleHighlight}
-              </span>
-            </h2>
+        <div className="relative overflow-visible">
+          {/* ✅ DESKTOP: фотка справа */}
+          <div className="pointer-events-none absolute inset-0 hidden lg:block z-0 overflow-visible">
+            <img
+              src={RIGHT_IMG}
+              alt=""
+              draggable={false}
+              className={cx(
+                "absolute right-[-420px] top-[160px]",
+                "w-[1180px] max-w-none",
+                "h-[760px] object-contain",
+                "opacity-[0.98]",
+                "drop-shadow-[0_90px_240px_rgba(0,0,0,0.75)]"
+              )}
+            />
           </div>
 
-          <div className="mt-10 space-y-4 sm:space-y-5">
-            {items.map((b) => (
-              <BenefitRow
-                key={b.title}
-                b={b}
-                rowLabel={bDict.rowLabel}
-                rowMeta={bDict.rowMeta}
-              />
-            ))}
+          {/* ✅ MOBILE/TABLET */}
+          <div className="pointer-events-none absolute inset-0 lg:hidden z-0 overflow-visible">
+            <img
+              src={RIGHT_IMG}
+              alt=""
+              draggable={false}
+              className={cx(
+                "absolute right-[-180px] top-[260px]",
+                "w-[920px] max-w-none",
+                "h-[640px] object-contain",
+                "opacity-[0.40]",
+                "drop-shadow-[0_70px_190px_rgba(0,0,0,0.78)]"
+              )}
+            />
+          </div>
+
+          {/* ✅ контент */}
+          <div className="relative z-10">
+            <div className="mx-auto max-w-3xl text-center">
+              <div className="text-[12px] tracking-[0.22em] text-white/55">{bDict.badge}</div>
+              <h2 className="mt-3 text-[34px] sm:text-[44px] font-[820] tracking-[-0.03em] text-white leading-[1.06]">
+                {bDict.titlePrefix}{" "}
+                <span className="bg-[linear-gradient(90deg,#FFD7B0,#FF9A3D,#FF6A1A)] bg-clip-text text-transparent">
+                  {bDict.titleHighlight}
+                </span>
+              </h2>
+            </div>
+
+            <div className="mt-10 space-y-3 sm:space-y-4 max-w-[760px] mx-auto lg:mx-0">
+              {items.map((b) => (
+                <BenefitRow key={b.title} b={b} rowLabel={bDict.rowLabel} rowMeta={bDict.rowMeta} />
+              ))}
+            </div>
           </div>
         </div>
       </Container>

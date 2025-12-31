@@ -1,5 +1,5 @@
 // src/components/landing/Header.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Container from "../ui/Container";
 import { Button } from "../ui/Button";
@@ -9,14 +9,15 @@ function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
 
-type NavKey = "contacts" | "projects" | "faq";
-type NavItem = { to: string; key: NavKey };
+type NavKey = "home" | "contacts" | "projects" | "faq";
+type NavItem = { to: string; key: "contacts" | "projects" };
 
-const NAV: NavItem[] = [
+const NAV_MAIN: NavItem[] = [
   { to: "/contacts", key: "contacts" },
   { to: "/projects", key: "projects" },
-  { to: "#faq", key: "faq" },
 ];
+
+const FAQ_TO = "#faq";
 
 const ORANGE_STATIC =
   "linear-gradient(90deg, rgba(255,160,70,0) 0%, rgba(255,120,40,0.95) 18%, rgba(255,198,120,1) 50%, rgba(255,120,40,0.95) 82%, rgba(255,160,70,0) 100%)";
@@ -25,6 +26,23 @@ const BRAND_CTA =
   "linear-gradient(90deg, #FFD7B0 0%, #FF9A3D 45%, #FF6A1A 100%)";
 
 const BAR_H = 76;
+
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const on = () => setReduced(!!mq.matches);
+    on();
+    if (mq.addEventListener) mq.addEventListener("change", on);
+    else mq.addListener(on);
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener("change", on);
+      else mq.removeListener(on);
+    };
+  }, []);
+  return reduced;
+}
 
 function LangToggle({ compact }: { compact?: boolean }) {
   const { lang, setLang } = useLang();
@@ -66,8 +84,147 @@ function LangToggle({ compact }: { compact?: boolean }) {
   );
 }
 
+/**
+ * ✅ Слот со свапом:
+ * - при входе в FAQ: FAQ -> OUT вправо, HOME -> IN слева
+ * - при уходе из FAQ вверх: HOME -> OUT влево, FAQ -> IN справа
+ */
+function SwapNavSlot({
+  desired,
+  homeText,
+  faqText,
+  onHome,
+  onFaq,
+  reducedMotion,
+}: {
+  desired: "home" | "faq";
+  homeText: string;
+  faqText: string;
+  onHome: (e: React.MouseEvent) => void;
+  onFaq: (e: React.MouseEvent) => void;
+  reducedMotion: boolean;
+}) {
+  const DUR = 300;
+
+  const [shown, setShown] = useState<"home" | "faq">(desired);
+  const [anim, setAnim] = useState<
+    | null
+    | {
+        from: "home" | "faq";
+        to: "home" | "faq";
+        k: number;
+      }
+  >(null);
+
+  useEffect(() => {
+    if (desired === shown) return;
+
+    if (reducedMotion) {
+      setAnim(null);
+      setShown(desired);
+      return;
+    }
+
+    const from = shown;
+    const to = desired;
+    setAnim({ from, to, k: Date.now() });
+    setShown(desired);
+
+    const t = window.setTimeout(() => setAnim(null), DUR + 60);
+    return () => window.clearTimeout(t);
+  }, [desired, shown, reducedMotion]);
+
+  const homeAnim =
+    anim?.to === "home"
+      ? "tivoNavInLeft"
+      : anim?.from === "home"
+      ? "tivoNavOutLeft"
+      : "";
+
+  const faqAnim =
+    anim?.to === "faq"
+      ? "tivoNavInRight"
+      : anim?.from === "faq"
+      ? "tivoNavOutRight"
+      : "";
+
+  const homeActive = shown === "home";
+  const faqActive = shown === "faq";
+
+  return (
+    <div className="inline-grid h-10 items-center">
+      <style>{`
+        @keyframes tivoNavInLeft {
+          from { opacity: 0; transform: translateX(-18px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes tivoNavOutRight {
+          from { opacity: 1; transform: translateX(0); }
+          to   { opacity: 0; transform: translateX(18px); }
+        }
+        @keyframes tivoNavInRight {
+          from { opacity: 0; transform: translateX(18px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes tivoNavOutLeft {
+          from { opacity: 1; transform: translateX(0); }
+          to   { opacity: 0; transform: translateX(-18px); }
+        }
+      `}</style>
+
+      {/* HOME (сидит в той же ячейке, ширина слота = max(home/faq)) */}
+      <Link
+        to="/"
+        onClick={onHome}
+        aria-hidden={!homeActive}
+        tabIndex={homeActive ? 0 : -1}
+        className={cx(
+          "col-start-1 row-start-1 px-3 py-2 hover:text-white transition-colors",
+          homeActive ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+        style={
+          reducedMotion || !homeAnim
+            ? undefined
+            : ({
+                animation: `${homeAnim} ${DUR}ms ease-out both`,
+                willChange: "transform,opacity",
+              } as React.CSSProperties)
+        }
+      >
+        {homeText}
+      </Link>
+
+      {/* FAQ */}
+      <a
+        href={FAQ_TO}
+        onClick={onFaq}
+        aria-hidden={!faqActive}
+        tabIndex={faqActive ? 0 : -1}
+        className={cx(
+          "col-start-1 row-start-1 px-3 py-2 hover:text-white transition-colors",
+          faqActive ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+        style={
+          reducedMotion || !faqAnim
+            ? undefined
+            : ({
+                animation: `${faqAnim} ${DUR}ms ease-out both`,
+                willChange: "transform,opacity",
+              } as React.CSSProperties)
+        }
+      >
+        {faqText}
+      </a>
+    </div>
+  );
+}
+
+
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [faqInView, setFaqInView] = useState(false);
+
+  const reducedMotion = usePrefersReducedMotion();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -89,6 +246,56 @@ export default function Header() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  // ✅ наблюдаем именно #faq (один id!)
+  useEffect(() => {
+    if (location.pathname !== "/") {
+      setFaqInView(false);
+      return;
+    }
+
+    let io: IntersectionObserver | null = null;
+    let stopped = false;
+
+    const attach = () => {
+      const el = document.getElementById("faq");
+      if (!el) return false;
+
+      io = new IntersectionObserver(
+        (entries) => {
+          if (stopped) return;
+          setFaqInView(!!entries[0]?.isIntersecting);
+        },
+        {
+          threshold: 0,
+          // ✅ самое важное: учитываем фикс-хедер и НЕ режем низ экрана
+          rootMargin: `-${BAR_H + 12}px 0px 0px 0px`,
+        }
+      );
+
+      io.observe(el);
+      return true;
+    };
+
+    if (!attach()) {
+      let tries = 0;
+      const t = window.setInterval(() => {
+        tries++;
+        if (attach() || tries > 40) window.clearInterval(t);
+      }, 150);
+
+      return () => {
+        stopped = true;
+        window.clearInterval(t);
+        io?.disconnect();
+      };
+    }
+
+    return () => {
+      stopped = true;
+      io?.disconnect();
+    };
+  }, [location.pathname]);
 
   const scrollToId = (id: string) => {
     const el = document.getElementById(id);
@@ -116,7 +323,6 @@ export default function Header() {
       }
       return;
     }
-
     setOpen(false);
   };
 
@@ -128,10 +334,12 @@ export default function Header() {
 
   const navLabel = (key: NavKey) => {
     if (isRu) {
+      if (key === "home") return "главная";
       if (key === "contacts") return "контакты";
       if (key === "projects") return "проекты";
       if (key === "faq") return "FAQ";
     } else {
+      if (key === "home") return "home";
       if (key === "contacts") return "contacts";
       if (key === "projects") return "projects";
       if (key === "faq") return "FAQ";
@@ -142,6 +350,13 @@ export default function Header() {
   const ctaText = isRu ? "Начать" : "Get started";
   const ariaHome = isRu ? "На главную" : "Go to home";
   const ariaMenu = isRu ? "Меню" : "Menu";
+
+  // ✅ desired:
+  // - на главной: пока FAQ НЕ виден -> показываем FAQ
+  // - когда FAQ появляется -> показываем HOME (и делаем анимацию)
+  // - на других страницах -> HOME
+  const desiredSlot: "home" | "faq" =
+    location.pathname !== "/" ? "home" : faqInView ? "home" : "faq";
 
   return (
     <>
@@ -178,27 +393,29 @@ export default function Header() {
               </Link>
 
               <div className="hidden md:flex items-center gap-3 text-sm text-white/70">
-                {NAV.map((it) =>
-                  it.to.startsWith("#") ? (
-                    <a
-                      key={it.to}
-                      href={it.to}
-                      onClick={onNav(it.to)}
-                      className="px-3 py-2 hover:text-white transition-colors"
-                    >
-                      {navLabel(it.key)}
-                    </a>
-                  ) : (
-                    <Link
-                      key={it.to}
-                      to={it.to}
-                      onClick={onNav(it.to)}
-                      className="px-3 py-2 hover:text-white transition-colors"
-                    >
-                      {navLabel(it.key)}
-                    </Link>
-                  )
-                )}
+                {/* ✅ СВАП С АНИМАЦИЕЙ */}
+                <SwapNavSlot
+                  desired={desiredSlot}
+                  reducedMotion={reducedMotion}
+                  homeText={navLabel("home")}
+                  faqText={navLabel("faq")}
+                  onHome={(e) => {
+                    e.preventDefault();
+                    goStart();
+                  }}
+                  onFaq={onNav(FAQ_TO)}
+                />
+
+                {NAV_MAIN.map((it) => (
+                  <Link
+                    key={it.to}
+                    to={it.to}
+                    onClick={onNav(it.to)}
+                    className="px-3 py-2 hover:text-white transition-colors"
+                  >
+                    {navLabel(it.key)}
+                  </Link>
+                ))}
 
                 <LangToggle />
 
@@ -210,7 +427,7 @@ export default function Header() {
                     "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
                     "hover:brightness-[1.04] active:brightness-[0.96]"
                   )}
-                  style={{ background: BRAND_CTA } as any}
+                  style={{ background: BRAND_CTA } as React.CSSProperties}
                 >
                   {ctaText}
                 </Button>
@@ -271,14 +488,15 @@ export default function Header() {
           <div className="pointer-events-none relative -mb-3 h-6">
             <div
               className="mx-auto h-[2px] w-[min(720px,88%)] rounded-full opacity-95"
-              style={{ background: ORANGE_STATIC } as any}
+              style={{ background: ORANGE_STATIC } as React.CSSProperties}
             />
             <div
               className="mx-auto mt-[-2px] h-6 w-[min(720px,88%)] blur-2xl opacity-45"
-              style={{ background: ORANGE_STATIC } as any}
+              style={{ background: ORANGE_STATIC } as React.CSSProperties}
             />
           </div>
 
+          {/* Mobile */}
           <div
             className={cx(
               "md:hidden overflow-hidden border-t border-white/5 bg-black/55 backdrop-blur-2xl",
@@ -289,27 +507,37 @@ export default function Header() {
             <Container>
               <div className="py-4">
                 <div className="flex flex-col gap-1 text-sm text-white/75">
-                  {NAV.map((it) =>
-                    it.to.startsWith("#") ? (
-                      <a
-                        key={it.to}
-                        href={it.to}
-                        onClick={onNav(it.to)}
-                        className="rounded-2xl px-3 py-3 transition hover:bg-white/5 hover:text-white"
-                      >
-                        {navLabel(it.key)}
-                      </a>
-                    ) : (
-                      <Link
-                        key={it.to}
-                        to={it.to}
-                        onClick={onNav(it.to)}
-                        className="rounded-2xl px-3 py-3 transition hover:bg-white/5 hover:text-white"
-                      >
-                        {navLabel(it.key)}
-                      </Link>
-                    )
+                  {desiredSlot === "home" ? (
+                    <Link
+                      to="/"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        goStart();
+                      }}
+                      className="rounded-2xl px-3 py-3 transition hover:bg-white/5 hover:text-white"
+                    >
+                      {navLabel("home")}
+                    </Link>
+                  ) : (
+                    <a
+                      href={FAQ_TO}
+                      onClick={onNav(FAQ_TO)}
+                      className="rounded-2xl px-3 py-3 transition hover:bg-white/5 hover:text-white"
+                    >
+                      {navLabel("faq")}
+                    </a>
                   )}
+
+                  {NAV_MAIN.map((it) => (
+                    <Link
+                      key={it.to}
+                      to={it.to}
+                      onClick={onNav(it.to)}
+                      className="rounded-2xl px-3 py-3 transition hover:bg-white/5 hover:text-white"
+                    >
+                      {navLabel(it.key)}
+                    </Link>
+                  ))}
                 </div>
 
                 <div className="mt-4 flex items-center gap-3">
@@ -322,7 +550,7 @@ export default function Header() {
                       "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
                       "hover:brightness-[1.04] active:brightness-[0.96]"
                     )}
-                    style={{ background: BRAND_CTA } as any}
+                    style={{ background: BRAND_CTA } as React.CSSProperties}
                   >
                     {ctaText}
                   </Button>
