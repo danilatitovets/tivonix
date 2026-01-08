@@ -1,5 +1,5 @@
 // src/components/landing/Header.tsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Container from "../ui/Container";
 import { Button } from "../ui/Button";
@@ -9,23 +9,20 @@ function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
 
-type NavKey = "home" | "contacts" | "projects" | "faq";
-type NavItem = { to: string; key: "contacts" | "projects" };
+type NavKey = "home" | "contacts" | "projects";
+type NavItem = { to: string; key: NavKey };
 
 const NAV_MAIN: NavItem[] = [
+  { to: "/", key: "home" },
   { to: "/contacts", key: "contacts" },
   { to: "/projects", key: "projects" },
 ];
-
-const FAQ_TO = "#faq";
 
 const ORANGE_STATIC =
   "linear-gradient(90deg, rgba(255,160,70,0) 0%, rgba(255,120,40,0.95) 18%, rgba(255,198,120,1) 50%, rgba(255,120,40,0.95) 82%, rgba(255,160,70,0) 100%)";
 
 const BRAND_CTA =
   "linear-gradient(90deg, #FFD7B0 0%, #FF9A3D 45%, #FF6A1A 100%)";
-
-const BAR_H = 76;
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -62,8 +59,8 @@ function LangToggle({ compact }: { compact?: boolean }) {
         className={cx(
           baseBtn,
           lang === "ru"
-            ? "border-white/18 bg-white/10 text-white"
-            : "border-white/10 bg-black/20 text-white/70 hover:text-white hover:bg-white/5"
+            ? "border-white/16 bg-white/10 text-white"
+            : "border-white/10 bg-black/25 text-white/70 hover:text-white hover:bg-white/5"
         )}
       >
         RU
@@ -74,8 +71,8 @@ function LangToggle({ compact }: { compact?: boolean }) {
         className={cx(
           baseBtn,
           lang === "en"
-            ? "border-white/18 bg-white/10 text-white"
-            : "border-white/10 bg-black/20 text-white/70 hover:text-white hover:bg-white/5"
+            ? "border-white/16 bg-white/10 text-white"
+            : "border-white/10 bg-black/25 text-white/70 hover:text-white hover:bg-white/5"
         )}
       >
         EN
@@ -84,145 +81,70 @@ function LangToggle({ compact }: { compact?: boolean }) {
   );
 }
 
-/**
- * ✅ Слот со свапом:
- * - при входе в FAQ: FAQ -> OUT вправо, HOME -> IN слева
- * - при уходе из FAQ вверх: HOME -> OUT влево, FAQ -> IN справа
- */
-function SwapNavSlot({
-  desired,
-  homeText,
-  faqText,
-  onHome,
-  onFaq,
+/** SaaS segmented tabs без оранжевой точки */
+function SaaSTabs({
+  activeKey,
+  items,
+  onItemClick,
   reducedMotion,
 }: {
-  desired: "home" | "faq";
-  homeText: string;
-  faqText: string;
-  onHome: (e: React.MouseEvent) => void;
-  onFaq: (e: React.MouseEvent) => void;
+  activeKey: NavKey;
+  items: Array<{ key: NavKey; label: string; to: string }>;
+  onItemClick: (to: string) => (e: React.MouseEvent) => void;
   reducedMotion: boolean;
 }) {
-  const DUR = 300;
-
-  const [shown, setShown] = useState<"home" | "faq">(desired);
-  const [anim, setAnim] = useState<
-    | null
-    | {
-        from: "home" | "faq";
-        to: "home" | "faq";
-        k: number;
-      }
-  >(null);
-
-  useEffect(() => {
-    if (desired === shown) return;
-
-    if (reducedMotion) {
-      setAnim(null);
-      setShown(desired);
-      return;
-    }
-
-    const from = shown;
-    const to = desired;
-    setAnim({ from, to, k: Date.now() });
-    setShown(desired);
-
-    const t = window.setTimeout(() => setAnim(null), DUR + 60);
-    return () => window.clearTimeout(t);
-  }, [desired, shown, reducedMotion]);
-
-  const homeAnim =
-    anim?.to === "home"
-      ? "tivoNavInLeft"
-      : anim?.from === "home"
-      ? "tivoNavOutLeft"
-      : "";
-
-  const faqAnim =
-    anim?.to === "faq"
-      ? "tivoNavInRight"
-      : anim?.from === "faq"
-      ? "tivoNavOutRight"
-      : "";
-
-  const homeActive = shown === "home";
-  const faqActive = shown === "faq";
+  const dur = 240;
 
   return (
-    <div className="inline-grid h-10 items-center">
-      <style>{`
-        @keyframes tivoNavInLeft {
-          from { opacity: 0; transform: translateX(-18px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes tivoNavOutRight {
-          from { opacity: 1; transform: translateX(0); }
-          to   { opacity: 0; transform: translateX(18px); }
-        }
-        @keyframes tivoNavInRight {
-          from { opacity: 0; transform: translateX(18px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes tivoNavOutLeft {
-          from { opacity: 1; transform: translateX(0); }
-          to   { opacity: 0; transform: translateX(-18px); }
-        }
-      `}</style>
+    <div
+      className={cx(
+        "relative inline-flex items-center gap-1 rounded-full",
+        "border border-white/10 bg-white/[0.06] backdrop-blur-xl p-1",
+        "shadow-[0_12px_40px_rgba(0,0,0,0.35)] ring-1 ring-white/5"
+      )}
+      role="navigation"
+      aria-label="Header navigation"
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-full"
+        style={{
+          boxShadow:
+            "inset 0 1px 0 rgba(255,255,255,0.06), inset 0 0 0 1px rgba(255,255,255,0.04)",
+        }}
+      />
 
-      {/* HOME (сидит в той же ячейке, ширина слота = max(home/faq)) */}
-      <Link
-        to="/"
-        onClick={onHome}
-        aria-hidden={!homeActive}
-        tabIndex={homeActive ? 0 : -1}
-        className={cx(
-          "col-start-1 row-start-1 px-3 py-2 hover:text-white transition-colors",
-          homeActive ? "opacity-100" : "opacity-0 pointer-events-none"
-        )}
-        style={
-          reducedMotion || !homeAnim
-            ? undefined
-            : ({
-                animation: `${homeAnim} ${DUR}ms ease-out both`,
-                willChange: "transform,opacity",
-              } as React.CSSProperties)
-        }
-      >
-        {homeText}
-      </Link>
+      {items.map((it) => {
+        const isActive = it.key === activeKey;
 
-      {/* FAQ */}
-      <a
-        href={FAQ_TO}
-        onClick={onFaq}
-        aria-hidden={!faqActive}
-        tabIndex={faqActive ? 0 : -1}
-        className={cx(
-          "col-start-1 row-start-1 px-3 py-2 hover:text-white transition-colors",
-          faqActive ? "opacity-100" : "opacity-0 pointer-events-none"
-        )}
-        style={
-          reducedMotion || !faqAnim
-            ? undefined
-            : ({
-                animation: `${faqAnim} ${DUR}ms ease-out both`,
-                willChange: "transform,opacity",
-              } as React.CSSProperties)
-        }
-      >
-        {faqText}
-      </a>
+        return (
+          <Link
+            key={it.key}
+            to={it.to}
+            onClick={onItemClick(it.to)}
+            aria-current={isActive ? "page" : undefined}
+            className={cx(
+              "relative h-9 rounded-full px-4 text-xs font-semibold transition flex items-center gap-2 select-none",
+              isActive
+                ? "text-white bg-white/10 border border-white/14 shadow-[0_10px_30px_rgba(0,0,0,0.30)]"
+                : "text-white/72 hover:text-white hover:bg-white/5 border border-transparent"
+            )}
+            style={
+              reducedMotion
+                ? undefined
+                : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)
+            }
+          >
+            <span className="leading-none">{it.label}</span>
+          </Link>
+        );
+      })}
     </div>
   );
 }
 
-
 export default function Header() {
   const [open, setOpen] = useState(false);
-  const [faqInView, setFaqInView] = useState(false);
 
   const reducedMotion = usePrefersReducedMotion();
 
@@ -247,102 +169,15 @@ export default function Header() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // ✅ наблюдаем именно #faq (один id!)
-  useEffect(() => {
-    if (location.pathname !== "/") {
-      setFaqInView(false);
-      return;
-    }
-
-    let io: IntersectionObserver | null = null;
-    let stopped = false;
-
-    const attach = () => {
-      const el = document.getElementById("faq");
-      if (!el) return false;
-
-      io = new IntersectionObserver(
-        (entries) => {
-          if (stopped) return;
-          setFaqInView(!!entries[0]?.isIntersecting);
-        },
-        {
-          threshold: 0,
-          // ✅ самое важное: учитываем фикс-хедер и НЕ режем низ экрана
-          rootMargin: `-${BAR_H + 12}px 0px 0px 0px`,
-        }
-      );
-
-      io.observe(el);
-      return true;
-    };
-
-    if (!attach()) {
-      let tries = 0;
-      const t = window.setInterval(() => {
-        tries++;
-        if (attach() || tries > 40) window.clearInterval(t);
-      }, 150);
-
-      return () => {
-        stopped = true;
-        window.clearInterval(t);
-        io?.disconnect();
-      };
-    }
-
-    return () => {
-      stopped = true;
-      io?.disconnect();
-    };
-  }, [location.pathname]);
-
-  const scrollToId = (id: string) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const y = window.scrollY + r.top - (BAR_H + 10);
-    window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
-  };
-
-  const onNav = (to: string) => (e: React.MouseEvent) => {
-    if (to.startsWith("#")) {
-      e.preventDefault();
-      setOpen(false);
-      const id = to.slice(1);
-
-      if (location.pathname !== "/") {
-        navigate("/");
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => scrollToId(id))
-        );
-      } else {
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => scrollToId(id))
-        );
-      }
-      return;
-    }
-    setOpen(false);
-  };
-
-  const goStart = () => {
-    setOpen(false);
-    if (location.pathname !== "/") navigate("/");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   const navLabel = (key: NavKey) => {
     if (isRu) {
       if (key === "home") return "главная";
       if (key === "contacts") return "контакты";
       if (key === "projects") return "проекты";
-      if (key === "faq") return "FAQ";
     } else {
       if (key === "home") return "home";
       if (key === "contacts") return "contacts";
       if (key === "projects") return "projects";
-      if (key === "faq") return "FAQ";
     }
     return key;
   };
@@ -351,26 +186,54 @@ export default function Header() {
   const ariaHome = isRu ? "На главную" : "Go to home";
   const ariaMenu = isRu ? "Меню" : "Menu";
 
-  // ✅ desired:
-  // - на главной: пока FAQ НЕ виден -> показываем FAQ
-  // - когда FAQ появляется -> показываем HOME (и делаем анимацию)
-  // - на других страницах -> HOME
-  const desiredSlot: "home" | "faq" =
-    location.pathname !== "/" ? "home" : faqInView ? "home" : "faq";
+  const activeKey: NavKey = useMemo(() => {
+    if (location.pathname === "/contacts") return "contacts";
+    if (location.pathname === "/projects") return "projects";
+    return "home";
+  }, [location.pathname]);
+
+  const onNav = (to: string) => (e: React.MouseEvent) => {
+    setOpen(false);
+    if (to === "/") {
+      e.preventDefault();
+      if (location.pathname !== "/") navigate("/");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const goStart = () => {
+    setOpen(false);
+    if (location.pathname !== "/") navigate("/");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const tabsItems = useMemo(
+    () =>
+      NAV_MAIN.map((it) => ({
+        key: it.key,
+        to: it.to,
+        label: navLabel(it.key),
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lang]
+  );
 
   return (
     <>
-      <div aria-hidden className="h-[76px]" />
+      {/* spacer под фикс-хедер + табы */}
+      <div aria-hidden className="h-[112px]" />
 
       <div className="fixed inset-x-0 top-0 z-50">
+        {/* верхний бар + оранжевая линия */}
         <div className="border-b border-white/5 bg-black/40 backdrop-blur-xl">
           <Container>
             <div className="flex items-center justify-between py-4">
+              {/* Brand */}
               <Link
                 to="/"
-                onClick={() => {
-                  setOpen(false);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
+                onClick={(e) => {
+                  e.preventDefault();
+                  goStart();
                 }}
                 className="group flex items-center gap-3"
                 aria-label={ariaHome}
@@ -392,31 +255,8 @@ export default function Header() {
                 />
               </Link>
 
-              <div className="hidden md:flex items-center gap-3 text-sm text-white/70">
-                {/* ✅ СВАП С АНИМАЦИЕЙ */}
-                <SwapNavSlot
-                  desired={desiredSlot}
-                  reducedMotion={reducedMotion}
-                  homeText={navLabel("home")}
-                  faqText={navLabel("faq")}
-                  onHome={(e) => {
-                    e.preventDefault();
-                    goStart();
-                  }}
-                  onFaq={onNav(FAQ_TO)}
-                />
-
-                {NAV_MAIN.map((it) => (
-                  <Link
-                    key={it.to}
-                    to={it.to}
-                    onClick={onNav(it.to)}
-                    className="px-3 py-2 hover:text-white transition-colors"
-                  >
-                    {navLabel(it.key)}
-                  </Link>
-                ))}
-
+              {/* Desktop right side: язык + CTA */}
+              <div className="hidden md:flex items-center gap-3">
                 <LangToggle />
 
                 <Button
@@ -433,6 +273,7 @@ export default function Header() {
                 </Button>
               </div>
 
+              {/* Mobile burger */}
               <button
                 type="button"
                 className={cx(
@@ -485,6 +326,7 @@ export default function Header() {
             </div>
           </Container>
 
+          {/* оранжевая линия под баром */}
           <div className="pointer-events-none relative -mb-3 h-6">
             <div
               className="mx-auto h-[2px] w-[min(720px,88%)] rounded-full opacity-95"
@@ -496,48 +338,26 @@ export default function Header() {
             />
           </div>
 
-          {/* Mobile */}
+          {/* Mobile dropdown под линией */}
           <div
             className={cx(
               "md:hidden overflow-hidden border-t border-white/5 bg-black/55 backdrop-blur-2xl",
               "transition-[max-height,opacity] duration-300",
-              open ? "max-h-80 opacity-100" : "max-h-0 opacity-0"
+              open ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
             )}
           >
             <Container>
               <div className="py-4">
-                <div className="flex flex-col gap-1 text-sm text-white/75">
-                  {desiredSlot === "home" ? (
-                    <Link
-                      to="/"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        goStart();
-                      }}
-                      className="rounded-2xl px-3 py-3 transition hover:bg-white/5 hover:text-white"
-                    >
-                      {navLabel("home")}
-                    </Link>
-                  ) : (
-                    <a
-                      href={FAQ_TO}
-                      onClick={onNav(FAQ_TO)}
-                      className="rounded-2xl px-3 py-3 transition hover:bg-white/5 hover:text-white"
-                    >
-                      {navLabel("faq")}
-                    </a>
-                  )}
-
-                  {NAV_MAIN.map((it) => (
-                    <Link
-                      key={it.to}
-                      to={it.to}
-                      onClick={onNav(it.to)}
-                      className="rounded-2xl px-3 py-3 transition hover:bg-white/5 hover:text-white"
-                    >
-                      {navLabel(it.key)}
-                    </Link>
-                  ))}
+                <div className="flex justify-center">
+                  <SaaSTabs
+                    activeKey={activeKey}
+                    reducedMotion={reducedMotion}
+                    items={tabsItems}
+                    onItemClick={(to) => (e) => {
+                      onNav(to)(e);
+                      setOpen(false);
+                    }}
+                  />
                 </div>
 
                 <div className="mt-4 flex items-center gap-3">
@@ -558,6 +378,20 @@ export default function Header() {
               </div>
             </Container>
           </div>
+        </div>
+
+        {/* DESKTOP: табы по центру ниже оранжевой линии */}
+        <div className="hidden md:block bg-transparent pt-2 pb-4">
+          <Container>
+            <div className="flex justify-center">
+              <SaaSTabs
+                activeKey={activeKey}
+                reducedMotion={reducedMotion}
+                items={tabsItems}
+                onItemClick={onNav}
+              />
+            </div>
+          </Container>
         </div>
       </div>
     </>
