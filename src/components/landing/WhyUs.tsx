@@ -10,9 +10,11 @@ import Container from "../ui/Container";
 import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
 
-const HERO_IMG = "/images/hero.png";
-const STICKY_TOP = 96; // desktop sticky under header
+const STICKY_TOP = 96;
 const MOBILE_STICKY_TOP = "calc(var(--header-h, 72px) + 10px)";
+
+// твой файл: public/images/hero.png
+const HERO_IMG = "/images/hero.png";
 
 type Tech = {
   id: string;
@@ -20,20 +22,18 @@ type Tech = {
   sub: string;
   accent: string;
   mark: React.ReactNode;
+  kind?: "lang" | "default";
 };
 
 function clamp(n: number, a = 0, b = 1) {
   return Math.max(a, Math.min(b, n));
 }
 
-const PROGRESS_GRAD =
-  "linear-gradient(180deg,#FFD7B0 0%,#FF9A3D 35%,#FF6A1A 70%,#FFC678 100%)";
-
 function ReactAtomMark() {
   return (
     <svg
-      width="26"
-      height="26"
+      width="24"
+      height="24"
       viewBox="0 0 24 24"
       fill="none"
       className="opacity-95"
@@ -60,7 +60,15 @@ function ReactAtomMark() {
 
 function MarkText({ s }: { s: string }) {
   return (
-    <div className="text-[12px] font-extrabold tracking-widest text-white/90">
+    <div className="text-[11px] font-extrabold tracking-[0.18em] text-white/90 uppercase">
+      {s}
+    </div>
+  );
+}
+
+function LangChip({ s }: { s: string }) {
+  return (
+    <div className="rounded-full border border-white/18 bg-white/7 px-2.5 py-1 text-[11px] font-extrabold tracking-[0.16em] text-white/85 uppercase">
       {s}
     </div>
   );
@@ -72,24 +80,30 @@ function ProgressBar({
   thin = false,
 }: {
   progress: number; // 0..1
-  height: number; // px
+  height: number;
   thin?: boolean;
 }) {
-  const w = thin ? 14 : 18;
+  const w = thin ? 12 : 16;
+  const knobY = `${clamp(progress, 0, 1) * 100}%`;
+
   return (
-    <div className="relative" style={{ height, width: w }}>
-      <div className="absolute left-1/2 top-0 h-full w-[2px] -translate-x-1/2 rounded-full bg-white/10" />
-      <div className="absolute inset-y-1 left-1/2 w-[8px] -translate-x-1/2 overflow-hidden rounded-full bg-black/60">
+    <div className="relative flex justify-center" style={{ height, width: w }}>
+      <div className="absolute inset-y-0 w-[2px] rounded-full bg-white/10" />
+
+      <div className="absolute bottom-0 w-[4px] -translate-x-[1px] overflow-hidden rounded-full bg-white/5">
         <div
-          className="absolute left-0 top-0 w-full rounded-full"
+          className="w-full"
           style={{
-            height: `${progress * 100}%`,
-            background: PROGRESS_GRAD,
-            boxShadow:
-              "0 0 26px rgba(255,160,70,.55), 0 0 12px rgba(0,0,0,.8)",
+            height: `${clamp(progress, 0, 1) * 100}%`,
+            background: "linear-gradient(to top, #F97316 0%, #9CA3AF 100%)",
           }}
         />
       </div>
+
+      <div
+        className="absolute left-1/2 h-3 w-3 -translate-x-1/2 rounded-full border border-white/45 bg-black/80"
+        style={{ top: knobY, marginTop: -6 }}
+      />
     </div>
   );
 }
@@ -109,91 +123,111 @@ function TechCard({
   reveal: boolean;
   stackLabel: string;
 }) {
+  const isLang = tech.kind === "lang";
+
   return (
     <div
       ref={setRef}
       className="relative"
       style={{
-        transition: "transform .55s ease, opacity .55s ease, filter .55s ease",
+        transition: "transform .45s cubic-bezier(.2,.9,.2,1), opacity .4s ease",
       }}
     >
-      {/* aura */}
       <div
         className={[
-          "pointer-events-none absolute -inset-8 rounded-[44px] blur-2xl",
-          active ? "opacity-70" : "opacity-35",
-        ].join(" ")}
-        style={{ background: tech.accent }}
-      />
-
-      <div
-        className={[
-          "relative overflow-hidden rounded-[30px] border border-white/10",
-          "bg-black/35 backdrop-blur-2xl",
-          "px-6 py-5 sm:px-7 sm:py-6",
+          "relative overflow-hidden rounded-[22px] border px-5 py-4 sm:px-6 sm:py-5",
+          active ? "border-[#F97316]/70 bg-black/80" : "border-white/12 bg-black/70",
         ].join(" ")}
         style={
           {
             opacity: reveal ? 1 : 0,
-            transform: reveal ? "translateY(0)" : "translateY(18px)",
-            transitionDelay: `${index * 60}ms`,
-            filter: active ? "blur(0px)" : "blur(0.2px)",
+            transform: reveal ? "translateY(0)" : "translateY(16px)",
+            transitionDelay: `${index * 40}ms`,
           } as CSSProperties
         }
       >
-        {/* photo back */}
+        {/* ФОН КАРТОЧКИ */}
         <div className="pointer-events-none absolute inset-0">
           <div
-            className="absolute -inset-10"
-            style={
-              {
-                backgroundImage: `url(${HERO_IMG})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                opacity: active ? 0.18 : 0.12,
-                filter: "blur(12px) saturate(0.9) contrast(1.08)",
-                transform: "scale(1.08)",
-              } as CSSProperties
-            }
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url(${HERO_IMG})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center right",
+              filter: "blur(3px)",
+              opacity: 0.85,
+            }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/45 to-black/75" />
           <div
             className="absolute inset-0"
             style={{
               background:
-                "radial-gradient(120% 85% at 50% 35%, rgba(0,0,0,0) 0%, rgba(0,0,0,.62) 70%, rgba(0,0,0,.88) 100%)",
-              opacity: 0.55,
+                "linear-gradient(90deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.72) 40%, rgba(0,0,0,0.36) 80%, rgba(0,0,0,0.10) 100%)",
             }}
           />
         </div>
 
-        {/* dots */}
-        <div className="pointer-events-none absolute inset-0 opacity-[0.16] [background-image:radial-gradient(circle_at_1px_1px,rgba(255,255,255,.18)_1px,transparent_0)] [background-size:22px_22px]" />
+        {/* Верхняя линия (без анимации) */}
+        <div className="relative mb-3 h-[2px] w-full overflow-hidden rounded-full bg-white/10">
+          <div
+            className="h-full"
+            style={{
+              width: "55%",
+              background: "linear-gradient(to right, #9CA3AF 0%, #F97316 100%)",
+              opacity: active ? 0.65 : 0.35,
+              transition: "opacity .25s ease",
+            }}
+          />
+        </div>
 
-        <div className="relative flex items-center gap-4">
-          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-black/45 backdrop-blur-xl">
+        {/* Контент */}
+        <div className="relative flex items-start gap-4">
+          {isLang ? (
+            <div className="pt-0.5">
+              <LangChip s={tech.id.toUpperCase()} />
+            </div>
+          ) : (
             <div
-              className="absolute -inset-10 opacity-85 blur-2xl"
-              style={{ background: tech.accent }}
-            />
-            <div className="absolute inset-0 bg-black/35" />
-            <div className="relative flex h-full w-full items-center justify-center">
-              {tech.mark}
+              className="relative h-11 w-11 shrink-0 overflow-hidden rounded-2xl border bg-black/80"
+              style={{
+                borderColor: active
+                  ? "rgba(249,115,22,.18)"
+                  : "rgba(255,255,255,.14)",
+              }}
+            >
+              <div
+                className="absolute inset-0 opacity-70"
+                style={{ background: tech.accent }}
+              />
+              <div className="absolute inset-px rounded-[18px] bg-black/75" />
+              <div className="relative flex h-full w-full items-center justify-center">
+                {tech.mark}
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="min-w-0">
-            <div className="truncate text-[16px] font-semibold text-white/92">
-              {tech.label}
+          <div className="min-w-0 space-y-1.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="text-[15px] font-semibold text-white/95">
+                {tech.label}
+              </div>
+
+              {isLang && (
+                <div className="rounded-full border border-white/12 bg-black/45 px-2 py-1 text-[10px] font-semibold tracking-[0.12em] text-white/55 uppercase">
+                  language
+                </div>
+              )}
             </div>
-            <div className="mt-1 text-[13px] leading-relaxed text-white/55">
+
+            <div className="text-[13px] leading-relaxed text-white/60">
               {tech.sub}
             </div>
           </div>
         </div>
 
-        <div className="relative mt-4 text-[11px] tracking-widest text-white/40">
-          {stackLabel}
+        {/* Низ — только подпись стека, без 01/10 */}
+        <div className="relative mt-4 flex items-center justify-start text-[11px] tracking-[0.14em] uppercase text-white/35">
+          <span>{stackLabel}</span>
         </div>
       </div>
     </div>
@@ -204,11 +238,7 @@ export default function WhyUs() {
   const { dict } = useLang();
   const w = dict.whyUs;
 
-  const BG =
-    "radial-gradient(900px 520px at 18% 12%, rgba(62,13,0,.35) 0%, rgba(10,0,0,0) 62%)," +
-    "radial-gradient(820px 520px at 88% 18%, rgba(66,43,4,.28) 0%, rgba(10,0,0,0) 64%)," +
-    "radial-gradient(760px 520px at 30% 78%, rgba(26,2,0,.30) 0%, rgba(10,0,0,0) 62%)," +
-    "linear-gradient(180deg, #000000 0%, #040000 35%, #0A0000 100%)";
+  const BG = "#000000";
 
   const techs = useMemo<Tech[]>(
     () => [
@@ -216,81 +246,81 @@ export default function WhyUs() {
         id: "react",
         label: w.techs.react.label,
         sub: w.techs.react.sub,
-        accent:
-          "linear-gradient(135deg, #1A0200 0%, #3E0D00 55%, #464019 100%)",
+        accent: "linear-gradient(135deg,#4ADE80 0%,#22C55E 100%)",
         mark: <ReactAtomMark />,
+        kind: "default",
       },
       {
         id: "ts",
         label: w.techs.ts.label,
         sub: w.techs.ts.sub,
-        accent:
-          "linear-gradient(135deg, #110100 0%, #3E0D00 55%, #453B12 100%)",
-        mark: <MarkText s="TS" />,
+        accent: "transparent",
+        mark: <span className="sr-only">TS</span>,
+        kind: "lang",
       },
       {
         id: "js",
         label: w.techs.js.label,
         sub: w.techs.js.sub,
-        accent:
-          "linear-gradient(135deg, #250300 0%, #320800 55%, #44370C 100%)",
-        mark: <MarkText s="JS" />,
+        accent: "transparent",
+        mark: <span className="sr-only">JS</span>,
+        kind: "lang",
       },
       {
         id: "node",
         label: w.techs.node.label,
         sub: w.techs.node.sub,
-        accent:
-          "linear-gradient(135deg, #1A0200 0%, #431900 52%, #464019 100%)",
+        accent: "linear-gradient(135deg,#34D399 0%,#10B981 100%)",
         mark: <MarkText s="NODE" />,
+        kind: "default",
       },
       {
         id: "express",
         label: w.techs.express.label,
         sub: w.techs.express.sub,
-        accent:
-          "linear-gradient(135deg, #0A0000 0%, #250300 55%, #422B04 100%)",
+        accent: "linear-gradient(135deg,#9CA3AF 0%,#6B7280 100%)",
         mark: <MarkText s="EX" />,
+        kind: "default",
       },
       {
         id: "supabase",
         label: w.techs.supabase.label,
         sub: w.techs.supabase.sub,
-        accent:
-          "linear-gradient(135deg, #110100 0%, #3E0D00 50%, #453B12 100%)",
+        accent: "linear-gradient(135deg,#22C55E 0%,#16A34A 100%)",
         mark: <MarkText s="SB" />,
+        kind: "default",
       },
       {
         id: "postgres",
         label: w.techs.postgres.label,
         sub: w.techs.postgres.sub,
-        accent:
-          "linear-gradient(135deg, #250300 0%, #431900 48%, #44370C 100%)",
+        accent: "linear-gradient(135deg,#38BDF8 0%,#0EA5E9 100%)",
         mark: <MarkText s="PG" />,
+        kind: "default",
       },
       {
         id: "tailwind",
         label: w.techs.tailwind.label,
         sub: w.techs.tailwind.sub,
-        accent:
-          "linear-gradient(135deg, #0A0000 0%, #320800 52%, #464019 100%)",
+        accent: "linear-gradient(135deg,#2DD4BF 0%,#14B8A6 100%)",
         mark: <MarkText s="TW" />,
+        kind: "default",
       },
       {
         id: "saas",
         label: w.techs.saas.label,
         sub: w.techs.saas.sub,
-        accent:
-          "linear-gradient(135deg, #1A0200 0%, #3E0D00 45%, #422B04 100%)",
+        accent: "linear-gradient(135deg,#F97316 0%,#EA580C 100%)",
         mark: <MarkText s="UI" />,
+        kind: "default",
       },
       {
         id: "perf",
         label: w.techs.perf.label,
         sub: w.techs.perf.sub,
-        accent:
-          "linear-gradient(135deg, #110100 0%, #431900 45%, #453B12 100%)",
+        accent: "linear-gradient(135deg,#FBBF24 0%,#F97316 100%)",
         mark: <MarkText s="⚡" />,
+        kind: "default",
       },
     ],
     [w]
@@ -303,6 +333,7 @@ export default function WhyUs() {
   const [reveal, setReveal] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
+  // появление секции
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
@@ -311,13 +342,14 @@ export default function WhyUs() {
       (entries) => {
         if (entries[0]?.isIntersecting) setReveal(true);
       },
-      { threshold: 0.18 }
+      { threshold: 0.16 }
     );
 
     io.observe(el);
     return () => io.disconnect();
   }, []);
 
+  // скролл-логика
   useEffect(() => {
     let raf = 0;
 
@@ -327,7 +359,6 @@ export default function WhyUs() {
 
       let bestIdx = 0;
       let bestDist = Number.POSITIVE_INFINITY;
-
       let firstCenter: number | null = null;
       let lastCenter: number | null = null;
 
@@ -347,9 +378,9 @@ export default function WhyUs() {
         if (lastCenter === null || c > lastCenter) lastCenter = c;
 
         const t = clamp(dist / (window.innerHeight * 0.6), 0, 1);
-        const x = t * 18;
-        const scale = 1 - t * 0.04;
-        const op = 1 - t * 0.18;
+        const x = t * 14;
+        const scale = 1 - t * 0.03;
+        const op = 1 - t * 0.14;
 
         el.style.transform = `translateX(${x}px) scale(${scale})`;
         el.style.opacity = String(op);
@@ -386,46 +417,48 @@ export default function WhyUs() {
   }, []);
 
   return (
-    <Section className="pt-[200px] sm:pt-[280px] pb-16 sm:pb-24">
+    <Section className="pt-[200px] sm:pt-[260px] pb-16 sm:pb-24">
       <div ref={rootRef} className="relative">
+        {/* фон секции */}
         <div
           className="pointer-events-none absolute inset-0 -z-10"
           style={{ background: BG }}
         />
-        <div className="pointer-events-none absolute left-0 right-0 top-0 h-28 -z-10 bg-gradient-to-b from-black to-transparent" />
+        <div className="pointer-events-none absolute left-0 right-0 top-0 h-32 -z-10 bg-gradient-to-b from-black via-black/90 to-transparent" />
 
         <Container>
-          {/* Один layout на все брейкпоинты (БЕЗ дубля карточек) */}
           <div className="grid items-start gap-8 lg:grid-cols-[520px_minmax(0,1fr)_40px]">
-            {/* LEFT (desktop sticky) */}
-            <div className="lg:sticky" style={{ top: STICKY_TOP } as CSSProperties}>
-              <div className="text-[12px] tracking-widest text-white/40">{w.badge}</div>
+            {/* ЛЕВАЯ КОЛОНКА */}
+            <div
+              className="lg:sticky"
+              style={{ top: STICKY_TOP } as CSSProperties}
+            >
+              <div className="text-[12px] uppercase tracking-[0.26em] text-white/40">
+                {w.badge}
+              </div>
 
-              <h2 className="mt-4 font-display text-[56px] leading-[0.92] sm:text-[76px] font-extrabold">
+              <h2 className="mt-4 font-display text-[46px] leading-[0.96] sm:text-[64px] lg:text-[72px] font-extrabold">
                 {w.titleTop}
                 <br />
-                <span className="text-white/45">{w.titleBottom}</span>
+                <span className="text-white/40">{w.titleBottom}</span>
               </h2>
 
-              <div className="mt-6 max-w-[480px] text-[14px] leading-relaxed text-white/55">
+              <div className="mt-6 max-w-[480px] text-[14px] leading-relaxed text-white/60">
                 {w.description}
               </div>
             </div>
 
-            {/* CARDS AREA:
-                mobile -> grid: [progress | cards]
-                desktop -> normal block, progress on right column */}
+            {/* ЦЕНТР: карточки + mobile прогресс */}
             <div className="relative">
-              <div className="grid grid-cols-[18px_minmax(0,1fr)] items-start gap-4 lg:block">
-                {/* MOBILE progress (left of cards), sticky under header, disappears after section */}
+              <div className="grid grid-cols-[16px_minmax(0,1fr)] items-start gap-4 lg:block">
+                {/* mobile прогресс слева от карточек */}
                 <div
                   className="sticky self-start lg:hidden"
                   style={{ top: MOBILE_STICKY_TOP } as CSSProperties}
                 >
-                  <ProgressBar progress={scrollProgress} height={240} thin />
+                  <ProgressBar progress={scrollProgress} height={220} thin />
                 </div>
 
-                {/* Cards (single map only!) */}
                 <div className="space-y-5 sm:space-y-6">
                   {techs.map((t, i) => (
                     <TechCard
@@ -441,12 +474,16 @@ export default function WhyUs() {
                 </div>
               </div>
 
-              <div className="pointer-events-none sticky bottom-0 mt-10 h-20 w-full bg-gradient-to-t from-black to-transparent" />
+              {/* нижний fade */}
+              <div className="pointer-events-none sticky bottom-0 mt-10 h-16 w-full bg-gradient-to-t from-black via-black/95 to-transparent" />
             </div>
 
-            {/* DESKTOP progress (right column) */}
-            <div className="hidden lg:block lg:sticky" style={{ top: STICKY_TOP } as CSSProperties}>
-              <ProgressBar progress={scrollProgress} height={260} />
+            {/* ПРАВАЯ КОЛОНКА: desktop прогресс */}
+            <div
+              className="hidden lg:block lg:sticky"
+              style={{ top: STICKY_TOP } as CSSProperties}
+            >
+              <ProgressBar progress={scrollProgress} height={240} />
             </div>
           </div>
         </Container>

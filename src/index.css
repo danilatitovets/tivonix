@@ -1,43 +1,46 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
 
-:root { color-scheme: dark; }
-html, body, #root { height: 100%; }
-body { margin: 0; background: #000; color: rgba(255,255,255,0.92); }
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-/* скрыть скроллбар, но оставить прокрутку */
-html, body {
-  scrollbar-width: none;       /* Firefox */
-  -ms-overflow-style: none;    /* IE/Edge legacy */
-}
-html::-webkit-scrollbar,
-body::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none;               /* Chrome/Safari/Edge */
-}
-/* ✅ запрет горизонтального скролла без ломания fixed/анимаций */
-html, body, #root {
-  width: 100%;
-  max-width: 100%;
-}
-
-/* overflow: clip лучше чем hidden (не создаёт скролл-контейнер) */
-html, body {
-  overflow-x: clip;
-}
-
-/* fallback если clip не поддерживается */
-@supports not (overflow: clip) {
+  :root { color-scheme: dark; }
+  html, body, #root { height: 100%; }
+  body { margin: 0; background: #000; color: rgba(255,255,255,0.92); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  /* скрыть скроллбар, но оставить прокрутку */
   html, body {
-    overflow-x: hidden;
+    scrollbar-width: none;       /* Firefox */
+    -ms-overflow-style: none;    /* IE/Edge legacy */
   }
-}
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;               /* Chrome/Safari/Edge */
+  }
+  /* ✅ запрет горизонтального скролла без ломания fixed/анимаций */
+  html, body, #root {
+    width: 100%;
+    max-width: 100%;
+  }
 
-/* иногда 1–2px даёт медиа */
-img, video, canvas, svg {
-  max-width: 100%;
-  height: auto;
-}
+  /* overflow: clip лучше чем hidden (не создаёт скролл-контейнер) */
+  html, body {
+    overflow-x: clip;
+  }
+
+  /* fallback если clip не поддерживается */
+  @supports not (overflow: clip) {
+    html, body {
+      overflow-x: hidden;
+    }
+  }
+
+  /* иногда 1–2px даёт медиа */
+  img, video, canvas, svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+
+  

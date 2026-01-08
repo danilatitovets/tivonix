@@ -14,11 +14,9 @@ function clamp(n: number, a: number, b: number) {
   return Math.max(a, Math.min(b, n));
 }
 
-// ✅ хелпер для стилей, чтобы TS не ныл про boxShadow/width/transform
 type Style = CSSProperties & Record<string, any>;
 const s = (v: Record<string, any>) => v as Style;
 
-/** ✅ убираем скролл у всей страницы пока мы на Contacts */
 function useLockPageScroll(lock = true) {
   useEffect(() => {
     if (!lock) return;
@@ -38,7 +36,6 @@ function useLockPageScroll(lock = true) {
   }, [lock]);
 }
 
-/* -------------------- icons -------------------- */
 function IconMail() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
@@ -72,7 +69,6 @@ function IconTG() {
   );
 }
 
-/* -------------------- orbit system -------------------- */
 type LangItem = { label: string; sub?: string; glow?: number };
 
 function LangChip({ item }: { item: LangItem }) {
@@ -89,7 +85,6 @@ function LangChip({ item }: { item: LangItem }) {
     <div
       className={cx(
         "select-none",
-        // ✅ мобильный компакт
         "inline-flex items-center gap-2",
         "rounded-2xl px-2.5 py-1.5 sm:px-3 sm:py-2",
         "border border-white/10 bg-black/55 backdrop-blur-xl",
@@ -151,7 +146,6 @@ function OrbitRing(props: {
   );
 }
 
-/* -------------------- layout (no scroll) -------------------- */
 function useSolarLayoutNoScroll() {
   const [sState, setSState] = useState(() => ({
     isPhone: false,

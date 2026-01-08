@@ -1,5 +1,5 @@
 // src/components/landing/AppsOrbitBlock.tsx
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Container from "../ui/Container";
 import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
@@ -27,22 +27,20 @@ function usePrefersReducedMotion() {
   return reduced;
 }
 
-// ✅ фикс для проектов, где типы style ругаются на transitionDelay
 const delay = (ms: number): CSSProperties =>
   ({ ["transitionDelay" as any]: `${ms}ms` } as CSSProperties);
 
+const LEFT_BG = "/images/gen.webp";
+
 export default function AppsOrbitBlock() {
   const { dict } = useLang();
-  const o = dict.orbit;
-  const bullets = useMemo(() => o.bullets ?? [], [o]);
+  const o: any = dict.orbit;
 
   const reducedMotion = usePrefersReducedMotion();
 
-  // ✅ старт анимации при входе
   const sentinelRef = useRef<HTMLSpanElement | null>(null);
   const [entered, setEntered] = useState(false);
 
-  // 0..6
   const [stage, _setStage] = useState(0);
   const stageRef = useRef(0);
   const setStage = (n: number) => {
@@ -54,10 +52,9 @@ export default function AppsOrbitBlock() {
   useEffect(() => {
     if (reducedMotion) {
       setEntered(true);
-      setStage(6);
+      setStage(4);
       return;
     }
-
     const el = sentinelRef.current;
     if (!el || typeof window === "undefined") return;
 
@@ -67,7 +64,6 @@ export default function AppsOrbitBlock() {
       },
       { threshold: 0.18, rootMargin: "0px 0px -10% 0px" }
     );
-
     io.observe(el);
     return () => io.disconnect();
   }, [reducedMotion]);
@@ -76,18 +72,15 @@ export default function AppsOrbitBlock() {
     if (!entered || reducedMotion) return;
 
     setStage(0);
-
     const timers: number[] = [];
     const push = (ms: number, s: number) => {
       timers.push(window.setTimeout(() => setStage(s), ms));
     };
 
-    push(60, 1); // badge
-    push(220, 2); // title
-    push(430, 3); // desc
-    push(720, 4); // bullets
-    push(980, 5); // cta
-    push(1180, 6); // footnote
+    push(60, 1); // header line
+    push(200, 2); // blocks appear
+    push(360, 3); // текст / карточки
+    push(520, 4); // CTA
 
     return () => timers.forEach((t) => clearTimeout(t));
   }, [entered, reducedMotion]);
@@ -96,250 +89,300 @@ export default function AppsOrbitBlock() {
     cx(
       "will-change-[transform,opacity] transition-[opacity,transform]",
       "duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
-      on ? "opacity-100 translate-y-0" : "opacity-0 translate-y-[16px]"
+      on ? "opacity-100 translate-y-0" : "opacity-0 translate-y-[14px]"
     );
 
-  // ✅ твои 3 фотки (порядок = порядок bullets)
-  const bulletImgs = useMemo(
-    () => ["/images/rol.webp", "/images/tabl.webp", "/images/analitik.webp"],
-    []
-  );
-
-  // ✅ единый размер для всех фото
-  const IMG_H = "h-[148px] sm:h-[158px]";
+  // рамка
   const frameBg =
-    "conic-gradient(from 210deg at 50% 50%, rgba(255,255,255,.10), rgba(62,13,0,.95), rgba(69,59,18,.85), rgba(67,25,0,.95), rgba(255,255,255,.08))";
+    "conic-gradient(from 210deg at 50% 50%, rgba(255,255,255,.10), rgba(62,13,0,.95), rgba(84,80,70,.85), rgba(67,25,0,.95), rgba(255,255,255,.08))";
 
-  type Bullet = (typeof bullets)[number];
+  // тонкая линия сверху карточек справа
+  const stripGrad =
+    "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(210,210,210,.18) 20%, rgba(255,154,61,.55) 52%, rgba(255,106,26,.18) 82%, rgba(255,255,255,0) 100%)";
 
-function BulletCard({
-  b,
-  i,
-  className,
-}: {
-  b: (typeof bullets)[number];
-  i: number;
-  className?: string;
-}) {
-  const imgSrc = bulletImgs[i] ?? bulletImgs[0];
-
-  return (
-    <div className={cx("text-left", className)}>
-      {/* ✅ только фото с рамкой и текстом, без внешней “карточки” */}
+  function HeaderLine() {
+    return (
       <div
-        className="relative mb-4 rounded-2xl p-[1px]"
-        style={{ background: frameBg } as CSSVars}
+        className={cx("flex items-center gap-3", appear(stage >= 1))}
+        style={delay(10)}
       >
-        <div className="relative overflow-hidden rounded-[15px] border border-white/10 bg-black/35">
-          <img
-            src={imgSrc}
-            alt={b.title}
-            className={cx("w-full", IMG_H, "object-cover")}
-            loading="lazy"
-          />
+        <span className="h-2 w-2 rounded-full bg-[#FF9A3D] shadow-[0_0_18px_rgba(255,154,61,.55)]" />
+        <div className="text-[11px] sm:text-[12px] tracking-[0.34em] uppercase text-white/70 font-[850]">
+          {o.badge || "ADMIN PANEL • SAAS"}
+        </div>
+        <div className="h-px flex-1 bg-white/10" />
+      </div>
+    );
+  }
 
-          {/* затемнение/виньетка */}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-black/45 to-black/80" />
-          <div
-            className="pointer-events-none absolute inset-0 opacity-65"
-            style={{
-              background:
-                "radial-gradient(120% 90% at 50% 22%, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 70%, rgba(0,0,0,.9) 100%)",
-            }}
-          />
-          <div className="pointer-events-none absolute inset-0 opacity-[0.18] [background-image:radial-gradient(circle_at_1px_1px,rgba(255,255,255,.18)_1px,transparent_0)] [background-size:22px_22px]" />
+  function LeftBigBlock() {
+    const title =
+      o.title ||
+      `${o.titlePrefix || ""} ${o.titleHighlight || ""}`.trim() ||
+      "Admin panels for your product";
 
-          {/* текст прямо на фотке */}
-          <div className="relative z-10 flex h-full w-full flex-col justify-end px-4 pb-4">
-            <div className="text-[15px] sm:text-[16px] font-[850] text-white">
-              {b.title}
+    const desc =
+      o.description ||
+      "Roles and access, data tables with filters, statuses/moderation, dashboards and integrations — all clean and scalable.";
+
+    const [leftOk, setLeftOk] = useState(true);
+
+    return (
+      <div
+        className={cx("relative h-full", appear(stage >= 2))}
+        style={delay(20)}
+      >
+        <div
+          className="relative h-full rounded-[52px] p-[1px]"
+          style={{ background: frameBg } as CSSVars}
+        >
+          <div className="relative h-full overflow-hidden rounded-[51px] border border-white/10 bg-[#050506]">
+            {/* фон */}
+            <div className="absolute inset-0">
+              {leftOk ? (
+                <img
+                  src={LEFT_BG}
+                  alt=""
+                  className="h-full w-full object-cover scale-[1.03]"
+                  loading="lazy"
+                  onError={() => setLeftOk(false)}
+                />
+              ) : (
+                <div
+                  className="h-full w-full"
+                  style={{
+                    background:
+                      "radial-gradient(1200px 760px at 70% 78%, rgba(255,154,61,.24), rgba(255,106,26,.14), rgba(0,0,0,0) 58%), radial-gradient(900px 700px at 40% 30%, rgba(255,255,255,.06), rgba(0,0,0,0) 65%), linear-gradient(180deg, #050506, #050506)",
+                  }}
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/32 to-black/90" />
+
+              {/* дуга */}
+              <svg
+                className="pointer-events-none absolute left-0 top-[40%] h-[60%] w-full opacity-80"
+                viewBox="0 0 1200 420"
+                preserveAspectRatio="none"
+              >
+                <path
+                  d="M -60 240 C 220 365, 540 395, 860 330 C 1060 290, 1160 240, 1280 155"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.45)"
+                  strokeWidth="2"
+                />
+              </svg>
             </div>
-            <div className="mt-1 text-[12px] sm:text-[13px] leading-snug text-white/78">
-              {b.desc}
+
+            {/* контент */}
+            <div className="relative z-10 flex h-full flex-col px-9 py-10 sm:px-10 sm:py-12 lg:px-11 lg:py-12">
+              <div className="max-w-[34rem]">
+                <h2
+                  className={cx(
+                    "text-[36px] sm:text-[44px] lg:text-[50px]",
+                    "font-semibold leading-[1.06] tracking-[-0.03em] text-white",
+                    appear(stage >= 2)
+                  )}
+                  style={delay(70)}
+                >
+                  {title}
+                </h2>
+
+                <p
+                  className={cx(
+                    "mt-5 text-[14px] sm:text-[15px] leading-relaxed text-white/72",
+                    appear(stage >= 3)
+                  )}
+                  style={delay(110)}
+                >
+                  {desc}
+                </p>
+              </div>
+
+              {/* CTA */}
+              <div
+                className={cx("mt-auto pt-9", appear(stage >= 4))}
+                style={delay(150)}
+              >
+                <a
+                  href="/contacts"
+                  className={cx(
+                    "inline-flex items-center justify-center",
+                    "h-11 px-7 rounded-full",
+                    "bg-white text-black font-semibold text-[13.5px]",
+                    "shadow-[0_18px_60px_rgba(0,0,0,.55)]",
+                    "hover:brightness-105 active:translate-y-[1px] transition"
+                  )}
+                >
+                  {o.primaryCta || "Discuss the project"}
+                </a>
+              </div>
             </div>
+
+            <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]" />
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* нижняя “жаркая” линия можно оставить */}
-      <div className="mt-1 h-px w-full bg-white/10 overflow-hidden rounded-full">
+  function RightSeparateBlock() {
+    const cardsSrc = o.cards || {};
+
+    const items: {
+      id: string;
+      title: string;
+      desc: string;
+    }[] = [
+      {
+        id: "roles",
+        title: cardsSrc.roles?.title || "РОЛИ И ДОСТУПЫ",
+        desc:
+          cardsSrc.roles?.sub ||
+          "пользователи, права, аудит — роли, группы, журнал действий и быстрые переключатели доступа.",
+      },
+      {
+        id: "tables",
+        title: cardsSrc.tables?.title || "ТАБЛИЦЫ И УПРАВЛЕНИЕ",
+        desc:
+          cardsSrc.tables?.sub ||
+          "поиск, фильтры, экспорт — пагинация, сортировки, массовые операции и сохранённые представления.",
+      },
+      {
+        id: "analytics",
+        title: cardsSrc.analytics?.title || "АНАЛИТИКА И ПРОЦЕССЫ",
+        desc:
+          cardsSrc.analytics?.sub ||
+          "дашборды, статусы, выплаты — KPI, очереди, SLA и прозрачные отчёты по этапам.",
+      },
+      {
+        id: "integrations",
+        title: cardsSrc.integrations?.title || "ИНТЕГРАЦИИ И АВТОМАТИЗАЦИЯ",
+        desc:
+          cardsSrc.integrations?.sub ||
+          "crm, webhooks, антифрод и уведомления — триггеры, события и сценарии без боли.",
+      },
+    ];
+
+    function MiniCard({
+      it,
+      idx,
+    }: {
+      it: (typeof items)[number];
+      idx: number;
+    }) {
+      const number = String(idx + 1).padStart(2, "0");
+      return (
         <div
-          className="h-full w-full opacity-80"
-          style={{
-            background:
-              "linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(62,13,0,.95) 34%, rgba(67,25,0,.95) 55%, rgba(69,59,18,.9) 84%, rgba(0,0,0,0) 100%)",
-          }}
-        />
-      </div>
-    </div>
-  );
-}
+          className={cx(
+            "relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-4",
+            "will-change-[opacity,transform] transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+            appear(stage >= 3)
+          )}
+          style={delay(140 + idx * 80)}
+        >
+          {/* лёгкая сетка точек */}
+          <div className="pointer-events-none absolute inset-0 opacity-[0.10] [background-image:radial-gradient(circle_at_1px_1px,rgba(255,255,255,.14)_1px,transparent_0)] [background-size:22px_22px]" />
 
+          <div className="relative flex items-start gap-4">
+            <div className="mt-[2px] flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/22 bg-black/70">
+              <span className="text-[12px] font-semibold text-white/90">
+                {number}
+              </span>
+            </div>
+            <div className="min-w-0">
+              <div className="text-[13.5px] font-semibold leading-snug text-white uppercase tracking-[0.08em]">
+                {it.title}
+              </div>
+              <p className="mt-2 text-[13px] leading-relaxed text-white/70">
+                {it.desc}
+              </p>
+            </div>
+          </div>
+
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-[2px] opacity-70"
+            style={{ background: stripGrad }}
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className={cx("relative h-full", appear(stage >= 2))}
+        style={delay(40)}
+      >
+        <div
+          className="relative h-full rounded-[52px] p-[1px]"
+          style={{ background: frameBg } as CSSVars}
+        >
+          <div className="relative h-full overflow-hidden rounded-[51px] border border-white/10 bg-[#050506]">
+            {/* шапка */}
+            <div className="relative px-7 pt-7 sm:px-8 sm:pt-8">
+              <div className="text-[12px] sm:text-[12.5px] tracking-[0.28em] uppercase text-white/60 font-[850]">
+                {o.rightBadge || "WHAT'S INSIDE"}
+              </div>
+              <div className="mt-5 h-px w-full bg-white/10" />
+            </div>
+
+            {/* текст + список */}
+            <div className="relative flex h-full flex-col px-7 pb-7 pt-5 sm:px-8 sm:pb-8">
+              <div className="text-[14px] sm:text-[14.5px] leading-relaxed text-white/70 max-w-[36rem]">
+                {o.rightText ||
+                  "What exactly the admin panel can do: from roles and tables to analytics and integrations — everything in one place without visual noise."}
+              </div>
+
+              <div className="mt-6 grid gap-3">
+                {items.map((it, idx) => (
+                  <MiniCard key={it.id} it={it} idx={idx} />
+                ))}
+              </div>
+            </div>
+
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/55 to-transparent" />
+            <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Section
       className={cx(
-        "relative overflow-hidden",
-        "min-h-screen flex items-center",
-        "pt-20 sm:pt-24 pb-20 sm:pb-24"
+        "relative overflow-x-clip",
+        "pt-14 sm:pt-16 pb-16 sm:pb-20"
       )}
     >
-      {/* кастомный скроллбар для мобилки */}
-      <style>{`
-        .orbitScroll {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255,154,61,0.8) transparent;
-        }
-        .orbitScroll::-webkit-scrollbar {
-          height: 4px;
-        }
-        .orbitScroll::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .orbitScroll::-webkit-scrollbar-thumb {
-          border-radius: 9999px;
-          background: linear-gradient(90deg,#FFD7B0,#FF9A3D,#FF6A1A);
-        }
-      `}</style>
-
       <span
         ref={sentinelRef}
         className="pointer-events-none absolute inset-0"
         aria-hidden="true"
       />
 
-      {/* локальная читабельность поверх фона */}
-      <div className="pointer-events-none absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(1200px_700px_at_50%_18%,rgba(0,0,0,0.10),rgba(0,0,0,0.55),rgba(0,0,0,0.92))]" />
-      </div>
+      {/* фон секции */}
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-black" />
 
       <Container>
-        <div className="relative z-10 mx-auto max-w-[1040px]">
-          <div className="relative mx-auto max-w-[860px] text-center">
-            <div
-              className={cx(
-                "text-[12px] sm:text-[13px] tracking-[0.24em] text-white/60",
-                appear(stage >= 1)
-              )}
-              style={delay(20)}
-            >
-              {o.badge}
-            </div>
+        <div className="relative z-10 mx-auto max-w-[1320px]">
+          <HeaderLine />
 
-            {/* заголовок без круга, только glow */}
-            <h2
-              className={cx(
-                "mt-4 text-[34px] sm:text-[50px] lg:text-[62px]",
-                "font-[850] leading-[1.03] tracking-[-0.025em] text-white",
-                appear(stage >= 2)
-              )}
-              style={delay(40)}
-            >
-              {o.titlePrefix}{" "}
-              <span className="relative inline-block align-baseline">
-                <span
-                  className="pointer-events-none absolute left-1/2 top-[62%] -z-10 h-10 w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl opacity-65"
-                  style={{
-                    background:
-                      "radial-gradient(closest-side, rgba(255,154,61,.34), rgba(62,13,0,.22), transparent 72%)",
-                  }}
-                />
-                <span className="relative z-10 bg-[linear-gradient(90deg,#FFD7B0,#FF9A3D,#FF6A1A)] bg-clip-text text-transparent">
-                  {o.titleHighlight}
-                </span>
-              </span>
-            </h2>
-
-            <p
-              className={cx(
-                "mt-5 text-[16px] sm:text-[18px] lg:text-[20px]",
-                "leading-relaxed text-white/82",
-                appear(stage >= 3)
-              )}
-              style={delay(60)}
-            >
-              {o.description}
-            </p>
-
-            {/* ✅ БЛОКИ: мобилка — горизонтальный скролл, десктоп — 3 колонки */}
-            <div className={cx("mt-9", appear(stage >= 4))} style={delay(80)}>
-              {/* mobile / tablet: горизонтальная лента */}
-              <div className="-mx-4 sm:-mx-6 md:hidden">
-                <div
-                  className={cx(
-                    "orbitScroll flex gap-3 sm:gap-4 overflow-x-auto px-4 sm:px-6 pb-3",
-                    "snap-x snap-mandatory scroll-smooth"
-                  )}
-                >
-                  {bullets.map((b, i) => (
-                    <BulletCard
-                      key={b.title}
-                      b={b}
-                      i={i}
-                      className={cx(
-                        "flex-none snap-start",
-                        "w-[82vw] max-w-[320px]"
-                      )}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* desktop: обычная сетка */}
-              <div className="hidden md:grid md:grid-cols-3 gap-3 sm:gap-4">
-                {bullets.map((b, i) => (
-                  <BulletCard key={b.title} b={b} i={i} />
-                ))}
-              </div>
-            </div>
-
-            <div
-              className={cx(
-                "mt-10 flex flex-col gap-3 sm:flex-row sm:justify-center",
-                appear(stage >= 5)
-              )}
-              style={delay(90)}
-            >
-              <a
-                href="/contacts"
-                className={cx(
-                  "inline-flex h-14 w-full sm:w-auto items-center justify-center rounded-2xl px-8",
-                  "text-[15px] font-[950] tracking-[-0.01em] text-black",
-                  "bg-[linear-gradient(180deg,#FFD7B0_0%,#FF9A3D_52%,#FF6A1A_100%)]",
-                  "shadow-[0_18px_55px_rgba(255,122,0,0.18)]",
-                  "hover:brightness-105 hover:shadow-[0_22px_70px_rgba(255,122,0,0.24)]",
-                  "active:translate-y-[1px] transition"
-                )}
-              >
-                {o.primaryCta}
-              </a>
-
-              <a
-                href="/projects"
-                className={cx(
-                  "inline-flex h-14 w-full sm:w-auto items-center justify-center rounded-2xl px-8",
-                  "border border-white/18 bg-white/7",
-                  "text-[15px] font-[850] text-white/88",
-                  "hover:bg-white/10 transition"
-                )}
-              >
-                {o.secondaryCta}
-              </a>
-            </div>
-
-            <div
-              className={cx(
-                "mt-5 text-[13px] sm:text-[14px] text-white/58",
-                appear(stage >= 6)
-              )}
-              style={delay(120)}
-            >
-              {o.footnote}
-            </div>
+          {/* ДВА БЛОКА БЕЗ ВЕРТИКАЛЬНОЙ ЛИНИИ */}
+          <div
+            className={cx(
+              "relative mt-6 grid gap-6",
+              "lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)]",
+              "lg:items-stretch"
+            )}
+          >
+            <LeftBigBlock />
+            <RightSeparateBlock />
           </div>
+
+          {/* нижняя линия секции можно оставить, она очень тонкая; если надо — скажи, уберём */}
+          <div className="pointer-events-none mt-10 h-px w-full bg-gradient-to-r from-transparent via-[rgba(255,154,61,.38)] to-transparent" />
         </div>
       </Container>
     </Section>
   );
 }
- 
