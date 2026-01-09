@@ -1,5 +1,6 @@
 // src/components/landing/AppsOrbitBlock.tsx
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { Link } from "react-router-dom";
 import Container from "../ui/Container";
 import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
@@ -33,8 +34,9 @@ const delay = (ms: number): CSSProperties =>
 const LEFT_BG = "/images/gen.webp";
 
 export default function AppsOrbitBlock() {
-  const { dict } = useLang();
-  const o: any = dict.orbit;
+  const { dict, lang } = useLang();
+  const isRu = lang === "ru";
+  const o: any = dict.orbit || {};
 
   const reducedMotion = usePrefersReducedMotion();
 
@@ -120,6 +122,10 @@ export default function AppsOrbitBlock() {
     "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(210,210,210,.18) 20%, rgba(255,154,61,.55) 52%, rgba(255,106,26,.18) 82%, rgba(255,255,255,0) 100%)";
 
   function HeaderLine() {
+    const badgeText =
+      o.badge ||
+      (isRu ? "АДМИН-ПАНЕЛЬ • SAAS" : "ADMIN PANEL • SAAS");
+
     return (
       <div
         className={cx("flex items-center gap-3", appear(stage >= 1))}
@@ -127,7 +133,7 @@ export default function AppsOrbitBlock() {
       >
         <span className="h-2 w-2 rounded-full bg-[#FF9A3D] shadow-[0_0_18px_rgba(255,154,61,.55)]" />
         <div className="text-[11px] sm:text-[12px] tracking-[0.34em] uppercase text-white/70 font-[850]">
-          {o.badge || "ADMIN PANEL • SAAS"}
+          {badgeText}
         </div>
         <div className="h-px flex-1 bg-white/10" />
       </div>
@@ -135,14 +141,26 @@ export default function AppsOrbitBlock() {
   }
 
   function LeftBigBlock() {
-    const title =
-      o.title ||
-      `${o.titlePrefix || ""} ${o.titleHighlight || ""}`.trim() ||
-      "Admin panels for your product";
+    let title: string;
+    if (o.title) {
+      title = o.title;
+    } else if (o.titlePrefix || o.titleHighlight) {
+      title = `${o.titlePrefix || ""} ${o.titleHighlight || ""}`.trim();
+    } else {
+      title = isRu
+        ? "Админ-панели под ваш продукт"
+        : "Admin panels for your product";
+    }
 
-    const desc =
+    const desc: string =
       o.description ||
-      "Roles and access, data tables with filters, statuses/moderation, dashboards and integrations — all clean and scalable.";
+      (isRu
+        ? "Роли и доступы, таблицы с фильтрами, статусы, дашборды и интеграции — всё аккуратно и масштабируемо."
+        : "Roles and access, data tables with filters, statuses/moderation, dashboards and integrations — all clean and scalable.");
+
+    const primaryCta: string =
+      o.primaryCta ||
+      (isRu ? "Обсудить проект" : "Discuss the project");
 
     const [leftOk, setLeftOk] = useState(true);
 
@@ -243,8 +261,8 @@ export default function AppsOrbitBlock() {
                 className={cx("mt-auto pt-9", appear(stage >= 4))}
                 style={delay(150)}
               >
-                <a
-                  href="/contacts"
+                <Link
+                  to="/contacts"
                   className={cx(
                     "inline-flex items-center justify-center",
                     "h-11 px-7 rounded-full",
@@ -253,8 +271,8 @@ export default function AppsOrbitBlock() {
                     "hover:brightness-105 active:translate-y-[1px] transition"
                   )}
                 >
-                  {o.primaryCta || "Discuss the project"}
-                </a>
+                  {primaryCta}
+                </Link>
               </div>
             </div>
 
@@ -271,33 +289,59 @@ export default function AppsOrbitBlock() {
     const items: { id: string; title: string; desc: string }[] = [
       {
         id: "roles",
-        title: cardsSrc.roles?.title || "РОЛИ И ДОСТУПЫ",
+        title:
+          cardsSrc.roles?.title ||
+          (isRu ? "РОЛИ И ДОСТУПЫ" : "ROLES & ACCESS"),
         desc:
           cardsSrc.roles?.sub ||
-          "пользователи, права, аудит — роли, группы, журнал действий и быстрые переключатели доступа.",
+          (isRu
+            ? "Пользователи, права и аудит — роли, группы, журнал действий и быстрые переключатели доступа."
+            : "Users, permissions and audit — roles, groups, activity log and quick access toggles."),
       },
       {
         id: "tables",
-        title: cardsSrc.tables?.title || "ТАБЛИЦЫ И УПРАВЛЕНИЕ",
+        title:
+          cardsSrc.tables?.title ||
+          (isRu ? "ТАБЛИЦЫ И УПРАВЛЕНИЕ" : "TABLES & MANAGEMENT"),
         desc:
           cardsSrc.tables?.sub ||
-          "поиск, фильтры, экспорт — пагинация, сортировки, массовые операции и сохранённые представления.",
+          (isRu
+            ? "Поиск, фильтры, экспорт — пагинация, сортировки, массовые операции и сохранённые представления."
+            : "Search, filters, export — pagination, sorting, bulk actions and saved table views."),
       },
       {
         id: "analytics",
-        title: cardsSrc.analytics?.title || "АНАЛИТИКА И ПРОЦЕССЫ",
+        title:
+          cardsSrc.analytics?.title ||
+          (isRu ? "АНАЛИТИКА И ПРОЦЕССЫ" : "ANALYTICS & FLOWS"),
         desc:
           cardsSrc.analytics?.sub ||
-          "дашборды, статусы, выплаты — KPI, очереди, SLA и прозрачные отчёты по этапам.",
+          (isRu
+            ? "Дашборды, статусы, выплаты — KPI, очереди, SLA и прозрачные отчёты по этапам."
+            : "Dashboards, statuses, payouts — KPIs, queues, SLAs and transparent step-by-step reports."),
       },
       {
         id: "integrations",
-        title: cardsSrc.integrations?.title || "ИНТЕГРАЦИИ И АВТОМАТИЗАЦИЯ",
+        title:
+          cardsSrc.integrations?.title ||
+          (isRu ? "ИНТЕГРАЦИИ И АВТОМАТИЗАЦИЯ" : "INTEGRATIONS & AUTOMATION"),
         desc:
           cardsSrc.integrations?.sub ||
-          "crm, webhooks, антифрод и уведомления — триггеры, события и сценарии без боли.",
+          (isRu
+            ? "CRM, webhooks, антифрод и уведомления — триггеры, события и сценарии без боли."
+            : "CRMs, webhooks, antifraud and notifications — triggers, events and flows without pain."),
       },
     ];
+
+    const rightBadge =
+      o.rightBadge ||
+      (isRu ? "ЧТО ВНУТРИ ПАНЕЛИ" : "WHAT'S INSIDE");
+
+    const rightText =
+      o.rightText ||
+      (isRu
+        ? "Что именно умеет админ-панель: от ролей и таблиц до аналитики и интеграций — всё в одном месте без визуального шума."
+        : "What exactly the admin panel can do: from roles and tables to analytics and integrations — everything in one place without visual noise.");
 
     function MiniCard({ it, idx }: { it: (typeof items)[number]; idx: number }) {
       const number = String(idx + 1).padStart(2, "0");
@@ -349,7 +393,7 @@ export default function AppsOrbitBlock() {
             {/* шапка */}
             <div className="relative px-7 pt-7 sm:px-8 sm:pt-8">
               <div className="text-[12px] sm:text-[12.5px] tracking-[0.28em] uppercase text-white/60 font-[850]">
-                {o.rightBadge || "WHAT'S INSIDE"}
+                {rightBadge}
               </div>
               <div className="mt-5 h-px w-full bg-white/10" />
             </div>
@@ -357,8 +401,7 @@ export default function AppsOrbitBlock() {
             {/* текст + список */}
             <div className="relative flex h-full flex-col px-7 pb-7 pt-5 sm:px-8 sm:pb-8">
               <div className="text-[14px] sm:text-[14.5px] leading-relaxed text-white/70 max-w-[36rem]">
-                {o.rightText ||
-                  "What exactly the admin panel can do: from roles and tables to analytics and integrations — everything in one place without visual noise."}
+                {rightText}
               </div>
 
               <div className="mt-6 grid gap-3">

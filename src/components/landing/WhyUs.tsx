@@ -110,7 +110,7 @@ function StackPhoto({
             draggable={false}
             className="h-full w-full select-none"
             style={{
-              objectFit: "cover", // если не надо обрезать — contain
+              objectFit: "cover",
               objectPosition: "center",
               transition: "opacity 180ms ease",
             }}
@@ -119,7 +119,7 @@ function StackPhoto({
           {/* внутренняя обводка */}
           <div className="pointer-events-none absolute inset-0 ring-1 ring-white/8" />
 
-          {/* ✅ СКАН-МАСКА: картинка “пропадает” (приглушение) */}
+          {/* затемнение при ховере */}
           <div
             className={[
               "pointer-events-none absolute inset-0",
@@ -132,7 +132,7 @@ function StackPhoto({
             }}
           />
 
-          {/* ✅ ТЕКСТ ПО ЦЕНТРУ */}
+          {/* текст по центру */}
           <div
             className={[
               "pointer-events-none absolute inset-0 flex items-center justify-center",
@@ -152,16 +152,13 @@ function StackPhoto({
             </div>
           </div>
 
-          {/* ✅ ЧЁТКАЯ СКАН-ЛИНИЯ (тонкая, яркая) */}
+          {/* чёткая скан-линия */}
           <div className="pointer-events-none absolute inset-0">
-            {/* сама линия */}
             <div
               className={[
                 "absolute top-[-10%] h-[120%] w-[2px]",
                 "opacity-0 group-hover:opacity-100",
-                // старт слева за пределами
                 "-translate-x-[40px]",
-                // на hover уезжает вправо за пределы
                 "group-hover:translate-x-[240px]",
                 "transition-[transform,opacity] duration-700 ease-[cubic-bezier(.2,.9,.2,1)]",
               ].join(" ")}
@@ -171,7 +168,6 @@ function StackPhoto({
                   "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.95) 30%, rgba(249,115,22,.95) 50%, rgba(255,255,255,.9) 70%, rgba(255,255,255,0) 100%)",
               }}
             />
-            {/* лёгкий glow вокруг линии (очень аккуратный) */}
             <div
               className={[
                 "absolute top-[-10%] h-[120%] w-[10px]",
@@ -194,10 +190,26 @@ function StackPhoto({
 }
 
 export default function WhyUs() {
-  const { dict } = useLang();
-  const w = dict.whyUs;
+  const { dict, lang } = useLang();
+  const isRu = lang === "ru";
+  const w: any = dict.whyUs || {};
 
-  // ✅ список твоих иконок справа (порядок — как хочешь)
+  // тексты с RU / EN-фоллбэками
+  const badgeLeft = w.badgeLeft ?? (isRu ? "СТЕК" : "STACK");
+  const badgeCenter =
+    w.badgeCenter ?? (isRu ? "ТЕХНОЛОГИИ" : "TECHNOLOGIES");
+  const badgeRight = w.badgeRight ?? (isRu ? "ПРОДУКТ" : "PRODUCT");
+
+  const title1 = w.title1 ?? (isRu ? "С чем мы" : "What we");
+  const title2 = w.title2 ?? (isRu ? "работаем" : "work with");
+
+  const sub =
+    w.sub ??
+    (isRu
+      ? "Полный стек для разработки: UI, фронтенд, бэкенд, база данных, админка, оптимизация."
+      : "Full stack for development: UI, frontend, backend, database, admin panel, performance.");
+
+  // список иконок-стека справа
   const stack = useMemo<StackItem[]>(
     () => [
       { id: "cms", label: "CMS", src: "/images/stack/cms.webp" },
@@ -315,29 +327,28 @@ export default function WhyUs() {
             <div className="lg:sticky" style={{ top: STICKY_TOP } as CSSProperties}>
               <div className="flex items-center gap-3">
                 <div className="text-[12px] font-semibold tracking-[0.26em] uppercase">
-                  <span className="text-white/85">СТЕК</span>
+                  <span className="text-white/85">{badgeLeft}</span>
                   <span className="text-white/25"> • </span>
-                  <span className="text-[#F97316]/95">ТЕХНОЛОГИИ</span>
+                  <span className="text-[#F97316]/95">{badgeCenter}</span>
                   <span className="text-white/25"> • </span>
-                  <span className="text-white/70">ПРОДУКТ</span>
+                  <span className="text-white/70">{badgeRight}</span>
                 </div>
                 <div className="h-px flex-1 bg-gradient-to-r from-white/18 via-white/8 to-transparent" />
               </div>
 
               <h2 className="mt-5 font-display text-[46px] leading-[0.96] sm:text-[64px] lg:text-[72px] font-extrabold">
-                <span className="text-white/95">{w?.title1 ?? "С чем мы"}</span>
+                <span className="text-white/95">{title1}</span>
                 <br />
                 <span
                   className="bg-gradient-to-r from-white via-white to-[#F97316] bg-clip-text text-transparent"
                   style={{ WebkitTextFillColor: "transparent" }}
                 >
-                  {w?.title2 ?? "работаем"}
+                  {title2}
                 </span>
               </h2>
 
               <p className="mt-6 max-w-[46ch] text-[14px] leading-relaxed text-white/55">
-                {w?.sub ??
-                  "Полный стек для разработки: UI, фронтенд, бэкенд, база данных, админка, performance."}
+                {sub}
               </p>
             </div>
 

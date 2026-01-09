@@ -1,5 +1,6 @@
 // src/components/landing/Benefits.tsx
 import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
 import Section from "../ui/Section";
 import Container from "../ui/Container";
 import { useLang } from "../../i18n/LangProvider";
@@ -30,21 +31,50 @@ function Pill({ text }: { text: string }) {
 }
 
 export default function Benefits() {
-  const { dict } = useLang();
+  const { dict, lang } = useLang();
+  const isRu = lang === "ru";
   const bDict = dict.benefits;
 
-  const pills = useMemo(
-    () => [
-      "SaaS-сервисы и личные кабинеты",
-      "Дашборды и аналитика",
-      "Сайты и лендинги под ключ",
-      "Telegram- и чат-боты",
-      "Интеграции с CRM и API",
-      "Автоматизация рутины",
-      "Поддержка и развитие проекта",
-    ],
-    []
-  );
+  const badgeText =
+    bDict?.badge ?? (isRu ? "Этапы" : "Benefits");
+
+  const titlePrefix =
+    bDict?.titlePrefix ?? (isRu ? "Один блок — одна мысль." : "One block — one idea.");
+
+  const titleHighlight =
+    bDict?.titleHighlight ?? (isRu ? "ПРЕИМУЩЕСТВА" : "BENEFITS");
+
+  const rowMeta =
+    bDict?.rowMeta ??
+    (isRu ? "UI • код • скорость • масштабирование" : "UI • code • speed • scaling");
+
+  const ctaText =
+    bDict?.cta ?? (isRu ? "Заказать" : "Order project");
+
+  const pills = useMemo<string[]>(() => {
+    const fromDict = (bDict?.pills ?? []) as string[];
+    if (fromDict.length) return fromDict;
+
+    return isRu
+      ? [
+          "SaaS-сервисы и личные кабинеты",
+          "Дашборды и аналитика",
+          "Сайты и лендинги под ключ",
+          "Telegram- и чат-боты",
+          "Интеграции с CRM и API",
+          "Автоматизация рутины",
+          "Поддержка и развитие проекта",
+        ]
+      : [
+          "SaaS apps & client areas",
+          "Dashboards and analytics",
+          "Websites & landing pages",
+          "Telegram & chat bots",
+          "CRM and API integrations",
+          "Routine automation",
+          "Support & product growth",
+        ];
+  }, [bDict, isRu]);
 
   return (
     <Section
@@ -63,7 +93,7 @@ export default function Benefits() {
           <div className="flex items-center gap-3">
             <span className="h-1.5 w-1.5 rounded-full bg-[#FF9A3D]" />
             <div className="text-[11px] tracking-[0.28em] text-white/55 uppercase">
-              {bDict?.badge ?? "ЭТАПЫ"}
+              {badgeText}
             </div>
             <div className="h-px flex-1 bg-white/10" />
           </div>
@@ -100,24 +130,22 @@ export default function Benefits() {
 
             {/* контент */}
             <div className="relative z-10 p-7 sm:p-10 lg:p-12 h-full flex flex-col">
-              {/* верх: ТЕПЕРЬ ПО ЦЕНТРУ */}
+              {/* верх: по центру */}
               <div className="max-w-[720px] mx-auto text-center text-white">
                 <h2 className="text-[34px] sm:text-[44px] lg:text-[50px] font-[860] tracking-[-0.04em] leading-[1.04]">
-                  {bDict?.titlePrefix ?? "Один блок — одна мысль."}
+                  {titlePrefix}
                   <br />
-                  <span className="text-white/95">
-                    {bDict?.titleHighlight ?? "ПРЕИМУЩЕСТВА"}
-                  </span>
+                  <span className="text-white/95">{titleHighlight}</span>
                 </h2>
 
                 <p className="mt-4 text-[14px] sm:text-[15px] leading-relaxed text-white/80">
-                  {bDict?.rowMeta ?? "UI • код • скорость • масштабирование"}
+                  {rowMeta}
                 </p>
 
-                {/* стеклянная кнопка «Начать» */}
+                {/* стеклянная кнопка «Заказать» → /contacts */}
                 <div className="mt-8">
-                  <a
-                    href="#contacts"
+                  <Link
+                    to="/contacts"
                     className={cx(
                       "inline-flex items-center justify-center",
                       "h-11 px-7 rounded-full",
@@ -129,8 +157,8 @@ export default function Benefits() {
                       "hover:bg-white/14 hover:border-white/70 hover:shadow-[0_22px_90px_rgba(0,0,0,0.9)]"
                     )}
                   >
-                    {dict?.header?.start ?? "Начать"}
-                  </a>
+                    {ctaText}
+                  </Link>
                 </div>
               </div>
 
