@@ -79,6 +79,7 @@ export default function Footer() {
 
       <Container>
         <div className="relative">
+          {/* оранжевый мягкий ореол */}
           <div
             aria-hidden="true"
             className="pointer-events-none absolute left-1/2 top-1/2 h-[520px] w-[980px] -translate-x-1/2 -translate-y-1/2 blur-3xl opacity-60"
@@ -96,6 +97,7 @@ export default function Footer() {
               "backdrop-blur-2xl bg-black/35"
             )}
           >
+            {/* dot texture */}
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 opacity-[0.30]"
@@ -107,6 +109,7 @@ export default function Footer() {
               })}
             />
 
+            {/* внутренние инсет-тени */}
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 rounded-[34px]"
@@ -116,10 +119,19 @@ export default function Footer() {
               })}
             />
 
+            {/* ✅ WATERMARK — СДЕЛАЛ БОЛЬШЕ */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute left-6 top-2 select-none text-[110px] font-extrabold tracking-tight text-white/[0.06] sm:text-[150px]"
-              style={s({ textTransform: "lowercase" })}
+              className={cx(
+                "pointer-events-none absolute left-6 top-1 select-none",
+                "font-extrabold tracking-tight text-white/[0.06]"
+              )}
+              style={s({
+                textTransform: "lowercase",
+                // было 110/150 — теперь гораздо больше
+                fontSize: "clamp(150px, 15vw, 240px)",
+                lineHeight: 0.95,
+              })}
             >
               tivonix
             </div>
@@ -128,16 +140,14 @@ export default function Footer() {
               <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
                 <div className="lg:col-span-5">
                   <div className="flex items-start gap-3">
-                    <div>
-                      <div className="flex items-center">
-                        <img
-                          src={LOGO_LOCKUP_SVG}
-                          onError={imgFallback(LOGO_LOCKUP_PNG)}
-                          alt="Tivonix"
-                          className="h-[52px] w-auto object-contain sm:h-[54px]"
-                          draggable={false}
-                        />
-                      </div>
+                    <div className="flex items-center">
+                      <img
+                        src={LOGO_LOCKUP_SVG}
+                        onError={imgFallback(LOGO_LOCKUP_PNG)}
+                        alt="Tivonix"
+                        className="h-[52px] w-auto object-contain sm:h-[54px]"
+                        draggable={false}
+                      />
                     </div>
                   </div>
 
@@ -244,16 +254,24 @@ export default function Footer() {
                 <div className="text-sm text-white/65">{rightsText}</div>
 
                 <div className="flex items-center gap-4">
-                  <Link className="text-sm text-white/65 hover:text-white" to={LANDING.top}>
+                  <Link
+                    className="text-sm text-white/65 hover:text-white"
+                    to={LANDING.top}
+                  >
                     {backToTop}
                   </Link>
-                  <Link className="text-sm text-white/65 hover:text-white" to={LANDING.faq}>
+                  <Link
+                    className="text-sm text-white/65 hover:text-white"
+                    to={LANDING.faq}
+                  >
                     {faqShort}
                   </Link>
 
                   <button
                     type="button"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    onClick={() =>
+                      window.scrollTo({ top: 0, behavior: "smooth" })
+                    }
                     className={cx(
                       "ml-2 grid h-10 w-10 place-items-center rounded-full",
                       "border border-white/15 bg-black/40",
@@ -276,6 +294,7 @@ export default function Footer() {
               </div>
             </div>
 
+            {/* нижняя “шторка” */}
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0"

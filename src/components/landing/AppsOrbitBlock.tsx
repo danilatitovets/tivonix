@@ -15,13 +15,13 @@ function usePrefersReducedMotion() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const on = () => setReduced(!!mq.matches);
-    on();
-    if (mq.addEventListener) mq.addEventListener("change", on);
-    else mq.addListener(on);
+    const onChange = () => setReduced(!!mq.matches);
+    onChange();
+    if (mq.addEventListener) mq.addEventListener("change", onChange);
+    else mq.addListener(onChange);
     return () => {
-      if (mq.removeEventListener) mq.removeEventListener("change", on);
-      else mq.removeListener(on);
+      if (mq.removeEventListener) mq.removeEventListener("change", onChange);
+      else mq.removeListener(onChange);
     };
   }, []);
   return reduced;
@@ -39,8 +39,12 @@ export default function AppsOrbitBlock() {
   const reducedMotion = usePrefersReducedMotion();
 
   const sentinelRef = useRef<HTMLSpanElement | null>(null);
-  const [entered, setEntered] = useState(false);
 
+  // top-level: вся секция
+  const [sectionEntered, setSectionEntered] = useState(false);
+
+  // внутренние стадии
+  const [entered, setEntered] = useState(false);
   const [stage, _setStage] = useState(0);
   const stageRef = useRef(0);
   const setStage = (n: number) => {
@@ -51,6 +55,7 @@ export default function AppsOrbitBlock() {
 
   useEffect(() => {
     if (reducedMotion) {
+      setSectionEntered(true);
       setEntered(true);
       setStage(4);
       return;
@@ -60,10 +65,15 @@ export default function AppsOrbitBlock() {
 
     const io = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting) setEntered(true);
+        const hit = !!entries[0]?.isIntersecting;
+        if (hit) {
+          setSectionEntered(true);
+          setEntered(true);
+        }
       },
       { threshold: 0.18, rootMargin: "0px 0px -10% 0px" }
     );
+
     io.observe(el);
     return () => io.disconnect();
   }, [reducedMotion]);
@@ -78,7 +88,7 @@ export default function AppsOrbitBlock() {
     };
 
     push(60, 1); // header line
-    push(200, 2); // blocks appear
+    push(200, 2); // блоки
     push(360, 3); // текст / карточки
     push(520, 4); // CTA
 
@@ -90,6 +100,15 @@ export default function AppsOrbitBlock() {
       "will-change-[transform,opacity] transition-[opacity,transform]",
       "duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
       on ? "opacity-100 translate-y-0" : "opacity-0 translate-y-[14px]"
+    );
+
+  const sectionAnim = (on: boolean) =>
+    cx(
+      "will-change-[transform,opacity,filter]",
+      "transition-[opacity,transform,filter] duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+      on
+        ? "opacity-100 translate-y-0 scale-[1] blur-0"
+        : "opacity-0 translate-y-[18px] scale-[0.985] blur-[2px]"
     );
 
   // рамка
@@ -143,24 +162,45 @@ export default function AppsOrbitBlock() {
                 <img
                   src={LEFT_BG}
                   alt=""
-                  className="h-full w-full object-cover scale-[1.03]"
+                  className={cx(
+                    "h-full w-full object-cover scale-[1.03]",
+                    "will-change-[transform,opacity] transition-[opacity,transform] duration-[1100ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+                    sectionEntered ? "opacity-100" : "opacity-0 scale-[1.06]"
+                  )}
                   loading="lazy"
                   onError={() => setLeftOk(false)}
                 />
               ) : (
                 <div
-                  className="h-full w-full"
+                  className={cx(
+                    "h-full w-full",
+                    "will-change-[opacity,transform] transition-[opacity,transform] duration-[1100ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+                    sectionEntered ? "opacity-100" : "opacity-0 scale-[1.02]"
+                  )}
                   style={{
                     background:
                       "radial-gradient(1200px 760px at 70% 78%, rgba(255,154,61,.24), rgba(255,106,26,.14), rgba(0,0,0,0) 58%), radial-gradient(900px 700px at 40% 30%, rgba(255,255,255,.06), rgba(0,0,0,0) 65%), linear-gradient(180deg, #050506, #050506)",
                   }}
                 />
               )}
-              <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/32 to-black/90" />
+
+              <div
+                className={cx(
+                  "absolute inset-0 bg-gradient-to-b from-black/55 via-black/32 to-black/90",
+                  "will-change-[opacity] transition-opacity duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+                  sectionEntered ? "opacity-100" : "opacity-0"
+                )}
+              />
 
               {/* дуга */}
               <svg
-                className="pointer-events-none absolute left-0 top-[40%] h-[60%] w-full opacity-80"
+                className={cx(
+                  "pointer-events-none absolute left-0 top-[40%] h-[60%] w-full opacity-80",
+                  "will-change-[opacity,transform] transition-[opacity,transform] duration-[1100ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+                  sectionEntered
+                    ? "opacity-80 translate-y-0"
+                    : "opacity-0 translate-y-[10px]"
+                )}
                 viewBox="0 0 1200 420"
                 preserveAspectRatio="none"
               >
@@ -228,11 +268,7 @@ export default function AppsOrbitBlock() {
   function RightSeparateBlock() {
     const cardsSrc = o.cards || {};
 
-    const items: {
-      id: string;
-      title: string;
-      desc: string;
-    }[] = [
+    const items: { id: string; title: string; desc: string }[] = [
       {
         id: "roles",
         title: cardsSrc.roles?.title || "РОЛИ И ДОСТУПЫ",
@@ -263,13 +299,7 @@ export default function AppsOrbitBlock() {
       },
     ];
 
-    function MiniCard({
-      it,
-      idx,
-    }: {
-      it: (typeof items)[number];
-      idx: number;
-    }) {
+    function MiniCard({ it, idx }: { it: (typeof items)[number]; idx: number }) {
       const number = String(idx + 1).padStart(2, "0");
       return (
         <div
@@ -280,7 +310,6 @@ export default function AppsOrbitBlock() {
           )}
           style={delay(140 + idx * 80)}
         >
-          {/* лёгкая сетка точек */}
           <div className="pointer-events-none absolute inset-0 opacity-[0.10] [background-image:radial-gradient(circle_at_1px_1px,rgba(255,255,255,.14)_1px,transparent_0)] [background-size:22px_22px]" />
 
           <div className="relative flex items-start gap-4">
@@ -354,6 +383,7 @@ export default function AppsOrbitBlock() {
         "pt-14 sm:pt-16 pb-16 sm:pb-20"
       )}
     >
+      {/* sentinel для IntersectionObserver */}
       <span
         ref={sentinelRef}
         className="pointer-events-none absolute inset-0"
@@ -361,26 +391,58 @@ export default function AppsOrbitBlock() {
       />
 
       {/* фон секции */}
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-black" />
+      <div
+        className={cx(
+          "pointer-events-none absolute inset-0 -z-10 bg-black",
+          "will-change-[opacity] transition-opacity duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+          sectionEntered ? "opacity-100" : "opacity-0"
+        )}
+      />
 
       <Container>
-        <div className="relative z-10 mx-auto max-w-[1320px]">
-          <HeaderLine />
+        <div className="relative mx-auto max-w-[1320px]">
+          <div className={cx("relative", sectionAnim(sectionEntered))}>
+            {/* лёгкий верхний glow */}
+            <div
+              className={cx(
+                "pointer-events-none absolute -inset-x-8 -top-10 h-40 -z-10",
+                "blur-2xl",
+                "transition-[opacity,transform] duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+                sectionEntered
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-[10px]"
+              )}
+              style={{
+                background:
+                  "radial-gradient(520px 180px at 45% 50%, rgba(255,154,61,.18), rgba(255,106,26,.10), rgba(0,0,0,0) 70%)",
+              }}
+            />
 
-          {/* ДВА БЛОКА БЕЗ ВЕРТИКАЛЬНОЙ ЛИНИИ */}
-          <div
-            className={cx(
-              "relative mt-6 grid gap-6",
-              "lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)]",
-              "lg:items-stretch"
-            )}
-          >
-            <LeftBigBlock />
-            <RightSeparateBlock />
+            <HeaderLine />
+
+            <div
+              className={cx(
+                "relative mt-6 grid gap-6",
+                "lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)]",
+                "lg:items-stretch"
+              )}
+            >
+              <LeftBigBlock />
+              <RightSeparateBlock />
+            </div>
+
+            <div
+              className={cx(
+                "pointer-events-none mt-10 h-px w-full",
+                "bg-gradient-to-r from-transparent via-[rgba(255,154,61,.38)] to-transparent",
+                "transition-[opacity,transform] duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+                sectionEntered
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-[8px]"
+              )}
+              style={delay(120)}
+            />
           </div>
-
-          {/* нижняя линия секции можно оставить, она очень тонкая; если надо — скажи, уберём */}
-          <div className="pointer-events-none mt-10 h-px w-full bg-gradient-to-r from-transparent via-[rgba(255,154,61,.38)] to-transparent" />
         </div>
       </Container>
     </Section>
