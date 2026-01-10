@@ -75,7 +75,7 @@
     <meta name="robots" content="index,follow,max-image-preview:large" />
     <link rel="canonical" href="https://www.tivonix.tech/" />
 
-    <!-- ✅ hreflang (без отдельных страниц это работает как “подсказка”, можно через ?lang=) -->
+    <!-- ✅ hreflang -->
     <link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/?lang=ru" />
     <link rel="alternate" hreflang="en" href="https://www.tivonix.tech/?lang=en" />
     <link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/" />
@@ -84,13 +84,13 @@
     <meta name="theme-color" content="#0B1220" />
     <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
 
-    <!-- ✅ Icons (файлы должны лежать в /public корне) -->
+    <!-- ✅ Icons -->
     <link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="any" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
 
-    <!-- ✅ Open Graph (соцсети) -->
+    <!-- ✅ Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="TIVONIX" />
     <meta property="og:locale" content="ru_RU" />
@@ -99,8 +99,6 @@
     <meta property="og:title" content="TIVONIX — сайты и цифровые продукты" />
     <meta property="og:description" content="Сайты и веб-продукты: дизайн, разработка, запуск и поддержка." />
     <meta property="og:url" content="https://www.tivonix.tech/" />
-
-    <!-- OG image: файл должен быть в /public/og.jpg -->
     <meta property="og:image" content="https://www.tivonix.tech/og.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -160,10 +158,91 @@
         ]
       }
     </script>
+
+    <!-- ✅ Google Ads tag (ONLY ONCE) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17866464852"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+      gtag("js", new Date());
+      gtag("config", "AW-17866464852");
+
+      /**
+       * ВАЖНО: замените REPLACE_WITH_LABEL на ваш реальный label из Google Ads
+       * Пример: "AW-17866464852/AbCdEfGhIjkLmNoPq"
+       */
+      window.__TIVONIX_ADS_SEND_TO__ = "AW-17866464852/REPLACE_WITH_LABEL";
+    </script>
   </head>
 
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <!-- ✅ Click-to-contact conversions (Telegram / Email) -->
+    <script>
+      (function () {
+        function closestAnchor(el) {
+          while (el && el !== document.body) {
+            if (el.tagName === "A") return el;
+            el = el.parentElement;
+          }
+          return null;
+        }
+
+        function fireConversion(kind, href, openInNewTab) {
+          if (typeof window.gtag !== "function") return;
+
+          var sendTo = window.__TIVONIX_ADS_SEND_TO__;
+          if (!sendTo || sendTo.indexOf("REPLACE_WITH_LABEL") !== -1) {
+            // label ещё не подставили — просто не мешаем клику
+            return;
+          }
+
+          // Если ссылка открывается в новой вкладке — можно не блокировать
+          if (openInNewTab) {
+            gtag("event", "conversion", {
+              send_to: sendTo,
+              event_label: kind
+            });
+            return;
+          }
+
+          // Для перехода в той же вкладке — чуть задержим, чтобы успело отправиться событие
+          gtag("event", "conversion", {
+            send_to: sendTo,
+            event_label: kind,
+            event_callback: function () {
+              window.location.href = href;
+            }
+          });
+
+          // fallback на случай, если callback не сработает
+          setTimeout(function () {
+            window.location.href = href;
+          }, 700);
+        }
+
+        document.addEventListener("click", function (e) {
+          var a = closestAnchor(e.target);
+          if (!a) return;
+
+          var href = a.getAttribute("href") || "";
+          if (!href) return;
+
+          var isMail = href.indexOf("mailto:") === 0;
+          var isTg = href.indexOf("https://t.me/") === 0 || href.indexOf("http://t.me/") === 0
+                  || href.indexOf("https://telegram.me/") === 0 || href.indexOf("http://telegram.me/") === 0;
+
+          if (!isMail && !isTg) return;
+
+          var newTab = (a.getAttribute("target") || "").toLowerCase() === "_blank";
+
+          if (!newTab) e.preventDefault();
+
+          fireConversion(isTg ? "telegram" : "email", href, newTab);
+        }, true);
+      })();
+    </script>
   </body>
 </html>
