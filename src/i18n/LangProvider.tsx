@@ -3,6 +3,7 @@ import React, {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useState,
   type ReactNode,
 } from "react";
@@ -150,46 +151,16 @@ const DICT: Record<Lang, Dictionary> = {
         "Полный стек для SaaS и продуктов: фронт, бэкенд, база, UI-система и оптимизация. Делаем так, чтобы выглядело “дорого” и масштабировалось.",
       footerBadge: "STACK READY • SaaS / MVP",
       techs: {
-        react: {
-          label: "React",
-          sub: "UI для продукта, компоненты, архитектура",
-        },
-        ts: {
-          label: "TypeScript",
-          sub: "Типы, безопасность, масштабирование",
-        },
-        js: {
-          label: "JavaScript",
-          sub: "Логика, анимации, интеграции",
-        },
-        node: {
-          label: "Node.js",
-          sub: "API, сервисы, фоновые задачи",
-        },
-        express: {
-          label: "Express",
-          sub: "Маршруты, middleware, auth",
-        },
-        supabase: {
-          label: "Supabase",
-          sub: "Postgres, RLS, Storage, Auth",
-        },
-        postgres: {
-          label: "PostgreSQL",
-          sub: "Схемы, индексы, запросы",
-        },
-        tailwind: {
-          label: "Tailwind CSS",
-          sub: "UI-система, токены, скорость верстки",
-        },
-        saas: {
-          label: "SaaS UI / UX",
-          sub: "Стекло, сетка, детали, премиум-типографика",
-        },
-        perf: {
-          label: "Performance",
-          sub: "Оптимизация, lazy, UX-скорость",
-        },
+        react: { label: "React", sub: "UI для продукта, компоненты, архитектура" },
+        ts: { label: "TypeScript", sub: "Типы, безопасность, масштабирование" },
+        js: { label: "JavaScript", sub: "Логика, анимации, интеграции" },
+        node: { label: "Node.js", sub: "API, сервисы, фоновые задачи" },
+        express: { label: "Express", sub: "Маршруты, middleware, auth" },
+        supabase: { label: "Supabase", sub: "Postgres, RLS, Storage, Auth" },
+        postgres: { label: "PostgreSQL", sub: "Схемы, индексы, запросы" },
+        tailwind: { label: "Tailwind CSS", sub: "UI-система, токены, скорость верстки" },
+        saas: { label: "SaaS UI / UX", sub: "Стекло, сетка, детали, премиум-типографика" },
+        perf: { label: "Performance", sub: "Оптимизация, lazy, UX-скорость" },
       },
     },
     orbit: {
@@ -199,18 +170,9 @@ const DICT: Record<Lang, Dictionary> = {
       description:
         "Роли и доступы, таблицы с фильтрами, статусы/модерация, дашборды и интеграции — всё аккуратно и масштабируемо.",
       bullets: [
-        {
-          title: "Роли и доступы",
-          desc: "пользователи, права, аудит",
-        },
-        {
-          title: "Таблицы и управление",
-          desc: "поиск, фильтры, экспорт",
-        },
-        {
-          title: "Аналитика и процессы",
-          desc: "дашборды, статусы, выплаты",
-        },
+        { title: "Роли и доступы", desc: "пользователи, права, аудит" },
+        { title: "Таблицы и управление", desc: "поиск, фильтры, экспорт" },
+        { title: "Аналитика и процессы", desc: "дашборды, статусы, выплаты" },
       ],
       primaryCta: "Обсудить проект",
       secondaryCta: "Кейсы",
@@ -269,6 +231,7 @@ const DICT: Record<Lang, Dictionary> = {
       ],
     },
   },
+
   en: {
     header: {
       nav: {
@@ -314,46 +277,16 @@ const DICT: Record<Lang, Dictionary> = {
         "Full stack for SaaS and products: frontend, backend, database, UI system and performance. We make it look premium and scale cleanly.",
       footerBadge: "STACK READY • SaaS / MVP",
       techs: {
-        react: {
-          label: "React",
-          sub: "Product UI, components, architecture",
-        },
-        ts: {
-          label: "TypeScript",
-          sub: "Types, safety, scaling",
-        },
-        js: {
-          label: "JavaScript",
-          sub: "Logic, animations, integrations",
-        },
-        node: {
-          label: "Node.js",
-          sub: "APIs, services, background jobs",
-        },
-        express: {
-          label: "Express",
-          sub: "Routes, middleware, auth",
-        },
-        supabase: {
-          label: "Supabase",
-          sub: "Postgres, RLS, Storage, Auth",
-        },
-        postgres: {
-          label: "PostgreSQL",
-          sub: "Schemas, indexes, queries",
-        },
-        tailwind: {
-          label: "Tailwind CSS",
-          sub: "UI system, tokens, fast layout",
-        },
-        saas: {
-          label: "SaaS UI / UX",
-          sub: "Glassmorphism, grid, details, premium typography",
-        },
-        perf: {
-          label: "Performance",
-          sub: "Optimization, lazy, UX speed",
-        },
+        react: { label: "React", sub: "Product UI, components, architecture" },
+        ts: { label: "TypeScript", sub: "Types, safety, scaling" },
+        js: { label: "JavaScript", sub: "Logic, animations, integrations" },
+        node: { label: "Node.js", sub: "APIs, services, background jobs" },
+        express: { label: "Express", sub: "Routes, middleware, auth" },
+        supabase: { label: "Supabase", sub: "Postgres, RLS, Storage, Auth" },
+        postgres: { label: "PostgreSQL", sub: "Schemas, indexes, queries" },
+        tailwind: { label: "Tailwind CSS", sub: "UI system, tokens, fast layout" },
+        saas: { label: "SaaS UI / UX", sub: "Glassmorphism, grid, details, premium typography" },
+        perf: { label: "Performance", sub: "Optimization, lazy, UX speed" },
       },
     },
     orbit: {
@@ -363,18 +296,9 @@ const DICT: Record<Lang, Dictionary> = {
       description:
         "Roles and access, data tables with filters, statuses/moderation, dashboards and integrations — all clean and scalable.",
       bullets: [
-        {
-          title: "Roles & access",
-          desc: "users, permissions, audit",
-        },
-        {
-          title: "Tables & management",
-          desc: "search, filters, export",
-        },
-        {
-          title: "Analytics & processes",
-          desc: "dashboards, statuses, payouts",
-        },
+        { title: "Roles & access", desc: "users, permissions, audit" },
+        { title: "Tables & management", desc: "search, filters, export" },
+        { title: "Analytics & processes", desc: "dashboards, statuses, payouts" },
       ],
       primaryCta: "Discuss the project",
       secondaryCta: "Case studies",
@@ -445,37 +369,80 @@ type LangContextValue = {
 
 const LangContext = createContext<LangContextValue | null>(null);
 
-function getInitialLang(): Lang {
+/**
+ * Приоритеты:
+ * 1) ?lang=ru|en (позволяет тестить/шарить ссылки)
+ * 2) window.__TIVONIX_LANG__ (ранний выбор из index.html, если ты добавлял)
+ * 3) localStorage (ручной выбор)
+ * 4) navigator.languages / navigator.language (регион/язык браузера)
+ */
+function detectLang(): Lang {
   if (typeof window === "undefined") return "ru";
-  const stored = (localStorage.getItem("lang") || "").toLowerCase();
-  if (stored === "ru" || stored === "en") return stored;
 
-  const nav = (navigator.language || "").toLowerCase();
-  return nav.startsWith("ru") ? "ru" : "en";
+  // 1) query param
+  try {
+    const qp = new URL(window.location.href).searchParams.get("lang");
+    if (qp === "ru" || qp === "en") return qp;
+  } catch (_) {}
+
+  // 2) early pick from index.html (если есть)
+  const pre = (window as any).__TIVONIX_LANG__;
+  if (pre === "ru" || pre === "en") return pre;
+
+  // 3) stored manual choice
+  const stored = (localStorage.getItem("lang") || "").toLowerCase();
+  if (stored === "ru" || stored === "en") return stored as Lang;
+
+  // 4) browser languages
+  const nav = (
+    (navigator.languages && navigator.languages.length
+      ? navigator.languages.join(",")
+      : navigator.language) || ""
+  ).toLowerCase();
+
+  return /(^|,|\s)ru(-|_|$)/i.test(nav) ? "ru" : "en";
+}
+
+function syncHtmlLang(lang: Lang) {
+  if (typeof document === "undefined") return;
+  document.documentElement.lang = lang;
+  // удобно для CSS: html[data-lang="en"] ...
+  (document.documentElement as any).dataset.lang = lang;
 }
 
 export function LangProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>(() => getInitialLang());
+  const [lang, setLangState] = useState<Lang>(() => detectLang());
+
+  const setLang = (l: Lang) => {
+    setLangState(l);
+    try {
+      localStorage.setItem("lang", l); // ручной выбор фиксируем
+    } catch (_) {}
+    syncHtmlLang(l);
+  };
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    localStorage.setItem("lang", lang);
-    document.documentElement.lang = lang;
+    // при старте + при изменении
+    try {
+      localStorage.setItem("lang", lang);
+    } catch (_) {}
+    syncHtmlLang(lang);
   }, [lang]);
 
-  const value: LangContextValue = {
-    lang,
-    setLang,
-    dict: DICT[lang],
-  };
+  const value = useMemo<LangContextValue>(
+    () => ({
+      lang,
+      setLang,
+      dict: DICT[lang],
+    }),
+    [lang]
+  );
 
   return <LangContext.Provider value={value}>{children}</LangContext.Provider>;
 }
 
 export function useLang() {
   const ctx = useContext(LangContext);
-  if (!ctx) {
-    throw new Error("useLang must be used within LangProvider");
-  }
+  if (!ctx) throw new Error("useLang must be used within LangProvider");
   return ctx;
 }

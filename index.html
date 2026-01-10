@@ -1,9 +1,70 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-lang="ru">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
+    <!-- =========================================================
+         Auto language (first visit): RU if browser has ru, else EN
+         - does NOT override manual choice (localStorage)
+         - also updates title/description/twitter for EN early
+    ========================================================== -->
+    <script>
+      (function () {
+        var STORAGE_KEY = "tivonix_lang";
+
+        function pickLang() {
+          try {
+            var url = new URL(window.location.href);
+            var qp = url.searchParams.get("lang");
+            if (qp === "ru" || qp === "en") return qp;
+
+            var saved = localStorage.getItem(STORAGE_KEY);
+            if (saved === "ru" || saved === "en") return saved;
+          } catch (_) {}
+
+          var nav =
+            (navigator.languages && navigator.languages.length
+              ? navigator.languages.join(",")
+              : navigator.language) || "";
+
+          // RU if any ru locale is present, otherwise EN
+          return /(^|,|\s)ru(-|_|$)/i.test(nav) ? "ru" : "en";
+        }
+
+        var lang = pickLang();
+        document.documentElement.lang = lang;
+        document.documentElement.dataset.lang = lang;
+        window.__TIVONIX_LANG__ = lang;
+
+        // If EN: swap basic meta for better first paint (Google can render JS too)
+        if (lang === "en") {
+          document.title = "TIVONIX — websites & digital products";
+
+          var set = function (sel, val) {
+            var el = document.querySelector(sel);
+            if (el) el.setAttribute("content", val);
+          };
+
+          set(
+            'meta[name="description"]',
+            "We build websites, landing pages, and web products — from idea and prototype to launch, support, and growth."
+          );
+          set('meta[property="og:title"]', "TIVONIX — websites & digital products");
+          set(
+            'meta[property="og:description"]',
+            "Websites and web products: design, development, launch, and support."
+          );
+          set('meta[name="twitter:title"]', "TIVONIX — websites & digital products");
+          set(
+            'meta[name="twitter:description"]',
+            "Websites and web products: design, development, launch, and support."
+          );
+        }
+      })();
+    </script>
+
+    <!-- ✅ Titles / Descriptions (RU default; EN swaps via script above) -->
     <title>TIVONIX — сайты и цифровые продукты</title>
     <meta
       name="description"
@@ -12,14 +73,19 @@
 
     <!-- ✅ Индексация -->
     <meta name="robots" content="index,follow,max-image-preview:large" />
-    <link rel="canonical" href="https://tivonix.tech/" />
+    <link rel="canonical" href="https://www.tivonix.tech/" />
+
+    <!-- ✅ hreflang (без отдельных страниц это работает как “подсказка”, можно через ?lang=) -->
+    <link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/?lang=ru" />
+    <link rel="alternate" hreflang="en" href="https://www.tivonix.tech/?lang=en" />
+    <link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/" />
 
     <!-- ✅ Цвет UI браузера -->
     <meta name="theme-color" content="#0B1220" />
     <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
 
-    <!-- ✅ Icons -->
-    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <!-- ✅ Icons (файлы должны лежать в /public корне) -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="any" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
@@ -27,70 +93,69 @@
     <!-- ✅ Open Graph (соцсети) -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="TIVONIX" />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:locale:alternate" content="en_US" />
+
     <meta property="og:title" content="TIVONIX — сайты и цифровые продукты" />
-    <meta
-      property="og:description"
-      content="Сайты и веб-продукты: дизайн, разработка, запуск и поддержка."
-    />
-    <meta property="og:url" content="https://tivonix.tech/" />
-    <meta property="og:image" content="https://tivonix.tech/og.jpg" />
+    <meta property="og:description" content="Сайты и веб-продукты: дизайн, разработка, запуск и поддержка." />
+    <meta property="og:url" content="https://www.tivonix.tech/" />
+
+    <!-- OG image: файл должен быть в /public/og.jpg -->
+    <meta property="og:image" content="https://www.tivonix.tech/og.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="TIVONIX" />
 
     <!-- ✅ Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="TIVONIX — сайты и цифровые продукты" />
-    <meta
-      name="twitter:description"
-      content="Сайты и веб-продукты: дизайн, разработка, запуск и поддержка."
-    />
-    <meta name="twitter:image" content="https://tivonix.tech/og.jpg" />
+    <meta name="twitter:description" content="Сайты и веб-продукты: дизайн, разработка, запуск и поддержка." />
+    <meta name="twitter:image" content="https://www.tivonix.tech/og.jpg" />
+    <meta name="twitter:image:alt" content="TIVONIX" />
 
-    <!-- ✅ Schema.org (важно для красивого отображения в поиске) -->
+    <!-- ✅ Schema.org -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@graph": [
           {
             "@type": "Organization",
-            "@id": "https://tivonix.tech/#org",
+            "@id": "https://www.tivonix.tech/#org",
             "name": "TIVONIX",
-            "url": "https://tivonix.tech/",
+            "url": "https://www.tivonix.tech/",
             "logo": {
               "@type": "ImageObject",
-              "url": "https://tivonix.tech/logo.png",
-              "width": 512,
-              "height": 512
+              "url": "https://www.tivonix.tech/images/tivonix-logo-icon.png"
             },
+            "image": "https://www.tivonix.tech/og.jpg",
             "description": "TIVONIX — делаем сайты, лендинги и веб-продукты: от идеи и прототипа до запуска, поддержки и развития.",
-            "sameAs": [
-              "https://t.me/yourtelegram",
-              "https://github.com/yourgithub",
-              "https://www.behance.net/yourbehance"
-            ]
+            "contactPoint": [
+              {
+                "@type": "ContactPoint",
+                "contactType": "sales",
+                "email": "tivoonix@gmail.com",
+                "availableLanguage": ["ru", "en"]
+              }
+            ],
+            "sameAs": ["https://t.me/TIVONIX"]
           },
           {
             "@type": "WebSite",
-            "@id": "https://tivonix.tech/#website",
-            "url": "https://tivonix.tech/",
+            "@id": "https://www.tivonix.tech/#website",
+            "url": "https://www.tivonix.tech/",
             "name": "TIVONIX",
-            "publisher": { "@id": "https://tivonix.tech/#org" },
-            "inLanguage": "ru",
-            "potentialAction": {
-              "@type": "SearchAction",
-              "target": "https://tivonix.tech/?q={search_term_string}",
-              "query-input": "required name=search_term_string"
-            }
+            "publisher": { "@id": "https://www.tivonix.tech/#org" },
+            "inLanguage": ["ru", "en"]
           },
           {
             "@type": "WebPage",
-            "@id": "https://tivonix.tech/#home",
-            "url": "https://tivonix.tech/",
+            "@id": "https://www.tivonix.tech/#home",
+            "url": "https://www.tivonix.tech/",
             "name": "TIVONIX — сайты и цифровые продукты",
             "description": "TIVONIX — делаем сайты, лендинги и веб-продукты: от идеи и прототипа до запуска, поддержки и развития.",
-            "isPartOf": { "@id": "https://tivonix.tech/#website" },
-            "about": { "@id": "https://tivonix.tech/#org" },
-            "inLanguage": "ru"
+            "isPartOf": { "@id": "https://www.tivonix.tech/#website" },
+            "about": { "@id": "https://www.tivonix.tech/#org" },
+            "inLanguage": ["ru", "en"]
           }
         ]
       }
