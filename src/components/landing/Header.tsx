@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import Container from "../ui/Container";
 import { Button } from "../ui/Button";
 import { useLang, type Lang } from "../../i18n/LangProvider";
+import StartModal from "./StartModal";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -145,6 +146,7 @@ function SaaSTabs({
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [startOpen, setStartOpen] = useState(false);
 
   const reducedMotion = usePrefersReducedMotion();
 
@@ -207,6 +209,13 @@ export default function Header() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const openStartModal = () => {
+    setOpen(false);
+    if (location.pathname !== "/") navigate("/");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setStartOpen(true);
+  };
+
   const tabsItems = useMemo(
     () =>
       NAV_MAIN.map((it) => ({
@@ -260,7 +269,7 @@ export default function Header() {
                 <LangToggle />
 
                 <Button
-                  onClick={goStart}
+                  onClick={openStartModal}
                   className={cx(
                     "ml-1 h-10 rounded-full px-5 font-semibold",
                     "!text-black",
@@ -315,9 +324,7 @@ export default function Header() {
                     strokeLinecap="round"
                     style={{
                       transformOrigin: "12px 17px",
-                      transform: open
-                        ? "translateY(-5px) rotate(-45deg)"
-                        : "none",
+                      transform: open ? "translateY(-5px) rotate(-45deg)" : "none",
                       transition: "transform 220ms ease",
                     }}
                   />
@@ -363,7 +370,7 @@ export default function Header() {
                 <div className="mt-4 flex items-center gap-3">
                   <LangToggle compact />
                   <Button
-                    onClick={goStart}
+                    onClick={openStartModal}
                     className={cx(
                       "flex-1 h-11 rounded-2xl font-semibold",
                       "!text-black",
@@ -394,6 +401,9 @@ export default function Header() {
           </Container>
         </div>
       </div>
+
+      {/* Modal */}
+      <StartModal open={startOpen} onClose={() => setStartOpen(false)} />
     </>
   );
 }
