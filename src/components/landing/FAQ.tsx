@@ -36,7 +36,7 @@ type LocalFaqItem = {
 type CatFilter = "all" | Cat;
 
 const LOGO_ICON = "/images/tivonix-logo-icon.png";
-const BG_IMG = "/images/sunset.webp"; // или .png, если так у тебя
+const BG_IMG = "/images/sunset.webp";
 
 const PAGE_SIZE = 6;
 const CLOSED_CARD_H = 285;
@@ -57,6 +57,54 @@ const CAT_LABELS: Record<Cat, { ru: string; en: string }> = {
   tech: { ru: "Тех.часть", en: "Tech" },
   support: { ru: "Поддержка", en: "Support" },
   fix: { ru: "Правки", en: "Edits" },
+};
+
+// короткие подсказки внизу карточек (когда ответ скрыт)
+const TEASER_TEXTS: Record<Cat, { ru: string; en: string }> = {
+  start: {
+    ru: "Как мы заходим в проект и что нужно от вас на старте.",
+    en: "How we get into the project and what we need from you at the start.",
+  },
+  price: {
+    ru: "Ориентиры по бюджету и что реально входит в стоимость.",
+    en: "Budget guidelines and what is actually included in the price.",
+  },
+  time: {
+    ru: "Типичные сроки и когда можно ускориться до 1–2 дней.",
+    en: "Typical timelines and when we can speed up to 1–2 days.",
+  },
+  process: {
+    ru: "Пошаговый процесс от брифа до запуска без хаоса.",
+    en: "Step-by-step process from brief to launch without chaos.",
+  },
+  design: {
+    ru: "Как собираем премиум-визуал и попадаем в ваш бренд.",
+    en: "How we build premium visuals that match your brand.",
+  },
+  dev: {
+    ru: "На чём всё собрано и какие интеграции возможны.",
+    en: "What we build on and which integrations are possible.",
+  },
+  content: {
+    ru: "Как помогаем с текстами, оффером и структурой блоков.",
+    en: "How we help with copy, offer, and block structure.",
+  },
+  seo: {
+    ru: "Что делаем по SEO уже на уровне лендинга.",
+    en: "What we do for SEO already on the landing level.",
+  },
+  tech: {
+    ru: "Про скорость загрузки, адаптив и тех.часть проекта.",
+    en: "About load speed, responsiveness, and the tech side.",
+  },
+  support: {
+    ru: "Как сопровождаем проект после запуска и что входит.",
+    en: "How we support the project after launch and what is included.",
+  },
+  fix: {
+    ru: "Как работаем с правками, отступами и мелкими доработками.",
+    en: "How we handle edits, spacing, and small improvements.",
+  },
 };
 
 const FAQ_ITEMS: FaqItem[] = [
@@ -341,9 +389,7 @@ export default function FAQSection() {
     if (catFilter !== "all") list = list.filter((x) => x.cat === catFilter);
     if (!q) return list;
 
-    return list.filter((x) =>
-      (`${x.q} ${x.a} ${x.catLabel}`).toLowerCase().includes(q)
-    );
+    return list.filter((x) => (`${x.q} ${x.a} ${x.catLabel}`).toLowerCase().includes(q));
   }, [query, catFilter, localizedItems]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -379,12 +425,10 @@ export default function FAQSection() {
   const placeholder = isRu ? "Поиск по вопросам..." : "Search questions...";
   const resetLabel = isRu ? "Сбросить" : "Reset";
   const allLabel = isRu ? "Все" : "All";
-  const btnOpen = isRu ? "Открыть" : "Open";
-  const btnHide = isRu ? "Скрыть" : "Hide";
   const btnShowAnswer = isRu ? "Показать ответ" : "Show answer";
+  const btnHideAnswer = isRu ? "Скрыть ответ" : "Hide answer";
   const btnCopyAnswer = isRu ? "Скопировать ответ" : "Copy answer";
   const btnCopied = isRu ? "Скопировано" : "Copied";
-  const btnWriteUs = isRu ? "Написать нам" : "Contact us";
 
   return (
     <Section
@@ -394,7 +438,7 @@ export default function FAQSection() {
         "bg-black"
       )}
     >
-      {/* анимация границы карточек */}
+      {/* анимации и границы */}
       <style>{`
         @keyframes faqBorderMove {
           0% { background-position: 0% 50%; }
@@ -436,8 +480,24 @@ export default function FAQSection() {
 
         .faq-grad-border:hover::before { opacity: 1; }
 
+        @keyframes faqAnswerIn {
+          0% {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .faq-answer-open {
+          animation: faqAnswerIn .26s ease-out;
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .faq-grad-border::before { animation: none; }
+          .faq-answer-open { animation: none; }
         }
       `}</style>
 
@@ -565,6 +625,7 @@ export default function FAQSection() {
           {items.map((f) => {
             const isOpen = openId === f.id;
             const domId = toDomId(f.id);
+            const teaser = TEASER_TEXTS[f.cat][l];
 
             return (
               <div
@@ -577,7 +638,15 @@ export default function FAQSection() {
                 )}
                 style={!isOpen ? s({ height: CLOSED_CARD_H }) : undefined}
               >
-                <div className="absolute inset-x-0 top-0 h-px bg-white/8" />
+                {/* оранжевая градиентная линия сверху */}
+                <div
+                  className="absolute inset-x-0 top-0 h-[2px]"
+                  style={s({
+                    background:
+                      "linear-gradient(90deg,#FFD7B0 0%,#FF9A3D 22%,#FF6A1A 50%,#FF9A3D 78%,#FFD7B0 100%)",
+                    opacity: 0.95,
+                  })}
+                />
 
                 <div className="relative z-[2] p-5 flex h-full flex-col">
                   <div className="flex items-start justify-between gap-3">
@@ -587,20 +656,7 @@ export default function FAQSection() {
                       </div>
                       <div className="mt-1 text-[12px] text-white/45">{f.catLabel}</div>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setOpenId((v) => (v === f.id ? null : f.id))}
-                      aria-expanded={isOpen}
-                      aria-controls={domId}
-                      className={cx(
-                        "shrink-0 rounded-[12px] px-3 py-1.5 text-[12px] font-medium",
-                        "border border-white/12 bg-white/[0.06] text-white/80",
-                        "hover:bg-white/[0.1] hover:text-white transition"
-                      )}
-                    >
-                      {isOpen ? btnHide : btnOpen}
-                    </button>
+                    {/* верхнюю кнопку "Открыть" убрали */}
                   </div>
 
                   <div className="mt-4 space-y-2">
@@ -610,7 +666,7 @@ export default function FAQSection() {
                       className="w-full flex items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.02] px-3 py-2 text-left text-[12px] text-white/75 hover:bg-white/[0.05] transition"
                     >
                       <img src={LOGO_ICON} alt="" className="h-4 w-4 object-contain" draggable={false} />
-                      {btnShowAnswer}
+                      {isOpen ? btnHideAnswer : btnShowAnswer}
                     </button>
 
                     <button
@@ -623,30 +679,33 @@ export default function FAQSection() {
                       </span>
                       {copied === f.id ? btnCopied : btnCopyAnswer}
                     </button>
-
-                    <a
-                      href="#contact"
-                      className="w-full flex items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.02] px-3 py-2 text-left text-[12px] text-white/75 hover:bg-white/[0.05] transition"
-                    >
-                      <span style={s({ color: ORANGE })}>
-                        <Icon name="mail" />
-                      </span>
-                      {btnWriteUs}
-                    </a>
                   </div>
 
+                  {/* ответ снизу карточки */}
                   <div
                     id={domId}
                     className={cx(
                       "mt-3 rounded-[14px] border border-white/10 bg-black/60 px-4 py-3",
                       "text-[13px] leading-relaxed text-white/72",
-                      isOpen ? "block" : "hidden"
+                      isOpen ? "block faq-answer-open" : "hidden"
                     )}
                   >
                     {f.a}
                   </div>
 
-                  {!isOpen ? <div className="mt-auto" /> : null}
+                  {/* нижняя часть карточки, когда ответ скрыт — чтобы не было пустоты */}
+                  {!isOpen && (
+                    <div className="mt-auto pt-3">
+                      <div className="h-px w-full rounded-full bg-gradient-to-r from-white/0 via-white/18 to-white/0" />
+                      <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-white/60">
+                        <span className="truncate">{teaser}</span>
+                        <span className="flex items-center gap-1 whitespace-nowrap" style={s({ color: ORANGE })}>
+                          <span className="inline-block h-1.5 w-1.5 rounded-full bg-current" />
+                          <span>{isRu ? "Частый вопрос" : "Popular"}</span>
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             );

@@ -1,5 +1,5 @@
 // src/components/landing/Benefits.tsx
-import React, { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Section from "../ui/Section";
 import Container from "../ui/Container";
@@ -9,20 +9,20 @@ function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
 
-/** просто фотка – public/images/212.webp */
+/** public/images/212.webp */
 const BG_IMG = "/images/212.webp";
 
-/* ====== pill-бейджи в стиле навигации ====== */
+/* ====== pill ====== */
 function Pill({ text }: { text: string }) {
   return (
     <div
       className={cx(
-        "inline-flex h-[42px] items-center rounded-full px-6",
-        "border border-white/18 bg-[rgba(18,14,11,0.96)]",
-        "text-[12px] sm:text-[13px] font-[730] tracking-[0.16em] uppercase text-white/78",
-        "shadow-[0_18px_60px_rgba(0,0,0,0.70)]",
-        "transition-colors transition-shadow duration-200",
-        "hover:border-white/55 hover:text-white hover:shadow-[0_22px_80px_rgba(0,0,0,0.9)]"
+        "inline-flex items-center justify-center",
+        "h-10 px-4 rounded-full",
+        "border border-white/16 bg-white/[0.06] backdrop-blur-xl",
+        "text-[12px] font-[650] tracking-[-0.01em] text-white/78",
+        "transition duration-200",
+        "hover:border-white/28 hover:bg-white/[0.08] hover:text-white/90"
       )}
     >
       {text}
@@ -30,145 +30,299 @@ function Pill({ text }: { text: string }) {
   );
 }
 
+/* ====== mobile pills slider: автоскролл (бесконечно) + прогресс ====== */
+function MobilePillsSlider({ pills }: { pills: string[] }) {
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+
+  const [progress, setProgress] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  // пауза при касании/скролле
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+
+    let t: number | undefined;
+    const pause = () => {
+      setPaused(true);
+      if (t) window.clearTimeout(t);
+      t = window.setTimeout(() => setPaused(false), 2200);
+    };
+
+    el.addEventListener("touchstart", pause, { passive: true });
+    el.addEventListener("mousedown", pause);
+    el.addEventListener("wheel", pause, { passive: true });
+
+    return () => {
+      el.removeEventListener("touchstart", pause as any);
+      el.removeEventListener("mousedown", pause as any);
+      el.removeEventListener("wheel", pause as any);
+      if (t) window.clearTimeout(t);
+    };
+  }, []);
+
+  // прогресс (по “первой ленте”, без учёта дубля)
+  useEffect(() => {
+    const wrap = scrollerRef.current;
+    const track = trackRef.current;
+    if (!wrap || !track) return;
+
+    const update = () => {
+      const one = track.scrollWidth / 2;
+      const max = Math.max(1, one - wrap.clientWidth);
+      const leftInOne = ((wrap.scrollLeft % one) + one) % one;
+      const p = Math.max(0, Math.min(1, leftInOne / max));
+      setProgress(p);
+    };
+
+    update();
+    wrap.addEventListener("scroll", update, { passive: true });
+
+    const ro = new ResizeObserver(update);
+    ro.observe(wrap);
+    ro.observe(track);
+
+    return () => {
+      wrap.removeEventListener("scroll", update as any);
+      ro.disconnect();
+    };
+  }, []);
+
+  // автоскролл + бесконечность (дублированный трек)
+  useEffect(() => {
+    const wrap = scrollerRef.current;
+    const track = trackRef.current;
+    if (!wrap || !track) return;
+
+    const PX_PER_TICK = 1;
+    const TICK_MS = 18;
+
+    const step = () => {
+      if (paused) return;
+      const one = track.scrollWidth / 2;
+      if (one <= 0) return;
+
+      wrap.scrollLeft += PX_PER_TICK;
+
+      if (wrap.scrollLeft >= one * 1.5) {
+        wrap.scrollLeft -= one;
+      }
+    };
+
+    const id = window.setInterval(step, TICK_MS);
+    return () => window.clearInterval(id);
+  }, [paused]);
+
+  const doubled = useMemo(() => [...pills, ...pills], [pills]);
+
+  return (
+    <div className="sm:hidden mt-6">
+      {/* progress bar */}
+      <div className="mx-auto w-full max-w-[340px]">
+        <div className="h-[6px] rounded-full bg-white/12 overflow-hidden border border-white/10">
+          <div
+            className="h-full rounded-full"
+            style={{
+              width: `${Math.round(progress * 100)}%`,
+              background:
+                "linear-gradient(90deg, rgba(255,154,61,0.95), rgba(255,220,170,0.90))",
+            }}
+          />
+        </div>
+      </div>
+
+      {/* one row */}
+      <div className="mt-3">
+        <div
+          ref={scrollerRef}
+          className={cx(
+            "overflow-x-auto",
+            "px-1 -mx-1 pb-2",
+            "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          )}
+        >
+          <div ref={trackRef} className="flex gap-2.5 w-max">
+            {doubled.map((t, idx) => (
+              <div key={`${t}-${idx}`} className="shrink-0">
+                <Pill text={t} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-1 text-center text-[11.5px] text-white/45">
+          {Math.round(progress * 100)}%
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Benefits() {
   const { dict, lang } = useLang();
   const isRu = lang === "ru";
-  const bDict = dict.benefits;
 
-  const badgeText =
-    bDict?.badge ?? (isRu ? "Этапы" : "Benefits");
+  // безопасно (чтобы TS не ругался на BenefitsDict)
+  const bd: any = (dict as any)?.benefits ?? {};
 
-  const titlePrefix =
-    bDict?.titlePrefix ?? (isRu ? "Один блок — одна мысль." : "One block — one idea.");
+  const titleLine1 =
+    bd?.titleLine1 ?? (isRu ? "Запуск продукта без переделок." : "Launch without rework.");
+  const titleLine2 =
+    bd?.titleLine2 ?? (isRu ? "Дизайн + разработка под ключ" : "Design + development turnkey");
+  const subtitle =
+    bd?.subtitle ??
+    (isRu
+      ? "UI, код и интеграции — в одном процессе. Получите MVP или сайт, готовый к трафику и продажам."
+      : "UI, code, and integrations in one flow. Get an MVP or website ready for traffic and sales.");
 
-  const titleHighlight =
-    bDict?.titleHighlight ?? (isRu ? "ПРЕИМУЩЕСТВА" : "BENEFITS");
-
-  const rowMeta =
-    bDict?.rowMeta ??
-    (isRu ? "UI • код • скорость • масштабирование" : "UI • code • speed • scaling");
-
-  const ctaText =
-    bDict?.cta ?? (isRu ? "Заказать" : "Order project");
+  const ctaText = bd?.ctaPrimary ?? (isRu ? "Обсудить проект" : "Discuss your project");
+  const ctaSub = bd?.ctaSub ?? (isRu ? "Ответ в течение 2 часов" : "Reply within 2 hours");
 
   const pills = useMemo<string[]>(() => {
-    const fromDict = (bDict?.pills ?? []) as string[];
-    if (fromDict.length) return fromDict;
+    const fromDict = bd?.pills;
+    if (Array.isArray(fromDict) && fromDict.length) return fromDict;
 
     return isRu
       ? [
-          "SaaS-сервисы и личные кабинеты",
+          "SaaS и личные кабинеты",
           "Дашборды и аналитика",
-          "Сайты и лендинги под ключ",
-          "Telegram- и чат-боты",
+          "Лендинги и сайты",
+          "Telegram-боты и чаты",
           "Интеграции с CRM и API",
           "Автоматизация рутины",
-          "Поддержка и развитие проекта",
+          "Поддержка и развитие",
         ]
       : [
-          "SaaS apps & client areas",
-          "Dashboards and analytics",
-          "Websites & landing pages",
-          "Telegram & chat bots",
-          "CRM and API integrations",
+          "SaaS & client areas",
+          "Dashboards & analytics",
+          "Landing pages & sites",
+          "Telegram bots & chats",
+          "CRM & API integrations",
           "Routine automation",
-          "Support & product growth",
+          "Support & growth",
         ];
-  }, [bDict, isRu]);
+  }, [bd, isRu]);
 
   return (
-    <Section
-      id="benefits"
-      className="relative overflow-hidden pt-16 sm:pt-20 pb-16 sm:pb-20"
-    >
+    <Section id="benefits" className="relative pt-16 sm:pt-20 pb-16 sm:pb-20">
       {/* общий фон секции */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.55),rgba(0,0,0,0.96))]" />
-        <div className="absolute inset-0 opacity-[0.06] [background-image:radial-gradient(rgba(255,255,255,0.20)_1px,transparent_1px)] [background-size:18px_18px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.52),rgba(0,0,0,0.96))]" />
+        <div className="absolute inset-0 opacity-[0.055] [background-image:radial-gradient(rgba(255,255,255,0.20)_1px,transparent_1px)] [background-size:18px_18px]" />
+        <div className="absolute inset-0 [background:radial-gradient(60%_55%_at_50%_0%,rgba(255,154,61,0.12),transparent_60%)]" />
       </div>
 
       <Container>
         <div className="relative z-10">
-          {/* бэйдж сверху */}
-          <div className="flex items-center gap-3">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#FF9A3D]" />
-            <div className="text-[11px] tracking-[0.28em] text-white/55 uppercase">
-              {badgeText}
-            </div>
-            <div className="h-px flex-1 bg-white/10" />
-          </div>
-
-          {/* большой блок */}
           <div
             className={cx(
-              "mt-6 relative overflow-hidden rounded-[26px]",
+              "relative overflow-hidden rounded-[26px] sm:rounded-[30px]",
               "border border-white/10",
-              "shadow-[0_40px_160px_rgba(0,0,0,0.8)]",
-              "min-h-[380px] sm:min-h-[440px] lg:min-h-[520px]"
+              "shadow-[0_40px_160px_rgba(0,0,0,0.82)]"
             )}
           >
-            {/* фон-фотка с лёгким блюром */}
+            {/* фон */}
             <img
               src={BG_IMG}
               alt=""
               draggable={false}
-              className="pointer-events-none absolute inset-0 h-full w-full object-cover blur-[1px]"
-              style={{
-                objectPosition: "center 65%", // фокус как просил
-              }}
+              className={cx(
+                "pointer-events-none absolute inset-0 h-full w-full object-cover blur-[1px]",
+                "object-[50%_65%]"
+              )}
             />
 
-            {/* улучшенный оверлей: тёплый градиент снизу + мягкое затемнение */}
+            {/* оверлей */}
             <div
               className="pointer-events-none absolute inset-0"
               style={{
                 background:
-                  "radial-gradient(120% 140% at 50% 115%, rgba(255,154,61,0.40), transparent 60%)," +
-                  "linear-gradient(135deg, rgba(0,0,0,0.68), rgba(0,0,0,0.94))",
+                  "radial-gradient(110% 140% at 50% 115%, rgba(255,154,61,0.42), transparent 62%)," +
+                  "linear-gradient(135deg, rgba(0,0,0,0.60), rgba(0,0,0,0.94))",
               }}
             />
 
+            {/* мягкая виньетка */}
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(75%_65%_at_50%_20%,transparent_35%,rgba(0,0,0,0.55)_100%)]" />
+
             {/* контент */}
-            <div className="relative z-10 p-7 sm:p-10 lg:p-12 h-full flex flex-col">
-              {/* верх: по центру */}
-              <div className="max-w-[720px] mx-auto text-center text-white">
-                <h2 className="text-[34px] sm:text-[44px] lg:text-[50px] font-[860] tracking-[-0.04em] leading-[1.04]">
-                  {titlePrefix}
+            <div className="relative z-10 px-5 sm:px-10 lg:px-12 py-8 sm:py-10 lg:py-12">
+              <div className="mx-auto max-w-[980px] text-center text-white">
+                <h2 className="leading-[1.04] tracking-[-0.045em] text-[30px] sm:text-[46px] lg:text-[58px]">
+                  <span className="font-[780] text-white/95">{titleLine1}</span>
                   <br />
-                  <span className="text-white/95">{titleHighlight}</span>
+                  <span
+                    className={cx(
+                      "font-[820] inline-block mt-1 sm:mt-0",
+                      "bg-[linear-gradient(90deg,rgba(255,154,61,0.98),rgba(255,220,170,0.92))]",
+                      "bg-clip-text text-transparent"
+                    )}
+                  >
+                    {titleLine2}
+                  </span>
                 </h2>
 
-                <p className="mt-4 text-[14px] sm:text-[15px] leading-relaxed text-white/80">
-                  {rowMeta}
+                <p className="mt-4 sm:mt-5 text-[13.75px] sm:text-[15.75px] leading-[1.62] text-white/84 max-w-[860px] mx-auto">
+                  {subtitle}
                 </p>
 
-                {/* стеклянная кнопка «Заказать» → /contacts */}
-                <div className="mt-8">
+                {/* CTA — статичная премиум-кнопка */}
+                <div className="mt-6 sm:mt-9 flex flex-col items-center gap-2.5">
                   <Link
                     to="/contacts"
                     className={cx(
-                      "inline-flex items-center justify-center",
-                      "h-11 px-7 rounded-full",
-                      "border border-white/35 bg-white/8",
-                      "backdrop-blur-xl",
-                      "text-[13px] font-[820] tracking-[0.12em] uppercase text-white",
-                      "shadow-[0_18px_70px_rgba(0,0,0,0.70)]",
+                      "group relative inline-flex items-center justify-center",
+                      "h-[52px] sm:h-[58px] px-8 sm:px-11 rounded-full overflow-hidden select-none",
+                      "text-[12.5px] sm:text-[13px] font-[900] tracking-[0.10em] uppercase",
+                      "text-black",
                       "transition duration-200",
-                      "hover:bg-white/14 hover:border-white/70 hover:shadow-[0_22px_90px_rgba(0,0,0,0.9)]"
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35",
+                      "active:scale-[0.99]"
                     )}
+                    style={{
+                      boxShadow:
+                        "0 22px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.32)",
+                    }}
+                    aria-label={ctaText}
                   >
-                    {ctaText}
+                    {/* base gradient */}
+                    <span
+                      className="absolute inset-0"
+                      style={{
+                        background:
+                          "linear-gradient(90deg, rgba(255,154,61,0.98), rgba(255,220,170,0.92))",
+                      }}
+                    />
+                    {/* glossy top highlight */}
+                    <span className="absolute inset-x-0 top-0 h-[55%] bg-[linear-gradient(to_bottom,rgba(255,255,255,0.40),transparent)] opacity-70" />
+                    {/* hover bloom */}
+                    <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-200 [background:radial-gradient(120%_80%_at_50%_0%,rgba(255,255,255,0.55),transparent_60%)]" />
+                    {/* edge ring */}
+                    <span className="absolute inset-0 rounded-full ring-1 ring-white/25" />
+                    {/* subtle dark edge */}
+                    <span className="absolute inset-0 rounded-full shadow-[inset_0_-1px_0_rgba(0,0,0,0.20)]" />
+
+                    <span className="relative z-10">{ctaText}</span>
                   </Link>
+
+                  <div className="text-[12px] sm:text-[12.5px] text-white/60">{ctaSub}</div>
+                </div>
+
+                {/* MOBILE: авто-скролл чипов */}
+                <MobilePillsSlider pills={pills} />
+
+                {/* DESKTOP/TABLET: wrap чипов */}
+                <div className="hidden sm:flex mt-10 flex-wrap justify-center gap-3 max-w-[980px] mx-auto">
+                  {pills.map((t) => (
+                    <Pill key={t} text={t} />
+                  ))}
                 </div>
               </div>
-
-              {/* низ: таблетки по горизонтали */}
-              <div className="mt-10 md:mt-12 flex flex-wrap justify-center gap-3 lg:gap-4 max-w-[960px] mx-auto">
-                {pills.map((t) => (
-                  <Pill key={t} text={t} />
-                ))}
-              </div>
             </div>
+
+            {/* мягкий низ */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(to_top,rgba(0,0,0,0.36),transparent)]" />
           </div>
         </div>
       </Container>

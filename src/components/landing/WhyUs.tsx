@@ -1,11 +1,5 @@
 // src/components/landing/WhyUs.tsx
-import React, {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-} from "react";
+import React, { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import Container from "../ui/Container";
 import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
@@ -19,12 +13,25 @@ type StackItem = {
   src: string;
 };
 
-function cx(...a: Array<string | false | null | undefined>) {
-  return a.filter(Boolean).join(" ");
-}
-
 function clamp(n: number, a = 0, b = 1) {
   return Math.max(a, Math.min(b, n));
+}
+
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const on = () => setReduced(!!mq.matches);
+    on();
+    if (mq.addEventListener) mq.addEventListener("change", on);
+    else mq.addListener(on);
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener("change", on);
+      else mq.removeListener(on);
+    };
+  }, []);
+  return reduced;
 }
 
 /** прогресс справа (desktop) / слева (mobile) */
@@ -44,17 +51,27 @@ function ProgressBar({
 
   return (
     <div className="flex flex-col items-center">
-      <div className="relative flex justify-center" style={{ height, width: w }}>
+      <div className="relative flex justify-center" style={{ height, width: w } as CSSProperties}>
         <div className="absolute inset-y-0 w-[2px] rounded-full bg-white/10" />
         <div className="absolute inset-y-0 left-1/2 w-[6px] -translate-x-1/2 overflow-hidden rounded-full bg-white/8">
           <div
             className="absolute bottom-0 left-0 right-0 rounded-full"
-            style={{ height: `${p * 100}%`, background: "#F97316" }}
+            style={
+              {
+                height: `${p * 100}%`,
+                background: "#F97316",
+              } as CSSProperties
+            }
           />
         </div>
         <div
           className="absolute left-1/2 h-3 w-3 -translate-x-1/2 rounded-full border border-white/45 bg-black/85"
-          style={{ top: `${p * 100}%`, marginTop: -6 }}
+          style={
+            {
+              top: `${p * 100}%`,
+              marginTop: -6,
+            } as CSSProperties
+          }
         />
       </div>
 
@@ -67,123 +84,249 @@ function ProgressBar({
   );
 }
 
-/** ✅ Иконка 200×200 как фото, с серым градиентным бордером */
+/**
+ * Карточка 200×200: “сканер” действительно едет слева -> вправо
+ * - on hover (desktop) или on tap (touch)
+ * - клип открывается по ширине + линия двигается (left)
+ * - оранжевый градиент + мягкое свечение + scan-полосы
+ */
 function StackPhoto({
   item,
   index,
   reveal,
   setRef,
+  reducedMotion,
 }: {
   item: StackItem;
   index: number;
   reveal: boolean;
   setRef: (el: HTMLDivElement | null) => void;
+  reducedMotion: boolean;
 }) {
+  // /stack/html.webp -> /stack/html2.webp
+  const hoverSrc = useMemo(
+    () => item.src.replace(/(\.[a-zA-Z0-9]+)$/, "2$1"),
+    [item.src]
+  );
+
+  const [active, setActive] = useState(false);
+  const [isTouch, setIsTouch] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    // грубая проверка тача
+    setIsTouch("ontouchstart" in window || navigator.maxTouchPoints > 0);
+  }, []);
+
+  // прогресс сканирования 0..1
+  // reducedMotion: без “езда”, просто сразу показываем hover-версию
+  const scanP = reducedMotion ? (active ? 1 : 0) : active ? 1 : 0;
+
+  // ширина раскрытия: 0% -> 100%
+  const clipPath = reducedMotion
+    ? active
+      ? "polygon(0 0, 100% 0, 100% 100%, 0 100%)"
+      : "polygon(0 0, 0 0, 0 100%, 0 100%)"
+    : active
+    ? "polygon(0 0, 100% 0, 100% 100%, 0 100%)"
+    : "polygon(0 0, 0 0, 0 100%, 0 100%)";
+
+  // линия: left = прогресс*100, но мы двигаем именно внутренний “сканер”
+  // пока клип открывается, линия должна быть на границе клипа (правый край видимой области)
+  // при active = 1, клип 100% и линия справа
+  const lineLeft = active ? "100%" : "0%";
+
+  const baseEnter = () => setActive(true);
+  const baseLeave = () => !isTouch && setActive(false);
+
+  // на таче: тап = toggle
+  const onTap = () => {
+    if (!isTouch) return;
+    setActive((v) => !v);
+  };
+
   return (
     <div
       ref={setRef}
       className="relative"
+      onMouseEnter={baseEnter}
+      onMouseLeave={baseLeave}
+      onClick={onTap}
       style={
         {
           opacity: reveal ? 1 : 0,
           transform: reveal ? "translateY(0)" : "translateY(14px)",
-          transition:
-            "transform .45s cubic-bezier(.2,.9,.2,1), opacity .4s ease",
+          transition: "transform .45s cubic-bezier(.2,.9,.2,1), opacity .4s ease",
           transitionDelay: `${index * 28}ms`,
         } as CSSProperties
       }
     >
-      {/* рамка */}
+      {/* внешняя рамка */}
       <div
-        className="group relative h-[200px] w-[200px] overflow-hidden rounded-[34px] p-[2px]"
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,.08) 40%, rgba(255,255,255,.18) 100%)",
-        }}
+        className="relative h-[200px] w-[200px] overflow-hidden rounded-[34px] p-[2px]"
+        style={
+          {
+            background:
+              "linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,.08) 40%, rgba(255,255,255,.18) 100%)",
+          } as CSSProperties
+        }
       >
         <div className="relative h-full w-full overflow-hidden rounded-[32px] bg-black/35">
-          {/* картинка */}
+          {/* базовое изображение */}
           <img
             src={item.src}
             alt={item.label}
             loading="lazy"
             draggable={false}
             className="h-full w-full select-none"
-            style={{
-              objectFit: "cover",
-              objectPosition: "center",
-              transition: "opacity 180ms ease",
-            }}
+            style={{ objectFit: "cover", objectPosition: "center" } as CSSProperties}
           />
 
-          {/* внутренняя обводка */}
-          <div className="pointer-events-none absolute inset-0 ring-1 ring-white/8" />
-
-          {/* затемнение при ховере */}
-          <div
-            className={[
-              "pointer-events-none absolute inset-0",
-              "opacity-0 group-hover:opacity-100",
-              "transition-opacity duration-150",
-            ].join(" ")}
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(0,0,0,.72) 0%, rgba(0,0,0,.80) 55%, rgba(0,0,0,.86) 100%)",
-            }}
-          />
-
-          {/* текст по центру */}
-          <div
-            className={[
-              "pointer-events-none absolute inset-0 flex items-center justify-center",
-              "opacity-0 group-hover:opacity-100",
-              "transition-opacity duration-180",
-            ].join(" ")}
-          >
+          {/* overlay: картинка 2 + сканер */}
+          <div className="pointer-events-none absolute inset-0">
+            {/* слой, который раскрывается */}
             <div
-              className={[
-                "rounded-full border border-white/12 bg-black/55 backdrop-blur",
-                "px-5 py-3",
-                "text-[12px] font-semibold tracking-[0.28em] uppercase",
-                "text-white/90",
-              ].join(" ")}
+              className="absolute inset-0"
+              style={
+                {
+                  clipPath,
+                  transition: reducedMotion
+                    ? "clip-path 0s linear"
+                    : "clip-path 1.5s cubic-bezier(.21,.99,.24,1)",
+                } as CSSProperties
+              }
             >
-              {item.label}
+              <img
+                src={hoverSrc}
+                alt={item.label}
+                loading="lazy"
+                draggable={false}
+                className="h-full w-full select-none"
+                style={{ objectFit: "cover", objectPosition: "center" } as CSSProperties}
+              />
+
+              {/* scan-полосы внутри раскрытой области */}
+              <div
+                className="absolute inset-0 opacity-[0.22] mix-blend-screen"
+                style={
+                  {
+                    backgroundImage:
+                      "repeating-linear-gradient(to bottom, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 1px, rgba(0,0,0,0) 3px, rgba(0,0,0,0) 4px)",
+                  } as CSSProperties
+                }
+              />
+
+              {/* чуть-чуть “дымки” чтобы оранжевый смотрелся богаче */}
+              <div
+                className="absolute inset-0"
+                style={
+                  {
+                    background:
+                      "radial-gradient(120px 120px at 70% 40%, rgba(249,115,22,0.22), rgba(0,0,0,0) 60%)",
+                    opacity: 0.9,
+                  } as CSSProperties
+                }
+              />
+            </div>
+
+            {/* СКАНЕР-ЛИНИЯ (движется) — рисуем поверх всего, но видно только когда active */}
+            <div
+              className="absolute inset-0"
+              style={
+                {
+                  opacity: active ? 1 : 0,
+                  transition: "opacity .2s ease",
+                } as CSSProperties
+              }
+            >
+              {/* контейнер линии, который ездит слева->вправо */}
+              <div
+                className="absolute top-[-18%] bottom-[-18%]"
+                style={
+                  {
+                    left: lineLeft,
+                    transform: "translateX(-50%)",
+                    transition: reducedMotion
+                      ? "left 0s linear"
+                      : "left 1.5s cubic-bezier(.21,.99,.24,1)",
+                  } as CSSProperties
+                }
+              >
+                {/* мягкое широкое свечение */}
+                <div
+                  className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[44px]"
+                  style={
+                    {
+                      background:
+                        "linear-gradient(180deg, rgba(249,115,22,0) 0%, rgba(249,115,22,0.55) 38%, rgba(249,115,22,0.30) 62%, rgba(249,115,22,0) 100%)",
+                      filter: "blur(10px)",
+                      opacity: 0.95,
+                    } as CSSProperties
+                  }
+                />
+
+                {/* ядро линии */}
+                <div
+                  className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[3px] rounded-full"
+                  style={
+                    {
+                      background:
+                        "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.98) 14%, rgba(255,196,118,1) 40%, rgba(249,115,22,1) 50%, rgba(255,196,118,1) 60%, rgba(255,255,255,0.98) 86%, rgba(255,255,255,0) 100%)",
+                      boxShadow:
+                        "0 0 10px rgba(255,255,255,0.9), 0 0 26px rgba(249,115,22,0.95), 0 0 46px rgba(249,115,22,0.85)",
+                    } as CSSProperties
+                  }
+                />
+
+                {/* верхняя капля */}
+                <div
+                  className="absolute -top-3 left-1/2 -translate-x-1/2 h-6 w-6"
+                  style={
+                    {
+                      background:
+                        "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.98), rgba(255,196,118,0.45), rgba(0,0,0,0))",
+                      filter: "blur(4px)",
+                    } as CSSProperties
+                  }
+                />
+
+                {/* нижняя капля */}
+                <div
+                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 h-6 w-6"
+                  style={
+                    {
+                      background:
+                        "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.98), rgba(255,196,118,0.45), rgba(0,0,0,0))",
+                      filter: "blur(4px)",
+                    } as CSSProperties
+                  }
+                />
+              </div>
+
+              {/* легкая “подсветка границы раскрытия”: чтобы всегда было ощущение сканера */}
+              <div
+                className="absolute inset-0"
+                style={
+                  {
+                    opacity: active ? 1 : 0,
+                    transition: "opacity .25s ease",
+                    // подсветка справа, совпадает с направлением “движения”
+                    background:
+                      "linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 55%, rgba(249,115,22,0.10) 78%, rgba(249,115,22,0.00) 100%)",
+                  } as CSSProperties
+                }
+              />
             </div>
           </div>
 
-          {/* чёткая скан-линия */}
-          <div className="pointer-events-none absolute inset-0">
-            <div
-              className={[
-                "absolute top-[-10%] h-[120%] w-[2px]",
-                "opacity-0 group-hover:opacity-100",
-                "-translate-x-[40px]",
-                "group-hover:translate-x-[240px]",
-                "transition-[transform,opacity] duration-700 ease-[cubic-bezier(.2,.9,.2,1)]",
-              ].join(" ")}
-              style={{
-                left: 0,
-                background:
-                  "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.95) 30%, rgba(249,115,22,.95) 50%, rgba(255,255,255,.9) 70%, rgba(255,255,255,0) 100%)",
-              }}
-            />
-            <div
-              className={[
-                "absolute top-[-10%] h-[120%] w-[10px]",
-                "opacity-0 group-hover:opacity-100",
-                "-translate-x-[44px] group-hover:translate-x-[236px]",
-                "transition-[transform,opacity] duration-700 ease-[cubic-bezier(.2,.9,.2,1)]",
-              ].join(" ")}
-              style={{
-                left: 0,
-                background:
-                  "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(249,115,22,.20) 45%, rgba(255,255,255,.14) 55%, rgba(255,255,255,0) 100%)",
-                filter: "blur(3px)",
-              }}
-            />
-          </div>
+          {/* внутренняя тонкая обводка */}
+          <div className="pointer-events-none absolute inset-0 ring-1 ring-white/8" />
         </div>
+      </div>
+
+      {/* подпись (можешь убрать, если не надо) */}
+      <div className="mt-3 text-center text-[11px] font-semibold tracking-[0.22em] uppercase text-white/40">
+        {item.label}
       </div>
     </div>
   );
@@ -191,13 +334,13 @@ function StackPhoto({
 
 export default function WhyUs() {
   const { dict, lang } = useLang();
-  const isRu = lang === "ru";
-  const w: any = dict.whyUs || {};
+  const reducedMotion = usePrefersReducedMotion();
 
-  // тексты с RU / EN-фоллбэками
+  const isRu = lang === "ru";
+  const w = (dict as any).whyUs || {};
+
   const badgeLeft = w.badgeLeft ?? (isRu ? "СТЕК" : "STACK");
-  const badgeCenter =
-    w.badgeCenter ?? (isRu ? "ТЕХНОЛОГИИ" : "TECHNOLOGIES");
+  const badgeCenter = w.badgeCenter ?? (isRu ? "ТЕХНОЛОГИИ" : "TECHNOLOGIES");
   const badgeRight = w.badgeRight ?? (isRu ? "ПРОДУКТ" : "PRODUCT");
 
   const title1 = w.title1 ?? (isRu ? "С чем мы" : "What we");
@@ -209,7 +352,6 @@ export default function WhyUs() {
       ? "Полный стек для разработки: UI, фронтенд, бэкенд, база данных, админка, оптимизация."
       : "Full stack for development: UI, frontend, backend, database, admin panel, performance.");
 
-  // список иконок-стека справа
   const stack = useMemo<StackItem[]>(
     () => [
       { id: "cms", label: "CMS", src: "/images/stack/cms.webp" },
@@ -234,7 +376,7 @@ export default function WhyUs() {
   const [reveal, setReveal] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
-  // reveal
+  // включение анимаций блока
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
@@ -250,7 +392,7 @@ export default function WhyUs() {
     return () => io.disconnect();
   }, []);
 
-  // прогресс — по центрам первого/последнего фото
+  // скролл-прогресс для правого бара
   useEffect(() => {
     let raf = 0;
 
@@ -269,11 +411,7 @@ export default function WhyUs() {
         if (lastCenter === null || c > lastCenter) lastCenter = c;
       });
 
-      if (
-        firstCenter !== null &&
-        lastCenter !== null &&
-        Math.abs(lastCenter - firstCenter) > 4
-      ) {
+      if (firstCenter !== null && lastCenter !== null && Math.abs(lastCenter - firstCenter) > 4) {
         const raw = (midView - firstCenter) / (lastCenter - firstCenter);
         setScrollProgress(clamp(raw, 0, 1));
       } else {
@@ -307,23 +445,27 @@ export default function WhyUs() {
         <div className="pointer-events-none absolute -z-10 inset-0">
           <div
             className="absolute -left-24 top-20 h-[520px] w-[520px] rounded-full opacity-[0.22]"
-            style={{
-              background:
-                "radial-gradient(circle at 30% 30%, rgba(249,115,22,.25), rgba(249,115,22,0) 60%)",
-            }}
+            style={
+              {
+                background:
+                  "radial-gradient(circle at 30% 30%, rgba(249,115,22,.25), rgba(249,115,22,0) 60%)",
+              } as CSSProperties
+            }
           />
           <div
             className="absolute -right-24 top-40 h-[520px] w-[520px] rounded-full opacity-[0.18]"
-            style={{
-              background:
-                "radial-gradient(circle at 35% 35%, rgba(255,255,255,.12), rgba(255,255,255,0) 62%)",
-            }}
+            style={
+              {
+                background:
+                  "radial-gradient(circle at 35% 35%, rgba(255,255,255,.12), rgba(255,255,255,0) 62%)",
+              } as CSSProperties
+            }
           />
         </div>
 
         <Container>
           <div className="grid items-start gap-10 lg:grid-cols-[560px_minmax(0,1fr)_60px]">
-            {/* слева — заголовок */}
+            {/* слева текст */}
             <div className="lg:sticky" style={{ top: STICKY_TOP } as CSSProperties}>
               <div className="flex items-center gap-3">
                 <div className="text-[12px] font-semibold tracking-[0.26em] uppercase">
@@ -341,29 +483,22 @@ export default function WhyUs() {
                 <br />
                 <span
                   className="bg-gradient-to-r from-white via-white to-[#F97316] bg-clip-text text-transparent"
-                  style={{ WebkitTextFillColor: "transparent" }}
+                  style={{ WebkitTextFillColor: "transparent" } as CSSProperties}
                 >
                   {title2}
                 </span>
               </h2>
 
-              <p className="mt-6 max-w-[46ch] text-[14px] leading-relaxed text-white/55">
-                {sub}
-              </p>
+              <p className="mt-6 max-w-[46ch] text-[14px] leading-relaxed text-white/55">{sub}</p>
             </div>
 
-            {/* центр — фото-лента */}
+            {/* центр — иконки + мобильный прогресс */}
             <div className="relative">
               <div className="grid grid-cols-[16px_minmax(0,1fr)] items-start gap-4 lg:block">
-                {/* mobile прогресс */}
-                <div
-                  className="sticky self-start lg:hidden"
-                  style={{ top: MOBILE_STICKY_TOP } as CSSProperties}
-                >
+                <div className="sticky self-start lg:hidden" style={{ top: MOBILE_STICKY_TOP } as CSSProperties}>
                   <ProgressBar progress={scrollProgress} height={220} thin />
                 </div>
 
-                {/* сами фотки */}
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-7">
                   {stack.map((it, i) => (
                     <StackPhoto
@@ -371,7 +506,10 @@ export default function WhyUs() {
                       item={it}
                       index={i}
                       reveal={reveal}
-                      setRef={(el) => (itemRefs.current[i] = el)}
+                      reducedMotion={reducedMotion}
+                      setRef={(el) => {
+                        itemRefs.current[i] = el;
+                      }}
                     />
                   ))}
                 </div>
