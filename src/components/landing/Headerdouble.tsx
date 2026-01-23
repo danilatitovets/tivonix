@@ -1,9 +1,10 @@
 // src/components/landing/Header.tsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Container from "../ui/Container";
 import { Button } from "../ui/Button";
 import { useLang, type Lang } from "../../i18n/LangProvider";
+import StartModal from "./StartModal";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -18,11 +19,15 @@ const NAV_MAIN: NavItem[] = [
   { to: "/projects", key: "projects" },
 ];
 
-const ORANGE_STATIC =
-  "linear-gradient(90deg, rgba(255,160,70,0) 0%, rgba(255,120,40,0.95) 18%, rgba(255,198,120,1) 50%, rgba(255,120,40,0.95) 82%, rgba(255,160,70,0) 100%)";
-
 const BRAND_CTA =
   "linear-gradient(90deg, #FFD7B0 0%, #FF9A3D 45%, #FF6A1A 100%)";
+
+const ORANGE_LINE =
+  "linear-gradient(90deg, rgba(255,160,70,0) 0%, rgba(255,120,40,0.95) 18%, rgba(255,198,120,1) 50%, rgba(255,120,40,0.95) 82%, rgba(255,160,70,0) 100%)";
+
+// Важно: десктоп-режим теперь только с xl (>=1280).
+// Это специально под iPad/планшеты — там будет tablet mode (бургер + CTA).
+const DESKTOP_MIN_WIDTH = 1280;
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -41,39 +46,76 @@ function usePrefersReducedMotion() {
   return reduced;
 }
 
-function LangToggle({ compact }: { compact?: boolean }) {
+function useScrolled(threshold = 22) {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    let raf = 0;
+    const on = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        setScrolled(window.scrollY > threshold);
+      });
+    };
+
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", on);
+    };
+  }, [threshold]);
+
+  return scrolled;
+}
+
+function LangToggle({
+  compact,
+}: {
+  compact?: boolean;
+  scrolled?: boolean;
+}) {
   const { lang, setLang } = useLang();
+
   const baseBtn =
-    "h-9 rounded-full px-3 text-xs font-semibold transition border";
+    "h-9 rounded-full px-3 text-xs font-semibold transition border outline-none " +
+    "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40";
+
   const wrap = compact
     ? "flex items-center gap-1"
     : "flex items-center gap-1 mr-2";
 
+  const tone = {
+    on: "border-white/14 bg-white/10 text-white",
+    off: "border-white/10 bg-black/25 text-white/70 hover:text-white hover:bg-white/5",
+  };
+
   const label = lang === "ru" ? "Выбор языка" : "Language";
 
   return (
-    <div className={wrap} aria-label={label}>
+    <div
+      className={wrap}
+      role="radiogroup"
+      aria-label={label}
+      aria-orientation="horizontal"
+    >
       <button
         type="button"
+        role="radio"
+        aria-checked={lang === "ru"}
         onClick={() => setLang("ru" as Lang)}
-        className={cx(
-          baseBtn,
-          lang === "ru"
-            ? "border-white/16 bg-white/10 text-white"
-            : "border-white/10 bg-black/25 text-white/70 hover:text-white hover:bg-white/5"
-        )}
+        className={cx(baseBtn, lang === "ru" ? tone.on : tone.off)}
       >
         RU
       </button>
       <button
         type="button"
+        role="radio"
+        aria-checked={lang === "en"}
         onClick={() => setLang("en" as Lang)}
-        className={cx(
-          baseBtn,
-          lang === "en"
-            ? "border-white/16 bg-white/10 text-white"
-            : "border-white/10 bg-black/25 text-white/70 hover:text-white hover:bg-white/5"
-        )}
+        className={cx(baseBtn, lang === "en" ? tone.on : tone.off)}
       >
         EN
       </button>
@@ -81,28 +123,31 @@ function LangToggle({ compact }: { compact?: boolean }) {
   );
 }
 
-/** SaaS segmented tabs без оранжевой точки */
-function SaaSTabs({
+function PillNav({
   activeKey,
   items,
   onItemClick,
   reducedMotion,
+  compact,
 }: {
   activeKey: NavKey;
   items: Array<{ key: NavKey; label: string; to: string }>;
   onItemClick: (to: string) => (e: React.MouseEvent) => void;
   reducedMotion: boolean;
+  compact?: boolean;
 }) {
-  const dur = 240;
+  const dur = 260;
 
   return (
-    <div
+    <nav
       className={cx(
         "relative inline-flex items-center gap-1 rounded-full",
         "border border-white/10 bg-white/[0.06] backdrop-blur-xl p-1",
-        "shadow-[0_12px_40px_rgba(0,0,0,0.35)] ring-1 ring-white/5"
+        "ring-1 ring-white/5",
+        compact
+          ? "shadow-[0_12px_40px_rgba(0,0,0,0.35)]"
+          : "shadow-[0_18px_60px_rgba(0,0,0,0.40)]"
       )}
-      role="navigation"
       aria-label="Header navigation"
     >
       <div
@@ -110,12 +155,14 @@ function SaaSTabs({
         className="pointer-events-none absolute inset-0 rounded-full"
         style={{
           boxShadow:
-            "inset 0 1px 0 rgba(255,255,255,0.06), inset 0 0 0 1px rgba(255,255,255,0.04)",
+            "inset 0 1px 0 rgba(255,255,255,0.07), inset 0 0 0 1px rgba(255,255,255,0.05)",
         }}
       />
 
       {items.map((it) => {
         const isActive = it.key === activeKey;
+        const pad = compact ? "px-3 h-9" : "px-4 h-10";
+        const text = compact ? "text-[11px]" : "text-xs";
 
         return (
           <Link
@@ -124,10 +171,13 @@ function SaaSTabs({
             onClick={onItemClick(it.to)}
             aria-current={isActive ? "page" : undefined}
             className={cx(
-              "relative h-9 rounded-full px-4 text-xs font-semibold transition flex items-center gap-2 select-none",
+              "relative rounded-full font-semibold transition flex items-center gap-2 select-none uppercase tracking-wide outline-none",
+              "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
+              pad,
+              text,
               isActive
-                ? "text-white bg-white/10 border border-white/14 shadow-[0_10px_30px_rgba(0,0,0,0.30)]"
-                : "text-white/72 hover:text-white hover:bg-white/5 border border-transparent"
+                ? "text-white bg-white/12 border border-white/14 shadow-[0_10px_26px_rgba(0,0,0,0.28)]"
+                : "text-white/75 hover:text-white hover:bg-white/6 border border-transparent"
             )}
             style={
               reducedMotion
@@ -136,38 +186,65 @@ function SaaSTabs({
             }
           >
             <span className="leading-none">{it.label}</span>
+
+            {isActive && (
+              <span
+                aria-hidden
+                className="pointer-events-none absolute left-3 right-3 -bottom-[6px] h-[2px] rounded-full opacity-95"
+                style={{ background: ORANGE_LINE } as React.CSSProperties}
+              />
+            )}
           </Link>
         );
       })}
-    </div>
+    </nav>
   );
 }
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [startOpen, setStartOpen] = useState(false);
 
   const reducedMotion = usePrefersReducedMotion();
+  const scrolled = useScrolled(26);
 
   const navigate = useNavigate();
   const location = useLocation();
   const { lang } = useLang();
   const isRu = lang === "ru";
 
+  const burgerRef = useRef<HTMLButtonElement | null>(null);
+
+  // Закрывать меню при уходе на xl+ (>=1280)
   useEffect(() => {
     const onResize = () => {
-      if (window.innerWidth >= 768) setOpen(false);
+      if (window.innerWidth >= DESKTOP_MIN_WIDTH) setOpen(false);
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // Esc закрывает меню и возвращает фокус на бургер
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setOpen(false);
+        requestAnimationFrame(() => burgerRef.current?.focus());
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  // Блокируем скролл под меню на мобиле/планшете
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
 
   const navLabel = (key: NavKey) => {
     if (isRu) {
@@ -182,30 +259,11 @@ export default function Header() {
     return key;
   };
 
-  const ctaText = isRu ? "Начать" : "Get started";
-  const ariaHome = isRu ? "На главную" : "Go to home";
-  const ariaMenu = isRu ? "Меню" : "Menu";
-
   const activeKey: NavKey = useMemo(() => {
     if (location.pathname === "/contacts") return "contacts";
     if (location.pathname === "/projects") return "projects";
     return "home";
   }, [location.pathname]);
-
-  const onNav = (to: string) => (e: React.MouseEvent) => {
-    setOpen(false);
-    if (to === "/") {
-      e.preventDefault();
-      if (location.pathname !== "/") navigate("/");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const goStart = () => {
-    setOpen(false);
-    if (location.pathname !== "/") navigate("/");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
 
   const tabsItems = useMemo(
     () =>
@@ -218,182 +276,321 @@ export default function Header() {
     [lang]
   );
 
+  const onNav = (to: string) => (e: React.MouseEvent) => {
+    setOpen(false);
+    if (to === "/") {
+      e.preventDefault();
+      if (location.pathname !== "/") navigate("/");
+      window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
+    }
+  };
+
+  const goHome = () => {
+    setOpen(false);
+    if (location.pathname !== "/") navigate("/");
+    window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
+  };
+
+  const openStartModal = () => {
+    setOpen(false);
+    if (location.pathname !== "/") navigate("/");
+    window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
+    setStartOpen(true);
+  };
+
+  const ariaHome = isRu ? "На главную" : "Go to home";
+  const ariaMenu = isRu ? "Меню" : "Menu";
+
+  const ctaTop = isRu ? "Рассчитать стоимость" : "Get an estimate";
+  const ctaScrolled = isRu ? "Заказать сайт" : "Order a website";
+
+  const dur = reducedMotion ? 0 : 280;
+
   return (
     <>
-      {/* spacer под фикс-хедер + табы */}
-      <div aria-hidden className="h-[112px]" />
+      {/* spacer под фикс-хедер (чуть компактнее на мобиле/планшете) */}
+      <div aria-hidden className="h-[92px] sm:h-[100px] xl:h-[104px]" />
 
-      <div className="fixed inset-x-0 top-0 z-50">
-        {/* верхний бар + оранжевая линия */}
-        <div className="border-b border-white/5 bg-black/40 backdrop-blur-xl">
+      <header className="fixed inset-x-0 top-0 z-50">
+        <div className="pt-3">
           <Container>
-            <div className="flex items-center justify-between py-4">
-              {/* Brand */}
-              <Link
-                to="/"
-                onClick={(e) => {
-                  e.preventDefault();
-                  goStart();
-                }}
-                className="group flex items-center gap-3"
-                aria-label={ariaHome}
-              >
-                <div className="relative h-10 w-10 rounded-2xl border border-white/12 bg-white/5 backdrop-blur grid place-items-center overflow-hidden sm:hidden">
-                  <img
-                    src="/images/tivonix-logo-icon.png"
-                    alt="TIVONIX"
-                    className="h-6 w-6 opacity-90"
-                    draggable={false}
-                  />
-                </div>
+            <div
+              className={cx(
+                "relative transition-all",
+                scrolled
+                  ? "rounded-[999px] bg-black/55 backdrop-blur-2xl border border-white/10 shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
+                  : "rounded-[999px]"
+              )}
+              style={
+                reducedMotion
+                  ? undefined
+                  : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)
+              }
+            >
+              {/* glow + top orange strip */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 rounded-[999px] opacity-0 transition-opacity"
+                style={
+                  {
+                    opacity: scrolled ? 1 : 0,
+                    transitionDuration: `${dur}ms`,
+                    background:
+                      "radial-gradient(900px 120px at 50% 0%, rgba(255,122,32,0.28), transparent 60%)",
+                  } as React.CSSProperties
+                }
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute left-10 right-10 top-0 h-[3px] rounded-full opacity-0 transition-opacity"
+                style={
+                  {
+                    opacity: scrolled ? 0.95 : 0,
+                    transitionDuration: `${dur}ms`,
+                    background: ORANGE_LINE,
+                  } as React.CSSProperties
+                }
+              />
 
-                <img
-                  src="/images/tivonix-logo-lockup.png"
-                  alt="TIVONIX"
-                  className="hidden sm:block h-10 w-auto opacity-90 group-hover:opacity-100 transition-opacity"
-                  draggable={false}
-                />
-              </Link>
-
-              {/* Desktop right side: язык + CTA */}
-              <div className="hidden md:flex items-center gap-3">
-                <LangToggle />
-
-                <Button
-                  onClick={goStart}
-                  className={cx(
-                    "ml-1 h-10 rounded-full px-5 font-semibold",
-                    "!text-black",
-                    "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
-                    "hover:brightness-[1.04] active:brightness-[0.96]"
-                  )}
-                  style={{ background: BRAND_CTA } as React.CSSProperties}
-                >
-                  {ctaText}
-                </Button>
-              </div>
-
-              {/* Mobile burger */}
-              <button
-                type="button"
+              {/* основная полоса хедера */}
+              <div
                 className={cx(
-                  "md:hidden grid place-items-center",
-                  "h-11 w-11 rounded-2xl",
-                  "border border-white/12 bg-black/35 backdrop-blur-xl",
-                  "active:scale-[0.98] transition"
+                  "relative flex items-center",
+                  scrolled ? "px-4 sm:px-5" : "px-3 sm:px-4",
+                  scrolled ? "h-[70px] sm:h-[74px]" : "h-[78px] sm:h-[82px]"
                 )}
-                aria-label={ariaMenu}
-                aria-expanded={open}
-                onClick={() => setOpen((v) => !v)}
+                style={
+                  reducedMotion
+                    ? undefined
+                    : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)
+                }
               >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M4 7H20"
-                    stroke="#FF9A3D"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    style={{
-                      transformOrigin: "12px 7px",
-                      transform: open ? "translateY(5px) rotate(45deg)" : "none",
-                      transition: "transform 220ms ease",
+                {/* LEFT: логотип */}
+                <div className="flex items-center gap-3 shrink-0">
+                  <Link
+                    to="/"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      goHome();
                     }}
-                  />
-                  <path
-                    d="M4 12H20"
-                    stroke="#FF9A3D"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    style={{
-                      opacity: open ? 0 : 1,
-                      transition: "opacity 160ms ease",
-                    }}
-                  />
-                  <path
-                    d="M4 17H20"
-                    stroke="#FF9A3D"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    style={{
-                      transformOrigin: "12px 17px",
-                      transform: open
-                        ? "translateY(-5px) rotate(-45deg)"
-                        : "none",
-                      transition: "transform 220ms ease",
-                    }}
-                  />
-                </svg>
-              </button>
-            </div>
-          </Container>
-
-          {/* оранжевая линия под баром */}
-          <div className="pointer-events-none relative -mb-3 h-6">
-            <div
-              className="mx-auto h-[2px] w-[min(720px,88%)] rounded-full opacity-95"
-              style={{ background: ORANGE_STATIC } as React.CSSProperties}
-            />
-            <div
-              className="mx-auto mt-[-2px] h-6 w-[min(720px,88%)] blur-2xl opacity-45"
-              style={{ background: ORANGE_STATIC } as React.CSSProperties}
-            />
-          </div>
-
-          {/* Mobile dropdown под линией */}
-          <div
-            className={cx(
-              "md:hidden overflow-hidden border-t border-white/5 bg-black/55 backdrop-blur-2xl",
-              "transition-[max-height,opacity] duration-300",
-              open ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-            )}
-          >
-            <Container>
-              <div className="py-4">
-                <div className="flex justify-center">
-                  <SaaSTabs
-                    activeKey={activeKey}
-                    reducedMotion={reducedMotion}
-                    items={tabsItems}
-                    onItemClick={(to) => (e) => {
-                      onNav(to)(e);
-                      setOpen(false);
-                    }}
-                  />
+                    className={cx(
+                      "flex items-center outline-none",
+                      "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 rounded-xl"
+                    )}
+                    aria-label={ariaHome}
+                  >
+                    <img
+                      src="/images/tivonix-logo-lockup.png"
+                      alt="TIVONIX"
+                      className="h-8 sm:h-9 w-auto object-contain opacity-95 transition-opacity hover:opacity-100"
+                      draggable={false}
+                      loading="eager"
+                      decoding="async"
+                    />
+                  </Link>
                 </div>
 
-                <div className="mt-4 flex items-center gap-3">
-                  <LangToggle compact />
+                {/* CENTER: навигация (только xl+, чтобы iPad не “ломался”) */}
+                <div className="absolute inset-x-0 flex justify-center pointer-events-none">
+                  <div className="hidden xl:block pointer-events-auto">
+                    <PillNav
+                      activeKey={activeKey}
+                      reducedMotion={reducedMotion}
+                      items={tabsItems}
+                      onItemClick={onNav}
+                      compact={scrolled}
+                    />
+                  </div>
+                </div>
+
+                {/* RIGHT: язык + CTA (desktop xl+) */}
+                <div className="ml-auto hidden xl:flex items-center gap-3 shrink-0">
+                  <LangToggle scrolled={scrolled} />
+
                   <Button
-                    onClick={goStart}
+                    type="button"
+                    onClick={openStartModal}
                     className={cx(
-                      "flex-1 h-11 rounded-2xl font-semibold",
-                      "!text-black",
+                      "rounded-full font-semibold !text-black outline-none",
+                      "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
                       "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
-                      "hover:brightness-[1.04] active:brightness-[0.96]"
+                      "hover:brightness-[1.04] active:brightness-[0.96]",
+                      scrolled ? "h-10 px-5" : "h-11 px-6"
                     )}
                     style={{ background: BRAND_CTA } as React.CSSProperties}
                   >
-                    {ctaText}
+                    <span className="relative inline-grid">
+                      <span
+                        className={cx(
+                          "col-start-1 row-start-1 transition-all",
+                          scrolled
+                            ? "opacity-0 -translate-y-1"
+                            : "opacity-100 translate-y-0"
+                        )}
+                        style={
+                          reducedMotion
+                            ? undefined
+                            : ({
+                                transitionDuration: `${dur}ms`,
+                              } as React.CSSProperties)
+                        }
+                      >
+                        {ctaTop}
+                      </span>
+                      <span
+                        className={cx(
+                          "col-start-1 row-start-1 transition-all",
+                          scrolled
+                            ? "opacity-100 translate-y-0"
+                            : "opacity-0 translate-y-1"
+                        )}
+                        style={
+                          reducedMotion
+                            ? undefined
+                            : ({
+                                transitionDuration: `${dur}ms`,
+                              } as React.CSSProperties)
+                        }
+                      >
+                        {ctaScrolled}
+                      </span>
+                    </span>
                   </Button>
                 </div>
-              </div>
-            </Container>
-          </div>
-        </div>
 
-        {/* DESKTOP: табы по центру ниже оранжевой линии */}
-        <div className="hidden md:block bg-transparent pt-2 pb-4">
-          <Container>
-            <div className="flex justify-center">
-              <SaaSTabs
-                activeKey={activeKey}
-                reducedMotion={reducedMotion}
-                items={tabsItems}
-                onItemClick={onNav}
-              />
+                {/* RIGHT: tablet/mobile (до xl) — CTA + бургер */}
+                <div className="ml-auto xl:hidden flex items-center gap-2">
+                  {/* На планшете (md+) показываем компактный CTA рядом с бургером */}
+                  <div className="hidden md:block">
+                    <Button
+                      type="button"
+                      onClick={openStartModal}
+                      className={cx(
+                        "rounded-2xl font-semibold !text-black outline-none",
+                        "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
+                        "shadow-[0_18px_70px_rgba(255,120,40,0.30)]",
+                        "hover:brightness-[1.04] active:brightness-[0.96]",
+                        scrolled ? "h-10 px-4 text-sm" : "h-11 px-5 text-sm"
+                      )}
+                      style={{ background: BRAND_CTA } as React.CSSProperties}
+                    >
+                      {scrolled ? ctaScrolled : ctaTop}
+                    </Button>
+                  </div>
+
+                  <button
+                    ref={burgerRef}
+                    type="button"
+                    className={cx(
+                      "grid place-items-center outline-none",
+                      "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
+                      scrolled ? "h-10 w-10 rounded-2xl" : "h-11 w-11 rounded-2xl",
+                      "border border-white/12 bg-black/35 backdrop-blur-xl",
+                      "active:scale-[0.98] transition"
+                    )}
+                    aria-label={ariaMenu}
+                    aria-expanded={open}
+                    aria-controls="mobile-header-menu"
+                    onClick={() => setOpen((v) => !v)}
+                  >
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M4 7H20"
+                        stroke="#FF9A3D"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        style={{
+                          transformOrigin: "12px 7px",
+                          transform: open
+                            ? "translateY(5px) rotate(45deg)"
+                            : "none",
+                          transition: "transform 220ms ease",
+                        }}
+                      />
+                      <path
+                        d="M4 12H20"
+                        stroke="#FF9A3D"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        style={{
+                          opacity: open ? 0 : 1,
+                          transition: "opacity 160ms ease",
+                        }}
+                      />
+                      <path
+                        d="M4 17H20"
+                        stroke="#FF9A3D"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        style={{
+                          transformOrigin: "12px 17px",
+                          transform: open
+                            ? "translateY(-5px) rotate(-45deg)"
+                            : "none",
+                          transition: "transform 220ms ease",
+                        }}
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Tablet/Mobile dropdown (до xl) */}
+            <div
+              id="mobile-header-menu"
+              className={cx(
+                "xl:hidden overflow-hidden",
+                "transition-[max-height,opacity] duration-300",
+                open ? "max-h-[560px] opacity-100" : "max-h-0 opacity-0"
+              )}
+            >
+              <div className="pt-3">
+                <div className="rounded-[28px] border border-white/10 bg-black/55 backdrop-blur-2xl shadow-[0_22px_80px_rgba(0,0,0,0.55)] p-4">
+                  <div className="flex justify-center">
+                    <PillNav
+                      activeKey={activeKey}
+                      reducedMotion={reducedMotion}
+                      items={tabsItems}
+                      onItemClick={(to) => (e) => {
+                        onNav(to)(e);
+                        setOpen(false);
+                        requestAnimationFrame(() => burgerRef.current?.focus());
+                      }}
+                      compact
+                    />
+                  </div>
+
+                  <div className="mt-4 flex items-center gap-3">
+                    <LangToggle compact scrolled />
+                    <Button
+                      type="button"
+                      onClick={openStartModal}
+                      className={cx(
+                        "flex-1 h-11 rounded-2xl font-semibold !text-black outline-none",
+                        "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
+                        "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
+                        "hover:brightness-[1.04] active:brightness-[0.96]"
+                      )}
+                      style={{ background: BRAND_CTA } as React.CSSProperties}
+                    >
+                      {ctaScrolled}
+                    </Button>
+                  </div>
+
+                  <div className="mt-3 text-[12px] text-white/55 text-center">
+                    {isRu
+                      ? "Нажми — уточним задачу и быстро дадим оценку."
+                      : "Tap — we’ll clarify scope and estimate quickly."}
+                  </div>
+                </div>
+              </div>
             </div>
           </Container>
         </div>
-      </div>
+      </header>
+
+      <StartModal open={startOpen} onClose={() => setStartOpen(false)} />
     </>
   );
 }

@@ -1,10 +1,10 @@
 // src/components/landing/FAQ.tsx
-import { useMemo, useState, useEffect, type CSSProperties } from "react";
+import React, { useEffect, useMemo, useState, type CSSProperties } from "react";
 import Container from "../ui/Container";
 import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
 
-// ====== типы / хелперы ======
+// ====== types ======
 type Cat =
   | "start"
   | "price"
@@ -39,8 +39,11 @@ const LOGO_ICON = "/images/tivonix-logo-icon.png";
 const BG_IMG = "/images/sunset.webp";
 
 const PAGE_SIZE = 6;
-const CLOSED_CARD_H = 285;
 const ORANGE = "#FF9A3D";
+
+// UX: показываем только топ-категории сразу, остальные — через "Ещё"
+const PRIMARY_CATS: Cat[] = ["start", "price", "time", "process", "design", "dev"];
+const SECONDARY_CATS: Cat[] = ["content", "seo", "tech", "support", "fix"];
 
 type Style = CSSProperties & Record<string, any>;
 const s = (v: Record<string, any>) => v as Style;
@@ -59,7 +62,6 @@ const CAT_LABELS: Record<Cat, { ru: string; en: string }> = {
   fix: { ru: "Правки", en: "Edits" },
 };
 
-// короткие подсказки внизу карточек (когда ответ скрыт)
 const TEASER_TEXTS: Record<Cat, { ru: string; en: string }> = {
   start: {
     ru: "Как мы заходим в проект и что нужно от вас на старте.",
@@ -315,7 +317,7 @@ function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
 
-function Icon({ name }: { name: "search" | "copy" | "mail" }) {
+function Icon({ name }: { name: "search" | "copy" | "chev" }) {
   const common = "h-4 w-4 shrink-0";
   switch (name) {
     case "search":
@@ -337,15 +339,10 @@ function Icon({ name }: { name: "search" | "copy" | "mail" }) {
           />
         </svg>
       );
-    case "mail":
+    case "chev":
       return (
         <svg className={common} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-9Z"
-            stroke="currentColor"
-            strokeWidth="1.8"
-          />
-          <path d="m6 8 6 4.2L18 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="m8.5 10 3.5 3.5L15.5 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
   }
@@ -353,6 +350,19 @@ function Icon({ name }: { name: "search" | "copy" | "mail" }) {
 
 function toDomId(id: string) {
   return `faq-${id}`;
+}
+
+function buildFaqJsonLd(items: LocalFaqItem[]) {
+  // Google FAQ schema: https://schema.org/FAQPage
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((x) => ({
+      "@type": "Question",
+      name: x.q,
+      acceptedAnswer: { "@type": "Answer", text: x.a },
+    })),
+  };
 }
 
 export default function FAQSection() {
@@ -365,12 +375,7 @@ export default function FAQSection() {
   const [copied, setCopied] = useState<string | null>(null);
   const [catFilter, setCatFilter] = useState<CatFilter>("all");
   const [page, setPage] = useState(1);
-
-  const cats = useMemo<CatFilter[]>(() => {
-    const set = new Set<Cat>();
-    for (const x of FAQ_ITEMS) set.add(x.cat);
-    return ["all", ...Array.from(set)];
-  }, []);
+  const [showAllCats, setShowAllCats] = useState(false);
 
   const localizedItems = useMemo<LocalFaqItem[]>(() => {
     return FAQ_ITEMS.map((item) => ({
@@ -393,7 +398,12 @@ export default function FAQSection() {
   }, [query, catFilter, localizedItems]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const items = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, page]);
 
+  // reset page/open on filter changes
   useEffect(() => {
     setPage(1);
     setOpenId(null);
@@ -403,10 +413,7 @@ export default function FAQSection() {
     setPage((p) => Math.min(Math.max(1, p), totalPages));
   }, [totalPages]);
 
-  const items = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE;
-    return filtered.slice(start, start + PAGE_SIZE);
-  }, [filtered, page]);
+  const resetDisabled = query.trim() === "" && catFilter === "all" && page === 1;
 
   async function copy(text: string, id: string) {
     try {
@@ -414,48 +421,52 @@ export default function FAQSection() {
       setCopied(id);
       window.setTimeout(() => setCopied((v) => (v === id ? null : v)), 900);
     } catch {
-      // ignore
+      // optional: could fallback to execCommand, но в 2026 это обычно не нужно
     }
   }
 
+  // microcopy
   const title = isRu ? "FAQ — всё про сайт и работу" : "FAQ — about the site and workflow";
   const subtitle = isRu
-    ? "Стоимость, сроки, процесс, контент, SEO, техчасть — всё здесь."
-    : "Pricing, timelines, process, content, SEO, and tech — all in one place.";
-  const placeholder = isRu ? "Поиск по вопросам..." : "Search questions...";
+    ? "Стоимость, сроки, процесс, контент, SEO и техчасть — коротко и по делу."
+    : "Pricing, timelines, process, content, SEO, and tech — short and to the point.";
+
+  const placeholder = isRu ? "Поиск по вопросам…" : "Search questions…";
   const resetLabel = isRu ? "Сбросить" : "Reset";
   const allLabel = isRu ? "Все" : "All";
-  const btnShowAnswer = isRu ? "Показать ответ" : "Show answer";
-  const btnHideAnswer = isRu ? "Скрыть ответ" : "Hide answer";
-  const btnCopyAnswer = isRu ? "Скопировать ответ" : "Copy answer";
+  const moreCatsLabel = isRu ? "Ещё" : "More";
+  const lessCatsLabel = isRu ? "Свернуть" : "Less";
+  const btnShow = isRu ? "Показать ответ" : "Show answer";
+  const btnHide = isRu ? "Скрыть ответ" : "Hide answer";
+  const btnCopy = isRu ? "Скопировать ответ" : "Copy answer";
   const btnCopied = isRu ? "Скопировано" : "Copied";
+  const popularLabel = isRu ? "Частый вопрос" : "Popular";
+  const prevLabel = isRu ? "Назад" : "Prev";
+  const nextLabel = isRu ? "Дальше" : "Next";
+  const pageLabel = isRu ? "Страница" : "Page";
+
+  // JSON-LD (лучше, чем ничего; на проде желательно в <Head>, но так тоже ок)
+  const jsonLd = useMemo(() => buildFaqJsonLd(filtered), [filtered]);
 
   return (
-    <Section
-      id="faq"
-      className={cx(
-        "relative overflow-hidden pt-16 sm:pt-20 pb-16 sm:pb-20",
-        "bg-black"
-      )}
-    >
-      {/* анимации и границы */}
+    <Section id="faq" className="relative overflow-hidden pt-16 sm:pt-20 pb-16 sm:pb-20 bg-black">
       <style>{`
+        /* IMPORTANT: не крутим бесконечную анимацию в фоне — только на hover */
         @keyframes faqBorderMove {
           0% { background-position: 0% 50%; }
           100% { background-position: 200% 50%; }
         }
 
-        .faq-grad-border { position: relative; }
-
-        .faq-grad-border::before {
-          content: "";
-          position: absolute;
-          inset: 0;
+        .faq-grad-border{ position: relative; }
+        .faq-grad-border::before{
+          content:"";
+          position:absolute;
+          inset:0;
           border-radius: 20px;
           padding: 1px;
-          pointer-events: none;
+          pointer-events:none;
           opacity: 0;
-          transition: opacity .22s ease;
+          transition: opacity .18s ease;
 
           background: linear-gradient(
             90deg,
@@ -466,7 +477,8 @@ export default function FAQSection() {
             #FFD7B0 100%
           );
           background-size: 220% 220%;
-          animation: faqBorderMove 1.4s linear infinite;
+          animation: faqBorderMove 1.35s linear infinite;
+          animation-play-state: paused;
 
           -webkit-mask:
             linear-gradient(#000 0 0) content-box,
@@ -477,80 +489,64 @@ export default function FAQSection() {
             linear-gradient(#000 0 0);
           mask-composite: exclude;
         }
-
-        .faq-grad-border:hover::before { opacity: 1; }
+        .faq-grad-border:hover::before{ opacity: 1; animation-play-state: running; }
 
         @keyframes faqAnswerIn {
-          0% {
-            opacity: 0;
-            transform: translateY(8px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
+        .faq-answer-open { animation: faqAnswerIn .20s ease-out; }
 
-        .faq-answer-open {
-          animation: faqAnswerIn .26s ease-out;
+        /* mobile perf: меньше blur/тяжёлых эффектов */
+        @media (max-width: 640px){
+          .faq-card-bg{ backdrop-filter: blur(14px) !important; }
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .faq-grad-border::before { animation: none; }
-          .faq-answer-open { animation: none; }
+          .faq-grad-border::before{ animation: none; }
+          .faq-answer-open{ animation: none; }
         }
       `}</style>
 
-      {/* фон sunset */}
+      {/* JSON-LD FAQ schema */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
+      {/* background image as img (lazy-friendly) */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div
-          className="absolute inset-0"
-          style={s({
-            backgroundImage: `url(${BG_IMG})`,
-            backgroundPosition: "center top",
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "cover",
-          })}
+        <img
+          src={BG_IMG}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover object-top opacity-95"
+          draggable={false}
         />
         <div
           className="absolute inset-0"
           style={s({
             background:
-              "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.9) 100%)",
+              "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.92) 100%)",
           })}
         />
       </div>
 
       <Container>
-        {/* шапка */}
+        {/* header */}
         <div className="relative mx-auto max-w-2xl text-center">
-          <div className="relative mx-auto h-20 w-20 overflow-hidden rounded-full border border-white/10 bg-black/40 shadow-[0_20px_80px_rgba(0,0,0,0.6)]">
-            <span
-              aria-hidden="true"
-              className="absolute inset-0"
-              style={s({
-                background:
-                  "radial-gradient(circle at 30% 22%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 25%, transparent 62%)",
-              })}
-            />
-            <img
-              src={LOGO_ICON}
-              alt="Tivonix"
-              className="absolute left-1/2 top-1/2 h-[78%] w-[78%] -translate-x-1/2 -translate-y-1/2 object-contain opacity-95"
-              draggable={false}
-            />
-          </div>
-
           <h2 className="mt-5 font-display text-[30px] leading-[34px] sm:text-[40px] sm:leading-[44px] font-extrabold tracking-tight">
             {title}
           </h2>
-          <p className="mt-2 text-sm sm:text-[15px] text-white/55">{subtitle}</p>
+          <p className="mt-2 text-sm sm:text-[15px] text-white/60">{subtitle}</p>
 
-          {/* поиск + сброс */}
+          {/* search + reset */}
           <div className="mt-6">
             <div className="mx-auto max-w-[720px]">
               <div className="grid gap-3 sm:grid-cols-[1fr_auto] items-center">
                 <div className="relative">
+                  <label className="sr-only" htmlFor="faq-search">
+                    {placeholder}
+                  </label>
+
                   <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
                     <span style={s({ color: ORANGE })}>
                       <Icon name="search" />
@@ -558,15 +554,17 @@ export default function FAQSection() {
                   </div>
 
                   <input
+                    id="faq-search"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder={placeholder}
+                    inputMode="search"
                     className={cx(
                       "w-full h-11 sm:h-12 rounded-[14px]",
-                      "bg-white/[0.04] border border-white/10",
-                      "pl-10 pr-4 text-sm text-white/85 placeholder:text-white/35",
+                      "bg-white/[0.045] border border-white/12",
+                      "pl-10 pr-4 text-sm text-white/90 placeholder:text-white/40",
                       "outline-none",
-                      "focus:border-white/20 focus:ring-2 focus:ring-white/10",
+                      "focus:border-white/22 focus:ring-2 focus:ring-white/12",
                       "shadow-[0_18px_70px_rgba(0,0,0,0.55)]"
                     )}
                   />
@@ -574,185 +572,322 @@ export default function FAQSection() {
 
                 <button
                   type="button"
+                  disabled={resetDisabled}
                   onClick={() => {
                     setQuery("");
                     setOpenId(null);
                     setCatFilter("all");
                     setPage(1);
+                    setShowAllCats(false);
                   }}
+                  aria-disabled={resetDisabled}
                   className={cx(
                     "h-11 sm:h-12 px-4 rounded-[14px]",
-                    "border border-white/10 bg-white/[0.04]",
-                    "text-sm text-white/70 hover:text-white/90 hover:bg-white/[0.06] transition",
-                    "shadow-[0_18px_70px_rgba(0,0,0,0.45)]"
+                    "border border-white/12 bg-white/[0.045]",
+                    resetDisabled
+                      ? "text-white/35 cursor-not-allowed opacity-70"
+                      : "text-white/75 hover:text-white/92 hover:bg-white/[0.07] transition",
+                    "shadow-[0_18px_70px_rgba(0,0,0,0.45)]",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                   )}
                 >
                   {resetLabel}
                 </button>
               </div>
 
-              {/* категории */}
-              <div className="mt-3 flex flex-wrap justify-center gap-2">
-                {cats.map((c) => {
-                  const active = c === catFilter;
-                  const label = c === "all" ? allLabel : CAT_LABELS[c][l];
+              {/* categories: one-row scroll on mobile, wrap on desktop */}
+              <div className="mt-3">
+                <div
+                  className={cx(
+                    "flex items-center justify-start sm:justify-center gap-2",
+                    "overflow-x-auto sm:overflow-visible",
+                    "no-scrollbar py-1"
+                  )}
+                  role="tablist"
+                  aria-label={isRu ? "Категории вопросов" : "FAQ categories"}
+                >
+                  {/* All */}
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={catFilter === "all"}
+                    aria-pressed={catFilter === "all"}
+                    onClick={() => setCatFilter("all")}
+                    className={cx(
+                      "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium",
+                      "border border-white/12",
+                      catFilter === "all"
+                        ? "bg-white/[0.12] text-white"
+                        : "bg-black/30 text-white/75 hover:text-white/92 hover:bg-white/[0.07]",
+                      "transition",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                    )}
+                  >
+                    {allLabel}
+                  </button>
 
-                  return (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setCatFilter(c)}
-                      className={cx(
-                        "rounded-full px-3 py-1.5 text-xs font-medium",
-                        "border border-white/10",
-                        active
-                          ? "bg-white/[0.1] text-white"
-                          : "bg-black/30 text-white/70 hover:text-white/90 hover:bg-white/[0.06]",
-                        "transition"
-                      )}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
+                  {(showAllCats ? [...PRIMARY_CATS, ...SECONDARY_CATS] : PRIMARY_CATS).map((c) => {
+                    const active = c === catFilter;
+                    const label = CAT_LABELS[c][l];
+
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        role="tab"
+                        aria-selected={active}
+                        aria-pressed={active}
+                        onClick={() => setCatFilter(c)}
+                        className={cx(
+                          "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium",
+                          "border border-white/12",
+                          active
+                            ? "bg-white/[0.12] text-white"
+                            : "bg-black/30 text-white/75 hover:text-white/92 hover:bg-white/[0.07]",
+                          "transition",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                        )}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+
+                  {/* Toggle secondary categories */}
+                  <button
+                    type="button"
+                    onClick={() => setShowAllCats((v) => !v)}
+                    className={cx(
+                      "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold",
+                      "border border-white/12",
+                      "bg-white/[0.05] text-white/80 hover:text-white hover:bg-white/[0.08] transition",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                    )}
+                    aria-expanded={showAllCats}
+                    aria-label={showAllCats ? lessCatsLabel : moreCatsLabel}
+                  >
+                    <span className="inline-flex items-center gap-1.5">
+                      {showAllCats ? lessCatsLabel : moreCatsLabel}
+                      <span className={cx("transition", showAllCats ? "rotate-180" : "")}>
+                        <Icon name="chev" />
+                      </span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* results hint */}
+              <div className="mt-2 text-[12px] text-white/55">
+                {filtered.length === 0
+                  ? isRu
+                    ? "Ничего не найдено — попробуйте другой запрос."
+                    : "No results — try a different query."
+                  : isRu
+                    ? `Найдено: ${filtered.length}`
+                    : `Found: ${filtered.length}`}
               </div>
             </div>
           </div>
         </div>
 
-        {/* карточки */}
-        <div className={cx("mt-7 grid gap-5", "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3")}>
+        {/* cards */}
+        <div className="mt-7 grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((f) => {
             const isOpen = openId === f.id;
             const domId = toDomId(f.id);
             const teaser = TEASER_TEXTS[f.cat][l];
 
             return (
-              <div
+              <article
                 key={f.id}
                 className={cx(
                   "group faq-grad-border relative overflow-hidden rounded-[20px]",
                   "border border-white/12",
-                  "bg-black/75 backdrop-blur-[26px]",
-                  "shadow-[0_26px_110px_rgba(0,0,0,0.85)]"
+                  "bg-black/75 faq-card-bg backdrop-blur-[22px]",
+                  "shadow-[0_24px_95px_rgba(0,0,0,0.82)]"
                 )}
-                style={!isOpen ? s({ height: CLOSED_CARD_H }) : undefined}
               >
-                {/* оранжевая градиентная линия сверху */}
+                {/* top gradient line */}
                 <div
                   className="absolute inset-x-0 top-0 h-[2px]"
                   style={s({
                     background:
                       "linear-gradient(90deg,#FFD7B0 0%,#FF9A3D 22%,#FF6A1A 50%,#FF9A3D 78%,#FFD7B0 100%)",
-                    opacity: 0.95,
+                    opacity: 0.92,
                   })}
                 />
 
-                <div className="relative z-[2] p-5 flex h-full flex-col">
-                  <div className="flex items-start justify-between gap-3">
+                <div className="relative z-[2] p-5 flex flex-col">
+                  <header className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="text-[14px] font-semibold text-white/92 leading-snug">
+                      <h3 className="text-[14px] font-semibold text-white/92 leading-snug">
                         {f.q}
+                      </h3>
+                      <div className="mt-1 text-[12px] text-white/55">
+                        {f.catLabel}
                       </div>
-                      <div className="mt-1 text-[12px] text-white/45">{f.catLabel}</div>
                     </div>
-                    {/* верхнюю кнопку "Открыть" убрали */}
-                  </div>
+                  </header>
 
-                  <div className="mt-4 space-y-2">
+                  {/* toggle */}
+                  <div className="mt-4">
                     <button
                       type="button"
                       onClick={() => setOpenId((v) => (v === f.id ? null : f.id))}
-                      className="w-full flex items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.02] px-3 py-2 text-left text-[12px] text-white/75 hover:bg-white/[0.05] transition"
+                      aria-expanded={isOpen}
+                      aria-controls={domId}
+                      className={cx(
+                        "w-full flex items-center gap-2 rounded-[12px]",
+                        "border border-white/12 bg-white/[0.03] px-3 py-2",
+                        "text-left text-[12px] text-white/80 hover:bg-white/[0.06] transition",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                      )}
                     >
-                      <img src={LOGO_ICON} alt="" className="h-4 w-4 object-contain" draggable={false} />
-                      {isOpen ? btnHideAnswer : btnShowAnswer}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => copy(f.a, f.id)}
-                      className="w-full flex items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.02] px-3 py-2 text-left text-[12px] text-white/75 hover:bg-white/[0.05] transition"
-                    >
-                      <span style={s({ color: ORANGE })}>
-                        <Icon name="copy" />
-                      </span>
-                      {copied === f.id ? btnCopied : btnCopyAnswer}
+                      <img
+                        src={LOGO_ICON}
+                        alt=""
+                        className="h-4 w-4 object-contain"
+                        draggable={false}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      {isOpen ? btnHide : btnShow}
                     </button>
                   </div>
 
-                  {/* ответ снизу карточки */}
+                  {/* ANSWER: держим в DOM всегда для SEO, но прячем/раскрываем корректно */}
                   <div
                     id={domId}
                     className={cx(
-                      "mt-3 rounded-[14px] border border-white/10 bg-black/60 px-4 py-3",
-                      "text-[13px] leading-relaxed text-white/72",
+                      "mt-3 rounded-[14px] border border-white/12 bg-black/60 px-4 py-3",
+                      "text-[13px] leading-relaxed text-white/78",
                       isOpen ? "block faq-answer-open" : "hidden"
                     )}
+                    // если хочешь, чтобы поисковики точно видели даже закрытый — сделай "block" всегда
+                    // и сворачивай через max-height/overflow. Сейчас оставлено безопасно для UX.
                   >
                     {f.a}
+
+                    {/* Copy появляется только когда ответ открыт (логичный сценарий) */}
+                    <div className="mt-3">
+                      <button
+                        type="button"
+                        onClick={() => copy(f.a, f.id)}
+                        className={cx(
+                          "inline-flex items-center gap-2 rounded-[12px]",
+                          "border border-white/12 bg-white/[0.03] px-3 py-2",
+                          "text-[12px] text-white/80 hover:bg-white/[0.06] transition",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                        )}
+                      >
+                        <span style={s({ color: ORANGE })}>
+                          <Icon name="copy" />
+                        </span>
+                        {copied === f.id ? btnCopied : btnCopy}
+                      </button>
+                    </div>
                   </div>
 
-                  {/* нижняя часть карточки, когда ответ скрыт — чтобы не было пустоты */}
+                  {/* teaser when closed */}
                   {!isOpen && (
-                    <div className="mt-auto pt-3">
+                    <div className="mt-4 pt-3">
                       <div className="h-px w-full rounded-full bg-gradient-to-r from-white/0 via-white/18 to-white/0" />
-                      <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-white/60">
-                        <span className="truncate">{teaser}</span>
+                      <div className="mt-2 flex items-center justify-between gap-2 text-[11.5px] text-white/62">
+                        <span className="line-clamp-2">{teaser}</span>
                         <span className="flex items-center gap-1 whitespace-nowrap" style={s({ color: ORANGE })}>
                           <span className="inline-block h-1.5 w-1.5 rounded-full bg-current" />
-                          <span>{isRu ? "Частый вопрос" : "Popular"}</span>
+                          <span>{popularLabel}</span>
                         </span>
                       </div>
                     </div>
                   )}
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>
 
-        {/* пагинация 01 / 02 / 03 / 04 */}
+        {/* pagination: mobile prev/next, desktop dots */}
         <div className="relative mt-10 flex justify-center">
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-            {Array.from({ length: totalPages }).map((_, i) => {
-              const n = i + 1;
-              const active = n === page;
-              const label = n < 10 ? `0${n}` : String(n);
+          <div className="w-full max-w-[560px]">
+            {/* Mobile: prev/next */}
+            <div className="flex items-center justify-between gap-3 sm:hidden">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className={cx(
+                  "h-11 px-4 rounded-[14px] border border-white/12 bg-white/[0.045]",
+                  page <= 1 ? "text-white/35 cursor-not-allowed" : "text-white/80 hover:bg-white/[0.07]",
+                  "transition",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                )}
+              >
+                {prevLabel}
+              </button>
 
-              return (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => setPage(n)}
-                  className={cx(
-                    "relative flex flex-col items-center justify-center rounded-full select-none",
-                    "h-10 w-10 sm:h-11 sm:w-11",
-                    "text-[12px] sm:text-[13px] font-semibold",
-                    "transition-transform duration-200",
-                    active ? "scale-[1.06]" : "hover:scale-[1.04]"
-                  )}
-                  style={s({
-                    borderRadius: "999px",
-                    border: active ? `1px solid ${ORANGE}` : "1px solid rgba(255,255,255,0.16)",
-                    background: active ? "linear-gradient(145deg,#FFB46A,#FF9840,#C84A00)" : "rgba(5,5,7,0.85)",
-                    color: active ? "#1a0700" : "rgba(248,248,255,0.84)",
-                    boxShadow: active
-                      ? "0 16px 42px rgba(255,122,0,0.35)"
-                      : "0 10px 26px rgba(0,0,0,0.55)",
-                  })}
-                >
-                  <span className="relative z-10">{label}</span>
-                  <span
-                    className="mt-0.5 block h-[3px] w-[10px] rounded-full"
+              <div className="text-[12.5px] text-white/70">
+                {pageLabel} {page} / {totalPages}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+                className={cx(
+                  "h-11 px-4 rounded-[14px] border border-white/12 bg-white/[0.045]",
+                  page >= totalPages ? "text-white/35 cursor-not-allowed" : "text-white/80 hover:bg-white/[0.07]",
+                  "transition",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                )}
+              >
+                {nextLabel}
+              </button>
+            </div>
+
+            {/* Desktop: numbered pills */}
+            <div className="hidden sm:flex flex-wrap items-center justify-center gap-4">
+              {Array.from({ length: totalPages }).map((_, i) => {
+                const n = i + 1;
+                const active = n === page;
+                const label = n < 10 ? `0${n}` : String(n);
+
+                return (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setPage(n)}
+                    aria-current={active ? "page" : undefined}
+                    className={cx(
+                      "relative flex flex-col items-center justify-center rounded-full select-none",
+                      "h-11 w-11",
+                      "text-[13px] font-semibold",
+                      "transition-transform duration-200",
+                      active ? "scale-[1.06]" : "hover:scale-[1.04]",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                    )}
                     style={s({
-                      background: active ? "rgba(26,7,0,0.85)" : "rgba(255,255,255,0.18)",
-                      opacity: active ? 0.85 : 0.45,
+                      borderRadius: "999px",
+                      border: active ? `1px solid ${ORANGE}` : "1px solid rgba(255,255,255,0.16)",
+                      background: active ? "linear-gradient(145deg,#FFB46A,#FF9840,#C84A00)" : "rgba(5,5,7,0.85)",
+                      color: active ? "#1a0700" : "rgba(248,248,255,0.86)",
+                      boxShadow: active
+                        ? "0 16px 42px rgba(255,122,0,0.35)"
+                        : "0 10px 26px rgba(0,0,0,0.55)",
                     })}
-                  />
-                </button>
-              );
-            })}
+                  >
+                    <span className="relative z-10">{label}</span>
+                    <span
+                      className="mt-0.5 block h-[3px] w-[10px] rounded-full"
+                      style={s({
+                        background: active ? "rgba(26,7,0,0.85)" : "rgba(255,255,255,0.20)",
+                        opacity: active ? 0.85 : 0.45,
+                      })}
+                    />
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </Container>

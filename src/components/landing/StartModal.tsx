@@ -639,7 +639,7 @@ export default function StartModal({ open, onClose }: Props) {
               className="pointer-events-none absolute inset-0 opacity-[0.85]"
               style={
                 {
-                  backgroundImage: "url(/images/hero.png)",
+                  backgroundImage: "url(/images/121.webp)",
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                   filter: "blur(20px)",

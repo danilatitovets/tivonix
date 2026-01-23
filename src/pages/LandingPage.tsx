@@ -22,14 +22,14 @@ export default function LandingPage() {
         <div id="stack">
           <WhyUs />
         </div>
+        <div id="benefits">
+          <Benefits />
+        </div>
 
         <div id="admin">
           <AppsOrbitBlock />
         </div>
 
-        <div id="benefits">
-          <Benefits />
-        </div>
 
 
         <FAQ />

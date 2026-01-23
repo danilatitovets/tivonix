@@ -7,12 +7,19 @@ import { useLang } from "../../i18n/LangProvider";
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
-
 type Style = CSSProperties & Record<string, any>;
 const s = (v: Record<string, any>) => v as Style;
 
+// Поменяй на свои пути
 const LOGO_LOCKUP_SVG = "/images/tivonix-logo-lockup.svg";
 const LOGO_LOCKUP_PNG = "/images/tivonix-logo-lockup.png";
+
+// watermark-лого снизу справа (лучше SVG)
+// Важно: путь обычно без /public -> "/favicon.svg"
+const WATERMARK_LOGO = "/favicon.svg";
+
+// Один акцентный цвет на весь футер
+const ACCENT = "#FF6B2C";
 
 const LANDING = {
   top: "/#top",
@@ -32,14 +39,28 @@ const MENU = [
   { to: "/contacts", label: { ru: "Контакты", en: "Contacts" } },
 ];
 
-const SOCIALS = [
-  { href: "https://t.me/TIVONIX", label: "Telegram" },
-  {
-    href:
-      "https://mail.google.com/mail/?view=cm&fs=1&to=tivoonix@gmail.com&su=" +
-      encodeURIComponent("Проект (SaaS/MVP)"),
-    label: "Gmail",
+// Gmail compose для email (без mailto:)
+const GMAIL_EMAIL_URL =
+  "https://mail.google.com/mail/?view=cm&fs=1" +
+  `&to=${encodeURIComponent("tivoonix@gmail.com")}` +
+  `&su=${encodeURIComponent("Проект (SaaS/MVP)")}`;
+
+const CONTACTS = {
+  telegram: { href: "https://t.me/TIVONIX", label: "Telegram" },
+  email: {
+    href: GMAIL_EMAIL_URL,
+    label: "Email",
   },
+};
+
+const LEGAL = [
+  { to: "/privacy", label: { ru: "Политика", en: "Privacy" } },
+  { to: "/terms", label: { ru: "Условия", en: "Terms" } },
+];
+
+// ВНИЗУ оставляем только TG
+const SOCIALS = [
+  { href: "https://t.me/TIVONIX", label: "Telegram", icon: TelegramIcon },
 ];
 
 function imgFallback(fallbackSrc: string) {
@@ -51,261 +72,269 @@ function imgFallback(fallbackSrc: string) {
   };
 }
 
+function FooterLink({
+  to,
+  children,
+}: {
+  to: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      to={to}
+      className={cx(
+        "group inline-flex items-center gap-2 text-sm text-white/70 transition-colors",
+        "hover:text-white",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]/40 focus-visible:rounded"
+      )}
+    >
+      <span className="relative">
+        {children}
+        <span
+          className={cx(
+            "absolute -bottom-0.5 left-0 h-px w-0 transition-all duration-200",
+            "group-hover:w-full"
+          )}
+          style={s({
+            backgroundColor:
+              "color-mix(in srgb, var(--accent) 75%, transparent)",
+          })}
+        />
+      </span>
+    </Link>
+  );
+}
+
+function ExternalLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  const isHttp = href.startsWith("http");
+  return (
+    <a
+      href={href}
+      target={isHttp ? "_blank" : undefined}
+      rel={isHttp ? "noopener noreferrer" : undefined}
+      className={cx(
+        "group inline-flex items-center gap-2 text-sm text-white/70 transition-colors",
+        "hover:text-white",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]/40 focus-visible:rounded"
+      )}
+    >
+      <span className="relative">
+        {children}
+        <span
+          className={cx(
+            "absolute -bottom-0.5 left-0 h-px w-0 transition-all duration-200",
+            "group-hover:w-full"
+          )}
+          style={s({
+            backgroundColor:
+              "color-mix(in srgb, var(--accent) 75%, transparent)",
+          })}
+        />
+      </span>
+    </a>
+  );
+}
+
 export default function Footer() {
   const year = new Date().getFullYear();
   const { lang } = useLang();
   const isRu = lang === "ru";
+  const t = (v: { ru: string; en: string }) => (isRu ? v.ru : v.en);
 
-  const getStartedLabel = isRu ? "НАЧАТЬ" : "GET STARTED";
-  const subscribeText = isRu
-    ? "Подписываясь, ты принимаешь наши условия. Без спама."
-    : "By subscribing, you accept our terms. No spam.";
-  const menuTitle = isRu ? "МЕНЮ" : "MENU";
-  const linksTitle = isRu ? "ССЫЛКИ" : "LINKS";
-  const backToTop = isRu ? "Наверх" : "Top";
-  const faqShort = "FAQ";
+  const tagline = isRu
+    ? "SaaS и MVP под ключ — быстро, аккуратно, поддерживаемо."
+    : "SaaS & MVP delivered fast — clean, maintainable, reliable.";
+
   const rightsText = isRu
     ? `© ${year} Tivonix. Все права защищены.`
     : `© ${year} Tivonix. All rights reserved.`;
 
   return (
-    <footer className="relative overflow-hidden bg-black py-16 sm:py-20">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
-      >
-        <div className="pointer-events-none absolute inset-0 bg-black/55" />
+    <footer
+      className={cx(
+        "relative isolate overflow-hidden bg-black text-white",
+        "selection:bg-[color:var(--accent)]/30 selection:text-white"
+      )}
+      style={s({ ["--accent" as any]: ACCENT })}
+    >
+      {/* тонкая верхняя линия */}
+      <div className="h-px w-full bg-[color:var(--accent)]/25" />
+
+      {/* Watermark слой */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+        <div
+          className="absolute -right-28 -bottom-28 h-[640px] w-[640px] opacity-35 blur-3xl"
+          style={s({
+            background:
+              "radial-gradient(closest-side, color-mix(in srgb, var(--accent) 45%, transparent), rgba(0,0,0,0))",
+          })}
+        />
+
+        <img
+          src={WATERMARK_LOGO}
+          alt=""
+          draggable={false}
+          loading="lazy"
+          decoding="async"
+          className={cx(
+            "absolute select-none",
+            "-right-[10vw] -bottom-[10vw]",
+            "w-[min(980px,68vw)] max-w-none",
+            "opacity-[0.14]",
+            "blur-0"
+          )}
+          style={s({
+            filter: "saturate(1.05) contrast(1.05) brightness(1.03)",
+            imageRendering: "auto",
+          })}
+        />
       </div>
 
       <Container>
-        <div className="relative">
-          {/* оранжевый мягкий ореол */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute left-1/2 top-1/2 h-[520px] w-[980px] -translate-x-1/2 -translate-y-1/2 blur-3xl opacity-60"
-            style={s({
-              backgroundImage:
-                "radial-gradient(circle at 50% 50%, rgba(255,120,40,0.7), rgba(0,0,0,0) 70%)",
-            })}
-          />
+        <div className="relative py-14 sm:py-16">
+          {/* Верх: лого + описание */}
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+            <div className="max-w-[560px]">
+              <Link
+                to={LANDING.top}
+                className={cx(
+                  "inline-flex items-center gap-3 rounded-xl p-1 pr-3",
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]/45"
+                )}
+                aria-label={isRu ? "Наверх" : "Back to top"}
+                title={isRu ? "Наверх" : "Back to top"}
+              >
+                <img
+                  src={LOGO_LOCKUP_SVG}
+                  onError={imgFallback(LOGO_LOCKUP_PNG)}
+                  alt="Tivonix"
+                  className="h-9 w-auto"
+                  draggable={false}
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span className="text-xs text-white/40 hidden sm:inline">
+                  {isRu ? "Наверх" : "Top"}
+                </span>
+              </Link>
 
-          <div
-            className={cx(
-              "relative overflow-hidden rounded-[34px]",
-              "border border-white/15",
-              "shadow-[0_45px_170px_rgba(0,0,0,0.9)]",
-              "backdrop-blur-2xl bg-black/35"
-            )}
-          >
-            {/* dot texture */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 opacity-[0.30]"
-              style={s({
-                backgroundImage:
-                  "radial-gradient(circle at 1px 1px, rgba(255,150,90,0.6) 1px, rgba(0,0,0,0) 1.7px)",
-                backgroundSize: "18px 18px",
-                mixBlendMode: "screen",
-              })}
-            />
+              <p className="mt-4 text-sm leading-6 text-white/65">{tagline}</p>
 
-            {/* внутренние инсет-тени */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 rounded-[34px]"
-              style={s({
-                boxShadow:
-                  "inset 0 1px 0 rgba(255,255,255,0.1), inset 0 0 0 1px rgba(255,255,255,0.04)",
-              })}
-            />
+              <div className="mt-5 h-px w-24 bg-[color:var(--accent)]/40" />
+            </div>
+          </div>
 
-            {/* ✅ WATERMARK — СДЕЛАЛ БОЛЬШЕ */}
-            <div
-              aria-hidden="true"
-              className={cx(
-                "pointer-events-none absolute left-6 top-1 select-none",
-                "font-extrabold tracking-tight text-white/[0.06]"
-              )}
-              style={s({
-                textTransform: "lowercase",
-                // было 110/150 — теперь гораздо больше
-                fontSize: "clamp(150px, 15vw, 240px)",
-                lineHeight: 0.95,
-              })}
-            >
-              tivonix
+          {/* 3 колонки */}
+          <div className="mt-10 grid grid-cols-2 gap-10 sm:grid-cols-3">
+            {/* MENU */}
+            <div>
+              <div className="text-[11px] font-semibold tracking-[0.18em] text-white uppercase">
+                {isRu ? "Меню" : "Menu"}
+              </div>
+              <ul className="mt-4 space-y-2.5">
+                {MENU.map((i) => (
+                  <li key={i.to}>
+                    <FooterLink to={i.to}>{t(i.label)}</FooterLink>
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            <div className="relative px-7 py-10 sm:px-10 sm:py-12">
-              <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
-                <div className="lg:col-span-5">
-                  <div className="flex items-start gap-3">
-                    <div className="flex items-center">
-                      <img
-                        src={LOGO_LOCKUP_SVG}
-                        onError={imgFallback(LOGO_LOCKUP_PNG)}
-                        alt="Tivonix"
-                        className="h-[52px] w-auto object-contain sm:h-[54px]"
-                        draggable={false}
-                      />
-                    </div>
-                  </div>
+            {/* CONTACT */}
+            <div>
+              <div className="text-[11px] font-semibold tracking-[0.18em] text-white uppercase">
+                {isRu ? "Контакты" : "Contact"}
+              </div>
 
-                  <div className="mt-6 flex flex-wrap gap-2">
-                    {["React", "Tailwind", "TypeScript", "SaaS UI"].map((t) => (
-                      <span
-                        key={t}
-                        className="rounded-full border border-white/15 bg-black/40 px-3 py-1 text-[12px] text-white/75 backdrop-blur"
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+              <ul className="mt-4 space-y-2.5">
+                <li>
+                  <ExternalLink href={CONTACTS.telegram.href}>
+                    {CONTACTS.telegram.label}
+                  </ExternalLink>
+                </li>
+                <li>
+                  <ExternalLink href={CONTACTS.email.href}>
+                    {CONTACTS.email.label}
+                  </ExternalLink>
+                </li>
+              </ul>
+            </div>
 
-                <div className="lg:col-span-7 lg:pl-4">
-                  <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
-                    <div className="sm:col-span-2">
-                      <form
-                        className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center"
-                        onSubmit={(e) => e.preventDefault()}
-                      >
-                        <div className="relative flex-1">
-                          <input
-                            type="email"
-                            placeholder="you@domain.com"
-                            className={cx(
-                              "h-12 w-full rounded-full px-4",
-                              "bg-white/10 text-white placeholder:text-white/40",
-                              "border border-white/20",
-                              "outline-none focus:border-white/40",
-                              "focus:ring-2 focus:ring-white/15"
-                            )}
-                          />
-                          <div
-                            aria-hidden="true"
-                            className="pointer-events-none absolute inset-0 rounded-full"
-                            style={s({
-                              boxShadow:
-                                "inset 0 1px 0 rgba(255,255,255,0.08)",
-                            })}
-                          />
-                        </div>
+            {/* LEGAL */}
+            <div>
+              <div className="text-[11px] font-semibold tracking-[0.18em] text-white uppercase">
+                {isRu ? "Документы" : "Legal"}
+              </div>
+              <ul className="mt-4 space-y-2.5">
+                {LEGAL.map((i) => (
+                  <li key={i.to}>
+                    <FooterLink to={i.to}>{t(i.label)}</FooterLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
 
-                        <button
-                          type="submit"
-                          className={cx(
-                            "h-12 rounded-full px-6 font-semibold",
-                            "text-[12px] tracking-wide",
-                            "bg-white text-black",
-                            "hover:bg-white/90 active:bg-white/80",
-                            "shadow-[0_22px_80px_rgba(0,0,0,0.7)]"
-                          )}
-                        >
-                          {getStartedLabel}
-                        </button>
-                      </form>
+          {/* низ — © + только TG */}
+          <div className="mt-12 border-t border-white/10 pt-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="text-sm text-white/60">{rightsText}</div>
 
-                      <div className="mt-2 text-[12px] text-white/55">
-                        {subscribeText}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="text-[11px] font-semibold tracking-[0.18em] text-white/55">
-                        {menuTitle}
-                      </div>
-                      <div className="mt-3 flex flex-col gap-2">
-                        {MENU.map((i) => (
-                          <Link
-                            key={i.to}
-                            to={i.to}
-                            className="text-sm text-white/70 hover:text-white transition-colors"
-                          >
-                            {isRu ? i.label.ru : i.label.en}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="text-[11px] font-semibold tracking-[0.18em] text-white/55">
-                        {linksTitle}
-                      </div>
-                      <div className="mt-3 flex flex-col gap-2">
-                        {SOCIALS.map((i) => (
-                          <a
-                            key={i.href}
-                            href={i.href}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-sm text-white/70 hover:text-white transition-colors"
-                          >
-                            {i.label}
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                <div className="mt-3 flex items-center gap-3">
+                  {SOCIALS.map((soc) => (
+                    <a
+                      key={soc.href}
+                      href={soc.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cx(
+                        "inline-flex h-9 w-9 items-center justify-center rounded-full",
+                        "text-white/55 hover:text-white transition-colors",
+                        "hover:bg-[color:var(--accent)]/[0.08]",
+                        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]/40"
+                      )}
+                      aria-label={soc.label}
+                      title={soc.label}
+                    >
+                      <soc.icon />
+                    </a>
+                  ))}
                 </div>
               </div>
 
-              <div className="mt-10 flex flex-col gap-4 border-t border-white/15 pt-6 sm:flex-row sm:items-center sm:justify-between">
-                <div className="text-sm text-white/65">{rightsText}</div>
-
-                <div className="flex items-center gap-4">
-                  <Link
-                    className="text-sm text-white/65 hover:text-white"
-                    to={LANDING.top}
-                  >
-                    {backToTop}
-                  </Link>
-                  <Link
-                    className="text-sm text-white/65 hover:text-white"
-                    to={LANDING.faq}
-                  >
-                    {faqShort}
-                  </Link>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      window.scrollTo({ top: 0, behavior: "smooth" })
-                    }
-                    className={cx(
-                      "ml-2 grid h-10 w-10 place-items-center rounded-full",
-                      "border border-white/15 bg-black/40",
-                      "text-white/80 hover:text-white",
-                      "backdrop-blur"
-                    )}
-                    aria-label={backToTop}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M7 14l5-5 5 5"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
+              <div className="text-sm text-white/45">{/* пусто */}</div>
             </div>
-
-            {/* нижняя “шторка” */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0"
-              style={s({
-                backgroundImage:
-                  "radial-gradient(1200px 420px at 50% 0%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.25) 70%, rgba(0,0,0,0.4) 100%)",
-              })}
-            />
           </div>
         </div>
       </Container>
     </footer>
+  );
+}
+
+/* ======= icons (inline svg) ======= */
+
+function TelegramIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M21.8 4.6c.2-.8-.6-1.5-1.4-1.2L3.4 10c-1 .4-1 1.8 0 2.2l4.5 1.7 1.7 4.9c.3.9 1.5 1 2 .2l2.6-4.2 4.7 3.6c.7.5 1.7.1 1.9-.8L21.8 4.6Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8 13.8 19.6 6.4"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
