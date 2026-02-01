@@ -4,12 +4,14 @@ import Container from "../components/ui/Container";
 import Section from "../components/ui/Section";
 import Header from "../components/landing/Headerdouble";
 import { useLang } from "../i18n/LangProvider";
+
 const HERO_IMG = "/images/hero.png";
 const PROJECTS_BG = "/images/projects-bg.png";
 const HEADER_H = 72;
 
 const UPC_DOMAIN = "https://upc.promo/";
 const PAYCLIP_DOMAIN = "https://usepayclip.com/";
+const LABELOS_DOMAIN = "https://labelos.digital/";
 
 type Testimonial = {
   name: string;
@@ -18,16 +20,20 @@ type Testimonial = {
   text: string;
 };
 
+type ProjectStatus = "live" | "wip";
+
 type Project = {
   id: string;
   title: string;
   subtitleRu: string;
   subtitleEn: string;
-  domain: string;
+  domain?: string;
+  // demoUrl оставляю в типе на будущее, но не используем
   demoUrl?: string;
   tags: string[];
   cover?: string;
   testimonial?: Testimonial;
+  status?: ProjectStatus;
 };
 
 function cx(...a: Array<string | false | null | undefined>) {
@@ -83,12 +89,37 @@ function useParallaxCards() {
   }, []);
 }
 
-function DomainPill({ href }: { href: string }) {
+function DomainPill({
+  href,
+  status = "live",
+}: {
+  href?: string;
+  status?: ProjectStatus;
+}) {
   const { lang } = useLang();
   const isRu = lang === "ru";
 
-  const clean = href.replace(/^https?:\/\//, "").replace(/\/$/, "");
   const openLabel = isRu ? "Открыть" : "Open";
+  const wipLabel = isRu ? "В разработке" : "In progress";
+
+  if (!href || status === "wip") {
+    return (
+      <div
+        className={cx(
+          "inline-flex items-center gap-2",
+          "rounded-2xl px-4 py-2",
+          "border border-white/12 bg-black/30 backdrop-blur-xl",
+          "text-white/75",
+          "shadow-[0_14px_60px_rgba(0,0,0,0.40)]"
+        )}
+      >
+        <span className="h-2 w-2 rounded-full bg-white/35 shadow-[0_0_0_4px_rgba(255,255,255,0.08)]" />
+        <span className="text-[13px] font-[650] tracking-tight">{wipLabel}</span>
+      </div>
+    );
+  }
+
+  const clean = href.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
   return (
     <a
@@ -120,7 +151,6 @@ function ProjectCard({ p, idx }: { p: Project; idx: number }) {
   const isRu = lang === "ru";
 
   const labelProject = isRu ? "ПРОЕКТ" : "PROJECT";
-  const demoLabel = isRu ? "Демо" : "Demo";
   const contactLabel = isRu ? "Написать" : "Contact";
   const subtitle = isRu ? p.subtitleRu : p.subtitleEn;
 
@@ -162,9 +192,25 @@ function ProjectCard({ p, idx }: { p: Project; idx: number }) {
           <div className="text-[12px] tracking-[0.22em] text-white/45">
             {labelProject}
           </div>
-          <div className="mt-2 text-[22px] sm:text-[26px] font-[760] tracking-tight text-white/95 leading-[1.1]">
-            {p.title}
+
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <div className="text-[22px] sm:text-[26px] font-[760] tracking-tight text-white/95 leading-[1.1]">
+              {p.title}
+            </div>
+
+            {p.status === "wip" ? (
+              <span
+                className={cx(
+                  "inline-flex items-center rounded-2xl px-3 py-1",
+                  "border border-white/12 bg-white/[0.05]",
+                  "text-[11px] font-[700] tracking-[0.14em] text-white/55"
+                )}
+              >
+                {isRu ? "WIP" : "WIP"}
+              </span>
+            ) : null}
           </div>
+
           <div className="mt-2 text-[14px] sm:text-[15px] text-white/65 leading-relaxed max-w-[52ch]">
             {subtitle}
           </div>
@@ -187,42 +233,12 @@ function ProjectCard({ p, idx }: { p: Project; idx: number }) {
 
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3">
-            <DomainPill href={p.domain} />
-            <div className="hidden sm:flex items-center gap-2">
-              {p.demoUrl ? (
-                <a
-                  href={p.demoUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={cx(
-                    "inline-flex h-10 items-center justify-center rounded-2xl px-5",
-                    "text-[13px] font-[750] text-black",
-                    "bg-[linear-gradient(180deg,#FFD7B0_0%,#FF9A3D_52%,#FF6A1A_100%)]",
-                    "shadow-[0_16px_55px_rgba(255,122,0,0.18)] hover:brightness-105 transition"
-                  )}
-                >
-                  {demoLabel}
-                </a>
-              ) : null}
-            </div>
+            <DomainPill href={p.domain} status={p.status ?? "live"} />
+            {/* справа больше НЕТ кнопки Demo */}
           </div>
 
+          {/* мобилка: только кнопка "Написать" */}
           <div className="sm:hidden flex gap-2">
-            {p.demoUrl ? (
-              <a
-                href={p.demoUrl}
-                target="_blank"
-                rel="noreferrer"
-                className={cx(
-                  "flex-1 inline-flex h-10 items-center justify-center rounded-2xl px-5",
-                  "text-[13px] font-[750] text-black",
-                  "bg-[linear-gradient(180deg,#FFD7B0_0%,#FF9A3D_52%,#FF6A1A_100%)]",
-                  "shadow-[0_16px_55px_rgba(255,122,0,0.18)] hover:brightness-105 transition"
-                )}
-              >
-                {demoLabel}
-              </a>
-            ) : null}
             <a
               href="#contact"
               className={cx(
@@ -240,15 +256,15 @@ function ProjectCard({ p, idx }: { p: Project; idx: number }) {
   );
 }
 
-function MoreCard({ primaryHref }: { primaryHref: string }) {
+function MoreCard() {
   const { lang } = useLang();
   const isRu = lang === "ru";
 
-  const soonLabel = isRu ? "СКОРО" : "SOON";
+  const soonLabel = isRu ? "ДАЛЬШЕ" : "NEXT";
   const title = isRu ? "Дальше — больше" : "More coming soon";
   const body = isRu
-    ? "Скоро добавим новые кейсы и страницы. Сейчас оставили только рабочие ссылки."
-    : "More case studies and pages are coming soon. For now we only show live production links.";
+    ? "Добавим новые кейсы, демо-страницы и продукты. Сейчас показываем живые домены + то, что в активной разработке."
+    : "We’ll add more case studies, demo pages and products. For now we show live domains + what’s in active development.";
 
   return (
     <div
@@ -297,6 +313,7 @@ export default function ProjectsPage() {
         subtitleEn:
           "Promo landing: premium visuals, sections, animations, responsive layout, fast loading and clean typography.",
         domain: UPC_DOMAIN,
+        status: "live",
         tags: ["Landing", "Vite", "React", "Tailwind", "Performance"],
         cover: "/images/project-cover-upc.jpg",
       },
@@ -308,8 +325,32 @@ export default function ProjectsPage() {
         subtitleEn:
           "Payment product: fast onboarding, conversion-focused landing, precise grid and strong visuals.",
         domain: PAYCLIP_DOMAIN,
+        status: "live",
         tags: ["Fintech", "Landing", "UI/UX", "React", "Tailwind"],
         cover: "/images/project-cover-payclip.jpg",
+      },
+      {
+        id: "labelos",
+        title: "LabelOS",
+        subtitleRu:
+          "SaaS для музыкальных лейблов: автоматизация отчётов, рассылка, шаблоны, единая база данных и контроль выплат.",
+        subtitleEn:
+          "SaaS for music labels: report automation, email delivery, templates, centralized data and payout control.",
+        domain: LABELOS_DOMAIN,
+        status: "live",
+        tags: ["SaaS", "Music", "Automation", "React", "UI/UX"],
+        cover: "/images/project-cover-labelos.jpg",
+      },
+      {
+        id: "smart-house-ops",
+        title: "Smart House Ops",
+        subtitleRu:
+          "Платформа для эксплуатации объектов: заявки, маршруты, команды, риск-модель, аналитика и цифровой двойник.",
+        subtitleEn:
+          "Facility operations platform: tickets, routes, crews, risk model, analytics and a digital twin.",
+        status: "wip",
+        tags: ["Digital Twin", "Ops", "Dashboard", "React", "Backend"],
+        cover: "/images/project-cover-sho.jpg",
       },
     ],
     []
@@ -357,12 +398,27 @@ export default function ProjectsPage() {
                 </h1>
 
                 <p className="mt-4 max-w-[70ch] text-white/68 text-[15px] sm:text-[16px] leading-relaxed">
-                  {isRu
-                    ? "Сейчас показываем только живые домены: "
-                    : "Right now we only show live domains: "}
-                  <span className="text-white/90 font-[650]">upc.promo</span>
-                  {isRu ? " и " : " and "}
-                  <span className="text-white/90 font-[650]">usepayclip.com</span>.
+                  {isRu ? (
+                    <>
+                      Сейчас показываем <span className="text-white/90 font-[650]">живые
+                      домены</span>.
+                      <br />
+                      Live:{" "}
+                      <span className="text-white/90 font-[650]">upc.promo</span>,{" "}
+                      <span className="text-white/90 font-[650]">usepayclip.com</span>,{" "}
+                      <span className="text-white/90 font-[650]">labelos.digital</span>.
+                    </>
+                  ) : (
+                    <>
+                      Right now we only show{" "}
+                      <span className="text-white/90 font-[650]">live domains</span>.
+                      <br />
+                      Live:{" "}
+                      <span className="text-white/90 font-[650]">upc.promo</span>,{" "}
+                      <span className="text-white/90 font-[650]">usepayclip.com</span>,{" "}
+                      <span className="text-white/90 font-[650]">labelos.digital</span>.
+                    </>
+                  )}
                 </p>
 
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -401,7 +457,7 @@ export default function ProjectsPage() {
                 <ProjectCard key={p.id} p={p} idx={idx} />
               ))}
 
-              <MoreCard primaryHref={UPC_DOMAIN} />
+              <MoreCard />
 
               <div id="contact" className="pt-2" />
             </div>
