@@ -334,6 +334,7 @@ type FormState = {
   budget: string;
   timeframe: string;
   details: string;
+  consent: boolean; // ✅ добавили
 };
 
 export default function StartModal({ open, onClose }: Props) {
@@ -349,6 +350,26 @@ export default function StartModal({ open, onClose }: Props) {
     }),
     [isRu]
   );
+
+  // ✅ документы (ссылки на PDF из public/doc)
+  const docs = useMemo(() => {
+    if (isRu) {
+      return [
+        {
+          label: "Согласие на обработку персональных данных",
+          href: "/doc/Согласие_на_обработку_ПД_Tivonix_RU.pdf",
+        },
+        {
+          label: "Политика обработки персональных данных",
+          href: "/doc/Политика_обработки_ПД_Tivonix_RU.pdf",
+        },
+      ];
+    }
+    return [
+      { label: "Consent to personal data processing", href: "/doc/Consent_Tivonix_EN.pdf" },
+      { label: "Privacy Policy", href: "/doc/Privacy_Policy_Tivonix_EN.pdf" },
+    ];
+  }, [isRu]);
 
   const [mounted, setMounted] = useState(open);
   const [visible, setVisible] = useState(false);
@@ -366,6 +387,7 @@ export default function StartModal({ open, onClose }: Props) {
     budget: defaults.budget,
     timeframe: defaults.time,
     details: "",
+    consent: false, // ✅ добавили
   }));
 
   // чтобы при смене языка дефолты не ломали выбранное пользователем
@@ -443,9 +465,16 @@ export default function StartModal({ open, onClose }: Props) {
       send: isRu ? "Отправить" : "Send",
       cancel: isRu ? "Отмена" : "Cancel",
       required: isRu ? "Укажи имя и контакт." : "Add name and a contact.",
+      consentRequired: isRu
+        ? "Нужно согласиться с документами (галочка)."
+        : "Please accept the documents (checkbox).",
+      consentText: isRu
+        ? "Я принимаю условия и согласен(на) с документами:"
+        : "I agree with the documents:",
       close: isRu ? "Закрыть" : "Close",
       progressLabel: isRu ? "ГОТОВО" : "DONE",
       note: isRu ? "Откроется письмо в почте." : "Opens an email draft.",
+      openDoc: isRu ? "Открыть" : "Open",
     }),
     [isRu]
   );
@@ -460,6 +489,7 @@ export default function StartModal({ open, onClose }: Props) {
       form.budget !== defaults.budget,
       form.timeframe !== defaults.time,
       has(form.details),
+      form.consent, // ✅ добавили в прогресс
     ];
     const total = steps.length;
     const done = steps.filter(Boolean).length;
@@ -472,7 +502,8 @@ export default function StartModal({ open, onClose }: Props) {
       has(form.details) ||
       form.projectType !== defaults.type ||
       form.budget !== defaults.budget ||
-      form.timeframe !== defaults.time;
+      form.timeframe !== defaults.time ||
+      form.consent;
 
     if (pct === 0 && any) pct = 5;
     return pct;
@@ -494,6 +525,12 @@ export default function StartModal({ open, onClose }: Props) {
       return;
     }
 
+    // ✅ требуем галочку
+    if (!form.consent) {
+      setErrorText(txt.consentRequired);
+      return;
+    }
+
     setSending(true);
     try {
       const subject = `[TIVONIX] ${isRu ? "Заявка" : "Request"} — ${form.name
@@ -510,7 +547,11 @@ export default function StartModal({ open, onClose }: Props) {
         `${txt.projectType}: ${form.projectType || "-"}\n` +
         `${txt.budget}: ${form.budget || "-"}\n` +
         `${txt.timeframe}: ${form.timeframe || "-"}\n\n` +
-        `${txt.details}:\n${form.details || "-"}\n`;
+        `${txt.details}:\n${form.details || "-"}\n\n` +
+        `${isRu ? "Согласие: Да" : "Consent: Yes"}\n` +
+        `${isRu ? "Документы:" : "Documents:"}\n` +
+        docs.map((d) => `- ${d.label}: ${location.origin}${d.href}`).join("\n") +
+        "\n";
 
       openEmailDraft(CONTACT_EMAIL, subject, body);
       onClose();
@@ -870,6 +911,54 @@ export default function StartModal({ open, onClose }: Props) {
                     />
                   </div>
 
+                  {/* ✅ CONSENT BLOCK */}
+                  <div className="sm:col-span-2">
+                    <div
+                      className="rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 backdrop-blur-xl"
+                    >
+                      <label className="flex cursor-pointer items-start gap-3">
+                        <span className="mt-[2px] grid h-5 w-5 place-items-center rounded-[8px] border border-white/18 bg-black/30">
+                          <input
+                            type="checkbox"
+                            checked={form.consent}
+                            onChange={(e) => update("consent", e.target.checked)}
+                            className="h-4 w-4 accent-[#FF9A3D]"
+                          />
+                        </span>
+
+                        <span className="text-[12px] leading-relaxed text-white/75">
+                          <span className="font-semibold text-white/85">
+                            {txt.consentText}
+                          </span>{" "}
+                          <span className="text-white/55">
+                            ({isRu ? "откроются в новой вкладке" : "opens in a new tab"})
+                          </span>
+
+                          <div className="mt-2 flex flex-col gap-1.5">
+                            {docs.map((d) => (
+                              <a
+                                key={d.href}
+                                href={d.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex w-fit items-center gap-2 text-[12px] font-semibold text-white/80 hover:text-white"
+                              >
+                                <span
+                                  className="h-[6px] w-[6px] rounded-full"
+                                  style={{ background: "#FF9A3D" }}
+                                />
+                                <span className="underline decoration-white/25 underline-offset-4">
+                                  {d.label}
+                                </span>
+                                <span className="text-white/45">— {txt.openDoc}</span>
+                              </a>
+                            ))}
+                          </div>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
                   {errorText ? (
                     <div className="sm:col-span-2 text-[11.5px] text-[#FFB36A]">
                       {errorText}
@@ -900,13 +989,13 @@ export default function StartModal({ open, onClose }: Props) {
 
                     <Button
                       onClick={submit}
-                      disabled={sending}
+                      disabled={sending || !form.consent} // ✅ нельзя отправить без галочки
                       className={cx(
                         "h-10 rounded-2xl px-5 text-[13px] font-semibold sm:h-11",
                         "!text-black",
                         "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
                         "hover:brightness-[1.04] active:brightness-[0.96]",
-                        sending && "opacity-80"
+                        (sending || !form.consent) && "opacity-70 cursor-not-allowed"
                       )}
                       style={{ background: BRAND_CTA } as React.CSSProperties}
                     >

@@ -53,10 +53,40 @@ const CONTACTS = {
   },
 };
 
-const LEGAL = [
-  { to: "/privacy", label: { ru: "Политика", en: "Privacy" } },
-  { to: "/terms", label: { ru: "Условия", en: "Terms" } },
-];
+/**
+ * ДОКУМЕНТЫ (PDF) — public/doc/...
+ * Из скрина:
+ * - Consent_Tivonix_EN.pdf
+ * - Privacy_Policy_Tivonix_EN.pdf
+ * - Политика_обработки_ПД_Tivonix_RU.pdf
+ * - Согласие_на_обработку_ПД_Tivonix_RU.pdf
+ */
+const DOCS = {
+  ru: [
+    {
+      href: "/doc/Политика_обработки_ПД_Tivonix_RU.pdf",
+      label: { ru: "Политика обработки персональных данных", en: "Personal Data Policy" },
+      badge: { ru: "PDF", en: "PDF" },
+    },
+    {
+      href: "/doc/Согласие_на_обработку_ПД_Tivonix_RU.pdf",
+      label: { ru: "Согласие на обработку персональных данных", en: "Consent to Personal Data Processing" },
+      badge: { ru: "PDF", en: "PDF" },
+    },
+  ],
+  en: [
+    {
+      href: "/doc/Privacy_Policy_Tivonix_EN.pdf",
+      label: { ru: "Privacy Policy", en: "Privacy Policy" },
+      badge: { ru: "PDF", en: "PDF" },
+    },
+    {
+      href: "/doc/Consent_Tivonix_EN.pdf",
+      label: { ru: "Consent", en: "Consent" },
+      badge: { ru: "PDF", en: "PDF" },
+    },
+  ],
+} as const;
 
 // ВНИЗУ оставляем только TG
 const SOCIALS = [
@@ -108,16 +138,20 @@ function FooterLink({
 function ExternalLink({
   href,
   children,
+  newTab,
 }: {
   href: string;
   children: React.ReactNode;
+  newTab?: boolean;
 }) {
   const isHttp = href.startsWith("http");
+  const openInNewTab = newTab ?? isHttp;
+
   return (
     <a
       href={href}
-      target={isHttp ? "_blank" : undefined}
-      rel={isHttp ? "noopener noreferrer" : undefined}
+      target={openInNewTab ? "_blank" : undefined}
+      rel={openInNewTab ? "noopener noreferrer" : undefined}
       className={cx(
         "group inline-flex items-center gap-2 text-sm text-white/70 transition-colors",
         "hover:text-white",
@@ -141,6 +175,44 @@ function ExternalLink({
   );
 }
 
+function DocLink({
+  href,
+  title,
+  badge,
+}: {
+  href: string;
+  title: string;
+  badge?: string;
+}) {
+  return (
+    <ExternalLink href={href} newTab>
+      <span className="inline-flex items-center gap-2">
+        <span className="inline-flex items-center gap-2">
+          <FileIcon />
+          <span>{title}</span>
+        </span>
+
+        {badge ? (
+          <span
+            className={cx(
+              "ml-1 inline-flex items-center rounded-full px-2 py-0.5",
+              "text-[10px] font-semibold tracking-[0.16em] uppercase",
+              "border border-white/10 text-white/50",
+              "group-hover:border-[color:var(--accent)]/35 group-hover:text-white/70"
+            )}
+          >
+            {badge}
+          </span>
+        ) : null}
+
+        <span className="opacity-40 group-hover:opacity-70 transition-opacity">
+          <ArrowUpRightIcon />
+        </span>
+      </span>
+    </ExternalLink>
+  );
+}
+
 export default function Footer() {
   const year = new Date().getFullYear();
   const { lang } = useLang();
@@ -154,6 +226,9 @@ export default function Footer() {
   const rightsText = isRu
     ? `© ${year} Tivonix. Все права защищены.`
     : `© ${year} Tivonix. All rights reserved.`;
+
+  const primaryDocs = isRu ? DOCS.ru : DOCS.en;
+  const secondaryDocs = isRu ? DOCS.en : DOCS.ru;
 
   return (
     <footer
@@ -266,18 +341,48 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* LEGAL */}
+            {/* LEGAL / ДОКУМЕНТЫ */}
             <div>
               <div className="text-[11px] font-semibold tracking-[0.18em] text-white uppercase">
                 {isRu ? "Документы" : "Legal"}
               </div>
-              <ul className="mt-4 space-y-2.5">
-                {LEGAL.map((i) => (
-                  <li key={i.to}>
-                    <FooterLink to={i.to}>{t(i.label)}</FooterLink>
-                  </li>
-                ))}
-              </ul>
+
+              {/* основной язык */}
+              <div className="mt-4">
+                <div className="text-xs text-white/40">
+                  {isRu ? "RU документы" : "EN documents"}
+                </div>
+                <ul className="mt-2 space-y-2.5">
+                  {primaryDocs.map((d) => (
+                    <li key={d.href}>
+                      <DocLink
+                        href={d.href}
+                        title={t(d.label)}
+                        badge={t(d.badge)}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* вторичная версия */}
+              <div className="mt-5">
+                <div className="text-xs text-white/40">
+                  {isRu ? "EN версия" : "RU version"}
+                </div>
+                <ul className="mt-2 space-y-2.5">
+                  {secondaryDocs.map((d) => (
+                    <li key={d.href}>
+                      <DocLink
+                        href={d.href}
+                        // тут специально не t(), чтобы подписи были на "чужом" языке аккуратно
+                        title={isRu ? d.label.en : d.label.ru}
+                        badge={isRu ? d.badge.en : d.badge.ru}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
 
@@ -334,6 +439,56 @@ function TelegramIcon() {
         stroke="currentColor"
         strokeWidth="1.6"
         strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function FileIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M8 3h6l4 4v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M14 3v5h5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8.5 13.5h7"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M8.5 17h7"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function ArrowUpRightIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M7 17 17 7"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M10 7h7v7"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
       />
     </svg>
   );

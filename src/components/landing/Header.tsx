@@ -83,9 +83,7 @@ function LangToggle({
     "h-9 rounded-full px-3 text-xs font-semibold transition border outline-none " +
     "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40";
 
-  const wrap = compact
-    ? "flex items-center gap-1"
-    : "flex items-center gap-1 mr-2";
+  const wrap = compact ? "flex items-center gap-1" : "flex items-center gap-1 mr-2";
 
   const tone = {
     on: "border-white/14 bg-white/10 text-white",
@@ -236,13 +234,34 @@ export default function Header() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Блокируем скролл под меню на мобиле/планшете
+  // ✅ iOS-safe блокировка скролла (без прыжков вверх)
   useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+
+    const y = window.scrollY;
+    const body = document.body;
+
+    const prevPosition = body.style.position;
+    const prevTop = body.style.top;
+    const prevLeft = body.style.left;
+    const prevRight = body.style.right;
+    const prevWidth = body.style.width;
+
+    body.style.position = "fixed";
+    body.style.top = `-${y}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
+
     return () => {
-      document.body.style.overflow = prev;
+      body.style.position = prevPosition;
+      body.style.top = prevTop;
+      body.style.left = prevLeft;
+      body.style.right = prevRight;
+      body.style.width = prevWidth;
+
+      // восстановить скролл
+      window.scrollTo(0, y);
     };
   }, [open]);
 
@@ -390,7 +409,7 @@ export default function Header() {
                   </Link>
                 </div>
 
-                {/* CENTER: навигация (только xl+, чтобы iPad не “ломался”) */}
+                {/* CENTER: навигация (только xl+) */}
                 <div className="absolute inset-x-0 flex justify-center pointer-events-none">
                   <div className="hidden xl:block pointer-events-auto">
                     <PillNav
@@ -423,16 +442,12 @@ export default function Header() {
                       <span
                         className={cx(
                           "col-start-1 row-start-1 transition-all",
-                          scrolled
-                            ? "opacity-0 -translate-y-1"
-                            : "opacity-100 translate-y-0"
+                          scrolled ? "opacity-0 -translate-y-1" : "opacity-100 translate-y-0"
                         )}
                         style={
                           reducedMotion
                             ? undefined
-                            : ({
-                                transitionDuration: `${dur}ms`,
-                              } as React.CSSProperties)
+                            : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)
                         }
                       >
                         {ctaTop}
@@ -440,16 +455,12 @@ export default function Header() {
                       <span
                         className={cx(
                           "col-start-1 row-start-1 transition-all",
-                          scrolled
-                            ? "opacity-100 translate-y-0"
-                            : "opacity-0 translate-y-1"
+                          scrolled ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
                         )}
                         style={
                           reducedMotion
                             ? undefined
-                            : ({
-                                transitionDuration: `${dur}ms`,
-                              } as React.CSSProperties)
+                            : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)
                         }
                       >
                         {ctaScrolled}
@@ -491,7 +502,12 @@ export default function Header() {
                     aria-label={ariaMenu}
                     aria-expanded={open}
                     aria-controls="mobile-header-menu"
-                    onClick={() => setOpen((v) => !v)}
+                    onClick={(e) => {
+                      // ✅ гасим любые “провалы” клика в ссылки/якоря
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setOpen((v) => !v);
+                    }}
                   >
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                       <path
@@ -501,9 +517,7 @@ export default function Header() {
                         strokeLinecap="round"
                         style={{
                           transformOrigin: "12px 7px",
-                          transform: open
-                            ? "translateY(5px) rotate(45deg)"
-                            : "none",
+                          transform: open ? "translateY(5px) rotate(45deg)" : "none",
                           transition: "transform 220ms ease",
                         }}
                       />
@@ -524,9 +538,7 @@ export default function Header() {
                         strokeLinecap="round"
                         style={{
                           transformOrigin: "12px 17px",
-                          transform: open
-                            ? "translateY(-5px) rotate(-45deg)"
-                            : "none",
+                          transform: open ? "translateY(-5px) rotate(-45deg)" : "none",
                           transition: "transform 220ms ease",
                         }}
                       />
