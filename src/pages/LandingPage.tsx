@@ -7,6 +7,9 @@ import Benefits from "../components/landing/Benefits";
 import FAQ from "../components/landing/FAQ";
 import Footer from "../components/landing/Footer";
 
+// NEW: services/plans block (4 cards with hover videos)
+import ServicesPlans from "../components/landing/ServicesPlans";
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[var(--bg)]">
@@ -21,6 +24,8 @@ export default function LandingPage() {
         <div id="stack">
           <WhyUs />
         </div>
+
+
         <div id="benefits">
           <Benefits />
         </div>
@@ -28,7 +33,10 @@ export default function LandingPage() {
         <div id="admin">
           <AppsOrbitBlock />
         </div>
-
+                {/* NEW: 4 cards block */}
+        <div id="services">
+          <ServicesPlans className="py-14 sm:py-16" />
+        </div>
 
 
         <FAQ />
