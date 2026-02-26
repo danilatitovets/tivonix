@@ -1,12 +1,12 @@
 // src/components/landing/WhyUs.tsx
 import React, {
+  useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
   type CSSProperties,
-  useId,
-  useCallback,
 } from "react";
 import Container from "../ui/Container";
 import Section from "../ui/Section";
@@ -14,9 +14,7 @@ import { useLang } from "../../i18n/LangProvider";
 
 const STICKY_TOP = 96;
 const MOBILE_STICKY_TOP = "calc(var(--header-h, 72px) + 10px)";
-
-// ✅ “как раньше”: на мобиле карточка НЕ во всю ширину, а фикс/лимит и по центру
-const MOBILE_CARD_MAX_W = 320; // подгони (например 280/300/320/360)
+const MOBILE_CARD_MAX_W = 320;
 
 type StackItem = {
   id: string;
@@ -59,7 +57,6 @@ function prefetchImage(src: string) {
   img.src = src;
 }
 
-/** прогресс справа (desktop) / слева (mobile) */
 function ProgressBar({
   progress,
   height,
@@ -151,10 +148,7 @@ function StackCard({
   }, []);
 
   const overlayStyle: CSSProperties = reducedMotion
-    ? {
-        opacity: active ? 1 : 0,
-        transition: "opacity .14s ease",
-      }
+    ? { opacity: active ? 1 : 0, transition: "opacity .14s ease" }
     : {
         clipPath: active
           ? "polygon(0 0, 100% 0, 100% 100%, 0 100%)"
@@ -197,7 +191,6 @@ function StackCard({
       "
       style={
         {
-          // 👇 даём Tailwind’у переменную, чтобы w-[min(...)] работал
           ["--cardW" as any]: `${MOBILE_CARD_MAX_W}px`,
           opacity: reveal ? 1 : 0,
           transform: reveal ? "translateY(0)" : "translateY(14px)",
@@ -222,7 +215,6 @@ function StackCard({
         }
       >
         <div className="relative h-full w-full overflow-hidden rounded-[28px] bg-black/35">
-          {/* base image */}
           <img
             src={item.src}
             alt=""
@@ -235,7 +227,6 @@ function StackCard({
             }
           />
 
-          {/* overlay */}
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute inset-0" style={overlayStyle}>
               <img
@@ -340,10 +331,7 @@ function StackCard({
         </div>
 
         {item.note && descId && (
-          <div
-            id={descId}
-            className="mt-1 text-[12.5px] leading-relaxed text-white/55"
-          >
+          <div id={descId} className="mt-1 text-[12.5px] leading-relaxed text-white/55">
             {item.note}
           </div>
         )}
@@ -357,55 +345,51 @@ export default function WhyUs() {
   const reducedMotion = usePrefersReducedMotion();
 
   const isRu = lang === "ru";
-  const w = (dict as any).whyUs || {};
+  const w = dict.whyUs;
   const sectionId = useId();
 
-  const badgeLeft = w.badgeLeft ?? (isRu ? "СТЕК" : "STACK");
-  const badgeCenter = w.badgeCenter ?? (isRu ? "ТЕХНОЛОГИИ" : "TECH");
-  const badgeRight = w.badgeRight ?? (isRu ? "МОДУЛИ" : "MODULES");
+  const badgeLeft = (w as { badgeLeft?: string })?.badgeLeft ?? (isRu ? "СТЕК" : "STACK");
+  const badgeCenter = (w as { badgeCenter?: string })?.badgeCenter ?? (isRu ? "ТЕХНОЛОГИИ" : "TECH");
+  const badgeRight = (w as { badgeRight?: string })?.badgeRight ?? (isRu ? "МОДУЛИ" : "MODULES");
 
-  const title1 = w.title1 ?? (isRu ? "На чём мы" : "What we");
-  const title2 = w.title2 ?? (isRu ? "быстро запускаем" : "ship fast");
+  const title1 = w.titleTop ?? (isRu ? "На чём мы" : "What we");
+  const title2 = w.titleBottom ?? (isRu ? "быстро запускаем" : "ship fast");
 
   const sub =
-    w.sub ??
+    w.description ??
     (isRu
-      ? "Не просто логотипы: это стек и модули, которые сокращают время до релиза и упрощают поддержку. Ниже — что используем и какую пользу вы получаете."
-      : "Not just logos: a stack and modules that shorten time-to-ship and reduce maintenance cost. Here’s what we use — and the value you get.");
+      ? "Мы запускаем продукты на проверенном стеке и готовых модулях. Это ускоряет релиз, снижает риски и делает поддержку предсказуемой."
+      : "We ship on a proven stack with reusable modules. Faster releases, lower risk, and predictable maintenance.");
 
   const bullets: string[] =
-    w.bullets ??
+    (w as { bullets?: string[] }).bullets ??
     (isRu
       ? [
-          "Design system — единый стиль и быстрее сборка новых экранов",
-          "Админка + роли/права — управление продуктом без участия разработчиков",
-          "Интеграции и аналитика — платежи, события, метрики, отчёты",
+          "Design system — единый UI и быстрая разработка новых экранов",
+          "Админка + роли — управление контентом и доступами без разработчиков",
+          "Интеграции и аналитика — платежи, события, метрики и отчёты",
         ]
       : [
           "Design system — consistent UI and faster delivery",
-          "Admin + roles — manage product without engineers",
+          "Admin + roles — manage content and access without engineers",
           "Integrations & analytics — payments, events, metrics, reports",
         ]);
 
   const trustLine =
-    w.trustLine ??
+    (w as { trustLine?: string }).trustLine ??
     (isRu
-      ? "Типизация и линт • Адаптив и a11y • Оптимизация загрузки"
-      : "Typed code & linting • Responsive & a11y • Performance optimization");
+      ? "Типизация и линт • Адаптив • Доступность (a11y) • Оптимизация скорости"
+      : "Typed & linted • Responsive • Accessible (a11y) • Performance-focused");
 
   const stack = useMemo<StackItem[]>(
     () => [
       { id: "supabase", label: "Supabase", src: "/images/stack/supabase.webp", category: "Platform" },
-
       { id: "react", label: "React", src: "/images/stack/react.webp", category: "Frontend" },
       { id: "ts", label: "TypeScript", src: "/images/stack/ts.webp", category: "Frontend" },
       { id: "tw", label: "Tailwind", src: "/images/stack/tw.webp", category: "Frontend" },
-
       { id: "node", label: "Node.js", src: "/images/stack/node.webp", category: "Backend" },
       { id: "ex", label: "Express", src: "/images/stack/ex.webp", category: "Backend" },
-
       { id: "pg", label: "Postgres", src: "/images/stack/pg.webp", category: "Database" },
-
       { id: "html", label: "HTML", src: "/images/stack/html.webp", category: "Frontend" },
       { id: "css", label: "CSS", src: "/images/stack/css.webp", category: "Frontend" },
       { id: "js", label: "JavaScript", src: "/images/stack/js.webp", category: "Frontend" },
@@ -415,6 +399,11 @@ export default function WhyUs() {
 
   const rootRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const metricsRef = useRef<{ firstY: number; lastY: number; ready: boolean }>({
+    firstY: 0,
+    lastY: 0,
+    ready: false,
+  });
 
   const [reveal, setReveal] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -434,52 +423,88 @@ export default function WhyUs() {
     return () => io.disconnect();
   }, []);
 
+  const recalcMetrics = useCallback(() => {
+    if (typeof window === "undefined") return;
+    const els = itemRefs.current.filter(Boolean) as HTMLButtonElement[];
+    if (!els.length) {
+      metricsRef.current.ready = false;
+      return;
+    }
+
+    let first = Number.POSITIVE_INFINITY;
+    let last = Number.NEGATIVE_INFINITY;
+
+    for (const el of els) {
+      const r = el.getBoundingClientRect();
+      const centerY = r.top + window.scrollY + r.height / 2;
+      if (centerY < first) first = centerY;
+      if (centerY > last) last = centerY;
+    }
+
+    metricsRef.current.firstY = first;
+    metricsRef.current.lastY = last;
+    metricsRef.current.ready = last - first > 8;
+  }, []);
+
+  const updateProgress = useCallback(() => {
+    if (typeof window === "undefined") return;
+    const m = metricsRef.current;
+    if (!m.ready) {
+      setScrollProgress(0);
+      return;
+    }
+
+    const midView = window.scrollY + window.innerHeight * 0.5;
+    const raw = (midView - m.firstY) / (m.lastY - m.firstY);
+    setScrollProgress(clamp(raw, 0, 1));
+  }, []);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     let raf = 0;
 
-    const update = () => {
-      raf = 0;
-
-      const midView = window.innerHeight * 0.5;
-      let firstCenter: number | null = null;
-      let lastCenter: number | null = null;
-
-      for (const el of itemRefs.current) {
-        if (!el) continue;
-        const r = el.getBoundingClientRect();
-        const c = r.top + r.height / 2;
-        if (firstCenter === null || c < firstCenter) firstCenter = c;
-        if (lastCenter === null || c > lastCenter) lastCenter = c;
-      }
-
-      if (
-        firstCenter !== null &&
-        lastCenter !== null &&
-        Math.abs(lastCenter - firstCenter) > 4
-      ) {
-        const raw = (midView - firstCenter) / (lastCenter - firstCenter);
-        setScrollProgress(clamp(raw, 0, 1));
-      } else {
-        setScrollProgress(0);
-      }
-    };
-
     const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        updateProgress();
+      });
     };
 
-    update();
+    const onResize = () => {
+      recalcMetrics();
+      onScroll();
+    };
+
+    const ro = rootRef.current ? new ResizeObserver(onResize) : null;
+    if (ro && rootRef.current) ro.observe(rootRef.current);
+
+    const t = window.setTimeout(() => {
+      recalcMetrics();
+      updateProgress();
+    }, 0);
+
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("resize", onResize);
 
     return () => {
+      window.clearTimeout(t);
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("resize", onResize);
       if (raf) cancelAnimationFrame(raf);
+      if (ro) ro.disconnect();
     };
-  }, []);
+  }, [recalcMetrics, updateProgress]);
+
+  useEffect(() => {
+    if (!reveal) return;
+    const id = requestAnimationFrame(() => {
+      recalcMetrics();
+      updateProgress();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [reveal, recalcMetrics, updateProgress]);
 
   return (
     <Section className="pt-[150px] sm:pt-[200px] pb-16 sm:pb-24">
@@ -566,7 +591,6 @@ export default function WhyUs() {
                   <ProgressBar progress={scrollProgress} height={220} thin />
                 </div>
 
-                {/* ✅ мобила: по центру; sm+: как было (две колонки) */}
                 <div className="grid grid-cols-1 gap-6 justify-items-center sm:justify-items-stretch sm:grid-cols-2 sm:gap-7">
                   {stack.map((it, i) => {
                     const labelId = `${sectionId}-${it.id}-label`;

@@ -10,6 +10,8 @@ import React, {
 
 export type Lang = "ru" | "en";
 
+const LANG_STORAGE_KEY = "tivonix_lang";
+
 /* ====== словари ====== */
 
 type HeaderDict = {
@@ -123,7 +125,7 @@ const DICT: Record<Lang, Dictionary> = {
       titleLine2Prefix: "быстро, аккуратно и",
       titleLine2Premium: "с премиум-UI",
       subtitle:
-        "Дизайн как у топ-SaaS + чистый код + быстрый MVP. Админ-панель, роли, таблицы, аналитика, платежи — всё под ключ.",
+        "Дизайн как у топ-SaaS, чистый код, быстрый MVP. Админка, роли, аналитика, платежи — под ключ.",
       emailPlaceholder: "Рабочий email",
       btnDemo: "Получить демо",
       btnTelegram: "Написать в Telegram",
@@ -249,7 +251,7 @@ const DICT: Record<Lang, Dictionary> = {
       titleLine2Prefix: "fast, neatly and",
       titleLine2Premium: "with premium UI",
       subtitle:
-        "Top-tier SaaS design + clean code + fast MVP. Admin panel, roles, tables, analytics, payments — all delivered end-to-end.",
+        "Top-tier SaaS design, clean code, fast MVP. Admin panel, roles, analytics, payments — end-to-end.",
       emailPlaceholder: "Work email",
       btnDemo: "Get a demo",
       btnTelegram: "Message on Telegram",
@@ -386,11 +388,11 @@ function detectLang(): Lang {
   } catch (_) {}
 
   // 2) early pick from index.html (если есть)
-  const pre = (window as any).__TIVONIX_LANG__;
+  const pre = (window as Window & { __TIVONIX_LANG__?: string }).__TIVONIX_LANG__;
   if (pre === "ru" || pre === "en") return pre;
 
-  // 3) stored manual choice
-  const stored = (localStorage.getItem("lang") || "").toLowerCase();
+  // 3) stored manual choice (тот же ключ, что в index.html)
+  const stored = (localStorage.getItem(LANG_STORAGE_KEY) || "").toLowerCase();
   if (stored === "ru" || stored === "en") return stored as Lang;
 
   // 4) browser languages
@@ -407,7 +409,7 @@ function syncHtmlLang(lang: Lang) {
   if (typeof document === "undefined") return;
   document.documentElement.lang = lang;
   // удобно для CSS: html[data-lang="en"] ...
-  (document.documentElement as any).dataset.lang = lang;
+  (document.documentElement as HTMLElement).dataset.lang = lang;
 }
 
 export function LangProvider({ children }: { children: ReactNode }) {
@@ -416,15 +418,14 @@ export function LangProvider({ children }: { children: ReactNode }) {
   const setLang = (l: Lang) => {
     setLangState(l);
     try {
-      localStorage.setItem("lang", l); // ручной выбор фиксируем
+      localStorage.setItem(LANG_STORAGE_KEY, l);
     } catch (_) {}
     syncHtmlLang(l);
   };
 
   useEffect(() => {
-    // при старте + при изменении
     try {
-      localStorage.setItem("lang", lang);
+      localStorage.setItem(LANG_STORAGE_KEY, lang);
     } catch (_) {}
     syncHtmlLang(lang);
   }, [lang]);

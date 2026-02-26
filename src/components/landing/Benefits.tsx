@@ -15,9 +15,8 @@ const LOGO_IMG = "/images/logopad.webp";
 const CONTACT_EMAIL = "tivoonix@gmail.com";
 const TG_URL = "https://t.me/TIVONIX";
 
-// Если этот блок реально главный на странице — оставь true.
-// Если выше уже есть hero с H1 — поставь false, будет H2.
-const USE_H1 = true;
+// На странице один h1 — в Hero. Здесь используем h2.
+const USE_H1 = false;
 
 function buildMailBody(lang: Lang) {
   if (lang === "ru") {
@@ -114,23 +113,23 @@ function Chip({ children }: { children: React.ReactNode }) {
 export default function Benefits() {
   const { dict, lang } = useLang();
   const isRu = lang === "ru";
-  const bd: any = (dict as any)?.benefits ?? {};
+  const bd = dict?.benefits;
 
   const heroLine1 =
-    bd?.heroLine1 ?? (isRu ? "ЗАПУСК SaaS / MVP" : "SHIP YOUR SaaS MVP");
+    (bd as { heroLine1?: string } | undefined)?.heroLine1 ?? (isRu ? "ЗАПУСК SaaS / MVP" : "SHIP YOUR SaaS MVP");
   const heroLine2 =
-    bd?.heroLine2 ?? (isRu ? "СТРУКТУРНО И БЫСТРО" : "FAST AND STRUCTURED");
+    (bd as { heroLine2?: string } | undefined)?.heroLine2 ?? (isRu ? "СТРУКТУРНО И БЫСТРО" : "FAST AND STRUCTURED");
   const heroLine3 =
-    bd?.heroLine3 ??
+    (bd as { heroLine3?: string } | undefined)?.heroLine3 ??
     (isRu ? "ДИЗАЙН + РАЗРАБОТКА ПОД КЛЮЧ" : "DESIGN + DEVELOPMENT END-TO-END");
 
   const problemTitle =
-    bd?.problemTitle ?? (isRu ? "ПОЧЕМУ ПРОЕКТЫ БУКСУЮТ" : "WHY PROJECTS STALL");
+    (bd as { problemTitle?: string } | undefined)?.problemTitle ?? (isRu ? "ПОЧЕМУ ПРОЕКТЫ БУКСУЮТ" : "WHY PROJECTS STALL");
   const solutionTitle =
-    bd?.solutionTitle ?? (isRu ? "КАК МЫ РЕШАЕМ" : "HOW WE FIX IT");
+    (bd as { solutionTitle?: string } | undefined)?.solutionTitle ?? (isRu ? "КАК МЫ РЕШАЕМ" : "HOW WE FIX IT");
 
   const problemBullets: string[] =
-    bd?.problemBullets ??
+    (bd as { problemBullets?: string[] } | undefined)?.problemBullets ??
     (isRu
       ? [
           "Дизайн и разработка идут раздельно — начинаются бесконечные правки",
@@ -146,7 +145,7 @@ export default function Benefits() {
         ]);
 
   const solutionBullets: string[] =
-    bd?.solutionBullets ??
+    (bd as { solutionBullets?: string[] } | undefined)?.solutionBullets ??
     (isRu
       ? [
           "Сначала сценарии и структура → затем дизайн-система → потом код",
@@ -163,7 +162,7 @@ export default function Benefits() {
 
   // Никаких “гарантий из воздуха”: только понятный следующий шаг.
   const supportLine =
-    bd?.supportLine ??
+    (bd as { supportLine?: string } | undefined)?.supportLine ??
     (isRu
       ? "Отвечаю в течение 24 часов. Можно начать с короткого аудита или прототипа — чтобы быстро прояснить объём."
       : "I reply within 24 hours. You can start with a quick audit or prototype to clarify scope fast.");
@@ -251,7 +250,7 @@ export default function Benefits() {
             </div>
             <ul className="mt-5 space-y-4 text-[14.5px] sm:text-[15px] leading-[1.75]">
               {problemBullets.map((t, i) => (
-                <Bullet key={i}>{t}</Bullet>
+                <Bullet key={`problem-${i}`}>{t}</Bullet>
               ))}
             </ul>
           </div>
@@ -262,7 +261,7 @@ export default function Benefits() {
             </div>
             <ul className="mt-5 space-y-4 text-[14.5px] sm:text-[15px] leading-[1.75]">
               {solutionBullets.map((t, i) => (
-                <Bullet key={i}>{t}</Bullet>
+                <Bullet key={`solution-${i}`}>{t}</Bullet>
               ))}
             </ul>
 

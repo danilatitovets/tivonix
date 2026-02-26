@@ -1,8 +1,8 @@
-// src/components/landing/Hero.tsx
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Section from "../ui/Section";
 import Container from "../ui/Container";
 import { useLang, type Lang } from "../../i18n/LangProvider";
+import HeroWebGLBg from "./HeroWebGLBg";
 
 const HERO_BG_IMG = "/images/fom.webp";
 const TG_URL = "https://t.me/TIVONIX";
@@ -12,8 +12,27 @@ function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
 
+function useMediaQuery(query: string) {
+  const getMatch = () => (typeof window !== "undefined" ? window.matchMedia(query).matches : false);
+  const [matches, setMatches] = useState<boolean>(getMatch);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const m = window.matchMedia(query);
+    const onChange = () => setMatches(m.matches);
+    onChange();
+    if (m.addEventListener) m.addEventListener("change", onChange);
+    else m.addListener(onChange);
+    return () => {
+      if (m.removeEventListener) m.removeEventListener("change", onChange);
+      else m.removeListener(onChange);
+    };
+  }, [query]);
+
+  return matches;
+}
+
 const HERO_STYLES = `
-  /* scoped variables (НЕ :root) */
   .hero{
     --tiv-amber: 255,154,61;
     --tiv-orange: 255,106,26;
@@ -21,7 +40,8 @@ const HERO_STYLES = `
     --tiv-ice: 245,246,248;
   }
 
-  .heroBg{ position:absolute; inset:0; background:#050507; }
+  .heroBg{ position:absolute; inset:0; background:#000000; }
+
   .heroBg .heroImg{
     position:absolute; inset:0;
     width:100%; height:100%;
@@ -32,7 +52,16 @@ const HERO_STYLES = `
     will-change: transform;
   }
 
-  /* Overlay to guarantee text contrast */
+  .heroWebgl{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    transform:scale(1.03);
+    will-change: transform;
+    pointer-events:auto;
+  }
+
+  .heroWebgl canvas{ pointer-events:auto; }
+
   .heroOverlay{
     position:absolute; inset:0;
     background:
@@ -49,7 +78,7 @@ const HERO_STYLES = `
       radial-gradient(120% 120% at 50% 55%,
         rgba(0,0,0,0.18) 0%,
         rgba(0,0,0,0.84) 72%,
-        rgba(0,0,0,0.96) 100%);
+        rgba(0,0,0,1) 100%);
   }
 
   .heroGrain{
@@ -69,7 +98,6 @@ const HERO_STYLES = `
     text-shadow:0 14px 38px rgba(0,0,0,0.86);
   }
 
-  /* Gmail button (dark glass) */
   .gmailBtn{
     border-radius:18px;
     border:1px solid rgba(255,255,255,0.18);
@@ -79,30 +107,27 @@ const HERO_STYLES = `
     box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);
     transition:transform .18s ease, background .18s ease, border-color .18s ease;
   }
+
   .gmailBtn:hover{
     transform:translateY(-1px);
     background:rgba(255,255,255,0.06);
     border-color:rgba(255,255,255,0.26);
   }
+
   .gmailBtn:active{ transform:translateY(0px); }
 
-  /* Reduce motion */
   @media (prefers-reduced-motion: reduce){
     .heroBg .heroImg{ transform:none; will-change:auto; }
+    .heroWebgl{ transform:none; }
     .gmailBtn{ transition:none; }
   }
 
-  /* -------------------------
-     MOBILE ONLY IMPROVEMENTS
-     ------------------------- */
   @media (max-width: 640px){
     .hero .heroTitleCaps{ text-transform:none !important; letter-spacing:-0.02em !important; }
     .hero .heroH1{ line-height:1.05; letter-spacing:-0.028em; }
     .hero .heroSubtitle{ font-size:15.5px; line-height:1.55; }
-
     .hero .heroWrap{ padding-top: 2px; }
     .hero .heroCtas{ margin-top: 18px; gap: 10px; }
-
     .hero .gmailBtn, .hero .tgBtn{ height:56px !important; border-radius:18px !important; }
     .hero .heroTrust{ margin-top:10px; font-size:12.8px; color: rgba(255,255,255,0.64); }
     .hero .heroTrust{
@@ -157,17 +182,18 @@ export default function Hero() {
   const { lang, dict } = useLang();
   const hero = dict.hero;
 
-  const gmailUrl = useMemo(() => {
+  const isDesktop = useMediaQuery("(min-width: 900px)");
+
+  const { gmailUrl, gmailLabel, tgLabel, trustLine } = useMemo(() => {
     const subject = getSubject(lang);
     const body = buildMailBody(lang);
-    return buildGmailUrl(CONTACT_EMAIL, subject, body);
+    return {
+      gmailUrl: buildGmailUrl(CONTACT_EMAIL, subject, body),
+      gmailLabel: lang === "ru" ? "Открыть в Gmail" : "Open in Gmail",
+      tgLabel: lang === "ru" ? "Написать в Telegram" : "Message on Telegram",
+      trustLine: lang === "ru" ? "NDA • Договор • Прозрачная смета" : "NDA • Contract • Clear pricing",
+    };
   }, [lang]);
-
-  const gmailLabel = lang === "ru" ? "Открыть в Gmail" : "Open in Gmail";
-  const tgLabel = lang === "ru" ? "Написать в Telegram" : "Message on Telegram";
-
-  const trustLine =
-    lang === "ru" ? "NDA • Договор • Прозрачная смета" : "NDA • Contract • Clear pricing";
 
   return (
     <Section
@@ -179,24 +205,29 @@ export default function Hero() {
     >
       <style>{HERO_STYLES}</style>
 
-      {/* background (decorative) */}
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <div className="heroBg">
-          <img
-            className="heroImg"
-            src={HERO_BG_IMG}
-            alt=""
-            draggable={false}
-            loading="eager"
-            decoding="async"
-          />
+          {isDesktop ? (
+            <div className="heroWebgl pointer-events-auto">
+              <HeroWebGLBg />
+            </div>
+          ) : (
+            <img
+              className="heroImg"
+              src={HERO_BG_IMG}
+              alt=""
+              draggable={false}
+              loading="eager"
+              decoding="async"
+            />
+          )}
         </div>
 
         <div className="heroOverlay" />
         <div className="heroGrain" />
 
         <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/85 via-black/40 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/92 via-black/55 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black via-black/80 to-transparent" />
       </div>
 
       <Container>
@@ -222,9 +253,7 @@ export default function Hero() {
               {hero.subtitle}
             </p>
 
-            {/* ONLY TWO BUTTONS */}
             <div className="mt-7 flex w-full max-w-[820px] flex-col gap-3 sm:flex-row sm:items-stretch heroCtas">
-              {/* Gmail */}
               <a
                 href={gmailUrl}
                 target="_blank"
@@ -242,7 +271,6 @@ export default function Hero() {
                 {gmailLabel}
               </a>
 
-              {/* Telegram */}
               <a
                 href={TG_URL}
                 target="_blank"
@@ -263,11 +291,11 @@ export default function Hero() {
                 }}
               >
                 <span className="relative z-10">{tgLabel}</span>
-
                 <span
                   className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 blur-xl transition duration-300 group-hover:opacity-70"
                   style={{
-                    background: "radial-gradient(700px 120px at 50% 30%, rgba(255,176,32,0.65), rgba(0,0,0,0))",
+                    background:
+                      "radial-gradient(700px 120px at 50% 30%, rgba(255,176,32,0.65), rgba(0,0,0,0))",
                   }}
                 />
               </a>

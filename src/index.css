@@ -2,9 +2,14 @@
   @tailwind components;
   @tailwind utilities;
 
-  :root { color-scheme: dark; }
+  :root {
+    color-scheme: dark;
+    --bg: #000000;
+    --accent: #FF6B2C;
+    --accent-mid: #FF9A3D;
+  }
   html, body, #root { height: 100%; }
-  body { margin: 0; background: #000; color: rgba(255,255,255,0.92); }
+  body { margin: 0; background: #000000; color: rgba(255,255,255,0.92); }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   /* скрыть скроллбар, но оставить прокрутку */

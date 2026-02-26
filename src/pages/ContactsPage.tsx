@@ -233,7 +233,7 @@ function SunContacts({ size }: { size: number }) {
                   <a
                     href="https://t.me/TIVONIX"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className={cx(
                       "group inline-flex items-center justify-between gap-3 rounded-2xl px-4 py-3",
                       "border border-white/12 bg-white/[0.05] hover:bg-white/[0.07] transition",
@@ -257,7 +257,7 @@ function SunContacts({ size }: { size: number }) {
                   <a
                     href="https://mail.google.com/mail/?view=cm&fs=1&to=tivoonix@gmail.com&su=%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82%20(SaaS%2FMVP)"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className={cx(
                       "group inline-flex items-center justify-between gap-3 rounded-2xl px-4 py-3",
                       "border border-white/12 bg-white/[0.05] hover:bg-white/[0.07] transition",
@@ -283,7 +283,7 @@ function SunContacts({ size }: { size: number }) {
                   <a
                     href="https://t.me/TIVONIX"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className={cx(
                       "inline-flex h-11 w-full items-center justify-center rounded-2xl px-6",
                       "text-[14px] font-[800] text-black whitespace-nowrap",

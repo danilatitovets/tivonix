@@ -45,8 +45,8 @@ const ORANGE = "#FF9A3D";
 const PRIMARY_CATS: Cat[] = ["start", "price", "time", "process", "design", "dev"];
 const SECONDARY_CATS: Cat[] = ["content", "seo", "tech", "support", "fix"];
 
-type Style = CSSProperties & Record<string, any>;
-const s = (v: Record<string, any>) => v as Style;
+type Style = CSSProperties & Record<string, unknown>;
+const s = (v: Record<string, unknown>) => v as Style;
 
 const CAT_LABELS: Record<Cat, { ru: string; en: string }> = {
   start: { ru: "Старт", en: "Start" },
@@ -736,6 +736,7 @@ export default function FAQSection() {
                       onClick={() => setOpenId((v) => (v === f.id ? null : f.id))}
                       aria-expanded={isOpen}
                       aria-controls={domId}
+                      aria-label={isOpen ? btnHide : `${btnShow}: ${f.q}`}
                       className={cx(
                         "w-full flex items-center gap-2 rounded-[12px]",
                         "border border-white/12 bg-white/[0.03] px-3 py-2",

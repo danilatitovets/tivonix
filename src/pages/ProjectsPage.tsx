@@ -125,7 +125,7 @@ function DomainPill({
     <a
       href={href}
       target="_blank"
-      rel="noreferrer"
+      rel="noopener noreferrer"
       className={cx(
         "group inline-flex items-center gap-2",
         "rounded-2xl px-4 py-2",
@@ -425,7 +425,7 @@ export default function ProjectsPage() {
                   <a
                     href="https://mail.google.com/mail/?view=cm&fs=1&to=tivoonix@gmail.com&su=%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82%20(SaaS%2FMVP)"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className={cx(
                       "inline-flex h-11 items-center justify-center rounded-2xl px-6",
                       "border border-white/14 bg-white/5 backdrop-blur",
@@ -438,7 +438,7 @@ export default function ProjectsPage() {
                   <a
                     href="https://t.me/TIVONIX"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className={cx(
                       "inline-flex h-11 items-center justify-center rounded-2xl px-6",
                       "text-[14px] font-[750] text-black whitespace-nowrap",

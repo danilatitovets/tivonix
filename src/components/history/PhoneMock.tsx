@@ -22,7 +22,7 @@ export function IPhoneFrame({
       <div
         className={cx(
           "relative overflow-hidden rounded-[44px]",
-          "border border-white/12 bg-[#0b0b0c]/80",
+          "border border-white/12 bg-black/80",
           "shadow-[0_28px_90px_rgba(0,0,0,0.65)]"
         )}
       >

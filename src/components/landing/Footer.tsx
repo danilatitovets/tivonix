@@ -7,18 +7,17 @@ import { useLang } from "../../i18n/LangProvider";
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
-type Style = CSSProperties & Record<string, any>;
-const s = (v: Record<string, any>) => v as Style;
+type Style = CSSProperties & Record<string, unknown>;
+const s = (v: Record<string, unknown>) => v as Style;
 
-// Поменяй на свои пути
+// Assets
 const LOGO_LOCKUP_SVG = "/images/tivonix-logo-lockup.svg";
 const LOGO_LOCKUP_PNG = "/images/tivonix-logo-lockup.png";
 
-// watermark-лого снизу справа (лучше SVG)
-// Важно: путь обычно без /public -> "/favicon.svg"
+// watermark logo
 const WATERMARK_LOGO = "/favicon.svg";
 
-// Один акцентный цвет на весь футер
+// One accent for footer
 const ACCENT = "#FF6B2C";
 
 const LANDING = {
@@ -39,7 +38,7 @@ const MENU = [
   { to: "/contacts", label: { ru: "Контакты", en: "Contacts" } },
 ];
 
-// Gmail compose для email (без mailto:)
+// Gmail compose (no mailto)
 const GMAIL_EMAIL_URL =
   "https://mail.google.com/mail/?view=cm&fs=1" +
   `&to=${encodeURIComponent("tivoonix@gmail.com")}` +
@@ -47,15 +46,11 @@ const GMAIL_EMAIL_URL =
 
 const CONTACTS = {
   telegram: { href: "https://t.me/TIVONIX", label: "Telegram" },
-  email: {
-    href: GMAIL_EMAIL_URL,
-    label: "Email",
-  },
+  email: { href: GMAIL_EMAIL_URL, label: "Email" },
 };
 
 /**
- * ДОКУМЕНТЫ (PDF) — public/doc/...
- * Из скрина:
+ * DOCS (PDF) — public/doc/...
  * - Consent_Tivonix_EN.pdf
  * - Privacy_Policy_Tivonix_EN.pdf
  * - Политика_обработки_ПД_Tivonix_RU.pdf
@@ -65,33 +60,35 @@ const DOCS = {
   ru: [
     {
       href: "/doc/Политика_обработки_ПД_Tivonix_RU.pdf",
-      label: { ru: "Политика обработки персональных данных", en: "Personal Data Policy" },
-      badge: { ru: "PDF", en: "PDF" },
+      title: "Политика ПД",
+      subtitle: "Обработка и защита персональных данных",
+      badge: "PDF",
     },
     {
       href: "/doc/Согласие_на_обработку_ПД_Tivonix_RU.pdf",
-      label: { ru: "Согласие на обработку персональных данных", en: "Consent to Personal Data Processing" },
-      badge: { ru: "PDF", en: "PDF" },
+      title: "Согласие ПД",
+      subtitle: "Согласие на обработку персональных данных",
+      badge: "PDF",
     },
   ],
   en: [
     {
       href: "/doc/Privacy_Policy_Tivonix_EN.pdf",
-      label: { ru: "Privacy Policy", en: "Privacy Policy" },
-      badge: { ru: "PDF", en: "PDF" },
+      title: "Privacy Policy",
+      subtitle: "How we collect and use personal data",
+      badge: "PDF",
     },
     {
       href: "/doc/Consent_Tivonix_EN.pdf",
-      label: { ru: "Consent", en: "Consent" },
-      badge: { ru: "PDF", en: "PDF" },
+      title: "Consent",
+      subtitle: "Consent to personal data processing",
+      badge: "PDF",
     },
   ],
 } as const;
 
-// ВНИЗУ оставляем только TG
-const SOCIALS = [
-  { href: "https://t.me/TIVONIX", label: "Telegram", icon: TelegramIcon },
-];
+// Bottom socials: only Telegram
+const SOCIALS = [{ href: "https://t.me/TIVONIX", label: "Telegram", icon: TelegramIcon }];
 
 function imgFallback(fallbackSrc: string) {
   return (e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -102,13 +99,7 @@ function imgFallback(fallbackSrc: string) {
   };
 }
 
-function FooterLink({
-  to,
-  children,
-}: {
-  to: string;
-  children: React.ReactNode;
-}) {
+function FooterLink({ to, children }: { to: string; children: React.ReactNode }) {
   return (
     <Link
       to={to}
@@ -121,14 +112,8 @@ function FooterLink({
       <span className="relative">
         {children}
         <span
-          className={cx(
-            "absolute -bottom-0.5 left-0 h-px w-0 transition-all duration-200",
-            "group-hover:w-full"
-          )}
-          style={s({
-            backgroundColor:
-              "color-mix(in srgb, var(--accent) 75%, transparent)",
-          })}
+          className={cx("absolute -bottom-0.5 left-0 h-px w-0 transition-all duration-200", "group-hover:w-full")}
+          style={s({ backgroundColor: "color-mix(in srgb, var(--accent) 75%, transparent)" })}
         />
       </span>
     </Link>
@@ -161,55 +146,76 @@ function ExternalLink({
       <span className="relative">
         {children}
         <span
-          className={cx(
-            "absolute -bottom-0.5 left-0 h-px w-0 transition-all duration-200",
-            "group-hover:w-full"
-          )}
-          style={s({
-            backgroundColor:
-              "color-mix(in srgb, var(--accent) 75%, transparent)",
-          })}
+          className={cx("absolute -bottom-0.5 left-0 h-px w-0 transition-all duration-200", "group-hover:w-full")}
+          style={s({ backgroundColor: "color-mix(in srgb, var(--accent) 75%, transparent)" })}
         />
       </span>
     </a>
   );
 }
 
-function DocLink({
+function DocCard({
   href,
   title,
-  badge,
+  subtitle,
+  badge = "PDF",
 }: {
   href: string;
   title: string;
+  subtitle?: string;
   badge?: string;
 }) {
   return (
-    <ExternalLink href={href} newTab>
-      <span className="inline-flex items-center gap-2">
-        <span className="inline-flex items-center gap-2">
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={subtitle ? `${title} — ${subtitle}` : title}
+      className={cx(
+        "group block rounded-xl border border-white/10 bg-white/[0.02] p-3",
+        "transition-colors",
+        "hover:border-[color:var(--accent)]/30 hover:bg-white/[0.03]",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <div
+          className={cx(
+            "mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-lg",
+            "bg-white/[0.04] border border-white/10",
+            "group-hover:border-[color:var(--accent)]/35"
+          )}
+        >
           <FileIcon />
-          <span>{title}</span>
-        </span>
+        </div>
 
-        {badge ? (
-          <span
-            className={cx(
-              "ml-1 inline-flex items-center rounded-full px-2 py-0.5",
-              "text-[10px] font-semibold tracking-[0.16em] uppercase",
-              "border border-white/10 text-white/50",
-              "group-hover:border-[color:var(--accent)]/35 group-hover:text-white/70"
-            )}
-          >
-            {badge}
-          </span>
-        ) : null}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="truncate text-sm font-medium text-white/90">{title}</div>
+            </div>
 
-        <span className="opacity-40 group-hover:opacity-70 transition-opacity">
-          <ArrowUpRightIcon />
-        </span>
-      </span>
-    </ExternalLink>
+            <div className="flex items-center gap-2">
+              <span
+                className={cx(
+                  "inline-flex items-center rounded-full px-2 py-0.5",
+                  "text-[10px] font-semibold tracking-[0.16em] uppercase",
+                  "border border-white/10 text-white/45",
+                  "group-hover:border-[color:var(--accent)]/35 group-hover:text-white/65"
+                )}
+              >
+                {badge}
+              </span>
+              <span className="opacity-40 group-hover:opacity-70 transition-opacity">
+                <ArrowUpRightIcon />
+              </span>
+            </div>
+          </div>
+
+          {subtitle ? <div className="mt-1 text-xs leading-5 text-white/45">{subtitle}</div> : null}
+        </div>
+      </div>
+    </a>
   );
 }
 
@@ -220,28 +226,23 @@ export default function Footer() {
   const t = (v: { ru: string; en: string }) => (isRu ? v.ru : v.en);
 
   const tagline = isRu
-    ? "SaaS и MVP под ключ — быстро, аккуратно, поддерживаемо."
-    : "SaaS & MVP delivered fast — clean, maintainable, reliable.";
+    ? "SaaS и MVP под ключ — быстро и поддерживаемо."
+    : "SaaS & MVP delivered fast — clean and reliable.";
 
-  const rightsText = isRu
-    ? `© ${year} Tivonix. Все права защищены.`
-    : `© ${year} Tivonix. All rights reserved.`;
+  const rightsText = isRu ? `© ${year} Tivonix. Все права защищены.` : `© ${year} Tivonix. All rights reserved.`;
 
-  const primaryDocs = isRu ? DOCS.ru : DOCS.en;
-  const secondaryDocs = isRu ? DOCS.en : DOCS.ru;
+  // IMPORTANT: show docs ONLY in current language (no “secondary version”)
+  const docs = isRu ? DOCS.ru : DOCS.en;
 
   return (
     <footer
-      className={cx(
-        "relative isolate overflow-hidden bg-black text-white",
-        "selection:bg-[color:var(--accent)]/30 selection:text-white"
-      )}
-      style={s({ ["--accent" as any]: ACCENT })}
+      className={cx("relative isolate overflow-hidden bg-black text-white", "selection:bg-[color:var(--accent)]/30")}
+      style={s({ ["--accent" as string]: ACCENT })}
     >
-      {/* тонкая верхняя линия */}
+      {/* top hairline */}
       <div className="h-px w-full bg-[color:var(--accent)]/25" />
 
-      {/* Watermark слой */}
+      {/* Watermark layer */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
         <div
           className="absolute -right-28 -bottom-28 h-[640px] w-[640px] opacity-35 blur-3xl"
@@ -250,7 +251,6 @@ export default function Footer() {
               "radial-gradient(closest-side, color-mix(in srgb, var(--accent) 45%, transparent), rgba(0,0,0,0))",
           })}
         />
-
         <img
           src={WATERMARK_LOGO}
           alt=""
@@ -261,19 +261,15 @@ export default function Footer() {
             "absolute select-none",
             "-right-[10vw] -bottom-[10vw]",
             "w-[min(980px,68vw)] max-w-none",
-            "opacity-[0.14]",
-            "blur-0"
+            "opacity-[0.14]"
           )}
-          style={s({
-            filter: "saturate(1.05) contrast(1.05) brightness(1.03)",
-            imageRendering: "auto",
-          })}
+          style={s({ filter: "saturate(1.05) contrast(1.05) brightness(1.03)", imageRendering: "auto" })}
         />
       </div>
 
       <Container>
         <div className="relative py-14 sm:py-16">
-          {/* Верх: лого + описание */}
+          {/* Top: logo + tagline */}
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             <div className="max-w-[560px]">
               <Link
@@ -294,19 +290,16 @@ export default function Footer() {
                   loading="lazy"
                   decoding="async"
                 />
-                <span className="text-xs text-white/40 hidden sm:inline">
-                  {isRu ? "Наверх" : "Top"}
-                </span>
+                <span className="hidden text-xs text-white/40 sm:inline">{isRu ? "Наверх" : "Top"}</span>
               </Link>
 
               <p className="mt-4 text-sm leading-6 text-white/65">{tagline}</p>
-
               <div className="mt-5 h-px w-24 bg-[color:var(--accent)]/40" />
             </div>
           </div>
 
-          {/* 3 колонки */}
-          <div className="mt-10 grid grid-cols-2 gap-10 sm:grid-cols-3">
+          {/* Columns */}
+          <div className="mt-10 grid grid-cols-1 gap-10 sm:grid-cols-3">
             {/* MENU */}
             <div>
               <div className="text-[11px] font-semibold tracking-[0.18em] text-white uppercase">
@@ -326,67 +319,39 @@ export default function Footer() {
               <div className="text-[11px] font-semibold tracking-[0.18em] text-white uppercase">
                 {isRu ? "Контакты" : "Contact"}
               </div>
-
               <ul className="mt-4 space-y-2.5">
                 <li>
-                  <ExternalLink href={CONTACTS.telegram.href}>
-                    {CONTACTS.telegram.label}
-                  </ExternalLink>
+                  <ExternalLink href={CONTACTS.telegram.href}>{CONTACTS.telegram.label}</ExternalLink>
                 </li>
                 <li>
-                  <ExternalLink href={CONTACTS.email.href}>
-                    {CONTACTS.email.label}
-                  </ExternalLink>
+                  <ExternalLink href={CONTACTS.email.href}>{CONTACTS.email.label}</ExternalLink>
                 </li>
               </ul>
             </div>
 
-            {/* LEGAL / ДОКУМЕНТЫ */}
+            {/* LEGAL / DOCS */}
             <div>
               <div className="text-[11px] font-semibold tracking-[0.18em] text-white uppercase">
                 {isRu ? "Документы" : "Legal"}
               </div>
 
-              {/* основной язык */}
-              <div className="mt-4">
-                <div className="text-xs text-white/40">
-                  {isRu ? "RU документы" : "EN documents"}
-                </div>
-                <ul className="mt-2 space-y-2.5">
-                  {primaryDocs.map((d) => (
-                    <li key={d.href}>
-                      <DocLink
-                        href={d.href}
-                        title={t(d.label)}
-                        badge={t(d.badge)}
-                      />
-                    </li>
-                  ))}
-                </ul>
+              <div className="mt-3 text-sm text-white/50">
+                {isRu ? "Официальные документы Tivonix" : "Tivonix legal documents"}
               </div>
 
-              {/* вторичная версия */}
-              <div className="mt-5">
-                <div className="text-xs text-white/40">
-                  {isRu ? "EN версия" : "RU version"}
-                </div>
-                <ul className="mt-2 space-y-2.5">
-                  {secondaryDocs.map((d) => (
-                    <li key={d.href}>
-                      <DocLink
-                        href={d.href}
-                        // тут специально не t(), чтобы подписи были на "чужом" языке аккуратно
-                        title={isRu ? d.label.en : d.label.ru}
-                        badge={isRu ? d.badge.en : d.badge.ru}
-                      />
-                    </li>
-                  ))}
-                </ul>
+              <div className="mt-4 space-y-3">
+                {docs.map((d) => (
+                  <DocCard key={d.href} href={d.href} title={d.title} subtitle={d.subtitle} badge={d.badge} />
+                ))}
+              </div>
+
+              <div className="mt-4 text-xs text-white/35">
+                {isRu ? "Откроется в новой вкладке" : "Opens in a new tab"}
               </div>
             </div>
           </div>
 
-          {/* низ — © + только TG */}
+          {/* Bottom */}
           <div className="mt-12 border-t border-white/10 pt-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -414,7 +379,7 @@ export default function Footer() {
                 </div>
               </div>
 
-              <div className="text-sm text-white/45">{/* пусто */}</div>
+              <div className="text-sm text-white/45">{/* empty */}</div>
             </div>
           </div>
         </div>
@@ -434,12 +399,7 @@ function TelegramIcon() {
         strokeWidth="1.6"
         strokeLinejoin="round"
       />
-      <path
-        d="M8 13.8 19.6 6.4"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
+      <path d="M8 13.8 19.6 6.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   );
 }
@@ -453,24 +413,9 @@ function FileIcon() {
         strokeWidth="1.6"
         strokeLinejoin="round"
       />
-      <path
-        d="M14 3v5h5"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M8.5 13.5h7"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-      <path
-        d="M8.5 17h7"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
+      <path d="M14 3v5h5" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M8.5 13.5h7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M8.5 17h7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   );
 }
@@ -478,18 +423,8 @@ function FileIcon() {
 function ArrowUpRightIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M7 17 17 7"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-      <path
-        d="M10 7h7v7"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
+      <path d="M7 17 17 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M10 7h7v7" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
     </svg>
   );
 }

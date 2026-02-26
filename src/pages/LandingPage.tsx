@@ -4,7 +4,6 @@ import Hero from "../components/landing/Hero";
 import WhyUs from "../components/landing/WhyUs";
 import AppsOrbitBlock from "../components/landing/AppsOrbitBlock";
 import Benefits from "../components/landing/Benefits";
-import SaaSMap from "../components/landing/SaaSMap";
 import FAQ from "../components/landing/FAQ";
 import Footer from "../components/landing/Footer";
 

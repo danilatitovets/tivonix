@@ -358,7 +358,7 @@ export default function AppsOrbitBlock() {
                       <a
                         href={gmailUrl}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         aria-label={t.emailAria}
                         className={cx(
                           "gmailBtn block w-full",
@@ -377,7 +377,7 @@ export default function AppsOrbitBlock() {
                       <a
                         href={TG_URL}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className={cx(
                           "group relative block w-full",
                           "rounded-2xl px-6 py-[13px] sm:py-[16px]",

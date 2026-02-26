@@ -1,9 +1,10 @@
 // src/App.tsx
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
-import ProjectsPage from "./pages/ProjectsPage";
-import ContactsPage from "./pages/ContactsPage";
+
+const ProjectsPage = lazy(() => import("./pages/ProjectsPage"));
+const ContactsPage = lazy(() => import("./pages/ContactsPage"));
 
 const HEADER_OFFSET = 84; 
 
@@ -35,8 +36,22 @@ export default function App() {
       <ScrollToHash />
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/projects" element={<ProjectsPage />} />
-        <Route path="/contacts" element={<ContactsPage />} />
+        <Route
+          path="/projects"
+          element={
+            <Suspense fallback={<div className="min-h-screen bg-[var(--bg)]" aria-busy="true" />}>
+              <ProjectsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/contacts"
+          element={
+            <Suspense fallback={<div className="min-h-screen bg-[var(--bg)]" aria-busy="true" />}>
+              <ContactsPage />
+            </Suspense>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
