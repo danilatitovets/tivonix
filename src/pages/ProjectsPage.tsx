@@ -18,6 +18,7 @@ const HEADER_H = 72;
 const UPC_DOMAIN = "https://upc.promo/";
 const PAYCLIP_DOMAIN = "https://usepayclip.com/";
 const LABELOS_DOMAIN = "https://labelos.digital/";
+const HEADMIND_DOMAIN = "https://headmind.ru/";
 
 const GMAIL_EMAIL_URL =
   "https://mail.google.com/mail/?view=cm&fs=1" +
@@ -38,7 +39,6 @@ type Project = {
   subtitleRu: string;
   subtitleEn: string;
 
-  // content for modal
   detailsRu: string;
   detailsEn: string;
 
@@ -652,7 +652,7 @@ export default function ProjectsPage() {
 
   const projects = useMemo<Project[]>(
     () => [
-      // 1) LABEL0S — 3 days (first PDF)
+      // 1) LABEL0S — 3 days
       {
         id: "labelos",
         title: "LabelOS",
@@ -689,64 +689,96 @@ export default function ProjectsPage() {
         tags: ["SaaS", "Landing", "UI/UX", "React", "Tailwind"],
         cover: "/images/project-cover-labelos.jpg",
         outcomes: [
-          isRu ? "Готовый промо-лендинг за 3 дня" : "Promo landing delivered in 3 days",
+          isRu
+            ? "Готовый промо-лендинг за 3 дня"
+            : "Promo landing delivered in 3 days",
           isRu ? "Чёткая структура под конверсию" : "Conversion-focused structure",
           isRu ? "Адаптив + оптимизация загрузки" : "Responsive + optimized loading",
         ],
         stack: ["React", "Tailwind", "Vite"],
       },
 
-      // 2) UPC — promo landing
+      // 2) UPC — promo landing (client: ИП Безбородых И.В.)
       {
         id: "upc",
         title: "UPC Promo",
         subtitleRu:
-          "Промо-лендинг: премиум-визуал, анимации, адаптив и скорость.",
+          "Промо-лендинг + инфраструктура: премиум-визуал, анимации, скорость, интеграции.",
         subtitleEn:
-          "Promo landing: premium visuals, animations, responsive layout and speed.",
+          "Promo landing + infra: premium visuals, animations, speed and integrations.",
         detailsRu:
-          "Формат: промо-лендинг\n\n" +
+          "Формат: промо-лендинг + интеграции\n\n" +
+          "Заказчик\n" +
+          "• ИП Безбородых И.В.\n" +
+          "Контакт/представитель\n" +
+          "• Виктор Безбородых — Founder & CEO MIN.ECO (music distribution ecosystem)\n\n" +
           "Цель\n" +
-          "• Сделать презентацию продукта в премиум-подаче и обеспечить быстрые загрузки.\n\n" +
+          "• Сделать презентацию продукта в премиум-подаче и подготовить основу для дальнейшего роста.\n\n" +
           "Что сделали\n" +
-          "• Проработали сетку, типографику и визуальную иерархию секций\n" +
-          "• Добавили анимации и эффекты так, чтобы не перегружать интерфейс\n" +
-          "• Настроили адаптив (mobile/tablet/desktop) и микровзаимодействия\n" +
+          "• Проработали сетку, типографику и визуальную иерархию\n" +
+          "• Добавили анимации и эффекты без перегруза UI\n" +
+          "• Настроили адаптив + микровзаимодействия\n" +
+          "• Подключили backend-инфраструктуру (Supabase/Postgres) для дальнейших сценариев\n" +
           "• Оптимизировали графику и фоновые слои для скорости\n\n" +
           "Результат\n" +
           "• Страница выглядит дорого, читается легко и работает быстро\n",
         detailsEn:
-          "Format: promo landing\n\n" +
+          "Format: promo landing + integrations\n\n" +
+          "Client\n" +
+          "• IE Bezborodykh I.V.\n" +
+          "• INN 261709192509\n" +
+          "• OGRNIP 325200000025627\n" +
+          "Contact/rep\n" +
+          "• Viktor Bezborodykh — Founder & CEO of MIN.ECO (music distribution ecosystem)\n\n" +
           "Goal\n" +
-          "• Present the product with a premium look while keeping loading fast.\n\n" +
+          "• Present the product with a premium look and lay the foundation for future growth.\n\n" +
           "What we did\n" +
           "• Built a precise grid, typography and section hierarchy\n" +
           "• Added subtle animations without UI overload\n" +
-          "• Implemented responsive layout (mobile/tablet/desktop)\n" +
+          "• Implemented responsive layout and micro-interactions\n" +
+          "• Connected infra (Supabase/Postgres) for future product flows\n" +
           "• Optimized visuals and background layers for performance\n\n" +
           "Result\n" +
           "• Premium look, high readability, fast loading\n",
         domain: UPC_DOMAIN,
         status: "live",
-        tags: ["Landing", "Vite", "React", "Tailwind", "Performance"],
+        tags: ["Landing", "React", "TypeScript", "Supabase", "Performance"],
         cover: "/images/project-cover-upc.jpg",
         outcomes: [
           isRu ? "Премиум-подача без перегруза" : "Premium visuals without clutter",
           isRu ? "Анимации + стабильная скорость" : "Animations + stable performance",
-          isRu ? "Адаптив на все экраны" : "Responsive across devices",
+          isRu ? "Готовая база под интеграции" : "Infra-ready for integrations",
         ],
-        stack: ["React", "Tailwind", "Vite"],
+        stack: [
+          "React",
+          "TypeScript",
+          "Vite",
+          "Tailwind",
+          "Supabase",
+          "PostgreSQL",
+        ],
+        testimonial: {
+          name: isRu ? "Виктор Безбородых" : "Viktor Bezborodykh",
+          role: isRu ? "Founder & CEO MIN.ECO" : "Founder & CEO, MIN.ECO",
+          text: isRu
+            ? "Сделали быстро, аккуратно и с правильным ощущением премиума. Отдельно — за скорость и структуру."
+            : "Fast, clean delivery with a premium feel. Great performance and structure.",
+        },
       },
 
-      // 3) PAYCLIP — 2 weeks (second PDF)
+      // 3) PAYCLIP — 2 weeks (client: ИП Безбородых И.В.)
       {
         id: "payclip",
         title: "PayClip",
         subtitleRu:
-          "Платёжный продукт: лендинг под конверсию + онбординг.",
+          "Платёжный продукт: лендинг под конверсию + онбординг. Быстро доводит до действия.",
         subtitleEn: "Payment product: conversion landing + onboarding.",
         detailsRu:
           "Срок: 2 недели\n\n" +
+          "Заказчик\n" +
+          "• ИП Безбородых И.В.\n" +
+          "Контакт/представитель\n" +
+          "• Виктор Безбородых — Founder & CEO MIN.ECO\n\n" +
           "Цель\n" +
           "• Сделать продуктовую посадочную + онбординг, чтобы быстрее доводить пользователя до действия.\n\n" +
           "Что сделали за 2 недели\n" +
@@ -759,6 +791,12 @@ export default function ProjectsPage() {
           "• Понятная посадочная + онбординг, меньше вопросов у пользователей, выше конверсия в контакт\n",
         detailsEn:
           "Timeline: 2 weeks\n\n" +
+          "Client\n" +
+          "• IE Bezborodykh I.V.\n" +
+          "• INN 261709192509\n" +
+          "• OGRNIP 325200000025627\n" +
+          "Contact/rep\n" +
+          "• Viktor Bezborodykh — Founder & CEO, MIN.ECO\n\n" +
           "Goal\n" +
           "• Build a product landing + onboarding to move users to action faster.\n\n" +
           "What we delivered in 2 weeks\n" +
@@ -771,20 +809,73 @@ export default function ProjectsPage() {
           "• Clear landing + onboarding, fewer user questions, better conversion to contact\n",
         domain: PAYCLIP_DOMAIN,
         status: "live",
-        tags: ["Fintech", "Landing", "UI/UX", "React", "Tailwind"],
+        tags: ["Fintech", "Landing", "Onboarding", "UI/UX", "Conversion"],
         cover: "/images/project-cover-payclip.jpg",
         outcomes: [
           isRu ? "Сделано за 2 недели" : "Delivered in 2 weeks",
           isRu ? "Структура под конверсию" : "Conversion-driven structure",
           isRu ? "Онбординг и сценарии" : "Onboarding and user flows",
         ],
-        stack: ["React", "Tailwind"],
+        stack: ["React", "TypeScript", "Tailwind", "API"],
         testimonial: {
-          name: isRu ? "Клиент" : "Client",
-          role: "Fintech",
+          name: isRu ? "Виктор Безбородых" : "Viktor Bezborodykh",
+          role: isRu ? "Founder & CEO MIN.ECO" : "Founder & CEO, MIN.ECO",
           text: isRu
-            ? "Сделали быстро и аккуратно. Коммуникация — по делу, результат отличный."
-            : "Fast and clean delivery. Great communication and a solid result.",
+            ? "Коммуникация — по делу, быстро вносят правки, результатом довольны."
+            : "Clear communication, fast iterations, happy with the result.",
+        },
+      },
+
+      // 4) HEADMIND — closed case (stack: HTML/CSS/JS ES6)
+      {
+        id: "headmind",
+        title: "Headmind",
+        subtitleRu:
+          "Корпоративный сайт: услуги, команда, доверие и лид-ген под B2B.",
+        subtitleEn:
+          "Corporate website: services structure, team credibility and B2B lead-gen.",
+        detailsRu:
+          "Формат: корпоративный сайт / презентация услуг\n\n" +
+          "Цель\n" +
+          "• Упаковать экспертизу и сделать сайт, который объясняет «кто мы», «что делаем» и приводит заявки.\n\n" +
+          "Что сделали\n" +
+          "• Собрали информационную архитектуру: услуги → подход → кейсы → команда → контакт\n" +
+          "• Упростили формулировки и усилили доверие: акценты на опыте, ролях, результатах\n" +
+          "• Собрали верстку: чистая типографика, адаптив, скорость загрузки\n" +
+          "• Настроили CTA и точки захвата (контакты/формы)\n\n" +
+          "Заказчики\n" +
+          "• Евгений Беликов — основатель и генеральный директор ООО «Хэдмайнд»\n" +
+          "• Виталий Петровский — партнёр, соучредитель ООО «Хэдмайнд»\n",
+        detailsEn:
+          "Format: corporate website / services showcase\n\n" +
+          "Goal\n" +
+          "• Package expertise into a clear website that explains who they are, what they do, and generates leads.\n\n" +
+          "What we did\n" +
+          "• Built information architecture: services → approach → cases → team → contact\n" +
+          "• Improved clarity + trust: experience, roles, outcomes\n" +
+          "• Clean responsive layout, fast loading\n" +
+          "• CTA and lead capture points (contacts/forms)\n\n" +
+          "Clients\n" +
+          "• Evgeniy Belikov — Founder & CEO\n" +
+          "• Vitaliy Petrovskiy — Partner & Co-founder\n",
+        domain: HEADMIND_DOMAIN,
+        status: "live",
+        tags: ["B2B", "Website", "UI/UX", "Structure", "Conversion"],
+        cover: "/images/project-cover-headmind.jpg",
+        outcomes: [
+          isRu ? "Понятная упаковка услуг и подхода" : "Clear services & approach packaging",
+          isRu ? "Усиление доверия через команду и структуру" : "Stronger trust via team + structure",
+          isRu ? "CTA и точки лид-генерации" : "CTA and lead capture points",
+        ],
+        stack: ["HTML", "CSS", "JavaScript (ES6)"],
+        testimonial: {
+          name: isRu
+            ? "Евгений Беликов / Виталий Петровский"
+            : "Evgeniy Belikov / Vitaliy Petrovskiy",
+          role: isRu ? "ООО «Хэдмайнд»" : "Headmind",
+          text: isRu
+            ? "Собрали структуру и подачу так, что сайт стал понятнее для клиентов и лучше ведёт к заявке."
+            : "The structure and messaging became clearer, and the site now drives leads more effectively.",
         },
       },
 
@@ -825,10 +916,7 @@ export default function ProjectsPage() {
   const tgLabel = "Telegram";
 
   return (
-    <div
-      className="relative min-h-screen"
-      style={s({ "--headerH": `${HEADER_H}px` })}
-    >
+    <div className="relative min-h-screen" style={s({ "--headerH": `${HEADER_H}px` })}>
       <Header />
 
       <div className="pointer-events-none fixed inset-0 -z-10">
