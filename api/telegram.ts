@@ -1,7 +1,7 @@
 // api/telegram.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { webhookCallback } from "grammy";
-import { createBot } from "./_bot";
+import { createBot } from "./_bot.js";
 
 function getBaseUrl(req: VercelRequest) {
   const proto = (req.headers["x-forwarded-proto"] as string) || "https";
@@ -17,18 +17,18 @@ const bot = createBot({
   ADMIN_IDS: process.env.ADMIN_IDS,
 });
 
-// ✅ "http" вместо "vercel"
 const cb = webhookCallback(bot, "http");
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // чтобы в браузере /api/telegram показывал "OK"
   if (req.method !== "POST") return res.status(200).send("OK");
 
-  // (опционально) secret защита
+  // optional: webhook secret
   const secret = process.env.WEBHOOK_SECRET;
   const header = req.headers["x-telegram-bot-api-secret-token"];
   if (secret && header !== secret) return res.status(401).send("Unauthorized");
 
-  // передаём baseUrl в bot.config
+  // важно для ссылок на pdf
   (bot as any).config = { baseUrl: getBaseUrl(req) };
 
   await cb(req as any, res as any);
