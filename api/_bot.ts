@@ -9,6 +9,7 @@ type SessionData = {
     | "lang"
     | "consent"
     | "project_type"
+    | "project_type_text" // ✅ новый шаг для своего текста
     | "features"
     | "timeline"
     | "budget"
@@ -76,10 +77,7 @@ function botTokenOrThrow(token?: string) {
 }
 
 function escapeHtml(s: string) {
-  return s
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
+  return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
 
 function t(lang: Lang, key: string, vars?: Record<string, string>) {
@@ -89,22 +87,30 @@ function t(lang: Lang, key: string, vars?: Record<string, string>) {
       consent_title: "Перед началом нужно согласие",
       consent_text:
         "Я собираю ваш Telegram username/ID и ответы на вопросы, чтобы связаться с вами и рассчитать стоимость.\n" +
-        "Нажимая «Согласен», вы даёте согласие на обработку персональных данных.\n" +
-        "Политика: {privacy}\n" +
-        "Согласие: {consent}",
+        "Нажимая «Согласен», вы даёте согласие на обработку персональных данных.\n\n" +
+        "📄 {privacy}\n" +
+        "✅ {consent}",
+      // кнопки
       agree: "✅ Согласен — начать",
       decline: "❌ Не согласен",
       declined_text: "Ок. Без согласия я не могу принять заявку.",
       start_over: "Начать заново",
+
       q_project: "1/5 Что нужно сделать?",
+      q_project_custom_btn: "✍️ Написать своё",
+      q_project_custom_hint:
+        "Напишите одним сообщением, что нужно сделать.\nНапример: «CRM для салона + личный кабинет + оплата»",
+
       q_features: "2/5 Какие модули нужны? (можно несколько)",
       done_pick_features: "Готово ✅",
       q_timeline: "3/5 Какие сроки?",
       q_budget: "4/5 Какой бюджетный диапазон?",
       q_note:
         "5/5 Пришлите ссылку на ТЗ/макет/сайт (если есть) или кратко опишите задачу одним сообщением.",
+
       sent: "Спасибо! Заявка отправлена. Мы напишем вам в ближайшее время.",
       open_chat: "Открыть чат",
+
       tracker_title: "Пользователь заполняет заявку",
       tracker_user: "Пользователь",
       tracker_source: "Источник",
@@ -118,6 +124,7 @@ function t(lang: Lang, key: string, vars?: Record<string, string>) {
       step_lang: "Выбор языка",
       step_consent: "Согласие",
       step_project: "Тип проекта",
+      step_project_text: "Свой вариант",
       step_features: "Модули",
       step_timeline: "Сроки",
       step_budget: "Бюджет",
@@ -130,22 +137,29 @@ function t(lang: Lang, key: string, vars?: Record<string, string>) {
       consent_title: "Consent required",
       consent_text:
         "I collect your Telegram username/ID and your answers to estimate the project and contact you.\n" +
-        "By pressing “I agree”, you consent to personal data processing.\n" +
-        "Privacy policy: {privacy}\n" +
-        "Consent: {consent}",
+        "By pressing “I agree”, you consent to personal data processing.\n\n" +
+        "📄 {privacy}\n" +
+        "✅ {consent}",
       agree: "✅ I agree — start",
       decline: "❌ I don’t agree",
       declined_text: "Okay. Without consent I can’t accept the request.",
       start_over: "Start over",
+
       q_project: "1/5 What do you need?",
+      q_project_custom_btn: "✍️ Write my own",
+      q_project_custom_hint:
+        "Write in one message what you need.\nExample: “Client portal + payments + admin panel”",
+
       q_features: "2/5 Which features do you need? (multi-select)",
       done_pick_features: "Done ✅",
       q_timeline: "3/5 Timeline?",
       q_budget: "4/5 Budget range?",
       q_note:
         "5/5 Send a link to specs/design/site (if any) or describe your task in one message.",
+
       sent: "Thanks! Your request was sent. We’ll message you soon.",
       open_chat: "Open chat",
+
       tracker_title: "User is filling the request",
       tracker_user: "User",
       tracker_source: "Source",
@@ -159,6 +173,7 @@ function t(lang: Lang, key: string, vars?: Record<string, string>) {
       step_lang: "Language",
       step_consent: "Consent",
       step_project: "Project type",
+      step_project_text: "Custom text",
       step_features: "Features",
       step_timeline: "Timeline",
       step_budget: "Budget",
@@ -174,9 +189,7 @@ function t(lang: Lang, key: string, vars?: Record<string, string>) {
 }
 
 function langKeyboard() {
-  return new InlineKeyboard()
-    .text("🇷🇺 Русский", "lang:ru")
-    .text("🇬🇧 English", "lang:en");
+  return new InlineKeyboard().text("🇷🇺 Русский", "lang:ru").text("🇬🇧 English", "lang:en");
 }
 
 function consentKeyboard(lang: Lang) {
@@ -189,6 +202,7 @@ function consentKeyboard(lang: Lang) {
 function projectTypeKeyboard(lang: Lang) {
   const kb = new InlineKeyboard();
   for (const p of PROJECT_TYPES) kb.text(lang === "ru" ? p.ru : p.en, `q:project:${p.k}`).row();
+  kb.text(t(lang, "q_project_custom_btn"), "q:project:custom").row();
   return kb;
 }
 
@@ -239,12 +253,12 @@ function getDocs(ctx: MyContext) {
   const baseUrl = getBaseUrlFromContext(ctx);
   return {
     ru: {
-      privacy: docUrl(baseUrl, "Политика_обработки_ПД_Tivonix_RU.pdf"),
-      consent: docUrl(baseUrl, "Согласие_на_обработку_ПД_Tivonix_RU.pdf"),
+      privacyUrl: docUrl(baseUrl, "Политика_обработки_ПД_Tivonix_RU.pdf"),
+      consentUrl: docUrl(baseUrl, "Согласие_на_обработку_ПД_Tivonix_RU.pdf"),
     },
     en: {
-      privacy: docUrl(baseUrl, "Privacy_Policy_Tivonix_EN.pdf"),
-      consent: docUrl(baseUrl, "Consent_Tivonix_EN.pdf"),
+      privacyUrl: docUrl(baseUrl, "Privacy_Policy_Tivonix_EN.pdf"),
+      consentUrl: docUrl(baseUrl, "Consent_Tivonix_EN.pdf"),
     },
   };
 }
@@ -262,6 +276,7 @@ function stepName(lang: Lang, step: SessionData["step"]) {
     lang: t(lang, "step_lang"),
     consent: t(lang, "step_consent"),
     project_type: t(lang, "step_project"),
+    project_type_text: t(lang, "step_project_text"),
     features: t(lang, "step_features"),
     timeline: t(lang, "step_timeline"),
     budget: t(lang, "step_budget"),
@@ -338,14 +353,30 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
 
     const docs = getDocs(ctx)[lang];
 
-    await ctx.reply(
-      `🛡 ${t(lang, "consent_title")}\n\n` +
-        t(lang, "consent_text", { privacy: docs.privacy, consent: docs.consent }),
-      {
-        reply_markup: consentKeyboard(lang),
-        link_preview_options: { is_disabled: true },
-      }
-    );
+    // ✅ красивые ссылки (HTML)
+    const privacyLink =
+      lang === "ru"
+        ? `<a href="${docs.privacyUrl}">Политика обработки ПД</a>`
+        : `<a href="${docs.privacyUrl}">Privacy Policy</a>`;
+    const consentLink =
+      lang === "ru"
+        ? `<a href="${docs.consentUrl}">Согласие на обработку ПД</a>`
+        : `<a href="${docs.consentUrl}">Consent to processing</a>`;
+
+    const text =
+      `🛡 <b>${escapeHtml(t(lang, "consent_title"))}</b>\n\n` +
+      escapeHtml(
+        lang === "ru"
+          ? "Я собираю ваш Telegram username/ID и ответы на вопросы, чтобы связаться с вами и рассчитать стоимость.\nНажимая «Согласен», вы даёте согласие на обработку персональных данных."
+          : "I collect your Telegram username/ID and your answers to estimate the project and contact you.\nBy pressing “I agree”, you consent to personal data processing."
+      ) +
+      `\n\n📄 ${privacyLink}\n✅ ${consentLink}`;
+
+    await ctx.reply(text, {
+      parse_mode: "HTML",
+      reply_markup: consentKeyboard(lang),
+      link_preview_options: { is_disabled: true },
+    });
 
     await upsertAdminTracker(ctx, "—");
   }
@@ -360,8 +391,12 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
   bot.command("start", async (ctx) => {
     const payload = (ctx.match?.trim?.() as string | undefined) || "";
     const source = payload || "direct";
-    // keep adminTracker if it exists
-    ctx.session = { step: "idle", source, lang: ctx.session.lang, adminTracker: ctx.session.adminTracker };
+    ctx.session = {
+      step: "idle",
+      source,
+      lang: ctx.session.lang,
+      adminTracker: ctx.session.adminTracker,
+    };
     await goChooseLang(ctx, source);
   });
 
@@ -382,7 +417,12 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
 
   bot.callbackQuery("restart", async (ctx) => {
     await ctx.answerCallbackQuery();
-    ctx.session = { step: "idle", source: ctx.session.source, lang: ctx.session.lang, adminTracker: ctx.session.adminTracker };
+    ctx.session = {
+      step: "idle",
+      source: ctx.session.source,
+      lang: ctx.session.lang,
+      adminTracker: ctx.session.adminTracker,
+    };
     await goChooseLang(ctx, "restart");
   });
 
@@ -404,11 +444,21 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     await startQuiz(ctx);
   });
 
+  // Q1: choose project type OR custom text
   bot.callbackQuery(/^q:project:(.+)$/, async (ctx) => {
     const lang = ensureLang(ctx);
     if (ctx.session.step !== "project_type") return ctx.answerCallbackQuery();
 
     const key = ctx.match?.[1] as string;
+
+    if (key === "custom") {
+      ctx.session.step = "project_type_text";
+      await ctx.answerCallbackQuery();
+      await upsertAdminTracker(ctx, "custom project type…");
+      await ctx.reply(t(lang, "q_project_custom_hint"));
+      return;
+    }
+
     const p = PROJECT_TYPES.find((x) => x.k === key);
     if (!p) return ctx.answerCallbackQuery();
 
@@ -422,6 +472,27 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     await ctx.reply(t(lang, "q_features"), { reply_markup: featuresKeyboard(lang, new Set()) });
   });
 
+  // ✅ custom project type text handler
+  bot.on("message:text", async (ctx, next) => {
+    const lang = ensureLang(ctx);
+
+    // if user is typing custom project type
+    if (ctx.session.step === "project_type_text") {
+      const text = ctx.message.text.trim();
+      ctx.session.projectType = text || (lang === "ru" ? "Своя задача" : "Custom task");
+      ctx.session.features = [];
+      ctx.session.step = "features";
+
+      await upsertAdminTracker(ctx, `project(custom)=${ctx.session.projectType}`);
+
+      await ctx.reply(t(lang, "q_features"), { reply_markup: featuresKeyboard(lang, new Set()) });
+      return;
+    }
+
+    await next();
+  });
+
+  // Q2: multi select features
   bot.callbackQuery(/^q:feat:(\d+|done)$/, async (ctx) => {
     const lang = ensureLang(ctx);
     if (ctx.session.step !== "features") return ctx.answerCallbackQuery();
@@ -460,6 +531,7 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
       });
   });
 
+  // Q3
   bot.callbackQuery(/^q:timeline:(\d+)$/, async (ctx) => {
     const lang = ensureLang(ctx);
     if (ctx.session.step !== "timeline") return ctx.answerCallbackQuery();
@@ -475,6 +547,7 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     await ctx.reply(t(lang, "q_budget"), { reply_markup: budgetKeyboard(lang) });
   });
 
+  // Q4
   bot.callbackQuery(/^q:budget:(\d+)$/, async (ctx) => {
     const lang = ensureLang(ctx);
     if (ctx.session.step !== "budget") return ctx.answerCallbackQuery();
@@ -490,6 +563,7 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     await ctx.reply(t(lang, "q_note"));
   });
 
+  // Q5 note (final text)
   bot.on("message:text", async (ctx) => {
     const lang = ensureLang(ctx);
     if (ctx.session.step !== "note") return;
