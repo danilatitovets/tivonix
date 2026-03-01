@@ -1,0 +1,571 @@
+// bots/src/bot.ts
+import { Bot, Context, InlineKeyboard, session, SessionFlavor } from "grammy";
+
+type Lang = "ru" | "en";
+
+type SessionData = {
+  step:
+    | "idle"
+    | "lang"
+    | "consent"
+    | "project_type"
+    | "features"
+    | "timeline"
+    | "budget"
+    | "note";
+  lang?: Lang;
+  source?: string;
+
+  projectType?: string;
+  features?: string[];
+  timeline?: string;
+  budget?: string;
+
+  // admin "tracker" message to edit
+  adminTracker?: Record<string, { chatId: number; messageId: number }>;
+};
+
+// Context with session
+type MyContext = Context & SessionFlavor<SessionData>;
+
+const PROJECT_TYPES = [
+  { k: "saas", ru: "SaaS / MVP", en: "SaaS / MVP" },
+  { k: "cabinet", ru: "Личный кабинет / веб-сервис", en: "Client portal / web app" },
+  { k: "landing", ru: "Лендинг / сайт", en: "Landing / website" },
+  { k: "support", ru: "Доработки / поддержка", en: "Fixes / support" },
+] as const;
+
+const FEATURES = [
+  { ru: "Авторизация + роли", en: "Auth + roles" },
+  { ru: "Админка", en: "Admin panel" },
+  { ru: "Платежи", en: "Payments" },
+  { ru: "Аналитика/метрики", en: "Analytics/metrics" },
+  { ru: "Интеграции (CRM/API)", en: "Integrations (CRM/API)" },
+  { ru: "Чат/уведомления", en: "Chat/notifications" },
+  { ru: "Файлы/документы", en: "Files/documents" },
+] as const;
+
+const TIMELINES = [
+  { ru: "Срочно (1–2 недели)", en: "Urgent (1–2 weeks)" },
+  { ru: "2–4 недели", en: "2–4 weeks" },
+  { ru: "1–2 месяца", en: "1–2 months" },
+  { ru: "Не важно", en: "No preference" },
+] as const;
+
+const BUDGETS = [
+  { ru: "до $500", en: "under $500" },
+  { ru: "$500–$1500", en: "$500–$1500" },
+  { ru: "$1500–$5000", en: "$1500–$5000" },
+  { ru: "$5000+", en: "$5000+" },
+  { ru: "Пока не знаю", en: "Not sure yet" },
+] as const;
+
+function parseAdminIds(raw: string | undefined) {
+  return new Set(
+    (raw ?? "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .map((s) => Number(s))
+      .filter((n) => Number.isFinite(n))
+  );
+}
+
+function botTokenOrThrow(token?: string) {
+  if (!token) throw new Error("BOT_TOKEN is missing");
+  return token;
+}
+
+function escapeHtml(s: string) {
+  return s
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function t(lang: Lang, key: string, vars?: Record<string, string>) {
+  const dict: Record<Lang, Record<string, string>> = {
+    ru: {
+      choose_lang: "Выберите язык / Choose language:",
+      consent_title: "Перед началом нужно согласие",
+      consent_text:
+        "Я собираю ваш Telegram username/ID и ответы на вопросы, чтобы связаться с вами и рассчитать стоимость.\n" +
+        "Нажимая «Согласен», вы даёте согласие на обработку персональных данных.\n" +
+        "Политика: {privacy}\n" +
+        "Согласие: {consent}",
+      agree: "✅ Согласен — начать",
+      decline: "❌ Не согласен",
+      declined_text: "Ок. Без согласия я не могу принять заявку.",
+      start_over: "Начать заново",
+      q_project: "1/5 Что нужно сделать?",
+      q_features: "2/5 Какие модули нужны? (можно несколько)",
+      done_pick_features: "Готово ✅",
+      q_timeline: "3/5 Какие сроки?",
+      q_budget: "4/5 Какой бюджетный диапазон?",
+      q_note:
+        "5/5 Пришлите ссылку на ТЗ/макет/сайт (если есть) или кратко опишите задачу одним сообщением.",
+      sent: "Спасибо! Заявка отправлена. Мы напишем вам в ближайшее время.",
+      open_chat: "Открыть чат",
+      tracker_title: "Пользователь заполняет заявку",
+      tracker_user: "Пользователь",
+      tracker_source: "Источник",
+      tracker_lang: "Язык",
+      tracker_step: "Шаг",
+      tracker_project: "Тип",
+      tracker_features: "Модули",
+      tracker_timeline: "Срок",
+      tracker_budget: "Бюджет",
+      tracker_note: "Комментарий",
+      step_lang: "Выбор языка",
+      step_consent: "Согласие",
+      step_project: "Тип проекта",
+      step_features: "Модули",
+      step_timeline: "Сроки",
+      step_budget: "Бюджет",
+      step_note: "Описание",
+      tracker_final: "✅ Заявка отправлена",
+      tracker_declined: "❌ Отказ от согласия",
+    },
+    en: {
+      choose_lang: "Choose language / Выберите язык:",
+      consent_title: "Consent required",
+      consent_text:
+        "I collect your Telegram username/ID and your answers to estimate the project and contact you.\n" +
+        "By pressing “I agree”, you consent to personal data processing.\n" +
+        "Privacy policy: {privacy}\n" +
+        "Consent: {consent}",
+      agree: "✅ I agree — start",
+      decline: "❌ I don’t agree",
+      declined_text: "Okay. Without consent I can’t accept the request.",
+      start_over: "Start over",
+      q_project: "1/5 What do you need?",
+      q_features: "2/5 Which features do you need? (multi-select)",
+      done_pick_features: "Done ✅",
+      q_timeline: "3/5 Timeline?",
+      q_budget: "4/5 Budget range?",
+      q_note:
+        "5/5 Send a link to specs/design/site (if any) or describe your task in one message.",
+      sent: "Thanks! Your request was sent. We’ll message you soon.",
+      open_chat: "Open chat",
+      tracker_title: "User is filling the request",
+      tracker_user: "User",
+      tracker_source: "Source",
+      tracker_lang: "Language",
+      tracker_step: "Step",
+      tracker_project: "Type",
+      tracker_features: "Features",
+      tracker_timeline: "Timeline",
+      tracker_budget: "Budget",
+      tracker_note: "Note",
+      step_lang: "Language",
+      step_consent: "Consent",
+      step_project: "Project type",
+      step_features: "Features",
+      step_timeline: "Timeline",
+      step_budget: "Budget",
+      step_note: "Description",
+      tracker_final: "✅ Request submitted",
+      tracker_declined: "❌ Consent declined",
+    },
+  };
+
+  let s = dict[lang][key] ?? key;
+  if (vars) for (const [k, v] of Object.entries(vars)) s = s.replaceAll(`{${k}}`, v);
+  return s;
+}
+
+function langKeyboard() {
+  return new InlineKeyboard()
+    .text("🇷🇺 Русский", "lang:ru")
+    .text("🇬🇧 English", "lang:en");
+}
+
+function consentKeyboard(lang: Lang) {
+  return new InlineKeyboard()
+    .text(t(lang, "agree"), "consent:yes")
+    .row()
+    .text(t(lang, "decline"), "consent:no");
+}
+
+function projectTypeKeyboard(lang: Lang) {
+  const kb = new InlineKeyboard();
+  for (const p of PROJECT_TYPES) kb.text(lang === "ru" ? p.ru : p.en, `q:project:${p.k}`).row();
+  return kb;
+}
+
+function featuresKeyboard(lang: Lang, selected: Set<number>) {
+  const kb = new InlineKeyboard();
+  FEATURES.forEach((f, idx) => {
+    const mark = selected.has(idx) ? "✅ " : "☑️ ";
+    kb.text(mark + (lang === "ru" ? f.ru : f.en), `q:feat:${idx}`).row();
+  });
+  kb.text(t(lang, "done_pick_features"), "q:feat:done");
+  return kb;
+}
+
+function timelineKeyboard(lang: Lang) {
+  const kb = new InlineKeyboard();
+  TIMELINES.forEach((x, i) => kb.text(lang === "ru" ? x.ru : x.en, `q:timeline:${i}`).row());
+  return kb;
+}
+
+function budgetKeyboard(lang: Lang) {
+  const kb = new InlineKeyboard();
+  BUDGETS.forEach((x, i) => kb.text(lang === "ru" ? x.ru : x.en, `q:budget:${i}`).row());
+  return kb;
+}
+
+function selectedFeatureIndexesFromSession(lang: Lang, features: string[] | undefined) {
+  const s = new Set<number>();
+  FEATURES.forEach((f, i) => {
+    const label = lang === "ru" ? f.ru : f.en;
+    if ((features ?? []).includes(label)) s.add(i);
+  });
+  return s;
+}
+
+function getBaseUrlFromContext(ctx: MyContext) {
+  // api/telegram.ts stores it into bot.config
+  const b = (ctx as any).bot;
+  const baseUrl = b?.config?.baseUrl;
+  return typeof baseUrl === "string" && baseUrl.startsWith("http")
+    ? baseUrl
+    : "https://www.tivonix.tech";
+}
+
+function docUrl(base: string, fileName: string) {
+  // fileName may contain Cyrillic – encode to safe URL
+  return `${base}/doc/${encodeURIComponent(fileName)}`;
+}
+
+function getDocs(ctx: MyContext) {
+  const baseUrl = getBaseUrlFromContext(ctx);
+  return {
+    ru: {
+      privacy: docUrl(baseUrl, "Политика_обработки_ПД_Tivonix_RU.pdf"),
+      consent: docUrl(baseUrl, "Согласие_на_обработку_ПД_Tivonix_RU.pdf"),
+    },
+    en: {
+      privacy: docUrl(baseUrl, "Privacy_Policy_Tivonix_EN.pdf"),
+      consent: docUrl(baseUrl, "Consent_Tivonix_EN.pdf"),
+    },
+  };
+}
+
+function userLabel(ctx: MyContext) {
+  const from = ctx.from;
+  const username = from?.username ? `@${from.username}` : "—";
+  const name = [from?.first_name, from?.last_name].filter(Boolean).join(" ").trim() || "—";
+  return `${name} (${username}) id=${from?.id}`;
+}
+
+function stepName(lang: Lang, step: SessionData["step"]) {
+  const map: Record<SessionData["step"], string> = {
+    idle: "-",
+    lang: t(lang, "step_lang"),
+    consent: t(lang, "step_consent"),
+    project_type: t(lang, "step_project"),
+    features: t(lang, "step_features"),
+    timeline: t(lang, "step_timeline"),
+    budget: t(lang, "step_budget"),
+    note: t(lang, "step_note"),
+  };
+  return map[step];
+}
+
+export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
+  const bot = new Bot<MyContext>(botTokenOrThrow(env.BOT_TOKEN));
+  const admins = parseAdminIds(env.ADMIN_IDS);
+
+  bot.use(
+    session<SessionData, MyContext>({
+      initial(): SessionData {
+        return { step: "idle" };
+      },
+    })
+  );
+
+  const ensureLang = (ctx: MyContext): Lang => ctx.session.lang ?? "ru";
+
+  async function upsertAdminTracker(ctx: MyContext, extraStatus?: string) {
+    if (!ctx.from) return;
+    const lang = ensureLang(ctx);
+
+    const docs = getDocs(ctx)[lang];
+    void docs; // not used in tracker, but available if you want to show links
+
+    const text =
+      `<b>🧾 ${escapeHtml(t(lang, "tracker_title"))}</b>\n\n` +
+      `<b>${escapeHtml(t(lang, "tracker_user"))}:</b> ${escapeHtml(userLabel(ctx))}\n` +
+      `<b>${escapeHtml(t(lang, "tracker_source"))}:</b> ${escapeHtml(ctx.session.source ?? "direct")}\n` +
+      `<b>${escapeHtml(t(lang, "tracker_lang"))}:</b> ${escapeHtml(ctx.session.lang ?? "—")}\n` +
+      `<b>${escapeHtml(t(lang, "tracker_step"))}:</b> ${escapeHtml(stepName(lang, ctx.session.step))}\n\n` +
+      `<b>${escapeHtml(t(lang, "tracker_project"))}:</b> ${escapeHtml(ctx.session.projectType ?? "—")}\n` +
+      `<b>${escapeHtml(t(lang, "tracker_features"))}:</b> ${escapeHtml((ctx.session.features ?? []).join(", ") || "—")}\n` +
+      `<b>${escapeHtml(t(lang, "tracker_timeline"))}:</b> ${escapeHtml(ctx.session.timeline ?? "—")}\n` +
+      `<b>${escapeHtml(t(lang, "tracker_budget"))}:</b> ${escapeHtml(ctx.session.budget ?? "—")}\n` +
+      `<b>${escapeHtml(t(lang, "tracker_note"))}:</b> ${escapeHtml(extraStatus ?? "—")}`;
+
+    ctx.session.adminTracker = ctx.session.adminTracker ?? {};
+
+    // Create or edit one message per admin
+    for (const adminId of admins) {
+      const key = String(adminId);
+      const existing = ctx.session.adminTracker[key];
+
+      try {
+        if (existing?.messageId) {
+          await ctx.api.editMessageText(existing.chatId, existing.messageId, text, {
+            parse_mode: "HTML",
+            link_preview_options: { is_disabled: true },
+          });
+        } else {
+          const msg = await ctx.api.sendMessage(adminId, text, {
+            parse_mode: "HTML",
+            link_preview_options: { is_disabled: true },
+          });
+          ctx.session.adminTracker[key] = { chatId: adminId, messageId: msg.message_id };
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  async function goChooseLang(ctx: MyContext, source?: string) {
+    ctx.session.step = "lang";
+    ctx.session.source = source ?? ctx.session.source;
+    await ctx.reply(t("ru", "choose_lang"), { reply_markup: langKeyboard() });
+    await upsertAdminTracker(ctx, "—");
+  }
+
+  async function goConsent(ctx: MyContext) {
+    const lang = ensureLang(ctx);
+    ctx.session.step = "consent";
+
+    const docs = getDocs(ctx)[lang];
+
+    await ctx.reply(
+      `🛡 ${t(lang, "consent_title")}\n\n` +
+        t(lang, "consent_text", { privacy: docs.privacy, consent: docs.consent }),
+      {
+        reply_markup: consentKeyboard(lang),
+        link_preview_options: { is_disabled: true },
+      }
+    );
+
+    await upsertAdminTracker(ctx, "—");
+  }
+
+  async function startQuiz(ctx: MyContext) {
+    const lang = ensureLang(ctx);
+    ctx.session.step = "project_type";
+    await ctx.reply(t(lang, "q_project"), { reply_markup: projectTypeKeyboard(lang) });
+    await upsertAdminTracker(ctx, "—");
+  }
+
+  // /start with payload (?start=calc etc.)
+  bot.command("start", async (ctx) => {
+    const payload = (ctx.match?.trim?.() as string | undefined) || "";
+    const source = payload || "direct";
+    ctx.session = { step: "idle", source, adminTracker: ctx.session.adminTracker };
+    await goChooseLang(ctx, source);
+  });
+
+  bot.command("estimate", async (ctx) => {
+    ctx.session.source = ctx.session.source ?? "command_estimate";
+    if (!ctx.session.lang) return goChooseLang(ctx, ctx.session.source);
+    await goConsent(ctx);
+  });
+
+  // language select
+  bot.callbackQuery(/^lang:(ru|en)$/, async (ctx) => {
+    const lang = ctx.match?.[1] as Lang;
+    ctx.session.lang = lang;
+    await ctx.answerCallbackQuery();
+    await ctx.editMessageReplyMarkup().catch(() => {});
+    await upsertAdminTracker(ctx, `lang=${lang}`);
+    await goConsent(ctx);
+  });
+
+  // restart
+  bot.callbackQuery("restart", async (ctx) => {
+    await ctx.answerCallbackQuery();
+    ctx.session = { step: "idle", source: ctx.session.source, lang: ctx.session.lang, adminTracker: ctx.session.adminTracker };
+    await goChooseLang(ctx, "restart");
+  });
+
+  // consent
+  bot.callbackQuery(/^consent:(yes|no)$/, async (ctx) => {
+    const lang = ensureLang(ctx);
+    const yes = ctx.match?.[1] === "yes";
+    await ctx.answerCallbackQuery();
+
+    if (!yes) {
+      ctx.session.step = "idle";
+      await upsertAdminTracker(ctx, t(lang, "tracker_declined"));
+      await ctx.reply(t(lang, "declined_text"), {
+        reply_markup: new InlineKeyboard().text(t(lang, "start_over"), "restart"),
+      });
+      return;
+    }
+
+    await upsertAdminTracker(ctx, "✅ consent=yes");
+    await startQuiz(ctx);
+  });
+
+  // Q1 project type
+  bot.callbackQuery(/^q:project:(.+)$/, async (ctx) => {
+    const lang = ensureLang(ctx);
+    if (ctx.session.step !== "project_type") return ctx.answerCallbackQuery();
+
+    const key = ctx.match?.[1] as string;
+    const p = PROJECT_TYPES.find((x) => x.k === key);
+    if (!p) return ctx.answerCallbackQuery();
+
+    ctx.session.projectType = lang === "ru" ? p.ru : p.en;
+    ctx.session.features = [];
+    ctx.session.step = "features";
+
+    await ctx.answerCallbackQuery();
+    await upsertAdminTracker(ctx, `project=${ctx.session.projectType}`);
+
+    await ctx.reply(t(lang, "q_features"), { reply_markup: featuresKeyboard(lang, new Set()) });
+  });
+
+  // Q2 features (multi select)
+  bot.callbackQuery(/^q:feat:(\d+|done)$/, async (ctx) => {
+    const lang = ensureLang(ctx);
+    if (ctx.session.step !== "features") return ctx.answerCallbackQuery();
+
+    const v = ctx.match?.[1] as string;
+    const currentLabels = new Set(ctx.session.features ?? []);
+
+    if (v === "done") {
+      ctx.session.step = "timeline";
+      await ctx.answerCallbackQuery();
+      await upsertAdminTracker(ctx, `features=${(ctx.session.features ?? []).join(", ") || "—"}`);
+      await ctx.reply(t(lang, "q_timeline"), { reply_markup: timelineKeyboard(lang) });
+      return;
+    }
+
+    const idx = Number(v);
+    if (!Number.isFinite(idx) || idx < 0 || idx >= FEATURES.length) {
+      await ctx.answerCallbackQuery();
+      return;
+    }
+
+    const label = lang === "ru" ? FEATURES[idx].ru : FEATURES[idx].en;
+    if (currentLabels.has(label)) currentLabels.delete(label);
+    else currentLabels.add(label);
+
+    ctx.session.features = Array.from(currentLabels);
+    await ctx.answerCallbackQuery();
+
+    const selected = selectedFeatureIndexesFromSession(lang, ctx.session.features);
+    await upsertAdminTracker(ctx, `features=${(ctx.session.features ?? []).join(", ") || "—"}`);
+
+    await ctx
+      .editMessageReplyMarkup({ reply_markup: featuresKeyboard(lang, selected) })
+      .catch(async () => {
+        await ctx.reply(t(lang, "q_features"), { reply_markup: featuresKeyboard(lang, selected) });
+      });
+  });
+
+  // Q3 timeline
+  bot.callbackQuery(/^q:timeline:(\d+)$/, async (ctx) => {
+    const lang = ensureLang(ctx);
+    if (ctx.session.step !== "timeline") return ctx.answerCallbackQuery();
+
+    const idx = Number(ctx.match?.[1]);
+    if (!Number.isFinite(idx) || idx < 0 || idx >= TIMELINES.length) return ctx.answerCallbackQuery();
+
+    ctx.session.timeline = lang === "ru" ? TIMELINES[idx].ru : TIMELINES[idx].en;
+    ctx.session.step = "budget";
+
+    await ctx.answerCallbackQuery();
+    await upsertAdminTracker(ctx, `timeline=${ctx.session.timeline}`);
+    await ctx.reply(t(lang, "q_budget"), { reply_markup: budgetKeyboard(lang) });
+  });
+
+  // Q4 budget
+  bot.callbackQuery(/^q:budget:(\d+)$/, async (ctx) => {
+    const lang = ensureLang(ctx);
+    if (ctx.session.step !== "budget") return ctx.answerCallbackQuery();
+
+    const idx = Number(ctx.match?.[1]);
+    if (!Number.isFinite(idx) || idx < 0 || idx >= BUDGETS.length) return ctx.answerCallbackQuery();
+
+    ctx.session.budget = lang === "ru" ? BUDGETS[idx].ru : BUDGETS[idx].en;
+    ctx.session.step = "note";
+
+    await ctx.answerCallbackQuery();
+    await upsertAdminTracker(ctx, `budget=${ctx.session.budget}`);
+    await ctx.reply(t(lang, "q_note"));
+  });
+
+  // Q5 note (text)
+  bot.on("message:text", async (ctx) => {
+    const lang = ensureLang(ctx);
+    if (ctx.session.step !== "note") return;
+
+    const note = ctx.message.text.trim();
+    const from = ctx.from;
+    const username = from?.username ? `@${from.username}` : "—";
+    const name = [from?.first_name, from?.last_name].filter(Boolean).join(" ").trim() || "—";
+    const source = ctx.session.source ?? "direct";
+
+    await upsertAdminTracker(ctx, note || "—");
+
+    // Final lead card to admins
+    const leadHtml =
+      `<b>📩 Новая заявка</b>\n\n` +
+      `<b>Источник:</b> ${escapeHtml(source)}\n` +
+      `<b>Тип:</b> ${escapeHtml(ctx.session.projectType ?? "—")}\n` +
+      `<b>Модули:</b> ${escapeHtml((ctx.session.features ?? []).join(", ") || "—")}\n` +
+      `<b>Срок:</b> ${escapeHtml(ctx.session.timeline ?? "—")}\n` +
+      `<b>Бюджет:</b> ${escapeHtml(ctx.session.budget ?? "—")}\n` +
+      `<b>Комментарий:</b> ${escapeHtml(note || "—")}\n\n` +
+      `<b>Контакт:</b> ${escapeHtml(name)} (${escapeHtml(username)})\n` +
+      `<b>ID:</b> <code>${from?.id}</code>`;
+
+    const kb = new InlineKeyboard()
+      .url(t(lang, "open_chat"), `tg://user?id=${from?.id}`)
+      .url("👤 Профиль", from?.username ? `https://t.me/${from.username}` : `tg://user?id=${from?.id}`);
+
+    for (const adminId of admins) {
+      ctx.api
+        .sendMessage(adminId, leadHtml, {
+          parse_mode: "HTML",
+          link_preview_options: { is_disabled: true },
+          reply_markup: kb,
+        })
+        .catch(() => {});
+    }
+
+    // Mark tracker final
+    await upsertAdminTracker(ctx, t(lang, "tracker_final"));
+
+    await ctx.reply(t(lang, "sent"));
+
+    // reset session (keep language, keep tracker ids)
+    ctx.session = {
+      step: "idle",
+      lang: ctx.session.lang,
+      source: ctx.session.source,
+      adminTracker: ctx.session.adminTracker,
+    };
+  });
+
+  // help
+  bot.command("help", async (ctx) => {
+    const lang = ensureLang(ctx);
+    await ctx.reply(
+      lang === "ru"
+        ? "Команды: /start /estimate\n\n/start → выбор языка → согласие → 5 вопросов."
+        : "Commands: /start /estimate\n\n/start → choose language → consent → 5 questions."
+    );
+  });
+
+  return bot;
+}
