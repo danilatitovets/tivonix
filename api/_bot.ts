@@ -1,4 +1,4 @@
-// bots/src/bot.ts
+// api/_bot.ts
 import { Bot, Context, InlineKeyboard, session, SessionFlavor } from "grammy";
 
 type Lang = "ru" | "en";
@@ -25,7 +25,6 @@ type SessionData = {
   adminTracker?: Record<string, { chatId: number; messageId: number }>;
 };
 
-// Context with session
 type MyContext = Context & SessionFlavor<SessionData>;
 
 const PROJECT_TYPES = [
@@ -225,7 +224,6 @@ function selectedFeatureIndexesFromSession(lang: Lang, features: string[] | unde
 }
 
 function getBaseUrlFromContext(ctx: MyContext) {
-  // api/telegram.ts stores it into bot.config
   const b = (ctx as any).bot;
   const baseUrl = b?.config?.baseUrl;
   return typeof baseUrl === "string" && baseUrl.startsWith("http")
@@ -234,7 +232,6 @@ function getBaseUrlFromContext(ctx: MyContext) {
 }
 
 function docUrl(base: string, fileName: string) {
-  // fileName may contain Cyrillic – encode to safe URL
   return `${base}/doc/${encodeURIComponent(fileName)}`;
 }
 
@@ -291,9 +288,6 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     if (!ctx.from) return;
     const lang = ensureLang(ctx);
 
-    const docs = getDocs(ctx)[lang];
-    void docs; // not used in tracker, but available if you want to show links
-
     const text =
       `<b>🧾 ${escapeHtml(t(lang, "tracker_title"))}</b>\n\n` +
       `<b>${escapeHtml(t(lang, "tracker_user"))}:</b> ${escapeHtml(userLabel(ctx))}\n` +
@@ -308,7 +302,6 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
 
     ctx.session.adminTracker = ctx.session.adminTracker ?? {};
 
-    // Create or edit one message per admin
     for (const adminId of admins) {
       const key = String(adminId);
       const existing = ctx.session.adminTracker[key];
@@ -364,11 +357,11 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     await upsertAdminTracker(ctx, "—");
   }
 
-  // /start with payload (?start=calc etc.)
   bot.command("start", async (ctx) => {
     const payload = (ctx.match?.trim?.() as string | undefined) || "";
     const source = payload || "direct";
-    ctx.session = { step: "idle", source, adminTracker: ctx.session.adminTracker };
+    // keep adminTracker if it exists
+    ctx.session = { step: "idle", source, lang: ctx.session.lang, adminTracker: ctx.session.adminTracker };
     await goChooseLang(ctx, source);
   });
 
@@ -378,7 +371,6 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     await goConsent(ctx);
   });
 
-  // language select
   bot.callbackQuery(/^lang:(ru|en)$/, async (ctx) => {
     const lang = ctx.match?.[1] as Lang;
     ctx.session.lang = lang;
@@ -388,14 +380,12 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     await goConsent(ctx);
   });
 
-  // restart
   bot.callbackQuery("restart", async (ctx) => {
     await ctx.answerCallbackQuery();
     ctx.session = { step: "idle", source: ctx.session.source, lang: ctx.session.lang, adminTracker: ctx.session.adminTracker };
     await goChooseLang(ctx, "restart");
   });
 
-  // consent
   bot.callbackQuery(/^consent:(yes|no)$/, async (ctx) => {
     const lang = ensureLang(ctx);
     const yes = ctx.match?.[1] === "yes";
@@ -414,7 +404,6 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     await startQuiz(ctx);
   });
 
-  // Q1 project type
   bot.callbackQuery(/^q:project:(.+)$/, async (ctx) => {
     const lang = ensureLang(ctx);
     if (ctx.session.step !== "project_type") return ctx.answerCallbackQuery();
@@ -433,7 +422,6 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     await ctx.reply(t(lang, "q_features"), { reply_markup: featuresKeyboard(lang, new Set()) });
   });
 
-  // Q2 features (multi select)
   bot.callbackQuery(/^q:feat:(\d+|done)$/, async (ctx) => {
     const lang = ensureLang(ctx);
     if (ctx.session.step !== "features") return ctx.answerCallbackQuery();
@@ -472,7 +460,6 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
       });
   });
 
-  // Q3 timeline
   bot.callbackQuery(/^q:timeline:(\d+)$/, async (ctx) => {
     const lang = ensureLang(ctx);
     if (ctx.session.step !== "timeline") return ctx.answerCallbackQuery();
@@ -488,7 +475,6 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     await ctx.reply(t(lang, "q_budget"), { reply_markup: budgetKeyboard(lang) });
   });
 
-  // Q4 budget
   bot.callbackQuery(/^q:budget:(\d+)$/, async (ctx) => {
     const lang = ensureLang(ctx);
     if (ctx.session.step !== "budget") return ctx.answerCallbackQuery();
@@ -504,7 +490,6 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     await ctx.reply(t(lang, "q_note"));
   });
 
-  // Q5 note (text)
   bot.on("message:text", async (ctx) => {
     const lang = ensureLang(ctx);
     if (ctx.session.step !== "note") return;
@@ -517,7 +502,6 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
 
     await upsertAdminTracker(ctx, note || "—");
 
-    // Final lead card to admins
     const leadHtml =
       `<b>📩 Новая заявка</b>\n\n` +
       `<b>Источник:</b> ${escapeHtml(source)}\n` +
@@ -543,12 +527,9 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
         .catch(() => {});
     }
 
-    // Mark tracker final
     await upsertAdminTracker(ctx, t(lang, "tracker_final"));
-
     await ctx.reply(t(lang, "sent"));
 
-    // reset session (keep language, keep tracker ids)
     ctx.session = {
       step: "idle",
       lang: ctx.session.lang,
@@ -557,7 +538,6 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     };
   });
 
-  // help
   bot.command("help", async (ctx) => {
     const lang = ensureLang(ctx);
     await ctx.reply(

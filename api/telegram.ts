@@ -1,7 +1,7 @@
 // api/telegram.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { webhookCallback } from "grammy";
-import { createBot } from "../bots/src/bot";
+import { createBot } from "./_bot";
 
 function getBaseUrl(req: VercelRequest) {
   const proto = (req.headers["x-forwarded-proto"] as string) || "https";
