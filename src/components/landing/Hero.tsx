@@ -5,7 +5,7 @@ import { useLang, type Lang } from "../../i18n/LangProvider";
 import HeroWebGLBg from "./HeroWebGLBg";
 
 const HERO_BG_IMG = "/images/fom.webp";
-const TG_URL = "https://t.me/TIVONIX";
+const TG_URL = "https://t.me/tivonixtech_leads_bot?start=calc";
 const CONTACT_EMAIL = "tivoonix@gmail.com";
 
 function cx(...a: Array<string | false | null | undefined>) {
@@ -190,7 +190,7 @@ export default function Hero() {
     return {
       gmailUrl: buildGmailUrl(CONTACT_EMAIL, subject, body),
       gmailLabel: lang === "ru" ? "Открыть в Gmail" : "Open in Gmail",
-      tgLabel: lang === "ru" ? "Написать в Telegram" : "Message on Telegram",
+      tgLabel: lang === "ru" ? "Telegram" : "Telegram",
       trustLine: lang === "ru" ? "NDA • Договор • Прозрачная смета" : "NDA • Contract • Clear pricing",
     };
   }, [lang]);
