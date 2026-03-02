@@ -5,6 +5,10 @@ import Container from "../ui/Container";
 import { Button } from "../ui/Button";
 import { useLang, type Lang } from "../../i18n/LangProvider";
 import StartModal from "./StartModal";
+import { TG_BOT_URL } from "../../constants/links";
+
+// Мобилка: CTA ведёт в бота, модалка не открывается. Десктоп: модалка.
+const MOBILE_BREAKPOINT = 1280; // xl
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -141,7 +145,7 @@ function PillNav({
         style={{
           boxShadow:
             "inset 0 1px 0 rgba(255,255,255,0.07), inset 0 0 0 1px rgba(255,255,255,0.05)",
-        }}
+        } as React.CSSProperties}
       />
 
       {items.map((it) => {
@@ -321,6 +325,11 @@ export default function Header() {
     setOpen(false);
     if (location.pathname !== "/") navigate("/");
     window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
+    // На мобилке — переход в бота, без модалки
+    if (typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT) {
+      window.open(TG_BOT_URL, "_blank", "noopener,noreferrer");
+      return;
+    }
     setStartOpen(true);
   };
 
@@ -332,7 +341,6 @@ export default function Header() {
 
   const dur = reducedMotion ? 0 : 280;
 
-  // высота области меню: viewport минус высота верхней полосы и небольшой отступ
   const menuMaxH = `calc(100dvh - ${barH}px - 16px)`;
 
   return (
@@ -489,9 +497,12 @@ export default function Header() {
                       "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
                       scrolled ? "h-10 w-10 rounded-2xl" : "h-11 w-11 rounded-2xl",
                       "border border-white/12 bg-black/35 backdrop-blur-xl",
-                      "active:scale-[0.98] transition"
+                      "transition-[transform,background-color,border-color] duration-200 ease-out",
+                      "hover:bg-black/50 hover:border-white/18",
+                      "active:scale-95",
+                      open && "bg-white/[0.08] border-white/20"
                     )}
-                    aria-label={ariaMenu}
+                    aria-label={open ? (isRu ? "Закрыть меню" : "Close menu") : ariaMenu}
                     aria-expanded={open}
                     aria-controls="mobile-header-menu"
                     onClick={(e) => {
@@ -500,7 +511,13 @@ export default function Header() {
                       setOpen((v) => !v);
                     }}
                   >
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      className="transition-transform duration-200 ease-out"
+                    >
                       <path
                         d="M4 7H20"
                         stroke="#FF9A3D"
@@ -508,9 +525,9 @@ export default function Header() {
                         strokeLinecap="round"
                         style={{
                           transformOrigin: "12px 7px",
-                          transform: open ? "translateY(5px) rotate(45deg)" : "none",
-                          transition: "transform 220ms ease",
-                        }}
+                          transform: open ? "translateY(5px) rotate(45deg)" : "translateY(0) rotate(0deg)",
+                          transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)",
+                        } as React.CSSProperties}
                       />
                       <path
                         d="M4 12H20"
@@ -519,8 +536,8 @@ export default function Header() {
                         strokeLinecap="round"
                         style={{
                           opacity: open ? 0 : 1,
-                          transition: "opacity 160ms ease",
-                        }}
+                          transition: reducedMotion ? "none" : "opacity 0.18s ease-out",
+                        } as React.CSSProperties}
                       />
                       <path
                         d="M4 17H20"
@@ -529,9 +546,9 @@ export default function Header() {
                         strokeLinecap="round"
                         style={{
                           transformOrigin: "12px 17px",
-                          transform: open ? "translateY(-5px) rotate(-45deg)" : "none",
-                          transition: "transform 220ms ease",
-                        }}
+                          transform: open ? "translateY(-5px) rotate(-45deg)" : "translateY(0) rotate(0deg)",
+                          transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)",
+                        } as React.CSSProperties}
                       />
                     </svg>
                   </button>
@@ -541,93 +558,159 @@ export default function Header() {
           </Container>
         </div>
 
-        {/* ✅ MOBILE/TABLET MENU OVERLAY (до xl) — скроллится внутри */}
+        {/* MOBILE MENU — на весь экран, стиль как у хедера (блюр, тёмный фон, оранжевая полоска) */}
         <div
           id="mobile-header-menu"
-          className={cx("xl:hidden", open ? "pointer-events-auto" : "pointer-events-none")}
+          className={cx("xl:hidden fixed inset-0 z-50", open ? "pointer-events-auto" : "pointer-events-none")}
           aria-hidden={!open}
         >
-          {/* backdrop */}
+          {/* подложка: тёмный блюр в стиле хедера */}
           <div
-            className={cx(
-              "fixed inset-0 z-40 transition-opacity",
-              open ? "opacity-100" : "opacity-0"
-            )}
-            style={{ background: "rgba(0,0,0,0.55)" }}
+            className={cx("absolute inset-0 transition-opacity duration-300", open ? "opacity-100" : "opacity-0")}
+            style={{
+              background: "rgba(0,0,0,0.72)",
+              backdropFilter: "blur(32px)",
+              WebkitBackdropFilter: "blur(32px)",
+            } as React.CSSProperties}
             onClick={() => {
               setOpen(false);
               requestAnimationFrame(() => burgerRef.current?.focus());
             }}
           />
+          {/* панель на весь экран, выезд справа */}
+          <div
+            className={cx(
+              "absolute inset-0 flex flex-col bg-[#0a0a0c]",
+              "transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
+            )}
+            style={{ transform: open ? "translateX(0)" : "translateX(100%)" } as React.CSSProperties}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* оранжевое свечение сверху + полоска — как в хедере */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-0 h-32 rounded-b-2xl opacity-90"
+              style={{
+                background: "radial-gradient(600px 80px at 50% 0%, rgba(255,154,61,0.22), transparent 65%)",
+              } as React.CSSProperties}
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-6 right-6 top-0 h-[3px] rounded-full"
+              style={{ background: ORANGE_LINE } as React.CSSProperties}
+            />
 
-          {/* panel */}
-          <div className="fixed inset-x-0 z-50" style={{ top: barH }}>
-            <Container>
-              <div className="pt-3 pb-4">
-                <div
-                  className={cx(
-                    "rounded-[28px] border border-white/10 bg-black/55 backdrop-blur-2xl shadow-[0_22px_80px_rgba(0,0,0,0.55)]",
-                    "transition-[transform,opacity] duration-300",
-                    open ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"
-                  )}
-                >
-                  {/* ✅ scroll area */}
-                  <div
-                    className={cx(
-                      "p-4",
-                      "overflow-y-auto overscroll-contain"
-                    )}
-                    style={
-                      {
-                        maxHeight: menuMaxH,
-                        WebkitOverflowScrolling: "touch",
-                      } as React.CSSProperties
-                    }
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="flex justify-center">
-                      <PillNav
-                        activeKey={activeKey}
-                        reducedMotion={reducedMotion}
-                        items={tabsItems}
-                        onItemClick={(to) => (e) => {
-                          onNav(to)(e);
-                          setOpen(false);
-                          requestAnimationFrame(() => burgerRef.current?.focus());
-                        }}
-                        compact
-                      />
-                    </div>
+            <div className="relative flex-1 flex flex-col min-h-0 pt-2">
+                  {/* кнопка закрытия — сверху справа */}
+                  <div className="flex justify-end pt-5 pr-5 sm:pt-6 sm:pr-6 mb-5">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setOpen(false);
+                        requestAnimationFrame(() => burgerRef.current?.focus());
+                      }}
+                      className={cx(
+                        "group grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-2xl shrink-0",
+                        "border border-white/14 bg-white/[0.07] backdrop-blur-xl",
+                        "transition-all duration-200 ease-out cursor-pointer",
+                        "hover:scale-110 hover:bg-white/[0.12] active:scale-95",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
+                      )}
+                      aria-label={isRu ? "Закрыть меню" : "Close menu"}
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        className="transition-transform duration-200 ease-out"
+                      >
+                        <path
+                          d="M6 6L18 18"
+                          stroke="#FF9A3D"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M18 6L6 18"
+                          stroke="#FF9A3D"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
 
-                    <div className="mt-4 flex items-center gap-3">
-                      <LangToggle compact scrolled />
-                      <Button
-                        type="button"
-                        onClick={openStartModal}
+                  {/* scroll area */}
+                  <div className="px-6 pb-6 pt-0 overflow-y-auto overscroll-contain" style={{ maxHeight: menuMaxH } as React.CSSProperties} onClick={(e) => e.stopPropagation()}>
+                    <div className="flex flex-col gap-3">
+                      <a
+                        href={TG_BOT_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className={cx(
-                          "flex-1 h-11 rounded-2xl font-semibold !text-black outline-none",
-                          "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
-                          "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
-                          "hover:brightness-[1.04] active:brightness-[0.96]"
+                          "h-12 rounded-2xl font-semibold flex items-center justify-center",
+                          "bg-[#FF9A3D] text-black hover:brightness-105 active:brightness-95",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0c]"
                         )}
-                        style={{ background: BRAND_CTA } as React.CSSProperties}
+                        onClick={() => setOpen(false)}
                       >
                         {ctaScrolled}
-                      </Button>
+                      </a>
+                      <Link
+                        to="/contacts"
+                        className={cx(
+                          "h-12 rounded-2xl font-medium flex items-center justify-center border border-white/20 bg-white/5 text-white",
+                          "hover:bg-white/10 active:bg-white/5",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0c]"
+                        )}
+                        onClick={() => setOpen(false)}
+                      >
+                        {isRu ? "Контакты" : "Contact"}
+                      </Link>
+                    </div>
+
+                    <nav className="mt-6 flex flex-col" aria-label={isRu ? "Навигация" : "Navigation"}>
+                      {tabsItems.map((item) => (
+                        <Link
+                          key={item.key}
+                          to={item.to}
+                          className={cx(
+                            "flex items-center justify-between py-3 text-white/90 hover:text-white",
+                            "border-b border-white/5 last:border-0"
+                          )}
+                          onClick={() => {
+                            setOpen(false);
+                            requestAnimationFrame(() => burgerRef.current?.focus());
+                          }}
+                        >
+                          <span>{item.label}</span>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0 text-white/50">
+                            <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </Link>
+                      ))}
+                    </nav>
+
+                    <div className="my-4 border-t border-white/10" />
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-white/70">{isRu ? "Язык" : "Language"}</span>
+                      <LangToggle compact scrolled />
                     </div>
 
                     <div className="mt-3 text-[12px] text-white/55 text-center">
                       {isRu
-                        ? "Нажми — уточним задачу и быстро дадим оценку."
+                        ? "Нажми — откроется бот в Telegram для заявки."
                         : "Tap — we’ll clarify scope and estimate quickly."}
                     </div>
 
-                    {/* небольшой нижний отступ, чтобы не упираться в край при скролле */}
-                    <div className="h-2" />
+                    {/* небольшой нижний отступ */}
+                    <div className="h-4" />
                   </div>
-                </div>
-              </div>
-            </Container>
+            </div>
           </div>
         </div>
       </header>

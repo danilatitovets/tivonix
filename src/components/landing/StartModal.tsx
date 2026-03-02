@@ -639,10 +639,12 @@ export default function StartModal({ open, onClose }: Props) {
         `}
       </style>
 
-      {/* overlay */}
+      {/* overlay — клик по фону закрывает модалку */}
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-[12px] transition-opacity duration-200"
-        style={{ opacity: open && visible ? 1 : 0 }}
+        className="absolute inset-0 bg-black/70 backdrop-blur-[12px] transition-opacity duration-200 cursor-pointer"
+        style={{ opacity: open && visible ? 1 : 0, pointerEvents: open ? "auto" : "none" }}
+        onClick={onClose}
+        aria-hidden="true"
       />
 
       <div
@@ -743,24 +745,35 @@ export default function StartModal({ open, onClose }: Props) {
                     type="button"
                     onClick={onClose}
                     className={cx(
-                      "grid h-9 w-9 place-items-center rounded-2xl sm:h-10 sm:w-10",
+                      "group grid h-9 w-9 place-items-center rounded-2xl sm:h-10 sm:w-10",
                       "border border-white/14 bg-white/[0.07] backdrop-blur-xl",
-                      "hover:bg-white/[0.10] active:scale-[0.97] transition"
+                      "transition-all duration-200 ease-out",
+                      "hover:scale-110 hover:bg-white/[0.12] hover:border-white/20",
+                      "active:scale-95",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                     )}
                     aria-label={txt.close}
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      className="transition-transform duration-200 ease-out group-hover:rotate-90"
+                    >
                       <path
                         d="M6 6L18 18"
                         stroke="#FFB36A"
                         strokeWidth="2"
                         strokeLinecap="round"
+                        className="transition-opacity group-hover:opacity-90"
                       />
                       <path
                         d="M18 6L6 18"
                         stroke="#FFB36A"
                         strokeWidth="2"
                         strokeLinecap="round"
+                        className="transition-opacity group-hover:opacity-90"
                       />
                     </svg>
                   </button>

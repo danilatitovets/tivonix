@@ -3,9 +3,9 @@ import Section from "../ui/Section";
 import Container from "../ui/Container";
 import { useLang, type Lang } from "../../i18n/LangProvider";
 import HeroWebGLBg from "./HeroWebGLBg";
+import { TG_BOT_URL } from "../../constants/links";
 
 const HERO_BG_IMG = "/images/fom4.webp"; // твой фон
-const TG_URL = "https://t.me/tivonixtech_leads_bot?start=calc";
 const CONTACT_EMAIL = "tivoonix@gmail.com";
 
 function cx(...a: Array<string | false | null | undefined>) {
@@ -343,7 +343,7 @@ export default function Hero() {
 
             <div className="mt-7 flex w-full max-w-[820px] flex-col gap-3 sm:flex-row sm:items-stretch heroCtas">
               <a
-                href={TG_URL}
+                href={TG_BOT_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={tgLabel}
