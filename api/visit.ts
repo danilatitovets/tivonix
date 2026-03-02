@@ -1,25 +1,19 @@
-// api/visit.ts — учёт визитов для счётчика в боте /admin
+// api/visit.ts — учёт визитов для счётчика в боте /admin (без БД, в памяти)
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { kv } from "@vercel/kv";
-
-const KEY_PREFIX = "visits:";
-
-function todayKey(): string {
-  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-}
+import { getTodayCount, incrementToday } from "./_visitStore.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // GET или POST — один раз за сессию вызывается с фронта
   if (req.method !== "GET" && req.method !== "POST") {
     return res.status(405).setHeader("Allow", "GET, POST").end();
   }
 
-  try {
-    const key = `${KEY_PREFIX}${todayKey()}`;
-    await kv.incr(key);
-    return res.status(204).end();
-  } catch (e) {
-    console.error("visit count error", e);
-    return res.status(500).json({ error: "Failed to count visit" });
+  const statsOnly = req.query?.stats === "1" || req.query?.stats === "true";
+
+  if (statsOnly) {
+    const count = getTodayCount();
+    return res.status(200).json({ count });
   }
+
+  incrementToday();
+  return res.status(204).end();
 }

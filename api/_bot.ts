@@ -1,6 +1,5 @@
 // api/_bot.ts
 import { Bot, Context, InlineKeyboard, session, SessionFlavor } from "grammy";
-import { kv } from "@vercel/kv";
 
 type Lang = "ru" | "en";
 
@@ -637,21 +636,29 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
       month: "2-digit",
       year: "numeric",
     });
-    const dateKey = new Date().toISOString().slice(0, 10);
     let visitCount: number | null = null;
     try {
-      const raw = await kv.get(`visits:${dateKey}`);
-      visitCount = typeof raw === "number" ? raw : raw != null ? Number(raw) : 0;
+      const baseUrl = getBaseUrlFromContext(ctx);
+      const res = await fetch(`${baseUrl}/api/visit?stats=1`);
+      if (res.ok) {
+        const data = (await res.json()) as { count?: number };
+        visitCount = typeof data?.count === "number" ? data.count : 0;
+      }
     } catch {
-      // KV не настроен или ошибка
+      // сеть или API недоступны
     }
     const countText =
-      visitCount !== null ? String(visitCount) : "— (нужен Vercel KV)";
+      visitCount !== null ? String(visitCount) : "0";
+    const hint =
+      visitCount === null
+        ? "\n\n💡 Счётчик в памяти; если бот и сайт на разных инстансах — может показывать 0."
+        : "";
     await ctx.reply(
       `👋 Админ-панель\n\n` +
         `📅 Дата: ${today}\n` +
-        `👁 Визитов сегодня: ${countText}\n\n` +
-        `Используйте бота для заявок — новые заявки приходят сюда.`
+        `👁 Визитов сегодня: ${countText}` +
+        hint +
+        `\n\nИспользуйте бота для заявок — новые заявки приходят сюда.`
     );
   });
 
