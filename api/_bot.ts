@@ -564,9 +564,12 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
   });
 
   // Q5 note (final text)
-  bot.on("message:text", async (ctx) => {
+  bot.on("message:text", async (ctx, next) => {
     const lang = ensureLang(ctx);
-    if (ctx.session.step !== "note") return;
+    if (ctx.session.step !== "note") {
+      await next();
+      return;
+    }
 
     const note = ctx.message.text.trim();
     const from = ctx.from;
