@@ -31,6 +31,21 @@ function ScrollToHash() {
 }
 
 export default function App() {
+  // Учёт визита: один раз за сессию в день вызываем /api/visit
+  useEffect(() => {
+    const key = "tivonix_visit_date";
+    const today = new Date().toISOString().slice(0, 10);
+    try {
+      const sent = sessionStorage.getItem(key);
+      if (sent === today) return;
+      fetch("/api/visit", { method: "GET", keepalive: true }).finally(() => {
+        try {
+          sessionStorage.setItem(key, today);
+        } catch {}
+      });
+    } catch {}
+  }, []);
+
   return (
     <BrowserRouter>
       <ScrollToHash />

@@ -1,5 +1,6 @@
 // api/_bot.ts
 import { Bot, Context, InlineKeyboard, session, SessionFlavor } from "grammy";
+import { kv } from "@vercel/kv";
 
 type Lang = "ru" | "en";
 
@@ -636,10 +637,20 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
       month: "2-digit",
       year: "numeric",
     });
+    const dateKey = new Date().toISOString().slice(0, 10);
+    let visitCount: number | null = null;
+    try {
+      const raw = await kv.get(`visits:${dateKey}`);
+      visitCount = typeof raw === "number" ? raw : raw != null ? Number(raw) : 0;
+    } catch {
+      // KV не настроен или ошибка
+    }
+    const countText =
+      visitCount !== null ? String(visitCount) : "— (нужен Vercel KV)";
     await ctx.reply(
       `👋 Админ-панель\n\n` +
         `📅 Дата: ${today}\n` +
-        `👁 Визитов сегодня: пока не считаем (нужен общий счётчик для сайта).\n\n` +
+        `👁 Визитов сегодня: ${countText}\n\n` +
         `Используйте бота для заявок — новые заявки приходят сюда.`
     );
   });
