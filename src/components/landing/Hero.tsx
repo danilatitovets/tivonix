@@ -4,7 +4,7 @@ import Container from "../ui/Container";
 import { useLang, type Lang } from "../../i18n/LangProvider";
 import HeroWebGLBg from "./HeroWebGLBg";
 
-const HERO_BG_IMG = "/images/fom.webp";
+const HERO_BG_IMG = "/images/fom4.webp"; // твой фон
 const TG_URL = "https://t.me/tivonixtech_leads_bot?start=calc";
 const CONTACT_EMAIL = "tivoonix@gmail.com";
 
@@ -13,7 +13,8 @@ function cx(...a: Array<string | false | null | undefined>) {
 }
 
 function useMediaQuery(query: string) {
-  const getMatch = () => (typeof window !== "undefined" ? window.matchMedia(query).matches : false);
+  const getMatch = () =>
+    typeof window !== "undefined" ? window.matchMedia(query).matches : false;
   const [matches, setMatches] = useState<boolean>(getMatch);
 
   useEffect(() => {
@@ -32,22 +33,32 @@ function useMediaQuery(query: string) {
   return matches;
 }
 
+/**
+ * ВАЖНО: чтобы не было “резкого перехода”
+ * - НЕ делаем условный рендер mobile/desktop разметки.
+ * - Разметка ОДНА, а переключение стилей — только через CSS media queries.
+ * Тогда нет “скачка” из-за гидрации/JS-брейкпоинта.
+ */
 const HERO_STYLES = `
   .hero{
     --tiv-amber: 255,154,61;
     --tiv-orange: 255,106,26;
     --tiv-cream: 255,215,176;
     --tiv-ice: 245,246,248;
+
+    /* mobile bg knobs */
+    --hero-img-shift: 0vh;
+    --hero-img-scale: 1.04;
   }
 
-  .heroBg{ position:absolute; inset:0; background:#000000; }
+  .heroBg{ position:absolute; inset:0; background:#000000; overflow:hidden; }
 
   .heroBg .heroImg{
     position:absolute; inset:0;
     width:100%; height:100%;
     object-fit:cover;
     object-position:50% 50%;
-    transform:scale(1.04);
+    transform: translate3d(0,var(--hero-img-shift),0) scale(var(--hero-img-scale));
     filter:saturate(1.05) contrast(1.04);
     will-change: transform;
   }
@@ -59,7 +70,6 @@ const HERO_STYLES = `
     will-change: transform;
     pointer-events:auto;
   }
-
   .heroWebgl canvas{ pointer-events:auto; }
 
   .heroOverlay{
@@ -91,6 +101,7 @@ const HERO_STYLES = `
     pointer-events:none;
   }
 
+  /* ===== DESKTOP typography (как было) ===== */
   .heroH1{
     font-weight:850;
     letter-spacing:-0.03em;
@@ -98,6 +109,7 @@ const HERO_STYLES = `
     text-shadow:0 14px 38px rgba(0,0,0,0.86);
   }
 
+  /* ===== DESKTOP CTA (как было) ===== */
   .gmailBtn{
     border-radius:18px;
     border:1px solid rgba(255,255,255,0.18);
@@ -107,35 +119,122 @@ const HERO_STYLES = `
     box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);
     transition:transform .18s ease, background .18s ease, border-color .18s ease;
   }
-
   .gmailBtn:hover{
     transform:translateY(-1px);
     background:rgba(255,255,255,0.06);
     border-color:rgba(255,255,255,0.26);
   }
-
   .gmailBtn:active{ transform:translateY(0px); }
+
+  /* ===== Mobile (Vercel-like) — только стилями, без другой разметки ===== */
+
+  /* Резерв снизу, чтобы фон не лез на текст */
+  @media (max-width: 640px){
+    .hero{
+      --hero-img-shift: 16vh;   /* опусти фон */
+      --hero-img-scale: 1.16;
+    }
+    .heroBg .heroImg{ object-position: 50% 92%; }
+
+    /* Моб. оверлей: верх темнее, низ “чище” */
+@media (max-width: 640px){
+  .heroOverlay{
+    background:
+      /* общий диммер */
+      linear-gradient(0deg,
+        rgba(0,0,0,0.40),
+        rgba(0,0,0,0.40)
+      ),
+      /* верх темнее под текст */
+      linear-gradient(180deg,
+        rgba(0,0,0,0.92) 0%,
+        rgba(0,0,0,0.72) 28%,
+        rgba(0,0,0,0.35) 58%,
+        rgba(0,0,0,0.15) 72%,
+        rgba(0,0,0,0.86) 100%
+      );
+  }
+}
+
+    /* Центрируем блок как у Vercel */
+    .hero .heroWrap{ text-align:center; padding-top: 2px; padding-bottom: clamp(220px, 40vh, 440px); }
+    .hero .heroSubtitle{ margin-left:auto; margin-right:auto; }
+
+    /* Типографика мобилки */
+    .hero .heroTitleCaps{ text-transform:none !important; letter-spacing:-0.02em !important; }
+    .hero .heroH1{
+      line-height:1.04;
+      letter-spacing:-0.035em;
+      text-shadow:none;
+    }
+
+    /* Ограничим ширину заголовка, чтобы выглядел “плотно” */
+    .hero .heroH1{ max-width: 18ch; margin-left:auto; margin-right:auto; }
+    .hero .heroSubtitle{
+      font-size: 13.75px !important;
+      line-height: 1.6 !important;
+      color: rgba(255,255,255,0.68) !important;
+      max-width: 48ch;
+    }
+
+    /* CTA в одну строку (2 колонки), как Vercel */
+    .hero .heroCtas{
+      margin-top: 18px !important;
+      display:grid !important;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px !important;
+      max-width: 520px;
+      margin-left:auto;
+      margin-right:auto;
+    }
+
+    /* Превращаем обе кнопки в pill-стиль */
+    .hero .gmailBtn,
+    .hero .tgBtn{
+      height: 44px !important;
+      border-radius: 999px !important;
+      font-size: 13.5px !important;
+      font-weight: 700 !important;
+      letter-spacing: -0.012em !important;
+      box-shadow: none !important;
+    }
+
+    /* Telegram = primary (белая) */
+    .hero .tgBtn{
+      background: rgba(255,255,255,0.92) !important;
+      color: rgba(0,0,0,0.90) !important;
+      border: 1px solid rgba(255,255,255,0.18) !important;
+      box-shadow: 0 18px 60px rgba(0,0,0,.45) !important;
+    }
+
+    /* Gmail = ghost */
+    .hero .gmailBtn{
+      background: rgba(255,255,255,0.08) !important;
+      color: rgba(255,255,255,0.92) !important;
+      border: 1px solid rgba(255,255,255,0.14) !important;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .hero .heroTrust{
+      margin-top: 12px !important;
+      font-size: 12px !important;
+      color: rgba(255,255,255,0.52) !important;
+      letter-spacing: 0.01em !important;
+    }
+
+    /* Супер узкие экраны: кнопки в столбик */
+    @media (max-width: 360px){
+      .hero .heroCtas{ grid-template-columns: 1fr; }
+      .hero .gmailBtn, .hero .tgBtn{ height: 46px !important; }
+      .hero .heroH1{ max-width: 20ch; }
+    }
+  }
 
   @media (prefers-reduced-motion: reduce){
     .heroBg .heroImg{ transform:none; will-change:auto; }
     .heroWebgl{ transform:none; }
     .gmailBtn{ transition:none; }
-  }
-
-  @media (max-width: 640px){
-    .hero .heroTitleCaps{ text-transform:none !important; letter-spacing:-0.02em !important; }
-    .hero .heroH1{ line-height:1.05; letter-spacing:-0.028em; }
-    .hero .heroSubtitle{ font-size:15.5px; line-height:1.55; }
-    .hero .heroWrap{ padding-top: 2px; }
-    .hero .heroCtas{ margin-top: 18px; gap: 10px; }
-    .hero .gmailBtn, .hero .tgBtn{ height:56px !important; border-radius:18px !important; }
-    .hero .heroTrust{ margin-top:10px; font-size:12.8px; color: rgba(255,255,255,0.64); }
-    .hero .heroTrust{
-      display:-webkit-box;
-      -webkit-line-clamp:2;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-    }
   }
 `;
 
@@ -182,6 +281,7 @@ export default function Hero() {
   const { lang, dict } = useLang();
   const hero = dict.hero;
 
+  // Оставляем ТОЛЬКО это условие: фон WebGL на десктопе (это не ломает разметку текста/кнопок)
   const isDesktop = useMediaQuery("(min-width: 900px)");
 
   const { gmailUrl, gmailLabel, tgLabel, trustLine } = useMemo(() => {
@@ -190,8 +290,7 @@ export default function Hero() {
     return {
       gmailUrl: buildGmailUrl(CONTACT_EMAIL, subject, body),
       gmailLabel: lang === "ru" ? "Открыть в Gmail" : "Open in Gmail",
-      tgLabel: lang === "ru" ? "Telegram" : "Telegram",
-      trustLine: lang === "ru" ? "NDA • Договор • Прозрачная смета" : "NDA • Contract • Clear pricing",
+      tgLabel: "Telegram",
     };
   }, [lang]);
 
@@ -205,6 +304,7 @@ export default function Hero() {
     >
       <style>{HERO_STYLES}</style>
 
+      {/* BG */}
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <div className="heroBg">
           {isDesktop ? (
@@ -212,14 +312,7 @@ export default function Hero() {
               <HeroWebGLBg />
             </div>
           ) : (
-            <img
-              className="heroImg"
-              src={HERO_BG_IMG}
-              alt=""
-              draggable={false}
-              loading="eager"
-              decoding="async"
-            />
+            <img className="heroImg" src={HERO_BG_IMG} alt="" draggable={false} loading="eager" decoding="async" />
           )}
         </div>
 
@@ -232,16 +325,11 @@ export default function Hero() {
 
       <Container>
         <div className="relative mx-auto max-w-6xl px-1 sm:px-0 w-full">
+          {/* ОДНА разметка для всех экранов (без резких скачков) */}
           <div className="pt-2 sm:pt-6 lg:pt-8 heroWrap">
             <h1 className={cx("heroH1 tracking-[-0.02em]", "text-[30px] sm:text-[46px] lg:text-[54px]")}>
-              <span className="block font-[850] text-white/95 uppercase heroTitleCaps">
-                {hero.titleLine1}
-              </span>
-
-              <span className="block font-[850] text-white/80 uppercase heroTitleCaps">
-                {hero.titleLine2Prefix}
-              </span>
-
+              <span className="block font-[850] text-white/95 uppercase heroTitleCaps">{hero.titleLine1}</span>
+              <span className="block font-[850] text-white/80 uppercase heroTitleCaps">{hero.titleLine2Prefix}</span>
               <span className="block font-[850] uppercase heroTitleCaps">
                 <span className="bg-[linear-gradient(90deg,#FFD7B0,#FF9A3D,#FF6A1A)] bg-clip-text text-transparent">
                   {hero.titleLine2Premium}
@@ -254,23 +342,6 @@ export default function Hero() {
             </p>
 
             <div className="mt-7 flex w-full max-w-[820px] flex-col gap-3 sm:flex-row sm:items-stretch heroCtas">
-              <a
-                href={gmailUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={gmailLabel}
-                className={cx(
-                  "gmailBtn",
-                  "inline-flex items-center justify-center",
-                  "h-[54px] sm:h-[58px] px-6 sm:px-7",
-                  "w-full sm:w-auto whitespace-nowrap",
-                  "text-white/90 text-[15px] sm:text-[16px] font-[780]",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                )}
-              >
-                {gmailLabel}
-              </a>
-
               <a
                 href={TG_URL}
                 target="_blank"
@@ -294,16 +365,30 @@ export default function Hero() {
                 <span
                   className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 blur-xl transition duration-300 group-hover:opacity-70"
                   style={{
-                    background:
-                      "radial-gradient(700px 120px at 50% 30%, rgba(255,176,32,0.65), rgba(0,0,0,0))",
+                    background: "radial-gradient(700px 120px at 50% 30%, rgba(255,176,32,0.65), rgba(0,0,0,0))",
                   }}
                 />
               </a>
+
+              <a
+                href={gmailUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={gmailLabel}
+                className={cx(
+                  "gmailBtn",
+                  "inline-flex items-center justify-center",
+                  "h-[54px] sm:h-[58px] px-6 sm:px-7",
+                  "w-full sm:w-auto whitespace-nowrap",
+                  "text-white/90 text-[15px] sm:text-[16px] font-[780]",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                )}
+              >
+                {gmailLabel}
+              </a>
             </div>
 
-            <div className="mt-3 max-w-2xl text-[12.5px] sm:text-[13px] text-white/62 heroTrust">
-              {trustLine}
-            </div>
+            <div className="mt-3 max-w-2xl text-[12.5px] sm:text-[13px] text-white/62 heroTrust">{trustLine}</div>
           </div>
         </div>
       </Container>

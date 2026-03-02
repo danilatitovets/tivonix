@@ -73,10 +73,7 @@ function ProgressBar({
 
   return (
     <div className="flex flex-col items-center" aria-hidden="true">
-      <div
-        className="relative flex justify-center"
-        style={{ height, width: w } as CSSProperties}
-      >
+      <div className="relative flex justify-center" style={{ height, width: w } as CSSProperties}>
         <div className="absolute inset-y-0 w-[2px] rounded-full bg-white/10" />
         <div className="absolute inset-y-0 left-1/2 w-[6px] -translate-x-1/2 overflow-hidden rounded-full bg-white/8">
           <div
@@ -194,8 +191,7 @@ function StackCard({
           ["--cardW" as any]: `${MOBILE_CARD_MAX_W}px`,
           opacity: reveal ? 1 : 0,
           transform: reveal ? "translateY(0)" : "translateY(14px)",
-          transition:
-            "transform .45s cubic-bezier(.2,.9,.2,1), opacity .4s ease",
+          transition: "transform .45s cubic-bezier(.2,.9,.2,1), opacity .4s ease",
           transitionDelay: `${index * 26}ms`,
         } as CSSProperties
       }
@@ -222,9 +218,7 @@ function StackCard({
             decoding="async"
             draggable={false}
             className="h-full w-full select-none"
-            style={
-              { objectFit: "cover", objectPosition: "center" } as CSSProperties
-            }
+            style={{ objectFit: "cover", objectPosition: "center" } as CSSProperties}
           />
 
           <div className="pointer-events-none absolute inset-0">
@@ -236,9 +230,7 @@ function StackCard({
                 decoding="async"
                 draggable={false}
                 className="h-full w-full select-none"
-                style={
-                  { objectFit: "cover", objectPosition: "center" } as CSSProperties
-                }
+                style={{ objectFit: "cover", objectPosition: "center" } as CSSProperties}
               />
 
               {!reducedMotion && (
@@ -348,38 +340,15 @@ export default function WhyUs() {
   const w = dict.whyUs;
   const sectionId = useId();
 
+  // badges
   const badgeLeft = (w as { badgeLeft?: string })?.badgeLeft ?? (isRu ? "СТЕК" : "STACK");
   const badgeCenter = (w as { badgeCenter?: string })?.badgeCenter ?? (isRu ? "ТЕХНОЛОГИИ" : "TECH");
-  const badgeRight = (w as { badgeRight?: string })?.badgeRight ?? (isRu ? "МОДУЛИ" : "MODULES");
+  const badgeRight =
+    (w as { badgeRight?: string })?.badgeRight ?? (isRu ? "МОДУЛИ" : "MODULES");
 
-  const title1 = w.titleTop ?? (isRu ? "На чём мы" : "What we");
-  const title2 = w.titleBottom ?? (isRu ? "быстро запускаем" : "ship fast");
-
-  const sub =
-    w.description ??
-    (isRu
-      ? "Мы запускаем продукты на проверенном стеке и готовых модулях. Это ускоряет релиз, снижает риски и делает поддержку предсказуемой."
-      : "We ship on a proven stack with reusable modules. Faster releases, lower risk, and predictable maintenance.");
-
-  const bullets: string[] =
-    (w as { bullets?: string[] }).bullets ??
-    (isRu
-      ? [
-          "Design system — единый UI и быстрая разработка новых экранов",
-          "Админка + роли — управление контентом и доступами без разработчиков",
-          "Интеграции и аналитика — платежи, события, метрики и отчёты",
-        ]
-      : [
-          "Design system — consistent UI and faster delivery",
-          "Admin + roles — manage content and access without engineers",
-          "Integrations & analytics — payments, events, metrics, reports",
-        ]);
-
-  const trustLine =
-    (w as { trustLine?: string }).trustLine ??
-    (isRu
-      ? "Типизация и линт • Адаптив • Доступность (a11y) • Оптимизация скорости"
-      : "Typed & linted • Responsive • Accessible (a11y) • Performance-focused");
+  // title (сжали текст до 2 строк, без описания/буллетов)
+  const title1 = w.titleTop ?? (isRu ? "С чем мы" : "Our");
+  const title2 = w.titleBottom ?? (isRu ? "работаем" : "stack");
 
   const stack = useMemo<StackItem[]>(
     () => [
@@ -535,6 +504,7 @@ export default function WhyUs() {
 
         <Container>
           <div className="grid items-start gap-10 lg:grid-cols-[520px_minmax(0,1fr)_60px]">
+            {/* LEFT: only badge + title (убрали описание/буллеты/линию доверия) */}
             <div className="lg:sticky" style={{ top: STICKY_TOP } as CSSProperties}>
               <div className="flex items-center gap-3">
                 <div className="text-[12px] font-semibold tracking-[0.26em] uppercase">
@@ -561,27 +531,9 @@ export default function WhyUs() {
                   {title2}
                 </span>
               </h2>
-
-              <p className="mt-5 max-w-[54ch] text-[14px] leading-relaxed text-white/70">
-                {sub}
-              </p>
-
-              <ul className="mt-6 space-y-3 max-w-[54ch]">
-                {bullets.map((b, i) => (
-                  <li key={i} className="flex gap-3 text-[13px] leading-relaxed text-white/70">
-                    <span
-                      className="mt-[7px] h-2 w-2 rounded-full"
-                      style={{ background: "#F97316" } as CSSProperties}
-                      aria-hidden="true"
-                    />
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="mt-6 text-[12.5px] text-white/55">{trustLine}</div>
             </div>
 
+            {/* RIGHT: cards */}
             <div className="relative">
               <div className="grid grid-cols-[16px_minmax(0,1fr)] items-start gap-4 lg:block">
                 <div
@@ -617,6 +569,7 @@ export default function WhyUs() {
               <div className="pointer-events-none sticky bottom-0 mt-10 h-16 w-full bg-gradient-to-t from-black via-black/95 to-transparent" />
             </div>
 
+            {/* FAR RIGHT: progress */}
             <div className="hidden lg:block lg:sticky" style={{ top: STICKY_TOP } as CSSProperties}>
               <ProgressBar progress={scrollProgress} height={320} showPercent />
             </div>
