@@ -614,10 +614,30 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
 
   bot.command("help", async (ctx) => {
     const lang = ensureLang(ctx);
-    await ctx.reply(
+    const isAdmin = ctx.from && admins.has(ctx.from.id);
+    const helpText =
       lang === "ru"
-        ? "Команды: /start /estimate\n\n/start → выбор языка → согласие → 5 вопросов."
-        : "Commands: /start /estimate\n\n/start → choose language → consent → 5 questions."
+        ? "Команды: /start /estimate" + (isAdmin ? " /admin" : "") + "\n\n/start → выбор языка → согласие → 5 вопросов."
+        : "Commands: /start /estimate" + (isAdmin ? " /admin" : "") + "\n\n/start → choose language → consent → 5 questions.";
+    await ctx.reply(helpText);
+  });
+
+  bot.command("admin", async (ctx) => {
+    const userId = ctx.from?.id;
+    if (userId == null || !admins.has(userId)) {
+      await ctx.reply("Нет доступа. / Access denied.");
+      return;
+    }
+    const today = new Date().toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+    await ctx.reply(
+      `👋 Админ-панель\n\n` +
+        `📅 Дата: ${today}\n` +
+        `👁 Визитов сегодня: пока не считаем (нужен общий счётчик для сайта).\n\n` +
+        `Используйте бота для заявок — новые заявки приходят сюда.`
     );
   });
 
