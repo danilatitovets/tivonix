@@ -1,7 +1,8 @@
 // src/pages/ContactsPage.tsx
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import Container from "../components/ui/Container";
-import Header from "../components/landing/Headerdouble";
+import Header from "../components/landing/Header";
+import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
 
 const ORANGE = "#FF9A3D";
@@ -221,9 +222,9 @@ function SunContacts({ size }: { size: number }) {
           <div className="absolute inset-0 grid place-items-center p-6">
             <div className="w-full max-w-[260px] text-center">
               <div className="text-[11px] tracking-[0.22em] text-white/45">TIVONIX</div>
-              <div className="mt-2 text-[22px] sm:text-[24px] font-[820] tracking-tight text-white/92 leading-[1.1]">
+              <h1 className="mt-2 text-[22px] sm:text-[24px] font-[820] tracking-tight text-white/92 leading-[1.1]">
                 {title}
-              </div>
+              </h1>
               <div className="mt-2 text-[12.5px] text-white/62 leading-relaxed">
                 {subtitle}
               </div>
@@ -350,6 +351,11 @@ export default function ContactsPage() {
 
   return (
     <div className="relative h-[100svh] w-full overflow-hidden bg-black">
+      <SEO
+        title="Контакты — TIVONIX"
+        description="Связаться с TIVONIX: Telegram, email. Ответим быстро."
+        canonicalPath="/contacts"
+      />
       <Header />
 
       {/* background */}

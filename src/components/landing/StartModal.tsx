@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { trackAdsConversion } from "../../lib/ads";
 import { Button } from "../ui/Button";
 import { useLang } from "../../i18n/LangProvider";
 
@@ -554,6 +555,7 @@ export default function StartModal({ open, onClose }: Props) {
         "\n";
 
       openEmailDraft(CONTACT_EMAIL, subject, body);
+      trackAdsConversion("form_request");
       onClose();
     } finally {
       setSending(false);

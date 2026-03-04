@@ -6,13 +6,19 @@ import AppsOrbitBlock from "../components/landing/AppsOrbitBlock";
 import Benefits from "../components/landing/Benefits";
 import FAQ from "../components/landing/FAQ";
 import Footer from "../components/landing/Footer";
-
-// NEW: services/plans block (4 cards with hover videos)
+import { SEO } from "../components/SEO";
 import ServicesPlans from "../components/landing/ServicesPlans";
+import { HOME_PAGE_SCHEMA } from "../lib/schema";
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[var(--bg)]">
+      <SEO
+        title="TIVONIX — сайты и цифровые продукты"
+        description="TIVONIX — делаем сайты, лендинги и веб-продукты: от идеи и прототипа до запуска, поддержки и развития."
+        canonicalPath="/"
+        schemaJsonLd={HOME_PAGE_SCHEMA}
+      />
       <div id="top" />
       <Header />
 

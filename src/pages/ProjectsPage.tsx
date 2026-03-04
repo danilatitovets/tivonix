@@ -8,7 +8,8 @@ import React, {
 } from "react";
 import Container from "../components/ui/Container";
 import Section from "../components/ui/Section";
-import Header from "../components/landing/Headerdouble";
+import Header from "../components/landing/Header";
+import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
 
 const HERO_IMG = "/images/hero.png";
@@ -917,6 +918,11 @@ export default function ProjectsPage() {
 
   return (
     <div className="relative min-h-screen" style={s({ "--headerH": `${HEADER_H}px` })}>
+      <SEO
+        title="Проекты — TIVONIX"
+        description="Портфолио и кейсы TIVONIX: лендинги, SaaS, MVP, веб-продукты. Разработка от идеи до запуска."
+        canonicalPath="/projects"
+      />
       <Header />
 
       <div className="pointer-events-none fixed inset-0 -z-10">

@@ -7,8 +7,7 @@ import { useLang, type Lang } from "../../i18n/LangProvider";
 import StartModal from "./StartModal";
 import { TG_BOT_URL } from "../../constants/links";
 
-// Мобилка: CTA ведёт в бота, модалка не открывается. Десктоп: модалка.
-const MOBILE_BREAKPOINT = 1280; // xl
+// Десктоп-режим (бургер скрыт, показывается полоса навигации) с xl (>=1280).
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -323,14 +322,8 @@ export default function Header() {
 
   const openStartModal = () => {
     setOpen(false);
-    if (location.pathname !== "/") navigate("/");
-    window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
-    // На мобилке — переход в бота, без модалки
-    if (typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT) {
-      window.open(TG_BOT_URL, "_blank", "noopener,noreferrer");
-      return;
-    }
-    setStartOpen(true);
+    // Везде открываем бота в Telegram (главная, контакты, проекты)
+    window.open(TG_BOT_URL, "_blank", "noopener,noreferrer");
   };
 
   const ariaHome = isRu ? "На главную" : "Go to home";
