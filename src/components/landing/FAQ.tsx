@@ -1,5 +1,5 @@
 // src/components/landing/FAQ.tsx
-import React, { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import Container from "../ui/Container";
 import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
@@ -445,8 +445,8 @@ export default function FAQSection() {
   const nextLabel = isRu ? "Дальше" : "Next";
   const pageLabel = isRu ? "Страница" : "Page";
 
-  // JSON-LD (лучше, чем ничего; на проде желательно в <Head>, но так тоже ок)
-  const jsonLd = useMemo(() => buildFaqJsonLd(filtered), [filtered]);
+  // JSON-LD: стабильный список для индексации (полный список, не зависит от поиска/категории/пагинации)
+  const jsonLd = useMemo(() => buildFaqJsonLd(localizedItems), [localizedItems]);
 
   return (
     <Section id="faq" className="relative overflow-hidden pt-16 sm:pt-20 pb-16 sm:pb-20 bg-black">
@@ -496,6 +496,20 @@ export default function FAQSection() {
           to   { opacity: 1; transform: translateY(0); }
         }
         .faq-answer-open { animation: faqAnswerIn .20s ease-out; }
+        /* Свёрнутый ответ: в DOM для SEO, визуально скрыт через max-height/opacity */
+        .faq-answer-collapsed {
+          max-height: 0;
+          opacity: 0;
+          overflow: hidden;
+          pointer-events: none;
+          transition: max-height 0.25s ease, opacity 0.2s ease;
+        }
+        .faq-answer-expanded {
+          max-height: 420px;
+          opacity: 1;
+          overflow: visible;
+          transition: max-height 0.3s ease, opacity 0.2s ease;
+        }
 
         /* mobile perf: меньше blur/тяжёлых эффектов */
         @media (max-width: 640px){
@@ -505,6 +519,7 @@ export default function FAQSection() {
         @media (prefers-reduced-motion: reduce) {
           .faq-grad-border::before{ animation: none; }
           .faq-answer-open{ animation: none; }
+          .faq-answer-collapsed, .faq-answer-expanded{ transition: none; }
         }
       `}</style>
 
@@ -756,16 +771,15 @@ export default function FAQSection() {
                     </button>
                   </div>
 
-                  {/* ANSWER: держим в DOM всегда для SEO, но прячем/раскрываем корректно */}
+                  {/* ANSWER: всегда в DOM для SEO, визуально свёрнут через max-height/opacity */}
                   <div
                     id={domId}
                     className={cx(
                       "mt-3 rounded-[14px] border border-white/12 bg-black/60 px-4 py-3",
                       "text-[13px] leading-relaxed text-white/78",
-                      isOpen ? "block faq-answer-open" : "hidden"
+                      isOpen ? "faq-answer-expanded faq-answer-open" : "faq-answer-collapsed"
                     )}
-                    // если хочешь, чтобы поисковики точно видели даже закрытый — сделай "block" всегда
-                    // и сворачивай через max-height/overflow. Сейчас оставлено безопасно для UX.
+                    aria-hidden={!isOpen}
                   >
                     {f.a}
 

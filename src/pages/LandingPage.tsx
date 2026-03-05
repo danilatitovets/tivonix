@@ -5,6 +5,7 @@ import WhyUs from "../components/landing/WhyUs";
 import AppsOrbitBlock from "../components/landing/AppsOrbitBlock";
 import Benefits from "../components/landing/Benefits";
 import FAQ from "../components/landing/FAQ";
+import SeoContent from "../components/landing/SeoContent";
 import Footer from "../components/landing/Footer";
 import { SEO } from "../components/SEO";
 import ServicesPlans from "../components/landing/ServicesPlans";
@@ -46,6 +47,7 @@ export default function LandingPage() {
 
 
         <FAQ />
+        <SeoContent />
         <div id="contact" />
       </main>
 

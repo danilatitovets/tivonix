@@ -1,17 +1,17 @@
-// src/lib/schema.ts — Schema.org JSON-LD for home page (all URLs canonical www)
+// src/lib/schema.ts — Schema.org JSON-LD for home page (canonical non-www)
 export const HOME_PAGE_SCHEMA = {
   "@context": "https://schema.org",
   "@graph": [
     {
       "@type": "Organization",
-      "@id": "https://www.tivonix.tech/#org",
+      "@id": "https://tivonix.tech/#org",
       name: "TIVONIX",
-      url: "https://www.tivonix.tech/",
+      url: "https://tivonix.tech/",
       logo: {
         "@type": "ImageObject",
-        url: "https://www.tivonix.tech/images/tivonix-logo-icon.png",
+        url: "https://tivonix.tech/images/tivonix-logo-icon.png",
       },
-      image: "https://www.tivonix.tech/og.jpg",
+      image: "https://tivonix.tech/og.jpg",
       description:
         "TIVONIX — делаем сайты, лендинги и веб-продукты: от идеи и прототипа до запуска, поддержки и развития.",
       contactPoint: [
@@ -26,21 +26,21 @@ export const HOME_PAGE_SCHEMA = {
     },
     {
       "@type": "WebSite",
-      "@id": "https://www.tivonix.tech/#website",
-      url: "https://www.tivonix.tech/",
+      "@id": "https://tivonix.tech/#website",
+      url: "https://tivonix.tech/",
       name: "TIVONIX",
-      publisher: { "@id": "https://www.tivonix.tech/#org" },
+      publisher: { "@id": "https://tivonix.tech/#org" },
       inLanguage: ["ru", "en"],
     },
     {
       "@type": "WebPage",
-      "@id": "https://www.tivonix.tech/#home",
-      url: "https://www.tivonix.tech/",
+      "@id": "https://tivonix.tech/#home",
+      url: "https://tivonix.tech/",
       name: "TIVONIX — сайты и цифровые продукты",
       description:
         "TIVONIX — делаем сайты, лендинги и веб-продукты: от идеи и прототипа до запуска, поддержки и развития.",
-      isPartOf: { "@id": "https://www.tivonix.tech/#website" },
-      about: { "@id": "https://www.tivonix.tech/#org" },
+      isPartOf: { "@id": "https://tivonix.tech/#website" },
+      about: { "@id": "https://tivonix.tech/#org" },
       inLanguage: ["ru", "en"],
     },
   ],

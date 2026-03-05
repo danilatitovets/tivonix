@@ -1,7 +1,7 @@
 // src/components/SEO.tsx
 import { Helmet } from "react-helmet-async";
 
-const CANONICAL_ORIGIN = "https://www.tivonix.tech";
+const CANONICAL_ORIGIN = "https://tivonix.tech";
 const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN}/og.jpg`;
 
 export type SEOProps = {
