@@ -4,8 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
-    <!-- Auto language (first visit): RU if browser has ru, else EN; does NOT override manual choice (localStorage) -->
-    <script>
+    <title>Tivonix — Разработка SaaS-сервисов, CRM и интерфейсов на React</title>
+    <meta name="description" content="Создание масштабируемых SaaS-платформ, сложных личных кабинетов и высоконагруженных систем на React и TypeScript. Веб-разработка полного цикла от Tivonix.">
+    <meta name="keywords" content="разработка saas, создание сайтов на реакте, заказать crm, frontend разработка, tivonix, разработка личных кабинетов">
+
+    <meta property="og:title" content="Tivonix | Разработка SaaS и веб-интерфейсов">
+    <meta property="og:description" content="Профессиональная разработка современных веб-сервисов на React. От идеи до запуска.">
+    <meta property="og:url" content="https://tivonix.tech/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://tivonix.tech/og-image.jpg"> <script>
       (function () {
         var STORAGE_KEY = "tivonix_lang";
         function pickLang() {
@@ -26,10 +33,8 @@
       })();
     </script>
 
-    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <meta name="robots" content="index,follow" />
     <meta name="theme-color" content="#000000" />
-    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
-
     <link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="any" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
@@ -40,8 +45,28 @@
     <link rel="alternate" hreflang="x-default" href="https://tivonix.tech/" />
   </head>
 
-  <body>
-    <div id="root"></div>
+  <body style="margin: 0; background-color: #000;">
+    <div id="root">
+      <noscript>
+        <div style="padding: 20px; color: white; font-family: sans-serif;">
+          <h1>Tivonix — Студия разработки SaaS и сложных веб-систем</h1>
+          <p>Мы специализируемся на создании масштабируемых веб-приложений на стеке React и TypeScript.</p>
+          <h2>Наши услуги:</h2>
+          <ul>
+            <li>Разработка SaaS-сервисов под ключ;</li>
+            <li>Создание CRM и ERP систем для бизнеса;</li>
+            <li>Разработка сложных интерактивных интерфейсов и дашбордов;</li>
+            <li>Frontend-аутсорс и оптимизация React-приложений.</li>
+          </ul>
+          <p>Посетите наш сайт tivonix.tech, чтобы увидеть портфолио и заказать разработку.</p>
+        </div>
+      </noscript>
+
+      <div id="loader" style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #000;">
+         <div style="color: #fff; font-family: sans-serif; letter-spacing: 2px; font-weight: bold; text-transform: uppercase;">Tivonix Loading...</div>
+      </div>
+    </div>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
