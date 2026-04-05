@@ -20,6 +20,7 @@ const UPC_DOMAIN = "https://upc.promo/";
 const PAYCLIP_DOMAIN = "https://usepayclip.com/";
 const LABELOS_DOMAIN = "https://labelos.digital/";
 const HEADMIND_DOMAIN = "https://headmind.ru/";
+const LOGOVO_DOMAIN = "https://logovo24.by/";
 
 const GMAIL_EMAIL_URL =
   "https://mail.google.com/mail/?view=cm&fs=1" +
@@ -45,6 +46,7 @@ type Project = {
 
   domain?: string;
   tags: string[];
+  /** Hero / above-the-fold screenshot (sharp preview on cards + modal). */
   cover?: string;
   status?: ProjectStatus;
 
@@ -52,6 +54,53 @@ type Project = {
   stack?: string[];
   testimonial?: Testimonial;
 };
+
+function projectPreviewSrc(p: Project) {
+  return p.cover ?? HERO_IMG;
+}
+
+/** Превью как в Vercel: «карточка» со скрином — рамка, тень, скругление, без лишнего затемнения. */
+function ProjectPreviewFrame({
+  src,
+  compact,
+}: {
+  src: string;
+  /** Чуть ниже блок в модалке */
+  compact?: boolean;
+}) {
+  return (
+    <div
+      className={cx(
+        "relative overflow-hidden rounded-2xl",
+        "border border-white/[0.11]",
+        "bg-[#0a0a0a]",
+        "shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_2px_12px_rgba(0,0,0,0.45),0_18px_48px_-12px_rgba(0,0,0,0.65)]"
+      )}
+    >
+      <div
+        className={cx(
+          "relative w-full overflow-hidden",
+          compact
+            ? "h-[min(58vw,280px)] sm:h-[340px]"
+            : "h-[min(62vw,300px)] sm:h-[380px]"
+        )}
+      >
+        <img
+          src={src}
+          alt=""
+          className="h-full w-full object-cover object-top"
+          draggable={false}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+      <div
+        className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/[0.06]"
+        aria-hidden
+      />
+    </div>
+  );
+}
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -253,38 +302,24 @@ function ProjectSlideOver({
           aria-labelledby={titleId}
           aria-describedby={descId}
           className={cx(
-            "relative h-full overflow-hidden",
+            "relative flex h-full min-h-0 flex-col overflow-hidden",
             "border-l border-white/10",
-            "bg-[#070707]/92 backdrop-blur-2xl",
+            "bg-[#070707]/96 backdrop-blur-2xl",
             "shadow-[-30px_0_120px_rgba(0,0,0,0.75)]"
           )}
         >
-          {/* visual */}
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <img
-              src={project.cover ?? HERO_IMG}
-              alt=""
-              className={cx(
-                "absolute inset-0 h-full w-full object-cover",
-                "opacity-[0.18] blur-[10px] scale-[1.06]"
-              )}
-              draggable={false}
-              loading="lazy"
-              decoding="async"
-            />
-            <div
-              className="absolute inset-0"
-              style={s({
-                background:
-                  "linear-gradient(180deg, rgba(0,0,0,0.70), rgba(0,0,0,0.94))," +
-                  "radial-gradient(900px 520px at 18% 10%, rgba(255,154,61,0.16) 0%, rgba(0,0,0,0) 44%)," +
-                  "radial-gradient(820px 520px at 90% 22%, rgba(255,106,26,0.12) 0%, rgba(0,0,0,0) 64%)",
-              })}
-            />
-          </div>
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={s({
+              background:
+                "linear-gradient(180deg, rgba(10,10,10,0.92), rgba(7,7,7,0.98))," +
+                "radial-gradient(900px 520px at 18% 0%, rgba(255,154,61,0.10) 0%, rgba(0,0,0,0) 44%)," +
+                "radial-gradient(820px 520px at 90% 12%, rgba(255,106,26,0.08) 0%, rgba(0,0,0,0) 64%)",
+            })}
+          />
 
           {/* header */}
-          <div className="relative z-10 flex items-start justify-between gap-4 p-5 sm:p-6">
+          <div className="relative z-10 flex shrink-0 items-start justify-between gap-4 p-5 sm:p-6">
             <div className="min-w-0">
               <div
                 id={titleId}
@@ -311,8 +346,16 @@ function ProjectSlideOver({
             </button>
           </div>
 
+          {/* превью в стиле Vercel: карточка со скрином */}
+          <div className="relative z-10 shrink-0 px-5 pb-1 pt-0 sm:px-6">
+            <ProjectPreviewFrame
+              src={projectPreviewSrc(project)}
+              compact
+            />
+          </div>
+
           {/* body */}
-          <div className="relative z-10 h-[calc(100%-76px)] overflow-y-auto px-5 pb-6 sm:px-6 sm:pb-8">
+          <div className="relative z-10 min-h-0 flex-1 overflow-y-auto px-5 pb-6 sm:px-6 sm:pb-8">
             <div className="flex flex-wrap gap-2">
               {project.tags.map((tag) => (
                 <span
@@ -507,31 +550,18 @@ function ProjectCard({
         "will-change-transform"
       )}
     >
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <img
-          src={p.cover ?? HERO_IMG}
-          alt=""
-          className={cx(
-            "absolute inset-0 h-full w-full object-cover",
-            "opacity-[0.28] blur-[10px] scale-[1.08]"
-          )}
-          draggable={false}
-          loading="lazy"
-          decoding="async"
-        />
+      <div className="relative z-10 flex flex-col gap-7 p-5 sm:p-8">
+        <ProjectPreviewFrame src={projectPreviewSrc(p)} />
+
         <div
-          className="absolute inset-0"
+          className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr] lg:gap-8"
           style={s({
             background:
-              "linear-gradient(180deg, rgba(0,0,0,0.80), rgba(0,0,0,0.92))," +
-              "radial-gradient(900px 520px at 18% 8%, rgba(255,154,61,0.20) 0%, rgba(0,0,0,0) 40%)," +
-              "radial-gradient(820px 520px at 88% 22%, rgba(255,106,26,0.16) 0%, rgba(0,0,0,0) 60%)",
+              "linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0.55))," +
+              "radial-gradient(900px 520px at 18% 0%, rgba(255,154,61,0.12) 0%, rgba(0,0,0,0) 45%)," +
+              "radial-gradient(820px 520px at 88% 10%, rgba(255,106,26,0.08) 0%, rgba(0,0,0,0) 55%)",
           })}
-        />
-        <div className="absolute inset-0 ring-1 ring-white/10" />
-      </div>
-
-      <div className="relative z-10 grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.25fr_0.75fr]">
+        >
         <div>
           <div className="text-[12px] tracking-[0.22em] text-white/45">
             {labelProject}
@@ -601,6 +631,7 @@ function ProjectCard({
           >
             {moreLabel}
           </button>
+        </div>
         </div>
       </div>
     </div>
@@ -688,7 +719,7 @@ export default function ProjectsPage() {
         domain: LABELOS_DOMAIN,
         status: "live",
         tags: ["SaaS", "Landing", "UI/UX", "React", "Tailwind"],
-        cover: "/images/project-cover-labelos.jpg",
+        cover: "/images/project-priew/labelOS.png",
         outcomes: [
           isRu
             ? "Готовый промо-лендинг за 3 дня"
@@ -744,7 +775,7 @@ export default function ProjectsPage() {
         domain: UPC_DOMAIN,
         status: "live",
         tags: ["Landing", "React", "TypeScript", "Supabase", "Performance"],
-        cover: "/images/project-cover-upc.jpg",
+        cover: "/images/project-priew/upcpromo.png",
         outcomes: [
           isRu ? "Премиум-подача без перегруза" : "Premium visuals without clutter",
           isRu ? "Анимации + стабильная скорость" : "Animations + stable performance",
@@ -811,7 +842,7 @@ export default function ProjectsPage() {
         domain: PAYCLIP_DOMAIN,
         status: "live",
         tags: ["Fintech", "Landing", "Onboarding", "UI/UX", "Conversion"],
-        cover: "/images/project-cover-payclip.jpg",
+        cover: "/images/project-priew/usepayslip.png",
         outcomes: [
           isRu ? "Сделано за 2 недели" : "Delivered in 2 weeks",
           isRu ? "Структура под конверсию" : "Conversion-driven structure",
@@ -862,7 +893,7 @@ export default function ProjectsPage() {
         domain: HEADMIND_DOMAIN,
         status: "live",
         tags: ["B2B", "Website", "UI/UX", "Structure", "Conversion"],
-        cover: "/images/project-cover-headmind.jpg",
+        cover: "/images/project-priew/headmed.png",
         outcomes: [
           isRu ? "Понятная упаковка услуг и подхода" : "Clear services & approach packaging",
           isRu ? "Усиление доверия через команду и структуру" : "Stronger trust via team + structure",
@@ -880,32 +911,78 @@ export default function ProjectsPage() {
         },
       },
 
-      // WIP
+      // 5) LOGOVO — сеть шиномонтажа (Минск), визуал в духе «космос» под бренд
       {
-        id: "smart-house-ops",
-        title: "Smart House Ops",
+        id: "logovo",
+        title: "LOGOVO",
         subtitleRu:
-          "Платформа эксплуатации: заявки, маршруты, команды, аналитика.",
+          "Сеть шиномонтажа в Минске: услуги, адреса, прайс, кейсы и запись — в премиальной «космической» подаче бренда.",
         subtitleEn:
-          "Facility ops platform: tickets, routes, crews, analytics.",
+          "Minsk tire-service network: services, locations, pricing, cases and booking — premium “cosmic” brand look.",
         detailsRu:
-          "В работе (WIP):\n" +
-          "• Дашборды, роли, процессы\n" +
-          "• Аналитика и контроль операций\n" +
-          "• Интеграции и модель рисков\n",
+          "Формат: многостраничный промо-сайт сети\n" +
+          "Срок: 12 дней\n\n" +
+          "Заказчик\n" +
+          "• LOGOVO — шиномонтаж и сопутствующие услуги, несколько точек в Минске\n" +
+          "• Соцсети: Instagram @Logovo_mnsk\n\n" +
+          "Цель\n" +
+          "• Показать сервис «уровня студии»: скорость, точность, честность — и довести до записи без лишнего шума.\n" +
+          "• Визуально попасть в фирменный стиль: тёмная премиум-подача с «космической» эстетикой (как просили), без дешёвого китча.\n\n" +
+          "Что сделали\n" +
+          "• Собрали структуру: услуги и акценты → прейскурант → адреса → кейсы → команда → отзывы → FAQ → контакты\n" +
+          "• Проработали типографику, сетку и анимации: глубина, ритм, плавные переходы — ощущение дорогого сервиса\n" +
+          "• Сделали сильный mobile-first: запись и цены читаются с телефона за секунды\n" +
+          "• Усилили доверие: реальные сценарии (кейсы), люди, отзывы, понятные ответы в FAQ\n\n" +
+          "Результат\n" +
+          "• Сайт работает как витрина сети и подводит к действию: выбрать услугу, понять цену, записаться или связаться\n",
         detailsEn:
-          "Work in progress (WIP):\n" +
-          "• Dashboards, roles, workflows\n" +
-          "• Ops analytics and control\n" +
-          "• Integrations and risk model\n",
-        status: "wip",
-        tags: ["Dashboard", "Ops", "React", "Backend"],
-        cover: "/images/project-cover-sho.jpg",
-        outcomes: [
-          isRu ? "Дашборды и процессы" : "Dashboards and workflows",
-          isRu ? "Аналитика операций" : "Ops analytics",
+          "Format: multi-page promo site for a service network\n" +
+          "Timeline: 12 days\n\n" +
+          "Client\n" +
+          "• LOGOVO — tire service and related work, multiple locations in Minsk\n" +
+          "• Social: Instagram @Logovo_mnsk\n\n" +
+          "Goals\n" +
+          "• Communicate a premium, studio-like experience: speed, precision, honesty — and drive bookings without noise.\n" +
+          "• Match the brand direction: dark premium look with a “cosmic” aesthetic (as requested), avoiding cheap clichés.\n\n" +
+          "What we delivered\n" +
+          "• IA: services → pricing → locations → cases → team → reviews → FAQ → contacts\n" +
+          "• Typography, grid and motion: depth, rhythm, smooth transitions — premium service feel\n" +
+          "• Strong mobile-first: pricing and booking paths readable in seconds on a phone\n" +
+          "• Trust: real-world scenarios (cases), people, reviews, clear FAQ answers\n\n" +
+          "Outcome\n" +
+          "• The site acts as a storefront for the network and pushes action: pick a service, understand pricing, book or contact\n",
+        domain: LOGOVO_DOMAIN,
+        status: "live",
+        tags: [
+          "Landing",
+          "React",
+          "TypeScript",
+          "Framer Motion",
+          "Automotive",
         ],
-        stack: ["React", "API", "DB"],
+        cover: "/images/project-priew/logovo.png",
+        outcomes: [
+          isRu ? "Сделано за 12 дней" : "Delivered in 12 days",
+          isRu
+            ? "Структура под услуги, прайс и запись"
+            : "Structure for services, pricing and booking",
+          isRu
+            ? "«Космический» премиум-визуал под бренд"
+            : "“Cosmic” premium visuals aligned with the brand",
+          isRu
+            ? "Кейсы, команда и отзывы для доверия"
+            : "Cases, team and reviews for trust",
+        ],
+        stack: ["React", "TypeScript", "Tailwind", "Framer Motion"],
+        testimonial: {
+          name: isRu ? "Команда LOGOVO" : "LOGOVO team",
+          role: isRu
+            ? "Сеть шиномонтажа · Минск"
+            : "Tire service network · Minsk",
+          text: isRu
+            ? "Нужен был сайт, который ощущается как мы: не «ещё один шиномонтаж», а сервис с характером. Космическая тема ожила без дешёвого блеска — глубина, тёмная палитра, сочная типографика. С телефона всё предельно ясно: цена, что входит, куда приехать. В сезон это прямо деньги — люди не теряются, а доходят до записи."
+            : "We needed a site that feels like us — not “just another tire shop”, but a brand with character. The cosmic theme landed without cheap glitter: depth, a dark palette, strong typography. On mobile everything is obvious — pricing, what’s included, where to go. In peak season that’s revenue: people don’t get lost, they get to booking.",
+        },
       },
     ],
     [isRu]
