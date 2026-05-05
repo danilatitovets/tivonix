@@ -5,6 +5,7 @@ import { initGoogleAds, trackAdsConversion } from "./lib/ads";
 import LandingPage from "./pages/LandingPage";
 
 const ProjectsPage = lazy(() => import("./pages/ProjectsPage"));
+const ProjectDetailPage = lazy(() => import("./pages/ProjectDetailPage"));
 const ContactsPage = lazy(() => import("./pages/ContactsPage"));
 
 const HEADER_OFFSET = 84;
@@ -101,6 +102,14 @@ export default function App() {
           element={
             <Suspense fallback={<div className="min-h-screen bg-[var(--bg)]" aria-busy="true" />}>
               <ProjectsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/projects/:slug"
+          element={
+            <Suspense fallback={<div className="min-h-screen bg-[var(--bg)]" aria-busy="true" />}>
+              <ProjectDetailPage />
             </Suspense>
           }
         />
