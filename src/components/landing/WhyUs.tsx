@@ -28,35 +28,6 @@ function clamp(n: number, a = 0, b = 1) {
   return Math.max(a, Math.min(b, n));
 }
 
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const on = () => setReduced(!!mq.matches);
-    on();
-
-    if (mq.addEventListener) mq.addEventListener("change", on);
-    else mq.addListener(on);
-
-    return () => {
-      if (mq.removeEventListener) mq.removeEventListener("change", on);
-      else mq.removeListener(on);
-    };
-  }, []);
-
-  return reduced;
-}
-
-function prefetchImage(src: string) {
-  if (typeof window === "undefined") return;
-  const img = new Image();
-  img.decoding = "async";
-  img.loading = "eager";
-  img.src = src;
-}
-
 function ProgressBar({
   progress,
   height,
@@ -112,80 +83,20 @@ function StackCard({
   index,
   reveal,
   setRef,
-  reducedMotion,
   labelId,
   descId,
 }: {
   item: StackItem;
   index: number;
   reveal: boolean;
-  setRef: (el: HTMLButtonElement | null) => void;
-  reducedMotion: boolean;
+  setRef: (el: HTMLDivElement | null) => void;
   labelId: string;
   descId?: string;
 }) {
-  const hoverSrc = useMemo(
-    () => item.src.replace(/(\.[a-zA-Z0-9]+)$/, "2$1"),
-    [item.src]
-  );
-
-  const [active, setActive] = useState(false);
-  const [isTouch, setIsTouch] = useState(false);
-
-  const prefetchedRef = useRef(false);
-  const ensurePrefetch = useCallback(() => {
-    if (prefetchedRef.current) return;
-    prefetchedRef.current = true;
-    prefetchImage(hoverSrc);
-  }, [hoverSrc]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    setIsTouch("ontouchstart" in window || navigator.maxTouchPoints > 0);
-  }, []);
-
-  const overlayStyle: CSSProperties = reducedMotion
-    ? { opacity: active ? 1 : 0, transition: "opacity .14s ease" }
-    : {
-        clipPath: active
-          ? "polygon(0 0, 100% 0, 100% 100%, 0 100%)"
-          : "polygon(0 0, 0 0, 0 100%, 0 100%)",
-        transition: "clip-path 1.25s cubic-bezier(.21,.99,.24,1)",
-      };
-
-  const lineLeft = active ? "100%" : "0%";
-
-  const activate = () => {
-    ensurePrefetch();
-    setActive(true);
-  };
-
-  const deactivate = () => {
-    if (!isTouch) setActive(false);
-  };
-
-  const toggle = () => {
-    ensurePrefetch();
-    setActive((v) => !v);
-  };
-
   return (
-    <button
+    <div
       ref={setRef}
-      type="button"
-      onMouseEnter={activate}
-      onMouseLeave={deactivate}
-      onFocus={activate}
-      onBlur={deactivate}
-      onClick={toggle}
-      aria-labelledby={labelId}
-      aria-describedby={descId}
-      className="
-        group relative text-left
-        mx-auto
-        w-[min(86vw,var(--cardW))]
-        sm:w-full sm:mx-0
-      "
+      className="relative mx-auto w-[min(86vw,var(--cardW))] text-left sm:w-full sm:mx-0"
       style={
         {
           ["--cardW" as any]: `${MOBILE_CARD_MAX_W}px`,
@@ -206,118 +117,36 @@ function StackCard({
         style={
           {
             background:
-              "linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,.08) 40%, rgba(255,255,255,.18) 100%)",
+              "linear-gradient(135deg, rgba(255,255,255,.09) 0%, rgba(255,255,255,.04) 45%, rgba(255,255,255,.08) 100%)",
           } as CSSProperties
         }
       >
-        <div className="relative h-full w-full overflow-hidden rounded-[28px] bg-black/35">
+        <div className="relative h-full w-full overflow-hidden rounded-[28px] bg-black/55">
           <img
             src={item.src}
             alt=""
             loading="lazy"
             decoding="async"
             draggable={false}
-            className="h-full w-full select-none"
+            className="h-full w-full select-none brightness-[0.88] saturate-[0.68] contrast-[0.96]"
             style={{ objectFit: "cover", objectPosition: "center" } as CSSProperties}
           />
 
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute inset-0" style={overlayStyle}>
-              <img
-                src={hoverSrc}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                draggable={false}
-                className="h-full w-full select-none"
-                style={{ objectFit: "cover", objectPosition: "center" } as CSSProperties}
-              />
+          <div
+            className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/45"
+            aria-hidden
+          />
 
-              {!reducedMotion && (
-                <div
-                  className="absolute inset-0 opacity-[0.20] mix-blend-screen"
-                  style={
-                    {
-                      backgroundImage:
-                        "repeating-linear-gradient(to bottom, rgba(255,255,255,0.18) 0px, rgba(255,255,255,0.18) 1px, rgba(0,0,0,0) 3px, rgba(0,0,0,0) 4px)",
-                    } as CSSProperties
-                  }
-                />
-              )}
-
-              <div
-                className="absolute inset-0"
-                style={
-                  {
-                    background:
-                      "radial-gradient(120px 120px at 70% 40%, rgba(249,115,22,0.22), rgba(0,0,0,0) 60%)",
-                    opacity: 0.9,
-                  } as CSSProperties
-                }
-              />
-            </div>
-
-            {!reducedMotion && (
-              <div
-                className="absolute inset-0"
-                style={
-                  {
-                    opacity: active ? 1 : 0,
-                    transition: "opacity .18s ease",
-                  } as CSSProperties
-                }
-              >
-                <div
-                  className="absolute top-[-18%] bottom-[-18%]"
-                  style={
-                    {
-                      left: lineLeft,
-                      transform: "translateX(-50%)",
-                      transition: "left 1.25s cubic-bezier(.21,.99,.24,1)",
-                    } as CSSProperties
-                  }
-                >
-                  <div
-                    className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[40px]"
-                    style={
-                      {
-                        background:
-                          "linear-gradient(180deg, rgba(249,115,22,0) 0%, rgba(249,115,22,0.55) 38%, rgba(249,115,22,0.30) 62%, rgba(249,115,22,0) 100%)",
-                        filter: "blur(10px)",
-                        opacity: 0.92,
-                      } as CSSProperties
-                    }
-                  />
-                  <div
-                    className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[3px] rounded-full"
-                    style={
-                      {
-                        background:
-                          "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.98) 14%, rgba(255,196,118,1) 40%, rgba(249,115,22,1) 50%, rgba(255,196,118,1) 60%, rgba(255,255,255,0.98) 86%, rgba(255,255,255,0) 100%)",
-                        boxShadow:
-                          "0 0 10px rgba(255,255,255,0.8), 0 0 24px rgba(249,115,22,0.90), 0 0 44px rgba(249,115,22,0.78)",
-                      } as CSSProperties
-                    }
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="pointer-events-none absolute inset-0 ring-1 ring-white/8" />
-          <div className="pointer-events-none absolute inset-0 rounded-[28px] ring-0 ring-orange-400/0 transition group-focus-visible:ring-2 group-focus-visible:ring-orange-400/50" />
+          <div className="pointer-events-none absolute inset-0 ring-1 ring-white/6" />
         </div>
       </div>
 
       <div className="mt-3 w-full">
         <div className="flex items-center justify-between gap-3">
-          <div
-            id={labelId}
-            className="text-[12px] font-semibold tracking-[0.20em] uppercase text-white/80"
-          >
+          <div id={labelId} className="text-[12px] font-semibold tracking-[0.20em] uppercase text-white/72">
             {item.label}
           </div>
-          <div className="text-[11px] font-semibold tracking-[0.18em] uppercase text-white/40">
+          <div className="text-[11px] font-semibold tracking-[0.18em] uppercase text-white/38">
             {item.category}
           </div>
         </div>
@@ -328,13 +157,12 @@ function StackCard({
           </div>
         )}
       </div>
-    </button>
+    </div>
   );
 }
 
 export default function WhyUs() {
   const { dict, lang } = useLang();
-  const reducedMotion = usePrefersReducedMotion();
 
   const isRu = lang === "ru";
   const w = dict.whyUs;
@@ -352,22 +180,23 @@ export default function WhyUs() {
 
   const stack = useMemo<StackItem[]>(
     () => [
-      { id: "supabase", label: "Supabase", src: "/images/stack/supabase.webp", category: "Platform" },
-      { id: "react", label: "React", src: "/images/stack/react.webp", category: "Frontend" },
-      { id: "ts", label: "TypeScript", src: "/images/stack/ts.webp", category: "Frontend" },
-      { id: "tw", label: "Tailwind", src: "/images/stack/tw.webp", category: "Frontend" },
-      { id: "node", label: "Node.js", src: "/images/stack/node.webp", category: "Backend" },
-      { id: "ex", label: "Express", src: "/images/stack/ex.webp", category: "Backend" },
-      { id: "pg", label: "Postgres", src: "/images/stack/pg.webp", category: "Database" },
-      { id: "html", label: "HTML", src: "/images/stack/html.webp", category: "Frontend" },
-      { id: "css", label: "CSS", src: "/images/stack/css.webp", category: "Frontend" },
-      { id: "js", label: "JavaScript", src: "/images/stack/js.webp", category: "Frontend" },
+      // public/images/stack — имена файлов как в папке (PNG с заглавной / полным названием)
+      { id: "supabase", label: "Supabase", src: "/images/stack/Supabase.png", category: "Platform" },
+      { id: "react", label: "React", src: "/images/stack/React.png", category: "Frontend" },
+      { id: "ts", label: "TypeScript", src: "/images/stack/TypeScript.png", category: "Frontend" },
+      { id: "tw", label: "Tailwind", src: "/images/stack/Tailwind.png", category: "Frontend" },
+      { id: "node", label: "Node.js", src: "/images/stack/Node.js.png", category: "Backend" },
+      { id: "ex", label: "Express", src: "/images/stack/Express.png", category: "Backend" },
+      { id: "pg", label: "Postgres", src: "/images/stack/Postgres.png", category: "Database" },
+      { id: "html", label: "HTML", src: "/images/stack/HTML.png", category: "Frontend" },
+      { id: "css", label: "CSS", src: "/images/stack/CSS.png", category: "Frontend" },
+      { id: "js", label: "JavaScript", src: "/images/stack/JavaScript.png", category: "Frontend" },
     ],
     []
   );
 
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const metricsRef = useRef<{ firstY: number; lastY: number; ready: boolean }>({
     firstY: 0,
     lastY: 0,
@@ -394,7 +223,7 @@ export default function WhyUs() {
 
   const recalcMetrics = useCallback(() => {
     if (typeof window === "undefined") return;
-    const els = itemRefs.current.filter(Boolean) as HTMLButtonElement[];
+    const els = itemRefs.current.filter(Boolean) as HTMLDivElement[];
     if (!els.length) {
       metricsRef.current.ready = false;
       return;
@@ -554,7 +383,6 @@ export default function WhyUs() {
                         item={it}
                         index={i}
                         reveal={reveal}
-                        reducedMotion={reducedMotion}
                         labelId={labelId}
                         descId={descId}
                         setRef={(el) => {

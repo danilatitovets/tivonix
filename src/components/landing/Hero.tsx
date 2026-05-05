@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Section from "../ui/Section";
 import Container from "../ui/Container";
 import { useLang, type Lang } from "../../i18n/LangProvider";
 import HeroWebGLBg from "./HeroWebGLBg";
 import { TG_BOT_URL } from "../../constants/links";
 
-const HERO_BG_IMG = "/images/fom4.webp"; // твой фон
+const HERO_BG_IMG = "/images/hero1.png"; // mobile hero image
 const CONTACT_EMAIL = "tivoonix@gmail.com";
 
 function cx(...a: Array<string | false | null | undefined>) {
@@ -132,9 +132,18 @@ const HERO_STYLES = `
   @media (max-width: 640px){
     .hero{
       --hero-img-shift: 16vh;   /* опусти фон */
-      --hero-img-scale: 1.16;
+      --hero-img-scale: 1;
     }
-    .heroBg .heroImg{ object-position: 50% 92%; }
+    .heroBg .heroImg{
+      inset: auto;
+      width: 88%;
+      height: 88%;
+      left: 50%;
+      top: 58%;
+      object-fit: contain;
+      object-position: 50% 50%;
+      transform: translate3d(-50%, -50%, 0) scale(var(--hero-img-scale));
+    }
 
     /* Моб. оверлей: верх темнее, низ “чище” */
 @media (max-width: 640px){
@@ -196,31 +205,23 @@ const HERO_STYLES = `
       font-size: 13.5px !important;
       font-weight: 700 !important;
       letter-spacing: -0.012em !important;
+      border: none !important;
       box-shadow: none !important;
     }
 
     /* Telegram = primary (белая) */
     .hero .tgBtn{
-      background: rgba(255,255,255,0.92) !important;
+      background: rgba(255,255,255,0.95) !important;
       color: rgba(0,0,0,0.90) !important;
-      border: 1px solid rgba(255,255,255,0.18) !important;
-      box-shadow: 0 18px 60px rgba(0,0,0,.45) !important;
+      box-shadow: 0 10px 28px rgba(0,0,0,.35) !important;
     }
 
     /* Gmail = ghost */
     .hero .gmailBtn{
-      background: rgba(255,255,255,0.08) !important;
+      background: rgba(255,255,255,0.14) !important;
       color: rgba(255,255,255,0.92) !important;
-      border: 1px solid rgba(255,255,255,0.14) !important;
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-    }
-
-    .hero .heroTrust{
-      margin-top: 12px !important;
-      font-size: 12px !important;
-      color: rgba(255,255,255,0.52) !important;
-      letter-spacing: 0.01em !important;
     }
 
     /* Супер узкие экраны: кнопки в столбик */
@@ -284,7 +285,7 @@ export default function Hero() {
   // Оставляем ТОЛЬКО это условие: фон WebGL на десктопе (это не ломает разметку текста/кнопок)
   const isDesktop = useMediaQuery("(min-width: 900px)");
 
-  const { gmailUrl, gmailLabel, tgLabel, trustLine } = useMemo(() => {
+  const { gmailUrl, gmailLabel, tgLabel } = useMemo(() => {
     const subject = getSubject(lang);
     const body = buildMailBody(lang);
     return {
@@ -388,7 +389,6 @@ export default function Hero() {
               </a>
             </div>
 
-            <div className="mt-3 max-w-2xl text-[12.5px] sm:text-[13px] text-white/62 heroTrust">{trustLine}</div>
           </div>
         </div>
       </Container>

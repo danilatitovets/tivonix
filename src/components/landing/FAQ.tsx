@@ -451,46 +451,6 @@ export default function FAQSection() {
   return (
     <Section id="faq" className="relative overflow-hidden pt-16 sm:pt-20 pb-16 sm:pb-20 bg-black">
       <style>{`
-        /* IMPORTANT: не крутим бесконечную анимацию в фоне — только на hover */
-        @keyframes faqBorderMove {
-          0% { background-position: 0% 50%; }
-          100% { background-position: 200% 50%; }
-        }
-
-        .faq-grad-border{ position: relative; }
-        .faq-grad-border::before{
-          content:"";
-          position:absolute;
-          inset:0;
-          border-radius: 20px;
-          padding: 1px;
-          pointer-events:none;
-          opacity: 0;
-          transition: opacity .18s ease;
-
-          background: linear-gradient(
-            90deg,
-            #FFD7B0 0%,
-            #FF9A3D 18%,
-            #FF6A1A 55%,
-            #FF9A3D 86%,
-            #FFD7B0 100%
-          );
-          background-size: 220% 220%;
-          animation: faqBorderMove 1.35s linear infinite;
-          animation-play-state: paused;
-
-          -webkit-mask:
-            linear-gradient(#000 0 0) content-box,
-            linear-gradient(#000 0 0);
-          -webkit-mask-composite: xor;
-          mask:
-            linear-gradient(#000 0 0) content-box,
-            linear-gradient(#000 0 0);
-          mask-composite: exclude;
-        }
-        .faq-grad-border:hover::before{ opacity: 1; animation-play-state: running; }
-
         @keyframes faqAnswerIn {
           from { opacity: 0; transform: translateY(6px); }
           to   { opacity: 1; transform: translateY(0); }
@@ -517,7 +477,6 @@ export default function FAQSection() {
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .faq-grad-border::before{ animation: none; }
           .faq-answer-open{ animation: none; }
           .faq-answer-collapsed, .faq-answer-expanded{ transition: none; }
         }
@@ -576,10 +535,10 @@ export default function FAQSection() {
                     inputMode="search"
                     className={cx(
                       "w-full h-11 sm:h-12 rounded-[14px]",
-                      "bg-white/[0.045] border border-white/12",
+                      "bg-white/[0.06] border-0",
                       "pl-10 pr-4 text-sm text-white/90 placeholder:text-white/40",
                       "outline-none",
-                      "focus:border-white/22 focus:ring-2 focus:ring-white/12",
+                      "focus:ring-2 focus:ring-white/12",
                       "shadow-[0_18px_70px_rgba(0,0,0,0.55)]"
                     )}
                   />
@@ -598,7 +557,7 @@ export default function FAQSection() {
                   aria-disabled={resetDisabled}
                   className={cx(
                     "h-11 sm:h-12 px-4 rounded-[14px]",
-                    "border border-white/12 bg-white/[0.045]",
+                    "border-0 bg-white/[0.06]",
                     resetDisabled
                       ? "text-white/35 cursor-not-allowed opacity-70"
                       : "text-white/75 hover:text-white/92 hover:bg-white/[0.07] transition",
@@ -630,10 +589,10 @@ export default function FAQSection() {
                     onClick={() => setCatFilter("all")}
                     className={cx(
                       "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium",
-                      "border border-white/12",
+                      "border-0",
                       catFilter === "all"
-                        ? "bg-white/[0.12] text-white"
-                        : "bg-black/30 text-white/75 hover:text-white/92 hover:bg-white/[0.07]",
+                        ? "bg-white/[0.16] text-white"
+                        : "bg-white/[0.07] text-white/75 hover:text-white/92 hover:bg-white/[0.10]",
                       "transition",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                     )}
@@ -655,10 +614,10 @@ export default function FAQSection() {
                         onClick={() => setCatFilter(c)}
                         className={cx(
                           "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium",
-                          "border border-white/12",
+                          "border-0",
                           active
-                            ? "bg-white/[0.12] text-white"
-                            : "bg-black/30 text-white/75 hover:text-white/92 hover:bg-white/[0.07]",
+                            ? "bg-white/[0.16] text-white"
+                            : "bg-white/[0.07] text-white/75 hover:text-white/92 hover:bg-white/[0.10]",
                           "transition",
                           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                         )}
@@ -674,8 +633,8 @@ export default function FAQSection() {
                     onClick={() => setShowAllCats((v) => !v)}
                     className={cx(
                       "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold",
-                      "border border-white/12",
-                      "bg-white/[0.05] text-white/80 hover:text-white hover:bg-white/[0.08] transition",
+                      "border-0",
+                      "bg-white/[0.07] text-white/80 hover:text-white hover:bg-white/[0.10] transition",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                     )}
                     aria-expanded={showAllCats}
@@ -716,22 +675,12 @@ export default function FAQSection() {
               <article
                 key={f.id}
                 className={cx(
-                  "group faq-grad-border relative overflow-hidden rounded-[20px]",
-                  "border border-white/12",
-                  "bg-black/75 faq-card-bg backdrop-blur-[22px]",
-                  "shadow-[0_24px_95px_rgba(0,0,0,0.82)]"
+                  "group relative overflow-hidden rounded-[20px]",
+                  "border-0",
+                  "bg-[#1c1c1f] faq-card-bg backdrop-blur-[22px]",
+                  "shadow-[0_20px_60px_rgba(0,0,0,0.42)]"
                 )}
               >
-                {/* top gradient line */}
-                <div
-                  className="absolute inset-x-0 top-0 h-[2px]"
-                  style={s({
-                    background:
-                      "linear-gradient(90deg,#FFD7B0 0%,#FF9A3D 22%,#FF6A1A 50%,#FF9A3D 78%,#FFD7B0 100%)",
-                    opacity: 0.92,
-                  })}
-                />
-
                 <div className="relative z-[2] p-5 flex flex-col">
                   <header className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -754,8 +703,8 @@ export default function FAQSection() {
                       aria-label={isOpen ? btnHide : `${btnShow}: ${f.q}`}
                       className={cx(
                         "w-full flex items-center gap-2 rounded-[12px]",
-                        "border border-white/12 bg-white/[0.03] px-3 py-2",
-                        "text-left text-[12px] text-white/80 hover:bg-white/[0.06] transition",
+                        "border-0 bg-white/[0.07] px-3 py-2",
+                        "text-left text-[12px] text-white/80 hover:bg-white/[0.10] transition",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                       )}
                     >
@@ -775,7 +724,7 @@ export default function FAQSection() {
                   <div
                     id={domId}
                     className={cx(
-                      "mt-3 rounded-[14px] border border-white/12 bg-black/60 px-4 py-3",
+                      "mt-3 rounded-[14px] border-0 bg-black/45 px-4 py-3",
                       "text-[13px] leading-relaxed text-white/78",
                       isOpen ? "faq-answer-expanded faq-answer-open" : "faq-answer-collapsed"
                     )}
@@ -790,8 +739,8 @@ export default function FAQSection() {
                         onClick={() => copy(f.a, f.id)}
                         className={cx(
                           "inline-flex items-center gap-2 rounded-[12px]",
-                          "border border-white/12 bg-white/[0.03] px-3 py-2",
-                          "text-[12px] text-white/80 hover:bg-white/[0.06] transition",
+                          "border-0 bg-white/[0.07] px-3 py-2",
+                          "text-[12px] text-white/80 hover:bg-white/[0.10] transition",
                           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                         )}
                       >
@@ -832,8 +781,8 @@ export default function FAQSection() {
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
                 className={cx(
-                  "h-11 px-4 rounded-[14px] border border-white/12 bg-white/[0.045]",
-                  page <= 1 ? "text-white/35 cursor-not-allowed" : "text-white/80 hover:bg-white/[0.07]",
+                  "h-11 px-4 rounded-[14px] border-0 bg-white/[0.06]",
+                  page <= 1 ? "text-white/35 cursor-not-allowed" : "text-white/80 hover:bg-white/[0.10]",
                   "transition",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 )}
@@ -850,8 +799,8 @@ export default function FAQSection() {
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
                 className={cx(
-                  "h-11 px-4 rounded-[14px] border border-white/12 bg-white/[0.045]",
-                  page >= totalPages ? "text-white/35 cursor-not-allowed" : "text-white/80 hover:bg-white/[0.07]",
+                  "h-11 px-4 rounded-[14px] border-0 bg-white/[0.06]",
+                  page >= totalPages ? "text-white/35 cursor-not-allowed" : "text-white/80 hover:bg-white/[0.10]",
                   "transition",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 )}
@@ -883,7 +832,7 @@ export default function FAQSection() {
                     )}
                     style={s({
                       borderRadius: "999px",
-                      border: active ? `1px solid ${ORANGE}` : "1px solid rgba(255,255,255,0.16)",
+                      border: "none",
                       background: active ? "linear-gradient(145deg,#FFB46A,#FF9840,#C84A00)" : "rgba(5,5,7,0.85)",
                       color: active ? "#1a0700" : "rgba(248,248,255,0.86)",
                       boxShadow: active

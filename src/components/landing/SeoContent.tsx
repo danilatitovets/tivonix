@@ -22,10 +22,9 @@ const VISIBLE_RU = (
 
     <blockquote className="mt-6 text-white font-extrabold leading-relaxed text-[18px] sm:text-[20px]">
       <span className="text-white/35 text-3xl sm:text-4xl font-black mr-2 align-[-6px]">“</span>
-      Мы в <span className="text-white">TIVONIX</span> делаем сайты так, чтобы они работали на результат: быстро
-      грузились, выглядели премиально и приносили заявки. Без лишнего шума — только чистый дизайн, сильная структура и
-      современная разработка на <span className="text-white">React</span> +{" "}
-      <span className="text-white">TypeScript</span>. Мы любим простоту, но ещё больше — эффект для вашего бизнеса.
+      Мы в <span className="text-white">TIVONIX</span> создаём цифровые продукты, которые выглядят дорого, работают
+      быстро и помогают бизнесу расти. Берём на себя структуру, дизайн, разработку и запуск — чтобы вы получили не просто
+      сайт, а понятный инструмент для клиентов и продаж.
       <span className="text-white/35 text-3xl sm:text-4xl font-black ml-2 align-[-6px]">”</span>
     </blockquote>
 
@@ -52,10 +51,9 @@ const VISIBLE_EN = (
 
     <blockquote className="mt-6 text-white font-extrabold leading-relaxed text-[18px] sm:text-[20px]">
       <span className="text-white/35 text-3xl sm:text-4xl font-black mr-2 align-[-6px]">“</span>
-      At <span className="text-white">TIVONIX</span>, we build websites that are made for outcomes: fast, premium-looking,
-      and focused on conversions. No noise — just clean design, strong structure, and modern{" "}
-      <span className="text-white">React</span> + <span className="text-white">TypeScript</span> engineering. We love
-      simplicity, but even more — real impact for your business.
+      At <span className="text-white">TIVONIX</span>, we create digital products that look premium, perform fast, and help
+      businesses grow. We own structure, design, development, and launch — so you get more than a website: a clear tool
+      for clients and sales.
       <span className="text-white/35 text-3xl sm:text-4xl font-black ml-2 align-[-6px]">”</span>
     </blockquote>
 

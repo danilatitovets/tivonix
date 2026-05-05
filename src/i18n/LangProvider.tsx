@@ -121,11 +121,11 @@ const DICT: Record<Lang, Dictionary> = {
       language: "Язык",
     },
     hero: {
-      titleLine1: "Сделаем вам SaaS-продукт",
-      titleLine2Prefix: "быстро, аккуратно и",
-      titleLine2Premium: "с премиум-UI",
+      titleLine1: "Сделаем сайт или веб-сервис",
+      titleLine2Prefix: "под задачи",
+      titleLine2Premium: "вашего бизнеса",
       subtitle:
-        "Дизайн как у топ-SaaS, чистый код, быстрый MVP. Админка, роли, аналитика, платежи — под ключ.",
+        "Разберём идею, спроектируем интерфейс, разработаем продукт и подготовим его к запуску. Всё — в одном месте и без технической путаницы.",
       emailPlaceholder: "Рабочий email",
       btnDemo: "Получить демо",
       btnTelegram: "Написать в Telegram",
@@ -247,11 +247,11 @@ const DICT: Record<Lang, Dictionary> = {
       language: "Language",
     },
     hero: {
-      titleLine1: "We build your SaaS product",
-      titleLine2Prefix: "fast, neatly and",
-      titleLine2Premium: "with premium UI",
+      titleLine1: "We build a site or web service",
+      titleLine2Prefix: "for your",
+      titleLine2Premium: "business goals",
       subtitle:
-        "Top-tier SaaS design, clean code, fast MVP. Admin panel, roles, analytics, payments — end-to-end.",
+        "We unpack the idea, design the interface, build the product, and get it launch-ready. Everything in one place — without technical confusion.",
       emailPlaceholder: "Work email",
       btnDemo: "Get a demo",
       btnTelegram: "Message on Telegram",

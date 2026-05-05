@@ -60,29 +60,25 @@ const DOCS = {
   ru: [
     {
       href: "/doc/Политика_обработки_ПД_Tivonix_RU.pdf",
-      title: "Политика ПД",
-      subtitle: "Обработка и защита персональных данных",
-      badge: "PDF",
+      label: "Политика ПД",
+      aria: "Политика обработки и защиты персональных данных (PDF)",
     },
     {
       href: "/doc/Согласие_на_обработку_ПД_Tivonix_RU.pdf",
-      title: "Согласие ПД",
-      subtitle: "Согласие на обработку персональных данных",
-      badge: "PDF",
+      label: "Согласие ПД",
+      aria: "Согласие на обработку персональных данных (PDF)",
     },
   ],
   en: [
     {
       href: "/doc/Privacy_Policy_Tivonix_EN.pdf",
-      title: "Privacy Policy",
-      subtitle: "How we collect and use personal data",
-      badge: "PDF",
+      label: "Privacy Policy",
+      aria: "Privacy Policy (PDF)",
     },
     {
       href: "/doc/Consent_Tivonix_EN.pdf",
-      title: "Consent",
-      subtitle: "Consent to personal data processing",
-      badge: "PDF",
+      label: "Consent",
+      aria: "Consent to personal data processing (PDF)",
     },
   ],
 } as const;
@@ -124,10 +120,12 @@ function ExternalLink({
   href,
   children,
   newTab,
+  "aria-label": ariaLabel,
 }: {
   href: string;
   children: React.ReactNode;
   newTab?: boolean;
+  "aria-label"?: string;
 }) {
   const isHttp = href.startsWith("http");
   const openInNewTab = newTab ?? isHttp;
@@ -137,6 +135,7 @@ function ExternalLink({
       href={href}
       target={openInNewTab ? "_blank" : undefined}
       rel={openInNewTab ? "noopener noreferrer" : undefined}
+      aria-label={ariaLabel}
       className={cx(
         "group inline-flex items-center gap-2 text-sm text-white/70 transition-colors",
         "hover:text-white",
@@ -150,71 +149,6 @@ function ExternalLink({
           style={s({ backgroundColor: "color-mix(in srgb, var(--accent) 75%, transparent)" })}
         />
       </span>
-    </a>
-  );
-}
-
-function DocCard({
-  href,
-  title,
-  subtitle,
-  badge = "PDF",
-}: {
-  href: string;
-  title: string;
-  subtitle?: string;
-  badge?: string;
-}) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={subtitle ? `${title} — ${subtitle}` : title}
-      className={cx(
-        "group block rounded-xl border border-white/10 bg-white/[0.02] p-3",
-        "transition-colors",
-        "hover:border-[color:var(--accent)]/30 hover:bg-white/[0.03]",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-      )}
-    >
-      <div className="flex items-start gap-3">
-        <div
-          className={cx(
-            "mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-lg",
-            "bg-white/[0.04] border border-white/10",
-            "group-hover:border-[color:var(--accent)]/35"
-          )}
-        >
-          <FileIcon />
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <div className="truncate text-sm font-medium text-white/90">{title}</div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span
-                className={cx(
-                  "inline-flex items-center rounded-full px-2 py-0.5",
-                  "text-[10px] font-semibold tracking-[0.16em] uppercase",
-                  "border border-white/10 text-white/45",
-                  "group-hover:border-[color:var(--accent)]/35 group-hover:text-white/65"
-                )}
-              >
-                {badge}
-              </span>
-              <span className="opacity-40 group-hover:opacity-70 transition-opacity">
-                <ArrowUpRightIcon />
-              </span>
-            </div>
-          </div>
-
-          {subtitle ? <div className="mt-1 text-xs leading-5 text-white/45">{subtitle}</div> : null}
-        </div>
-      </div>
     </a>
   );
 }
@@ -339,13 +273,17 @@ export default function Footer() {
                 {isRu ? "Официальные документы Tivonix" : "Tivonix legal documents"}
               </div>
 
-              <div className="mt-4 space-y-3">
+              <ul className="mt-4 space-y-2.5">
                 {docs.map((d) => (
-                  <DocCard key={d.href} href={d.href} title={d.title} subtitle={d.subtitle} badge={d.badge} />
+                  <li key={d.href}>
+                    <ExternalLink href={d.href} newTab aria-label={d.aria}>
+                      {d.label}
+                    </ExternalLink>
+                  </li>
                 ))}
-              </div>
+              </ul>
 
-              <div className="mt-4 text-xs text-white/35">
+              <div className="mt-3 text-xs text-white/35">
                 {isRu ? "Откроется в новой вкладке" : "Opens in a new tab"}
               </div>
             </div>
@@ -400,31 +338,6 @@ function TelegramIcon() {
         strokeLinejoin="round"
       />
       <path d="M8 13.8 19.6 6.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function FileIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M8 3h6l4 4v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-      <path d="M14 3v5h5" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-      <path d="M8.5 13.5h7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M8.5 17h7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function ArrowUpRightIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 17 17 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M10 7h7v7" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
     </svg>
   );
 }
