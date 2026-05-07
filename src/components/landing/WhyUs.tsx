@@ -203,7 +203,7 @@ export default function WhyUs() {
     ready: false,
   });
 
-  const [reveal, setReveal] = useState(false);
+  const [reveal, setReveal] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {

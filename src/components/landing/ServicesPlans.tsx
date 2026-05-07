@@ -69,7 +69,7 @@ function CheckIcon() {
 }
 
 function useVideoBlock(ref: React.RefObject<HTMLVideoElement>, src?: string) {
-  const [canLoad, setCanLoad] = useState(false);
+  const [canLoad, setCanLoad] = useState(true);
   const [reduceMotion, setReduceMotion] = useState(false);
 
   useEffect(() => {
@@ -179,6 +179,7 @@ function openTelegram(planName: string, isRu: boolean) {
 function PlanCard({ p, isRu }: { p: Plan; isRu: boolean }) {
   const ref = useRef<HTMLVideoElement | null>(null);
   const { play, stop } = useVideoBlock(ref, p.videoSrc);
+  const [videoFailed, setVideoFailed] = useState(false);
 
   const label = isRu ? p.labelRu : p.labelEn;
   const title = isRu ? p.titleRu : p.titleEn;
@@ -236,30 +237,42 @@ function PlanCard({ p, isRu }: { p: Plan; isRu: boolean }) {
           transform: "translateZ(0)",
         }}
       >
-        <video
-          ref={ref}
-          poster={p.poster}
-          muted
-          playsInline
-          loop
-          preload="none"
-          controls={false}
-          // @ts-expect-error nonstandard attribute
-          disablePictureInPicture
-          className={cx(
-            "absolute left-0 top-0 h-full w-full object-cover",
-            "opacity-[0.70] transition-opacity duration-200",
-            "group-hover:opacity-[0.90]"
-          )}
-          style={{
-            zIndex: 1,
-            filter: "contrast(1.08) saturate(1.05)",
-            // ✅ смещение фокуса вниз без чёрных полос
-            objectPosition: `center calc(50% + ${VIDEO_OFFSET_PX}px)`,
-            backfaceVisibility: "hidden",
-            willChange: "opacity",
-          }}
-        />
+        {!videoFailed ? (
+          <video
+            ref={ref}
+            poster={p.poster}
+            muted
+            playsInline
+            loop
+            preload="none"
+            controls={false}
+            onError={() => setVideoFailed(true)}
+            // @ts-expect-error nonstandard attribute
+            disablePictureInPicture
+            className={cx(
+              "absolute left-0 top-0 h-full w-full object-cover",
+              "opacity-[0.70] transition-opacity duration-200",
+              "group-hover:opacity-[0.90]"
+            )}
+            style={{
+              zIndex: 1,
+              filter: "contrast(1.08) saturate(1.05)",
+              // ✅ смещение фокуса вниз без чёрных полос
+              objectPosition: `center calc(50% + ${VIDEO_OFFSET_PX}px)`,
+              backfaceVisibility: "hidden",
+              willChange: "opacity",
+            }}
+          />
+        ) : (
+          <div
+            className="absolute inset-0"
+            style={{
+              zIndex: 1,
+              background:
+                "radial-gradient(100% 120% at 70% 20%, rgba(255,154,61,0.35), transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.08), rgba(0,0,0,0.55))",
+            }}
+          />
+        )}
 
         {/* нижний градиент */}
         <div
