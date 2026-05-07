@@ -9,16 +9,26 @@ import SeoContent from "../components/landing/SeoContent";
 import Footer from "../components/landing/Footer";
 import { SEO } from "../components/SEO";
 import ServicesPlans from "../components/landing/ServicesPlans";
-import { HOME_PAGE_SCHEMA } from "../lib/schema";
+import { buildHomePageSchema } from "../lib/schema";
+import { homePageSeoFromDict, useLang } from "../i18n/LangProvider";
 
 export default function LandingPage() {
+  const { dict, lang } = useLang();
+  const seo = homePageSeoFromDict(dict);
+  const schemaJsonLd = buildHomePageSchema({
+    pageTitle: seo.title,
+    pageDescription: seo.description,
+  });
+
   return (
     <div className="min-h-screen bg-[var(--bg)]">
       <SEO
-        title="TIVONIX — сайты и цифровые продукты"
-        description="TIVONIX — делаем сайты, лендинги и веб-продукты: от идеи и прототипа до запуска, поддержки и развития."
+        title={seo.title}
+        description={seo.description}
         canonicalPath="/"
-        schemaJsonLd={HOME_PAGE_SCHEMA}
+        schemaJsonLd={schemaJsonLd}
+        localizedPath="/"
+        ogLocalePrimary={lang === "en" ? "en_US" : "ru_RU"}
       />
       <div id="top" />
       <Header />

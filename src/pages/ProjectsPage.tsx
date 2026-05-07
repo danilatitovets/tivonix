@@ -1,9 +1,10 @@
 // src/pages/ProjectsPage.tsx
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Container from "../components/ui/Container";
 import Section from "../components/ui/Section";
 import Header from "../components/landing/Header";
+import HeroWebGLBg from "../components/landing/HeroWebGLBg";
 import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
 import { buildProjects, type Project } from "../data/projectsCatalog";
@@ -15,7 +16,6 @@ import {
   s,
 } from "./projectBlocks";
 
-const PROJECTS_BG = "/images/projects-bg.png";
 const HEADER_H = 72;
 
 const GMAIL_EMAIL_URL =
@@ -25,6 +25,27 @@ const GMAIL_EMAIL_URL =
 
 function clamp(n: number, a = 0, b = 1) {
   return Math.max(a, Math.min(b, n));
+}
+
+function useMediaQuery(query: string) {
+  const getMatch = () =>
+    typeof window !== "undefined" ? window.matchMedia(query).matches : false;
+  const [matches, setMatches] = useState<boolean>(getMatch);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const m = window.matchMedia(query);
+    const onChange = () => setMatches(m.matches);
+    onChange();
+    if (m.addEventListener) m.addEventListener("change", onChange);
+    else m.addListener(onChange);
+    return () => {
+      if (m.removeEventListener) m.removeEventListener("change", onChange);
+      else m.removeListener(onChange);
+    };
+  }, [query]);
+
+  return matches;
 }
 
 function useParallaxCards() {
@@ -88,31 +109,29 @@ function ProjectCard({
       data-parallax
       data-parallax-amp={String(14 + idx * 4)}
       className={cx(
-        "relative overflow-hidden rounded-[28px]",
-        "border-0 bg-white/[0.05] backdrop-blur-2xl",
-        "shadow-[0_20px_72px_rgba(0,0,0,0.42)]",
+        "relative overflow-hidden rounded-[24px]",
+        "border border-white/[0.06] bg-white/[0.04] backdrop-blur-2xl",
         "will-change-transform"
       )}
     >
-      <div className="relative z-10 flex flex-col gap-7 p-5 sm:p-8">
+      <div className="relative z-10 flex flex-col gap-8 p-6 sm:p-8">
         <ProjectPreviewFrame src={projectPreviewSrc(p)} />
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-10">
-          <div className="min-w-0 space-y-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(200px,240px)] lg:items-start lg:gap-x-12">
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/38">
               {labelProject}
             </p>
 
-            <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <h2 className="text-[22px] sm:text-[26px] font-[760] tracking-[-0.02em] text-white/95 leading-tight">
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+              <h2 className="text-[1.375rem] sm:text-[1.625rem] font-[780] tracking-[-0.03em] text-white/[0.94] leading-[1.12]">
                 {p.title}
               </h2>
               {wip ? (
                 <span
                   className={cx(
-                    "inline-flex items-center rounded-full px-2.5 py-0.5",
-                    "border-0 bg-white/[0.08]",
-                    "text-[10px] font-bold uppercase tracking-wider text-white/50"
+                    "inline-flex items-center rounded-md border border-white/[0.08] bg-white/[0.05]",
+                    "px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white/48"
                   )}
                 >
                   WIP
@@ -120,40 +139,21 @@ function ProjectCard({
               ) : null}
             </div>
 
-            <p className="mt-3 text-[15px] leading-[1.55] text-white/65 max-w-[56ch]">
+            <p className="mt-4 max-w-[60ch] text-[14px] sm:text-[15px] font-[450] leading-[1.62] text-white/[0.58]">
               {subtitle}
             </p>
-
-            <div className="mt-5 flex flex-wrap gap-2">
-              {p.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className={cx(
-                    "inline-flex items-center rounded-full px-3 py-1.5",
-                    "border-0 bg-white/[0.08]",
-                    "text-[12px] text-white/70"
-                  )}
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
           </div>
 
-          <div className="flex flex-col gap-3 lg:items-end lg:pt-1 shrink-0">
-            <DomainPill
-              href={p.domain}
-              status={p.status ?? "live"}
-              isRu={isRu}
-            />
+          <div className="flex w-full flex-col gap-2.5 lg:shrink-0">
+            <DomainPill href={p.domain} status={p.status ?? "live"} isRu={isRu} />
 
             <Link
               to={`/projects/${p.id}`}
               className={cx(
-                "inline-flex h-11 min-w-[140px] items-center justify-center rounded-2xl px-6",
-                "border-0 bg-white/[0.10] backdrop-blur",
-                "text-[14px] font-[750] text-white/85 hover:bg-white/[0.14] transition whitespace-nowrap",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40"
+                "flex h-11 w-full items-center justify-center rounded-xl px-5",
+                "border-0 bg-[#FF9A3D] text-[13px] font-[650] text-black",
+                "transition-colors hover:bg-[#FFAC5C] active:bg-[#F08A2E]",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/55"
               )}
               aria-label={
                 isRu
@@ -164,6 +164,23 @@ function ProjectCard({
               {moreLabel}
             </Link>
           </div>
+        </div>
+
+        <div className="border-t border-white/[0.06] pt-6">
+          <ul className="flex list-none flex-wrap gap-x-2 gap-y-2 p-0" role="list">
+            {p.tags.map((tag) => (
+              <li key={tag}>
+                <span
+                  className={cx(
+                    "inline-flex items-center rounded-md border border-white/[0.06] bg-white/[0.05]",
+                    "px-2.5 py-1 text-[11px] font-[550] tracking-wide text-white/[0.68]"
+                  )}
+                >
+                  {tag}
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>
@@ -180,28 +197,18 @@ function MoreCard({ isRu }: { isRu: boolean }) {
   return (
     <div
       className={cx(
-        "relative overflow-hidden rounded-[28px]",
-        "border-0 bg-white/[0.05] backdrop-blur-2xl",
-        "shadow-[0_20px_72px_rgba(0,0,0,0.42)]"
+        "relative overflow-hidden rounded-[24px]",
+        "border border-white/[0.06] bg-white/[0.04] backdrop-blur-2xl"
       )}
     >
-      <div
-        className="pointer-events-none absolute -inset-10 opacity-70"
-        style={s({
-          background:
-            "radial-gradient(520px 260px at 20% 25%, rgba(255,154,61,0.22), transparent 62%)," +
-            "radial-gradient(520px 260px at 85% 15%, rgba(255,106,26,0.16), transparent 62%)",
-        })}
-      />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:radial-gradient(rgba(255,255,255,0.22)_1px,transparent_1px)] [background-size:16px_16px]" />
-      <div className="relative z-10 p-7 sm:p-8">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40">
+      <div className="p-6 sm:p-8">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/38">
           {soonLabel}
         </div>
-        <div className="mt-3 text-[22px] sm:text-[28px] font-[800] tracking-[-0.02em] text-white/95 leading-tight">
+        <div className="mt-3 text-[1.375rem] sm:text-[1.625rem] font-[780] tracking-[-0.03em] text-white/[0.94] leading-[1.12]">
           {title}
         </div>
-        <div className="mt-3 text-[15px] leading-[1.55] text-white/65 max-w-[70ch]">
+        <div className="mt-4 max-w-[60ch] text-[14px] sm:text-[15px] leading-[1.62] text-white/[0.58]">
           {body}
         </div>
       </div>
@@ -213,38 +220,55 @@ export default function ProjectsPage() {
   useParallaxCards();
   const { lang } = useLang();
   const isRu = lang === "ru";
+  const isDesktop = useMediaQuery("(min-width: 900px)");
 
   const projects = useMemo(() => buildProjects(isRu), [isRu]);
 
   const gmailLabel = "Gmail";
   const tgLabel = "Telegram";
 
+  const seoTitle = isRu ? "Портфолио и кейсы — TIVONIX" : "Portfolio & case studies — TIVONIX";
+  const seoDescription = isRu
+    ? "Кейсы TIVONIX: разработка сайтов, лендингов, SaaS и MVP на React. Живые проекты — от идеи до запуска и поддержки."
+    : "TIVONIX case studies: websites, landings, SaaS and MVPs on React. Live work from idea to launch and support.";
+
   return (
     <div className="relative min-h-screen" style={s({ "--headerH": `${HEADER_H}px` })}>
       <SEO
-        title="Проекты — TIVONIX"
-        description="Портфолио и кейсы TIVONIX: лендинги, SaaS, MVP, веб-продукты. Разработка от идеи до запуска."
+        title={seoTitle}
+        description={seoDescription}
         canonicalPath="/projects"
+        localizedPath="/projects"
+        ogLocalePrimary={isRu ? "ru_RU" : "en_US"}
       />
       <Header />
 
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <img
-          src={PROJECTS_BG}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover object-[50%_65%] opacity-55 blur-[6px]"
-          draggable={false}
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.65),rgba(0,0,0,0.95))]" />
+      <div className="pointer-events-none fixed inset-0 -z-10" aria-hidden>
+        <div className="absolute inset-0 overflow-hidden bg-black">
+          {isDesktop ? (
+            <div className="absolute inset-0 h-full w-full scale-[1.03] will-change-transform">
+              <HeroWebGLBg />
+            </div>
+          ) : (
+            <div
+              className="absolute inset-0"
+              style={s({
+                background:
+                  "radial-gradient(120% 90% at 55% 35%, rgba(255,154,61,0.12) 0%, rgba(255,106,26,0.08) 32%, rgba(0,0,0,0) 62%)," +
+                  "linear-gradient(180deg, #0a0a0a 0%, #000 50%, #000 100%)",
+              })}
+            />
+          )}
+        </div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.55),rgba(0,0,0,0.92))]" />
         <div
           className="absolute inset-0"
           style={s({
             background:
-              "radial-gradient(1200px 650px at 18% 12%, rgba(255,154,61,0.20), transparent 60%)," +
-              "radial-gradient(900px 520px at 85% 20%, rgba(255,106,26,0.16), transparent 62%)",
+              "radial-gradient(1200px 650px at 18% 12%, rgba(255,154,61,0.18), transparent 60%)," +
+              "radial-gradient(900px 520px at 85% 20%, rgba(255,106,26,0.14), transparent 62%)",
           })}
         />
-        <div className="absolute inset-0 opacity-[0.10] [background-image:radial-gradient(rgba(255,255,255,0.22)_1px,transparent_1px)] [background-size:16px_16px]" />
       </div>
 
       <Section className="pt-[calc(var(--headerH)+20px)] sm:pt-[calc(var(--headerH)+28px)] pb-16">

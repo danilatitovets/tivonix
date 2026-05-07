@@ -21,8 +21,7 @@ export function ProjectPreviewFrame({ src }: { src: string }) {
     <div
       className={cx(
         "relative w-full overflow-hidden rounded-2xl",
-        "border-0 bg-[#0c0c0f]",
-        "shadow-[0_10px_32px_rgba(0,0,0,0.42)]"
+        "border-0 bg-[#0c0c0f]"
       )}
     >
       <img
@@ -41,10 +40,12 @@ export function DomainPill({
   href,
   status = "live",
   isRu,
+  className,
 }: {
   href?: string;
   status?: ProjectStatus;
   isRu: boolean;
+  className?: string;
 }) {
   const openLabel = isRu ? "Открыть" : "Open";
   const wipLabel = isRu ? "В разработке" : "In progress";
@@ -53,15 +54,14 @@ export function DomainPill({
     return (
       <div
         className={cx(
-          "inline-flex items-center gap-2",
-          "rounded-2xl px-4 py-2",
-          "border-0 bg-white/[0.08] backdrop-blur-xl",
-          "text-white/75",
-          "shadow-[0_10px_36px_rgba(0,0,0,0.35)]"
+          "inline-flex min-h-[44px] w-full items-center justify-center gap-2",
+          "rounded-xl border border-white/[0.08] bg-white/[0.06] px-4",
+          "text-[13px] font-[600] tracking-tight text-white/72",
+          className
         )}
       >
-        <span className="h-2 w-2 rounded-full bg-white/35 shadow-[0_0_0_4px_rgba(255,255,255,0.08)]" />
-        <span className="text-[13px] font-[650] tracking-tight">{wipLabel}</span>
+        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-white/40" />
+        <span>{wipLabel}</span>
       </div>
     );
   }
@@ -74,19 +74,20 @@ export function DomainPill({
       target="_blank"
       rel="noopener noreferrer"
       className={cx(
-        "group inline-flex items-center gap-2",
-        "rounded-2xl px-4 py-2",
-        "border-0 bg-white/[0.08] backdrop-blur-xl",
-        "text-white/85 hover:text-white hover:bg-white/[0.11] transition",
-        "shadow-[0_10px_36px_rgba(0,0,0,0.35)]"
+        "group relative flex min-h-[44px] w-full min-w-0 items-center justify-center",
+        "rounded-xl border border-white/[0.08] bg-white/[0.06] px-4 py-2.5 pr-[4.75rem]",
+        "text-white/85 transition hover:border-white/[0.12] hover:bg-white/[0.09]",
+        className
       )}
       aria-label={`${clean} — ${openLabel}`}
       title={clean}
     >
-      <span className="h-2 w-2 rounded-full bg-[#FF9A3D]/80 shadow-[0_0_0_4px_rgba(255,154,61,0.12)]" />
-      <span className="text-[13px] font-[650] tracking-tight">{clean}</span>
-      <span className="ml-1 text-[#FF9A3D]/80 group-hover:text-[#FF6A1A] transition">•</span>
-      <span className="text-[12px] text-white/55 group-hover:text-white/70 transition">{openLabel}</span>
+      <span className="min-w-0 max-w-[calc(100%-4.5rem)] truncate text-center text-[13px] font-[600] tracking-tight">
+        {clean}
+      </span>
+      <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[12px] font-[500] text-white/50 group-hover:text-white/65">
+        {openLabel}
+      </span>
     </a>
   );
 }

@@ -27,7 +27,7 @@ export type Project = {
   testimonial?: Testimonial;
 };
 
-const UPC_DOMAIN = "https://upc.promo/";
+const UPC_DOMAIN = "https://upc.watch/";
 const PAYCLIP_DOMAIN = "https://usepayclip.com/";
 const LABELOS_DOMAIN = "https://labelos.digital/";
 const HEADMIND_DOMAIN = "https://headmind.ru/";

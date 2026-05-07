@@ -809,8 +809,8 @@ export default function FAQSection() {
               </button>
             </div>
 
-            {/* Desktop: numbered pills */}
-            <div className="hidden sm:flex flex-wrap items-center justify-center gap-4">
+            {/* Desktop: простые номера страниц без кругов и подчёркиваний */}
+            <div className="hidden sm:flex flex-wrap items-center justify-center gap-6">
               {Array.from({ length: totalPages }).map((_, i) => {
                 const n = i + 1;
                 const active = n === page;
@@ -823,31 +823,14 @@ export default function FAQSection() {
                     onClick={() => setPage(n)}
                     aria-current={active ? "page" : undefined}
                     className={cx(
-                      "relative flex flex-col items-center justify-center rounded-full select-none",
-                      "h-11 w-11",
-                      "text-[13px] font-semibold",
-                      "transition-transform duration-200",
-                      active ? "scale-[1.06]" : "hover:scale-[1.04]",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                      "border-0 bg-transparent p-0 select-none",
+                      "text-[14px] font-semibold tabular-nums tracking-tight",
+                      "transition-colors duration-200",
+                      active ? "text-[#FF9840]" : "text-white/40 hover:text-white/70",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:rounded-sm"
                     )}
-                    style={s({
-                      borderRadius: "999px",
-                      border: "none",
-                      background: active ? "linear-gradient(145deg,#FFB46A,#FF9840,#C84A00)" : "rgba(5,5,7,0.85)",
-                      color: active ? "#1a0700" : "rgba(248,248,255,0.86)",
-                      boxShadow: active
-                        ? "0 16px 42px rgba(255,122,0,0.35)"
-                        : "0 10px 26px rgba(0,0,0,0.55)",
-                    })}
                   >
-                    <span className="relative z-10">{label}</span>
-                    <span
-                      className="mt-0.5 block h-[3px] w-[10px] rounded-full"
-                      style={s({
-                        background: active ? "rgba(26,7,0,0.85)" : "rgba(255,255,255,0.20)",
-                        opacity: active ? 0.85 : 0.45,
-                      })}
-                    />
+                    {label}
                   </button>
                 );
               })}

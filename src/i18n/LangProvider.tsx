@@ -1,5 +1,5 @@
 // src/i18n/LangProvider.tsx
-import React, {
+import {
   createContext,
   useContext,
   useEffect,
@@ -98,7 +98,7 @@ type BenefitsDict = {
   }[];
 };
 
-type Dictionary = {
+export type Dictionary = {
   header: HeaderDict;
   hero: HeroDict;
   curtain: CurtainDict;
@@ -446,4 +446,13 @@ export function useLang() {
   const ctx = useContext(LangContext);
   if (!ctx) throw new Error("useLang must be used within LangProvider");
   return ctx;
+}
+
+/** Title и meta description для главной — те же строки, что в Hero (один источник правды). */
+export function homePageSeoFromDict(dict: Dictionary): { title: string; description: string } {
+  const { titleLine1, subtitle } = dict.hero;
+  return {
+    title: `TIVONIX — ${titleLine1}`,
+    description: subtitle,
+  };
 }

@@ -3,6 +3,8 @@ import React, { type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import Container from "../ui/Container";
 import { useLang } from "../../i18n/LangProvider";
+import { buildProjects } from "../../data/projectsCatalog";
+import HeroWebGLBg from "./HeroWebGLBg";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -10,35 +12,32 @@ function cx(...a: Array<string | false | null | undefined>) {
 type Style = CSSProperties & Record<string, unknown>;
 const s = (v: Record<string, unknown>) => v as Style;
 
-// Assets
 const LOGO_LOCKUP_SVG = "/images/tivonix-logo-lockup.svg";
 const LOGO_LOCKUP_PNG = "/images/tivonix-logo-lockup.png";
-
-// watermark logo
 const WATERMARK_LOGO = "/favicon.svg";
-
-// One accent for footer
 const ACCENT = "#FF6B2C";
 
 const LANDING = {
   top: "/#top",
-  admin: "/#admin",
-  stack: "/#stack",
-  benefits: "/#benefits",
+  services: "/#services",
   faq: "/#faq",
-  contact: "/#contact",
-};
+} as const;
 
 const MENU = [
-  { to: LANDING.admin, label: { ru: "Админ панель", en: "Admin panel" } },
-  { to: LANDING.stack, label: { ru: "Стек", en: "Stack" } },
-  { to: LANDING.benefits, label: { ru: "Преимущества", en: "Benefits" } },
+  { to: LANDING.top, label: { ru: "Главная", en: "Home" } },
+  { to: LANDING.services, label: { ru: "Услуги", en: "Services" } },
   { to: LANDING.faq, label: { ru: "FAQ", en: "FAQ" } },
-  { to: "/projects", label: { ru: "Проекты", en: "Projects" } },
   { to: "/contacts", label: { ru: "Контакты", en: "Contacts" } },
 ];
 
-// Gmail compose (no mailto)
+/** Якоря главной — отдельная колонка, чтобы сетка справа была плотнее (как у крупных SaaS-футеров). */
+const SECTION_LINKS = [
+  { to: "/#stack", label: { ru: "Технологии", en: "Tech stack" } },
+  { to: "/#benefits", label: { ru: "Преимущества", en: "Benefits" } },
+  { to: "/#admin", label: { ru: "Админ-панели", en: "Admin panels" } },
+  { to: "/#services", label: { ru: "Тарифы", en: "Pricing" } },
+] as const;
+
 const GMAIL_EMAIL_URL =
   "https://mail.google.com/mail/?view=cm&fs=1" +
   `&to=${encodeURIComponent("tivoonix@gmail.com")}` +
@@ -46,16 +45,10 @@ const GMAIL_EMAIL_URL =
 
 const CONTACTS = {
   telegram: { href: "https://t.me/TIVONIX", label: "Telegram" },
+  instagram: { href: "https://www.instagram.com/tivonix.tech/", label: "Instagram" },
   email: { href: GMAIL_EMAIL_URL, label: "Email" },
 };
 
-/**
- * DOCS (PDF) — public/doc/...
- * - Consent_Tivonix_EN.pdf
- * - Privacy_Policy_Tivonix_EN.pdf
- * - Политика_обработки_ПД_Tivonix_RU.pdf
- * - Согласие_на_обработку_ПД_Tivonix_RU.pdf
- */
 const DOCS = {
   ru: [
     {
@@ -83,8 +76,13 @@ const DOCS = {
   ],
 } as const;
 
-// Bottom socials: only Telegram
-const SOCIALS = [{ href: "https://t.me/TIVONIX", label: "Telegram", icon: TelegramIcon }];
+/** Ссылки: как у Framer — ~14px, серый #A3A3A3, hover → белый, line-height ~1.6 */
+const footerLinkText =
+  "font-sans text-[14px] font-normal leading-[1.6] text-[#A3A3A3] antialiased transition-colors duration-200 hover:text-white focus:outline-none focus-visible:text-white focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:rounded-sm";
+
+/** Заголовки колонок: белый, ~16px, bold 700, без uppercase */
+const colTitleClass =
+  "font-sans text-[15px] sm:text-[16px] font-bold tracking-tight text-white antialiased leading-snug";
 
 function imgFallback(fallbackSrc: string) {
   return (e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -97,21 +95,8 @@ function imgFallback(fallbackSrc: string) {
 
 function FooterLink({ to, children }: { to: string; children: React.ReactNode }) {
   return (
-    <Link
-      to={to}
-      className={cx(
-        "group inline-flex items-center gap-2 text-sm text-white/70 transition-colors",
-        "hover:text-white",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]/40 focus-visible:rounded"
-      )}
-    >
-      <span className="relative">
-        {children}
-        <span
-          className={cx("absolute -bottom-0.5 left-0 h-px w-0 transition-all duration-200", "group-hover:w-full")}
-          style={s({ backgroundColor: "color-mix(in srgb, var(--accent) 75%, transparent)" })}
-        />
-      </span>
+    <Link to={to} className={cx("block w-fit", footerLinkText)}>
+      {children}
     </Link>
   );
 }
@@ -136,55 +121,125 @@ function ExternalLink({
       target={openInNewTab ? "_blank" : undefined}
       rel={openInNewTab ? "noopener noreferrer" : undefined}
       aria-label={ariaLabel}
+      className={cx("block w-fit max-w-full", footerLinkText)}
+    >
+      {children}
+    </a>
+  );
+}
+
+function ColNav({
+  id,
+  title,
+  children,
+}: {
+  id: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <nav aria-labelledby={id} className="min-w-0">
+      <h2 id={id} className={colTitleClass}>
+        {title}
+      </h2>
+      <ul className="mt-3 space-y-2">{children}</ul>
+    </nav>
+  );
+}
+
+function SocialIconLink({
+  href,
+  label,
+  children,
+}: {
+  href: string;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
       className={cx(
-        "group inline-flex items-center gap-2 text-sm text-white/70 transition-colors",
-        "hover:text-white",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]/40 focus-visible:rounded"
+        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
+        "border border-white/[0.12] bg-white/[0.03] text-white/58",
+        "transition-[color,background-color,border-color] duration-200",
+        "hover:border-white/22 hover:bg-white/[0.08] hover:text-white",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
       )}
     >
-      <span className="relative">
-        {children}
-        <span
-          className={cx("absolute -bottom-0.5 left-0 h-px w-0 transition-all duration-200", "group-hover:w-full")}
-          style={s({ backgroundColor: "color-mix(in srgb, var(--accent) 75%, transparent)" })}
-        />
-      </span>
+      {children}
     </a>
   );
 }
 
 export default function Footer() {
-  const year = new Date().getFullYear();
   const { lang } = useLang();
   const isRu = lang === "ru";
   const t = (v: { ru: string; en: string }) => (isRu ? v.ru : v.en);
 
-  const tagline = isRu
-    ? "SaaS и MVP под ключ — быстро и поддерживаемо."
-    : "SaaS & MVP delivered fast — clean and reliable.";
-
-  const rightsText = isRu ? `© ${year} Tivonix. Все права защищены.` : `© ${year} Tivonix. All rights reserved.`;
-
-  // IMPORTANT: show docs ONLY in current language (no “secondary version”)
   const docs = isRu ? DOCS.ru : DOCS.en;
+  const projects = buildProjects(isRu);
+
+  const rights = isRu ? "Все права защищены." : "All rights reserved.";
 
   return (
     <footer
-      className={cx("relative isolate overflow-hidden bg-black text-white", "selection:bg-[color:var(--accent)]/30")}
-      style={s({ ["--accent" as string]: ACCENT })}
+      className={cx(
+        "relative isolate overflow-hidden font-sans text-white antialiased",
+        "selection:bg-[color:var(--accent)]/25"
+      )}
+      style={s({ ["--accent" as string]: ACCENT, backgroundColor: "#000000" })}
     >
-      {/* top hairline */}
-      <div className="h-px w-full bg-[color:var(--accent)]/25" />
-
-      {/* Watermark layer */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+      {/*
+        Дым как в Hero: WebGL под оверлеем и **под** водяным знаком.
+        Маска radial — без прямоугольного края Canvas; пласт уходит влево мягко.
+      */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 isolate overflow-hidden"
+      >
+        {/* 1) WebGL: широкая зона от левого края, маска срезает квадрат и тянет свечение влево */}
+        <div className="absolute inset-0 hidden min-[900px]:block">
+          <div
+            className="absolute bottom-[-48%] left-[-8%] right-[-28%] top-[0%] min-h-[min(100vh,920px)]"
+            style={s({
+              opacity: 1,
+              WebkitMaskImage:
+                "radial-gradient(ellipse 145% 115% at 92% 100%, #000 0%, #000 38%, rgba(0,0,0,0.94) 52%, rgba(0,0,0,0.62) 68%, rgba(0,0,0,0.22) 84%, rgba(0,0,0,0.06) 94%, transparent 100%)",
+              maskImage:
+                "radial-gradient(ellipse 145% 115% at 92% 100%, #000 0%, #000 38%, rgba(0,0,0,0.94) 52%, rgba(0,0,0,0.62) 68%, rgba(0,0,0,0.22) 84%, rgba(0,0,0,0.06) 94%, transparent 100%)",
+              WebkitMaskRepeat: "no-repeat",
+              maskRepeat: "no-repeat",
+              WebkitMaskSize: "100% 100%",
+              maskSize: "100% 100%",
+            })}
+          >
+            <HeroWebGLBg />
+          </div>
+        </div>
         <div
-          className="absolute -right-28 -bottom-28 h-[640px] w-[640px] opacity-35 blur-3xl"
+          className="absolute inset-0 min-[900px]:hidden"
           style={s({
             background:
-              "radial-gradient(closest-side, color-mix(in srgb, var(--accent) 45%, transparent), rgba(0,0,0,0))",
+              "radial-gradient(120% 90% at 92% 96%, rgba(255,154,61,0.38) 0%, rgba(255,106,26,0.24) 36%, rgba(0,0,0,0) 66%), #000000",
           })}
         />
+
+        {/* 2) Оверлей: слева текст читается, справа/снизу почти не душим — дым сильно заметен */}
+        <div
+          className="absolute inset-0"
+          style={s({
+            background: [
+              "linear-gradient(90deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.42) 30%, rgba(0,0,0,0.10) 54%, rgba(0,0,0,0.02) 72%, rgba(0,0,0,0.04) 100%)",
+              "radial-gradient(120% 120% at 50% 92%, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.48) 62%, rgba(0,0,0,0.82) 100%)",
+            ].join(","),
+          })}
+        />
+
+        {/* 3) Водяной знак — только над фоном; весь текст/ссылки — в слое z-10 ниже */}
         <img
           src={WATERMARK_LOGO}
           alt=""
@@ -192,145 +247,131 @@ export default function Footer() {
           loading="lazy"
           decoding="async"
           className={cx(
-            "absolute select-none",
-            "-right-[10vw] -bottom-[10vw]",
-            "w-[min(980px,68vw)] max-w-none",
-            "opacity-[0.14]"
+            "absolute z-[1] select-none",
+            "-right-[12vw] -bottom-[14vw]",
+            "w-[min(760px,62vw)] max-w-none",
+            "opacity-[0.14] sm:opacity-[0.16]"
           )}
-          style={s({ filter: "saturate(1.05) contrast(1.05) brightness(1.03)", imageRendering: "auto" })}
+          style={s({ filter: "saturate(1.06) brightness(1.12)" })}
         />
       </div>
 
-      <Container>
-        <div className="relative py-14 sm:py-16">
-          {/* Top: logo + tagline */}
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-            <div className="max-w-[560px]">
-              <Link
-                to={LANDING.top}
-                className={cx(
-                  "inline-flex items-center gap-3 rounded-xl p-1 pr-3",
-                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]/45"
-                )}
-                aria-label={isRu ? "Наверх" : "Back to top"}
-                title={isRu ? "Наверх" : "Back to top"}
-              >
-                <img
-                  src={LOGO_LOCKUP_SVG}
-                  onError={imgFallback(LOGO_LOCKUP_PNG)}
-                  alt="Tivonix"
-                  className="h-9 w-auto"
-                  draggable={false}
-                  loading="lazy"
-                  decoding="async"
-                />
-                <span className="hidden text-xs text-white/40 sm:inline">{isRu ? "Наверх" : "Top"}</span>
-              </Link>
+      <div className="relative z-10">
+        <Container>
+          <div className="relative px-3 sm:px-5">
+            <div className="relative pt-16 pb-14 sm:pt-20 sm:pb-16 lg:pt-24 lg:pb-20">
+            {/* Framer-подобная схема: бренд слева, плотная сетка колонок справа (без «пустого поля»). */}
+            <div className="flex flex-col gap-14 lg:flex-row lg:items-start lg:gap-10 xl:gap-14">
+              <aside className="shrink-0 lg:w-[min(280px,32%)] lg:max-w-[300px]">
+                <Link
+                  to={LANDING.top}
+                  className={cx(
+                    "inline-block rounded-lg",
+                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                  )}
+                  aria-label={isRu ? "Наверх" : "Back to top"}
+                >
+                  <img
+                    src={LOGO_LOCKUP_SVG}
+                    onError={imgFallback(LOGO_LOCKUP_PNG)}
+                    alt="Tivonix"
+                    className="block h-9 w-auto sm:h-10"
+                    draggable={false}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </Link>
+              </aside>
 
-              <p className="mt-4 text-sm leading-6 text-white/65">{tagline}</p>
-              <div className="mt-5 h-px w-24 bg-[color:var(--accent)]/40" />
-            </div>
-          </div>
+              <div className="min-w-0 flex-1">
+                <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:gap-x-7 md:grid-cols-3 md:gap-y-11 lg:grid-cols-4 xl:grid-cols-5 xl:gap-x-6">
+                  <ColNav id="footer-site" title={isRu ? "Сайт" : "Site"}>
+                    {MENU.map((i) => (
+                      <li key={i.to}>
+                        <FooterLink to={i.to}>{t(i.label)}</FooterLink>
+                      </li>
+                    ))}
+                  </ColNav>
 
-          {/* Columns */}
-          <div className="mt-10 grid grid-cols-1 gap-10 sm:grid-cols-3">
-            {/* MENU */}
-            <div>
-              <div className="text-[11px] font-semibold tracking-[0.18em] text-white uppercase">
-                {isRu ? "Меню" : "Menu"}
-              </div>
-              <ul className="mt-4 space-y-2.5">
-                {MENU.map((i) => (
-                  <li key={i.to}>
-                    <FooterLink to={i.to}>{t(i.label)}</FooterLink>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                  <ColNav id="footer-sections" title={isRu ? "Секции" : "Sections"}>
+                    {SECTION_LINKS.map((i) => (
+                      <li key={i.to}>
+                        <FooterLink to={i.to}>{t(i.label)}</FooterLink>
+                      </li>
+                    ))}
+                  </ColNav>
 
-            {/* CONTACT */}
-            <div>
-              <div className="text-[11px] font-semibold tracking-[0.18em] text-white uppercase">
-                {isRu ? "Контакты" : "Contact"}
-              </div>
-              <ul className="mt-4 space-y-2.5">
-                <li>
-                  <ExternalLink href={CONTACTS.telegram.href}>{CONTACTS.telegram.label}</ExternalLink>
-                </li>
-                <li>
-                  <ExternalLink href={CONTACTS.email.href}>{CONTACTS.email.label}</ExternalLink>
-                </li>
-              </ul>
-            </div>
+                  <ColNav id="footer-work" title={isRu ? "Кейсы" : "Work"}>
+                    <li>
+                      <FooterLink to="/projects">{isRu ? "Все проекты" : "All projects"}</FooterLink>
+                    </li>
+                    {projects.map((p) => (
+                      <li key={p.id}>
+                        <FooterLink to={`/projects/${p.id}`}>{p.title}</FooterLink>
+                      </li>
+                    ))}
+                  </ColNav>
 
-            {/* LEGAL / DOCS */}
-            <div>
-              <div className="text-[11px] font-semibold tracking-[0.18em] text-white uppercase">
-                {isRu ? "Документы" : "Legal"}
-              </div>
+                  <ColNav id="footer-contact" title={isRu ? "Связь" : "Connect"}>
+                    <li>
+                      <ExternalLink href={CONTACTS.telegram.href}>{CONTACTS.telegram.label}</ExternalLink>
+                    </li>
+                    <li>
+                      <ExternalLink href={CONTACTS.instagram.href}>{CONTACTS.instagram.label}</ExternalLink>
+                    </li>
+                    <li>
+                      <ExternalLink href={CONTACTS.email.href}>{CONTACTS.email.label}</ExternalLink>
+                    </li>
+                  </ColNav>
 
-              <div className="mt-3 text-sm text-white/50">
-                {isRu ? "Официальные документы Tivonix" : "Tivonix legal documents"}
-              </div>
-
-              <ul className="mt-4 space-y-2.5">
-                {docs.map((d) => (
-                  <li key={d.href}>
-                    <ExternalLink href={d.href} newTab aria-label={d.aria}>
-                      {d.label}
-                    </ExternalLink>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="mt-3 text-xs text-white/35">
-                {isRu ? "Откроется в новой вкладке" : "Opens in a new tab"}
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom */}
-          <div className="mt-12 border-t border-white/10 pt-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="text-sm text-white/60">{rightsText}</div>
-
-                <div className="mt-3 flex items-center gap-3">
-                  {SOCIALS.map((soc) => (
-                    <a
-                      key={soc.href}
-                      href={soc.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={cx(
-                        "inline-flex h-9 w-9 items-center justify-center rounded-full",
-                        "text-white/55 hover:text-white transition-colors",
-                        "hover:bg-[color:var(--accent)]/[0.08]",
-                        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]/40"
-                      )}
-                      aria-label={soc.label}
-                      title={soc.label}
-                    >
-                      <soc.icon />
-                    </a>
-                  ))}
+                  <ColNav id="footer-legal" title={isRu ? "Документы" : "Legal"}>
+                    {docs.map((d) => (
+                      <li key={d.href}>
+                        <ExternalLink href={d.href} newTab aria-label={d.aria}>
+                          {d.label}
+                        </ExternalLink>
+                      </li>
+                    ))}
+                  </ColNav>
                 </div>
               </div>
+            </div>
 
-              <div className="text-sm text-white/45">{/* empty */}</div>
+            <div
+              className={cx(
+                "mt-14 border-t border-white/[0.09] pt-8 sm:mt-16 sm:pt-9",
+                "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+              )}
+            >
+              <p className="text-[13px] leading-relaxed text-[#737373] sm:text-[14px]">
+                © {new Date().getFullYear()} TIVONIX. {rights}
+              </p>
+              <nav
+                className="flex flex-wrap items-center gap-1.5 sm:justify-end"
+                aria-label={isRu ? "Соцсети и почта" : "Social and email"}
+              >
+                <SocialIconLink href={CONTACTS.telegram.href} label={CONTACTS.telegram.label}>
+                  <IconTelegram className="h-4 w-4" />
+                </SocialIconLink>
+                <SocialIconLink href={CONTACTS.instagram.href} label={CONTACTS.instagram.label}>
+                  <IconInstagram className="h-4 w-4" />
+                </SocialIconLink>
+                <SocialIconLink href={CONTACTS.email.href} label={CONTACTS.email.label}>
+                  <IconMail className="h-4 w-4" />
+                </SocialIconLink>
+              </nav>
             </div>
           </div>
         </div>
-      </Container>
+        </Container>
+      </div>
     </footer>
   );
 }
 
-/* ======= icons (inline svg) ======= */
-
-function TelegramIcon() {
+function IconTelegram({ className }: { className?: string }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
       <path
         d="M21.8 4.6c.2-.8-.6-1.5-1.4-1.2L3.4 10c-1 .4-1 1.8 0 2.2l4.5 1.7 1.7 4.9c.3.9 1.5 1 2 .2l2.6-4.2 4.7 3.6c.7.5 1.7.1 1.9-.8L21.8 4.6Z"
         stroke="currentColor"
@@ -338,6 +379,30 @@ function TelegramIcon() {
         strokeLinejoin="round"
       />
       <path d="M8 13.8 19.6 6.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconInstagram({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect x="2.5" y="2.5" width="19" height="19" rx="5" stroke="currentColor" strokeWidth="1.55" />
+      <circle cx="12" cy="12" r="4.25" stroke="currentColor" strokeWidth="1.55" />
+      <circle cx="17.5" cy="6.5" r="1.35" fill="currentColor" />
+    </svg>
+  );
+}
+
+function IconMail({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M4.5 7.5v9a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-11a2 2 0 0 0-2 2Z"
+        stroke="currentColor"
+        strokeWidth="1.65"
+        opacity="0.95"
+      />
+      <path d="M6 8.5 12 12.5l6-4" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

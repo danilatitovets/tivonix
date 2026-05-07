@@ -4,6 +4,7 @@ import Container from "../components/ui/Container";
 import Header from "../components/landing/Header";
 import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
+import { TG_BOT_URL } from "../constants/links";
 
 const ORANGE = "#FF9A3D";
 const ORANGE2 = "#FF6A1A";
@@ -70,6 +71,16 @@ function IconTG() {
   );
 }
 
+function IconInstagram() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+      <rect x="2.5" y="2.5" width="19" height="19" rx="5" stroke="currentColor" strokeWidth="1.65" opacity="0.9" />
+      <circle cx="12" cy="12" r="4.25" stroke="currentColor" strokeWidth="1.65" />
+      <circle cx="17.5" cy="6.5" r="1.35" fill="currentColor" />
+    </svg>
+  );
+}
+
 type LangItem = { label: string; sub?: string; glow?: number };
 
 function LangChip({ item }: { item: LangItem }) {
@@ -79,7 +90,7 @@ function LangChip({ item }: { item: LangItem }) {
 
   const dotStyle = s({
     background: `linear-gradient(180deg, ${ORANGE} 0%, ${ORANGE2} 100%)`,
-    boxShadow: "0 0 0 4px rgba(255,154,61,0.12)",
+    boxShadow: "0 0 12px rgba(255,154,61,0.35)",
   });
 
   return (
@@ -88,8 +99,8 @@ function LangChip({ item }: { item: LangItem }) {
         "select-none",
         "inline-flex items-center gap-2",
         "rounded-2xl px-2.5 py-1.5 sm:px-3 sm:py-2",
-        "border border-white/10 bg-black/55 backdrop-blur-xl",
-        "shadow-[0_18px_65px_rgba(0,0,0,0.55)]"
+        "bg-white/[0.055] backdrop-blur-xl",
+        "shadow-[0_12px_40px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)]"
       )}
       style={chipStyle}
     >
@@ -111,7 +122,7 @@ function OrbitRing(props: {
   reverse?: boolean;
   offsetDeg?: number;
 }) {
-  const { radius, duration, items, reverse, offsetDeg = -14 } = props;
+  const { radius, duration, items, reverse, offsetDeg = 0 } = props;
   const step = 360 / Math.max(1, items.length);
   const size = radius * 2;
 
@@ -124,13 +135,18 @@ function OrbitRing(props: {
   const animStyle = s({ animationDuration: `${duration}s` });
 
   return (
-    <div className="absolute left-1/2 top-1/2" style={wrapStyle} aria-hidden="true">
-      <div className="absolute inset-0 rounded-full border border-white/8 opacity-60" />
-      <div className="absolute inset-0 rounded-full border border-[#FF9A3D]/10 opacity-80 [mask-image:radial-gradient(transparent_52%,black_64%)] [-webkit-mask-image:radial-gradient(transparent_52%,black_64%)]" />
+    <div className="absolute left-1/2 top-1/2 z-20" style={wrapStyle} aria-hidden="true">
+      {/* тонкая орбита — чипы ровно на этой окружности */}
+      <div
+        className="pointer-events-none absolute inset-0 rounded-full border border-white/[0.07] bg-transparent"
+        style={s({
+          boxShadow: "0 0 28px rgba(255,154,61,0.04), inset 0 0 0 1px rgba(255,255,255,0.02)",
+        })}
+      />
 
       <div className={cx("absolute inset-0 will-change-transform", reverse ? "orbit-rev" : "orbit")} style={animStyle}>
         {items.map((it, i) => {
-          const ang = offsetDeg + i * step + (i % 2 ? 8 : -5);
+          const ang = offsetDeg + i * step;
           const posStyle = s({
             transform: `translate(-50%,-50%) rotate(${ang}deg) translateX(${radius}px) rotate(${-ang}deg)`,
           });
@@ -153,9 +169,10 @@ function useSolarLayoutNoScroll() {
     headerH: 86,
     side: 820,
     sun: 420,
-    r1: 260,
-    r2: 390,
-    r3: 540,
+    sunDisplay: 525,
+    orbit1: 320,
+    orbit2: 450,
+    orbit3: 590,
   }));
 
   useEffect(() => {
@@ -176,11 +193,28 @@ function useSolarLayoutNoScroll() {
         ? clamp(Math.floor(side * 0.86), 320, 520)
         : clamp(Math.floor(side * 0.58), 320, 480);
 
-      const r1 = Math.floor(sun / 2 + (isPhone ? 44 : 62));
-      const r2 = r1 + (isPhone ? 110 : 160);
-      const r3 = r2 + (isPhone ? 120 : 190);
+      const sunDisplay = Math.round(sun * 1.25);
+      const planetR = sunDisplay / 2;
 
-      setSState({ isPhone, headerH, side, sun, r1, r2, r3 });
+      const pad1 = isPhone ? 52 : 68;
+      const gap12 = isPhone ? 82 : 108;
+      const gap23 = isPhone ? 92 : 124;
+
+      let orbit1 = Math.round(planetR + pad1);
+      let orbit2 = orbit1 + gap12;
+      let orbit3 = orbit2 + gap23;
+
+      const maxOrbit = Math.floor(side / 2) - (isPhone ? 14 : 22);
+      if (orbit3 > maxOrbit) {
+        const scale = maxOrbit / orbit3;
+        orbit1 = Math.max(Math.round(planetR + (isPhone ? 36 : 48)), Math.round(orbit1 * scale));
+        orbit2 = Math.max(orbit1 + (isPhone ? 58 : 72), Math.round(orbit2 * scale));
+        orbit3 = maxOrbit;
+      }
+      if (orbit2 >= orbit3 - 8) orbit2 = orbit3 - (isPhone ? 48 : 62);
+      if (orbit1 >= orbit2 - 8) orbit1 = Math.max(Math.round(planetR + 32), orbit2 - (isPhone ? 62 : 78));
+
+      setSState({ isPhone, headerH, side, sun, sunDisplay, orbit1, orbit2, orbit3 });
     };
 
     calc();
@@ -206,21 +240,37 @@ function SunContacts({ size }: { size: number }) {
 
   const title = isRu ? "Контакты" : "Contacts";
   const subtitle = isRu ? "Напиши — отвечу быстро." : "Send a message — I reply fast.";
-  const openTg = isRu ? "Открыть →" : "Open →";
-  const sendMail = isRu ? "Отправить →" : "Send →";
-  const writeBtn = isRu ? "Написать" : "Write";
+  const botCta = isRu ? "Бот для заявок" : "Leads bot";
+
+  /** Фиксированная колонка 36px — иконки строго на одной вертикали во всех рядах */
+  const contactRowClass = cx(
+    "group grid w-full grid-cols-[2.25rem_minmax(0,1fr)] items-center gap-x-3",
+    "min-h-[48px] rounded-2xl px-4 py-2.5",
+    "bg-white/[0.06] hover:bg-white/[0.09] transition duration-200",
+    "shadow-[0_14px_48px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.07)]",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/35 focus-visible:ring-offset-0"
+  );
+
+  const contactIconWrap = cx(
+    "flex h-9 w-9 items-center justify-center justify-self-center rounded-2xl",
+    "bg-[linear-gradient(180deg,rgba(255,215,176,0.16),rgba(255,154,61,0.12))]",
+    "shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
+  );
+
+  const contactLabelClass =
+    "min-w-0 text-left text-[13px] font-[780] leading-none tracking-tight text-white/85";
 
   return (
-    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-      <div className="relative rounded-full p-[1px] bg-[conic-gradient(from_180deg,rgba(255,154,61,0.0),rgba(255,154,61,0.65),rgba(255,106,26,0.30),rgba(255,154,61,0.0))] shadow-[0_34px_150px_rgba(0,0,0,0.70)]">
-        <div className="relative overflow-hidden rounded-full border border-white/10 bg-black/70 backdrop-blur-2xl">
+    <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+      <div className="relative rounded-full shadow-[0_28px_120px_rgba(0,0,0,0.72),0_0_80px_rgba(255,154,61,0.08),0_0_1px_rgba(255,255,255,0.05)]">
+        <div className="relative overflow-hidden rounded-full bg-[rgba(8,8,10,0.82)] backdrop-blur-2xl">
           <div style={sizeStyle} />
 
           <div className="pointer-events-none absolute inset-0 opacity-[0.10] [background-image:radial-gradient(rgba(255,255,255,0.22)_1px,transparent_1px)] [background-size:14px_14px]" />
           <div className="pointer-events-none absolute -inset-12 opacity-80" style={hazeStyle} />
 
           <div className="absolute inset-0 grid place-items-center p-6">
-            <div className="w-full max-w-[260px] text-center">
+            <div className="w-full max-w-[280px] text-center">
               <div className="text-[11px] tracking-[0.22em] text-white/45">TIVONIX</div>
               <h1 className="mt-2 text-[22px] sm:text-[24px] font-[820] tracking-tight text-white/92 leading-[1.1]">
                 {title}
@@ -231,68 +281,58 @@ function SunContacts({ size }: { size: number }) {
 
               <div className="mt-5">
                 <div className="grid gap-2.5 relative z-20 pointer-events-auto">
-                  <a
-                    href="https://t.me/TIVONIX"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cx(
-                      "group inline-flex items-center justify-between gap-3 rounded-2xl px-4 py-3",
-                      "border border-white/12 bg-white/[0.05] hover:bg-white/[0.07] transition",
-                      "shadow-[0_16px_60px_rgba(0,0,0,0.45)]",
-                      "whitespace-nowrap"
-                    )}
-                  >
-                    <span className="inline-flex items-center gap-3 text-white/85">
-                      <span className="grid place-items-center h-9 w-9 rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,215,176,0.20),rgba(255,154,61,0.18))]">
-                        <span className="text-[#FF9A3D]">
-                          <IconTG />
-                        </span>
+                  <a href="https://t.me/TIVONIX" target="_blank" rel="noopener noreferrer" className={contactRowClass}>
+                    <span className={contactIconWrap}>
+                      <span className="flex text-[#FF9A3D] [&_svg]:block [&_svg]:shrink-0">
+                        <IconTG />
                       </span>
-                      <span className="text-[13px] font-[780] tracking-tight">Telegram</span>
                     </span>
-                    <span className="text-[#FF9A3D]/85 group-hover:text-[#FF6A1A] transition text-[12px] font-[750]">
-                      {openTg}
-                    </span>
+                    <span className={contactLabelClass}>Telegram</span>
                   </a>
 
                   <a
                     href="https://mail.google.com/mail/?view=cm&fs=1&to=tivoonix@gmail.com&su=%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82%20(SaaS%2FMVP)"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={cx(
-                      "group inline-flex items-center justify-between gap-3 rounded-2xl px-4 py-3",
-                      "border border-white/12 bg-white/[0.05] hover:bg-white/[0.07] transition",
-                      "shadow-[0_16px_60px_rgba(0,0,0,0.45)]",
-                      "whitespace-nowrap"
-                    )}
+                    className={contactRowClass}
                   >
-                    <span className="inline-flex items-center gap-3 text-white/85">
-                      <span className="grid place-items-center h-9 w-9 rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,215,176,0.20),rgba(255,154,61,0.18))]">
-                        <span className="text-[#FF9A3D]">
-                          <IconMail />
-                        </span>
+                    <span className={contactIconWrap}>
+                      <span className="flex text-[#FF9A3D] [&_svg]:block [&_svg]:shrink-0">
+                        <IconMail />
                       </span>
-                      <span className="text-[13px] font-[780] tracking-tight">Gmail</span>
                     </span>
-                    <span className="text-[#FF9A3D]/85 group-hover:text-[#FF6A1A] transition text-[12px] font-[750]">
-                      {sendMail}
+                    <span className={contactLabelClass}>Gmail</span>
+                  </a>
+
+                  <a
+                    href="https://www.instagram.com/tivonix.tech/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={contactRowClass}
+                  >
+                    <span className={contactIconWrap}>
+                      <span className="flex text-[#FF9A3D] [&_svg]:block [&_svg]:shrink-0">
+                        <IconInstagram />
+                      </span>
                     </span>
+                    <span className={contactLabelClass}>Instagram</span>
                   </a>
                 </div>
 
                 <div className="mt-4 relative z-20 pointer-events-auto">
                   <a
-                    href="https://t.me/TIVONIX"
+                    href={TG_BOT_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cx(
-                      "inline-flex h-11 w-full items-center justify-center rounded-2xl px-6",
-                      "text-[14px] font-[800] text-black whitespace-nowrap",
-                      "bg-[linear-gradient(180deg,#FFD7B0_0%,#FF9A3D_52%,#FF6A1A_100%)]",
-                      "shadow-[0_18px_55px_rgba(255,122,0,0.18)] hover:brightness-105 transition"
+                      "inline-flex min-h-10 w-full items-center justify-center rounded-xl px-4 py-2.5",
+                      "text-[13px] font-semibold leading-snug text-black text-center",
+                      "bg-[#FF9A3D] hover:bg-[#FFAC5C] active:bg-[#F08A2E]",
+                      "transition-colors duration-200",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/50"
                     )}
                   >
-                    {writeBtn}
+                    {botCta}
                   </a>
                 </div>
               </div>
@@ -309,7 +349,9 @@ function SunContacts({ size }: { size: number }) {
 /* -------------------- page -------------------- */
 export default function ContactsPage() {
   useLockPageScroll(true);
-  const { headerH, side, sun, r1, r2, r3 } = useSolarLayoutNoScroll();
+  const { lang } = useLang();
+  const isRu = lang === "ru";
+  const { headerH, side, sun, sunDisplay, orbit1, orbit2, orbit3 } = useSolarLayoutNoScroll();
 
   const ring1 = useMemo<LangItem[]>(
     () => [
@@ -349,18 +391,25 @@ export default function ContactsPage() {
 
   const stageStyle = s({ width: side, height: side });
 
+  const seoTitle = isRu ? "Контакты — TIVONIX" : "Contacts — TIVONIX";
+  const seoDescription = isRu
+    ? "Связаться с TIVONIX: заказать сайт, лендинг, MVP или бота. Telegram и email — ответим быстро."
+    : "Contact TIVONIX: website, landing, MVP or bot. Telegram and email — we reply fast.";
+
   return (
     <div className="relative h-[100svh] w-full overflow-hidden bg-black">
       <SEO
-        title="Контакты — TIVONIX"
-        description="Связаться с TIVONIX: Telegram, email. Ответим быстро."
+        title={seoTitle}
+        description={seoDescription}
         canonicalPath="/contacts"
+        localizedPath="/contacts"
+        ogLocalePrimary={isRu ? "ru_RU" : "en_US"}
       />
       <Header />
 
       {/* background */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-x-0 top-0 h-[10px] bg-[linear-gradient(90deg,rgba(255,154,61,0),rgba(255,154,61,0.65),rgba(255,106,26,0))]" />
+        <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(ellipse_80%_100%_at_50%_0%,rgba(255,154,61,0.12),transparent_72%)] opacity-90" />
         <div className="absolute inset-0 bg-[radial-gradient(1200px_700px_at_12%_12%,rgba(255,154,61,0.18),transparent_60%),radial-gradient(900px_520px_at_88%_18%,rgba(255,106,26,0.14),transparent_62%),radial-gradient(900px_700px_at_55%_80%,rgba(255,154,61,0.10),transparent_65%),linear-gradient(180deg,rgba(0,0,0,0.78),rgba(0,0,0,0.96))]" />
         <div className="absolute inset-0 opacity-[0.10] [background-image:radial-gradient(rgba(255,255,255,0.22)_1px,transparent_1px)] [background-size:16px_16px]" />
         <div className="absolute inset-0 [box-shadow:inset_0_0_260px_rgba(0,0,0,0.92)]" />
@@ -398,16 +447,15 @@ export default function ContactsPage() {
                 })}
               />
 
-              {/* ✅ кольца ВСЕГДА, даже на телефоне */}
-              <OrbitRing radius={r1 + 30} duration={18} items={ring1} offsetDeg={-8} />
-              <OrbitRing radius={r2} duration={26} items={ring2} reverse offsetDeg={8} />
-              <OrbitRing radius={r3} duration={38} items={ring3} offsetDeg={-18} />
+              {/* три концентрические орбиты — радиусы от реального размера «планеты» */}
+              <OrbitRing radius={orbit1} duration={22} items={ring1} offsetDeg={-12} />
+              <OrbitRing radius={orbit2} duration={32} items={ring2} reverse offsetDeg={18} />
+              <OrbitRing radius={orbit3} duration={46} items={ring3} offsetDeg={-28} />
 
-              {/* center */}
-              <SunContacts size={Math.round(sun * 1.25)} />
+              <SunContacts size={sunDisplay} />
 
-              {/* edge fade */}
-              <div className="pointer-events-none absolute inset-0 [mask-image:radial-gradient(circle_at_center,black_62%,transparent_84%)] [-webkit-mask-image:radial-gradient(circle_at_center,black_62%,transparent_84%)]" />
+              {/* мягкое затухание края сцены; z ниже орбит — чипы не прячутся под маской */}
+              <div className="pointer-events-none absolute inset-0 z-[12] [mask-image:radial-gradient(circle_at_center,black_0%,black_78%,transparent_97%)] [-webkit-mask-image:radial-gradient(circle_at_center,black_0%,black_78%,transparent_97%)]" />
             </div>
           </Container>
         </div>

@@ -701,12 +701,6 @@ export default function Header() {
                       <LangToggle compact scrolled />
                     </div>
 
-                    <div className="mt-3 text-[12px] text-white/55 text-center">
-                      {isRu
-                        ? "Нажми — откроется бот в Telegram для заявки."
-                        : "Tap — we’ll clarify scope and estimate quickly."}
-                    </div>
-
                     {/* небольшой нижний отступ */}
                     <div className="h-4" />
                   </div>

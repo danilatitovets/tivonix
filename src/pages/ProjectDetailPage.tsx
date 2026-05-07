@@ -10,10 +10,17 @@ import { useLang } from "../i18n/LangProvider";
 import { findProjectBySlug } from "../data/projectsCatalog";
 import { cx, projectPreviewSrc, ProjectPreviewFrame, s } from "./projectBlocks";
 
-const PROJECTS_BG = "/images/projects-bg.png";
 const HEADER_H = 72;
 
 const BULLET_RE = /^[•\-]\s*/;
+
+function clipMetaDescription(text: string, max = 158): string {
+  const t = text.replace(/\s+/g, " ").trim();
+  if (t.length <= max) return t;
+  const slice = t.slice(0, max - 1);
+  const i = slice.lastIndexOf(" ");
+  return `${(i > 70 ? slice.slice(0, i) : slice).trimEnd()}…`;
+}
 
 function MetaRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -160,24 +167,52 @@ export default function ProjectDetailPage() {
 
   const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
   const details = isRu ? project.detailsRu : project.detailsEn;
-  const seoTitle = `${project.title} — ${isRu ? "проект" : "project"} TIVONIX`;
+  const seoTitle = `${project.title} — ${isRu ? "кейс TIVONIX" : "TIVONIX case study"}`;
+  const seoDescription = clipMetaDescription(
+    subtitle +
+      (isRu
+        ? " Студия TIVONIX: веб-разработка, лендинги, продукты и MVP."
+        : " TIVONIX studio: web development, landings, products and MVPs.")
+  );
   const wip = project.status === "wip";
   const domainClean = project.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "") ?? "";
+  const coverSrc = projectPreviewSrc(project);
+
+  const coverBlurStyle = s({
+    transform: "translate(-50%, -50%) scale(1.12)",
+    filter: "blur(40px)",
+    WebkitFilter: "blur(40px)",
+    opacity: 0.58,
+  });
 
   return (
     <div className="relative min-h-screen" style={s({ "--headerH": `${HEADER_H}px` })}>
-      <SEO title={seoTitle} description={subtitle} canonicalPath={`/projects/${project.id}`} />
-      <Header />
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        canonicalPath={`/projects/${project.id}`}
+        localizedPath={`/projects/${project.id}`}
+        ogLocalePrimary={isRu ? "ru_RU" : "en_US"}
+      />
 
-      <div className="pointer-events-none fixed inset-0 -z-10">
+      {/*
+        Не используем -z-10: fixed-слой уходит под фон body (#000) и визуально «пропадает».
+        z-0 + контент z-10 — фон и blur всегда между body и страницей.
+      */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden>
         <img
-          src={PROJECTS_BG}
+          src={coverSrc}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover object-[50%_65%] opacity-40 blur-[8px]"
+          className="absolute left-1/2 top-1/2 h-full min-h-[120%] w-full min-w-[120%] object-cover object-center"
+          style={coverBlurStyle}
           draggable={false}
+          decoding="async"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,5,6,0.92)_0%,rgba(0,0,0,0.97)_55%,#000_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,5,6,0.72)_0%,rgba(0,0,0,0.88)_50%,rgba(0,0,0,0.93)_100%)]" />
       </div>
+
+      <div className="relative z-10">
+      <Header />
 
       <Section className="pt-[calc(var(--headerH)+16px)] sm:pt-[calc(var(--headerH)+24px)] pb-24">
         <Container>
@@ -345,6 +380,7 @@ export default function ProjectDetailPage() {
           </div>
         </Container>
       </Section>
+      </div>
     </div>
   );
 }

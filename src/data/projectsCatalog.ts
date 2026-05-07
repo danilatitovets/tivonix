@@ -22,7 +22,7 @@ export type Project = {
   testimonial?: Testimonial;
 };
 
-const UPC_DOMAIN = "https://upc.promo/";
+const UPC_DOMAIN = "https://upc.watch/";
 const PAYCLIP_DOMAIN = "https://usepayclip.com/";
 const LABELOS_DOMAIN = "https://labelos.digital/";
 const HEADMIND_DOMAIN = "https://headmind.ru/";
@@ -65,7 +65,7 @@ export function buildProjects(isRu: boolean): Project[] {
         domain: LABELOS_DOMAIN,
         status: "live",
         tags: ["SaaS", "Landing", "UI/UX", "React", "Tailwind"],
-        cover: "/images/project-priew/labelOS.png",
+        cover: "/images/project-priew/labelo.jpg",
         outcomes: [
           isRu
             ? "Готовый промо-лендинг за 3 дня"
@@ -76,56 +76,56 @@ export function buildProjects(isRu: boolean): Project[] {
         stack: ["React", "Tailwind", "Vite"],
       },
 
-      // 2) UPC — promo landing (client: ИП Безбородых И.В.)
+      // 2) UPC — SaaS MVP (client: ИП Безбородых И.В.) · https://upc.watch/
       {
         id: "upc",
-        title: "UPC Promo",
+        title: "UPC",
         subtitleRu:
-          "Промо-лендинг + инфраструктура: премиум-визуал, анимации, скорость, интеграции.",
+          "SaaS MVP: подключаешь трек к TikTok, делишься ссылкой — монетизируешь просмотры, когда ролик набирает охват.",
         subtitleEn:
-          "Promo landing + infra: premium visuals, animations, speed and integrations.",
+          "SaaS MVP: attach your sound on TikTok, share a link — monetize views as the clip gains traction.",
         detailsRu:
-          "Формат: промо-лендинг + интеграции\n\n" +
+          "Продукт: SaaS / MVP (не одностраничный лендинг)\n\n" +
+          "Идея\n" +
+          "• Артист или правообладатель подключает трек к ролику в TikTok и получает ссылку на отслеживание\n" +
+          "• Доход завязан на просмотрах и охвате: чем устойчивее набирает видео, тем сильнее монетизация сценария\n\n" +
           "Заказчик\n" +
           "• ИП Безбородых И.В.\n" +
           "Контакт/представитель\n" +
           "• Виктор Безбородых — Founder & CEO MIN.ECO (music distribution ecosystem)\n\n" +
-          "Цель\n" +
-          "• Сделать презентацию продукта в премиум-подаче и подготовить основу для дальнейшего роста.\n\n" +
           "Что сделали\n" +
-          "• Проработали сетку, типографику и визуальную иерархию\n" +
-          "• Добавили анимации и эффекты без перегруза UI\n" +
-          "• Настроили адаптив + микровзаимодействия\n" +
-          "• Подключили backend-инфраструктуру (Supabase/Postgres) для дальнейших сценариев\n" +
-          "• Оптимизировали графику и фоновые слои для скорости\n\n" +
+          "• Собрали продуктовый интерфейс и логику сценария «трек → ссылка → метрики»\n" +
+          "• Премиум-подача UI: сетка, типографика, анимации без перегруза\n" +
+          "• Адаптив, микровзаимодействия, скорость загрузки\n" +
+          "• Backend на Supabase/Postgres под учёт, интеграции и рост функциональности\n\n" +
           "Результат\n" +
-          "• Страница выглядит дорого, читается легко и работает быстро\n",
+          "• Живой MVP на upc.watch с понятным циклом монетизации для коротких видео\n",
         detailsEn:
-          "Format: promo landing + integrations\n\n" +
+          "Product: SaaS / MVP (not a single-page marketing-only site)\n\n" +
+          "Concept\n" +
+          "• The rights holder connects a track to a TikTok video and gets a tracking link\n" +
+          "• Revenue ties to views and reach — stronger traction means a stronger monetization path\n\n" +
           "Client\n" +
           "• IE Bezborodykh I.V.\n" +
           "• INN 261709192509\n" +
           "• OGRNIP 325200000025627\n" +
           "Contact/rep\n" +
           "• Viktor Bezborodykh — Founder & CEO of MIN.ECO (music distribution ecosystem)\n\n" +
-          "Goal\n" +
-          "• Present the product with a premium look and lay the foundation for future growth.\n\n" +
           "What we did\n" +
-          "• Built a precise grid, typography and section hierarchy\n" +
-          "• Added subtle animations without UI overload\n" +
-          "• Implemented responsive layout and micro-interactions\n" +
-          "• Connected infra (Supabase/Postgres) for future product flows\n" +
-          "• Optimized visuals and background layers for performance\n\n" +
-          "Result\n" +
-          "• Premium look, high readability, fast loading\n",
+          "• Product UI and flows: track → link → metrics\n" +
+          "• Premium UI craft: grid, typography, motion without clutter\n" +
+          "• Responsive layout, micro-interactions, fast loading\n" +
+          "• Supabase/Postgres backend for data, integrations and feature growth\n\n" +
+          "Outcome\n" +
+          "• Live MVP at upc.watch with a clear short-video monetization loop\n",
         domain: UPC_DOMAIN,
         status: "live",
-        tags: ["Landing", "React", "TypeScript", "Supabase", "Performance"],
-        cover: "/images/project-priew/upcpromo.png",
+        tags: ["SaaS", "MVP", "React", "TypeScript", "Supabase"],
+        cover: "/images/project-priew/upcwatc.png",
         outcomes: [
-          isRu ? "Премиум-подача без перегруза" : "Premium visuals without clutter",
-          isRu ? "Анимации + стабильная скорость" : "Animations + stable performance",
-          isRu ? "Готовая база под интеграции" : "Infra-ready for integrations",
+          isRu ? "MVP с циклом трек → ссылка → монетизация просмотров" : "MVP loop: track → link → view-based monetization",
+          isRu ? "Премиум UI + стабильная скорость" : "Premium UI + solid performance",
+          isRu ? "База Supabase/Postgres под масштаб продукта" : "Supabase/Postgres foundation to scale the product",
         ],
         stack: [
           "React",
@@ -188,7 +188,7 @@ export function buildProjects(isRu: boolean): Project[] {
         domain: PAYCLIP_DOMAIN,
         status: "live",
         tags: ["Fintech", "Landing", "Onboarding", "UI/UX", "Conversion"],
-        cover: "/images/project-priew/usepayslip.png",
+        cover: "/images/project-priew/payslip.jpg",
         outcomes: [
           isRu ? "Сделано за 2 недели" : "Delivered in 2 weeks",
           isRu ? "Структура под конверсию" : "Conversion-driven structure",
@@ -239,7 +239,7 @@ export function buildProjects(isRu: boolean): Project[] {
         domain: HEADMIND_DOMAIN,
         status: "live",
         tags: ["B2B", "Website", "UI/UX", "Structure", "Conversion"],
-        cover: "/images/project-priew/headmed.png",
+        cover: "/images/project-priew/headmid.jpg",
         outcomes: [
           isRu ? "Понятная упаковка услуг и подхода" : "Clear services & approach packaging",
           isRu ? "Усиление доверия через команду и структуру" : "Stronger trust via team + structure",
@@ -306,7 +306,7 @@ export function buildProjects(isRu: boolean): Project[] {
           "Framer Motion",
           "Automotive",
         ],
-        cover: "/images/project-priew/logovo.png",
+        cover: "/images/project-priew/logovvo.jpg",
         outcomes: [
           isRu ? "Сделано за 12 дней" : "Delivered in 12 days",
           isRu
@@ -336,4 +336,9 @@ export function buildProjects(isRu: boolean): Project[] {
 export function findProjectBySlug(slug: string | undefined, isRu: boolean): Project | undefined {
   if (!slug) return undefined;
   return buildProjects(isRu).find((p) => p.id === slug);
+}
+
+/** Стабильный список id для sitemap и канонических путей /projects/:id */
+export function allProjectIds(): string[] {
+  return buildProjects(true).map((p) => p.id);
 }

@@ -77,14 +77,14 @@ function LangToggle({ compact }: { compact?: boolean; scrolled?: boolean }) {
   const { lang, setLang } = useLang();
 
   const baseBtn =
-    "h-9 rounded-full px-3 text-xs font-semibold transition border outline-none " +
+    "h-9 rounded-full px-3 text-xs font-semibold transition outline-none " +
     "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40";
 
   const wrap = compact ? "flex items-center gap-1" : "flex items-center gap-1 mr-2";
 
   const tone = {
-    on: "border-white/14 bg-white/10 text-white",
-    off: "border-white/10 bg-black/25 text-white/70 hover:text-white hover:bg-white/5",
+    on: "bg-white/14 text-white shadow-[0_4px_18px_rgba(0,0,0,0.35)]",
+    off: "bg-white/[0.05] text-white/70 hover:text-white hover:bg-white/[0.09]",
   };
 
   const label = lang === "ru" ? "Выбор языка" : "Language";
@@ -132,9 +132,8 @@ function PillNav({
     <nav
       className={cx(
         "relative inline-flex items-center gap-1 rounded-full",
-        "border border-white/10 bg-white/[0.06] backdrop-blur-xl p-1",
-        "ring-1 ring-white/5",
-        compact ? "shadow-[0_12px_40px_rgba(0,0,0,0.35)]" : "shadow-[0_18px_60px_rgba(0,0,0,0.40)]"
+        "border-0 bg-white/[0.07] backdrop-blur-xl p-1",
+        compact ? "shadow-[0_12px_44px_rgba(0,0,0,0.38)]" : "shadow-[0_18px_64px_rgba(0,0,0,0.42)]"
       )}
       aria-label="Header navigation"
     >
@@ -142,8 +141,7 @@ function PillNav({
         aria-hidden
         className="pointer-events-none absolute inset-0 rounded-full"
         style={{
-          boxShadow:
-            "inset 0 1px 0 rgba(255,255,255,0.07), inset 0 0 0 1px rgba(255,255,255,0.05)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.09)",
         } as React.CSSProperties}
       />
 
@@ -159,13 +157,13 @@ function PillNav({
             onClick={onItemClick(it.to)}
             aria-current={isActive ? "page" : undefined}
             className={cx(
-              "relative rounded-full font-semibold transition flex items-center gap-2 select-none uppercase tracking-wide outline-none",
+              "relative rounded-full font-semibold transition flex items-center gap-2 select-none uppercase tracking-wide outline-none border-0",
               "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
               pad,
               text,
               isActive
-                ? "text-white bg-white/12 border border-white/14 shadow-[0_10px_26px_rgba(0,0,0,0.28)]"
-                : "text-white/75 hover:text-white hover:bg-white/6 border border-transparent"
+                ? "text-white bg-white/14 shadow-[0_10px_28px_rgba(0,0,0,0.32)]"
+                : "text-white/75 hover:text-white hover:bg-white/[0.07]"
             )}
             style={
               reducedMotion ? undefined : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)
@@ -348,7 +346,7 @@ export default function Header() {
               className={cx(
                 "relative transition-all",
                 scrolled
-                  ? "rounded-[999px] bg-black/55 backdrop-blur-2xl border border-white/10 shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
+                  ? "rounded-[999px] bg-black/58 backdrop-blur-2xl border-0 shadow-[0_22px_72px_rgba(0,0,0,0.52),inset_0_1px_0_rgba(255,255,255,0.06)]"
                   : "rounded-[999px]"
               )}
               style={reducedMotion ? undefined : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)}
@@ -486,14 +484,14 @@ export default function Header() {
                     ref={burgerRef}
                     type="button"
                     className={cx(
-                      "grid place-items-center outline-none",
+                      "grid place-items-center outline-none border-0",
                       "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
                       scrolled ? "h-10 w-10 rounded-2xl" : "h-11 w-11 rounded-2xl",
-                      "border border-white/12 bg-black/35 backdrop-blur-xl",
-                      "transition-[transform,background-color,border-color] duration-200 ease-out",
-                      "hover:bg-black/50 hover:border-white/18",
+                      "bg-white/[0.08] backdrop-blur-xl shadow-[0_10px_36px_rgba(0,0,0,0.45)]",
+                      "transition-[transform,background-color,box-shadow] duration-200 ease-out",
+                      "hover:bg-white/[0.12] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)]",
                       "active:scale-95",
-                      open && "bg-white/[0.08] border-white/20"
+                      open && "bg-white/[0.14] shadow-[0_14px_44px_rgba(0,0,0,0.5)]"
                     )}
                     aria-label={open ? (isRu ? "Закрыть меню" : "Close menu") : ariaMenu}
                     aria-expanded={open}
@@ -605,10 +603,10 @@ export default function Header() {
                         requestAnimationFrame(() => burgerRef.current?.focus());
                       }}
                       className={cx(
-                        "group grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-2xl shrink-0",
-                        "border border-white/14 bg-white/[0.07] backdrop-blur-xl",
+                        "group grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-2xl shrink-0 border-0",
+                        "bg-white/[0.08] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]",
                         "transition-all duration-200 ease-out cursor-pointer",
-                        "hover:scale-110 hover:bg-white/[0.12] active:scale-95",
+                        "hover:scale-110 hover:bg-white/[0.13] active:scale-95",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
                       )}
                       aria-label={isRu ? "Закрыть меню" : "Close menu"}
@@ -655,9 +653,9 @@ export default function Header() {
                       <Link
                         to="/contacts"
                         className={cx(
-                          "h-12 rounded-2xl font-medium flex items-center justify-center border border-white/20 bg-white/5 text-white",
-                          "hover:bg-white/10 active:bg-white/5",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0c]"
+                          "h-12 rounded-2xl font-medium flex items-center justify-center border-0 bg-white/[0.07] text-white",
+                          "shadow-[0_8px_28px_rgba(0,0,0,0.35)] hover:bg-white/[0.11] active:bg-white/[0.08]",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0c]"
                         )}
                         onClick={() => setOpen(false)}
                       >
@@ -665,14 +663,14 @@ export default function Header() {
                       </Link>
                     </div>
 
-                    <nav className="mt-6 flex flex-col" aria-label={isRu ? "Навигация" : "Navigation"}>
+                    <nav className="mt-6 flex flex-col gap-1" aria-label={isRu ? "Навигация" : "Navigation"}>
                       {tabsItems.map((item) => (
                         <Link
                           key={item.key}
                           to={item.to}
                           className={cx(
-                            "flex items-center justify-between py-3 text-white/90 hover:text-white",
-                            "border-b border-white/5 last:border-0"
+                            "flex items-center justify-between rounded-xl px-3 py-3.5 text-white/90 hover:text-white",
+                            "hover:bg-white/[0.05] active:bg-white/[0.03] transition-colors"
                           )}
                           onClick={() => {
                             setOpen(false);
@@ -687,17 +685,18 @@ export default function Header() {
                       ))}
                     </nav>
 
-                    <div className="my-4 border-t border-white/10" />
+                    <div
+                      className="my-5 h-px w-full opacity-80"
+                      style={{
+                        background:
+                          "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)",
+                      }}
+                      aria-hidden
+                    />
 
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-white/70">{isRu ? "Язык" : "Language"}</span>
                       <LangToggle compact scrolled />
-                    </div>
-
-                    <div className="mt-3 text-[12px] text-white/55 text-center">
-                      {isRu
-                        ? "Нажми — откроется бот в Telegram для заявки."
-                        : "Tap — we’ll clarify scope and estimate quickly."}
                     </div>
 
                     {/* небольшой нижний отступ */}

@@ -20,15 +20,18 @@ const VISIBLE_RU = (
       </div>
     </div>
 
-    <blockquote className="mt-6 text-white font-extrabold leading-relaxed text-[18px] sm:text-[20px]">
-      <span className="text-white/35 text-3xl sm:text-4xl font-black mr-2 align-[-6px]">“</span>
-      Мы в <span className="text-white">TIVONIX</span> создаём цифровые продукты, которые выглядят дорого, работают
-      быстро и помогают бизнесу расти. Берём на себя структуру, дизайн, разработку и запуск — чтобы вы получили не просто
-      сайт, а понятный инструмент для клиентов и продаж.
-      <span className="text-white/35 text-3xl sm:text-4xl font-black ml-2 align-[-6px]">”</span>
+    <blockquote className="mt-6 m-0 border-0 pl-0 font-display text-[18px] sm:text-[20px] font-extrabold leading-[1.55] tracking-tight text-white/95">
+      <span className="text-white/30 text-[2rem] sm:text-[2.35rem] font-extrabold leading-none mr-1 align-[-0.15em]">
+        “
+      </span>
+      Мы в <span className="text-white">TIVONIX</span> создаём цифровые продукты, которые выглядят дорого, работают быстро
+      и помогают бизнесу расти. Берём на себя структуру, дизайн, разработку и запуск — чтобы вы получили не просто сайт,
+      а понятный инструмент для клиентов и продаж. Лендинг, многостраничный сайт, MVP, онлайн-сервис и Telegram-бот для
+      заявок — в одном процессе, без лишней суеты.
+      <span className="text-white/30 text-[2rem] sm:text-[2.35rem] font-extrabold leading-none ml-0.5 align-[-0.15em]">
+        ”
+      </span>
     </blockquote>
-
-
   </>
 );
 
@@ -49,17 +52,17 @@ const VISIBLE_EN = (
       </div>
     </div>
 
-    <blockquote className="mt-6 text-white font-extrabold leading-relaxed text-[18px] sm:text-[20px]">
-      <span className="text-white/35 text-3xl sm:text-4xl font-black mr-2 align-[-6px]">“</span>
+    <blockquote className="mt-6 m-0 border-0 pl-0 font-display text-[18px] sm:text-[20px] font-extrabold leading-[1.55] tracking-tight text-white/95">
+      <span className="text-white/30 text-[2rem] sm:text-[2.35rem] font-extrabold leading-none mr-1 align-[-0.15em]">
+        “
+      </span>
       At <span className="text-white">TIVONIX</span>, we create digital products that look premium, perform fast, and help
-      businesses grow. We own structure, design, development, and launch — so you get more than a website: a clear tool
-      for clients and sales.
-      <span className="text-white/35 text-3xl sm:text-4xl font-black ml-2 align-[-6px]">”</span>
+      businesses grow. We own structure, design, development, and launch — so you get more than a website: a clear tool for
+      clients and sales. Clean build. Fast launch. Reliable support.
+      <span className="text-white/30 text-[2rem] sm:text-[2.35rem] font-extrabold leading-none ml-0.5 align-[-0.15em]">
+        ”
+      </span>
     </blockquote>
-
-    <p className="mt-6 text-white font-extrabold text-[15px] sm:text-[16px] leading-relaxed">
-      Clean build. Fast launch. Reliable support.
-    </p>
   </>
 );
 
@@ -127,7 +130,9 @@ export default function SeoContent() {
           aria-label={isRu ? "О создании сайтов и услугах TIVONIX" : "About website development and TIVONIX services"}
         >
           <h2 className="sr-only">
-            {isRu ? "Создание сайтов, лендинги и веб-разработка" : "Website development, landings and web apps"}
+            {isRu
+              ? "Создание сайта, лендинга, MVP, Telegram-бота и веб-разработка"
+              : "Website, landing, MVP, Telegram bot and web development"}
           </h2>
 
           {/* Видимый контент (коротко и красиво) */}
