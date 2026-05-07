@@ -1,11 +1,13 @@
 import React from "react";
-import ReactDOM from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
 import { LangProvider } from "./i18n/LangProvider";
 import "./index.css";
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+const root = document.getElementById("root");
+
+const app = (
   <React.StrictMode>
     <HelmetProvider>
       <LangProvider>
@@ -14,3 +16,11 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     </HelmetProvider>
   </React.StrictMode>
 );
+
+if (root) {
+  if (root.hasChildNodes()) {
+    hydrateRoot(root, app);
+  } else {
+    createRoot(root).render(app);
+  }
+}

@@ -1,5 +1,5 @@
 // src/components/landing/Footer.tsx
-import React, { type CSSProperties } from "react";
+import React, { useEffect, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import Container from "../ui/Container";
 import { useLang } from "../../i18n/LangProvider";
@@ -179,7 +179,12 @@ function SocialIconLink({
 export default function Footer() {
   const { lang } = useLang();
   const isRu = lang === "ru";
+  const [mounted, setMounted] = useState(false);
   const t = (v: { ru: string; en: string }) => (isRu ? v.ru : v.en);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const docs = isRu ? DOCS.ru : DOCS.en;
   const projects = buildProjects(isRu);
@@ -218,7 +223,7 @@ export default function Footer() {
               maskSize: "100% 100%",
             })}
           >
-            <HeroWebGLBg />
+            {mounted ? <HeroWebGLBg /> : null}
           </div>
         </div>
 

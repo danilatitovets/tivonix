@@ -1,5 +1,5 @@
 // src/pages/ProjectsPage.tsx
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Container from "../components/ui/Container";
 import Section from "../components/ui/Section";
@@ -199,6 +199,10 @@ export default function ProjectsPage() {
   useParallaxCards();
   const { lang } = useLang();
   const isRu = lang === "ru";
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const projects = useMemo(() => buildProjects(isRu), [isRu]);
 
   const gmailLabel = "Gmail";
@@ -224,7 +228,7 @@ export default function ProjectsPage() {
       <div className="pointer-events-none fixed inset-0 -z-10" aria-hidden>
         <div className="absolute inset-0 overflow-hidden bg-black">
           <div className="absolute inset-0 h-full w-full scale-[1.03] will-change-transform">
-            <HeroWebGLBg />
+            {mounted ? <HeroWebGLBg /> : null}
           </div>
         </div>
         <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.55),rgba(0,0,0,0.92))]" />

@@ -281,6 +281,11 @@ function buildGmailUrl(to: string, subject: string, body: string) {
 export default function Hero() {
   const { lang, dict } = useLang();
   const hero = dict.hero;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Оставляем ТОЛЬКО это условие: фон WebGL на десктопе (это не ломает разметку текста/кнопок)
   const isDesktop = useMediaQuery("(min-width: 900px)");
@@ -308,7 +313,7 @@ export default function Hero() {
       {/* BG */}
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <div className="heroBg">
-          {isDesktop ? (
+          {mounted && isDesktop ? (
             <div className="heroWebgl pointer-events-auto">
               <HeroWebGLBg />
             </div>

@@ -17,16 +17,24 @@ const checks = [
   {
     file: "dist/index.html",
     phrases: [
+      "Создание сайтов и веб-сервисов под ключ — TIVONIX",
       "Создание сайтов",
-      "FAQ",
-      "С чем мы работаем",
       "Сделаем сайт или веб-сервис",
+      "FAQ",
+      "FAQ — всё про сайт и работу",
+      "С чем мы работаем",
       "Создадим сайт или веб-сервис для вашего бизнеса",
+      "https://www.tivonix.tech/",
     ],
   },
   {
     file: "dist/sozdanie-sajtov/index.html",
-    phrases: ["Создание сайтов под ключ", "лендинги", "базовое SEO"],
+    phrases: [
+      "Создание сайтов под ключ — TIVONIX",
+      "https://www.tivonix.tech/sozdanie-sajtov",
+      "лендинги",
+      "базовое SEO",
+    ],
   },
   {
     file: "dist/projects/index.html",
@@ -36,6 +44,14 @@ const checks = [
     file: "dist/contacts/index.html",
     phrases: ["Контакты", "Telegram", "Email"],
   },
+];
+
+const forbiddenPhrases = [
+  "Tivonix Loading",
+  "TIVONIX — Сделаем сайт или веб-сервис",
+  "https://tivonix.tech/",
+  "chrome-headless",
+  "playwright",
 ];
 
 let hasErrors = false;
@@ -67,6 +83,25 @@ for (const check of checks) {
       hasErrors = true;
     } else {
       console.log(`OK ${check.file}: "${phrase}"`);
+    }
+  }
+}
+
+for (const requiredFile of requiredHtmlFiles) {
+  const filePath = path.resolve(requiredFile);
+  let content = "";
+  try {
+    content = await readFile(filePath, "utf8");
+  } catch {
+    continue;
+  }
+
+  for (const forbidden of forbiddenPhrases) {
+    if (content.includes(forbidden)) {
+      console.error(`Forbidden phrase in ${requiredFile}: "${forbidden}"`);
+      hasErrors = true;
+    } else {
+      console.log(`OK ${requiredFile}: forbidden phrase not found "${forbidden}"`);
     }
   }
 }

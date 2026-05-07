@@ -1,15 +1,7 @@
-// src/App.tsx
-import { lazy, Suspense, useEffect } from "react";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter } from "react-router-dom";
 import { initGoogleAds, trackAdsConversion } from "./lib/ads";
-import LandingPage from "./pages/LandingPage";
-
-const ProjectsPage = lazy(() => import("./pages/ProjectsPage"));
-const ProjectDetailPage = lazy(() => import("./pages/ProjectDetailPage"));
-const ContactsPage = lazy(() => import("./pages/ContactsPage"));
-const WebsiteCreationPage = lazy(() => import("./pages/WebsiteCreationPage"));
-
-const HEADER_OFFSET = 84;
+import { AppRoutes } from "./AppRoutes";
 
 function closestAnchor(el: EventTarget | null): HTMLAnchorElement | null {
   let e = el as HTMLElement | null;
@@ -24,28 +16,6 @@ function isContactLink(href: string): boolean {
   if (href.startsWith("mailto:")) return true;
   if (/^https?:\/\/(www\.)?(t\.me|telegram\.me)\//i.test(href)) return true;
   return false;
-}
-
-function ScrollToHash() {
-  const { pathname, hash } = useLocation();
-
-  useEffect(() => {
-    if (!hash) {
-      window.scrollTo({ top: 0, behavior: "auto" });
-      return;
-    }
-
-    const id = hash.replace("#", "");
-    const el = document.getElementById(id);
-    if (!el) return;
-
-    requestAnimationFrame(() => {
-      const y = el.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
-      window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
-    });
-  }, [pathname, hash]);
-
-  return null;
 }
 
 export default function App() {
@@ -95,42 +65,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <ScrollToHash />
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route
-          path="/projects"
-          element={
-            <Suspense fallback={<div className="min-h-screen bg-[var(--bg)]" aria-busy="true" />}>
-              <ProjectsPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/projects/:slug"
-          element={
-            <Suspense fallback={<div className="min-h-screen bg-[var(--bg)]" aria-busy="true" />}>
-              <ProjectDetailPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/contacts"
-          element={
-            <Suspense fallback={<div className="min-h-screen bg-[var(--bg)]" aria-busy="true" />}>
-              <ContactsPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/sozdanie-sajtov"
-          element={
-            <Suspense fallback={<div className="min-h-screen bg-[var(--bg)]" aria-busy="true" />}>
-              <WebsiteCreationPage />
-            </Suspense>
-          }
-        />
-      </Routes>
+      <AppRoutes />
     </BrowserRouter>
   );
 }
