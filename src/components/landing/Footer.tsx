@@ -12,7 +12,6 @@ function cx(...a: Array<string | false | null | undefined>) {
 type Style = CSSProperties & Record<string, unknown>;
 const s = (v: Record<string, unknown>) => v as Style;
 
-const LOGO_LOCKUP_SVG = "/images/tivonix-logo-lockup.svg";
 const LOGO_LOCKUP_PNG = "/images/tivonix-logo-lockup.png";
 const WATERMARK_LOGO = "/favicon.svg";
 const ACCENT = "#FF6B2C";
@@ -207,6 +206,13 @@ export default function Footer() {
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10 isolate overflow-hidden"
       >
+        <div
+          className="absolute inset-0"
+          style={s({
+            background:
+              "radial-gradient(120% 90% at 85% 100%, rgba(255,154,61,0.22) 0%, rgba(255,106,26,0.12) 30%, rgba(0,0,0,0) 62%), linear-gradient(180deg, #000000 0%, #020202 100%)",
+          })}
+        />
         {/* 1) WebGL: та же сцена и маска, что на десктопе — на всех ширинах */}
         <div className="absolute inset-0">
           <div
@@ -271,7 +277,7 @@ export default function Footer() {
                   aria-label={isRu ? "Наверх" : "Back to top"}
                 >
                   <img
-                    src={LOGO_LOCKUP_SVG}
+                    src={LOGO_LOCKUP_PNG}
                     onError={imgFallback(LOGO_LOCKUP_PNG)}
                     alt="Tivonix"
                     className="block h-9 w-auto sm:h-10"

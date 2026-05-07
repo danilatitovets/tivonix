@@ -27,7 +27,8 @@ function outputFileForRoute(route) {
 }
 
 function splitLeadingHeadTags(appHtml) {
-  const tagRegex = /^(<(?:title|meta|link)\b[^>]*\/?>|<script\b[^>]*>[\s\S]*?<\/script>)/i;
+  const tagRegex =
+    /^(<title\b[^>]*>[\s\S]*?<\/title>|<meta\b[^>]*\/?>|<link\b[^>]*\/?>|<script\b[^>]*>[\s\S]*?<\/script>)/i;
   let bodyHtml = appHtml.trimStart();
   const extracted = [];
 

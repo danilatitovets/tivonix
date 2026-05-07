@@ -151,6 +151,7 @@ function buildGmailUrl(to: string, subject: string, body: string) {
 export default function AppsOrbitBlock() {
   const { lang } = useLang();
   const t = lang === "ru" ? COPY.ru : COPY.en;
+  const [bgFailed, setBgFailed] = useState(false);
 
   const reducedMotion = usePrefersReducedMotion();
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -296,17 +297,29 @@ export default function AppsOrbitBlock() {
           >
             {/* Фон-фото */}
             <div className="absolute inset-0 z-0">
-              <img
-                src={IMG}
-                alt=""
-                draggable={false}
-                width={1536}
-                height={1024}
-                decoding="async"
-                loading="lazy"
-                className="h-full w-full object-cover"
-                style={{ objectPosition: "50% 42%" } as CSSProperties}
+              <div
+                className="absolute inset-0"
+                style={
+                  {
+                    background:
+                      "radial-gradient(120% 90% at 50% 0%, rgba(255,154,61,0.24) 0%, rgba(255,106,26,0.12) 28%, rgba(0,0,0,0) 60%), linear-gradient(180deg, #000000 0%, #050505 100%)",
+                  } as CSSProperties
+                }
               />
+              {!bgFailed && (
+                <img
+                  src={IMG}
+                  alt=""
+                  draggable={false}
+                  width={1536}
+                  height={1024}
+                  decoding="async"
+                  loading="lazy"
+                  onError={() => setBgFailed(true)}
+                  className="h-full w-full object-cover"
+                  style={{ objectPosition: "50% 42%" } as CSSProperties}
+                />
+              )}
             </div>
 
             {/* Область экрана ноута */}

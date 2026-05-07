@@ -314,11 +314,27 @@ export default function Hero() {
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <div className="heroBg">
           {mounted && isDesktop ? (
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "radial-gradient(120% 90% at 55% 35%, rgba(255,154,61,0.18) 0%, rgba(255,106,26,0.10) 34%, rgba(0,0,0,0) 62%), linear-gradient(180deg, #000000 0%, #030303 100%)",
+              }}
+            />
+          ) : null}
+          {mounted && isDesktop ? (
             <div className="heroWebgl pointer-events-auto">
               <HeroWebGLBg />
             </div>
           ) : (
-            <img className="heroImg" src={HERO_BG_IMG} alt="" draggable={false} loading="eager" decoding="async" />
+            <img
+              className="heroImg"
+              src={HERO_BG_IMG}
+              alt=""
+              draggable={false}
+              loading="eager"
+              decoding="async"
+            />
           )}
         </div>
 
