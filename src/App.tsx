@@ -7,6 +7,7 @@ import LandingPage from "./pages/LandingPage";
 const ProjectsPage = lazy(() => import("./pages/ProjectsPage"));
 const ProjectDetailPage = lazy(() => import("./pages/ProjectDetailPage"));
 const ContactsPage = lazy(() => import("./pages/ContactsPage"));
+const WebsiteCreationPage = lazy(() => import("./pages/WebsiteCreationPage"));
 
 const HEADER_OFFSET = 84;
 
@@ -118,6 +119,14 @@ export default function App() {
           element={
             <Suspense fallback={<div className="min-h-screen bg-[var(--bg)]" aria-busy="true" />}>
               <ContactsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/sozdanie-sajtov"
+          element={
+            <Suspense fallback={<div className="min-h-screen bg-[var(--bg)]" aria-busy="true" />}>
+              <WebsiteCreationPage />
             </Suspense>
           }
         />

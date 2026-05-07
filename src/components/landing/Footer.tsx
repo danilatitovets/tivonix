@@ -25,6 +25,7 @@ const LANDING = {
 
 const MENU = [
   { to: LANDING.top, label: { ru: "Главная", en: "Home" } },
+  { to: "/sozdanie-sajtov", label: { ru: "Создание сайтов", en: "Website development" } },
   { to: LANDING.services, label: { ru: "Услуги", en: "Services" } },
   { to: LANDING.faq, label: { ru: "FAQ", en: "FAQ" } },
   { to: "/contacts", label: { ru: "Контакты", en: "Contacts" } },

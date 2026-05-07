@@ -351,6 +351,7 @@ export default function WhyUs() {
                   mt-5 uppercase leading-[0.98] tracking-[-0.02em]
                   text-[34px] sm:text-[48px] lg:text-[58px]
                 "
+                aria-label={isRu ? "С чем мы работаем" : "Our stack"}
               >
                 <span className="block font-[820] text-white/95">{title1}</span>
                 <span

@@ -1,4 +1,4 @@
-// src/lib/schema.ts — Schema.org JSON-LD for home page (canonical non-www)
+// src/lib/schema.ts — Schema.org JSON-LD for home page
 
 type HomeSchemaInput = {
   pageTitle: string;
@@ -12,14 +12,14 @@ export function buildHomePageSchema({ pageTitle, pageDescription }: HomeSchemaIn
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://tivonix.tech/#org",
+        "@id": "https://www.tivonix.tech/#org",
         name: "TIVONIX",
-        url: "https://tivonix.tech/",
+        url: "https://www.tivonix.tech/",
         logo: {
           "@type": "ImageObject",
-          url: "https://tivonix.tech/images/tivonix-logo-icon.png",
+          url: "https://www.tivonix.tech/images/tivonix-logo-icon.png",
         },
-        image: "https://tivonix.tech/og.jpg",
+        image: "https://www.tivonix.tech/og.jpg",
         description: pageDescription,
         contactPoint: [
           {
@@ -33,20 +33,20 @@ export function buildHomePageSchema({ pageTitle, pageDescription }: HomeSchemaIn
       },
       {
         "@type": "WebSite",
-        "@id": "https://tivonix.tech/#website",
-        url: "https://tivonix.tech/",
+        "@id": "https://www.tivonix.tech/#website",
+        url: "https://www.tivonix.tech/",
         name: "TIVONIX",
-        publisher: { "@id": "https://tivonix.tech/#org" },
+        publisher: { "@id": "https://www.tivonix.tech/#org" },
         inLanguage: ["ru", "en"],
       },
       {
         "@type": "WebPage",
-        "@id": "https://tivonix.tech/#home",
-        url: "https://tivonix.tech/",
+        "@id": "https://www.tivonix.tech/#home",
+        url: "https://www.tivonix.tech/",
         name: pageTitle,
         description: pageDescription,
-        isPartOf: { "@id": "https://tivonix.tech/#website" },
-        about: { "@id": "https://tivonix.tech/#org" },
+        isPartOf: { "@id": "https://www.tivonix.tech/#website" },
+        about: { "@id": "https://www.tivonix.tech/#org" },
         inLanguage: ["ru", "en"],
       },
     ],

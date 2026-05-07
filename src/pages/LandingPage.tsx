@@ -5,7 +5,6 @@ import WhyUs from "../components/landing/WhyUs";
 import AppsOrbitBlock from "../components/landing/AppsOrbitBlock";
 import Benefits from "../components/landing/Benefits";
 import FAQ from "../components/landing/FAQ";
-import SeoContent from "../components/landing/SeoContent";
 import Footer from "../components/landing/Footer";
 import { SEO } from "../components/SEO";
 import ServicesPlans from "../components/landing/ServicesPlans";
@@ -27,7 +26,6 @@ export default function LandingPage() {
         description={seo.description}
         canonicalPath="/"
         schemaJsonLd={schemaJsonLd}
-        localizedPath="/"
         ogLocalePrimary={lang === "en" ? "en_US" : "ru_RU"}
       />
       <div id="top" />
@@ -55,9 +53,7 @@ export default function LandingPage() {
           <ServicesPlans className="py-14 sm:py-16" />
         </div>
 
-
         <FAQ />
-        <SeoContent />
         <div id="contact" />
       </main>
 

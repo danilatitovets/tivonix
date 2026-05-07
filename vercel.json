@@ -6,6 +6,5 @@
       "destination": "https://www.tivonix.tech/:path*",
       "permanent": true
     }
-  ],
-  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
+  ]
 }

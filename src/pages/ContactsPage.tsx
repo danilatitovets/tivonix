@@ -281,7 +281,7 @@ function SunContacts({ size }: { size: number }) {
                       <IconMail />
                     </span>
                     <span className="min-w-0 text-[13px] font-[780] tracking-tight text-white/85">
-                      Gmail
+                      Email
                     </span>
                   </a>
 
@@ -334,10 +334,12 @@ export default function ContactsPage() {
   const isRu = lang === "ru";
   const { headerH, side, sun, r1, r2, r3 } = useSolarLayoutNoScroll();
 
-  const seoTitle = isRu ? "Контакты — TIVONIX" : "Contacts — TIVONIX";
+  const seoTitle = isRu
+    ? "Контакты TIVONIX — заказать сайт или веб-сервис"
+    : "TIVONIX contacts — order a website or web service";
   const seoDescription = isRu
-    ? "Связаться с TIVONIX: Telegram, Gmail, Instagram, ТГ-бот. Ответим быстро."
-    : "Contact TIVONIX: Telegram, Gmail, Instagram, Telegram bot. We reply fast.";
+    ? "Свяжитесь с TIVONIX, чтобы обсудить создание сайта, лендинга, веб-сервиса, MVP, админки или Telegram-бота."
+    : "Contact TIVONIX to discuss creating a website, landing page, web service, MVP, admin panel, or Telegram bot.";
 
   const ring1 = useMemo<LangItem[]>(
     () => [
@@ -383,7 +385,6 @@ export default function ContactsPage() {
         title={seoTitle}
         description={seoDescription}
         canonicalPath="/contacts"
-        localizedPath="/contacts"
         ogLocalePrimary={isRu ? "ru_RU" : "en_US"}
       />
       <Header />

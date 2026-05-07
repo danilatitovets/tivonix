@@ -204,10 +204,12 @@ export default function ProjectsPage() {
   const gmailLabel = "Gmail";
   const tgLabel = "Telegram";
 
-  const seoTitle = isRu ? "Портфолио и кейсы — TIVONIX" : "Portfolio & case studies — TIVONIX";
+  const seoTitle = isRu
+    ? "Проекты и кейсы TIVONIX — сайты, веб-сервисы и MVP"
+    : "TIVONIX projects and case studies — websites, web services and MVP";
   const seoDescription = isRu
-    ? "Кейсы TIVONIX: разработка сайтов, лендингов, SaaS и MVP на React. Живые проекты — от идеи до запуска и поддержки."
-    : "TIVONIX case studies: websites, landings, SaaS and MVPs on React. Live work from idea to launch and support.";
+    ? "Посмотрите проекты TIVONIX: лендинги, веб-сервисы, личные кабинеты, админки, MVP и Telegram-интеграции для бизнеса."
+    : "Explore TIVONIX projects: landings, web services, client areas, admin panels, MVPs and Telegram integrations for business.";
 
   return (
     <div className="relative min-h-screen" style={s({ "--headerH": `${HEADER_H}px` })}>
@@ -215,7 +217,6 @@ export default function ProjectsPage() {
         title={seoTitle}
         description={seoDescription}
         canonicalPath="/projects"
-        localizedPath="/projects"
         ogLocalePrimary={isRu ? "ru_RU" : "en_US"}
       />
       <Header />

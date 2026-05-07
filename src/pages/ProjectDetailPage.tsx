@@ -191,7 +191,6 @@ export default function ProjectDetailPage() {
         title={seoTitle}
         description={seoDescription}
         canonicalPath={`/projects/${project.id}`}
-        localizedPath={`/projects/${project.id}`}
         ogLocalePrimary={isRu ? "ru_RU" : "en_US"}
       />
 

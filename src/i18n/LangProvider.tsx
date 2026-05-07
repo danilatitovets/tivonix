@@ -125,7 +125,7 @@ const DICT: Record<Lang, Dictionary> = {
       titleLine2Prefix: "под задачи",
       titleLine2Premium: "вашего бизнеса",
       subtitle:
-        "Разберём идею, спроектируем интерфейс, разработаем продукт и подготовим его к запуску. Всё — в одном месте и без технической путаницы.",
+        "Создадим сайт или веб-сервис для вашего бизнеса. Разберём идею, спроектируем интерфейс, разработаем продукт и подготовим его к запуску. Всё — в одном месте и без технической путаницы.",
       emailPlaceholder: "Рабочий email",
       btnDemo: "Получить демо",
       btnTelegram: "Написать в Telegram",
@@ -387,22 +387,11 @@ function detectLang(): Lang {
     if (qp === "ru" || qp === "en") return qp;
   } catch (_) {}
 
-  // 2) early pick from index.html (если есть)
-  const pre = (window as Window & { __TIVONIX_LANG__?: string }).__TIVONIX_LANG__;
-  if (pre === "ru" || pre === "en") return pre;
+  // 2) явный английский URL
+  if (window.location.pathname.startsWith("/en")) return "en";
 
-  // 3) stored manual choice (тот же ключ, что в index.html)
-  const stored = (localStorage.getItem(LANG_STORAGE_KEY) || "").toLowerCase();
-  if (stored === "ru" || stored === "en") return stored as Lang;
-
-  // 4) browser languages
-  const nav = (
-    (navigator.languages && navigator.languages.length
-      ? navigator.languages.join(",")
-      : navigator.language) || ""
-  ).toLowerCase();
-
-  return /(^|,|\s)ru(-|_|$)/i.test(nav) ? "ru" : "en";
+  // 3) основной URL всегда русская версия
+  return "ru";
 }
 
 function syncHtmlLang(lang: Lang) {
@@ -450,6 +439,15 @@ export function useLang() {
 
 /** Title и meta description для главной — те же строки, что в Hero (один источник правды). */
 export function homePageSeoFromDict(dict: Dictionary): { title: string; description: string } {
+  const isRu = dict.header.home === "На главную";
+  if (isRu) {
+    return {
+      title: "Создание сайтов и веб-сервисов под ключ — TIVONIX",
+      description:
+        "TIVONIX создаёт сайты, лендинги, веб-сервисы, MVP, личные кабинеты, админки и Telegram-боты для бизнеса. Дизайн, разработка и запуск в одном процессе.",
+    };
+  }
+
   const { titleLine1, subtitle } = dict.hero;
   return {
     title: `TIVONIX — ${titleLine1}`,
