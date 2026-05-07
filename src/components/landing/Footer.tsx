@@ -201,8 +201,8 @@ export default function Footer() {
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10 isolate overflow-hidden"
       >
-        {/* 1) WebGL: широкая зона от левого края, маска срезает квадрат и тянет свечение влево */}
-        <div className="absolute inset-0 hidden min-[900px]:block">
+        {/* 1) WebGL: та же сцена и маска, что на десктопе — на всех ширинах */}
+        <div className="absolute inset-0">
           <div
             className="absolute bottom-[-48%] left-[-8%] right-[-28%] top-[0%] min-h-[min(100vh,920px)]"
             style={s({
@@ -220,13 +220,6 @@ export default function Footer() {
             <HeroWebGLBg />
           </div>
         </div>
-        <div
-          className="absolute inset-0 min-[900px]:hidden"
-          style={s({
-            background:
-              "radial-gradient(120% 90% at 92% 96%, rgba(255,154,61,0.38) 0%, rgba(255,106,26,0.24) 36%, rgba(0,0,0,0) 66%), #000000",
-          })}
-        />
 
         {/* 2) Оверлей: слева текст читается, справа/снизу почти не душим — дым сильно заметен */}
         <div

@@ -1,5 +1,5 @@
 // src/pages/ProjectsPage.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Container from "../components/ui/Container";
 import Section from "../components/ui/Section";
@@ -25,27 +25,6 @@ const GMAIL_EMAIL_URL =
 
 function clamp(n: number, a = 0, b = 1) {
   return Math.max(a, Math.min(b, n));
-}
-
-function useMediaQuery(query: string) {
-  const getMatch = () =>
-    typeof window !== "undefined" ? window.matchMedia(query).matches : false;
-  const [matches, setMatches] = useState<boolean>(getMatch);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const m = window.matchMedia(query);
-    const onChange = () => setMatches(m.matches);
-    onChange();
-    if (m.addEventListener) m.addEventListener("change", onChange);
-    else m.addListener(onChange);
-    return () => {
-      if (m.removeEventListener) m.removeEventListener("change", onChange);
-      else m.removeListener(onChange);
-    };
-  }, [query]);
-
-  return matches;
 }
 
 function useParallaxCards() {
@@ -220,8 +199,6 @@ export default function ProjectsPage() {
   useParallaxCards();
   const { lang } = useLang();
   const isRu = lang === "ru";
-  const isDesktop = useMediaQuery("(min-width: 900px)");
-
   const projects = useMemo(() => buildProjects(isRu), [isRu]);
 
   const gmailLabel = "Gmail";
@@ -245,20 +222,9 @@ export default function ProjectsPage() {
 
       <div className="pointer-events-none fixed inset-0 -z-10" aria-hidden>
         <div className="absolute inset-0 overflow-hidden bg-black">
-          {isDesktop ? (
-            <div className="absolute inset-0 h-full w-full scale-[1.03] will-change-transform">
-              <HeroWebGLBg />
-            </div>
-          ) : (
-            <div
-              className="absolute inset-0"
-              style={s({
-                background:
-                  "radial-gradient(120% 90% at 55% 35%, rgba(255,154,61,0.12) 0%, rgba(255,106,26,0.08) 32%, rgba(0,0,0,0) 62%)," +
-                  "linear-gradient(180deg, #0a0a0a 0%, #000 50%, #000 100%)",
-              })}
-            />
-          )}
+          <div className="absolute inset-0 h-full w-full scale-[1.03] will-change-transform">
+            <HeroWebGLBg />
+          </div>
         </div>
         <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.55),rgba(0,0,0,0.92))]" />
         <div
