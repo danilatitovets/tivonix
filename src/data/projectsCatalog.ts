@@ -27,6 +27,7 @@ const PAYCLIP_DOMAIN = "https://usepayclip.com/";
 const LABELOS_DOMAIN = "https://labelos.digital/";
 const HEADMIND_DOMAIN = "https://headmind.ru/";
 const LOGOVO_DOMAIN = "https://logovo24.by/";
+const GIFTSNIPER_DOMAIN = "https://t.me/GiftSniperTonBot";
 
 export function buildProjects(isRu: boolean): Project[] {
   return [
@@ -329,6 +330,82 @@ export function buildProjects(isRu: boolean): Project[] {
             ? "Нужен был сайт, который ощущается как мы: не «ещё один шиномонтаж», а сервис с характером. Космическая тема ожила без дешёвого блеска — глубина, тёмная палитра, сочная типографика. С телефона всё предельно ясно: цена, что входит, куда приехать. В сезон это прямо деньги — люди не теряются, а доходят до записи."
             : "We needed a site that feels like us — not “just another tire shop”, but a brand with character. The cosmic theme landed without cheap glitter: depth, a dark palette, strong typography. On mobile everything is obvious — pricing, what’s included, where to go. In peak season that’s revenue: people don’t get lost, they get to booking.",
         },
+      },
+
+      // 6) GIFTSNIPER — Telegram-бот для оценки NFT и Telegram Gifts в TON
+      {
+        id: "giftsniper",
+        title: "GiftSniper",
+        subtitleRu:
+          "Telegram-бот для оценки NFT и Telegram Gifts в TON по рыночным данным: трейты, листинги, аналоги и ориентир цены.",
+        subtitleEn:
+          "Telegram bot for TON NFT and Telegram Gifts valuation using market data: traits, listings, comparables, and pricing guidance.",
+        detailsRu:
+          "Формат: Telegram-бот / аналитический продукт\n\n" +
+          "Цель\n" +
+          "• Помочь пользователю быстро понять, сколько может стоить NFT или Telegram Gift без ручного сравнения десятков объявлений.\n\n" +
+          "Как это работает\n" +
+          "• Пользователь отправляет ссылку на Getgems, Fragment, Tonviewer или NFT address\n" +
+          "• GiftSniper анализирует объект и возвращает данные в понятном формате\n\n" +
+          "Что показывает бот\n" +
+          "• Трейты и характеристики NFT или Telegram Gift\n" +
+          "• Текущий листинг\n" +
+          "• Похожие объявления на рынке\n" +
+          "• Ориентировочную цену продажи\n" +
+          "• Данные для более быстрого решения по продаже\n\n" +
+          "Безопасность и позиционирование\n" +
+          "• GiftSniper не покупает и не продаёт активы за пользователя\n" +
+          "• Не подключается к кошельку и не запрашивает seed-фразу, private key или доступ к аккаунту\n" +
+          "• Это аналитический инструмент для оценки и сравнения объекта с рынком\n\n" +
+          "Что сделали в проекте\n" +
+          "• Продумали логику работы бота и структуру сценариев\n" +
+          "• Реализовали обработку ссылок и показ ключевых рыночных данных\n" +
+          "• Собрали удобный пользовательский путь внутри Telegram\n\n" +
+          "Результат\n" +
+          "• GiftSniper показывает, как Telegram-бот может быть полноценным продуктом с практической пользой для TON, NFT и Telegram Gifts\n" +
+          "• Твой помощник по первому заработку\n" +
+          "• Проект создан командой TIVONIX\n",
+        detailsEn:
+          "Format: Telegram bot / analytics product\n\n" +
+          "Goal\n" +
+          "• Help users quickly estimate NFT or Telegram Gift value without manually comparing dozens of listings.\n\n" +
+          "How it works\n" +
+          "• A user sends a Getgems, Fragment, Tonviewer link, or an NFT address\n" +
+          "• GiftSniper analyzes the asset and returns key data in a clear format\n\n" +
+          "What the bot provides\n" +
+          "• Traits and asset characteristics\n" +
+          "• Current listing data\n" +
+          "• Comparable market offers\n" +
+          "• Estimated selling price range\n" +
+          "• Decision-support data for faster pricing\n\n" +
+          "Safety and positioning\n" +
+          "• GiftSniper does not buy or sell assets on behalf of users\n" +
+          "• No wallet connection and no request for seed phrase, private key, or account access\n" +
+          "• It is an analytics assistant for valuation and market comparison\n\n" +
+          "What we delivered\n" +
+          "• Bot logic and scenario architecture\n" +
+          "• Link parsing and market-data presentation flow\n" +
+          "• A smooth user journey inside Telegram\n\n" +
+          "Outcome\n" +
+          "• GiftSniper demonstrates how a Telegram bot can be a full product with real utility for TON, NFT, and Telegram Gifts users\n" +
+          "• Your first-earnings assistant\n" +
+          "• Project by TIVONIX team\n",
+        domain: GIFTSNIPER_DOMAIN,
+        status: "live",
+        tags: ["Telegram Bot", "TON", "NFT", "Analytics", "Market Data"],
+        cover: "/images/project-priew/gift.jpg",
+        outcomes: [
+          isRu
+            ? "Оценка NFT и Gifts по данным рынка в одном окне"
+            : "NFT and Gifts valuation from market data in one flow",
+          isRu
+            ? "Быстрый анализ: трейты, листинги, аналоги, ориентир цены"
+            : "Fast analysis: traits, listings, comparables, pricing guidance",
+          isRu
+            ? "Без подключения кошелька и доступа к аккаунту"
+            : "No wallet connection or account-access risk",
+        ],
+        stack: ["Telegram Bot API", "TON", "NFT Data", "Parser", "Analytics"],
       },
   ];
 }

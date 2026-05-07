@@ -302,7 +302,7 @@ export default function AppsOrbitBlock() {
                 style={
                   {
                     background:
-                      "radial-gradient(120% 90% at 50% 0%, rgba(255,154,61,0.24) 0%, rgba(255,106,26,0.12) 28%, rgba(0,0,0,0) 60%), linear-gradient(180deg, #000000 0%, #050505 100%)",
+                      "radial-gradient(120% 90% at 50% 0%, rgba(255,154,61,0.30) 0%, rgba(255,106,26,0.16) 28%, rgba(0,0,0,0) 62%), linear-gradient(180deg, #000000 0%, #070707 100%)",
                   } as CSSProperties
                 }
               />
@@ -317,7 +317,13 @@ export default function AppsOrbitBlock() {
                   loading="lazy"
                   onError={() => setBgFailed(true)}
                   className="h-full w-full object-cover"
-                  style={{ objectPosition: "50% 42%" } as CSSProperties}
+                  style={
+                    {
+                      objectPosition: "50% 50%",
+                      transform: "scale(1.02)",
+                      filter: "brightness(1.02) contrast(1.02)",
+                    } as CSSProperties
+                  }
                 />
               )}
             </div>

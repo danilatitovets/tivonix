@@ -11,6 +11,7 @@ const requiredHtmlFiles = [
   "dist/projects/payclip/index.html",
   "dist/projects/headmind/index.html",
   "dist/projects/logovo/index.html",
+  "dist/projects/giftsniper/index.html",
 ];
 
 const checks = [
@@ -38,7 +39,16 @@ const checks = [
   },
   {
     file: "dist/projects/index.html",
-    phrases: ["Проекты", "LabelOS", "UPC", "PayClip", "Headmind", "LOGOVO"],
+    phrases: ["Проекты", "LabelOS", "UPC", "PayClip", "Headmind", "LOGOVO", "GiftSniper"],
+  },
+  {
+    file: "dist/projects/giftsniper/index.html",
+    phrases: [
+      "GiftSniper",
+      "Telegram-бот для оценки NFT и Telegram Gifts",
+      "https://www.tivonix.tech/projects/giftsniper",
+      "https://t.me/GiftSniperTonBot",
+    ],
   },
   {
     file: "dist/contacts/index.html",
