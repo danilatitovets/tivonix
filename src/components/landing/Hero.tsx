@@ -112,17 +112,16 @@ const HERO_STYLES = `
   /* ===== DESKTOP CTA (как было) ===== */
   .gmailBtn{
     border-radius:18px;
-    border:1px solid rgba(255,255,255,0.18);
-    background:rgba(0,0,0,0.34);
-    backdrop-filter:blur(12px);
-    -webkit-backdrop-filter:blur(12px);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);
+    border:none;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+    box-shadow:none;
     transition:transform .18s ease, background .18s ease, border-color .18s ease;
   }
   .gmailBtn:hover{
     transform:translateY(-1px);
-    background:rgba(255,255,255,0.06);
-    border-color:rgba(255,255,255,0.26);
+    background:rgba(255,255,255,0.13);
   }
   .gmailBtn:active{ transform:translateY(0px); }
 
@@ -211,17 +210,17 @@ const HERO_STYLES = `
 
     /* Telegram = primary (белая) */
     .hero .tgBtn{
-      background: rgba(255,255,255,0.95) !important;
-      color: rgba(0,0,0,0.90) !important;
-      box-shadow: 0 10px 28px rgba(0,0,0,.35) !important;
+      background: #FF8A1E !important;
+      color: rgba(0,0,0,0.92) !important;
+      box-shadow: none !important;
     }
 
     /* Gmail = ghost */
     .hero .gmailBtn{
-      background: rgba(255,255,255,0.14) !important;
+      background: rgba(255,255,255,0.08) !important;
       color: rgba(255,255,255,0.92) !important;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
 
     /* Супер узкие экраны: кнопки в столбик */
@@ -380,7 +379,7 @@ export default function Hero() {
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 )}
                 style={{
-                  background: "linear-gradient(180deg, #FFB020 0%, #FF7A18 45%, #FF5A12 100%)",
+                  background: "#FF8A1E",
                 }}
               >
                 <span className="relative z-10">{tgLabel}</span>

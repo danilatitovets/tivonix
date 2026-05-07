@@ -16,7 +16,7 @@ function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
 
-const IMG = "/images/gen.webp";
+const IMG = "/images/mak.png";
 const TG_URL = "https://t.me/TIVONIX";
 const EMAIL = "tivoonix@gmail.com";
 
