@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/prerender.mjs && node scripts/check-seo.mjs",
+    "build": "vite build && npx playwright install chromium && node scripts/prerender.mjs && node scripts/check-seo.mjs",
     "build:raw": "vite build",
     "check:seo": "node scripts/check-seo.mjs",
     "lint": "eslint .",
