@@ -10,25 +10,6 @@
       rel="stylesheet"
     />
 
-    <script>
-      (function () {
-        var STORAGE_KEY = "tivonix_lang";
-        function pickLang() {
-          try {
-            var url = new URL(window.location.href);
-            var qp = url.searchParams.get("lang");
-            if (qp === "ru" || qp === "en") return qp;
-          } catch (_) {}
-          if (window.location.pathname.startsWith("/en")) return "en";
-          return "ru";
-        }
-        var lang = pickLang();
-        document.documentElement.lang = lang;
-        document.documentElement.dataset.lang = lang;
-        window.__TIVONIX_LANG__ = lang;
-      })();
-    </script>
-
     <meta name="robots" content="index,follow" />
     <meta name="theme-color" content="#000000" />
     <link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="any" />
@@ -38,20 +19,7 @@
   </head>
 
   <body style="margin: 0; background-color: #000;">
-    <div id="root">
-      <noscript>
-        <div style="padding: 20px; color: white; font-family: sans-serif;">
-          <h1>Создание сайтов и веб-сервисов под ключ</h1>
-          <p>TIVONIX создаёт сайты, лендинги, веб-сервисы, MVP, личные кабинеты, админки и Telegram-боты для бизнеса. Дизайн, разработка и запуск в одном процессе.</p>
-          <p>Под задачи вашего бизнеса: лендинги, веб-сервисы, MVP, админки, интеграции, Telegram для заявок. React и TypeScript.</p>
-          <p>Портфолио и контакты — на www.tivonix.tech.</p>
-        </div>
-      </noscript>
-
-      <div id="loader" style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #000;">
-         <div style="color: #fff; font-family: sans-serif; letter-spacing: 2px; font-weight: bold; text-transform: uppercase;">Tivonix Loading...</div>
-      </div>
-    </div>
+    <div id="root"></div>
 
     <script type="module" src="/src/main.tsx"></script>
   </body>
