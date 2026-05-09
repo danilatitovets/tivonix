@@ -110,20 +110,19 @@ const HERO_STYLES = `
     text-shadow:0 14px 38px rgba(0,0,0,0.86);
   }
 
-  /* ===== DESKTOP CTA: вторичная кнопка (обводка + стекло) ===== */
+  /* ===== CTA Gmail: тёмно-серый фирменный, без обводки ===== */
   .gmailBtn{
     border-radius:14px;
-    border:1px solid rgba(255,255,255,0.22);
-    background:rgba(255,255,255,0.06);
+    border:none;
+    background:#2a2a2a;
     backdrop-filter:none;
     -webkit-backdrop-filter:none;
     box-shadow:none;
-    transition:transform .18s ease, background .18s ease, border-color .18s ease;
+    transition:transform .18s ease, background .18s ease;
   }
   .gmailBtn:hover{
     transform:translateY(-1px);
-    background:rgba(255,255,255,0.10);
-    border-color:rgba(255,255,255,0.32);
+    background:#363636;
   }
   .gmailBtn:active{ transform:translateY(0px); }
 
@@ -140,7 +139,7 @@ const HERO_STYLES = `
       width: 88%;
       height: 88%;
       left: 50%;
-      top: 58%;
+      top: 68%;
       object-fit: contain;
       object-position: 50% 50%;
       transform: translate3d(-50%, -50%, 0) scale(var(--hero-img-scale));
@@ -161,7 +160,7 @@ const HERO_STYLES = `
         rgba(0,0,0,0.72) 28%,
         rgba(0,0,0,0.35) 58%,
         rgba(0,0,0,0.15) 72%,
-        rgba(0,0,0,0.86) 100%
+        rgba(0,0,0,0.78) 100%
       );
   }
 }
@@ -218,9 +217,9 @@ const HERO_STYLES = `
     }
 
     .hero .gmailBtn{
-      background: rgba(255,255,255,0.06) !important;
+      background: #2a2a2a !important;
       color: rgba(255,255,255,0.92) !important;
-      border: 1px solid rgba(255,255,255,0.22) !important;
+      border: none !important;
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
     }
@@ -351,7 +350,7 @@ export default function Hero() {
         <div className="heroGrain" />
 
         <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/85 via-black/40 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black via-black/80 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black via-black/80 to-transparent max-sm:h-52 max-sm:from-black/[0.72] max-sm:via-black/45" />
       </div>
 
         <Container>
