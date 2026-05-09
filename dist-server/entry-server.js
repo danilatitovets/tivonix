@@ -1,11 +1,9 @@
 import { jsx, jsxs, Fragment } from "react/jsx-runtime";
-import React, { createContext, useState, useEffect, useMemo, useContext, useRef, useId, useCallback, useLayoutEffect } from "react";
+import React, { createContext, useState, useEffect, useMemo, useContext, useRef, lazy, Suspense, useId, useCallback, useLayoutEffect } from "react";
 import { renderToString } from "react-dom/server";
 import { useNavigate, useLocation, Link, useParams, Navigate, Routes, Route, MemoryRouter } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { createPortal } from "react-dom";
-import { Canvas, useThree, useFrame } from "@react-three/fiber";
-import * as THREE from "three";
 const LANG_STORAGE_KEY = "tivonix_lang";
 const DICT = {
   ru: {
@@ -706,7 +704,7 @@ function StartModal({ open, onClose }) {
   );
   const has = (v) => v.trim().length > 0;
   const progressPct = useMemo(() => {
-    const steps = [
+    const steps2 = [
       has(form.name),
       has(form.email) || has(form.telegram),
       form.projectType !== defaults.type,
@@ -716,8 +714,8 @@ function StartModal({ open, onClose }) {
       form.consent
       // ✅ добавили в прогресс
     ];
-    const total = steps.length;
-    const done = steps.filter(Boolean).length;
+    const total = steps2.length;
+    const done = steps2.filter(Boolean).length;
     let pct = Math.round(done / total * 100);
     const any = has(form.name) || has(form.email) || has(form.telegram) || has(form.details) || form.projectType !== defaults.type || form.budget !== defaults.budget || form.timeframe !== defaults.time || form.consent;
     if (pct === 0 && any) pct = 5;
@@ -1904,243 +1902,9 @@ function Section({
 }) {
   return /* @__PURE__ */ jsx("section", { id, className: ["py-14 sm:py-20", className].filter(Boolean).join(" "), children });
 }
-function clamp01(v) {
-  return Math.min(1, Math.max(0, v));
-}
-const VS = `
-varying vec2 vUv;
-void main(){
-  vUv = uv;
-  gl_Position = vec4(position, 1.0);
-}
-`;
-const FS = `
-precision highp float;
-varying vec2 vUv;
-
-uniform float uTime;
-uniform vec2  uMouse;
-uniform vec2  uPrevMouse;
-uniform vec2  uRes;
-
-float hash(vec2 p){
-  p = fract(p * vec2(123.34, 345.45));
-  p += dot(p, p + 34.345);
-  return fract(p.x * p.y);
-}
-
-float noise(vec2 p){
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  float a = hash(i);
-  float b = hash(i + vec2(1.0, 0.0));
-  float c = hash(i + vec2(0.0, 1.0));
-  float d = hash(i + vec2(1.0, 1.0));
-  vec2 u = f*f*(3.0-2.0*f);
-  return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-}
-
-float fbm(vec2 p){
-  float v = 0.0;
-  float a = 0.58;
-  for(int i=0;i<3;i++){
-    v += a * noise(p);
-    p *= 2.02;
-    a *= 0.52;
-  }
-  return v;
-}
-
-vec2 flowField(vec2 p, float t){
-  float e = 0.0032;
-  vec2 tp = vec2(0.10*t, -0.07*t);
-  float n  = fbm(p + tp);
-  float nx = fbm(p + vec2(e,0.0) + tp);
-  float ny = fbm(p + vec2(0.0,e) + tp);
-  vec2 g = vec2(nx-n, ny-n)/e;
-  return vec2(g.y, -g.x);
-}
-
-float sdSegment(vec2 p, vec2 a, vec2 b){
-  vec2 pa = p - a;
-  vec2 ba = b - a;
-  float h = clamp(dot(pa,ba)/dot(ba,ba), 0.0, 1.0);
-  return length(pa - ba*h);
-}
-
-void main(){
-  vec2 uv = vUv;
-  vec2 aspect = vec2(uRes.x / uRes.y, 1.0);
-
-  vec2 p  = (uv - 0.5) * aspect;
-  vec2 m  = (uMouse - 0.5) * aspect;
-  vec2 pm = (uPrevMouse - 0.5) * aspect;
-
-  float t = uTime;
-
-  vec2 f0 = flowField(p * 1.05, t);
-  vec2 f1 = flowField(p * 1.90 + 1.6, t * 0.83);
-  vec2 flow = f0 * 0.58 + f1 * 0.42;
-
-  float dist = length(p - m);
-  float influence = exp(-dist * 1.9);
-
-  p += flow * 0.13;
-  p += flow * 0.26 * influence;
-
-  float nA = fbm(p * 1.25 + vec2(0.06*t, 0.03*t));
-  float nB = fbm(p * 2.05 + vec2(-0.04*t, 0.07*t) + 2.0);
-  float nC = fbm(p * 3.00 + vec2(0.02*t, -0.05*t) - 1.5);
-
-  float nebA = smoothstep(0.25, 0.92, nA);
-  float nebB = smoothstep(0.35, 0.97, nB) * 0.85;
-  float fil  = smoothstep(0.42, 0.99, nC) * 0.55;
-
-  vec3 dark   = vec3(0.02, 0.02, 0.03);
-  vec3 amber  = vec3(1.00, 0.62, 0.25);
-  vec3 orange = vec3(1.00, 0.40, 0.12);
-  vec3 cream  = vec3(1.00, 0.84, 0.69);
-
-  vec3 col = dark;
-  col += amber  * nebA * 0.48;
-  col += orange * nebB * 0.56;
-  col += cream  * fil  * 0.20;
-
-  float core = smoothstep(0.22, 0.0, dist) * 0.20;
-  float halo = smoothstep(0.55, 0.0, dist) * 0.10;
-  col += (amber * 0.42 + cream * 0.10) * core;
-  col += (orange * 0.18) * halo;
-
-  float cutDist = sdSegment(p, pm, m);
-  float speed = length(m - pm);
-
-  float radius = mix(0.032, 0.090, clamp(speed * 22.0, 0.0, 1.0));
-  float cut = smoothstep(radius, 0.0, cutDist);
-
-  float cutStrength = (0.10 + 0.22 * clamp(speed * 14.0, 0.0, 1.0));
-  col -= cut * cutStrength;
-  col += cut * (amber * 0.09 + cream * 0.03);
-
-  float vig = smoothstep(0.98, 0.30, length((uv - 0.5) * aspect));
-  col *= (0.56 + 0.44 * vig);
-
-  float g = noise(uv * uRes * 0.18 + t * 0.45);
-  col += (g - 0.5) * 0.016;
-
-  gl_FragColor = vec4(col, 1.0);
-}
-`;
-function Quad({ onContextLost }) {
-  const matRef = useRef(null);
-  const { size, gl } = useThree();
-  const uniforms = useMemo(
-    () => ({
-      uTime: { value: 0 },
-      uMouse: { value: new THREE.Vector2(0.55, 0.45) },
-      uPrevMouse: { value: new THREE.Vector2(0.55, 0.45) },
-      uRes: { value: new THREE.Vector2(1, 1) }
-    }),
-    []
-  );
-  const mouseTarget = useRef(new THREE.Vector2(0.55, 0.45));
-  const prevMouse = useRef(new THREE.Vector2(0.55, 0.45));
-  const dprRef = useRef(1.15);
-  const avgDt = useRef(1 / 60);
-  useEffect(() => {
-    uniforms.uRes.value.set(size.width, size.height);
-  }, [size.width, size.height, uniforms]);
-  useEffect(() => {
-    const el = gl.domElement;
-    const onMove = (e) => {
-      const r = el.getBoundingClientRect();
-      const x = clamp01((e.clientX - r.left) / Math.max(1, r.width));
-      const y = clamp01(1 - (e.clientY - r.top) / Math.max(1, r.height));
-      mouseTarget.current.set(x, y);
-    };
-    const onLost = (e) => {
-      e.preventDefault?.();
-      onContextLost();
-    };
-    el.addEventListener("pointermove", onMove, { passive: true });
-    el.addEventListener("webglcontextlost", onLost, { passive: false });
-    return () => {
-      el.removeEventListener("pointermove", onMove);
-      el.removeEventListener("webglcontextlost", onLost);
-    };
-  }, [gl, onContextLost]);
-  useFrame((_, delta) => {
-    if (!matRef.current) return;
-    const dt = Math.min(0.033, Math.max(1e-3, delta));
-    avgDt.current = avgDt.current * 0.92 + dt * 0.08;
-    const m = matRef.current.uniforms.uMouse.value;
-    const pm = matRef.current.uniforms.uPrevMouse.value;
-    pm.copy(prevMouse.current);
-    const lerpK = 1 - Math.pow(1e-3, dt);
-    m.lerp(mouseTarget.current, lerpK);
-    prevMouse.current.copy(m);
-    matRef.current.uniforms.uTime.value += dt;
-    const ms = avgDt.current * 1e3;
-    let targetDpr = dprRef.current;
-    if (ms > 19.5) targetDpr = Math.max(1, targetDpr - 0.03);
-    else if (ms < 16.8) targetDpr = Math.min(1.25, targetDpr + 0.015);
-    if (Math.abs(targetDpr - dprRef.current) > 1e-3) {
-      dprRef.current = targetDpr;
-      gl.setPixelRatio(dprRef.current);
-      matRef.current.uniforms.uRes.value.set(size.width, size.height);
-    }
-  });
-  return /* @__PURE__ */ jsxs("mesh", { children: [
-    /* @__PURE__ */ jsx("planeGeometry", { args: [2, 2] }),
-    /* @__PURE__ */ jsx(
-      "shaderMaterial",
-      {
-        ref: matRef,
-        uniforms,
-        vertexShader: VS,
-        fragmentShader: FS
-      }
-    )
-  ] });
-}
-function Fallback() {
-  return /* @__PURE__ */ jsx(
-    "div",
-    {
-      "aria-hidden": "true",
-      style: {
-        position: "absolute",
-        inset: 0,
-        background: "radial-gradient(120% 90% at 55% 35%, rgba(255,154,61,0.10) 0%, rgba(255,106,26,0.07) 32%, rgba(0,0,0,0) 62%), linear-gradient(180deg, #000000 0%, #000000 100%)"
-      }
-    }
-  );
-}
-function HeroWebGLBg() {
-  const [dead, setDead] = useState(false);
-  if (dead) return /* @__PURE__ */ jsx(Fallback, {});
-  const initialDpr = typeof window !== "undefined" ? Math.min(1.2, window.devicePixelRatio || 1) : 1;
-  return /* @__PURE__ */ jsx("div", { style: { position: "absolute", inset: 0 }, children: /* @__PURE__ */ jsx(
-    Canvas,
-    {
-      frameloop: "always",
-      dpr: initialDpr,
-      gl: {
-        antialias: false,
-        alpha: true,
-        powerPreference: "high-performance",
-        preserveDrawingBuffer: false
-      },
-      camera: { position: [0, 0, 1], fov: 50 },
-      style: { width: "100%", height: "100%" },
-      onCreated: ({ gl }) => {
-        gl.setClearColor(0, 0);
-      },
-      children: /* @__PURE__ */ jsx(Quad, { onContextLost: () => setDead(true) })
-    }
-  ) });
-}
 const HERO_BG_IMG = "/images/hero1.png";
 const CONTACT_EMAIL = "tivoonix@gmail.com";
+const HeroWebGLBg$2 = lazy(() => import("./assets/HeroWebGLBg-BM6EiQUz.js"));
 function cx$7(...a) {
   return a.filter(Boolean).join(" ");
 }
@@ -2409,7 +2173,7 @@ function Hero() {
                 }
               }
             ) : null,
-            mounted && isDesktop ? /* @__PURE__ */ jsx("div", { className: "heroWebgl pointer-events-auto", children: /* @__PURE__ */ jsx(HeroWebGLBg, {}) }) : /* @__PURE__ */ jsx(
+            mounted && isDesktop ? /* @__PURE__ */ jsx("div", { className: "heroWebgl pointer-events-auto", children: /* @__PURE__ */ jsx(Suspense, { fallback: null, children: /* @__PURE__ */ jsx(HeroWebGLBg$2, {}) }) }) : /* @__PURE__ */ jsx(
               "img",
               {
                 className: "heroImg",
@@ -2554,7 +2318,9 @@ function StackCard({
         opacity: reveal ? 1 : 0,
         transform: reveal ? "translateY(0)" : "translateY(14px)",
         transition: "transform .45s cubic-bezier(.2,.9,.2,1), opacity .4s ease",
-        transitionDelay: `${index * 26}ms`
+        transitionDelay: `${index * 26}ms`,
+        contentVisibility: "auto",
+        containIntrinsicSize: "320px 320px"
       },
       children: [
         /* @__PURE__ */ jsx(
@@ -2634,6 +2400,7 @@ function WhyUs() {
   });
   const [reveal, setReveal] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const progressRef = useRef(0);
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
@@ -2674,7 +2441,11 @@ function WhyUs() {
     }
     const midView = window.scrollY + window.innerHeight * 0.5;
     const raw = (midView - m.firstY) / (m.lastY - m.firstY);
-    setScrollProgress(clamp$2(raw, 0, 1));
+    const next = clamp$2(raw, 0, 1);
+    if (Math.abs(next - progressRef.current) > 5e-3) {
+      progressRef.current = next;
+      setScrollProgress(next);
+    }
   }, []);
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -3587,6 +3358,8 @@ function FAQSection() {
   const [catFilter, setCatFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [showAllCats, setShowAllCats] = useState(false);
+  const rootRef = useRef(null);
+  const [bgInView, setBgInView] = useState(false);
   const localizedItems = useMemo(() => {
     return FAQ_ITEMS.map((item) => ({
       id: item.id,
@@ -3615,6 +3388,22 @@ function FAQSection() {
   useEffect(() => {
     setPage((p) => Math.min(Math.max(1, p), totalPages));
   }, [totalPages]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const el = rootRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setBgInView(true);
+          io.disconnect();
+        }
+      },
+      { root: null, rootMargin: "300px 0px 300px 0px", threshold: 0.01 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   const resetDisabled = query.trim() === "" && catFilter === "all" && page === 1;
   async function copy(text, id) {
     try {
@@ -3664,7 +3453,7 @@ function FAQSection() {
 
         /* mobile perf: меньше blur/тяжёлых эффектов */
         @media (max-width: 640px){
-          .faq-card-bg{ backdrop-filter: blur(14px) !important; }
+          .faq-card-bg{ backdrop-filter: blur(8px) !important; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -3674,29 +3463,30 @@ function FAQSection() {
       ` }),
     /* @__PURE__ */ jsx("script", { type: "application/ld+json", dangerouslySetInnerHTML: { __html: JSON.stringify(jsonLd) } }),
     /* @__PURE__ */ jsxs("div", { "aria-hidden": "true", className: "pointer-events-none absolute inset-0", children: [
-      /* @__PURE__ */ jsx(
+      bgInView ? /* @__PURE__ */ jsx(
         "img",
         {
           src: BG_IMG,
           alt: "",
           loading: "lazy",
           decoding: "async",
+          fetchPriority: "low",
           className: "absolute inset-0 h-full w-full object-cover object-top opacity-95",
           draggable: false
         }
-      ),
+      ) : null,
       /* @__PURE__ */ jsx(
         "div",
         {
           className: "absolute inset-0",
           style: s$3({
-            background: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.92) 100%)"
+            background: bgInView ? "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.92) 100%)" : "linear-gradient(180deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.42) 50%, rgba(0,0,0,0.94) 100%)"
           })
         }
       )
     ] }),
     /* @__PURE__ */ jsxs(Container, { children: [
-      /* @__PURE__ */ jsxs("div", { className: "relative mx-auto max-w-2xl text-center", children: [
+      /* @__PURE__ */ jsxs("div", { ref: rootRef, className: "relative mx-auto max-w-2xl text-center", children: [
         /* @__PURE__ */ jsx("h2", { className: "mt-5 font-display text-[30px] leading-[34px] sm:text-[40px] sm:leading-[44px] font-extrabold tracking-tight", children: title }),
         /* @__PURE__ */ jsx("p", { className: "mt-2 text-sm sm:text-[15px] text-white/60", children: subtitle }),
         /* @__PURE__ */ jsx("div", { className: "mt-6", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[720px]", children: [
@@ -3717,8 +3507,7 @@ function FAQSection() {
                     "bg-white/[0.06] border-0",
                     "pl-10 pr-4 text-sm text-white/90 placeholder:text-white/40",
                     "outline-none",
-                    "focus:ring-2 focus:ring-white/12",
-                    "shadow-[0_18px_70px_rgba(0,0,0,0.55)]"
+                    "focus:ring-2 focus:ring-white/12"
                   )
                 }
               )
@@ -3740,7 +3529,6 @@ function FAQSection() {
                   "h-11 sm:h-12 px-4 rounded-[14px]",
                   "border-0 bg-white/[0.06]",
                   resetDisabled ? "text-white/35 cursor-not-allowed opacity-70" : "text-white/75 hover:text-white/92 hover:bg-white/[0.07] transition",
-                  "shadow-[0_18px_70px_rgba(0,0,0,0.45)]",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 ),
                 children: resetLabel
@@ -3834,9 +3622,10 @@ function FAQSection() {
             className: cx$4(
               "group relative overflow-hidden rounded-[20px]",
               "border-0",
-              "bg-[#1c1c1f] faq-card-bg backdrop-blur-[22px]",
-              "shadow-[0_20px_60px_rgba(0,0,0,0.42)]"
+              "bg-[#1c1c1f] faq-card-bg backdrop-blur-[10px]",
+              "shadow-[0_8px_24px_rgba(0,0,0,0.28)]"
             ),
+            style: { contentVisibility: "auto", containIntrinsicSize: "360px 320px", contain: "layout paint style" },
             children: /* @__PURE__ */ jsxs("div", { className: "relative z-[2] p-5 flex flex-col", children: [
               /* @__PURE__ */ jsx("header", { className: "flex items-start justify-between gap-3", children: /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
                 /* @__PURE__ */ jsx("h3", { className: "text-[14px] font-semibold text-white/92 leading-snug", children: f.q }),
@@ -4147,6 +3936,7 @@ function findProjectBySlug(slug, isRu) {
   if (!slug) return void 0;
   return buildProjects(isRu).find((p) => p.id === slug);
 }
+const HeroWebGLBg$1 = lazy(() => import("./assets/HeroWebGLBg-BM6EiQUz.js"));
 function cx$3(...a) {
   return a.filter(Boolean).join(" ");
 }
@@ -4274,9 +4064,42 @@ function Footer() {
   const { lang } = useLang();
   const isRu = lang === "ru";
   const [mounted, setMounted] = useState(false);
+  const footerRef = useRef(null);
+  const [webglInView, setWebglInView] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const [desktop, setDesktop] = useState(false);
   const t = (v) => isRu ? v.ru : v.en;
   useEffect(() => {
     setMounted(true);
+  }, []);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const el = footerRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        setWebglInView(!!entries[0]?.isIntersecting);
+      },
+      { root: null, rootMargin: "220px 0px 220px 0px", threshold: 0.01 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const desktopMq = window.matchMedia("(min-width: 1024px)");
+    const apply = () => {
+      setReducedMotion(!!motionMq.matches);
+      setDesktop(!!desktopMq.matches);
+    };
+    apply();
+    motionMq.addEventListener?.("change", apply);
+    desktopMq.addEventListener?.("change", apply);
+    return () => {
+      motionMq.removeEventListener?.("change", apply);
+      desktopMq.removeEventListener?.("change", apply);
+    };
   }, []);
   const docs = isRu ? DOCS.ru : DOCS.en;
   const projects = buildProjects(isRu);
@@ -4284,6 +4107,7 @@ function Footer() {
   return /* @__PURE__ */ jsxs(
     "footer",
     {
+      ref: footerRef,
       className: cx$3(
         "relative isolate overflow-hidden font-sans text-white antialiased",
         "selection:bg-[color:var(--accent)]/25"
@@ -4318,7 +4142,7 @@ function Footer() {
                     WebkitMaskSize: "100% 100%",
                     maskSize: "100% 100%"
                   }),
-                  children: mounted ? /* @__PURE__ */ jsx(HeroWebGLBg, {}) : null
+                  children: mounted && webglInView && desktop && !reducedMotion ? /* @__PURE__ */ jsx(Suspense, { fallback: null, children: /* @__PURE__ */ jsx(HeroWebGLBg$1, {}) }) : null
                 }
               ) }),
               /* @__PURE__ */ jsx(
@@ -4347,7 +4171,7 @@ function Footer() {
                     "w-[min(760px,62vw)] max-w-none",
                     "opacity-[0.14] sm:opacity-[0.16]"
                   ),
-                  style: s$2({ filter: "saturate(1.06) brightness(1.12)" })
+                  style: s$2({ opacity: 0.15 })
                 }
               )
             ]
@@ -4521,8 +4345,9 @@ function CheckIcon() {
   ) });
 }
 function useVideoBlock(ref, src) {
-  const [canLoad, setCanLoad] = useState(true);
+  const [canLoad, setCanLoad] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
+  const [inView, setInView] = useState(false);
   useEffect(() => {
     const mql = window.matchMedia?.("(prefers-reduced-motion: reduce)");
     if (!mql) return;
@@ -4540,17 +4365,19 @@ function useVideoBlock(ref, src) {
     if (!el) return;
     if (!("IntersectionObserver" in window)) {
       setCanLoad(true);
+      setInView(true);
       return;
     }
     const io = new IntersectionObserver(
       (entries) => {
         const e = entries[0];
-        if (e?.isIntersecting) {
+        const visible = !!e?.isIntersecting;
+        setInView(visible);
+        if (visible) {
           setCanLoad(true);
-          io.disconnect();
         }
       },
-      { root: null, rootMargin: "280px", threshold: 0.01 }
+      { root: null, rootMargin: "220px", threshold: 0.15 }
     );
     io.observe(el);
     return () => io.disconnect();
@@ -4598,9 +4425,22 @@ function useVideoBlock(ref, src) {
     }
   }, [ref, reduceMotion]);
   const stop = useCallback(() => {
-    safeReset();
-  }, [safeReset]);
-  return { play, stop };
+    const v = ref.current;
+    if (!v) return;
+    try {
+      v.pause();
+    } catch {
+    }
+  }, [ref]);
+  useEffect(() => {
+    if (!canLoad) return;
+    if (inView) {
+      void play();
+      return;
+    }
+    stop();
+  }, [inView, canLoad, play, stop]);
+  return { play, stop, inView };
 }
 function openTelegram(planName, isRu) {
   const text = isRu ? `${TG_TEXT_RU}${planName}` : `${TG_TEXT_EN}${planName}`;
@@ -4609,7 +4449,7 @@ function openTelegram(planName, isRu) {
 }
 function PlanCard({ p, isRu }) {
   const ref = useRef(null);
-  const { play, stop } = useVideoBlock(ref, p.videoSrc);
+  const { play, stop, inView } = useVideoBlock(ref, p.videoSrc);
   const [videoFailed, setVideoFailed] = useState(false);
   const label = isRu ? p.labelRu : p.labelEn;
   const title = isRu ? p.titleRu : p.titleEn;
@@ -4679,7 +4519,8 @@ function PlanCard({ p, isRu }) {
                   disablePictureInPicture: true,
                   className: cx$2(
                     "absolute left-0 top-0 h-full w-full object-cover",
-                    "opacity-[0.70] transition-opacity duration-200",
+                    "opacity-[0.72] transition-opacity duration-200",
+                    inView ? "opacity-[0.86]" : "opacity-[0.72]",
                     "group-hover:opacity-[0.90]"
                   ),
                   style: {
@@ -5065,6 +4906,7 @@ function DomainPill({
     }
   );
 }
+const HeroWebGLBg = lazy(() => import("./assets/HeroWebGLBg-BM6EiQUz.js"));
 const HEADER_H$1 = 72;
 const GMAIL_EMAIL_URL = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent("tivoonix@gmail.com")}&su=${encodeURIComponent("Проект (SaaS/MVP)")}`;
 function clamp$1(n, a = 0, b = 1) {
@@ -5219,7 +5061,7 @@ function ProjectsPage() {
     ),
     /* @__PURE__ */ jsx(Header, {}),
     /* @__PURE__ */ jsxs("div", { className: "pointer-events-none fixed inset-0 -z-10", "aria-hidden": true, children: [
-      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 overflow-hidden bg-black", children: /* @__PURE__ */ jsx("div", { className: "absolute inset-0 h-full w-full scale-[1.03] will-change-transform", children: mounted ? /* @__PURE__ */ jsx(HeroWebGLBg, {}) : null }) }),
+      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 overflow-hidden bg-black", children: /* @__PURE__ */ jsx("div", { className: "absolute inset-0 h-full w-full scale-[1.03] will-change-transform", children: mounted ? /* @__PURE__ */ jsx(Suspense, { fallback: null, children: /* @__PURE__ */ jsx(HeroWebGLBg, {}) }) : null }) }),
       /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.55),rgba(0,0,0,0.92))]" }),
       /* @__PURE__ */ jsx(
         "div",
@@ -6007,6 +5849,492 @@ function WebsiteCreationPage() {
     /* @__PURE__ */ jsx(Footer, {})
   ] });
 }
+const AUTOMATION_HERO_IMG = "/images/avtomatizaciya-biznesa/hero.png";
+const painPoints = [
+  {
+    title: "Ручной перенос данных",
+    text: "Информация копируется между таблицами, CRM, почтой и мессенджерами. Из-за этого появляются ошибки, дубли и потери данных."
+  },
+  {
+    title: "Потерянные заявки",
+    text: "Когда заявки приходят из разных каналов и не собираются в одной системе, часть обращений теряется или обрабатывается слишком поздно."
+  },
+  {
+    title: "Нет прозрачной аналитики",
+    text: "Данные разбросаны по разным местам. Чтобы понять, что происходит в бизнесе, приходится собирать всё вручную."
+  },
+  {
+    title: "Повторяющиеся задачи",
+    text: "Напоминания, статусы, уведомления, отчёты и другие рутинные действия можно автоматизировать и освободить время команды."
+  }
+];
+const whyAutomationVisuals = [
+  {
+    src: "/images/avtomatizaciya-biznesa/Зачем бизнесу автоматизация/Меньше ручной работы.png"
+  },
+  {
+    src: "/images/avtomatizaciya-biznesa/Зачем бизнесу автоматизация/Быстрее обработка заявок.png"
+  },
+  {
+    src: "/images/avtomatizaciya-biznesa/Зачем бизнесу автоматизация/Понятный контроль процессов.png"
+  },
+  {
+    src: "/images/avtomatizaciya-biznesa/Зачем бизнесу автоматизация/Удобная работа команды.png"
+  },
+  {
+    src: "/images/avtomatizaciya-biznesa/Зачем бизнесу автоматизация/Больше времени на рост бизнеса.png"
+  }
+];
+const automationFeatures = [
+  {
+    title: "Обработка заявок",
+    text: "Соберём заявки с сайта, форм, Telegram, email и других источников в одном месте."
+  },
+  {
+    title: "CRM и воронки продаж",
+    text: "Настроим систему для работы с клиентами, статусами, задачами и этапами продаж."
+  },
+  {
+    title: "Личные кабинеты",
+    text: "Разработаем кабинеты для клиентов, сотрудников или партнёров с нужными функциями и ролями."
+  },
+  {
+    title: "Админ-панели",
+    text: "Сделаем удобные внутренние панели управления для заявок, пользователей, заказов, контента и процессов."
+  },
+  {
+    title: "Уведомления и напоминания",
+    text: "Настроим автоматические уведомления в Telegram, email или внутри системы."
+  },
+  {
+    title: "Отчёты и аналитика",
+    text: "Соберём ключевые показатели в удобные дашборды и понятные отчёты."
+  },
+  {
+    title: "Оплаты и документы",
+    text: "Подключим оплату, статусы платежей, подтверждения, документы и логику после оплаты."
+  },
+  {
+    title: "Интеграции с внешними сервисами",
+    text: "Свяжем сайт, CRM, Telegram, таблицы, платёжные системы, API и другие инструменты."
+  }
+];
+const realExamples = [
+  {
+    title: "Для услуг и сервисных компаний",
+    text: "Клиент оставляет заявку на сайте. Она автоматически попадает в систему, менеджер получает уведомление, заявке присваивается статус, а руководитель видит весь путь клиента от обращения до оплаты."
+  },
+  {
+    title: "Для онлайн-сервисов и стартапов",
+    text: "Пользователь регистрируется, получает доступ в личный кабинет, видит нужные функции, оплачивает сервис, а администратор управляет данными через панель."
+  },
+  {
+    title: "Для локального бизнеса",
+    text: "Заявки, записи, оплаты и сообщения собираются в одном месте. Команда видит задачи, а владелец получает понятную картину по работе бизнеса."
+  },
+  {
+    title: "Для внутренних процессов компании",
+    text: "Вместо множества таблиц и ручных отчётов появляется единая система, где сотрудники работают с задачами, статусами, документами и данными."
+  }
+];
+const steps = [
+  {
+    title: "Разбираем процессы",
+    text: "Понимаем, как сейчас устроена работа, где появляются узкие места и что реально мешает бизнесу."
+  },
+  {
+    title: "Находим точки автоматизации",
+    text: "Определяем, какие действия можно упростить, какие данные нужно связать и что должно происходить автоматически."
+  },
+  {
+    title: "Проектируем решение",
+    text: "Продумываем структуру, роли пользователей, сценарии, статусы, экраны и интеграции."
+  },
+  {
+    title: "Разрабатываем систему",
+    text: "Создаём интерфейс, серверную часть, админ-панель, личные кабинеты и нужную логику."
+  },
+  {
+    title: "Тестируем и запускаем",
+    text: "Проверяем сценарии, исправляем ошибки, подключаем всё необходимое и запускаем систему в работу."
+  },
+  {
+    title: "Развиваем дальше",
+    text: "После запуска добавляем новые функции и улучшаем продукт по мере роста бизнеса."
+  }
+];
+const faqs = [
+  {
+    q: "Сколько стоит автоматизация бизнеса?",
+    a: "Стоимость зависит от объёма задачи: ролей, экранов, логики, интеграций и сценариев. После короткого разбора мы сможем дать ориентир по бюджету."
+  },
+  {
+    q: "Сколько времени занимает разработка?",
+    a: "Это зависит от сложности решения. Небольшую систему можно запустить быстрее, более сложный продукт требует больше этапов. Часто оптимально начинать с MVP."
+  },
+  {
+    q: "Можно автоматизировать только один процесс?",
+    a: "Да. Часто это лучший вариант. Например, сначала автоматизировать заявки, а потом постепенно добавить личный кабинет, аналитику, оплаты и другие блоки."
+  },
+  {
+    q: "Вы делаете интеграции с Telegram, оплатами и внешними сервисами?",
+    a: "Да. Мы можем подключить Telegram, email, платёжные системы, CRM, таблицы, API и другие сервисы."
+  },
+  {
+    q: "Что лучше: готовый сервис или разработка под себя?",
+    a: "Если задача типовая, может подойти готовый сервис. Если у бизнеса своя логика и нестандартные процессы, лучше делать решение под себя."
+  },
+  {
+    q: "Нужно ли техническое задание?",
+    a: "Нет. На старте достаточно описать задачу простыми словами. Мы сами поможем разобраться, сформировать структуру и определить первый этап."
+  }
+];
+function DotList({ items }) {
+  return /* @__PURE__ */ jsx("ul", { className: "grid gap-3 sm:grid-cols-2", children: items.map((item) => /* @__PURE__ */ jsxs("li", { className: "flex items-start gap-3 text-white/78", children: [
+    /* @__PURE__ */ jsx("span", { className: "mt-2 h-1.5 w-1.5 rounded-full bg-[#FF8A1E]" }),
+    /* @__PURE__ */ jsx("span", { children: item })
+  ] }, item)) });
+}
+function AutomationHero() {
+  return /* @__PURE__ */ jsx(Section, { className: "relative overflow-hidden pt-12 sm:pt-16 lg:pt-20 pb-16 sm:pb-20", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-6xl", children: [
+    /* @__PURE__ */ jsxs("div", { className: "text-center", children: [
+      /* @__PURE__ */ jsxs("h1", { className: "font-display mt-5 text-[36px] sm:text-[58px] leading-[1.02] tracking-[-0.035em] font-[860] text-white", children: [
+        /* @__PURE__ */ jsx("span", { className: "block", children: "Автоматизируем процессы" }),
+        /* @__PURE__ */ jsx("span", { className: "block bg-[linear-gradient(90deg,#FFD7B0_0%,#FFAE57_38%,#FF8A1E_72%,#FF6E12_100%)] bg-clip-text text-transparent", children: "вашего бизнеса" })
+      ] }),
+      /* @__PURE__ */ jsx("p", { className: "font-display mt-7 mx-auto max-w-3xl text-[18px] sm:text-[20px] leading-[1.55] tracking-[-0.015em] text-white/82", children: "Помогаем убрать ручную работу, связать сервисы и навести порядок в заявках, клиентах, отчётах и внутренних процессах." })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "relative mx-auto mt-14 max-w-5xl px-3", children: [
+      /* @__PURE__ */ jsx(
+        "img",
+        {
+          src: AUTOMATION_HERO_IMG,
+          alt: "Схема автоматизации бизнес-процессов",
+          loading: "eager",
+          decoding: "async",
+          draggable: false,
+          className: "w-full h-auto object-cover"
+        }
+      ),
+      /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 bottom-5 flex justify-center px-4", children: /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap justify-center gap-3", children: [
+        /* @__PURE__ */ jsx(
+          "a",
+          {
+            href: "https://t.me/TIVONIX",
+            target: "_blank",
+            rel: "noopener noreferrer",
+            className: "inline-flex h-12 items-center justify-center rounded-2xl px-7 text-[14px] font-[760] text-black bg-[linear-gradient(180deg,#FFB347_0%,#FF8A1E_100%)]",
+            children: "Обсудить автоматизацию"
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          Link,
+          {
+            to: "/projects",
+            className: "inline-flex h-12 items-center justify-center rounded-2xl px-7 text-[14px] font-[650] text-white bg-white/[0.08] hover:bg-white/[0.12] transition",
+            children: "Посмотреть кейсы"
+          }
+        )
+      ] }) })
+    ] }),
+    /* @__PURE__ */ jsx("p", { className: "mt-4 text-center text-[13px] text-white/58", children: "Первая консультация — бесплатно. Поможем понять, что именно можно автоматизировать и с чего лучше начать." })
+  ] }) }) });
+}
+function WhyAutomation() {
+  const scrollWrapRef = useRef(null);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const count = whyAutomationVisuals.length;
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncMotion = () => setReduceMotion(mq.matches);
+    syncMotion();
+    mq.addEventListener("change", syncMotion);
+    return () => mq.removeEventListener("change", syncMotion);
+  }, []);
+  useEffect(() => {
+    if (reduceMotion) return;
+    const el = scrollWrapRef.current;
+    if (!el) return;
+    const updateIndex = () => {
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const scrollRange = el.offsetHeight - vh;
+      if (scrollRange <= 0) {
+        setActiveIdx(0);
+        return;
+      }
+      const scrolled = Math.min(Math.max(-rect.top, 0), scrollRange);
+      const t = scrolled / scrollRange;
+      const idx = Math.min(count - 1, Math.max(0, Math.floor(t * count)));
+      setActiveIdx((prev) => prev === idx ? prev : idx);
+    };
+    updateIndex();
+    window.addEventListener("scroll", updateIndex, { passive: true });
+    window.addEventListener("resize", updateIndex);
+    return () => {
+      window.removeEventListener("scroll", updateIndex);
+      window.removeEventListener("resize", updateIndex);
+    };
+  }, [count, reduceMotion]);
+  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20", children: /* @__PURE__ */ jsxs(Container, { children: [
+    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Зачем бизнесу автоматизация" }),
+    /* @__PURE__ */ jsx("p", { className: "mt-5 max-w-[78ch] text-white/72 leading-7", children: "Автоматизация нужна не ради “сложной системы”. Она нужна, чтобы бизнес работал быстрее, понятнее и стабильнее." }),
+    /* @__PURE__ */ jsx("p", { className: "mt-3 max-w-[78ch] text-white/64 leading-7", children: "Если заявки теряются в чатах, сотрудники переносят данные вручную, а отчёты собираются из нескольких таблиц — это уже сигнал, что часть процессов можно упростить." }),
+    reduceMotion ? /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-5 max-w-4xl", children: whyAutomationVisuals.map((item, idx) => /* @__PURE__ */ jsx(
+      "img",
+      {
+        src: encodeURI(item.src),
+        alt: "",
+        loading: "lazy",
+        decoding: "async",
+        draggable: false,
+        className: "w-full h-auto"
+      },
+      idx
+    )) }) : /* @__PURE__ */ jsx(
+      "div",
+      {
+        ref: scrollWrapRef,
+        className: "relative mt-10",
+        style: { minHeight: `calc(${count} * 100vh)` },
+        children: /* @__PURE__ */ jsx("div", { className: "sticky top-0 flex min-h-[100svh] items-center justify-center py-8 sm:py-10", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto w-full max-w-4xl px-1", children: [
+          /* @__PURE__ */ jsx(
+            "img",
+            {
+              src: encodeURI(whyAutomationVisuals[activeIdx].src),
+              alt: "",
+              loading: activeIdx === 0 ? "eager" : "lazy",
+              decoding: "async",
+              fetchPriority: activeIdx === 0 ? "high" : "low",
+              draggable: false,
+              className: "mx-auto w-full max-h-[min(88vh,920px)] h-auto object-contain transition-opacity duration-300"
+            }
+          ),
+          /* @__PURE__ */ jsx("div", { className: "mt-6 flex justify-center gap-2", children: whyAutomationVisuals.map((_, i) => /* @__PURE__ */ jsx(
+            "span",
+            {
+              className: `h-1.5 w-1.5 rounded-full transition-colors ${i === activeIdx ? "bg-[#FF8A1E]" : "bg-white/22"}`,
+              "aria-hidden": true
+            },
+            i
+          )) })
+        ] }) })
+      }
+    )
+  ] }) });
+}
+function AutomationSignals() {
+  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20 bg-white/[0.02]", children: /* @__PURE__ */ jsxs(Container, { children: [
+    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Когда уже пора автоматизировать процессы" }),
+    /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-[76ch] text-white/66 leading-7", children: "Обычно автоматизация нужна не “когда-нибудь потом”, а в тот момент, когда бизнес начинает упираться в хаос и ручную работу." }),
+    /* @__PURE__ */ jsx("div", { className: "mt-8", children: /* @__PURE__ */ jsx(
+      DotList,
+      {
+        items: [
+          "Заявки приходят из разных источников и часть из них теряется",
+          "Менеджеры ведут клиентов в таблицах, чатах и заметках",
+          "Одни и те же данные приходится переносить вручную",
+          "Руководителю сложно видеть актуальные статусы и цифры",
+          "Клиенты постоянно задают одни и те же вопросы",
+          "Команда тратит много времени на повторяющиеся действия",
+          "Готовые сервисы не подходят под вашу логику работы"
+        ]
+      }
+    ) })
+  ] }) });
+}
+function PainPoints() {
+  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20", children: /* @__PURE__ */ jsxs(Container, { children: [
+    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Где бизнес теряет время и деньги" }),
+    /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-5 sm:grid-cols-2", children: painPoints.map((item) => /* @__PURE__ */ jsxs("article", { className: "rounded-3xl bg-white/[0.04] p-6", children: [
+      /* @__PURE__ */ jsx("h3", { className: "text-[20px] font-[760] text-white", children: item.title }),
+      /* @__PURE__ */ jsx("p", { className: "mt-3 text-white/67 leading-7", children: item.text })
+    ] }, item.title)) })
+  ] }) });
+}
+function AutomationFeatures() {
+  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20 bg-white/[0.02]", children: /* @__PURE__ */ jsxs(Container, { children: [
+    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Что можно автоматизировать" }),
+    /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4", children: automationFeatures.map((item) => /* @__PURE__ */ jsxs("article", { className: "rounded-2xl bg-white/[0.04] p-5", children: [
+      /* @__PURE__ */ jsx("h3", { className: "text-[17px] font-[730] text-white", children: item.title }),
+      /* @__PURE__ */ jsx("p", { className: "mt-2 text-[14px] leading-6 text-white/64", children: item.text })
+    ] }, item.title)) })
+  ] }) });
+}
+function RealExamples() {
+  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20", children: /* @__PURE__ */ jsxs(Container, { children: [
+    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Как автоматизация выглядит на практике" }),
+    /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-5 sm:grid-cols-2", children: realExamples.map((example) => /* @__PURE__ */ jsxs("article", { className: "rounded-3xl bg-white/[0.04] p-6", children: [
+      /* @__PURE__ */ jsx("h3", { className: "text-[20px] font-[760] text-white", children: example.title }),
+      /* @__PURE__ */ jsx("p", { className: "mt-3 text-white/68 leading-7", children: example.text })
+    ] }, example.title)) })
+  ] }) });
+}
+function ResultsSection() {
+  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20 bg-white/[0.02]", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs("div", { className: "grid gap-8 lg:grid-cols-[1fr_360px] lg:items-start", children: [
+    /* @__PURE__ */ jsxs("div", { children: [
+      /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Что вы получите в результате" }),
+      /* @__PURE__ */ jsx("div", { className: "mt-7", children: /* @__PURE__ */ jsx(
+        DotList,
+        {
+          items: [
+            "Понятную структуру будущей системы",
+            "Прототип экранов и логики",
+            "Веб-сервис или внутренний инструмент под ваш процесс",
+            "Админ-панель для управления",
+            "Интеграции с нужными сервисами",
+            "Уведомления, статусы и автоматические действия",
+            "Поддержку запуска и дальнейшего развития"
+          ]
+        }
+      ) })
+    ] }),
+    /* @__PURE__ */ jsx("aside", { className: "rounded-3xl bg-[linear-gradient(180deg,rgba(255,138,30,0.18),rgba(255,138,30,0.05))] p-6", children: /* @__PURE__ */ jsx("p", { className: "text-white/86 leading-7", children: "Не просто “красивый интерфейс”, а рабочую систему, которая реально разгружает команду и помогает контролировать процессы." }) })
+  ] }) }) });
+}
+function ProcessSteps() {
+  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20", children: /* @__PURE__ */ jsxs(Container, { children: [
+    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Как мы запускаем автоматизацию" }),
+    /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3", children: steps.map((step, index) => /* @__PURE__ */ jsxs("article", { className: "rounded-2xl bg-white/[0.035] p-5", children: [
+      /* @__PURE__ */ jsxs("div", { className: "text-[#FF9A3D] text-[12px] tracking-[0.18em] uppercase", children: [
+        "Шаг ",
+        index + 1
+      ] }),
+      /* @__PURE__ */ jsx("h3", { className: "mt-2 text-[18px] font-[740] text-white", children: step.title }),
+      /* @__PURE__ */ jsx("p", { className: "mt-2 text-white/64 leading-6", children: step.text })
+    ] }, step.title)) })
+  ] }) });
+}
+function WhyNotGenericCRM() {
+  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20 bg-white/[0.02]", children: /* @__PURE__ */ jsxs(Container, { children: [
+    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Почему готовый сервис подходит не всем" }),
+    /* @__PURE__ */ jsx("p", { className: "mt-5 max-w-[82ch] text-white/72 leading-7", children: "Готовые CRM и сервисы могут быть полезны, если процессы стандартные. Но если у бизнеса своя логика работы, нестандартные роли, личные кабинеты, особые статусы, интеграции или внутренние сценарии, стандартных решений часто становится недостаточно." }),
+    /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-[82ch] text-white/64 leading-7", children: "В таких случаях приходится либо подстраивать бизнес под чужой инструмент, либо делать систему под себя. Мы помогаем выбрать правильный вариант и не предлагаем разработку там, где можно обойтись более простым решением." })
+  ] }) });
+}
+function WhyTivonix() {
+  const points = [
+    {
+      title: "Не просто сайт, а рабочая система",
+      text: "Мы смотрим шире: заявки, данные, пользователи, процессы, админка, интеграции и развитие после запуска."
+    },
+    {
+      title: "Объясняем простым языком",
+      text: "Без технической путаницы. Показываем, что именно нужно сделать, зачем это нужно и как это поможет бизнесу."
+    },
+    {
+      title: "Можно начать с MVP",
+      text: "Не обязательно сразу строить большую систему. Часто лучше запустить первую рабочую версию и развивать её поэтапно."
+    },
+    {
+      title: "Берём на себя весь процесс",
+      text: "Структура, дизайн, разработка, интеграции, тестирование и запуск — всё в одном месте."
+    }
+  ];
+  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20", children: /* @__PURE__ */ jsxs(Container, { children: [
+    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Почему TIVONIX" }),
+    /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-5 sm:grid-cols-2", children: points.map((item) => /* @__PURE__ */ jsxs("article", { className: "rounded-3xl bg-white/[0.04] p-6", children: [
+      /* @__PURE__ */ jsx("h3", { className: "text-[20px] font-[760] text-white", children: item.title }),
+      /* @__PURE__ */ jsx("p", { className: "mt-3 text-white/66 leading-7", children: item.text })
+    ] }, item.title)) })
+  ] }) });
+}
+function AutomationFAQ() {
+  const [open, setOpen] = useState(0);
+  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20 bg-white/[0.02]", children: /* @__PURE__ */ jsxs(Container, { children: [
+    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Частые вопросы" }),
+    /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-3", children: faqs.map((item, index) => {
+      const active = open === index;
+      return /* @__PURE__ */ jsxs("article", { className: "rounded-2xl bg-white/[0.04] px-5 py-4", children: [
+        /* @__PURE__ */ jsxs(
+          "button",
+          {
+            type: "button",
+            onClick: () => setOpen((prev) => prev === index ? null : index),
+            className: "w-full text-left flex items-center justify-between gap-4",
+            children: [
+              /* @__PURE__ */ jsx("span", { className: "text-[17px] font-[720] text-white", children: item.q }),
+              /* @__PURE__ */ jsx("span", { className: `text-[#FF9A3D] transition-transform ${active ? "rotate-180" : ""}`, children: "⌄" })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsx("div", { className: `grid transition-[grid-template-rows,opacity] duration-300 ${active ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0"}`, children: /* @__PURE__ */ jsx("p", { className: "overflow-hidden text-white/65 leading-7", children: item.a }) })
+      ] }, item.q);
+    }) })
+  ] }) });
+}
+function AutomationCTA() {
+  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs("div", { className: "rounded-[30px] bg-[linear-gradient(180deg,rgba(255,138,30,0.18),rgba(255,138,30,0.04))] p-8 sm:p-10", children: [
+    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Покажем, что можно автоматизировать именно у вас" }),
+    /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-[78ch] text-white/72 leading-7", children: "Расскажите, как сейчас устроена работа в вашем бизнесе. Мы разберём процессы, найдём точки автоматизации и предложим понятное решение: от простого внутреннего инструмента до полноценного веб-сервиса." }),
+    /* @__PURE__ */ jsxs("div", { className: "mt-8 flex flex-wrap gap-3", children: [
+      /* @__PURE__ */ jsx(
+        "a",
+        {
+          href: "https://t.me/TIVONIX",
+          target: "_blank",
+          rel: "noopener noreferrer",
+          className: "inline-flex h-12 items-center justify-center rounded-2xl px-7 text-[14px] font-[760] text-black bg-[linear-gradient(180deg,#FFB347_0%,#FF8A1E_100%)]",
+          children: "Получить консультацию"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "a",
+        {
+          href: "https://t.me/TIVONIX",
+          target: "_blank",
+          rel: "noopener noreferrer",
+          className: "inline-flex h-12 items-center justify-center rounded-2xl px-7 text-[14px] font-[650] text-white bg-white/[0.08] hover:bg-white/[0.12] transition",
+          children: "Написать в Telegram"
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsx("p", { className: "mt-4 text-[13px] text-white/58", children: "Ответим в течение дня и подскажем, с чего лучше начать." })
+  ] }) }) });
+}
+function AutomationBusinessPage() {
+  const schema = useMemo(
+    () => ({
+      "@context": "https://schema.org",
+      "@type": "Service",
+      name: "Автоматизация бизнеса TIVONIX",
+      serviceType: "Automation and custom web systems",
+      provider: { "@type": "Organization", name: "TIVONIX" },
+      areaServed: "CIS",
+      url: "https://www.tivonix.tech/avtomatizaciya-biznesa"
+    }),
+    []
+  );
+  return /* @__PURE__ */ jsxs("div", { className: "min-h-screen bg-black", children: [
+    /* @__PURE__ */ jsx(
+      SEO,
+      {
+        title: "Автоматизация бизнеса — TIVONIX",
+        description: "Автоматизация процессов, CRM, личные кабинеты, админ-панели и интеграции под реальные задачи бизнеса.",
+        canonicalPath: "/avtomatizaciya-biznesa",
+        schemaJsonLd: schema,
+        ogLocalePrimary: "ru_RU"
+      }
+    ),
+    /* @__PURE__ */ jsx(Header, {}),
+    /* @__PURE__ */ jsxs("main", { children: [
+      /* @__PURE__ */ jsx(AutomationHero, {}),
+      /* @__PURE__ */ jsx(WhyAutomation, {}),
+      /* @__PURE__ */ jsx(AutomationSignals, {}),
+      /* @__PURE__ */ jsx(PainPoints, {}),
+      /* @__PURE__ */ jsx(AutomationFeatures, {}),
+      /* @__PURE__ */ jsx(RealExamples, {}),
+      /* @__PURE__ */ jsx(ResultsSection, {}),
+      /* @__PURE__ */ jsx(ProcessSteps, {}),
+      /* @__PURE__ */ jsx(WhyNotGenericCRM, {}),
+      /* @__PURE__ */ jsx(WhyTivonix, {}),
+      /* @__PURE__ */ jsx(AutomationFAQ, {}),
+      /* @__PURE__ */ jsx(AutomationCTA, {})
+    ] }),
+    /* @__PURE__ */ jsx(Footer, {})
+  ] });
+}
 const HEADER_OFFSET = 84;
 function ScrollToHash() {
   const { pathname, hash } = useLocation();
@@ -6033,7 +6361,8 @@ function AppRoutes() {
       /* @__PURE__ */ jsx(Route, { path: "/projects", element: /* @__PURE__ */ jsx(ProjectsPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/projects/:slug", element: /* @__PURE__ */ jsx(ProjectDetailPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/contacts", element: /* @__PURE__ */ jsx(ContactsPage, {}) }),
-      /* @__PURE__ */ jsx(Route, { path: "/sozdanie-sajtov", element: /* @__PURE__ */ jsx(WebsiteCreationPage, {}) })
+      /* @__PURE__ */ jsx(Route, { path: "/sozdanie-sajtov", element: /* @__PURE__ */ jsx(WebsiteCreationPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/avtomatizaciya-biznesa", element: /* @__PURE__ */ jsx(AutomationBusinessPage, {}) })
     ] })
   ] });
 }

@@ -1,4 +1,3 @@
-import React from "react";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
@@ -8,13 +7,11 @@ import "./index.css";
 const root = document.getElementById("root");
 
 const app = (
-  <React.StrictMode>
-    <HelmetProvider>
-      <LangProvider>
-        <App />
-      </LangProvider>
-    </HelmetProvider>
-  </React.StrictMode>
+  <HelmetProvider>
+    <LangProvider>
+      <App />
+    </LangProvider>
+  </HelmetProvider>
 );
 
 if (root) {

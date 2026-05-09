@@ -68,9 +68,10 @@ function CheckIcon() {
   );
 }
 
-function useVideoBlock(ref: React.RefObject<HTMLVideoElement>, src?: string) {
-  const [canLoad, setCanLoad] = useState(true);
+function useVideoBlock(ref: React.RefObject<HTMLVideoElement | null>, src?: string) {
+  const [canLoad, setCanLoad] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
+  const [inView, setInView] = useState(false);
 
   useEffect(() => {
     const mql = window.matchMedia?.("(prefers-reduced-motion: reduce)");
@@ -95,18 +96,20 @@ function useVideoBlock(ref: React.RefObject<HTMLVideoElement>, src?: string) {
 
     if (!("IntersectionObserver" in window)) {
       setCanLoad(true);
+      setInView(true);
       return;
     }
 
     const io = new IntersectionObserver(
       (entries) => {
         const e = entries[0];
-        if (e?.isIntersecting) {
+        const visible = !!e?.isIntersecting;
+        setInView(visible);
+        if (visible) {
           setCanLoad(true);
-          io.disconnect();
         }
       },
-      { root: null, rootMargin: "280px", threshold: 0.01 }
+      { root: null, rootMargin: "220px", threshold: 0.15 }
     );
 
     io.observe(el);
@@ -163,10 +166,23 @@ function useVideoBlock(ref: React.RefObject<HTMLVideoElement>, src?: string) {
   }, [ref, reduceMotion]);
 
   const stop = useCallback(() => {
-    safeReset();
-  }, [safeReset]);
+    const v = ref.current;
+    if (!v) return;
+    try {
+      v.pause();
+    } catch {}
+  }, [ref]);
 
-  return { play, stop };
+  useEffect(() => {
+    if (!canLoad) return;
+    if (inView) {
+      void play();
+      return;
+    }
+    stop();
+  }, [inView, canLoad, play, stop]);
+
+  return { play, stop, inView };
 }
 
 // ✅ открываем TG (в новой вкладке) + с префиллом текста
@@ -178,7 +194,7 @@ function openTelegram(planName: string, isRu: boolean) {
 
 function PlanCard({ p, isRu }: { p: Plan; isRu: boolean }) {
   const ref = useRef<HTMLVideoElement | null>(null);
-  const { play, stop } = useVideoBlock(ref, p.videoSrc);
+  const { play, stop, inView } = useVideoBlock(ref, p.videoSrc);
   const [videoFailed, setVideoFailed] = useState(false);
 
   const label = isRu ? p.labelRu : p.labelEn;
@@ -251,7 +267,8 @@ function PlanCard({ p, isRu }: { p: Plan; isRu: boolean }) {
             disablePictureInPicture
             className={cx(
               "absolute left-0 top-0 h-full w-full object-cover",
-              "opacity-[0.70] transition-opacity duration-200",
+              "opacity-[0.72] transition-opacity duration-200",
+              inView ? "opacity-[0.86]" : "opacity-[0.72]",
               "group-hover:opacity-[0.90]"
             )}
             style={{

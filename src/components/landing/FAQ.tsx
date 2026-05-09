@@ -1,5 +1,5 @@
 // src/components/landing/FAQ.tsx
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import Container from "../ui/Container";
 import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
@@ -376,6 +376,8 @@ export default function FAQSection() {
   const [catFilter, setCatFilter] = useState<CatFilter>("all");
   const [page, setPage] = useState(1);
   const [showAllCats, setShowAllCats] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const [bgInView, setBgInView] = useState(false);
 
   const localizedItems = useMemo<LocalFaqItem[]>(() => {
     return FAQ_ITEMS.map((item) => ({
@@ -412,6 +414,23 @@ export default function FAQSection() {
   useEffect(() => {
     setPage((p) => Math.min(Math.max(1, p), totalPages));
   }, [totalPages]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const el = rootRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setBgInView(true);
+          io.disconnect();
+        }
+      },
+      { root: null, rootMargin: "300px 0px 300px 0px", threshold: 0.01 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const resetDisabled = query.trim() === "" && catFilter === "all" && page === 1;
 
@@ -473,7 +492,7 @@ export default function FAQSection() {
 
         /* mobile perf: меньше blur/тяжёлых эффектов */
         @media (max-width: 640px){
-          .faq-card-bg{ backdrop-filter: blur(14px) !important; }
+          .faq-card-bg{ backdrop-filter: blur(8px) !important; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -487,26 +506,30 @@ export default function FAQSection() {
 
       {/* background image as img (lazy-friendly) */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <img
-          src={BG_IMG}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          className="absolute inset-0 h-full w-full object-cover object-top opacity-95"
-          draggable={false}
-        />
+        {bgInView ? (
+          <img
+            src={BG_IMG}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            fetchPriority="low"
+            className="absolute inset-0 h-full w-full object-cover object-top opacity-95"
+            draggable={false}
+          />
+        ) : null}
         <div
           className="absolute inset-0"
           style={s({
-            background:
-              "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.92) 100%)",
+            background: bgInView
+              ? "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.92) 100%)"
+              : "linear-gradient(180deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.42) 50%, rgba(0,0,0,0.94) 100%)",
           })}
         />
       </div>
 
       <Container>
         {/* header */}
-        <div className="relative mx-auto max-w-2xl text-center">
+        <div ref={rootRef} className="relative mx-auto max-w-2xl text-center">
           <h2 className="mt-5 font-display text-[30px] leading-[34px] sm:text-[40px] sm:leading-[44px] font-extrabold tracking-tight">
             {title}
           </h2>
@@ -538,8 +561,7 @@ export default function FAQSection() {
                       "bg-white/[0.06] border-0",
                       "pl-10 pr-4 text-sm text-white/90 placeholder:text-white/40",
                       "outline-none",
-                      "focus:ring-2 focus:ring-white/12",
-                      "shadow-[0_18px_70px_rgba(0,0,0,0.55)]"
+                      "focus:ring-2 focus:ring-white/12"
                     )}
                   />
                 </div>
@@ -561,7 +583,6 @@ export default function FAQSection() {
                     resetDisabled
                       ? "text-white/35 cursor-not-allowed opacity-70"
                       : "text-white/75 hover:text-white/92 hover:bg-white/[0.07] transition",
-                    "shadow-[0_18px_70px_rgba(0,0,0,0.45)]",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                   )}
                 >
@@ -677,9 +698,10 @@ export default function FAQSection() {
                 className={cx(
                   "group relative overflow-hidden rounded-[20px]",
                   "border-0",
-                  "bg-[#1c1c1f] faq-card-bg backdrop-blur-[22px]",
-                  "shadow-[0_20px_60px_rgba(0,0,0,0.42)]"
+                  "bg-[#1c1c1f] faq-card-bg backdrop-blur-[10px]",
+                  "shadow-[0_8px_24px_rgba(0,0,0,0.28)]"
                 )}
+                style={{ contentVisibility: "auto", containIntrinsicSize: "360px 320px", contain: "layout paint style" } as CSSProperties}
               >
                 <div className="relative z-[2] p-5 flex flex-col">
                   <header className="flex items-start justify-between gap-3">

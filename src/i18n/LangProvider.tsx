@@ -34,6 +34,7 @@ type HeroDict = {
   emailPlaceholder: string;
   btnDemo: string;
   btnTelegram: string;
+  btnAutomation: string;
 };
 
 type CurtainDict = {
@@ -129,6 +130,7 @@ const DICT: Record<Lang, Dictionary> = {
       emailPlaceholder: "Рабочий email",
       btnDemo: "Получить демо",
       btnTelegram: "Написать в Telegram",
+      btnAutomation: "Автоматизировать ваш бизнес",
     },
     curtain: {
       title: "Процесс разработки — по шагам",
@@ -255,6 +257,7 @@ const DICT: Record<Lang, Dictionary> = {
       emailPlaceholder: "Work email",
       btnDemo: "Get a demo",
       btnTelegram: "Message on Telegram",
+      btnAutomation: "Automate your business",
     },
     curtain: {
       title: "Development process — step by step",

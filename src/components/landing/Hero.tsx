@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import Section from "../ui/Section";
 import Container from "../ui/Container";
 import { useLang, type Lang } from "../../i18n/LangProvider";
-import HeroWebGLBg from "./HeroWebGLBg";
 import { TG_BOT_URL } from "../../constants/links";
 
 const HERO_BG_IMG = "/images/hero1.png"; // mobile hero image
 const CONTACT_EMAIL = "tivoonix@gmail.com";
+const HeroWebGLBg = lazy(() => import("./HeroWebGLBg"));
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -109,11 +110,11 @@ const HERO_STYLES = `
     text-shadow:0 14px 38px rgba(0,0,0,0.86);
   }
 
-  /* ===== DESKTOP CTA (как было) ===== */
+  /* ===== DESKTOP CTA: вторичная кнопка (обводка + стекло) ===== */
   .gmailBtn{
-    border-radius:18px;
-    border:none;
-    background:rgba(255,255,255,0.08);
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,0.22);
+    background:rgba(255,255,255,0.06);
     backdrop-filter:none;
     -webkit-backdrop-filter:none;
     box-shadow:none;
@@ -121,7 +122,8 @@ const HERO_STYLES = `
   }
   .gmailBtn:hover{
     transform:translateY(-1px);
-    background:rgba(255,255,255,0.13);
+    background:rgba(255,255,255,0.10);
+    border-color:rgba(255,255,255,0.32);
   }
   .gmailBtn:active{ transform:translateY(0px); }
 
@@ -164,9 +166,12 @@ const HERO_STYLES = `
   }
 }
 
-    /* Центрируем блок как у Vercel */
-    .hero .heroWrap{ text-align:center; padding-top: 2px; padding-bottom: clamp(220px, 40vh, 440px); }
-    .hero .heroSubtitle{ margin-left:auto; margin-right:auto; }
+    .hero .heroWrap{
+      text-align:left;
+      padding-top: 2px;
+      padding-bottom: clamp(220px, 40vh, 440px);
+    }
+    .hero .heroSubtitle{ margin-left:0; margin-right:auto; }
 
     /* Типографика мобилки */
     .hero .heroTitleCaps{ text-transform:none !important; letter-spacing:-0.02em !important; }
@@ -176,8 +181,7 @@ const HERO_STYLES = `
       text-shadow:none;
     }
 
-    /* Ограничим ширину заголовка, чтобы выглядел “плотно” */
-    .hero .heroH1{ max-width: 18ch; margin-left:auto; margin-right:auto; }
+    .hero .heroH1{ max-width: 20ch; margin-left:0; margin-right:auto; }
     .hero .heroSubtitle{
       font-size: 13.75px !important;
       line-height: 1.6 !important;
@@ -185,48 +189,52 @@ const HERO_STYLES = `
       max-width: 48ch;
     }
 
-    /* CTA в одну строку (2 колонки), как Vercel */
+    /* CTA: столбик, выравнивание как у текста */
     .hero .heroCtas{
       margin-top: 18px !important;
       display:grid !important;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px !important;
-      max-width: 520px;
-      margin-left:auto;
-      margin-right:auto;
+      grid-template-columns: 1fr;
+      gap: 10px !important;
+      max-width: min(100%, 22rem);
+      margin-left: 0 !important;
+      margin-right: auto !important;
     }
 
-    /* Превращаем обе кнопки в pill-стиль */
     .hero .gmailBtn,
-    .hero .tgBtn{
-      height: 44px !important;
-      border-radius: 999px !important;
+    .hero .tgBtn,
+    .hero .heroAutomationBtn{
+      height: 46px !important;
+      border-radius: 14px !important;
       font-size: 13.5px !important;
       font-weight: 700 !important;
       letter-spacing: -0.012em !important;
-      border: none !important;
       box-shadow: none !important;
     }
 
-    /* Telegram = primary (белая) */
     .hero .tgBtn{
       background: #FF8A1E !important;
       color: rgba(0,0,0,0.92) !important;
-      box-shadow: none !important;
+      border: 1px solid rgba(255,140,60,0.55) !important;
     }
 
-    /* Gmail = ghost */
     .hero .gmailBtn{
-      background: rgba(255,255,255,0.08) !important;
+      background: rgba(255,255,255,0.06) !important;
       color: rgba(255,255,255,0.92) !important;
+      border: 1px solid rgba(255,255,255,0.22) !important;
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
     }
 
-    /* Супер узкие экраны: кнопки в столбик */
+    /* Белая — та же геометрия + тонкая обводка */
+    .hero .heroAutomationBtn{
+      background: rgba(255,255,255,0.96) !important;
+      color: rgba(0,0,0,0.9) !important;
+      border: 1px solid rgba(255,255,255,0.55) !important;
+    }
+
+    /* Супер узкие экраны */
     @media (max-width: 360px){
-      .hero .heroCtas{ grid-template-columns: 1fr; }
-      .hero .gmailBtn, .hero .tgBtn{ height: 46px !important; }
+      .hero .gmailBtn, .hero .tgBtn, .hero .heroAutomationBtn{ height: 46px !important; }
       .hero .heroH1{ max-width: 20ch; }
     }
   }
@@ -323,7 +331,9 @@ export default function Hero() {
           ) : null}
           {mounted && isDesktop ? (
             <div className="heroWebgl pointer-events-auto">
-              <HeroWebGLBg />
+              <Suspense fallback={null}>
+                <HeroWebGLBg />
+              </Suspense>
             </div>
           ) : (
             <img
@@ -344,39 +354,35 @@ export default function Hero() {
         <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black via-black/80 to-transparent" />
       </div>
 
-      <Container>
-        <div className="relative mx-auto max-w-6xl px-1 sm:px-0 w-full">
+        <Container>
+          <div className="relative mx-auto max-w-6xl px-1 sm:px-0 w-full">
           {/* ОДНА разметка для всех экранов (без резких скачков) */}
           <div className="pt-2 sm:pt-6 lg:pt-8 heroWrap">
             <h1 className={cx("heroH1 tracking-[-0.02em]", "text-[30px] sm:text-[46px] lg:text-[54px]")}>
               <span className="block font-[850] text-white/95 uppercase heroTitleCaps">{hero.titleLine1}</span>
               <span className="block font-[850] text-white/80 uppercase heroTitleCaps">{hero.titleLine2Prefix}</span>
-              <span className="block font-[850] uppercase heroTitleCaps">
-                <span className="bg-[linear-gradient(90deg,#FFD7B0,#FF9A3D,#FF6A1A)] bg-clip-text text-transparent">
-                  {hero.titleLine2Premium}
-                </span>
-              </span>
+              <span className="block font-[850] text-white/95 uppercase heroTitleCaps">{hero.titleLine2Premium}</span>
             </h1>
 
             <p className="mt-4 max-w-2xl text-[15px] sm:text-[16px] leading-relaxed font-medium text-white/85 heroSubtitle">
               {hero.subtitle}
             </p>
 
-            <div className="mt-7 flex w-full max-w-[820px] flex-col gap-3 sm:flex-row sm:items-stretch heroCtas">
+            <div className="mt-7 flex w-full max-w-2xl flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start heroCtas">
               <a
                 href={TG_BOT_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={tgLabel}
                 className={cx(
-                  "tgBtn group relative block w-full sm:w-auto",
+                  "tgBtn group relative w-full sm:w-auto",
                   "inline-flex items-center justify-center",
-                  "rounded-2xl h-[54px] sm:h-[58px] px-6 sm:px-8",
+                  "rounded-xl h-[50px] sm:h-[52px] px-5 sm:px-6",
                   "text-center font-[780] tracking-[-0.01em]",
-                  "text-[15px] sm:text-[16px] text-black whitespace-nowrap",
-                  "shadow-[0_18px_70px_rgba(0,0,0,.55)]",
+                  "text-[14px] sm:text-[15px] text-black whitespace-nowrap",
+                  "border border-orange-500/45 shadow-[0_12px_40px_rgba(255,106,40,0.22)]",
                   "transition active:translate-y-[1px]",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 )}
                 style={{
                   background: "#FF8A1E",
@@ -384,7 +390,7 @@ export default function Hero() {
               >
                 <span className="relative z-10">{tgLabel}</span>
                 <span
-                  className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 blur-xl transition duration-300 group-hover:opacity-70"
+                  className="pointer-events-none absolute inset-0 rounded-xl opacity-0 blur-xl transition duration-300 group-hover:opacity-70"
                   style={{
                     background: "radial-gradient(700px 120px at 50% 30%, rgba(255,176,32,0.65), rgba(0,0,0,0))",
                   }}
@@ -399,19 +405,36 @@ export default function Hero() {
                 className={cx(
                   "gmailBtn",
                   "inline-flex items-center justify-center",
-                  "h-[54px] sm:h-[58px] px-6 sm:px-7",
+                  "rounded-xl h-[50px] sm:h-[52px] px-5 sm:px-6",
                   "w-full sm:w-auto whitespace-nowrap",
-                  "text-white/90 text-[15px] sm:text-[16px] font-[780]",
+                  "text-white/90 text-[14px] sm:text-[15px] font-[780]",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 )}
               >
                 {gmailLabel}
               </a>
+
+              <Link
+                to="/avtomatizaciya-biznesa"
+                className={cx(
+                  "heroAutomationBtn",
+                  "inline-flex items-center justify-center",
+                  "rounded-xl h-[50px] sm:h-[52px] px-5 sm:px-6",
+                  "w-full sm:w-auto",
+                  "text-center font-[780] tracking-[-0.01em]",
+                  "text-[14px] sm:text-[15px] whitespace-nowrap",
+                  "border border-white/50 bg-white text-black hover:bg-white/95",
+                  "transition active:translate-y-[1px]",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                )}
+              >
+                {hero.btnAutomation}
+              </Link>
             </div>
 
           </div>
-        </div>
-      </Container>
+          </div>
+        </Container>
     </Section>
   );
 }

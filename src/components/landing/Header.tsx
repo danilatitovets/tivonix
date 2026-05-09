@@ -13,11 +13,12 @@ function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
 
-type NavKey = "home" | "contacts" | "projects";
+type NavKey = "home" | "automation" | "contacts" | "projects";
 type NavItem = { to: string; key: NavKey };
 
 const NAV_MAIN: NavItem[] = [
   { to: "/", key: "home" },
+  { to: "/avtomatizaciya-biznesa", key: "automation" },
   { to: "/contacts", key: "contacts" },
   { to: "/projects", key: "projects" },
 ];
@@ -73,42 +74,74 @@ function useScrolled(threshold = 22) {
   return scrolled;
 }
 
-function LangToggle({ compact }: { compact?: boolean; scrolled?: boolean }) {
+function LangToggle({
+  compact,
+  reducedMotion,
+}: {
+  compact?: boolean;
+  reducedMotion?: boolean;
+}) {
   const { lang, setLang } = useLang();
 
-  const baseBtn =
-    "h-9 rounded-full px-3 text-xs font-semibold transition outline-none " +
-    "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40";
-
-  const wrap = compact ? "flex items-center gap-1" : "flex items-center gap-1 mr-2";
-
-  const tone = {
-    on: "bg-white/14 text-white shadow-[0_4px_18px_rgba(0,0,0,0.35)]",
-    off: "bg-white/[0.05] text-white/70 hover:text-white hover:bg-white/[0.09]",
-  };
-
   const label = lang === "ru" ? "Выбор языка" : "Language";
+  const h = compact ? "h-9 w-[5.25rem]" : "h-10 w-[5.75rem]";
+  const text = compact ? "text-[11px]" : "text-xs";
 
   return (
-    <div className={wrap} role="radiogroup" aria-label={label} aria-orientation="horizontal">
-      <button
-        type="button"
-        role="radio"
-        aria-checked={lang === "ru"}
-        onClick={() => setLang("ru" as Lang)}
-        className={cx(baseBtn, lang === "ru" ? tone.on : tone.off)}
-      >
-        RU
-      </button>
-      <button
-        type="button"
-        role="radio"
-        aria-checked={lang === "en"}
-        onClick={() => setLang("en" as Lang)}
-        className={cx(baseBtn, lang === "en" ? tone.on : tone.off)}
-      >
-        EN
-      </button>
+    <div
+      className={cx(
+        "relative shrink-0 select-none rounded-full bg-white/[0.07] p-1 backdrop-blur-xl",
+        "shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_6px_22px_rgba(0,0,0,0.22)]",
+        h
+      )}
+      role="radiogroup"
+      aria-label={label}
+      aria-orientation="horizontal"
+    >
+      <span
+        aria-hidden
+        className={cx(
+          "pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-8px)/2)] rounded-full",
+          !reducedMotion && "transition-transform duration-200 ease-[cubic-bezier(0.33,1,0.68,1)]"
+        )}
+        style={
+          {
+            background: BRAND_CTA,
+            boxShadow: "0 4px 16px rgba(255,106,26,0.38)",
+            transform: lang === "en" ? "translateX(100%)" : "translateX(0)",
+          } as React.CSSProperties
+        }
+      />
+      <div className="relative z-10 grid h-full grid-cols-2">
+        <button
+          type="button"
+          role="radio"
+          aria-checked={lang === "ru"}
+          onClick={() => setLang("ru" as Lang)}
+          className={cx(
+            "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
+            "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
+            text,
+            lang === "ru" ? "text-black" : "text-white/60 hover:text-white/88"
+          )}
+        >
+          RU
+        </button>
+        <button
+          type="button"
+          role="radio"
+          aria-checked={lang === "en"}
+          onClick={() => setLang("en" as Lang)}
+          className={cx(
+            "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
+            "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
+            text,
+            lang === "en" ? "text-black" : "text-white/60 hover:text-white/88"
+          )}
+        >
+          EN
+        </button>
+      </div>
     </div>
   );
 }
@@ -276,10 +309,12 @@ export default function Header() {
   const navLabel = (key: NavKey) => {
     if (isRu) {
       if (key === "home") return "главная";
+      if (key === "automation") return "автоматизация";
       if (key === "contacts") return "контакты";
       if (key === "projects") return "проекты";
     } else {
       if (key === "home") return "home";
+      if (key === "automation") return "automation";
       if (key === "contacts") return "contacts";
       if (key === "projects") return "projects";
     }
@@ -289,6 +324,7 @@ export default function Header() {
   const activeKey: NavKey = useMemo(() => {
     if (location.pathname === "/contacts") return "contacts";
     if (location.pathname === "/projects") return "projects";
+    if (location.pathname === "/avtomatizaciya-biznesa") return "automation";
     return "home";
   }, [location.pathname]);
 
@@ -379,14 +415,14 @@ export default function Header() {
               {/* основная полоса хедера */}
               <div
                 className={cx(
-                  "relative flex items-center",
+                  "relative flex w-full min-w-0 items-center xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:items-center xl:gap-x-4",
                   scrolled ? "px-4 sm:px-5" : "px-3 sm:px-4",
                   scrolled ? "h-[70px] sm:h-[74px]" : "h-[78px] sm:h-[82px]"
                 )}
                 style={reducedMotion ? undefined : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)}
               >
                 {/* LEFT: логотип */}
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex min-w-0 items-center gap-3 shrink-0 xl:justify-self-start">
                   <Link
                     to="/"
                     onClick={(e) => {
@@ -410,27 +446,25 @@ export default function Header() {
                   </Link>
                 </div>
 
-                {/* CENTER: навигация (только xl+) */}
-                <div className="absolute inset-x-0 flex justify-center pointer-events-none">
-                  <div className="hidden xl:block pointer-events-auto">
-                    <PillNav
-                      activeKey={activeKey}
-                      reducedMotion={reducedMotion}
-                      items={tabsItems}
-                      onItemClick={onNav}
-                      compact={scrolled}
-                    />
-                  </div>
+                {/* CENTER: навигация (только xl+) — колонка auto между двумя 1fr, визуально по центру экрана */}
+                <div className="hidden min-w-0 justify-self-center xl:block">
+                  <PillNav
+                    activeKey={activeKey}
+                    reducedMotion={reducedMotion}
+                    items={tabsItems}
+                    onItemClick={onNav}
+                    compact={scrolled}
+                  />
                 </div>
 
                 {/* RIGHT: язык + CTA (desktop xl+) */}
-                <div className="ml-auto hidden xl:flex items-center gap-3 shrink-0">
-                  <LangToggle scrolled={scrolled} />
+                <div className="ml-auto hidden min-w-0 shrink-0 items-center gap-3 xl:ml-0 xl:flex xl:justify-self-end">
+                  <LangToggle reducedMotion={reducedMotion} />
                   <Button
                     type="button"
                     onClick={openStartModal}
                     className={cx(
-                      "rounded-full font-semibold !text-black outline-none",
+                      "rounded-full font-semibold !text-black outline-none !py-0",
                       "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
                       "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
                       "hover:brightness-[1.04] active:brightness-[0.96]",
@@ -438,7 +472,7 @@ export default function Header() {
                     )}
                     style={{ background: BRAND_CTA } as React.CSSProperties}
                   >
-                    <span className="relative inline-grid">
+                    <span className="relative grid grid-cols-1 grid-rows-1 place-items-center leading-none">
                       <span
                         className={cx(
                           "col-start-1 row-start-1 transition-all",
@@ -468,7 +502,7 @@ export default function Header() {
                       type="button"
                       onClick={openStartModal}
                       className={cx(
-                        "rounded-2xl font-semibold !text-black outline-none",
+                        "rounded-2xl font-semibold !text-black outline-none !py-0",
                         "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
                         "shadow-[0_18px_70px_rgba(255,120,40,0.30)]",
                         "hover:brightness-[1.04] active:brightness-[0.96]",
@@ -696,7 +730,7 @@ export default function Header() {
 
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-white/70">{isRu ? "Язык" : "Language"}</span>
-                      <LangToggle compact scrolled />
+                      <LangToggle compact reducedMotion={reducedMotion} />
                     </div>
 
                     {/* небольшой нижний отступ */}

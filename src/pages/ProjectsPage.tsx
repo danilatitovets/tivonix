@@ -1,10 +1,9 @@
 // src/pages/ProjectsPage.tsx
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Container from "../components/ui/Container";
 import Section from "../components/ui/Section";
 import Header from "../components/landing/Header";
-import HeroWebGLBg from "../components/landing/HeroWebGLBg";
 import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
 import { buildProjects, type Project } from "../data/projectsCatalog";
@@ -15,6 +14,7 @@ import {
   ProjectPreviewFrame,
   s,
 } from "./projectBlocks";
+const HeroWebGLBg = lazy(() => import("../components/landing/HeroWebGLBg"));
 
 const HEADER_H = 72;
 
@@ -228,7 +228,11 @@ export default function ProjectsPage() {
       <div className="pointer-events-none fixed inset-0 -z-10" aria-hidden>
         <div className="absolute inset-0 overflow-hidden bg-black">
           <div className="absolute inset-0 h-full w-full scale-[1.03] will-change-transform">
-            {mounted ? <HeroWebGLBg /> : null}
+            {mounted ? (
+              <Suspense fallback={null}>
+                <HeroWebGLBg />
+              </Suspense>
+            ) : null}
           </div>
         </div>
         <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.55),rgba(0,0,0,0.92))]" />

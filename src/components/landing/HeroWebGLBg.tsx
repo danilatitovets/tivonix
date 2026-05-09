@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -131,7 +131,17 @@ void main(){
 }
 `;
 
-function Quad({ onContextLost }: { onContextLost: () => void }) {
+type QualityMode = "high" | "low";
+
+function Quad({
+  onContextLost,
+  quality = "high",
+  interactive = true,
+}: {
+  onContextLost: () => void;
+  quality?: QualityMode;
+  interactive?: boolean;
+}) {
   const matRef = useRef<THREE.ShaderMaterial | null>(null);
   const { size, gl } = useThree();
 
@@ -148,14 +158,39 @@ function Quad({ onContextLost }: { onContextLost: () => void }) {
   const mouseTarget = useRef(new THREE.Vector2(0.55, 0.45));
   const prevMouse = useRef(new THREE.Vector2(0.55, 0.45));
 
-  const dprRef = useRef(1.15);
+  const dprRef = useRef(quality === "low" ? 0.88 : 1.15);
   const avgDt = useRef(1 / 60);
-
   useEffect(() => {
     uniforms.uRes.value.set(size.width, size.height);
   }, [size.width, size.height, uniforms]);
 
   useEffect(() => {
+    const el = gl.domElement;
+    let remountTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const onLost = (e: Event) => {
+      e.preventDefault?.();
+      if (remountTimer) clearTimeout(remountTimer);
+      // Долгая задержка: чаще успевает webglcontextrestored без remount (меньше чёрных кадров).
+      remountTimer = setTimeout(() => onContextLost(), 12000);
+    };
+
+    const onRestore = () => {
+      if (remountTimer) clearTimeout(remountTimer);
+      remountTimer = undefined;
+    };
+
+    el.addEventListener("webglcontextlost", onLost as any, { passive: false } as any);
+    el.addEventListener("webglcontextrestored", onRestore);
+    return () => {
+      if (remountTimer) clearTimeout(remountTimer);
+      el.removeEventListener("webglcontextlost", onLost as any);
+      el.removeEventListener("webglcontextrestored", onRestore);
+    };
+  }, [gl, onContextLost]);
+
+  useEffect(() => {
+    if (!interactive) return;
     const el = gl.domElement;
 
     const onMove = (e: PointerEvent) => {
@@ -165,19 +200,11 @@ function Quad({ onContextLost }: { onContextLost: () => void }) {
       mouseTarget.current.set(x, y);
     };
 
-    const onLost = (e: Event) => {
-      e.preventDefault?.();
-      onContextLost();
-    };
-
     el.addEventListener("pointermove", onMove, { passive: true });
-    el.addEventListener("webglcontextlost", onLost as any, { passive: false } as any);
-
     return () => {
       el.removeEventListener("pointermove", onMove);
-      el.removeEventListener("webglcontextlost", onLost as any);
     };
-  }, [gl, onContextLost]);
+  }, [gl, interactive]);
 
   useFrame((_, delta) => {
     if (!matRef.current) return;
@@ -197,16 +224,25 @@ function Quad({ onContextLost }: { onContextLost: () => void }) {
 
     matRef.current.uniforms.uTime.value += dt;
 
-    const ms = avgDt.current * 1000.0;
-    let targetDpr = dprRef.current;
+    // Только интерактивный hero: динамический DPR. Фоновая дымка (interactive=false):
+    // постоянный setPixelRatio() при дрожании FPS даёт заметные чёрные вспышки.
+    if (interactive) {
+      const ms = avgDt.current * 1000.0;
+      let targetDpr = dprRef.current;
 
-    if (ms > 19.5) targetDpr = Math.max(1.0, targetDpr - 0.03);
-    else if (ms < 16.8) targetDpr = Math.min(1.25, targetDpr + 0.015);
+      if (quality === "low") {
+        if (ms > 19.5) targetDpr = Math.max(0.72, targetDpr - 0.025);
+        else if (ms < 16.8) targetDpr = Math.min(0.95, targetDpr + 0.01);
+      } else {
+        if (ms > 19.5) targetDpr = Math.max(1.0, targetDpr - 0.03);
+        else if (ms < 16.8) targetDpr = Math.min(1.25, targetDpr + 0.015);
+      }
 
-    if (Math.abs(targetDpr - dprRef.current) > 0.001) {
-      dprRef.current = targetDpr;
-      gl.setPixelRatio(dprRef.current);
-      matRef.current.uniforms.uRes.value.set(size.width, size.height);
+      if (Math.abs(targetDpr - dprRef.current) > 0.001) {
+        dprRef.current = targetDpr;
+        gl.setPixelRatio(dprRef.current);
+        matRef.current.uniforms.uRes.value.set(size.width, size.height);
+      }
     }
   });
 
@@ -223,46 +259,58 @@ function Quad({ onContextLost }: { onContextLost: () => void }) {
   );
 }
 
-function Fallback() {
-  return (
-    <div
-      aria-hidden="true"
-      style={{
-        position: "absolute",
-        inset: 0,
-        background:
-          "radial-gradient(120% 90% at 55% 35%, rgba(255,154,61,0.10) 0%, rgba(255,106,26,0.07) 32%, rgba(0,0,0,0) 62%), linear-gradient(180deg, #000000 0%, #000000 100%)",
-      }}
-    />
-  );
-}
+export default function HeroWebGLBg({
+  quality = "high",
+  interactive = true,
+  opaqueBuffer = false,
+}: {
+  quality?: QualityMode;
+  interactive?: boolean;
+  /**
+   * Непрозрачный framebuffer (alpha=false): для крупной дымки под шапкой — иначе Chrome/Edge
+   * дают периодическое белое мигание при alpha:true и backdrop/sibling-слоях.
+   * Мелкие карточки можно оставить с прозрачным GL (compositeOverGradient).
+   */
+  opaqueBuffer?: boolean;
+}) {
+  /** Подмешивать CSS-градиент снизу только для мелких фоновых дымок без opaqueBuffer. */
+  const compositeOverGradient = !interactive && !opaqueBuffer;
 
-export default function HeroWebGLBg() {
-  const [dead, setDead] = useState(false);
-
-  if (dead) return <Fallback />;
+  const [canvasKey, setCanvasKey] = useState(0);
+  const onContextLost = useCallback(() => {
+    setCanvasKey((k) => k + 1);
+  }, []);
 
   const initialDpr =
-    typeof window !== "undefined" ? Math.min(1.2, window.devicePixelRatio || 1) : 1;
+    typeof window !== "undefined"
+      ? quality === "low"
+        ? Math.min(0.9, window.devicePixelRatio || 1)
+        : Math.min(1.2, window.devicePixelRatio || 1)
+      : 1;
 
   return (
-    <div style={{ position: "absolute", inset: 0 }}>
+    <div style={{ position: "absolute", inset: 0, background: compositeOverGradient ? "transparent" : "#000" }}>
       <Canvas
+        key={canvasKey}
         frameloop="always"
         dpr={initialDpr}
         gl={{
           antialias: false,
-          alpha: true,
+          alpha: compositeOverGradient,
           powerPreference: "high-performance",
           preserveDrawingBuffer: false,
         }}
         camera={{ position: [0, 0, 1], fov: 50 }}
-        style={{ width: "100%", height: "100%" }}
+        style={{
+          width: "100%",
+          height: "100%",
+          background: compositeOverGradient ? "transparent" : "#000000",
+        }}
         onCreated={({ gl }) => {
-          gl.setClearColor(0x000000, 0);
+          gl.setClearColor(0x000000, compositeOverGradient ? 0 : 1);
         }}
       >
-        <Quad onContextLost={() => setDead(true)} />
+        <Quad onContextLost={onContextLost} quality={quality} interactive={interactive} />
       </Canvas>
     </div>
   );

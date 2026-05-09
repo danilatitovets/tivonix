@@ -7,8 +7,24 @@
     --bg: #000000;
     --accent: #FF6B2C;
     --accent-mid: #FF9A3D;
+    /* совпадает со спейсером под фикс-хедером в Header.tsx (h-[92px] sm:h-[100px] xl:h-[104px]) */
+    --tivonix-header-spacer: 92px;
+  }
+  @media (min-width: 640px) {
+    :root {
+      --tivonix-header-spacer: 100px;
+    }
+  }
+  @media (min-width: 1280px) {
+    :root {
+      --tivonix-header-spacer: 104px;
+    }
   }
   html, body, #root { height: 100%; }
+  /* отступ под фикс-хедер (~92–104px + запас) при якорях и программном скролле */
+  html {
+    scroll-padding-top: 6.75rem;
+  }
   body { margin: 0; background: #000000; color: rgba(255,255,255,0.92); }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

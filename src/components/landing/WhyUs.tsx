@@ -104,6 +104,8 @@ function StackCard({
           transform: reveal ? "translateY(0)" : "translateY(14px)",
           transition: "transform .45s cubic-bezier(.2,.9,.2,1), opacity .4s ease",
           transitionDelay: `${index * 26}ms`,
+          contentVisibility: "auto",
+          containIntrinsicSize: "320px 320px",
         } as CSSProperties
       }
     >
@@ -205,6 +207,7 @@ export default function WhyUs() {
 
   const [reveal, setReveal] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const progressRef = useRef(0);
 
   useEffect(() => {
     const el = rootRef.current;
@@ -254,7 +257,12 @@ export default function WhyUs() {
 
     const midView = window.scrollY + window.innerHeight * 0.5;
     const raw = (midView - m.firstY) / (m.lastY - m.firstY);
-    setScrollProgress(clamp(raw, 0, 1));
+    const next = clamp(raw, 0, 1);
+    // avoid re-render on tiny scroll deltas
+    if (Math.abs(next - progressRef.current) > 0.005) {
+      progressRef.current = next;
+      setScrollProgress(next);
+    }
   }, []);
 
   useEffect(() => {
