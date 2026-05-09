@@ -11,6 +11,7 @@ const SERVER_ENTRY_PATH = path.join(DIST_SERVER_DIR, "entry-server.js");
 const routes = [
   "/",
   "/sozdanie-sajtov",
+  "/avtomatizaciya-biznesa",
   "/projects",
   "/contacts",
   "/projects/labelos",

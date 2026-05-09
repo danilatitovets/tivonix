@@ -4,6 +4,9 @@ import { renderToString } from "react-dom/server";
 import { useNavigate, useLocation, Link, useParams, Navigate, Routes, Route, MemoryRouter } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { createPortal } from "react-dom";
+import { Bot, Zap, LayoutDashboard, Users, TrendingUp, ShieldCheck, ChevronLeft, ChevronRight, FolderOpen, Check, Plus } from "lucide-react";
+import { SiTelegram, SiGmail, SiHubspot, SiGooglesheets, SiWhatsapp, SiNotion, SiGooglecalendar, SiClickup, SiStripe, SiGoogledocs, SiGoogleanalytics, SiZapier } from "react-icons/si";
+import { FiBell } from "react-icons/fi";
 const LANG_STORAGE_KEY = "tivonix_lang";
 const DICT = {
   ru: {
@@ -25,7 +28,8 @@ const DICT = {
       subtitle: "Создадим сайт или веб-сервис для вашего бизнеса. Разберём идею, спроектируем интерфейс, разработаем продукт и подготовим его к запуску. Всё — в одном месте и без технической путаницы.",
       emailPlaceholder: "Рабочий email",
       btnDemo: "Получить демо",
-      btnTelegram: "Написать в Telegram"
+      btnTelegram: "Написать в Telegram",
+      btnAutomation: "Автоматизировать ваш бизнес"
     },
     curtain: {
       title: "Процесс разработки — по шагам",
@@ -145,7 +149,8 @@ const DICT = {
       subtitle: "We unpack the idea, design the interface, build the product, and get it launch-ready. Everything in one place — without technical confusion.",
       emailPlaceholder: "Work email",
       btnDemo: "Get a demo",
-      btnTelegram: "Message on Telegram"
+      btnTelegram: "Message on Telegram",
+      btnAutomation: "Automate your business"
     },
     curtain: {
       title: "Development process — step by step",
@@ -704,7 +709,7 @@ function StartModal({ open, onClose }) {
   );
   const has = (v) => v.trim().length > 0;
   const progressPct = useMemo(() => {
-    const steps2 = [
+    const steps = [
       has(form.name),
       has(form.email) || has(form.telegram),
       form.projectType !== defaults.type,
@@ -714,8 +719,8 @@ function StartModal({ open, onClose }) {
       form.consent
       // ✅ добавили в прогресс
     ];
-    const total = steps2.length;
-    const done = steps2.filter(Boolean).length;
+    const total = steps.length;
+    const done = steps.filter(Boolean).length;
     let pct = Math.round(done / total * 100);
     const any = has(form.name) || has(form.email) || has(form.telegram) || has(form.details) || form.projectType !== defaults.type || form.budget !== defaults.budget || form.timeframe !== defaults.time || form.consent;
     if (pct === 0 && any) pct = 5;
@@ -1236,6 +1241,7 @@ function cx$8(...a) {
 }
 const NAV_MAIN = [
   { to: "/", key: "home" },
+  { to: "/avtomatizaciya-biznesa", key: "automation" },
   { to: "/contacts", key: "contacts" },
   { to: "/projects", key: "projects" }
 ];
@@ -1278,39 +1284,78 @@ function useScrolled(threshold = 22) {
   }, [threshold]);
   return scrolled;
 }
-function LangToggle({ compact }) {
+function LangToggle({
+  compact,
+  reducedMotion
+}) {
   const { lang, setLang } = useLang();
-  const baseBtn = "h-9 rounded-full px-3 text-xs font-semibold transition outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40";
-  const wrap = compact ? "flex items-center gap-1" : "flex items-center gap-1 mr-2";
-  const tone = {
-    on: "bg-white/14 text-white shadow-[0_4px_18px_rgba(0,0,0,0.35)]",
-    off: "bg-white/[0.05] text-white/70 hover:text-white hover:bg-white/[0.09]"
-  };
   const label = lang === "ru" ? "Выбор языка" : "Language";
-  return /* @__PURE__ */ jsxs("div", { className: wrap, role: "radiogroup", "aria-label": label, "aria-orientation": "horizontal", children: [
-    /* @__PURE__ */ jsx(
-      "button",
-      {
-        type: "button",
-        role: "radio",
-        "aria-checked": lang === "ru",
-        onClick: () => setLang("ru"),
-        className: cx$8(baseBtn, lang === "ru" ? tone.on : tone.off),
-        children: "RU"
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      "button",
-      {
-        type: "button",
-        role: "radio",
-        "aria-checked": lang === "en",
-        onClick: () => setLang("en"),
-        className: cx$8(baseBtn, lang === "en" ? tone.on : tone.off),
-        children: "EN"
-      }
-    )
-  ] });
+  const h = compact ? "h-9 w-[5.25rem]" : "h-10 w-[5.75rem]";
+  const text = compact ? "text-[11px]" : "text-xs";
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: cx$8(
+        "relative shrink-0 select-none rounded-full bg-white/[0.07] p-1 backdrop-blur-xl",
+        "shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_6px_22px_rgba(0,0,0,0.22)]",
+        h
+      ),
+      role: "radiogroup",
+      "aria-label": label,
+      "aria-orientation": "horizontal",
+      children: [
+        /* @__PURE__ */ jsx(
+          "span",
+          {
+            "aria-hidden": true,
+            className: cx$8(
+              "pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-8px)/2)] rounded-full",
+              !reducedMotion && "transition-transform duration-200 ease-[cubic-bezier(0.33,1,0.68,1)]"
+            ),
+            style: {
+              background: BRAND_CTA,
+              boxShadow: "0 4px 16px rgba(255,106,26,0.38)",
+              transform: lang === "en" ? "translateX(100%)" : "translateX(0)"
+            }
+          }
+        ),
+        /* @__PURE__ */ jsxs("div", { className: "relative z-10 grid h-full grid-cols-2", children: [
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              role: "radio",
+              "aria-checked": lang === "ru",
+              onClick: () => setLang("ru"),
+              className: cx$8(
+                "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
+                "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
+                text,
+                lang === "ru" ? "text-black" : "text-white/60 hover:text-white/88"
+              ),
+              children: "RU"
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              role: "radio",
+              "aria-checked": lang === "en",
+              onClick: () => setLang("en"),
+              className: cx$8(
+                "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
+                "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
+                text,
+                lang === "en" ? "text-black" : "text-white/60 hover:text-white/88"
+              ),
+              children: "EN"
+            }
+          )
+        ] })
+      ]
+    }
+  );
 }
 function PillNav({
   activeKey,
@@ -1445,10 +1490,12 @@ function Header() {
   const navLabel = (key) => {
     if (isRu) {
       if (key === "home") return "главная";
+      if (key === "automation") return "автоматизация";
       if (key === "contacts") return "контакты";
       if (key === "projects") return "проекты";
     } else {
       if (key === "home") return "home";
+      if (key === "automation") return "automation";
       if (key === "contacts") return "contacts";
       if (key === "projects") return "projects";
     }
@@ -1457,6 +1504,7 @@ function Header() {
   const activeKey = useMemo(() => {
     if (location2.pathname === "/contacts") return "contacts";
     if (location2.pathname === "/projects") return "projects";
+    if (location2.pathname === "/avtomatizaciya-biznesa") return "automation";
     return "home";
   }, [location2.pathname]);
   const tabsItems = useMemo(
@@ -1531,13 +1579,13 @@ function Header() {
               "div",
               {
                 className: cx$8(
-                  "relative flex items-center",
+                  "relative flex w-full min-w-0 items-center xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:items-center xl:gap-x-4",
                   scrolled ? "px-4 sm:px-5" : "px-3 sm:px-4",
                   scrolled ? "h-[70px] sm:h-[74px]" : "h-[78px] sm:h-[82px]"
                 ),
                 style: reducedMotion ? void 0 : { transitionDuration: `${dur}ms` },
                 children: [
-                  /* @__PURE__ */ jsx("div", { className: "flex items-center gap-3 shrink-0", children: /* @__PURE__ */ jsx(
+                  /* @__PURE__ */ jsx("div", { className: "flex min-w-0 items-center gap-3 shrink-0 xl:justify-self-start", children: /* @__PURE__ */ jsx(
                     Link,
                     {
                       to: "/",
@@ -1563,7 +1611,7 @@ function Header() {
                       )
                     }
                   ) }),
-                  /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 flex justify-center pointer-events-none", children: /* @__PURE__ */ jsx("div", { className: "hidden xl:block pointer-events-auto", children: /* @__PURE__ */ jsx(
+                  /* @__PURE__ */ jsx("div", { className: "hidden min-w-0 justify-self-center xl:block", children: /* @__PURE__ */ jsx(
                     PillNav,
                     {
                       activeKey,
@@ -1572,23 +1620,23 @@ function Header() {
                       onItemClick: onNav,
                       compact: scrolled
                     }
-                  ) }) }),
-                  /* @__PURE__ */ jsxs("div", { className: "ml-auto hidden xl:flex items-center gap-3 shrink-0", children: [
-                    /* @__PURE__ */ jsx(LangToggle, { scrolled }),
+                  ) }),
+                  /* @__PURE__ */ jsxs("div", { className: "ml-auto hidden min-w-0 shrink-0 items-center gap-3 xl:ml-0 xl:flex xl:justify-self-end", children: [
+                    /* @__PURE__ */ jsx(LangToggle, { reducedMotion }),
                     /* @__PURE__ */ jsx(
                       Button,
                       {
                         type: "button",
                         onClick: openStartModal,
                         className: cx$8(
-                          "rounded-full font-semibold !text-black outline-none",
+                          "rounded-full font-semibold !text-black outline-none !py-0",
                           "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
                           "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
                           "hover:brightness-[1.04] active:brightness-[0.96]",
                           scrolled ? "h-10 px-5" : "h-11 px-6"
                         ),
                         style: { background: BRAND_CTA },
-                        children: /* @__PURE__ */ jsxs("span", { className: "relative inline-grid", children: [
+                        children: /* @__PURE__ */ jsxs("span", { className: "relative grid grid-cols-1 grid-rows-1 place-items-center leading-none", children: [
                           /* @__PURE__ */ jsx(
                             "span",
                             {
@@ -1622,7 +1670,7 @@ function Header() {
                         type: "button",
                         onClick: openStartModal,
                         className: cx$8(
-                          "rounded-2xl font-semibold !text-black outline-none",
+                          "rounded-2xl font-semibold !text-black outline-none !py-0",
                           "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
                           "shadow-[0_18px_70px_rgba(255,120,40,0.30)]",
                           "hover:brightness-[1.04] active:brightness-[0.96]",
@@ -1880,7 +1928,7 @@ function Header() {
                       ),
                       /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
                         /* @__PURE__ */ jsx("span", { className: "text-sm text-white/70", children: isRu ? "Язык" : "Language" }),
-                        /* @__PURE__ */ jsx(LangToggle, { compact: true, scrolled: true })
+                        /* @__PURE__ */ jsx(LangToggle, { compact: true, reducedMotion })
                       ] }),
                       /* @__PURE__ */ jsx("div", { className: "h-4" })
                     ] })
@@ -1904,7 +1952,7 @@ function Section({
 }
 const HERO_BG_IMG = "/images/hero1.png";
 const CONTACT_EMAIL = "tivoonix@gmail.com";
-const HeroWebGLBg$2 = lazy(() => import("./assets/HeroWebGLBg-BM6EiQUz.js"));
+const HeroWebGLBg$4 = lazy(() => import("./assets/HeroWebGLBg-CnY8eKt4.js"));
 function cx$7(...a) {
   return a.filter(Boolean).join(" ");
 }
@@ -1995,19 +2043,19 @@ const HERO_STYLES$1 = `
     text-shadow:0 14px 38px rgba(0,0,0,0.86);
   }
 
-  /* ===== DESKTOP CTA (как было) ===== */
+  /* ===== CTA Gmail: тёмно-серый фирменный, без обводки ===== */
   .gmailBtn{
-    border-radius:18px;
+    border-radius:14px;
     border:none;
-    background:rgba(255,255,255,0.08);
+    background:#2a2a2a;
     backdrop-filter:none;
     -webkit-backdrop-filter:none;
     box-shadow:none;
-    transition:transform .18s ease, background .18s ease, border-color .18s ease;
+    transition:transform .18s ease, background .18s ease;
   }
   .gmailBtn:hover{
     transform:translateY(-1px);
-    background:rgba(255,255,255,0.13);
+    background:#363636;
   }
   .gmailBtn:active{ transform:translateY(0px); }
 
@@ -2024,7 +2072,7 @@ const HERO_STYLES$1 = `
       width: 88%;
       height: 88%;
       left: 50%;
-      top: 58%;
+      top: 68%;
       object-fit: contain;
       object-position: 50% 50%;
       transform: translate3d(-50%, -50%, 0) scale(var(--hero-img-scale));
@@ -2045,14 +2093,17 @@ const HERO_STYLES$1 = `
         rgba(0,0,0,0.72) 28%,
         rgba(0,0,0,0.35) 58%,
         rgba(0,0,0,0.15) 72%,
-        rgba(0,0,0,0.86) 100%
+        rgba(0,0,0,0.78) 100%
       );
   }
 }
 
-    /* Центрируем блок как у Vercel */
-    .hero .heroWrap{ text-align:center; padding-top: 2px; padding-bottom: clamp(220px, 40vh, 440px); }
-    .hero .heroSubtitle{ margin-left:auto; margin-right:auto; }
+    .hero .heroWrap{
+      text-align:left;
+      padding-top: 2px;
+      padding-bottom: clamp(220px, 40vh, 440px);
+    }
+    .hero .heroSubtitle{ margin-left:0; margin-right:auto; }
 
     /* Типографика мобилки */
     .hero .heroTitleCaps{ text-transform:none !important; letter-spacing:-0.02em !important; }
@@ -2062,8 +2113,7 @@ const HERO_STYLES$1 = `
       text-shadow:none;
     }
 
-    /* Ограничим ширину заголовка, чтобы выглядел “плотно” */
-    .hero .heroH1{ max-width: 18ch; margin-left:auto; margin-right:auto; }
+    .hero .heroH1{ max-width: 20ch; margin-left:0; margin-right:auto; }
     .hero .heroSubtitle{
       font-size: 13.75px !important;
       line-height: 1.6 !important;
@@ -2071,48 +2121,52 @@ const HERO_STYLES$1 = `
       max-width: 48ch;
     }
 
-    /* CTA в одну строку (2 колонки), как Vercel */
+    /* CTA: столбик, выравнивание как у текста */
     .hero .heroCtas{
       margin-top: 18px !important;
       display:grid !important;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px !important;
-      max-width: 520px;
-      margin-left:auto;
-      margin-right:auto;
+      grid-template-columns: 1fr;
+      gap: 10px !important;
+      max-width: min(100%, 22rem);
+      margin-left: 0 !important;
+      margin-right: auto !important;
     }
 
-    /* Превращаем обе кнопки в pill-стиль */
     .hero .gmailBtn,
-    .hero .tgBtn{
-      height: 44px !important;
-      border-radius: 999px !important;
+    .hero .tgBtn,
+    .hero .heroAutomationBtn{
+      height: 46px !important;
+      border-radius: 14px !important;
       font-size: 13.5px !important;
       font-weight: 700 !important;
       letter-spacing: -0.012em !important;
-      border: none !important;
       box-shadow: none !important;
     }
 
-    /* Telegram = primary (белая) */
     .hero .tgBtn{
       background: #FF8A1E !important;
       color: rgba(0,0,0,0.92) !important;
-      box-shadow: none !important;
+      border: 1px solid rgba(255,140,60,0.55) !important;
     }
 
-    /* Gmail = ghost */
     .hero .gmailBtn{
-      background: rgba(255,255,255,0.08) !important;
+      background: #2a2a2a !important;
       color: rgba(255,255,255,0.92) !important;
+      border: none !important;
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
     }
 
-    /* Супер узкие экраны: кнопки в столбик */
+    /* Белая — та же геометрия + тонкая обводка */
+    .hero .heroAutomationBtn{
+      background: rgba(255,255,255,0.96) !important;
+      color: rgba(0,0,0,0.9) !important;
+      border: 1px solid rgba(255,255,255,0.55) !important;
+    }
+
+    /* Супер узкие экраны */
     @media (max-width: 360px){
-      .hero .heroCtas{ grid-template-columns: 1fr; }
-      .hero .gmailBtn, .hero .tgBtn{ height: 46px !important; }
+      .hero .gmailBtn, .hero .tgBtn, .hero .heroAutomationBtn{ height: 46px !important; }
       .hero .heroH1{ max-width: 20ch; }
     }
   }
@@ -2173,7 +2227,7 @@ function Hero() {
                 }
               }
             ) : null,
-            mounted && isDesktop ? /* @__PURE__ */ jsx("div", { className: "heroWebgl pointer-events-auto", children: /* @__PURE__ */ jsx(Suspense, { fallback: null, children: /* @__PURE__ */ jsx(HeroWebGLBg$2, {}) }) }) : /* @__PURE__ */ jsx(
+            mounted && isDesktop ? /* @__PURE__ */ jsx("div", { className: "heroWebgl pointer-events-auto", children: /* @__PURE__ */ jsx(Suspense, { fallback: null, children: /* @__PURE__ */ jsx(HeroWebGLBg$4, {}) }) }) : /* @__PURE__ */ jsx(
               "img",
               {
                 className: "heroImg",
@@ -2188,16 +2242,16 @@ function Hero() {
           /* @__PURE__ */ jsx("div", { className: "heroOverlay" }),
           /* @__PURE__ */ jsx("div", { className: "heroGrain" }),
           /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/85 via-black/40 to-transparent" }),
-          /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black via-black/80 to-transparent" })
+          /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black via-black/80 to-transparent max-sm:h-52 max-sm:from-black/[0.72] max-sm:via-black/45" })
         ] }),
         /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsx("div", { className: "relative mx-auto max-w-6xl px-1 sm:px-0 w-full", children: /* @__PURE__ */ jsxs("div", { className: "pt-2 sm:pt-6 lg:pt-8 heroWrap", children: [
           /* @__PURE__ */ jsxs("h1", { className: cx$7("heroH1 tracking-[-0.02em]", "text-[30px] sm:text-[46px] lg:text-[54px]"), children: [
             /* @__PURE__ */ jsx("span", { className: "block font-[850] text-white/95 uppercase heroTitleCaps", children: hero.titleLine1 }),
             /* @__PURE__ */ jsx("span", { className: "block font-[850] text-white/80 uppercase heroTitleCaps", children: hero.titleLine2Prefix }),
-            /* @__PURE__ */ jsx("span", { className: "block font-[850] uppercase heroTitleCaps", children: /* @__PURE__ */ jsx("span", { className: "bg-[linear-gradient(90deg,#FFD7B0,#FF9A3D,#FF6A1A)] bg-clip-text text-transparent", children: hero.titleLine2Premium }) })
+            /* @__PURE__ */ jsx("span", { className: "block font-[850] text-white/95 uppercase heroTitleCaps", children: hero.titleLine2Premium })
           ] }),
           /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-2xl text-[15px] sm:text-[16px] leading-relaxed font-medium text-white/85 heroSubtitle", children: hero.subtitle }),
-          /* @__PURE__ */ jsxs("div", { className: "mt-7 flex w-full max-w-[820px] flex-col gap-3 sm:flex-row sm:items-stretch heroCtas", children: [
+          /* @__PURE__ */ jsxs("div", { className: "mt-7 flex w-full max-w-2xl flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start heroCtas", children: [
             /* @__PURE__ */ jsxs(
               "a",
               {
@@ -2206,14 +2260,14 @@ function Hero() {
                 rel: "noopener noreferrer",
                 "aria-label": tgLabel,
                 className: cx$7(
-                  "tgBtn group relative block w-full sm:w-auto",
+                  "tgBtn group relative w-full sm:w-auto",
                   "inline-flex items-center justify-center",
-                  "rounded-2xl h-[54px] sm:h-[58px] px-6 sm:px-8",
+                  "rounded-xl h-[50px] sm:h-[52px] px-5 sm:px-6",
                   "text-center font-[780] tracking-[-0.01em]",
-                  "text-[15px] sm:text-[16px] text-black whitespace-nowrap",
-                  "shadow-[0_18px_70px_rgba(0,0,0,.55)]",
+                  "text-[14px] sm:text-[15px] text-black whitespace-nowrap",
+                  "border border-orange-500/45 shadow-[0_12px_40px_rgba(255,106,40,0.22)]",
                   "transition active:translate-y-[1px]",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 ),
                 style: {
                   background: "#FF8A1E"
@@ -2223,7 +2277,7 @@ function Hero() {
                   /* @__PURE__ */ jsx(
                     "span",
                     {
-                      className: "pointer-events-none absolute inset-0 rounded-2xl opacity-0 blur-xl transition duration-300 group-hover:opacity-70",
+                      className: "pointer-events-none absolute inset-0 rounded-xl opacity-0 blur-xl transition duration-300 group-hover:opacity-70",
                       style: {
                         background: "radial-gradient(700px 120px at 50% 30%, rgba(255,176,32,0.65), rgba(0,0,0,0))"
                       }
@@ -2242,12 +2296,30 @@ function Hero() {
                 className: cx$7(
                   "gmailBtn",
                   "inline-flex items-center justify-center",
-                  "h-[54px] sm:h-[58px] px-6 sm:px-7",
+                  "rounded-xl h-[50px] sm:h-[52px] px-5 sm:px-6",
                   "w-full sm:w-auto whitespace-nowrap",
-                  "text-white/90 text-[15px] sm:text-[16px] font-[780]",
+                  "text-white/90 text-[14px] sm:text-[15px] font-[780]",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 ),
                 children: gmailLabel
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              Link,
+              {
+                to: "/avtomatizaciya-biznesa",
+                className: cx$7(
+                  "heroAutomationBtn",
+                  "inline-flex items-center justify-center",
+                  "rounded-xl h-[50px] sm:h-[52px] px-5 sm:px-6",
+                  "w-full sm:w-auto",
+                  "text-center font-[780] tracking-[-0.01em]",
+                  "text-[14px] sm:text-[15px] whitespace-nowrap",
+                  "border border-white/50 bg-white text-black hover:bg-white/95",
+                  "transition active:translate-y-[1px]",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                ),
+                children: hero.btnAutomation
               }
             )
           ] })
@@ -2326,7 +2398,7 @@ function StackCard({
         /* @__PURE__ */ jsx(
           "div",
           {
-            className: "\r\n          relative w-full overflow-hidden rounded-[30px] p-[2px]\r\n          aspect-square\r\n          sm:aspect-auto sm:h-[200px]\r\n          focus-visible:outline-none\r\n        ",
+            className: "\n          relative w-full overflow-hidden rounded-[30px] p-[2px]\n          aspect-square\n          sm:aspect-auto sm:h-[200px]\n          focus-visible:outline-none\n        ",
             style: {
               background: "linear-gradient(135deg, rgba(255,255,255,.09) 0%, rgba(255,255,255,.04) 45%, rgba(255,255,255,.08) 100%)"
             },
@@ -2523,7 +2595,7 @@ function WhyUs() {
         /* @__PURE__ */ jsxs(
           "h2",
           {
-            className: "\r\n                  mt-5 uppercase leading-[0.98] tracking-[-0.02em]\r\n                  text-[34px] sm:text-[48px] lg:text-[58px]\r\n                ",
+            className: "\n                  mt-5 uppercase leading-[0.98] tracking-[-0.02em]\n                  text-[34px] sm:text-[48px] lg:text-[58px]\n                ",
             "aria-label": isRu ? "С чем мы работаем" : "Our stack",
             children: [
               /* @__PURE__ */ jsx("span", { className: "block font-[820] text-white/95", children: title1 }),
@@ -3936,7 +4008,7 @@ function findProjectBySlug(slug, isRu) {
   if (!slug) return void 0;
   return buildProjects(isRu).find((p) => p.id === slug);
 }
-const HeroWebGLBg$1 = lazy(() => import("./assets/HeroWebGLBg-BM6EiQUz.js"));
+const HeroWebGLBg$3 = lazy(() => import("./assets/HeroWebGLBg-CnY8eKt4.js"));
 function cx$3(...a) {
   return a.filter(Boolean).join(" ");
 }
@@ -4060,6 +4132,72 @@ function SocialIconLink({
     }
   );
 }
+function FooterSmokeBg({
+  mounted,
+  webglInView,
+  reducedMotion
+}) {
+  return /* @__PURE__ */ jsxs("div", { "aria-hidden": true, className: "pointer-events-none absolute inset-0 -z-10 isolate overflow-hidden", children: [
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "absolute inset-0",
+        style: s$2({
+          background: "radial-gradient(120% 90% at 85% 100%, rgba(255,154,61,0.24) 0%, rgba(255,106,26,0.14) 30%, rgba(0,0,0,0) 62%), linear-gradient(180deg, #000000 0%, #020202 100%)"
+        })
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "absolute inset-0", children: /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: cx$3(
+          "absolute min-h-[760px]",
+          "bottom-[-42%] left-[-95%] right-[-90%] top-[-8%]",
+          "sm:bottom-[-48%] sm:left-[-50%] sm:right-[-55%] sm:top-[-4%]",
+          "lg:bottom-[-48%] lg:left-[-8%] lg:right-[-28%] lg:top-[0%] lg:min-h-[min(100vh,920px)]"
+        ),
+        style: s$2({
+          opacity: 1,
+          WebkitMaskImage: "radial-gradient(ellipse 160% 120% at 82% 100%, #000 0%, #000 38%, rgba(0,0,0,0.94) 52%, rgba(0,0,0,0.62) 68%, rgba(0,0,0,0.22) 84%, rgba(0,0,0,0.06) 94%, transparent 100%)",
+          maskImage: "radial-gradient(ellipse 160% 120% at 82% 100%, #000 0%, #000 38%, rgba(0,0,0,0.94) 52%, rgba(0,0,0,0.62) 68%, rgba(0,0,0,0.22) 84%, rgba(0,0,0,0.06) 94%, transparent 100%)",
+          WebkitMaskRepeat: "no-repeat",
+          maskRepeat: "no-repeat",
+          WebkitMaskSize: "100% 100%",
+          maskSize: "100% 100%"
+        }),
+        children: mounted && webglInView && !reducedMotion ? /* @__PURE__ */ jsx(Suspense, { fallback: null, children: /* @__PURE__ */ jsx(HeroWebGLBg$3, { interactive: false, quality: "low" }) }) : null
+      }
+    ) }),
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "absolute inset-0",
+        style: s$2({
+          background: [
+            "linear-gradient(90deg, rgba(0,0,0,0.86) 0%, rgba(0,0,0,0.48) 30%, rgba(0,0,0,0.12) 54%, rgba(0,0,0,0.04) 72%, rgba(0,0,0,0.06) 100%)",
+            "radial-gradient(120% 120% at 50% 92%, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.44) 62%, rgba(0,0,0,0.82) 100%)"
+          ].join(",")
+        })
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      "img",
+      {
+        src: WATERMARK_LOGO,
+        alt: "",
+        draggable: false,
+        loading: "lazy",
+        decoding: "async",
+        className: cx$3(
+          "absolute z-[1] select-none",
+          "-right-[18vw] -bottom-[18vw]",
+          "w-[min(760px,76vw)] max-w-none",
+          "opacity-[0.12] sm:-right-[12vw] sm:-bottom-[14vw] sm:w-[min(760px,62vw)] sm:opacity-[0.16]"
+        )
+      }
+    )
+  ] });
+}
 function Footer() {
   const { lang } = useLang();
   const isRu = lang === "ru";
@@ -4067,7 +4205,6 @@ function Footer() {
   const footerRef = useRef(null);
   const [webglInView, setWebglInView] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
-  const [desktop, setDesktop] = useState(false);
   const t = (v) => isRu ? v.ru : v.en;
   useEffect(() => {
     setMounted(true);
@@ -4080,7 +4217,7 @@ function Footer() {
       (entries) => {
         setWebglInView(!!entries[0]?.isIntersecting);
       },
-      { root: null, rootMargin: "220px 0px 220px 0px", threshold: 0.01 }
+      { root: null, rootMargin: "260px 0px 260px 0px", threshold: 0.01 }
     );
     io.observe(el);
     return () => io.disconnect();
@@ -4088,17 +4225,13 @@ function Footer() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const desktopMq = window.matchMedia("(min-width: 1024px)");
     const apply = () => {
       setReducedMotion(!!motionMq.matches);
-      setDesktop(!!desktopMq.matches);
     };
     apply();
     motionMq.addEventListener?.("change", apply);
-    desktopMq.addEventListener?.("change", apply);
     return () => {
       motionMq.removeEventListener?.("change", apply);
-      desktopMq.removeEventListener?.("change", apply);
     };
   }, []);
   const docs = isRu ? DOCS.ru : DOCS.en;
@@ -4114,70 +4247,8 @@ function Footer() {
       ),
       style: s$2({ ["--accent"]: ACCENT$1, backgroundColor: "#000000" }),
       children: [
-        /* @__PURE__ */ jsxs(
-          "div",
-          {
-            "aria-hidden": true,
-            className: "pointer-events-none absolute inset-0 -z-10 isolate overflow-hidden",
-            children: [
-              /* @__PURE__ */ jsx(
-                "div",
-                {
-                  className: "absolute inset-0",
-                  style: s$2({
-                    background: "radial-gradient(120% 90% at 85% 100%, rgba(255,154,61,0.22) 0%, rgba(255,106,26,0.12) 30%, rgba(0,0,0,0) 62%), linear-gradient(180deg, #000000 0%, #020202 100%)"
-                  })
-                }
-              ),
-              /* @__PURE__ */ jsx("div", { className: "absolute inset-0", children: /* @__PURE__ */ jsx(
-                "div",
-                {
-                  className: "absolute bottom-[-48%] left-[-8%] right-[-28%] top-[0%] min-h-[min(100vh,920px)]",
-                  style: s$2({
-                    opacity: 1,
-                    WebkitMaskImage: "radial-gradient(ellipse 145% 115% at 92% 100%, #000 0%, #000 38%, rgba(0,0,0,0.94) 52%, rgba(0,0,0,0.62) 68%, rgba(0,0,0,0.22) 84%, rgba(0,0,0,0.06) 94%, transparent 100%)",
-                    maskImage: "radial-gradient(ellipse 145% 115% at 92% 100%, #000 0%, #000 38%, rgba(0,0,0,0.94) 52%, rgba(0,0,0,0.62) 68%, rgba(0,0,0,0.22) 84%, rgba(0,0,0,0.06) 94%, transparent 100%)",
-                    WebkitMaskRepeat: "no-repeat",
-                    maskRepeat: "no-repeat",
-                    WebkitMaskSize: "100% 100%",
-                    maskSize: "100% 100%"
-                  }),
-                  children: mounted && webglInView && desktop && !reducedMotion ? /* @__PURE__ */ jsx(Suspense, { fallback: null, children: /* @__PURE__ */ jsx(HeroWebGLBg$1, {}) }) : null
-                }
-              ) }),
-              /* @__PURE__ */ jsx(
-                "div",
-                {
-                  className: "absolute inset-0",
-                  style: s$2({
-                    background: [
-                      "linear-gradient(90deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.42) 30%, rgba(0,0,0,0.10) 54%, rgba(0,0,0,0.02) 72%, rgba(0,0,0,0.04) 100%)",
-                      "radial-gradient(120% 120% at 50% 92%, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.48) 62%, rgba(0,0,0,0.82) 100%)"
-                    ].join(",")
-                  })
-                }
-              ),
-              /* @__PURE__ */ jsx(
-                "img",
-                {
-                  src: WATERMARK_LOGO,
-                  alt: "",
-                  draggable: false,
-                  loading: "lazy",
-                  decoding: "async",
-                  className: cx$3(
-                    "absolute z-[1] select-none",
-                    "-right-[12vw] -bottom-[14vw]",
-                    "w-[min(760px,62vw)] max-w-none",
-                    "opacity-[0.14] sm:opacity-[0.16]"
-                  ),
-                  style: s$2({ opacity: 0.15 })
-                }
-              )
-            ]
-          }
-        ),
-        /* @__PURE__ */ jsx("div", { className: "relative z-10", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsx("div", { className: "relative px-3 sm:px-5", children: /* @__PURE__ */ jsxs("div", { className: "relative pt-16 pb-14 sm:pt-20 sm:pb-16 lg:pt-24 lg:pb-20", children: [
+        /* @__PURE__ */ jsx(FooterSmokeBg, { mounted, webglInView, reducedMotion }),
+        /* @__PURE__ */ jsx("div", { className: "relative z-10", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsx("div", { className: "relative px-3 sm:px-5", children: /* @__PURE__ */ jsxs("div", { className: "relative pb-14 pt-16 sm:pb-16 sm:pt-20 lg:pb-20 lg:pt-24", children: [
           /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-14 lg:flex-row lg:items-start lg:gap-10 xl:gap-14", children: [
             /* @__PURE__ */ jsx("aside", { className: "shrink-0 lg:w-[min(280px,32%)] lg:max-w-[300px]", children: /* @__PURE__ */ jsx(
               Link,
@@ -4283,7 +4354,16 @@ function IconMail$1({ className }) {
         opacity: "0.95"
       }
     ),
-    /* @__PURE__ */ jsx("path", { d: "M6 8.5 12 12.5l6-4", stroke: "currentColor", strokeWidth: "1.65", strokeLinecap: "round", strokeLinejoin: "round" })
+    /* @__PURE__ */ jsx(
+      "path",
+      {
+        d: "M6 8.5 12 12.5l6-4",
+        stroke: "currentColor",
+        strokeWidth: "1.65",
+        strokeLinecap: "round",
+        strokeLinejoin: "round"
+      }
+    )
   ] });
 }
 const CANONICAL_ORIGIN = "https://www.tivonix.tech";
@@ -4906,7 +4986,7 @@ function DomainPill({
     }
   );
 }
-const HeroWebGLBg = lazy(() => import("./assets/HeroWebGLBg-BM6EiQUz.js"));
+const HeroWebGLBg$2 = lazy(() => import("./assets/HeroWebGLBg-CnY8eKt4.js"));
 const HEADER_H$1 = 72;
 const GMAIL_EMAIL_URL = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent("tivoonix@gmail.com")}&su=${encodeURIComponent("Проект (SaaS/MVP)")}`;
 function clamp$1(n, a = 0, b = 1) {
@@ -5061,7 +5141,7 @@ function ProjectsPage() {
     ),
     /* @__PURE__ */ jsx(Header, {}),
     /* @__PURE__ */ jsxs("div", { className: "pointer-events-none fixed inset-0 -z-10", "aria-hidden": true, children: [
-      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 overflow-hidden bg-black", children: /* @__PURE__ */ jsx("div", { className: "absolute inset-0 h-full w-full scale-[1.03] will-change-transform", children: mounted ? /* @__PURE__ */ jsx(Suspense, { fallback: null, children: /* @__PURE__ */ jsx(HeroWebGLBg, {}) }) : null }) }),
+      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 overflow-hidden bg-black", children: /* @__PURE__ */ jsx("div", { className: "absolute inset-0 h-full w-full scale-[1.03] will-change-transform", children: mounted ? /* @__PURE__ */ jsx(Suspense, { fallback: null, children: /* @__PURE__ */ jsx(HeroWebGLBg$2, {}) }) : null }) }),
       /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.55),rgba(0,0,0,0.92))]" }),
       /* @__PURE__ */ jsx(
         "div",
@@ -5849,491 +5929,1913 @@ function WebsiteCreationPage() {
     /* @__PURE__ */ jsx(Footer, {})
   ] });
 }
-const AUTOMATION_HERO_IMG = "/images/avtomatizaciya-biznesa/hero.png";
-const painPoints = [
-  {
-    title: "Ручной перенос данных",
-    text: "Информация копируется между таблицами, CRM, почтой и мессенджерами. Из-за этого появляются ошибки, дубли и потери данных."
-  },
-  {
-    title: "Потерянные заявки",
-    text: "Когда заявки приходят из разных каналов и не собираются в одной системе, часть обращений теряется или обрабатывается слишком поздно."
-  },
-  {
-    title: "Нет прозрачной аналитики",
-    text: "Данные разбросаны по разным местам. Чтобы понять, что происходит в бизнесе, приходится собирать всё вручную."
-  },
-  {
-    title: "Повторяющиеся задачи",
-    text: "Напоминания, статусы, уведомления, отчёты и другие рутинные действия можно автоматизировать и освободить время команды."
-  }
-];
-const whyAutomationVisuals = [
-  {
-    src: "/images/avtomatizaciya-biznesa/Зачем бизнесу автоматизация/Меньше ручной работы.png"
-  },
-  {
-    src: "/images/avtomatizaciya-biznesa/Зачем бизнесу автоматизация/Быстрее обработка заявок.png"
-  },
-  {
-    src: "/images/avtomatizaciya-biznesa/Зачем бизнесу автоматизация/Понятный контроль процессов.png"
-  },
-  {
-    src: "/images/avtomatizaciya-biznesa/Зачем бизнесу автоматизация/Удобная работа команды.png"
-  },
-  {
-    src: "/images/avtomatizaciya-biznesa/Зачем бизнесу автоматизация/Больше времени на рост бизнеса.png"
-  }
-];
-const automationFeatures = [
-  {
-    title: "Обработка заявок",
-    text: "Соберём заявки с сайта, форм, Telegram, email и других источников в одном месте."
-  },
-  {
-    title: "CRM и воронки продаж",
-    text: "Настроим систему для работы с клиентами, статусами, задачами и этапами продаж."
-  },
-  {
-    title: "Личные кабинеты",
-    text: "Разработаем кабинеты для клиентов, сотрудников или партнёров с нужными функциями и ролями."
-  },
-  {
-    title: "Админ-панели",
-    text: "Сделаем удобные внутренние панели управления для заявок, пользователей, заказов, контента и процессов."
-  },
-  {
-    title: "Уведомления и напоминания",
-    text: "Настроим автоматические уведомления в Telegram, email или внутри системы."
-  },
-  {
-    title: "Отчёты и аналитика",
-    text: "Соберём ключевые показатели в удобные дашборды и понятные отчёты."
-  },
-  {
-    title: "Оплаты и документы",
-    text: "Подключим оплату, статусы платежей, подтверждения, документы и логику после оплаты."
-  },
-  {
-    title: "Интеграции с внешними сервисами",
-    text: "Свяжем сайт, CRM, Telegram, таблицы, платёжные системы, API и другие инструменты."
-  }
-];
-const realExamples = [
-  {
-    title: "Для услуг и сервисных компаний",
-    text: "Клиент оставляет заявку на сайте. Она автоматически попадает в систему, менеджер получает уведомление, заявке присваивается статус, а руководитель видит весь путь клиента от обращения до оплаты."
-  },
-  {
-    title: "Для онлайн-сервисов и стартапов",
-    text: "Пользователь регистрируется, получает доступ в личный кабинет, видит нужные функции, оплачивает сервис, а администратор управляет данными через панель."
-  },
-  {
-    title: "Для локального бизнеса",
-    text: "Заявки, записи, оплаты и сообщения собираются в одном месте. Команда видит задачи, а владелец получает понятную картину по работе бизнеса."
-  },
-  {
-    title: "Для внутренних процессов компании",
-    text: "Вместо множества таблиц и ручных отчётов появляется единая система, где сотрудники работают с задачами, статусами, документами и данными."
-  }
-];
-const steps = [
-  {
-    title: "Разбираем процессы",
-    text: "Понимаем, как сейчас устроена работа, где появляются узкие места и что реально мешает бизнесу."
-  },
-  {
-    title: "Находим точки автоматизации",
-    text: "Определяем, какие действия можно упростить, какие данные нужно связать и что должно происходить автоматически."
-  },
-  {
-    title: "Проектируем решение",
-    text: "Продумываем структуру, роли пользователей, сценарии, статусы, экраны и интеграции."
-  },
-  {
-    title: "Разрабатываем систему",
-    text: "Создаём интерфейс, серверную часть, админ-панель, личные кабинеты и нужную логику."
-  },
-  {
-    title: "Тестируем и запускаем",
-    text: "Проверяем сценарии, исправляем ошибки, подключаем всё необходимое и запускаем систему в работу."
-  },
-  {
-    title: "Развиваем дальше",
-    text: "После запуска добавляем новые функции и улучшаем продукт по мере роста бизнеса."
-  }
-];
-const faqs = [
-  {
-    q: "Сколько стоит автоматизация бизнеса?",
-    a: "Стоимость зависит от объёма задачи: ролей, экранов, логики, интеграций и сценариев. После короткого разбора мы сможем дать ориентир по бюджету."
-  },
-  {
-    q: "Сколько времени занимает разработка?",
-    a: "Это зависит от сложности решения. Небольшую систему можно запустить быстрее, более сложный продукт требует больше этапов. Часто оптимально начинать с MVP."
-  },
-  {
-    q: "Можно автоматизировать только один процесс?",
-    a: "Да. Часто это лучший вариант. Например, сначала автоматизировать заявки, а потом постепенно добавить личный кабинет, аналитику, оплаты и другие блоки."
-  },
-  {
-    q: "Вы делаете интеграции с Telegram, оплатами и внешними сервисами?",
-    a: "Да. Мы можем подключить Telegram, email, платёжные системы, CRM, таблицы, API и другие сервисы."
-  },
-  {
-    q: "Что лучше: готовый сервис или разработка под себя?",
-    a: "Если задача типовая, может подойти готовый сервис. Если у бизнеса своя логика и нестандартные процессы, лучше делать решение под себя."
-  },
-  {
-    q: "Нужно ли техническое задание?",
-    a: "Нет. На старте достаточно описать задачу простыми словами. Мы сами поможем разобраться, сформировать структуру и определить первый этап."
-  }
-];
-function DotList({ items }) {
-  return /* @__PURE__ */ jsx("ul", { className: "grid gap-3 sm:grid-cols-2", children: items.map((item) => /* @__PURE__ */ jsxs("li", { className: "flex items-start gap-3 text-white/78", children: [
-    /* @__PURE__ */ jsx("span", { className: "mt-2 h-1.5 w-1.5 rounded-full bg-[#FF8A1E]" }),
-    /* @__PURE__ */ jsx("span", { children: item })
-  ] }, item)) });
+const automationTypo = {
+  /** Главный заголовок страницы (hero) */
+  h1: "font-display text-white font-[850] leading-[1.02] tracking-[-0.04em] text-[32px] sm:text-[48px] lg:text-[56px]",
+  /** Все крупные заголовки секций */
+  h2: "font-display text-white font-[850] leading-[0.98] tracking-[-0.045em] text-[32px] sm:text-[44px] lg:text-[52px]",
+  /** Заголовки карточек и компактных блоков */
+  h3: "font-display text-white font-[800] leading-[1.1] tracking-[-0.03em] text-[20px] sm:text-[22px]",
+  /** Акцентные заголовки (слайды, сетка «Почему TIVONIX») */
+  h3Lg: "font-display text-white font-[800] leading-[1.08] tracking-[-0.035em] text-[24px] sm:text-[28px] lg:text-[32px]"
+};
+const HeroWebGLBg$1 = lazy(() => import("./assets/HeroWebGLBg-CnY8eKt4.js"));
+const DEFAULT_FRAME = "relative h-[13.5rem] overflow-hidden bg-black sm:h-[15rem] lg:h-[16.5rem]";
+function SmokeMaskedIllustration({
+  image,
+  imageDir,
+  title,
+  smokeBase,
+  orangeLayer,
+  frameClassName = DEFAULT_FRAME
+}) {
+  const smokeMask = "radial-gradient(ellipse 78% 72% at 50% 50%, #fff 0%, #fff 34%, rgba(255,255,255,0.62) 52%, rgba(255,255,255,0.22) 68%, transparent 82%)";
+  return /* @__PURE__ */ jsxs("div", { className: frameClassName, children: [
+    /* @__PURE__ */ jsxs(
+      "div",
+      {
+        "aria-hidden": true,
+        className: "absolute inset-0 z-[1]",
+        style: {
+          WebkitMaskImage: smokeMask,
+          maskImage: smokeMask,
+          WebkitMaskRepeat: "no-repeat",
+          maskRepeat: "no-repeat",
+          WebkitMaskSize: "100% 100%",
+          maskSize: "100% 100%"
+        },
+        children: [
+          /* @__PURE__ */ jsx("div", { className: "absolute inset-[-20%] opacity-[0.92]", style: { background: smokeBase } }),
+          /* @__PURE__ */ jsx("div", { className: "absolute inset-[-14%] z-[1] scale-[1.08] opacity-[0.76]", children: /* @__PURE__ */ jsx(Suspense, { fallback: null, children: /* @__PURE__ */ jsx(HeroWebGLBg$1, { interactive: false, quality: "low" }) }) }),
+          /* @__PURE__ */ jsx(
+            "div",
+            {
+              className: "absolute inset-[-12%] z-[2] opacity-[0.82]",
+              style: { background: orangeLayer }
+            }
+          ),
+          /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-[3] bg-black/10" })
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      "img",
+      {
+        src: encodeURI(`${imageDir}/${image}`),
+        alt: title,
+        loading: "lazy",
+        decoding: "async",
+        draggable: false,
+        className: "relative z-[4] h-full w-full scale-[1.08] object-contain opacity-[0.96] mix-blend-screen"
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-0 z-[5] bg-[radial-gradient(circle_at_center,transparent_0%,transparent_58%,rgba(0,0,0,0.98)_100%)]" })
+  ] });
 }
-function AutomationHero() {
-  return /* @__PURE__ */ jsx(Section, { className: "relative overflow-hidden pt-12 sm:pt-16 lg:pt-20 pb-16 sm:pb-20", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-6xl", children: [
-    /* @__PURE__ */ jsxs("div", { className: "text-center", children: [
-      /* @__PURE__ */ jsxs("h1", { className: "font-display mt-5 text-[36px] sm:text-[58px] leading-[1.02] tracking-[-0.035em] font-[860] text-white", children: [
-        /* @__PURE__ */ jsx("span", { className: "block", children: "Автоматизируем процессы" }),
-        /* @__PURE__ */ jsx("span", { className: "block bg-[linear-gradient(90deg,#FFD7B0_0%,#FFAE57_38%,#FF8A1E_72%,#FF6E12_100%)] bg-clip-text text-transparent", children: "вашего бизнеса" })
-      ] }),
-      /* @__PURE__ */ jsx("p", { className: "font-display mt-7 mx-auto max-w-3xl text-[18px] sm:text-[20px] leading-[1.55] tracking-[-0.015em] text-white/82", children: "Помогаем убрать ручную работу, связать сервисы и навести порядок в заявках, клиентах, отчётах и внутренних процессах." })
+const SIGNS_FRAME = "relative h-[16.5rem] overflow-hidden bg-black sm:h-[18.5rem]";
+function CenterLine() {
+  return /* @__PURE__ */ jsx(
+    "div",
+    {
+      "aria-hidden": true,
+      className: "pointer-events-none absolute left-1/2 top-0 z-0 hidden h-full -translate-x-1/2 md:block",
+      children: /* @__PURE__ */ jsx("div", { className: "relative h-full w-px bg-[#ff7a1a]/28", children: /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 top-0 h-full bg-gradient-to-b from-[#ff7a1a]/45 via-[#ff7a1a]/85 to-[#ff7a1a]/45" }) })
+    }
+  );
+}
+function TimelineDot() {
+  return /* @__PURE__ */ jsx(
+    "span",
+    {
+      "aria-hidden": true,
+      className: "absolute left-1/2 top-[11.15rem] z-[5] hidden h-3 w-3 -translate-x-1/2 rounded-full bg-[#ff7a1a] shadow-[0_0_22px_rgba(255,122,26,0.75)] md:block"
+    }
+  );
+}
+function Connector({ alignRight }) {
+  return /* @__PURE__ */ jsx(
+    "span",
+    {
+      "aria-hidden": true,
+      className: `absolute top-[11.5rem] hidden h-px w-14 bg-gradient-to-r md:block ${alignRight ? "right-full from-transparent to-[#ff7a1a]/80" : "left-full from-[#ff7a1a]/80 to-transparent"}`
+    }
+  );
+}
+function SignCard({
+  item,
+  alignRight,
+  imageDir,
+  smokeBase,
+  orangeLayer
+}) {
+  return /* @__PURE__ */ jsxs(
+    "article",
+    {
+      className: `relative w-full max-w-[34rem] overflow-hidden border border-white/[0.12] bg-black ${alignRight ? "md:ml-0 md:mr-auto" : "md:ml-auto md:mr-0"}`,
+      children: [
+        /* @__PURE__ */ jsx(Connector, { alignRight }),
+        /* @__PURE__ */ jsx(
+          SmokeMaskedIllustration,
+          {
+            image: item.image,
+            imageDir,
+            title: item.title,
+            smokeBase,
+            orangeLayer,
+            frameClassName: SIGNS_FRAME
+          }
+        ),
+        /* @__PURE__ */ jsxs("div", { className: "px-6 pb-8 pt-5 sm:px-7 sm:pb-9", children: [
+          /* @__PURE__ */ jsx("div", { className: "mb-6 inline-flex h-8 min-w-8 items-center justify-center rounded-full border border-white/[0.18] bg-white/[0.06] px-2 text-[11px] font-[850] text-white", children: item.number }),
+          /* @__PURE__ */ jsx("h3", { className: automationTypo.h3Lg, children: item.title }),
+          /* @__PURE__ */ jsx("p", { className: "mt-4 text-[16px] font-[600] leading-[1.65] text-white/86 sm:text-[18px]", children: item.text })
+        ] }),
+        /* @__PURE__ */ jsx(
+          "div",
+          {
+            "aria-hidden": true,
+            className: "pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#ff7a1a]/75 to-transparent"
+          }
+        )
+      ]
+    }
+  );
+}
+function SignItem({
+  item,
+  index,
+  imageDir,
+  smokeBase,
+  orangeLayer
+}) {
+  const alignRight = index % 2 === 1;
+  return /* @__PURE__ */ jsxs("li", { className: "relative z-10 grid gap-6 md:grid-cols-[1fr_5rem_1fr] md:items-start md:gap-0", children: [
+    /* @__PURE__ */ jsx("div", { className: `relative ${alignRight ? "md:col-start-3" : "md:col-start-1"}`, children: /* @__PURE__ */ jsx(
+      SignCard,
+      {
+        item,
+        alignRight,
+        imageDir,
+        smokeBase,
+        orangeLayer
+      }
+    ) }),
+    /* @__PURE__ */ jsx("div", { className: "relative hidden md:col-start-2 md:row-start-1 md:block", children: /* @__PURE__ */ jsx(TimelineDot, {}) })
+  ] });
+}
+function AutomationSignsScrollSection({
+  smokeBase,
+  orangeLayer,
+  imageDir,
+  sectionTitle,
+  sectionLead,
+  ariaList,
+  items
+}) {
+  return /* @__PURE__ */ jsx("section", { className: "relative scroll-mt-[var(--tivonix-header-spacer)] overflow-hidden bg-black", children: /* @__PURE__ */ jsx("div", { className: "relative py-16 sm:py-20 lg:py-24", children: /* @__PURE__ */ jsxs(Container, { children: [
+    /* @__PURE__ */ jsxs("div", { className: "relative z-10 mx-auto max-w-5xl text-center", children: [
+      /* @__PURE__ */ jsx("h2", { className: `mx-auto mt-6 max-w-[56rem] ${automationTypo.h2}`, children: sectionTitle }),
+      /* @__PURE__ */ jsx("p", { className: "mx-auto mt-6 max-w-[47rem] text-[16px] font-[600] leading-[1.68] text-white/76 sm:text-[18px]", children: sectionLead })
     ] }),
-    /* @__PURE__ */ jsxs("div", { className: "relative mx-auto mt-14 max-w-5xl px-3", children: [
+    /* @__PURE__ */ jsxs("div", { className: "relative mx-auto mt-14 max-w-6xl sm:mt-16", children: [
+      /* @__PURE__ */ jsx(CenterLine, {}),
+      /* @__PURE__ */ jsx(
+        "ul",
+        {
+          className: "relative z-10 list-none space-y-10 sm:space-y-12 md:space-y-16",
+          "aria-label": ariaList,
+          children: items.map((item, index) => /* @__PURE__ */ jsx(
+            SignItem,
+            {
+              item,
+              index,
+              imageDir,
+              smokeBase,
+              orangeLayer
+            },
+            item.number
+          ))
+        }
+      )
+    ] })
+  ] }) }) });
+}
+const icons = [
+  {
+    label: "Telegram",
+    Icon: SiTelegram,
+    side: "left",
+    x: -520,
+    y: -120,
+    size: 72,
+    iconSize: 34,
+    delay: 0,
+    color: "#26A5E4"
+  },
+  {
+    label: "Email",
+    Icon: SiGmail,
+    side: "left",
+    x: -440,
+    y: 0,
+    size: 96,
+    iconSize: 46,
+    delay: 0.45,
+    color: "#EA4335"
+  },
+  {
+    label: "CRM",
+    Icon: SiHubspot,
+    side: "right",
+    x: 500,
+    y: -90,
+    size: 96,
+    iconSize: 48,
+    delay: 0.9,
+    color: "#FF5C35"
+  },
+  {
+    label: "Таблицы",
+    Icon: SiGooglesheets,
+    side: "left",
+    x: -330,
+    y: -85,
+    size: 82,
+    iconSize: 40,
+    delay: 1.3,
+    color: "#34A853"
+  },
+  {
+    label: "WhatsApp",
+    Icon: SiWhatsapp,
+    side: "left",
+    x: -360,
+    y: 125,
+    size: 88,
+    iconSize: 42,
+    delay: 1.75,
+    color: "#25D366"
+  },
+  {
+    label: "Notion",
+    Icon: SiNotion,
+    side: "right",
+    x: 400,
+    y: 20,
+    size: 78,
+    iconSize: 38,
+    delay: 2.2,
+    color: "#000000"
+  },
+  {
+    label: "Календарь",
+    Icon: SiGooglecalendar,
+    side: "right",
+    x: 310,
+    y: -135,
+    size: 92,
+    iconSize: 44,
+    delay: 2.65,
+    color: "#4285F4"
+  },
+  {
+    label: "Задачи",
+    Icon: SiClickup,
+    side: "right",
+    x: 370,
+    y: 130,
+    size: 84,
+    iconSize: 42,
+    delay: 3.1,
+    color: "#7B68EE"
+  },
+  {
+    label: "Оплаты",
+    Icon: SiStripe,
+    side: "right",
+    x: 520,
+    y: 115,
+    size: 72,
+    iconSize: 36,
+    delay: 3.55,
+    color: "#635BFF"
+  },
+  {
+    label: "Документы",
+    Icon: SiGoogledocs,
+    side: "left",
+    x: -520,
+    y: 110,
+    size: 72,
+    iconSize: 36,
+    delay: 4,
+    color: "#4285F4"
+  },
+  {
+    label: "Отчёты",
+    Icon: SiGoogleanalytics,
+    side: "left",
+    x: -455,
+    y: -15,
+    size: 64,
+    iconSize: 34,
+    delay: 4.45,
+    color: "#F9AB00"
+  },
+  {
+    label: "Автоматизация",
+    Icon: SiZapier,
+    side: "left",
+    x: -250,
+    y: 85,
+    size: 64,
+    iconSize: 34,
+    delay: 4.9,
+    color: "#FF4A00"
+  },
+  {
+    label: "Уведомления",
+    Icon: FiBell,
+    side: "right",
+    x: 500,
+    y: -10,
+    size: 64,
+    iconSize: 34,
+    delay: 5.35,
+    color: "#FF5C35"
+  }
+];
+function AutomationEcosystemMap({
+  logoSrc,
+  smokeBase = "radial-gradient(circle at center, rgba(255,122,26,0.12), transparent 45%)",
+  orangeLayer = "linear-gradient(180deg, rgba(255,122,26,0.10), transparent 60%)",
+  badgeLabels
+}) {
+  const resolvedIcons = icons.map((icon, index) => ({
+    ...icon,
+    label: badgeLabels[index] ?? icon.label
+  }));
+  return /* @__PURE__ */ jsxs("section", { className: "relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 overflow-hidden px-4 sm:px-6", children: [
+    /* @__PURE__ */ jsxs("div", { className: "relative mx-auto min-h-[22rem] max-w-[min(96vw,1400px)] overflow-hidden rounded-[26px] bg-black px-4 py-8 sm:min-h-[30rem] lg:min-h-[34rem]", children: [
+      /* @__PURE__ */ jsx(
+        "div",
+        {
+          "aria-hidden": true,
+          className: "pointer-events-none absolute inset-0",
+          style: { background: smokeBase }
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "div",
+        {
+          "aria-hidden": true,
+          className: "pointer-events-none absolute inset-0 z-[1]",
+          style: { background: orangeLayer }
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "div",
+        {
+          "aria-hidden": true,
+          className: "pointer-events-none absolute inset-0 z-[2] bg-[radial-gradient(circle_at_center,rgba(255,122,26,0.22),transparent_35%),radial-gradient(circle_at_center,rgba(0,0,0,0)_0%,rgba(0,0,0,0.9)_84%)]"
+        }
+      ),
+      /* @__PURE__ */ jsxs(
+        "svg",
+        {
+          "aria-hidden": true,
+          className: "pointer-events-none absolute inset-0 z-[3] h-full w-full",
+          viewBox: "0 0 1200 430",
+          preserveAspectRatio: "none",
+          children: [
+            /* @__PURE__ */ jsxs("defs", { children: [
+              /* @__PURE__ */ jsxs("linearGradient", { id: "lineLeft", x1: "0", x2: "1", y1: "0", y2: "0", children: [
+                /* @__PURE__ */ jsx("stop", { offset: "0%", stopColor: "#ffffff", stopOpacity: "0" }),
+                /* @__PURE__ */ jsx("stop", { offset: "55%", stopColor: "#ffffff", stopOpacity: "0.28" }),
+                /* @__PURE__ */ jsx("stop", { offset: "100%", stopColor: "#ff7a1a", stopOpacity: "0.95" })
+              ] }),
+              /* @__PURE__ */ jsxs("linearGradient", { id: "lineRight", x1: "1", x2: "0", y1: "0", y2: "0", children: [
+                /* @__PURE__ */ jsx("stop", { offset: "0%", stopColor: "#ffffff", stopOpacity: "0" }),
+                /* @__PURE__ */ jsx("stop", { offset: "55%", stopColor: "#ffffff", stopOpacity: "0.28" }),
+                /* @__PURE__ */ jsx("stop", { offset: "100%", stopColor: "#ff7a1a", stopOpacity: "0.95" })
+              ] }),
+              /* @__PURE__ */ jsxs("filter", { id: "orangeGlow", children: [
+                /* @__PURE__ */ jsx("feGaussianBlur", { stdDeviation: "3", result: "blur" }),
+                /* @__PURE__ */ jsxs("feMerge", { children: [
+                  /* @__PURE__ */ jsx("feMergeNode", { in: "blur" }),
+                  /* @__PURE__ */ jsx("feMergeNode", { in: "SourceGraphic" })
+                ] })
+              ] })
+            ] }),
+            resolvedIcons.map((icon, index) => {
+              const startX = 600 + icon.x;
+              const startY = 215 + icon.y;
+              const c1x = icon.side === "left" ? startX + 150 : startX - 150;
+              const c2x = icon.side === "left" ? 470 : 730;
+              const c1y = startY;
+              const c2y = 215 + icon.y * 0.35;
+              const path = `M ${startX} ${startY} C ${c1x} ${c1y}, ${c2x} ${c2y}, 600 215`;
+              return /* @__PURE__ */ jsxs("g", { children: [
+                /* @__PURE__ */ jsx(
+                  "path",
+                  {
+                    d: path,
+                    fill: "none",
+                    stroke: icon.side === "left" ? "url(#lineLeft)" : "url(#lineRight)",
+                    strokeWidth: "1",
+                    strokeDasharray: index % 2 === 0 ? "4 8" : "1 0",
+                    opacity: "0.52"
+                  }
+                ),
+                /* @__PURE__ */ jsxs("circle", { r: "3", fill: "#ff7a1a", filter: "url(#orangeGlow)", children: [
+                  /* @__PURE__ */ jsx(
+                    "animateMotion",
+                    {
+                      dur: `${5.8 + index % 4 * 0.45}s`,
+                      begin: `${icon.delay}s`,
+                      repeatCount: "indefinite",
+                      path
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "animate",
+                    {
+                      attributeName: "opacity",
+                      values: "0;1;1;0",
+                      keyTimes: "0;0.15;0.75;1",
+                      dur: `${5.8 + index % 4 * 0.45}s`,
+                      begin: `${icon.delay}s`,
+                      repeatCount: "indefinite"
+                    }
+                  )
+                ] })
+              ] }, `${icon.label}-line`);
+            })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-0 z-[4]", children: resolvedIcons.map((item, index) => {
+        const Icon2 = item.Icon;
+        return /* @__PURE__ */ jsx(
+          "div",
+          {
+            className: "integration-fly absolute left-1/2 top-1/2 flex items-center justify-center rounded-full bg-white shadow-[0_0_34px_rgba(255,255,255,0.18)]",
+            style: {
+              "--from-x": `${item.x}px`,
+              "--from-y": `${item.y}px`,
+              "--size": `${item.size}px`,
+              "--duration": `${6.6 + index % 5 * 0.45}s`,
+              "--delay": `${item.delay}s`
+            },
+            children: /* @__PURE__ */ jsx(Icon2, { size: item.iconSize, color: item.color, "aria-hidden": true })
+          },
+          `int-${index}`
+        );
+      }) }),
+      /* @__PURE__ */ jsxs("div", { className: "absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center", children: [
+        /* @__PURE__ */ jsx("div", { className: "absolute h-[13rem] w-[13rem] rounded-full bg-[#ff7a1a]/25 blur-[42px] sm:h-[18rem] sm:w-[18rem]" }),
+        /* @__PURE__ */ jsx("div", { className: "absolute h-[8rem] w-[8rem] animate-ping rounded-full border border-[#ff7a1a]/35 sm:h-[11rem] sm:w-[11rem]" }),
+        /* @__PURE__ */ jsxs("div", { className: "relative flex h-[7.5rem] w-[7.5rem] items-center justify-center rounded-full bg-black shadow-[0_0_45px_rgba(255,122,26,0.7)] ring-2 ring-[#ff7a1a] sm:h-[10rem] sm:w-[10rem]", children: [
+          /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(255,122,26,0.35),transparent_65%)]" }),
+          /* @__PURE__ */ jsx(
+            "img",
+            {
+              src: logoSrc,
+              alt: "TIVONIX",
+              width: 96,
+              height: 96,
+              decoding: "async",
+              className: "relative z-10 h-[4rem] w-[4rem] object-contain sm:h-[5.5rem] sm:w-[5.5rem]"
+            }
+          )
+        ] })
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-0 z-[11] bg-[radial-gradient(circle_at_center,transparent_0%,transparent_58%,rgba(0,0,0,0.9)_100%)]" })
+    ] }),
+    /* @__PURE__ */ jsx("style", { children: `
+        .integration-fly {
+          width: var(--size);
+          height: var(--size);
+          animation: fly-to-center var(--duration) cubic-bezier(.55, 0, .15, 1) infinite;
+          animation-delay: var(--delay);
+          opacity: 0;
+          will-change: transform, opacity, filter;
+        }
+
+        @keyframes fly-to-center {
+          0% {
+            transform: translate(var(--from-x), var(--from-y)) translate(-50%, -50%) scale(0.78);
+            opacity: 0;
+            filter: blur(5px);
+          }
+
+          10% {
+            opacity: 1;
+            filter: blur(0);
+          }
+
+          58% {
+            opacity: 1;
+          }
+
+          82% {
+            transform: translate(0, 0) translate(-50%, -50%) scale(0.26);
+            opacity: 0;
+            filter: blur(2px);
+          }
+
+          100% {
+            transform: translate(0, 0) translate(-50%, -50%) scale(0.18);
+            opacity: 0;
+            filter: blur(8px);
+          }
+        }
+
+        @media (max-width: 768px) {
+          .integration-fly {
+            width: calc(var(--size) * 0.68);
+            height: calc(var(--size) * 0.68);
+            animation-name: fly-to-center-mobile;
+          }
+
+          @keyframes fly-to-center-mobile {
+            0% {
+              transform:
+                translate(calc(var(--from-x) * 0.52), calc(var(--from-y) * 0.75))
+                translate(-50%, -50%)
+                scale(0.72);
+              opacity: 0;
+              filter: blur(5px);
+            }
+
+            10% {
+              opacity: 1;
+              filter: blur(0);
+            }
+
+            58% {
+              opacity: 1;
+            }
+
+            82% {
+              transform: translate(0, 0) translate(-50%, -50%) scale(0.24);
+              opacity: 0;
+              filter: blur(2px);
+            }
+
+            100% {
+              transform: translate(0, 0) translate(-50%, -50%) scale(0.18);
+              opacity: 0;
+              filter: blur(8px);
+            }
+          }
+        }
+      ` })
+  ] });
+}
+const defaultPainPoints = [
+  {
+    title: "Заявки теряются между каналами",
+    text: "Клиенты пишут в Telegram, WhatsApp, почту и формы, а команда не всегда видит всё вовремя.",
+    image: "1.png"
+  },
+  {
+    title: "Команда тратит время вручную",
+    text: "Менеджеры переносят данные, обновляют статусы и собирают отчёты руками вместо автоматизации.",
+    image: "2.png"
+  },
+  {
+    title: "Нет контроля над процессами",
+    text: "Руководителю сложно понять, где застряли заявки, кто отвечает и сколько денег теряется.",
+    image: "3.png"
+  }
+];
+function PainCard({
+  item,
+  imageDir,
+  smokeBase,
+  orangeLayer,
+  index
+}) {
+  return /* @__PURE__ */ jsxs("article", { className: "group relative min-h-[25rem] overflow-hidden border border-white/[0.12] bg-black", children: [
+    /* @__PURE__ */ jsx(
+      SmokeMaskedIllustration,
+      {
+        image: item.image ?? `${index + 1}.png`,
+        imageDir,
+        title: item.title,
+        smokeBase,
+        orangeLayer
+      }
+    ),
+    /* @__PURE__ */ jsxs("div", { className: "relative z-10 px-5 pb-6 pt-4 sm:px-6 sm:pb-7", children: [
+      /* @__PURE__ */ jsx("div", { className: "mb-4 inline-flex h-7 min-w-7 items-center justify-center rounded-full border border-white/[0.16] bg-white/[0.06] px-2 text-[10px] font-[800] text-white", children: String(index + 1).padStart(2, "0") }),
+      /* @__PURE__ */ jsx("h3", { className: automationTypo.h3, children: item.title }),
+      /* @__PURE__ */ jsx("p", { className: "mt-3 max-w-[28rem] text-[13.5px] leading-[1.62] text-white sm:text-[14.5px]", children: item.text })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100", children: [
+      /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#ff7a1a]/80 to-transparent" }),
+      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[radial-gradient(circle_at_50%_10%,rgba(255,122,26,0.1),transparent_46%)]" })
+    ] })
+  ] });
+}
+function PainPointsBlock({
+  items = defaultPainPoints,
+  imageDir = "/images/avtomatizaciya-biznesa/Где бизнес теряет",
+  smokeBase,
+  orangeLayer,
+  sectionTitle,
+  sectionLead
+}) {
+  const coreItems = Array.from({ length: 3 }, (_, index) => ({
+    ...defaultPainPoints[index],
+    ...items[index] ?? {},
+    image: items[index]?.image ?? defaultPainPoints[index].image
+  }));
+  return /* @__PURE__ */ jsx(Section, { className: "relative scroll-mt-[var(--tivonix-header-spacer)] overflow-hidden bg-black py-16 sm:py-20", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs("div", { className: "relative mx-auto max-w-6xl", children: [
+    /* @__PURE__ */ jsxs("div", { className: "relative z-10 mb-7 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-start sm:justify-between", children: [
+      /* @__PURE__ */ jsxs("div", { children: [
+        /* @__PURE__ */ jsx("h2", { className: `max-w-[44rem] ${automationTypo.h2}`, children: sectionTitle }),
+        /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-[40rem] text-[14.5px] leading-[1.7] text-white sm:text-[16px]", children: sectionLead })
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "shrink-0 pt-1" })
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: "relative z-10 grid sm:grid-cols-3", children: coreItems.map((item, index) => /* @__PURE__ */ jsx(
+      PainCard,
+      {
+        item,
+        imageDir,
+        smokeBase,
+        orangeLayer,
+        index
+      },
+      `${item.title}-${index}`
+    )) })
+  ] }) }) });
+}
+const ru = {
+  seo: {
+    title: "Автоматизация бизнеса — TIVONIX",
+    description: "Автоматизация процессов, CRM, личные кабинеты, админ-панели и интеграции под реальные задачи бизнеса."
+  },
+  schemaServiceName: "Автоматизация бизнеса TIVONIX",
+  hero: {
+    h1Line1: "Автоматизируем процессы",
+    h1Line2: "вашего бизнеса",
+    subtitle: "Помогаем убрать ручную работу, связать сервисы и навести порядок в заявках, клиентах, отчётах и внутренних процессах.",
+    microCtaTelegram: "В Telegram",
+    microCtaEmail: "На почту",
+    microCtaEmailSubject: "Автоматизация бизнеса — заявка",
+    badges: ["консультация без оплаты", "быстрый разбор", "чёткий план старта"],
+    ctaDiscuss: "Обсудить автоматизацию",
+    ctaCases: "Посмотреть кейсы",
+    heroImgAlt: "Схема автоматизации бизнес-процессов"
+  },
+  signs: {
+    sectionTitle: "Когда уже пора автоматизировать процессы",
+    sectionLead: "Обычно автоматизация нужна не «когда-нибудь потом», а в тот момент, когда бизнес начинает упираться в хаос, ручную работу и потерю контроля.",
+    ariaList: "Признаки, что пора автоматизировать",
+    items: [
+      {
+        number: "01",
+        title: "Потерянные заявки",
+        text: "Заявки приходят из разных источников и не собираются в одной системе, часть обращений теряется или обрабатывается слишком поздно.",
+        image: "1.png"
+      },
+      {
+        number: "02",
+        title: "Клиенты ведутся вручную",
+        text: "Менеджеры хранят информацию в таблицах, чатах и заметках, поэтому история клиента быстро распадается на куски.",
+        image: "2.png"
+      },
+      {
+        number: "03",
+        title: "Ручной перенос данных",
+        text: "Одни и те же данные копируются между CRM, таблицами, почтой и документами. Это забирает время и создаёт ошибки.",
+        image: "3.png"
+      },
+      {
+        number: "04",
+        title: "Нет прозрачной аналитики",
+        text: "Данные разбросаны по разным местам. Чтобы понять, что происходит в бизнесе, приходится собирать всё вручную.",
+        image: "4.png"
+      },
+      {
+        number: "05",
+        title: "Повторяющиеся вопросы клиентов",
+        text: "Команда снова и снова отвечает на одинаковые сообщения вместо того, чтобы заниматься продажами и развитием.",
+        image: "5.png"
+      },
+      {
+        number: "06",
+        title: "Много повторяющихся действий",
+        text: "Статусы, уведомления, напоминания, отчёты и передача задач выполняются руками, хотя это можно автоматизировать.",
+        image: "6.png"
+      },
+      {
+        number: "07",
+        title: "Готовые сервисы не подходят под вашу логику работы",
+        text: "Бизнес работает по своим правилам, а стандартные инструменты не закрывают процесс полностью.",
+        image: "7.png"
+      }
+    ]
+  },
+  pain: {
+    title: "Где бизнес теряет заявки, время и деньги",
+    lead: "Когда процессы разбросаны по CRM, таблицам и мессенджерам, команда работает вручную, а часть клиентов просто выпадает из системы.",
+    items: [
+      {
+        title: "Ручной перенос данных",
+        text: "Информация копируется между таблицами, CRM, почтой и мессенджерами. Из-за этого появляются ошибки, дубли и потери данных.",
+        image: "1.png"
+      },
+      {
+        title: "Потерянные заявки",
+        text: "Когда заявки приходят из разных каналов и не собираются в одной системе, часть обращений теряется или обрабатывается слишком поздно.",
+        image: "2.png"
+      },
+      {
+        title: "Нет прозрачной аналитики",
+        text: "Данные разбросаны по разным местам. Чтобы понять, что происходит в бизнесе, приходится собирать всё вручную.",
+        image: "3.png"
+      }
+    ]
+  },
+  why: {
+    h2Line1: "Автоматизируем процессы",
+    h2Line2: "вашего бизнеса",
+    subtitle: "Автоматизация убирает рутину, ускоряет обработку заявок и даёт прозрачный контроль процессов.",
+    benefits: [
+      {
+        title: "Меньше ручной работы",
+        text: "Рутинные операции и перенос данных между сервисами автоматизируются. Команда меньше копирует данные вручную и реже допускает ошибки."
+      },
+      {
+        title: "Быстрее обработка заявок",
+        text: "Все обращения сразу попадают в единую систему. Статусы, уведомления и очередь обработки ведутся без потерь в чатах."
+      },
+      {
+        title: "Понятный контроль процессов",
+        text: "Этапы, задачи и отчеты собраны в одном месте. Вы видите реальную картину по процессам без ручной сборки таблиц."
+      },
+      {
+        title: "Удобная работа команды",
+        text: "Роли, доступы и сценарии настраиваются под вашу бизнес-логику. Каждый сотрудник работает в своем интерфейсе и по своим задачам."
+      },
+      {
+        title: "Больше времени на рост",
+        text: "Команда фокусируется на продукте, клиентах и развитии. Повторяющиеся операции выполняются автоматически."
+      },
+      {
+        title: "Меньше ошибок в данных",
+        text: "Единая логика обработки и автоматические сценарии снижают количество дубликатов и некорректных записей в данных."
+      }
+    ]
+  },
+  features: {
+    title: "Что можно автоматизировать",
+    ariaRegion: "Направления автоматизации",
+    ariaCarousel: "карусель",
+    prev: "Предыдущий слайд",
+    next: "Следующий слайд",
+    slides: [
+      {
+        title: "Обработка заявок",
+        text: "Соберём заявки с сайта, форм, Telegram, email и других источников в одном месте.",
+        image: "1.png"
+      },
+      {
+        title: "CRM и воронки продаж",
+        text: "Настроим систему для работы с клиентами, статусами, задачами и этапами продаж.",
+        image: "2.png"
+      },
+      {
+        title: "Личные кабинеты",
+        text: "Разработаем кабинеты для клиентов, сотрудников или партнёров с нужными функциями и ролями.",
+        image: "3.png"
+      },
+      {
+        title: "Админ-панели",
+        text: "Сделаем удобные внутренние панели управления для заявок, пользователей, заказов, контента и процессов.",
+        image: "4.png"
+      },
+      {
+        title: "Уведомления и напоминания",
+        text: "Настроим автоматические уведомления в Telegram, email или внутри системы.",
+        image: "5.png"
+      },
+      {
+        title: "Отчёты и аналитика",
+        text: "Соберём ключевые показатели в удобные дашборды и понятные отчёты.",
+        image: "6.png"
+      },
+      {
+        title: "Оплаты и документы",
+        text: "Подключим оплату, статусы платежей, подтверждения, документы и логику после оплаты.",
+        image: "7.png"
+      },
+      {
+        title: "Интеграции с внешними сервисами",
+        text: "Свяжем сайт, CRM, Telegram, таблицы, платёжные системы, API и другие инструменты.",
+        image: "8.png"
+      }
+    ]
+  },
+  examples: {
+    title: "Заявки, кабинеты, уведомления и оплаты в одной логике.",
+    body: "Одна система связывает каналы и заявки, статусы и путь клиента, личные кабинеты и админку, записи и сообщения — без ручных переносов и потерянных обращений.",
+    srOnly: "Одна цепочка в продукте"
+  },
+  ecosystemLabels: [
+    "Telegram",
+    "Email",
+    "CRM",
+    "Таблицы",
+    "WhatsApp",
+    "Notion",
+    "Календарь",
+    "Задачи",
+    "Оплаты",
+    "Документы",
+    "Отчёты",
+    "Автоматизация",
+    "Уведомления"
+  ],
+  results: {
+    title: "Что вы получите в результате",
+    folderLabel: "Папка результата",
+    folderMeta: (count) => `${count} пунктов после проекта`,
+    cta: "Узнать свой результат",
+    items: [
+      "Понятную структуру будущей системы",
+      "Прототип экранов и логики",
+      "Веб-сервис или внутренний инструмент под ваш процесс",
+      "Админ-панель для управления",
+      "Интеграции с нужными сервисами",
+      "Уведомления, статусы и автоматические действия",
+      "Поддержку запуска и дальнейшего развития"
+    ]
+  },
+  whyTivonix: {
+    bandTitle: "Автоматизация, которая работает под ваш бизнес",
+    points: [
+      {
+        title: "Не просто сайт, а рабочая система",
+        text: "Мы смотрим шире: заявки, данные, пользователи, процессы, админка, интеграции и развитие после запуска."
+      },
+      {
+        title: "Объясняем простым языком",
+        text: "Без технической путаницы. Показываем, что именно нужно сделать, зачем это нужно и как это поможет бизнесу."
+      },
+      {
+        title: "Можно начать с MVP",
+        text: "Не обязательно сразу строить большую систему. Часто лучше запустить первую рабочую версию и развивать её поэтапно."
+      },
+      {
+        title: "Берём на себя весь процесс",
+        text: "Структура, дизайн, разработка, интеграции, тестирование и запуск — всё в одном месте."
+      }
+    ]
+  },
+  faq: {
+    title: "Частые вопросы",
+    items: [
+      {
+        q: "Сколько стоит автоматизация бизнеса?",
+        a: "Стоимость зависит от объёма задачи: ролей, экранов, логики, интеграций и сценариев. После короткого разбора мы сможем дать ориентир по бюджету."
+      },
+      {
+        q: "Сколько времени занимает разработка?",
+        a: "Это зависит от сложности решения. Небольшую систему можно запустить быстрее, более сложный продукт требует больше этапов. Часто оптимально начинать с MVP."
+      },
+      {
+        q: "Можно автоматизировать только один процесс?",
+        a: "Да. Часто это лучший вариант. Например, сначала автоматизировать заявки, а потом постепенно добавить личный кабинет, аналитику, оплаты и другие блоки."
+      },
+      {
+        q: "Вы делаете интеграции с Telegram, оплатами и внешними сервисами?",
+        a: "Да. Мы можем подключить Telegram, email, платёжные системы, CRM, таблицы, API и другие сервисы."
+      },
+      {
+        q: "Что лучше: готовый сервис или разработка под себя?",
+        a: "Если задача типовая, может подойти готовый сервис. Если у бизнеса своя логика и нестандартные процессы, лучше делать решение под себя."
+      },
+      {
+        q: "Нужно ли техническое задание?",
+        a: "Нет. На старте достаточно описать задачу простыми словами. Мы сами поможем разобраться, сформировать структуру и определить первый этап."
+      }
+    ]
+  },
+  ctaBlock: {
+    title: "Покажем, что можно автоматизировать именно у вас",
+    body: "Расскажите, как сейчас устроена работа в вашем бизнесе. Мы разберём процессы, найдём точки автоматизации и предложим понятное решение: от простого внутреннего инструмента до полноценного веб-сервиса.",
+    primary: "Получить консультацию",
+    secondary: "Написать в Telegram",
+    footnote: "Ответим в течение дня и подскажем, с чего лучше начать."
+  },
+  common: { imageFallback: "Изображение скоро появится" }
+};
+const en = {
+  seo: {
+    title: "Business automation — TIVONIX",
+    description: "Process automation, CRM, client portals, admin panels, and integrations tailored to real business workflows."
+  },
+  schemaServiceName: "TIVONIX business automation",
+  hero: {
+    h1Line1: "We automate workflows",
+    h1Line2: "for your business",
+    subtitle: "We help remove manual work, connect your tools, and bring order to leads, customers, reporting, and internal processes.",
+    microCtaTelegram: "Telegram",
+    microCtaEmail: "Email",
+    microCtaEmailSubject: "Business automation inquiry",
+    badges: ["Free intro call", "Fast discovery", "A clear starting plan"],
+    ctaDiscuss: "Discuss automation",
+    ctaCases: "View case studies",
+    heroImgAlt: "Diagram of automated business processes"
+  },
+  signs: {
+    sectionTitle: "When it’s time to automate your processes",
+    sectionLead: "Automation is rarely “someday”—it matters when the business hits chaos, manual overload, and loss of control.",
+    ariaList: "Signs you should automate",
+    items: [
+      {
+        number: "01",
+        title: "Lost leads",
+        text: "Inquiries arrive from many channels and never land in one system—some are lost or handled too late.",
+        image: "1.png"
+      },
+      {
+        number: "02",
+        title: "Clients tracked by hand",
+        text: "Teams keep context in spreadsheets, chats, and notes, so the customer story falls apart.",
+        image: "2.png"
+      },
+      {
+        number: "03",
+        title: "Manual data copying",
+        text: "The same data is retyped across CRM, sheets, email, and documents—slow and error-prone.",
+        image: "3.png"
+      },
+      {
+        number: "04",
+        title: "No clear analytics",
+        text: "Metrics live in different places; understanding the business means stitching reports manually.",
+        image: "4.png"
+      },
+      {
+        number: "05",
+        title: "Repetitive client questions",
+        text: "The team answers the same messages again and again instead of selling and growing.",
+        image: "5.png"
+      },
+      {
+        number: "06",
+        title: "Too many repeat tasks",
+        text: "Statuses, alerts, reminders, reports, and handoffs are done manually though they could run automatically.",
+        image: "6.png"
+      },
+      {
+        number: "07",
+        title: "Off-the-shelf tools don’t fit",
+        text: "Your business has its own rules; standard products rarely cover the full process.",
+        image: "7.png"
+      }
+    ]
+  },
+  pain: {
+    title: "Where businesses lose leads, time, and money",
+    lead: "When work is split across CRM, spreadsheets, and messengers, teams operate manually and clients slip through the cracks.",
+    items: [
+      {
+        title: "Manual data transfer",
+        text: "Information is copied between spreadsheets, CRM, email, and chat—creating errors, duplicates, and gaps.",
+        image: "1.png"
+      },
+      {
+        title: "Lost leads",
+        text: "When leads come from many channels and aren’t unified, some inquiries are lost or handled too late.",
+        image: "2.png"
+      },
+      {
+        title: "No transparent analytics",
+        text: "Data is scattered; seeing what’s really happening means manual reporting.",
+        image: "3.png"
+      }
+    ]
+  },
+  why: {
+    h2Line1: "We automate workflows",
+    h2Line2: "for your business",
+    subtitle: "Automation cuts routine, speeds up lead handling, and gives clear process control.",
+    benefits: [
+      {
+        title: "Less manual work",
+        text: "Routine moves between tools are automated—fewer copy-paste mistakes for the team."
+      },
+      {
+        title: "Faster lead handling",
+        text: "Every inquiry lands in one system with statuses and notifications—nothing dies in chat threads."
+      },
+      {
+        title: "Clear process control",
+        text: "Stages, tasks, and reports live in one place—no more one-off spreadsheet dashboards."
+      },
+      {
+        title: "Better team experience",
+        text: "Roles, access, and flows match your logic—each person works in the right interface."
+      },
+      {
+        title: "More time to grow",
+        text: "The team focuses on product and customers while repeat work runs in the background."
+      },
+      {
+        title: "Fewer data errors",
+        text: "One processing model and automated steps reduce duplicates and bad records."
+      }
+    ]
+  },
+  features: {
+    title: "What you can automate",
+    ariaRegion: "Automation topics",
+    ariaCarousel: "carousel",
+    prev: "Previous slide",
+    next: "Next slide",
+    slides: [
+      {
+        title: "Lead capture",
+        text: "Bring leads from your site, forms, Telegram, email, and other sources into one place.",
+        image: "1.png"
+      },
+      {
+        title: "CRM & sales pipelines",
+        text: "Set up clients, statuses, tasks, and pipeline stages the way you sell.",
+        image: "2.png"
+      },
+      {
+        title: "Client portals",
+        text: "Build portals for customers, staff, or partners with the right features and roles.",
+        image: "3.png"
+      },
+      {
+        title: "Admin panels",
+        text: "Internal tools for leads, users, orders, content, and operations—tailored to your process.",
+        image: "4.png"
+      },
+      {
+        title: "Notifications & reminders",
+        text: "Automated alerts in Telegram, email, or inside your product.",
+        image: "5.png"
+      },
+      {
+        title: "Reporting & analytics",
+        text: "Dashboards and reports for the KPIs that matter.",
+        image: "6.png"
+      },
+      {
+        title: "Payments & documents",
+        text: "Payments, statuses, confirmations, documents, and post-payment logic.",
+        image: "7.png"
+      },
+      {
+        title: "External integrations",
+        text: "Connect site, CRM, Telegram, spreadsheets, payments, APIs, and more.",
+        image: "8.png"
+      }
+    ]
+  },
+  examples: {
+    title: "Leads, portals, notifications, and payments in one flow.",
+    body: "One system ties channels and leads, statuses and the customer journey, portals and admin, records and messages—without manual re-entry or lost inquiries.",
+    srOnly: "One connected product flow"
+  },
+  ecosystemLabels: [
+    "Telegram",
+    "Email",
+    "CRM",
+    "Sheets",
+    "WhatsApp",
+    "Notion",
+    "Calendar",
+    "Tasks",
+    "Payments",
+    "Documents",
+    "Reports",
+    "Automation",
+    "Notifications"
+  ],
+  results: {
+    title: "What you get when we’re done",
+    folderLabel: "Delivery folder",
+    folderMeta: (count) => `${count} deliverables after the project`,
+    cta: "See what we could build for you",
+    items: [
+      "A clear structure for the future system",
+      "A prototype of screens and logic",
+      "A web service or internal tool for your process",
+      "An admin panel to operate it",
+      "Integrations with the services you need",
+      "Notifications, statuses, and automated actions",
+      "Launch support and a path to iterate"
+    ]
+  },
+  whyTivonix: {
+    bandTitle: "Automation shaped around your business",
+    points: [
+      {
+        title: "Not just a site—a working system",
+        text: "We think end-to-end: leads, data, users, processes, admin, integrations, and what comes after launch."
+      },
+      {
+        title: "Plain-language explanations",
+        text: "No jargon overload—what to build, why it matters, and how it helps the business."
+      },
+      {
+        title: "You can start with an MVP",
+        text: "You don’t need the full platform on day one; a first working version often wins, then we grow it step by step."
+      },
+      {
+        title: "We own the full process",
+        text: "Structure, design, development, integrations, testing, and launch—one team."
+      }
+    ]
+  },
+  faq: {
+    title: "FAQ",
+    items: [
+      {
+        q: "How much does business automation cost?",
+        a: "It depends on scope: roles, screens, logic, integrations, and scenarios. After a short discovery we can give a budget range."
+      },
+      {
+        q: "How long does development take?",
+        a: "It varies with complexity. Smaller systems ship faster; larger ones need more phases. Starting with an MVP is often best."
+      },
+      {
+        q: "Can we automate just one process?",
+        a: "Yes—and often that’s ideal. For example, automate leads first, then add portals, analytics, or payments later."
+      },
+      {
+        q: "Do you integrate Telegram, payments, and other services?",
+        a: "Yes—Telegram, email, payments, CRM, spreadsheets, APIs, and more."
+      },
+      {
+        q: "SaaS product or custom build?",
+        a: "For generic tasks, SaaS can work. For unique logic and processes, custom usually fits better."
+      },
+      {
+        q: "Do I need a full technical specification?",
+        a: "No. A plain-language description is enough to start—we help shape structure and the first milestone."
+      }
+    ]
+  },
+  ctaBlock: {
+    title: "We’ll show what automation can look like for you",
+    body: "Tell us how your business runs today. We’ll map processes, spot automation wins, and propose a clear path—from a simple internal tool to a full web service.",
+    primary: "Book a consultation",
+    secondary: "Message on Telegram",
+    footnote: "We usually reply within a day with a sensible first step."
+  },
+  common: { imageFallback: "Image coming soon" }
+};
+function getAutomationPageCopy(lang) {
+  return lang === "en" ? en : ru;
+}
+const AUTOMATION_SIGNS_IMG_DIR = "/images/avtomatizaciya-biznesa/Когда уже пора";
+const AUTOMATION_HERO_IMG = "/images/avtomatizaciya-biznesa/hero.png";
+const AUTOMATION_CONTACT_EMAIL = "tivoonix@gmail.com";
+const WHY_TIVONIX_BAND_IMG = "/images/sunset.webp";
+const TIVONIX_LOGO_MARK = "/images/tivonix-logo-icon.png";
+const HeroWebGLBg = lazy(() => import("./assets/HeroWebGLBg-CnY8eKt4.js"));
+const PAIN_POINTS_IMG_DIR = "/images/avtomatizaciya-biznesa/Где бизнес теряет";
+function usePrefetchHeroWebGL() {
+  useEffect(() => {
+    void import("./assets/HeroWebGLBg-CnY8eKt4.js");
+  }, []);
+}
+const WHY_AUTOMATION_SMOKE_BASE = "radial-gradient(120% 90% at 55% 35%, rgba(255,154,61,0.18) 0%, rgba(255,106,26,0.10) 34%, rgba(0,0,0,0) 62%), linear-gradient(180deg, #000000 0%, #030303 100%)";
+const WHY_AUTOMATION_ORANGE_LAYER = "linear-gradient(180deg,rgba(255,174,87,0.34)_0%,rgba(255,138,30,0.22)_38%,rgba(255,120,48,0.12)_72%,rgba(0,0,0,0.14)_100%)";
+function SmokeWebGLLayer({
+  className,
+  quality = "low",
+  opaqueBuffer = false
+}) {
+  const ref = useRef(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const el = ref.current;
+    if (!el) return;
+    if (!("IntersectionObserver" in window)) {
+      setInView(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        setInView(Boolean(entry?.isIntersecting));
+      },
+      {
+        root: null,
+        rootMargin: "260px 0px 260px 0px",
+        threshold: 0.01
+      }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return /* @__PURE__ */ jsx("div", { ref, className, children: inView ? /* @__PURE__ */ jsx(Suspense, { fallback: null, children: /* @__PURE__ */ jsx(HeroWebGLBg, { interactive: false, quality, opaqueBuffer }) }) : null });
+}
+function HeroTextSmokeBg() {
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: "pointer-events-none relative isolate h-[500px] w-full overflow-hidden rounded-b-[40px] bg-black sm:h-[540px] sm:rounded-b-[52px]",
+      "aria-hidden": true,
+      children: [
+        /* @__PURE__ */ jsx("div", { className: "absolute inset-0", style: { background: WHY_AUTOMATION_SMOKE_BASE } }),
+        /* @__PURE__ */ jsx(
+          SmokeWebGLLayer,
+          {
+            className: "absolute inset-0 h-full w-full scale-[1.03] bg-black opacity-100",
+            quality: "high",
+            opaqueBuffer: true
+          }
+        ),
+        /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-[1]", style: { background: WHY_AUTOMATION_ORANGE_LAYER } }),
+        /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-[2] bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.1)_46%,rgba(0,0,0,0.86)_100%)]" })
+      ]
+    }
+  );
+}
+const AUTOMATION_FEATURES_IMG_DIR = "/images/avtomatizaciya-biznesa/Что можно автоматизировать";
+const whyAutomationBenefitIcons = [
+  { icon: Bot, iconColor: "#38BDF8" },
+  { icon: Zap, iconColor: "#FACC15" },
+  { icon: LayoutDashboard, iconColor: "#C084FC" },
+  { icon: Users, iconColor: "#4ADE80" },
+  { icon: TrendingUp, iconColor: "#FB923C" },
+  { icon: ShieldCheck, iconColor: "#2DD4BF" }
+];
+function DotList({
+  items,
+  variant = "grid",
+  tossIn = false
+}) {
+  const ulRef = useRef(null);
+  const [revealed, setRevealed] = useState(!tossIn);
+  useEffect(() => {
+    if (!tossIn) return;
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setRevealed(true);
+      return;
+    }
+    const el = ulRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e?.isIntersecting) setRevealed(true);
+      },
+      { threshold: 0.14, rootMargin: "0px 0px -6% 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [tossIn]);
+  const ulClass = variant === "stack" ? "mx-auto flex w-full max-w-xl flex-col gap-3.5" : "grid gap-3.5 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-3.5";
+  return /* @__PURE__ */ jsx("ul", { ref: tossIn ? ulRef : void 0, className: ulClass, children: items.map((item, i) => /* @__PURE__ */ jsxs(
+    "li",
+    {
+      className: "flex items-start gap-3 text-[14.5px] leading-[1.75] text-white/78 sm:text-[15px] " + (tossIn ? revealed ? "translate-y-0 opacity-100 motion-safe:transition-[opacity,transform] motion-safe:duration-[0.52s] motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]" : "-translate-y-7 opacity-0 motion-safe:transition-[opacity,transform] motion-safe:duration-0" : ""),
+      style: tossIn && revealed ? { transitionDelay: `${i * 72}ms` } : void 0,
+      children: [
+        /* @__PURE__ */ jsx(
+          Check,
+          {
+            className: "mt-[3px] h-[1.05em] w-[1.05em] shrink-0 text-[#FF9A3D]",
+            strokeWidth: 2.5,
+            "aria-hidden": true
+          }
+        ),
+        /* @__PURE__ */ jsx("span", { children: item })
+      ]
+    },
+    item
+  )) });
+}
+function AutomationHero({ t }) {
+  const [b1, b2, b3] = t.hero.badges;
+  return /* @__PURE__ */ jsx(Section, { className: "relative overflow-x-hidden overflow-y-visible pb-16 pt-0 sm:pb-20", children: /* @__PURE__ */ jsx("div", { className: "relative z-10", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-7xl", children: [
+    /* @__PURE__ */ jsxs("div", { className: "relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 overflow-x-hidden px-4 py-8 text-center sm:px-8 sm:py-10", children: [
+      /* @__PURE__ */ jsxs("h1", { className: `relative z-10 mt-5 ${automationTypo.h1}`, children: [
+        /* @__PURE__ */ jsx("span", { className: "block", children: t.hero.h1Line1 }),
+        /* @__PURE__ */ jsx("span", { className: "block", children: t.hero.h1Line2 })
+      ] }),
+      /* @__PURE__ */ jsx("p", { className: "relative z-10 mx-auto mt-8 max-w-[40rem] text-[17px] font-medium leading-[1.55] text-white/85 sm:text-[19px] sm:leading-[1.6] lg:text-[20px]", children: t.hero.subtitle }),
+      /* @__PURE__ */ jsxs("div", { className: "relative z-10 mx-auto mt-5 flex flex-wrap justify-center gap-2.5", children: [
+        /* @__PURE__ */ jsx(
+          "a",
+          {
+            href: TG_BOT_URL,
+            target: "_blank",
+            rel: "noopener noreferrer",
+            className: "inline-flex h-9 min-w-0 shrink-0 items-center justify-center rounded-full bg-white px-4 text-[13px] font-semibold tracking-tight text-neutral-900 shadow-sm transition hover:bg-white/92 active:translate-y-px sm:px-5 sm:text-[14px]",
+            children: t.hero.microCtaTelegram
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "a",
+          {
+            href: `mailto:${AUTOMATION_CONTACT_EMAIL}?subject=${encodeURIComponent(t.hero.microCtaEmailSubject)}`,
+            className: "inline-flex h-9 min-w-0 shrink-0 items-center justify-center rounded-full bg-white px-4 text-[13px] font-semibold tracking-tight text-neutral-900 shadow-sm transition hover:bg-white/92 active:translate-y-px sm:px-5 sm:text-[14px]",
+            children: t.hero.microCtaEmail
+          }
+        )
+      ] })
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: "mt-[8rem] text-center sm:mt-7 md:mt-9 lg:mt-10", children: /* @__PURE__ */ jsxs("div", { className: "mt-[calc(3.25rem+12px)] flex flex-wrap justify-center gap-3 text-[13px] sm:mt-3 sm:text-[14px]", children: [
+      /* @__PURE__ */ jsx("span", { className: "rounded-full bg-[#FF8A1E]/20 px-4 py-1.5 text-[#FFB55C]", children: b1 }),
+      /* @__PURE__ */ jsx("span", { className: "rounded-full bg-[#FF8A1E]/20 px-4 py-1.5 text-[#FFB55C]", children: b2 }),
+      /* @__PURE__ */ jsx("span", { className: "rounded-full bg-[#FF8A1E]/20 px-4 py-1.5 text-[#FFB55C]", children: b3 })
+    ] }) }),
+    /* @__PURE__ */ jsxs("div", { className: "relative left-1/2 mt-16 w-[109vw] max-w-none -translate-x-1/2 bg-black px-0 sm:left-auto sm:mx-auto sm:mt-20 sm:w-full sm:max-w-[min(100%,1280px)] sm:translate-x-0 sm:px-2", children: [
       /* @__PURE__ */ jsx(
         "img",
         {
           src: AUTOMATION_HERO_IMG,
-          alt: "Схема автоматизации бизнес-процессов",
+          alt: t.hero.heroImgAlt,
           loading: "eager",
           decoding: "async",
           draggable: false,
-          className: "w-full h-auto object-cover"
+          className: "h-[55vw] min-h-[268px] w-full object-cover sm:h-auto sm:min-h-0 sm:rounded-none"
         }
       ),
-      /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 bottom-5 flex justify-center px-4", children: /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap justify-center gap-3", children: [
+      /* @__PURE__ */ jsx("div", { className: "mt-5 flex justify-center px-4 sm:absolute sm:inset-x-0 sm:bottom-6 sm:mt-0", children: /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap justify-center gap-3", children: [
         /* @__PURE__ */ jsx(
           "a",
           {
             href: "https://t.me/TIVONIX",
             target: "_blank",
             rel: "noopener noreferrer",
-            className: "inline-flex h-12 items-center justify-center rounded-2xl px-7 text-[14px] font-[760] text-black bg-[linear-gradient(180deg,#FFB347_0%,#FF8A1E_100%)]",
-            children: "Обсудить автоматизацию"
+            className: "inline-flex h-[56px] items-center justify-center rounded-2xl bg-[#FF8A1E] px-7 text-[16px] font-[780] tracking-[-0.01em] text-black shadow-[0_18px_70px_rgba(0,0,0,.55)] transition hover:opacity-95 active:translate-y-px sm:h-[60px] sm:px-9 sm:text-[17px]",
+            children: t.hero.ctaDiscuss
           }
         ),
         /* @__PURE__ */ jsx(
           Link,
           {
             to: "/projects",
-            className: "inline-flex h-12 items-center justify-center rounded-2xl px-7 text-[14px] font-[650] text-white bg-white/[0.08] hover:bg-white/[0.12] transition",
-            children: "Посмотреть кейсы"
+            className: "inline-flex h-[56px] items-center justify-center rounded-2xl bg-white/[0.08] px-7 text-[16px] font-[780] text-white/90 transition hover:bg-white/[0.13] active:translate-y-px sm:h-[60px] sm:px-8 sm:text-[17px]",
+            children: t.hero.ctaCases
           }
         )
       ] }) })
-    ] }),
-    /* @__PURE__ */ jsx("p", { className: "mt-4 text-center text-[13px] text-white/58", children: "Первая консультация — бесплатно. Поможем понять, что именно можно автоматизировать и с чего лучше начать." })
-  ] }) }) });
+    ] })
+  ] }) }) }) });
 }
-function WhyAutomation() {
-  const scrollWrapRef = useRef(null);
-  const [activeIdx, setActiveIdx] = useState(0);
-  const [reduceMotion, setReduceMotion] = useState(false);
-  const count = whyAutomationVisuals.length;
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const syncMotion = () => setReduceMotion(mq.matches);
-    syncMotion();
-    mq.addEventListener("change", syncMotion);
-    return () => mq.removeEventListener("change", syncMotion);
-  }, []);
-  useEffect(() => {
-    if (reduceMotion) return;
-    const el = scrollWrapRef.current;
-    if (!el) return;
-    const updateIndex = () => {
-      const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const scrollRange = el.offsetHeight - vh;
-      if (scrollRange <= 0) {
-        setActiveIdx(0);
-        return;
-      }
-      const scrolled = Math.min(Math.max(-rect.top, 0), scrollRange);
-      const t = scrolled / scrollRange;
-      const idx = Math.min(count - 1, Math.max(0, Math.floor(t * count)));
-      setActiveIdx((prev) => prev === idx ? prev : idx);
-    };
-    updateIndex();
-    window.addEventListener("scroll", updateIndex, { passive: true });
-    window.addEventListener("resize", updateIndex);
-    return () => {
-      window.removeEventListener("scroll", updateIndex);
-      window.removeEventListener("resize", updateIndex);
-    };
-  }, [count, reduceMotion]);
-  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20", children: /* @__PURE__ */ jsxs(Container, { children: [
-    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Зачем бизнесу автоматизация" }),
-    /* @__PURE__ */ jsx("p", { className: "mt-5 max-w-[78ch] text-white/72 leading-7", children: "Автоматизация нужна не ради “сложной системы”. Она нужна, чтобы бизнес работал быстрее, понятнее и стабильнее." }),
-    /* @__PURE__ */ jsx("p", { className: "mt-3 max-w-[78ch] text-white/64 leading-7", children: "Если заявки теряются в чатах, сотрудники переносят данные вручную, а отчёты собираются из нескольких таблиц — это уже сигнал, что часть процессов можно упростить." }),
-    reduceMotion ? /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-5 max-w-4xl", children: whyAutomationVisuals.map((item, idx) => /* @__PURE__ */ jsx(
-      "img",
-      {
-        src: encodeURI(item.src),
-        alt: "",
-        loading: "lazy",
-        decoding: "async",
-        draggable: false,
-        className: "w-full h-auto"
-      },
-      idx
-    )) }) : /* @__PURE__ */ jsx(
+function WhyBenefitCardSmoke({
+  seed,
+  icon: Icon2,
+  iconColor
+}) {
+  const ax = 48 + seed % 3 * 10;
+  const ay = 30 + seed % 4 * 10;
+  const base = `radial-gradient(120% 90% at ${ax}% ${ay}%, rgba(255,154,61,0.3) 0%, rgba(255,106,26,0.18) 36%, rgba(0,0,0,0) 64%), linear-gradient(180deg, #000000 0%, #030303 100%)`;
+  return /* @__PURE__ */ jsxs("div", { className: "relative isolate aspect-[4/3] w-full overflow-hidden bg-black", children: [
+    /* @__PURE__ */ jsx("div", { className: "absolute inset-0", style: { background: base }, "aria-hidden": true }),
+    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-[1]", style: { background: WHY_AUTOMATION_ORANGE_LAYER }, "aria-hidden": true }),
+    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-[2] bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.16)_46%,rgba(0,0,0,0.86)_100%)]" }),
+    /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-0 z-[3] flex items-center justify-center", children: /* @__PURE__ */ jsx(
       "div",
       {
-        ref: scrollWrapRef,
-        className: "relative mt-10",
-        style: { minHeight: `calc(${count} * 100vh)` },
-        children: /* @__PURE__ */ jsx("div", { className: "sticky top-0 flex min-h-[100svh] items-center justify-center py-8 sm:py-10", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto w-full max-w-4xl px-1", children: [
-          /* @__PURE__ */ jsx(
-            "img",
+        className: "flex h-[132px] w-[132px] items-center justify-center rounded-[22%] bg-[#1a1a1a] sm:h-40 sm:w-40",
+        style: {
+          boxShadow: `0 18px 52px rgb(0 0 0 / 0.5), 0 0 48px ${iconColor}`
+        },
+        children: /* @__PURE__ */ jsx(
+          Icon2,
+          {
+            className: "h-[68px] w-[68px] sm:h-20 sm:w-20",
+            style: { color: iconColor },
+            strokeWidth: 1.35,
+            "aria-hidden": true
+          }
+        )
+      }
+    ) })
+  ] });
+}
+function AutomationSlideTextSmokeBg({ seed, webGl }) {
+  const ax = 48 + seed % 3 * 10;
+  const ay = 30 + seed % 4 * 10;
+  const base = `radial-gradient(120% 90% at ${ax}% ${ay}%, rgba(255,154,61,0.22) 0%, rgba(255,106,26,0.13) 34%, rgba(0,0,0,0) 62%), linear-gradient(180deg, #000000 0%, #030303 100%)`;
+  return /* @__PURE__ */ jsxs("div", { className: "pointer-events-none absolute inset-0 overflow-hidden", "aria-hidden": true, children: [
+    /* @__PURE__ */ jsx("div", { className: "absolute inset-0", style: { background: base } }),
+    webGl ? /* @__PURE__ */ jsx(
+      SmokeWebGLLayer,
+      {
+        className: "absolute inset-0 z-0 h-full w-full scale-[1.04] opacity-[0.72]",
+        quality: "low"
+      }
+    ) : null,
+    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-[1]", style: { background: WHY_AUTOMATION_ORANGE_LAYER } }),
+    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-[2] bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.14)_44%,rgba(0,0,0,0.88)_100%)]" }),
+    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-[3] bg-gradient-to-br from-black/45 via-black/20 to-transparent" })
+  ] });
+}
+function AutomationCTASmokeBg() {
+  const seed = 2;
+  const ax = 48 + seed % 3 * 10;
+  const ay = 30 + seed % 4 * 10;
+  const base = `radial-gradient(120% 90% at ${ax}% ${ay}%, rgba(255,154,61,0.24) 0%, rgba(255,106,26,0.14) 34%, rgba(0,0,0,0) 62%), linear-gradient(180deg, #000000 0%, #030303 100%)`;
+  return /* @__PURE__ */ jsxs("div", { className: "pointer-events-none absolute inset-0 overflow-hidden rounded-[30px]", "aria-hidden": true, children: [
+    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-[30px] bg-[linear-gradient(180deg,rgba(255,138,30,0.16),rgba(255,138,30,0.04))]" }),
+    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-[30px]", style: { background: base } }),
+    /* @__PURE__ */ jsx(
+      SmokeWebGLLayer,
+      {
+        className: "absolute inset-0 z-0 h-full w-full scale-[1.04] rounded-[30px] opacity-[0.68]",
+        quality: "low"
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-[1] rounded-[30px]", style: { background: WHY_AUTOMATION_ORANGE_LAYER } }),
+    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-[2] rounded-[30px] bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.12)_48%,rgba(0,0,0,0.84)_100%)]" }),
+    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-[3] rounded-[30px] bg-gradient-to-br from-black/32 via-black/12 to-transparent" })
+  ] });
+}
+function WhyAutomation({ t }) {
+  return /* @__PURE__ */ jsxs(Section, { className: "relative scroll-mt-[92px] overflow-x-visible bg-black py-16 sm:scroll-mt-[100px] sm:py-20 xl:scroll-mt-[104px]", children: [
+    /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs("div", { className: "relative z-10 mx-auto flex max-w-4xl flex-col items-center py-2 text-center sm:py-4", children: [
+      /* @__PURE__ */ jsxs("h2", { className: automationTypo.h2, children: [
+        /* @__PURE__ */ jsx("span", { className: "block", children: t.why.h2Line1 }),
+        /* @__PURE__ */ jsx("span", { className: "block", children: t.why.h2Line2 })
+      ] }),
+      /* @__PURE__ */ jsx("p", { className: "mt-6 max-w-[48rem] text-[19px] leading-[1.64] text-white/84 sm:text-[22px] sm:leading-[1.58]", children: t.why.subtitle })
+    ] }) }),
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "no-scrollbar relative z-[1] mt-10 min-w-0 w-full overflow-x-auto overflow-y-visible overscroll-x-contain scroll-smooth pb-2",
+        style: { WebkitOverflowScrolling: "touch" },
+        children: /* @__PURE__ */ jsx("div", { className: "flex w-max min-w-0 flex-nowrap gap-4 pr-4 pl-[max(1rem,calc((100vw-72rem)/2+1rem))] sm:gap-5 sm:pr-6 sm:pl-[max(1.5rem,calc((100vw-72rem)/2+1.5rem))] lg:gap-4 xl:gap-5", children: whyAutomationBenefitIcons.map((meta, index) => {
+          const benefit = t.why.benefits[index];
+          if (!benefit) return null;
+          return /* @__PURE__ */ jsxs(
+            "article",
             {
-              src: encodeURI(whyAutomationVisuals[activeIdx].src),
-              alt: "",
-              loading: activeIdx === 0 ? "eager" : "lazy",
-              decoding: "async",
-              fetchPriority: activeIdx === 0 ? "high" : "low",
-              draggable: false,
-              className: "mx-auto w-full max-h-[min(88vh,920px)] h-auto object-contain transition-opacity duration-300"
-            }
-          ),
-          /* @__PURE__ */ jsx("div", { className: "mt-6 flex justify-center gap-2", children: whyAutomationVisuals.map((_, i) => /* @__PURE__ */ jsx(
-            "span",
-            {
-              className: `h-1.5 w-1.5 rounded-full transition-colors ${i === activeIdx ? "bg-[#FF8A1E]" : "bg-white/22"}`,
-              "aria-hidden": true
+              className: "isolate flex min-h-0 w-[min(82vw,19rem)] shrink-0 flex-col overflow-hidden rounded-2xl bg-white/[0.05] sm:w-[19rem]",
+              children: [
+                /* @__PURE__ */ jsx(WhyBenefitCardSmoke, { seed: index, icon: meta.icon, iconColor: meta.iconColor }),
+                /* @__PURE__ */ jsxs("div", { className: "p-5 sm:p-6", children: [
+                  /* @__PURE__ */ jsx("h3", { className: automationTypo.h3, children: benefit.title }),
+                  /* @__PURE__ */ jsx("p", { className: "mt-2.5 text-[16px] leading-[1.7] text-white/82 sm:text-[17px]", children: benefit.text })
+                ] })
+              ]
             },
-            i
-          )) })
-        ] }) })
+            benefit.title
+          );
+        }) })
       }
     )
+  ] });
+}
+function AutomationFeatureSlideImage({
+  src,
+  alt,
+  className,
+  imageFallback
+}) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "absolute inset-0 flex items-center justify-center bg-gradient-to-br from-white/[0.08] to-white/[0.02] text-center text-[13px] text-white/40 " + (className ?? ""),
+        role: "img",
+        "aria-label": alt,
+        children: imageFallback
+      }
+    );
+  }
+  return /* @__PURE__ */ jsx(
+    "img",
+    {
+      src,
+      alt,
+      loading: "eager",
+      decoding: "async",
+      draggable: false,
+      onError: () => setFailed(true),
+      className
+    }
+  );
+}
+function AutomationFeatures({ t }) {
+  const slides = t.features.slides;
+  const n = slides.length;
+  const [active, setActive] = useState(0);
+  const scrollerRef = useRef(null);
+  const slideRefs = useRef([]);
+  const syncActiveFromScroll = useCallback(() => {
+    const root = scrollerRef.current;
+    if (!root) return;
+    const mid = root.scrollLeft + root.clientWidth / 2;
+    let best = 0;
+    let bestDist = Infinity;
+    for (let i = 0; i < n; i++) {
+      const el = slideRefs.current[i];
+      if (!el) continue;
+      const cMid = el.offsetLeft + el.offsetWidth / 2;
+      const d = Math.abs(cMid - mid);
+      if (d < bestDist) {
+        bestDist = d;
+        best = i;
+      }
+    }
+    setActive(best);
+  }, [n]);
+  useEffect(() => {
+    const root = scrollerRef.current;
+    if (!root) return;
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(() => {
+        raf = 0;
+        syncActiveFromScroll();
+      });
+    };
+    root.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", syncActiveFromScroll);
+    syncActiveFromScroll();
+    return () => {
+      root.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", syncActiveFromScroll);
+      if (raf) window.cancelAnimationFrame(raf);
+    };
+  }, [syncActiveFromScroll]);
+  const scrollToIndex = (i) => {
+    const el = slideRefs.current[(i % n + n) % n];
+    el?.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest"
+    });
+  };
+  return /* @__PURE__ */ jsxs(Section, { className: "overflow-visible bg-black py-16 sm:py-20", children: [
+    /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsx("div", { className: "mx-auto flex max-w-3xl flex-col items-center py-2 text-center sm:py-4", children: /* @__PURE__ */ jsx("h2", { className: automationTypo.h2, children: t.features.title }) }) }),
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "mt-10 w-full overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        ref: scrollerRef,
+        role: "region",
+        "aria-roledescription": t.features.ariaCarousel,
+        "aria-label": t.features.ariaRegion,
+        style: {
+          scrollSnapType: "x mandatory",
+          WebkitOverflowScrolling: "touch",
+          paddingLeft: "max(0.75rem, calc((100% - min(96vw, 80rem)) / 2))",
+          paddingRight: "max(0.75rem, calc((100% - min(96vw, 80rem)) / 2))"
+        },
+        children: /* @__PURE__ */ jsx("div", { className: "flex w-max gap-2 sm:gap-3", children: slides.map((item, i) => {
+          const imgSrc = encodeURI(`${AUTOMATION_FEATURES_IMG_DIR}/${item.image}`);
+          const isActive = i === active;
+          return /* @__PURE__ */ jsx(
+            "article",
+            {
+              ref: (el) => {
+                slideRefs.current[i] = el;
+              },
+              className: "w-[min(96vw,80rem)] shrink-0 snap-center snap-always overflow-hidden rounded-[24px] bg-black shadow-[0_28px_90px_rgba(0,0,0,0.5)] transition-[transform,opacity] duration-500 ease-out sm:rounded-[28px] " + (isActive ? "z-[1] scale-100 opacity-100" : "z-0 scale-[0.94] opacity-[0.5] sm:scale-[0.96] sm:opacity-[0.58]"),
+              style: { transformOrigin: "center center" },
+              "aria-current": isActive ? "true" : void 0,
+              children: /* @__PURE__ */ jsxs("div", { className: "flex min-h-[min(84vw,36rem)] flex-col lg:h-[min(68vh,680px)] lg:min-h-[min(68vh,680px)] lg:flex-row lg:items-stretch", children: [
+                /* @__PURE__ */ jsxs("div", { className: "relative flex min-h-0 w-full flex-1 flex-col overflow-hidden px-7 pb-11 pt-9 sm:px-12 sm:pb-14 sm:pt-11 lg:h-full lg:w-1/2 lg:max-w-none lg:flex-none lg:shrink-0 lg:py-14 lg:pl-14 lg:pr-12", children: [
+                  /* @__PURE__ */ jsx(AutomationSlideTextSmokeBg, { seed: i, webGl: isActive }),
+                  /* @__PURE__ */ jsxs("div", { className: "relative z-10 flex min-h-0 flex-1 flex-col", children: [
+                    /* @__PURE__ */ jsx("div", { className: "shrink-0", children: /* @__PURE__ */ jsx(
+                      "img",
+                      {
+                        src: TIVONIX_LOGO_MARK,
+                        alt: "TIVONIX",
+                        width: 44,
+                        height: 44,
+                        decoding: "async",
+                        className: "h-10 w-10 object-contain opacity-[0.96] sm:h-11 sm:w-11"
+                      }
+                    ) }),
+                    /* @__PURE__ */ jsxs("div", { className: "mt-10 flex flex-1 flex-col justify-center sm:mt-11 lg:mt-12", children: [
+                      /* @__PURE__ */ jsx("h3", { className: `max-w-none ${automationTypo.h3Lg}`, children: item.title }),
+                      /* @__PURE__ */ jsx("p", { className: "mt-6 max-w-[48ch] text-[17px] leading-[1.72] text-white/62 sm:mt-7 sm:text-[19px] sm:leading-[1.74] lg:mt-8 lg:text-[21px] lg:leading-[1.72]", children: item.text })
+                    ] })
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsx("div", { className: "relative isolate z-0 min-h-[min(92vw,32rem)] w-full flex-1 bg-[#0a0a0a] sm:min-h-[min(64vw,28rem)] lg:h-full lg:min-h-0 lg:w-1/2 lg:flex-none lg:min-w-0", children: /* @__PURE__ */ jsx("div", { className: "absolute inset-3 z-0 sm:inset-4 lg:inset-0", children: /* @__PURE__ */ jsx(
+                  AutomationFeatureSlideImage,
+                  {
+                    src: imgSrc,
+                    alt: item.title,
+                    imageFallback: t.common.imageFallback,
+                    className: "pointer-events-none h-full w-full object-contain object-center lg:object-cover"
+                  }
+                ) }) })
+              ] })
+            },
+            item.title
+          );
+        }) })
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "mt-8 sm:mt-10", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsx("div", { className: "flex justify-center sm:justify-end", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
+      /* @__PURE__ */ jsx(
+        "button",
+        {
+          type: "button",
+          "aria-label": t.features.prev,
+          className: "flex h-11 w-11 items-center justify-center rounded-full bg-white/[0.08] text-white transition hover:bg-white/[0.14] active:scale-[0.97]",
+          onClick: () => scrollToIndex(active - 1),
+          children: /* @__PURE__ */ jsx(ChevronLeft, { className: "h-5 w-5", strokeWidth: 2 })
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "button",
+        {
+          type: "button",
+          "aria-label": t.features.next,
+          className: "flex h-11 w-11 items-center justify-center rounded-full bg-white/[0.08] text-white transition hover:bg-white/[0.14] active:scale-[0.97]",
+          onClick: () => scrollToIndex(active + 1),
+          children: /* @__PURE__ */ jsx(ChevronRight, { className: "h-5 w-5", strokeWidth: 2 })
+        }
+      )
+    ] }) }) }) })
+  ] });
+}
+function RealExamples({ t }) {
+  return /* @__PURE__ */ jsx(Section, { className: "relative overflow-hidden bg-black py-16 sm:py-20", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs("div", { className: "relative z-10", children: [
+    /* @__PURE__ */ jsxs("div", { className: "mx-auto flex max-w-3xl flex-col items-center py-2 text-center sm:py-4 lg:max-w-4xl", children: [
+      /* @__PURE__ */ jsx("p", { className: "sr-only", children: t.examples.srOnly }),
+      /* @__PURE__ */ jsx("h2", { className: `${automationTypo.h2} max-w-[56rem]`, "aria-label": t.examples.title, children: t.examples.title }),
+      /* @__PURE__ */ jsx("p", { className: "mt-6 max-w-[40rem] text-[15px] leading-[1.65] text-white/72 sm:text-[17px] sm:leading-[1.6]", children: t.examples.body })
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: "relative mt-12 sm:mt-14 lg:mt-16", children: /* @__PURE__ */ jsx(
+      AutomationEcosystemMap,
+      {
+        logoSrc: TIVONIX_LOGO_MARK,
+        smokeBase: WHY_AUTOMATION_SMOKE_BASE,
+        orangeLayer: WHY_AUTOMATION_ORANGE_LAYER,
+        badgeLabels: t.ecosystemLabels
+      }
+    ) })
+  ] }) }) });
+}
+function ResultsSection({ t }) {
+  const items = t.results.items;
+  const count = items.length;
+  return /* @__PURE__ */ jsx(Section, { className: "bg-black py-16 sm:py-20", children: /* @__PURE__ */ jsxs(Container, { children: [
+    /* @__PURE__ */ jsx("div", { className: "mx-auto flex max-w-3xl flex-col items-center py-2 text-center sm:py-4", children: /* @__PURE__ */ jsx("h2", { id: "automation-results-heading", className: automationTypo.h2, children: t.results.title }) }),
+    /* @__PURE__ */ jsxs("div", { className: "mx-auto mt-10 w-full max-w-[min(100%,26rem)] sm:max-w-[32rem] lg:max-w-[36rem]", children: [
+      /* @__PURE__ */ jsx("div", { className: "relative z-20 flex justify-center sm:justify-start sm:pl-1", children: /* @__PURE__ */ jsxs("div", { className: "inline-flex items-center gap-2.5 rounded-t-2xl bg-[linear-gradient(180deg,rgba(32,32,32,0.98),rgba(12,12,12,0.99))] px-5 py-2.5 shadow-[0_-8px_32px_rgba(0,0,0,0.42)] sm:gap-3 sm:rounded-t-[18px] sm:px-6 sm:py-3", children: [
+        /* @__PURE__ */ jsx(FolderOpen, { className: "h-6 w-6 shrink-0 text-[#FF9A3D] sm:h-7 sm:w-7", strokeWidth: 1.85, "aria-hidden": true }),
+        /* @__PURE__ */ jsxs("div", { className: "text-left leading-tight", children: [
+          /* @__PURE__ */ jsx("p", { className: "font-display text-[11px] font-[760] uppercase tracking-[0.16em] text-[#FFB56C]/95 sm:text-[12px]", children: t.results.folderLabel }),
+          /* @__PURE__ */ jsx("p", { className: "mt-0.5 text-[12px] font-[550] text-white/45 sm:text-[13px]", children: t.results.folderMeta(count) })
+        ] })
+      ] }) }),
+      /* @__PURE__ */ jsxs(
+        "article",
+        {
+          className: "relative z-10 -mt-1 overflow-hidden rounded-[22px] rounded-tl-sm bg-[linear-gradient(165deg,rgba(28,28,28,0.97)_0%,rgba(8,8,8,0.99)_55%)] shadow-[0_28px_72px_rgba(0,0,0,0.52)] sm:rounded-[26px] sm:rounded-tl-md",
+          "aria-labelledby": "automation-results-heading",
+          children: [
+            /* @__PURE__ */ jsx("div", { className: "px-5 py-7 sm:px-8 sm:py-9", children: /* @__PURE__ */ jsx(DotList, { items, variant: "stack", tossIn: true }) }),
+            /* @__PURE__ */ jsx("div", { className: "flex justify-center bg-black/35 px-5 py-6 sm:px-8 sm:py-7", children: /* @__PURE__ */ jsx(
+              "a",
+              {
+                href: "https://t.me/TIVONIX",
+                target: "_blank",
+                rel: "noopener noreferrer",
+                className: "inline-flex h-[50px] w-full max-w-[min(100%,20rem)] items-center justify-center rounded-2xl bg-[#FF8A1E] px-6 text-[15px] font-[780] tracking-[-0.01em] text-black shadow-[0_14px_44px_rgba(255,106,40,0.28)] transition hover:opacity-95 active:translate-y-px sm:h-[54px] sm:max-w-none sm:px-10 sm:text-[16px]",
+                children: t.results.cta
+              }
+            ) })
+          ]
+        }
+      )
+    ] })
   ] }) });
 }
-function AutomationSignals() {
-  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20 bg-white/[0.02]", children: /* @__PURE__ */ jsxs(Container, { children: [
-    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Когда уже пора автоматизировать процессы" }),
-    /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-[76ch] text-white/66 leading-7", children: "Обычно автоматизация нужна не “когда-нибудь потом”, а в тот момент, когда бизнес начинает упираться в хаос и ручную работу." }),
-    /* @__PURE__ */ jsx("div", { className: "mt-8", children: /* @__PURE__ */ jsx(
-      DotList,
+function WhyTivonix({ t }) {
+  const points = t.whyTivonix.points;
+  return /* @__PURE__ */ jsxs(Section, { className: "relative overflow-hidden bg-black !pt-6 !pb-12 sm:!pt-8 sm:!pb-16", children: [
+    /* @__PURE__ */ jsx("div", { className: "relative left-1/2 w-screen max-w-none -translate-x-1/2 bg-black", children: /* @__PURE__ */ jsxs("div", { className: "relative isolate h-56 overflow-hidden bg-black sm:h-64 lg:h-72", children: [
+      /* @__PURE__ */ jsx(
+        "img",
+        {
+          src: WHY_TIVONIX_BAND_IMG,
+          alt: "",
+          loading: "lazy",
+          decoding: "async",
+          draggable: false,
+          className: "absolute inset-0 z-0 h-full w-full object-cover object-center"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: "absolute inset-0 z-[1] bg-gradient-to-b from-black/60 via-black/40 to-black/75",
+          "aria-hidden": true
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: "absolute inset-0 z-[2] bg-[radial-gradient(ellipse_95%_80%_at_50%_45%,transparent_0%,rgba(0,0,0,0.35)_55%,rgba(0,0,0,0.82)_100%)]",
+          "aria-hidden": true
+        }
+      ),
+      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-10 flex items-center justify-center px-4 sm:px-6", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsx("h2", { className: `mx-auto max-w-[44rem] text-center ${automationTypo.h2}`, children: t.whyTivonix.bandTitle }) }) })
+    ] }) }),
+    /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsx("div", { className: "relative z-10 -mt-3 sm:-mt-5 lg:-mt-6", children: /* @__PURE__ */ jsx("div", { className: "grid gap-px bg-white/[0.08] sm:grid-cols-2", children: points.map((item, index) => /* @__PURE__ */ jsxs(
+      "article",
       {
-        items: [
-          "Заявки приходят из разных источников и часть из них теряется",
-          "Менеджеры ведут клиентов в таблицах, чатах и заметках",
-          "Одни и те же данные приходится переносить вручную",
-          "Руководителю сложно видеть актуальные статусы и цифры",
-          "Клиенты постоянно задают одни и те же вопросы",
-          "Команда тратит много времени на повторяющиеся действия",
-          "Готовые сервисы не подходят под вашу логику работы"
+        className: "relative min-h-[17rem] overflow-hidden bg-[#050505] px-6 py-7 sm:px-8 sm:py-8",
+        children: [
+          /* @__PURE__ */ jsx("div", { className: "mb-7 text-[12px] font-[850] uppercase tracking-[0.18em] text-[#ff8a1e]", children: String(index + 1).padStart(2, "0") }),
+          /* @__PURE__ */ jsx("h3", { className: `max-w-[28rem] ${automationTypo.h3Lg}`, children: item.title }),
+          /* @__PURE__ */ jsx("p", { className: "mt-5 max-w-[31rem] text-[15px] font-[600] leading-[1.7] text-white/76 sm:text-[17px]", children: item.text }),
+          /* @__PURE__ */ jsx(
+            "div",
+            {
+              "aria-hidden": true,
+              className: "pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#ff7a1a]/75 to-transparent"
+            }
+          )
         ]
+      },
+      item.title
+    )) }) }) })
+  ] });
+}
+function AutomationFaqPlusHaze({ expanded }) {
+  const base = "linear-gradient(180deg, #101010 0%, #050505 100%)";
+  return /* @__PURE__ */ jsx("span", { className: "relative flex h-12 w-12 shrink-0 items-center justify-center", children: /* @__PURE__ */ jsxs("span", { className: "relative h-12 w-12 overflow-hidden rounded-full bg-black shadow-[0_0_18px_rgba(0,0,0,0.36)] ring-1 ring-white/[0.14]", children: [
+    /* @__PURE__ */ jsx("span", { className: "absolute inset-0", style: { background: base }, "aria-hidden": true }),
+    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-[1] bg-gradient-to-b from-white/[0.03] to-transparent", "aria-hidden": true }),
+    /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-0 z-[3] flex items-center justify-center", children: /* @__PURE__ */ jsx(
+      Plus,
+      {
+        className: `h-[19px] w-[19px] text-white transition-transform duration-300 ease-out ${expanded ? "rotate-45" : ""}`,
+        strokeWidth: 2,
+        "aria-hidden": true
       }
     ) })
   ] }) });
 }
-function PainPoints() {
-  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20", children: /* @__PURE__ */ jsxs(Container, { children: [
-    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Где бизнес теряет время и деньги" }),
-    /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-5 sm:grid-cols-2", children: painPoints.map((item) => /* @__PURE__ */ jsxs("article", { className: "rounded-3xl bg-white/[0.04] p-6", children: [
-      /* @__PURE__ */ jsx("h3", { className: "text-[20px] font-[760] text-white", children: item.title }),
-      /* @__PURE__ */ jsx("p", { className: "mt-3 text-white/67 leading-7", children: item.text })
-    ] }, item.title)) })
-  ] }) });
-}
-function AutomationFeatures() {
-  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20 bg-white/[0.02]", children: /* @__PURE__ */ jsxs(Container, { children: [
-    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Что можно автоматизировать" }),
-    /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4", children: automationFeatures.map((item) => /* @__PURE__ */ jsxs("article", { className: "rounded-2xl bg-white/[0.04] p-5", children: [
-      /* @__PURE__ */ jsx("h3", { className: "text-[17px] font-[730] text-white", children: item.title }),
-      /* @__PURE__ */ jsx("p", { className: "mt-2 text-[14px] leading-6 text-white/64", children: item.text })
-    ] }, item.title)) })
-  ] }) });
-}
-function RealExamples() {
-  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20", children: /* @__PURE__ */ jsxs(Container, { children: [
-    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Как автоматизация выглядит на практике" }),
-    /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-5 sm:grid-cols-2", children: realExamples.map((example) => /* @__PURE__ */ jsxs("article", { className: "rounded-3xl bg-white/[0.04] p-6", children: [
-      /* @__PURE__ */ jsx("h3", { className: "text-[20px] font-[760] text-white", children: example.title }),
-      /* @__PURE__ */ jsx("p", { className: "mt-3 text-white/68 leading-7", children: example.text })
-    ] }, example.title)) })
-  ] }) });
-}
-function ResultsSection() {
-  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20 bg-white/[0.02]", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs("div", { className: "grid gap-8 lg:grid-cols-[1fr_360px] lg:items-start", children: [
-    /* @__PURE__ */ jsxs("div", { children: [
-      /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Что вы получите в результате" }),
-      /* @__PURE__ */ jsx("div", { className: "mt-7", children: /* @__PURE__ */ jsx(
-        DotList,
-        {
-          items: [
-            "Понятную структуру будущей системы",
-            "Прототип экранов и логики",
-            "Веб-сервис или внутренний инструмент под ваш процесс",
-            "Админ-панель для управления",
-            "Интеграции с нужными сервисами",
-            "Уведомления, статусы и автоматические действия",
-            "Поддержку запуска и дальнейшего развития"
-          ]
-        }
-      ) })
-    ] }),
-    /* @__PURE__ */ jsx("aside", { className: "rounded-3xl bg-[linear-gradient(180deg,rgba(255,138,30,0.18),rgba(255,138,30,0.05))] p-6", children: /* @__PURE__ */ jsx("p", { className: "text-white/86 leading-7", children: "Не просто “красивый интерфейс”, а рабочую систему, которая реально разгружает команду и помогает контролировать процессы." }) })
-  ] }) }) });
-}
-function ProcessSteps() {
-  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20", children: /* @__PURE__ */ jsxs(Container, { children: [
-    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Как мы запускаем автоматизацию" }),
-    /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3", children: steps.map((step, index) => /* @__PURE__ */ jsxs("article", { className: "rounded-2xl bg-white/[0.035] p-5", children: [
-      /* @__PURE__ */ jsxs("div", { className: "text-[#FF9A3D] text-[12px] tracking-[0.18em] uppercase", children: [
-        "Шаг ",
-        index + 1
-      ] }),
-      /* @__PURE__ */ jsx("h3", { className: "mt-2 text-[18px] font-[740] text-white", children: step.title }),
-      /* @__PURE__ */ jsx("p", { className: "mt-2 text-white/64 leading-6", children: step.text })
-    ] }, step.title)) })
-  ] }) });
-}
-function WhyNotGenericCRM() {
-  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20 bg-white/[0.02]", children: /* @__PURE__ */ jsxs(Container, { children: [
-    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Почему готовый сервис подходит не всем" }),
-    /* @__PURE__ */ jsx("p", { className: "mt-5 max-w-[82ch] text-white/72 leading-7", children: "Готовые CRM и сервисы могут быть полезны, если процессы стандартные. Но если у бизнеса своя логика работы, нестандартные роли, личные кабинеты, особые статусы, интеграции или внутренние сценарии, стандартных решений часто становится недостаточно." }),
-    /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-[82ch] text-white/64 leading-7", children: "В таких случаях приходится либо подстраивать бизнес под чужой инструмент, либо делать систему под себя. Мы помогаем выбрать правильный вариант и не предлагаем разработку там, где можно обойтись более простым решением." })
-  ] }) });
-}
-function WhyTivonix() {
-  const points = [
-    {
-      title: "Не просто сайт, а рабочая система",
-      text: "Мы смотрим шире: заявки, данные, пользователи, процессы, админка, интеграции и развитие после запуска."
-    },
-    {
-      title: "Объясняем простым языком",
-      text: "Без технической путаницы. Показываем, что именно нужно сделать, зачем это нужно и как это поможет бизнесу."
-    },
-    {
-      title: "Можно начать с MVP",
-      text: "Не обязательно сразу строить большую систему. Часто лучше запустить первую рабочую версию и развивать её поэтапно."
-    },
-    {
-      title: "Берём на себя весь процесс",
-      text: "Структура, дизайн, разработка, интеграции, тестирование и запуск — всё в одном месте."
-    }
-  ];
-  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20", children: /* @__PURE__ */ jsxs(Container, { children: [
-    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Почему TIVONIX" }),
-    /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-5 sm:grid-cols-2", children: points.map((item) => /* @__PURE__ */ jsxs("article", { className: "rounded-3xl bg-white/[0.04] p-6", children: [
-      /* @__PURE__ */ jsx("h3", { className: "text-[20px] font-[760] text-white", children: item.title }),
-      /* @__PURE__ */ jsx("p", { className: "mt-3 text-white/66 leading-7", children: item.text })
-    ] }, item.title)) })
-  ] }) });
-}
-function AutomationFAQ() {
-  const [open, setOpen] = useState(0);
-  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20 bg-white/[0.02]", children: /* @__PURE__ */ jsxs(Container, { children: [
-    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Частые вопросы" }),
-    /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-3", children: faqs.map((item, index) => {
+function AutomationFAQ({ t }) {
+  const [open, setOpen] = useState(null);
+  const faqs = t.faq.items;
+  return /* @__PURE__ */ jsx(Section, { className: "bg-black py-16 sm:py-20", children: /* @__PURE__ */ jsxs(Container, { children: [
+    /* @__PURE__ */ jsx("div", { className: "mx-auto max-w-3xl text-center", children: /* @__PURE__ */ jsx("h2", { className: automationTypo.h2, children: t.faq.title }) }),
+    /* @__PURE__ */ jsx("div", { className: "mx-auto mt-8 flex max-w-3xl flex-col gap-3 sm:mt-10 sm:gap-3.5", children: faqs.map((item, index) => {
       const active = open === index;
-      return /* @__PURE__ */ jsxs("article", { className: "rounded-2xl bg-white/[0.04] px-5 py-4", children: [
-        /* @__PURE__ */ jsxs(
-          "button",
-          {
-            type: "button",
-            onClick: () => setOpen((prev) => prev === index ? null : index),
-            className: "w-full text-left flex items-center justify-between gap-4",
-            children: [
-              /* @__PURE__ */ jsx("span", { className: "text-[17px] font-[720] text-white", children: item.q }),
-              /* @__PURE__ */ jsx("span", { className: `text-[#FF9A3D] transition-transform ${active ? "rotate-180" : ""}`, children: "⌄" })
-            ]
-          }
-        ),
-        /* @__PURE__ */ jsx("div", { className: `grid transition-[grid-template-rows,opacity] duration-300 ${active ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0"}`, children: /* @__PURE__ */ jsx("p", { className: "overflow-hidden text-white/65 leading-7", children: item.a }) })
-      ] }, item.q);
+      return /* @__PURE__ */ jsxs(
+        "article",
+        {
+          className: "overflow-hidden rounded-3xl bg-[#1a1a1a] px-5 py-4 ring-1 transition-[background-color,box-shadow] duration-300 ease-out sm:px-6 sm:py-[1.125rem] " + (active ? "ring-white/[0.14] shadow-[0_12px_36px_rgba(0,0,0,0.34)]" : "ring-white/[0.07] shadow-none"),
+          children: [
+            /* @__PURE__ */ jsxs(
+              "button",
+              {
+                type: "button",
+                "aria-expanded": active,
+                onClick: () => setOpen((prev) => prev === index ? null : index),
+                className: "flex w-full items-start justify-between gap-4 text-left",
+                children: [
+                  /* @__PURE__ */ jsx("span", { className: "min-w-0 pt-1 font-display text-[16px] font-[760] leading-snug tracking-[-0.02em] text-white sm:text-[17px]", children: item.q }),
+                  /* @__PURE__ */ jsx(AutomationFaqPlusHaze, { expanded: active })
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "div",
+              {
+                className: `grid transition-[grid-template-rows,opacity,margin] duration-300 ease-out ${active ? "mt-2.5 grid-rows-[1fr] opacity-100" : "mt-0 grid-rows-[0fr] opacity-0"}`,
+                children: /* @__PURE__ */ jsx("div", { className: "overflow-hidden", children: /* @__PURE__ */ jsx("p", { className: "text-left text-[14.5px] leading-[1.75] text-white/65 sm:text-[15px] sm:leading-[1.72]", children: item.a }) })
+              }
+            )
+          ]
+        },
+        item.q
+      );
     }) })
   ] }) });
 }
-function AutomationCTA() {
-  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs("div", { className: "rounded-[30px] bg-[linear-gradient(180deg,rgba(255,138,30,0.18),rgba(255,138,30,0.04))] p-8 sm:p-10", children: [
-    /* @__PURE__ */ jsx("h2", { className: "text-[30px] sm:text-[40px] font-[820] tracking-[-0.02em] text-white", children: "Покажем, что можно автоматизировать именно у вас" }),
-    /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-[78ch] text-white/72 leading-7", children: "Расскажите, как сейчас устроена работа в вашем бизнесе. Мы разберём процессы, найдём точки автоматизации и предложим понятное решение: от простого внутреннего инструмента до полноценного веб-сервиса." }),
-    /* @__PURE__ */ jsxs("div", { className: "mt-8 flex flex-wrap gap-3", children: [
+function AutomationCTA({ t }) {
+  return /* @__PURE__ */ jsx(Section, { className: "py-16 sm:py-20", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs("div", { className: "relative overflow-hidden rounded-[30px] border border-white/[0.09] p-8 shadow-[0_28px_90px_rgba(0,0,0,0.45)] sm:p-10", children: [
+    /* @__PURE__ */ jsx(AutomationCTASmokeBg, {}),
+    /* @__PURE__ */ jsxs("div", { className: "relative z-10", children: [
       /* @__PURE__ */ jsx(
-        "a",
+        "img",
         {
-          href: "https://t.me/TIVONIX",
-          target: "_blank",
-          rel: "noopener noreferrer",
-          className: "inline-flex h-12 items-center justify-center rounded-2xl px-7 text-[14px] font-[760] text-black bg-[linear-gradient(180deg,#FFB347_0%,#FF8A1E_100%)]",
-          children: "Получить консультацию"
+          src: TIVONIX_LOGO_MARK,
+          alt: "TIVONIX",
+          width: 52,
+          height: 52,
+          decoding: "async",
+          className: "h-11 w-11 object-contain opacity-[0.96] sm:h-[52px] sm:w-[52px]"
         }
       ),
-      /* @__PURE__ */ jsx(
-        "a",
-        {
-          href: "https://t.me/TIVONIX",
-          target: "_blank",
-          rel: "noopener noreferrer",
-          className: "inline-flex h-12 items-center justify-center rounded-2xl px-7 text-[14px] font-[650] text-white bg-white/[0.08] hover:bg-white/[0.12] transition",
-          children: "Написать в Telegram"
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsx("p", { className: "mt-4 text-[13px] text-white/58", children: "Ответим в течение дня и подскажем, с чего лучше начать." })
+      /* @__PURE__ */ jsx("h2", { className: `mt-5 ${automationTypo.h2}`, children: t.ctaBlock.title }),
+      /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-[78ch] text-[15px] leading-[1.75] text-white/72 sm:text-[16.5px]", children: t.ctaBlock.body }),
+      /* @__PURE__ */ jsxs("div", { className: "mt-8 flex flex-wrap gap-3", children: [
+        /* @__PURE__ */ jsx(
+          "a",
+          {
+            href: "https://t.me/TIVONIX",
+            target: "_blank",
+            rel: "noopener noreferrer",
+            className: "inline-flex h-[54px] items-center justify-center rounded-2xl bg-[#FF8A1E] px-6 text-[15px] font-[780] tracking-[-0.01em] text-black shadow-[0_18px_70px_rgba(0,0,0,.55)] transition hover:opacity-95 active:translate-y-px sm:h-[58px] sm:px-8 sm:text-[16px]",
+            children: t.ctaBlock.primary
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "a",
+          {
+            href: "https://t.me/TIVONIX",
+            target: "_blank",
+            rel: "noopener noreferrer",
+            className: "inline-flex h-[54px] items-center justify-center rounded-2xl bg-white/[0.08] px-6 text-[15px] font-[780] text-white/90 transition hover:bg-white/[0.13] active:translate-y-px sm:h-[58px] sm:px-7 sm:text-[16px]",
+            children: t.ctaBlock.secondary
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsx("p", { className: "mt-4 text-[13px] leading-[1.65] text-white/58 sm:text-[13.5px]", children: t.ctaBlock.footnote })
+    ] })
   ] }) }) });
 }
 function AutomationBusinessPage() {
+  usePrefetchHeroWebGL();
+  const { lang } = useLang();
+  const t = useMemo(() => getAutomationPageCopy(lang), [lang]);
   const schema = useMemo(
     () => ({
       "@context": "https://schema.org",
       "@type": "Service",
-      name: "Автоматизация бизнеса TIVONIX",
+      name: t.schemaServiceName,
       serviceType: "Automation and custom web systems",
       provider: { "@type": "Organization", name: "TIVONIX" },
       areaServed: "CIS",
       url: "https://www.tivonix.tech/avtomatizaciya-biznesa"
     }),
-    []
+    [t.schemaServiceName]
   );
-  return /* @__PURE__ */ jsxs("div", { className: "min-h-screen bg-black", children: [
+  return /* @__PURE__ */ jsx("div", { className: "relative min-h-screen bg-black font-sans antialiased", children: /* @__PURE__ */ jsxs("div", { className: "relative z-10 isolate", children: [
+    /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-x-0 top-0 z-0 flex justify-center", children: /* @__PURE__ */ jsx(HeroTextSmokeBg, {}) }),
     /* @__PURE__ */ jsx(
       SEO,
       {
-        title: "Автоматизация бизнеса — TIVONIX",
-        description: "Автоматизация процессов, CRM, личные кабинеты, админ-панели и интеграции под реальные задачи бизнеса.",
+        title: t.seo.title,
+        description: t.seo.description,
         canonicalPath: "/avtomatizaciya-biznesa",
         schemaJsonLd: schema,
-        ogLocalePrimary: "ru_RU"
+        ogLocalePrimary: lang === "en" ? "en_US" : "ru_RU"
       }
     ),
     /* @__PURE__ */ jsx(Header, {}),
-    /* @__PURE__ */ jsxs("main", { children: [
-      /* @__PURE__ */ jsx(AutomationHero, {}),
-      /* @__PURE__ */ jsx(WhyAutomation, {}),
-      /* @__PURE__ */ jsx(AutomationSignals, {}),
-      /* @__PURE__ */ jsx(PainPoints, {}),
-      /* @__PURE__ */ jsx(AutomationFeatures, {}),
-      /* @__PURE__ */ jsx(RealExamples, {}),
-      /* @__PURE__ */ jsx(ResultsSection, {}),
-      /* @__PURE__ */ jsx(ProcessSteps, {}),
-      /* @__PURE__ */ jsx(WhyNotGenericCRM, {}),
-      /* @__PURE__ */ jsx(WhyTivonix, {}),
-      /* @__PURE__ */ jsx(AutomationFAQ, {}),
-      /* @__PURE__ */ jsx(AutomationCTA, {})
+    /* @__PURE__ */ jsxs("main", { className: "relative z-10 min-w-0 overflow-x-visible", children: [
+      /* @__PURE__ */ jsx(AutomationHero, { t }),
+      /* @__PURE__ */ jsx(
+        AutomationSignsScrollSection,
+        {
+          smokeBase: WHY_AUTOMATION_SMOKE_BASE,
+          orangeLayer: WHY_AUTOMATION_ORANGE_LAYER,
+          imageDir: AUTOMATION_SIGNS_IMG_DIR,
+          sectionTitle: t.signs.sectionTitle,
+          sectionLead: t.signs.sectionLead,
+          ariaList: t.signs.ariaList,
+          items: t.signs.items
+        }
+      ),
+      /* @__PURE__ */ jsx(WhyAutomation, { t }),
+      /* @__PURE__ */ jsx(
+        PainPointsBlock,
+        {
+          items: t.pain.items,
+          imageDir: PAIN_POINTS_IMG_DIR,
+          smokeBase: WHY_AUTOMATION_SMOKE_BASE,
+          orangeLayer: WHY_AUTOMATION_ORANGE_LAYER,
+          sectionTitle: t.pain.title,
+          sectionLead: t.pain.lead
+        }
+      ),
+      /* @__PURE__ */ jsx(AutomationFeatures, { t }),
+      /* @__PURE__ */ jsx(RealExamples, { t }),
+      /* @__PURE__ */ jsx(ResultsSection, { t }),
+      /* @__PURE__ */ jsx(WhyTivonix, { t }),
+      /* @__PURE__ */ jsx(AutomationFAQ, { t }),
+      /* @__PURE__ */ jsx(AutomationCTA, { t })
     ] }),
     /* @__PURE__ */ jsx(Footer, {})
-  ] });
+  ] }) });
 }
 const HEADER_OFFSET = 84;
 function ScrollToHash() {

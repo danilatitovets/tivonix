@@ -6,6 +6,7 @@ const requiredHtmlFiles = [
   "dist/projects/index.html",
   "dist/contacts/index.html",
   "dist/sozdanie-sajtov/index.html",
+  "dist/avtomatizaciya-biznesa/index.html",
   "dist/projects/labelos/index.html",
   "dist/projects/upc/index.html",
   "dist/projects/payclip/index.html",
@@ -54,6 +55,17 @@ const checks = [
     file: "dist/contacts/index.html",
     phrases: ["Контакты", "Telegram", "Email"],
   },
+  {
+    file: "dist/avtomatizaciya-biznesa/index.html",
+    phrases: [
+      "Автоматизация бизнеса — TIVONIX",
+      "Автоматизация процессов, CRM, личные кабинеты, админ-панели и интеграции под реальные задачи бизнеса.",
+      'href="https://www.tivonix.tech/avtomatizaciya-biznesa"',
+      'property="og:url" content="https://www.tivonix.tech/avtomatizaciya-biznesa"',
+      "Автоматизируем процессы",
+      "вашего бизнеса",
+    ],
+  },
 ];
 
 const forbiddenPhrases = [
@@ -63,6 +75,11 @@ const forbiddenPhrases = [
   "chrome-headless",
   "playwright",
 ];
+
+function countRegex(re, html) {
+  const m = html.match(re);
+  return m ? m.length : 0;
+}
 
 let hasErrors = false;
 
@@ -114,6 +131,57 @@ for (const requiredFile of requiredHtmlFiles) {
       console.log(`OK ${requiredFile}: forbidden phrase not found "${forbidden}"`);
     }
   }
+}
+
+/* Точные счётчики SEO-тегов: страница автоматизации */
+const automationFile = "dist/avtomatizaciya-biznesa/index.html";
+try {
+  const autoPath = path.resolve(automationFile);
+  const autoHtml = await readFile(autoPath, "utf8");
+
+  const titleTags = countRegex(/<title\b[^>]*>[\s\S]*?<\/title>/gi, autoHtml);
+  const descTags = countRegex(
+    /<meta\b(?=[^>]*\bname\s*=\s*["']description["'])[^>]*>/gi,
+    autoHtml
+  );
+  const canonicalTags = countRegex(
+    /<link\b(?=[^>]*\brel\s*=\s*["']canonical["'])[^>]*>/gi,
+    autoHtml
+  );
+
+  if (titleTags !== 1) {
+    console.error(`${automationFile}: expected exactly 1 <title>, found ${titleTags}`);
+    hasErrors = true;
+  } else {
+    console.log(`OK ${automationFile}: exactly 1 <title>`);
+  }
+  if (descTags !== 1) {
+    console.error(
+      `${automationFile}: expected exactly 1 meta name="description", found ${descTags}`
+    );
+    hasErrors = true;
+  } else {
+    console.log(`OK ${automationFile}: exactly 1 meta description`);
+  }
+  if (canonicalTags !== 1) {
+    console.error(
+      `${automationFile}: expected exactly 1 link rel="canonical", found ${canonicalTags}`
+    );
+    hasErrors = true;
+  } else {
+    console.log(`OK ${automationFile}: exactly 1 link rel="canonical"`);
+  }
+
+  const homeTitleWrong = "<title>Создание сайтов и веб-сервисов под ключ — TIVONIX</title>";
+  if (autoHtml.includes(homeTitleWrong)) {
+    console.error(`${automationFile}: must not contain home page <title>`);
+    hasErrors = true;
+  } else {
+    console.log(`OK ${automationFile}: home page title tag not present`);
+  }
+} catch (e) {
+  console.error(`Cannot verify ${automationFile}:`, e.message);
+  hasErrors = true;
 }
 
 if (hasErrors) {

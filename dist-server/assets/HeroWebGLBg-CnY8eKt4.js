@@ -1,5 +1,5 @@
 import { jsx, jsxs } from "react/jsx-runtime";
-import { useState, useRef, useMemo, useEffect } from "react";
+import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 function clamp01(v) {
@@ -148,10 +148,29 @@ function Quad({
   const prevMouse = useRef(new THREE.Vector2(0.55, 0.45));
   const dprRef = useRef(quality === "low" ? 0.88 : 1.15);
   const avgDt = useRef(1 / 60);
-  const frameRef = useRef(0);
   useEffect(() => {
     uniforms.uRes.value.set(size.width, size.height);
   }, [size.width, size.height, uniforms]);
+  useEffect(() => {
+    const el = gl.domElement;
+    let remountTimer;
+    const onLost = (e) => {
+      e.preventDefault?.();
+      if (remountTimer) clearTimeout(remountTimer);
+      remountTimer = setTimeout(() => onContextLost(), 12e3);
+    };
+    const onRestore = () => {
+      if (remountTimer) clearTimeout(remountTimer);
+      remountTimer = void 0;
+    };
+    el.addEventListener("webglcontextlost", onLost, { passive: false });
+    el.addEventListener("webglcontextrestored", onRestore);
+    return () => {
+      if (remountTimer) clearTimeout(remountTimer);
+      el.removeEventListener("webglcontextlost", onLost);
+      el.removeEventListener("webglcontextrestored", onRestore);
+    };
+  }, [gl, onContextLost]);
   useEffect(() => {
     if (!interactive) return;
     const el = gl.domElement;
@@ -161,23 +180,13 @@ function Quad({
       const y = clamp01(1 - (e.clientY - r.top) / Math.max(1, r.height));
       mouseTarget.current.set(x, y);
     };
-    const onLost = (e) => {
-      e.preventDefault?.();
-      onContextLost();
-    };
     el.addEventListener("pointermove", onMove, { passive: true });
-    el.addEventListener("webglcontextlost", onLost, { passive: false });
     return () => {
       el.removeEventListener("pointermove", onMove);
-      el.removeEventListener("webglcontextlost", onLost);
     };
-  }, [gl, onContextLost, interactive]);
+  }, [gl, interactive]);
   useFrame((_, delta) => {
     if (!matRef.current) return;
-    if (quality === "low") {
-      frameRef.current += 1;
-      if (frameRef.current % 2 !== 0) return;
-    }
     const dt = Math.min(0.033, Math.max(1e-3, delta));
     avgDt.current = avgDt.current * 0.92 + dt * 0.08;
     const m = matRef.current.uniforms.uMouse.value;
@@ -187,21 +196,23 @@ function Quad({
     m.lerp(mouseTarget.current, lerpK);
     prevMouse.current.copy(m);
     matRef.current.uniforms.uTime.value += dt;
-    const ms = avgDt.current * 1e3;
-    let targetDpr = dprRef.current;
-    if (quality === "low") {
-      if (ms > 19.5) targetDpr = Math.max(0.72, targetDpr - 0.025);
-      else if (ms < 16.8) targetDpr = Math.min(0.95, targetDpr + 0.01);
-    } else {
-      if (ms > 19.5) targetDpr = Math.max(1, targetDpr - 0.03);
-      else if (ms < 16.8) targetDpr = Math.min(1.25, targetDpr + 0.015);
+    if (interactive) {
+      const ms = avgDt.current * 1e3;
+      let targetDpr = dprRef.current;
+      if (quality === "low") {
+        if (ms > 19.5) targetDpr = Math.max(0.72, targetDpr - 0.025);
+        else if (ms < 16.8) targetDpr = Math.min(0.95, targetDpr + 0.01);
+      } else {
+        if (ms > 19.5) targetDpr = Math.max(1, targetDpr - 0.03);
+        else if (ms < 16.8) targetDpr = Math.min(1.25, targetDpr + 0.015);
+      }
+      if (Math.abs(targetDpr - dprRef.current) > 1e-3) {
+        dprRef.current = targetDpr;
+        gl.setPixelRatio(dprRef.current);
+        matRef.current.uniforms.uRes.value.set(size.width, size.height);
+      }
     }
-    if (Math.abs(targetDpr - dprRef.current) > 1e-3) {
-      dprRef.current = targetDpr;
-      gl.setPixelRatio(dprRef.current);
-      matRef.current.uniforms.uRes.value.set(size.width, size.height);
-    }
-  }, quality);
+  });
   return /* @__PURE__ */ jsxs("mesh", { children: [
     /* @__PURE__ */ jsx("planeGeometry", { args: [2, 2] }),
     /* @__PURE__ */ jsx(
@@ -215,44 +226,40 @@ function Quad({
     )
   ] });
 }
-function Fallback() {
-  return /* @__PURE__ */ jsx(
-    "div",
-    {
-      "aria-hidden": "true",
-      style: {
-        position: "absolute",
-        inset: 0,
-        background: "radial-gradient(120% 90% at 55% 35%, rgba(255,154,61,0.10) 0%, rgba(255,106,26,0.07) 32%, rgba(0,0,0,0) 62%), linear-gradient(180deg, #000000 0%, #000000 100%)"
-      }
-    }
-  );
-}
 function HeroWebGLBg({
   quality = "high",
-  interactive = true
+  interactive = true,
+  opaqueBuffer = false
 }) {
-  const [dead, setDead] = useState(false);
-  if (dead) return /* @__PURE__ */ jsx(Fallback, {});
+  const compositeOverGradient = !interactive && !opaqueBuffer;
+  const [canvasKey, setCanvasKey] = useState(0);
+  const onContextLost = useCallback(() => {
+    setCanvasKey((k) => k + 1);
+  }, []);
   const initialDpr = typeof window !== "undefined" ? quality === "low" ? Math.min(0.9, window.devicePixelRatio || 1) : Math.min(1.2, window.devicePixelRatio || 1) : 1;
-  return /* @__PURE__ */ jsx("div", { style: { position: "absolute", inset: 0 }, children: /* @__PURE__ */ jsx(
+  return /* @__PURE__ */ jsx("div", { style: { position: "absolute", inset: 0, background: compositeOverGradient ? "transparent" : "#000" }, children: /* @__PURE__ */ jsx(
     Canvas,
     {
       frameloop: "always",
       dpr: initialDpr,
       gl: {
         antialias: false,
-        alpha: true,
+        alpha: compositeOverGradient,
         powerPreference: "high-performance",
         preserveDrawingBuffer: false
       },
       camera: { position: [0, 0, 1], fov: 50 },
-      style: { width: "100%", height: "100%" },
-      onCreated: ({ gl }) => {
-        gl.setClearColor(0, 0);
+      style: {
+        width: "100%",
+        height: "100%",
+        background: compositeOverGradient ? "transparent" : "#000000"
       },
-      children: /* @__PURE__ */ jsx(Quad, { onContextLost: () => setDead(true), quality, interactive })
-    }
+      onCreated: ({ gl }) => {
+        gl.setClearColor(0, compositeOverGradient ? 0 : 1);
+      },
+      children: /* @__PURE__ */ jsx(Quad, { onContextLost, quality, interactive })
+    },
+    canvasKey
   ) });
 }
 export {
