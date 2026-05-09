@@ -256,8 +256,8 @@ function AutomationHero({ t }: { t: AutomationPageCopy }) {
               </div>
             </div>
 
-            <div className="mt-[8rem] text-center sm:mt-16 md:mt-20 lg:mt-24">
-              <div className="mt-[calc(3.25rem+12px)] flex flex-wrap justify-center gap-3 text-[13px] sm:mt-6 sm:text-[14px]">
+            <div className="mt-[8rem] text-center sm:mt-7 md:mt-9 lg:mt-10">
+              <div className="mt-[calc(3.25rem+12px)] flex flex-wrap justify-center gap-3 text-[13px] sm:mt-3 sm:text-[14px]">
                 <span className="rounded-full bg-[#FF8A1E]/20 px-4 py-1.5 text-[#FFB55C]">{b1}</span>
                 <span className="rounded-full bg-[#FF8A1E]/20 px-4 py-1.5 text-[#FFB55C]">{b2}</span>
                 <span className="rounded-full bg-[#FF8A1E]/20 px-4 py-1.5 text-[#FFB55C]">{b3}</span>
@@ -618,13 +618,15 @@ function AutomationFeatures({ t }: { t: AutomationPageCopy }) {
                     </div>
                   </div>
 
-                  <div className="relative isolate z-0 min-h-[min(52vw,22rem)] w-full flex-1 bg-[#0a0a0a] sm:min-h-[min(48vw,24rem)] lg:h-full lg:min-h-0 lg:w-1/2 lg:flex-none lg:min-w-0">
-                    <AutomationFeatureSlideImage
-                      src={imgSrc}
-                      alt={item.title}
-                      imageFallback={t.common.imageFallback}
-                      className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-center"
-                    />
+                  <div className="relative isolate z-0 min-h-[min(92vw,32rem)] w-full flex-1 bg-[#0a0a0a] sm:min-h-[min(64vw,28rem)] lg:h-full lg:min-h-0 lg:w-1/2 lg:flex-none lg:min-w-0">
+                    <div className="absolute inset-3 z-0 sm:inset-4 lg:inset-0">
+                      <AutomationFeatureSlideImage
+                        src={imgSrc}
+                        alt={item.title}
+                        imageFallback={t.common.imageFallback}
+                        className="pointer-events-none h-full w-full object-contain object-center lg:object-cover"
+                      />
+                    </div>
                   </div>
                 </div>
               </article>
