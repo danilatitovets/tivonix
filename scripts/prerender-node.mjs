@@ -20,6 +20,7 @@ const routes = [
   "/projects/headmind",
   "/projects/logovo",
   "/projects/giftsniper",
+  "/projects/slotty",
 ];
 
 function outputFileForRoute(route) {

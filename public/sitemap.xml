@@ -51,6 +51,11 @@
     <priority>0.85</priority>
   </url>
   <url>
+    <loc>https://www.tivonix.tech/projects/slotty</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
     <loc>https://www.tivonix.tech/contacts</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

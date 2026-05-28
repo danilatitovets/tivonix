@@ -13,6 +13,7 @@ const requiredHtmlFiles = [
   "dist/projects/headmind/index.html",
   "dist/projects/logovo/index.html",
   "dist/projects/giftsniper/index.html",
+  "dist/projects/slotty/index.html",
 ];
 
 const checks = [
@@ -21,11 +22,12 @@ const checks = [
     phrases: [
       "Создание сайтов и веб-сервисов под ключ — TIVONIX",
       "Создание сайтов",
-      "Сделаем сайт или веб-сервис",
+      "Сайты, боты и веб-сервисы",
+      "которые приводят заявки",
       "FAQ",
       "FAQ — всё про сайт и работу",
       "С чем мы работаем",
-      "Создадим сайт или веб-сервис для вашего бизнеса",
+      "Разберём вашу задачу, предложим решение и запустим продукт под ключ",
       "https://www.tivonix.tech/",
     ],
   },
@@ -40,7 +42,16 @@ const checks = [
   },
   {
     file: "dist/projects/index.html",
-    phrases: ["Проекты", "LabelOS", "UPC", "PayClip", "Headmind", "LOGOVO", "GiftSniper"],
+    phrases: ["Проекты", "LabelOS", "UPC", "PayClip", "Headmind", "LOGOVO", "GiftSniper", "Slotty"],
+  },
+  {
+    file: "dist/projects/slotty/index.html",
+    phrases: [
+      "Slotty",
+      "онлайн-записи к мастерам",
+      "https://www.tivonix.tech/projects/slotty",
+      "slotty.of.by",
+    ],
   },
   {
     file: "dist/projects/giftsniper/index.html",
@@ -70,7 +81,7 @@ const checks = [
 
 const forbiddenPhrases = [
   "Tivonix Loading",
-  "TIVONIX — Сделаем сайт или веб-сервис",
+  "TIVONIX — Сайты, боты и веб-сервисы",
   "https://tivonix.tech/",
   "chrome-headless",
   "playwright",

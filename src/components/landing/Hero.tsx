@@ -360,10 +360,10 @@ export default function Hero() {
     const body = buildMailBody(lang);
     return {
       gmailUrl: buildGmailUrl(CONTACT_EMAIL, subject, body),
-      gmailLabel: lang === "ru" ? "Открыть в Gmail" : "Open in Gmail",
-      tgLabel: "Telegram",
+      gmailLabel: hero.btnTelegram,
+      tgLabel: hero.btnDemo,
     };
-  }, [lang]);
+  }, [lang, hero.btnDemo, hero.btnTelegram]);
 
   return (
     <Section
@@ -424,7 +424,9 @@ export default function Hero() {
             >
               <span className="block font-[850] text-white/95 uppercase heroTitleCaps">{hero.titleLine1}</span>
               <span className="block font-[850] text-white/80 uppercase heroTitleCaps">{hero.titleLine2Prefix}</span>
-              <span className="block font-[850] text-white/95 uppercase heroTitleCaps">{hero.titleLine2Premium}</span>
+              {hero.titleLine2Premium ? (
+                <span className="block font-[850] text-white/95 uppercase heroTitleCaps">{hero.titleLine2Premium}</span>
+              ) : null}
             </h1>
 
             <p className="mt-4 max-w-2xl max-sm:mt-5 text-[15px] sm:text-[16px] leading-relaxed font-medium text-white/85 heroSubtitle">

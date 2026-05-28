@@ -22,14 +22,14 @@ const DICT = {
       language: "Язык"
     },
     hero: {
-      titleLine1: "Сделаем сайт или веб-сервис",
-      titleLine2Prefix: "под задачи",
-      titleLine2Premium: "вашего бизнеса",
-      subtitle: "Создадим сайт или веб-сервис для вашего бизнеса. Разберём идею, спроектируем интерфейс, разработаем продукт и подготовим его к запуску. Всё — в одном месте и без технической путаницы.",
+      titleLine1: "Сайты, боты и веб-сервисы",
+      titleLine2Prefix: "которые приводят заявки",
+      titleLine2Premium: "",
+      subtitle: "Разберём вашу задачу, предложим решение и запустим продукт под ключ: лендинг, Telegram-бот, личный кабинет, CRM или автоматизацию для бизнеса.",
       emailPlaceholder: "Рабочий email",
-      btnDemo: "Получить демо",
+      btnDemo: "Рассчитать проект",
       btnTelegram: "Написать в Telegram",
-      btnAutomation: "Автоматизировать ваш бизнес"
+      btnAutomation: "Посмотреть услуги"
     },
     curtain: {
       title: "Процесс разработки — по шагам",
@@ -143,14 +143,14 @@ const DICT = {
       language: "Language"
     },
     hero: {
-      titleLine1: "We build a site or web service",
-      titleLine2Prefix: "for your",
-      titleLine2Premium: "business goals",
-      subtitle: "We unpack the idea, design the interface, build the product, and get it launch-ready. Everything in one place — without technical confusion.",
+      titleLine1: "Websites, bots and web apps",
+      titleLine2Prefix: "that bring leads",
+      titleLine2Premium: "",
+      subtitle: "We understand your task, suggest the best solution and launch it end-to-end: landing page, Telegram bot, client portal, CRM or business automation.",
       emailPlaceholder: "Work email",
-      btnDemo: "Get a demo",
-      btnTelegram: "Message on Telegram",
-      btnAutomation: "Automate your business"
+      btnDemo: "Estimate my project",
+      btnTelegram: "Message us on Telegram",
+      btnAutomation: "View services"
     },
     curtain: {
       title: "Development process — step by step",
@@ -2059,13 +2059,27 @@ const HERO_STYLES$1 = `
   }
   .gmailBtn:active{ transform:translateY(0px); }
 
-  /* ===== Mobile (Vercel-like) — только стилями, без другой разметки ===== */
+  /* ===== Mobile (Vercel-like): центр, сетка, pill-кнопки ===== */
 
   /* Резерв снизу, чтобы фон не лез на текст */
   @media (max-width: 640px){
     .hero{
-      --hero-img-shift: 16vh;   /* опусти фон */
+      --hero-img-shift: 16vh;
       --hero-img-scale: 1;
+    }
+
+    .heroBg::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      opacity:0.45;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+      background-size: 40px 40px;
+      background-position: center top;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, transparent 88%);
     }
     .heroBg .heroImg{
       inset: auto;
@@ -2078,96 +2092,141 @@ const HERO_STYLES$1 = `
       transform: translate3d(-50%, -50%, 0) scale(var(--hero-img-scale));
     }
 
-    /* Моб. оверлей: верх темнее, низ “чище” */
-@media (max-width: 640px){
-  .heroOverlay{
-    background:
-      /* общий диммер */
-      linear-gradient(0deg,
-        rgba(0,0,0,0.40),
-        rgba(0,0,0,0.40)
-      ),
-      /* верх темнее под текст */
-      linear-gradient(180deg,
-        rgba(0,0,0,0.92) 0%,
-        rgba(0,0,0,0.72) 28%,
-        rgba(0,0,0,0.35) 58%,
-        rgba(0,0,0,0.15) 72%,
-        rgba(0,0,0,0.78) 100%
-      );
-  }
-}
+    /* Моб. оверлей: верх темнее, низ чище */
+    .heroOverlay{
+      background:
+        linear-gradient(0deg, rgba(0,0,0,0.32), rgba(0,0,0,0.32)),
+        linear-gradient(180deg,
+          rgba(0,0,0,0.88) 0%,
+          rgba(0,0,0,0.62) 22%,
+          rgba(0,0,0,0.28) 52%,
+          rgba(0,0,0,0.12) 68%,
+          rgba(0,0,0,0.72) 100%
+        );
+    }
+
+    .heroGrain{ opacity:0.055; }
 
     .hero .heroWrap{
-      text-align:left;
-      padding-top: 2px;
-      padding-bottom: clamp(220px, 40vh, 440px);
+      text-align:center;
+      padding-top: 4px;
+      padding-bottom: clamp(200px, 38vh, 420px);
     }
-    .hero .heroSubtitle{ margin-left:0; margin-right:auto; }
+    .hero .heroSubtitle{ margin-left:auto; margin-right:auto; }
 
-    /* Типографика мобилки */
-    .hero .heroTitleCaps{ text-transform:none !important; letter-spacing:-0.02em !important; }
+    /* Типографика: как Vercel — плотный заголовок, лид #A1A1AA */
+    .hero .heroTitleCaps{ text-transform:none !important; letter-spacing:-0.032em !important; }
     .hero .heroH1{
       line-height:1.04;
-      letter-spacing:-0.035em;
+      letter-spacing:-0.04em;
       text-shadow:none;
+      text-wrap: balance;
     }
 
-    .hero .heroH1{ max-width: 20ch; margin-left:0; margin-right:auto; }
+    .hero .heroH1{
+      max-width: 17ch;
+      margin-left:auto;
+      margin-right:auto;
+    }
+    .hero .heroH1 .heroTitleCaps{
+      color:#fafafa !important;
+    }
+    .hero .heroH1 .heroTitleCaps:nth-child(2){
+      color:rgba(250,250,250,0.82) !important;
+    }
     .hero .heroSubtitle{
-      font-size: 13.75px !important;
-      line-height: 1.6 !important;
-      color: rgba(255,255,255,0.68) !important;
-      max-width: 48ch;
+      font-size: 15px !important;
+      line-height: 1.65 !important;
+      color: #a1a1aa !important;
+      max-width: 34ch;
+      font-weight: 400 !important;
     }
 
-    /* CTA: столбик, выравнивание как у текста */
+    /* CTA: ряд из двух pill + третий outline на всю ширину пары */
     .hero .heroCtas{
-      margin-top: 18px !important;
-      display:grid !important;
-      grid-template-columns: 1fr;
-      gap: 10px !important;
-      max-width: min(100%, 22rem);
-      margin-left: 0 !important;
+      margin-top: 28px !important;
+      display:flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      gap: 12px !important;
+      max-width: 100% !important;
+      margin-left: auto !important;
       margin-right: auto !important;
+    }
+
+    .hero .heroCtasPair{
+      display:flex;
+      width:100%;
+      max-width:min(100%, 20.5rem);
+      gap:10px;
+    }
+
+    .hero .heroCtasPair .tgBtn,
+    .hero .heroCtasPair .gmailBtn{
+      flex:1;
+      min-width:0;
     }
 
     .hero .gmailBtn,
     .hero .tgBtn,
     .hero .heroAutomationBtn{
-      height: 46px !important;
-      border-radius: 14px !important;
-      font-size: 13.5px !important;
-      font-weight: 700 !important;
-      letter-spacing: -0.012em !important;
+      height: 48px !important;
+      border-radius: 9999px !important;
+      font-size: 14px !important;
+      font-weight: 600 !important;
+      letter-spacing: -0.02em !important;
       box-shadow: none !important;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
     }
 
+    /* Primary: белая pill (как Deploy у Vercel) */
     .hero .tgBtn{
-      background: #FF8A1E !important;
-      color: rgba(0,0,0,0.92) !important;
-      border: 1px solid rgba(255,140,60,0.55) !important;
+      background: #ffffff !important;
+      color: #0a0a0a !important;
+      border: 1px solid rgba(255,255,255,0.14) !important;
     }
 
+    /* Secondary: тёмная с тонкой обводкой (как Get a demo) */
     .hero .gmailBtn{
-      background: #2a2a2a !important;
+      background: transparent !important;
       color: rgba(255,255,255,0.92) !important;
-      border: none !important;
+      border: 1px solid rgba(255,255,255,0.22) !important;
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
     }
-
-    /* Белая — та же геометрия + тонкая обводка */
-    .hero .heroAutomationBtn{
+    .hero .tgBtn:hover{
       background: rgba(255,255,255,0.96) !important;
-      color: rgba(0,0,0,0.9) !important;
-      border: 1px solid rgba(255,255,255,0.55) !important;
+      border-color: rgba(255,255,255,0.22) !important;
+    }
+    .hero .gmailBtn:hover{
+      background: rgba(255,255,255,0.06) !important;
+      border-color: rgba(255,255,255,0.32) !important;
+    }
+    .hero .tgBtn:active,
+    .hero .gmailBtn:active,
+    .hero .heroAutomationBtn:active{
+      transform: scale(0.98);
     }
 
-    /* Супер узкие экраны */
+    .hero .heroAutomationBtn{
+      width:100%;
+      max-width:min(100%, 20.5rem);
+      background: #FF8A1E !important;
+      color: rgba(0,0,0,0.92) !important;
+      border: 1px solid rgba(255,140,60,0.55) !important;
+      font-weight: 600 !important;
+      box-shadow: 0 10px 28px rgba(255,138,30,0.22) !important;
+    }
+    .hero .heroAutomationBtn:hover{
+      background: #ff9a38 !important;
+      border-color: rgba(255,154,56,0.65) !important;
+      box-shadow: 0 12px 32px rgba(255,138,30,0.28) !important;
+    }
+
     @media (max-width: 360px){
-      .hero .gmailBtn, .hero .tgBtn, .hero .heroAutomationBtn{ height: 46px !important; }
-      .hero .heroH1{ max-width: 20ch; }
+      .hero .gmailBtn, .hero .tgBtn, .hero .heroAutomationBtn{ height: 46px !important; font-size: 13px !important; }
+      .hero .heroH1{ max-width: 16ch; }
     }
   }
 
@@ -2202,10 +2261,10 @@ function Hero() {
     const body = buildMailBody$1(lang);
     return {
       gmailUrl: buildGmailUrl$1(CONTACT_EMAIL, subject, body),
-      gmailLabel: lang === "ru" ? "Открыть в Gmail" : "Open in Gmail",
-      tgLabel: "Telegram"
+      gmailLabel: hero.btnTelegram,
+      tgLabel: hero.btnDemo
     };
-  }, [lang]);
+  }, [lang, hero.btnDemo, hero.btnTelegram]);
   return /* @__PURE__ */ jsxs(
     Section,
     {
@@ -2242,68 +2301,79 @@ function Hero() {
           /* @__PURE__ */ jsx("div", { className: "heroOverlay" }),
           /* @__PURE__ */ jsx("div", { className: "heroGrain" }),
           /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/85 via-black/40 to-transparent" }),
-          /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black via-black/80 to-transparent max-sm:h-52 max-sm:from-black/[0.72] max-sm:via-black/45" })
+          /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black via-black/80 to-transparent max-sm:h-56 max-sm:from-black/[0.58] max-sm:via-black/38 max-sm:to-transparent" })
         ] }),
         /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsx("div", { className: "relative mx-auto max-w-6xl px-1 sm:px-0 w-full", children: /* @__PURE__ */ jsxs("div", { className: "pt-2 sm:pt-6 lg:pt-8 heroWrap", children: [
-          /* @__PURE__ */ jsxs("h1", { className: cx$7("heroH1 tracking-[-0.02em]", "text-[30px] sm:text-[46px] lg:text-[54px]"), children: [
-            /* @__PURE__ */ jsx("span", { className: "block font-[850] text-white/95 uppercase heroTitleCaps", children: hero.titleLine1 }),
-            /* @__PURE__ */ jsx("span", { className: "block font-[850] text-white/80 uppercase heroTitleCaps", children: hero.titleLine2Prefix }),
-            /* @__PURE__ */ jsx("span", { className: "block font-[850] text-white/95 uppercase heroTitleCaps", children: hero.titleLine2Premium })
-          ] }),
-          /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-2xl text-[15px] sm:text-[16px] leading-relaxed font-medium text-white/85 heroSubtitle", children: hero.subtitle }),
-          /* @__PURE__ */ jsxs("div", { className: "mt-7 flex w-full max-w-2xl flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start heroCtas", children: [
-            /* @__PURE__ */ jsxs(
-              "a",
-              {
-                href: TG_BOT_URL,
-                target: "_blank",
-                rel: "noopener noreferrer",
-                "aria-label": tgLabel,
-                className: cx$7(
-                  "tgBtn group relative w-full sm:w-auto",
-                  "inline-flex items-center justify-center",
-                  "rounded-xl h-[50px] sm:h-[52px] px-5 sm:px-6",
-                  "text-center font-[780] tracking-[-0.01em]",
-                  "text-[14px] sm:text-[15px] text-black whitespace-nowrap",
-                  "border border-orange-500/45 shadow-[0_12px_40px_rgba(255,106,40,0.22)]",
-                  "transition active:translate-y-[1px]",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                ),
-                style: {
-                  background: "#FF8A1E"
-                },
-                children: [
-                  /* @__PURE__ */ jsx("span", { className: "relative z-10", children: tgLabel }),
-                  /* @__PURE__ */ jsx(
-                    "span",
-                    {
-                      className: "pointer-events-none absolute inset-0 rounded-xl opacity-0 blur-xl transition duration-300 group-hover:opacity-70",
-                      style: {
-                        background: "radial-gradient(700px 120px at 50% 30%, rgba(255,176,32,0.65), rgba(0,0,0,0))"
+          /* @__PURE__ */ jsxs(
+            "h1",
+            {
+              className: cx$7(
+                "heroH1 tracking-[-0.02em]",
+                "text-[clamp(2.05rem,7.5vw,2.2rem)] max-sm:font-[820] sm:text-[46px] lg:text-[54px]"
+              ),
+              children: [
+                /* @__PURE__ */ jsx("span", { className: "block font-[850] text-white/95 uppercase heroTitleCaps", children: hero.titleLine1 }),
+                /* @__PURE__ */ jsx("span", { className: "block font-[850] text-white/80 uppercase heroTitleCaps", children: hero.titleLine2Prefix }),
+                hero.titleLine2Premium ? /* @__PURE__ */ jsx("span", { className: "block font-[850] text-white/95 uppercase heroTitleCaps", children: hero.titleLine2Premium }) : null
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-2xl max-sm:mt-5 text-[15px] sm:text-[16px] leading-relaxed font-medium text-white/85 heroSubtitle", children: hero.subtitle }),
+          /* @__PURE__ */ jsxs("div", { className: "heroCtas mt-7 flex w-full max-w-2xl flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start", children: [
+            /* @__PURE__ */ jsxs("div", { className: "heroCtasPair flex w-full max-w-[20.5rem] gap-2.5 sm:contents sm:max-w-none", children: [
+              /* @__PURE__ */ jsxs(
+                "a",
+                {
+                  href: TG_BOT_URL,
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  "aria-label": tgLabel,
+                  className: cx$7(
+                    "tgBtn group relative w-full sm:w-auto",
+                    "inline-flex items-center justify-center",
+                    "rounded-xl max-sm:rounded-full h-[50px] sm:h-[52px] px-5 sm:px-6",
+                    "text-center font-[780] tracking-[-0.01em] max-sm:font-semibold",
+                    "text-[14px] sm:text-[15px] text-black whitespace-nowrap",
+                    "border border-orange-500/45 shadow-[0_12px_40px_rgba(255,106,40,0.22)] max-sm:border-white/15 max-sm:shadow-none",
+                    "transition active:translate-y-[1px]",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black max-sm:focus-visible:ring-white/30"
+                  ),
+                  style: {
+                    background: "#FF8A1E"
+                  },
+                  children: [
+                    /* @__PURE__ */ jsx("span", { className: "relative z-10", children: tgLabel }),
+                    /* @__PURE__ */ jsx(
+                      "span",
+                      {
+                        className: "pointer-events-none absolute inset-0 max-sm:hidden rounded-xl opacity-0 blur-xl transition duration-300 group-hover:opacity-70",
+                        style: {
+                          background: "radial-gradient(700px 120px at 50% 30%, rgba(255,176,32,0.65), rgba(0,0,0,0))"
+                        }
                       }
-                    }
-                  )
-                ]
-              }
-            ),
-            /* @__PURE__ */ jsx(
-              "a",
-              {
-                href: gmailUrl,
-                target: "_blank",
-                rel: "noopener noreferrer",
-                "aria-label": gmailLabel,
-                className: cx$7(
-                  "gmailBtn",
-                  "inline-flex items-center justify-center",
-                  "rounded-xl h-[50px] sm:h-[52px] px-5 sm:px-6",
-                  "w-full sm:w-auto whitespace-nowrap",
-                  "text-white/90 text-[14px] sm:text-[15px] font-[780]",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                ),
-                children: gmailLabel
-              }
-            ),
+                    )
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsx(
+                "a",
+                {
+                  href: gmailUrl,
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  "aria-label": gmailLabel,
+                  className: cx$7(
+                    "gmailBtn",
+                    "inline-flex items-center justify-center",
+                    "rounded-xl max-sm:rounded-full h-[50px] sm:h-[52px] px-5 sm:px-6",
+                    "w-full sm:w-auto whitespace-nowrap",
+                    "text-white/90 text-[14px] sm:text-[15px] font-[780] max-sm:font-semibold",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                  ),
+                  children: gmailLabel
+                }
+              )
+            ] }),
             /* @__PURE__ */ jsx(
               Link,
               {
@@ -2311,13 +2381,13 @@ function Hero() {
                 className: cx$7(
                   "heroAutomationBtn",
                   "inline-flex items-center justify-center",
-                  "rounded-xl h-[50px] sm:h-[52px] px-5 sm:px-6",
+                  "rounded-xl max-sm:rounded-full h-[50px] sm:h-[52px] px-5 sm:px-6",
                   "w-full sm:w-auto",
-                  "text-center font-[780] tracking-[-0.01em]",
+                  "text-center font-[780] tracking-[-0.01em] max-sm:font-semibold",
                   "text-[14px] sm:text-[15px] whitespace-nowrap",
                   "border border-white/50 bg-white text-black hover:bg-white/95",
                   "transition active:translate-y-[1px]",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black max-sm:focus-visible:ring-orange-300/50"
                 ),
                 children: hero.btnAutomation
               }
@@ -3852,6 +3922,7 @@ const LABELOS_DOMAIN = "https://labelos.digital/";
 const HEADMIND_DOMAIN = "https://headmind.ru/";
 const LOGOVO_DOMAIN = "https://logovo24.by/";
 const GIFTSNIPER_DOMAIN = "https://t.me/GiftSniperTonBot";
+const SLOTTY_DOMAIN = "https://slotty.of.by/";
 function buildProjects(isRu) {
   return [
     // 1) LABEL0S — 3 days
@@ -4001,6 +4072,35 @@ function buildProjects(isRu) {
         isRu ? "Без подключения кошелька и доступа к аккаунту" : "No wallet connection or account-access risk"
       ],
       stack: ["Telegram Bot API", "TON", "NFT Data", "Parser", "Analytics"]
+    },
+    // 7) SLOTTY — платформа онлайн-записи к мастерам (MVP)
+    {
+      id: "slotty",
+      title: "Slotty",
+      subtitleRu: "Платформа для онлайн-записи к мастерам, студиям и услугам: выбор специалиста, свободное время, запись, напоминания и история посещений в одном сервисе.",
+      subtitleEn: "Online booking platform for masters, studios and services: pick a specialist, see open slots, book, get reminders and visit history in one app.",
+      detailsRu: "Формат: SaaS / marketplace / сервис онлайн-записи\n\nДомен\n• slotty.of.by\n\nСтатус\n• В разработке / MVP\n\nЦель\n• Помочь пользователю быстро найти подходящего мастера или студию, выбрать услугу, увидеть свободное время и записаться онлайн без звонков, переписок и лишних шагов.\n\nКак это работает\n• Пользователь выбирает категорию услуги: маникюр, парикмахер, косметология, брови, массаж и другие направления.\n• Дальше он видит мастеров, карточки услуг, цены, свободные слоты и может оформить запись прямо в приложении.\n• Мастер получает заявку, управляет расписанием, услугами, профилем и клиентами в личном кабинете.\n\nЧто показывает сервис\n• Каталог услуг и категорий\n• Карточки мастеров и студий\n• Свободные даты и время\n• Онлайн-запись на услугу\n• Статус записи\n• Напоминания пользователю\n• Историю записей\n• Личный кабинет мастера\n\nБезопасность и позиционирование\nSlotty не заменяет мастера и не вмешивается в услугу. Сервис помогает удобно соединить клиента и специалиста, упростить запись и убрать хаос из переписок. Авторизация может работать через Telegram, Google и другие способы входа, чтобы пользователю было удобно зайти с любого устройства.\n\nЧто сделали в проекте\n• Продумали структуру сервиса для клиентов и мастеров\n• Собрали пользовательский путь от выбора услуги до записи\n• Разработали каталог категорий, услуг и мастеров\n• Сделали личный кабинет мастера\n• Реализовали запись на свободное время\n• Добавили основу для напоминаний и управления заявками\n• Подготовили продукт к развитию в полноценный marketplace\n\nРезультат\nSlotty показывает, как локальный сервис записи может стать полноценным продуктом для мастеров, студий и клиентов. Пользователь быстро находит услугу и записывается, а мастер получает удобный инструмент для управления своим временем, услугами и клиентами.\n",
+      detailsEn: "Format: SaaS / marketplace / online booking service\n\nDomain\n• slotty.of.by\n\nStatus\n• In development / MVP\n\nGoal\n• Help users quickly find the right master or studio, pick a service, see open time slots and book online — without calls, endless chats or extra steps.\n\nHow it works\n• The user picks a service category: nails, hair, skincare, brows, massage and more.\n• They browse masters, service cards, prices and open slots, then book in the app.\n• The master receives the request and manages schedule, services, profile and clients in a personal dashboard.\n\nWhat the service shows\n• Service and category catalog\n• Master and studio cards\n• Available dates and times\n• Online booking for a service\n• Booking status\n• User reminders\n• Visit history\n• Master dashboard\n\nSafety and positioning\nSlotty does not replace the master or interfere with the service itself. It connects client and specialist, simplifies booking and removes chaos from messaging. Sign-in can work via Telegram, Google and other methods so users can access the product from any device.\n\nWhat we delivered\n• Service structure for clients and masters\n• User journey from service pick to confirmed booking\n• Category, service and master catalog\n• Master personal area\n• Booking for open time slots\n• Foundation for reminders and request management\n• Product groundwork to grow into a full marketplace\n\nOutcome\nSlotty shows how a local booking service can become a full product for masters, studios and clients. Users find a service and book fast; masters get a practical tool to manage time, services and clients.\n",
+      domain: SLOTTY_DOMAIN,
+      status: "wip",
+      tags: ["Marketplace", "Booking", "Beauty", "SaaS", "Mobile App"],
+      cover: "/images/project-priew/slotty.png",
+      outcomes: [
+        isRu ? "Онлайн-запись к мастерам без лишних переписок" : "Online booking for masters without endless messaging",
+        isRu ? "Каталог услуг, мастеров и свободного времени в одном месте" : "Services, masters and open slots in one place",
+        isRu ? "Удобный кабинет для мастера и клиента" : "Convenient areas for master and client",
+        isRu ? "Быстрый путь от выбора услуги до подтверждённой записи" : "Fast path from service pick to confirmed booking"
+      ],
+      stack: [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "Supabase",
+        "Telegram Auth",
+        "Google Auth",
+        "Calendar",
+        "Notifications"
+      ]
     }
   ];
 }

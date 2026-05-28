@@ -28,6 +28,7 @@ const LABELOS_DOMAIN = "https://labelos.digital/";
 const HEADMIND_DOMAIN = "https://headmind.ru/";
 const LOGOVO_DOMAIN = "https://logovo24.by/";
 const GIFTSNIPER_DOMAIN = "https://t.me/GiftSniperTonBot";
+const SLOTTY_DOMAIN = "https://slotty.of.by/";
 
 export function buildProjects(isRu: boolean): Project[] {
   return [
@@ -406,6 +407,110 @@ export function buildProjects(isRu: boolean): Project[] {
             : "No wallet connection or account-access risk",
         ],
         stack: ["Telegram Bot API", "TON", "NFT Data", "Parser", "Analytics"],
+      },
+
+      // 7) SLOTTY — платформа онлайн-записи к мастерам (MVP)
+      {
+        id: "slotty",
+        title: "Slotty",
+        subtitleRu:
+          "Платформа для онлайн-записи к мастерам, студиям и услугам: выбор специалиста, свободное время, запись, напоминания и история посещений в одном сервисе.",
+        subtitleEn:
+          "Online booking platform for masters, studios and services: pick a specialist, see open slots, book, get reminders and visit history in one app.",
+        detailsRu:
+          "Формат: SaaS / marketplace / сервис онлайн-записи\n\n" +
+          "Домен\n" +
+          "• slotty.of.by\n\n" +
+          "Статус\n" +
+          "• В разработке / MVP\n\n" +
+          "Цель\n" +
+          "• Помочь пользователю быстро найти подходящего мастера или студию, выбрать услугу, увидеть свободное время и записаться онлайн без звонков, переписок и лишних шагов.\n\n" +
+          "Как это работает\n" +
+          "• Пользователь выбирает категорию услуги: маникюр, парикмахер, косметология, брови, массаж и другие направления.\n" +
+          "• Дальше он видит мастеров, карточки услуг, цены, свободные слоты и может оформить запись прямо в приложении.\n" +
+          "• Мастер получает заявку, управляет расписанием, услугами, профилем и клиентами в личном кабинете.\n\n" +
+          "Что показывает сервис\n" +
+          "• Каталог услуг и категорий\n" +
+          "• Карточки мастеров и студий\n" +
+          "• Свободные даты и время\n" +
+          "• Онлайн-запись на услугу\n" +
+          "• Статус записи\n" +
+          "• Напоминания пользователю\n" +
+          "• Историю записей\n" +
+          "• Личный кабинет мастера\n\n" +
+          "Безопасность и позиционирование\n" +
+          "Slotty не заменяет мастера и не вмешивается в услугу. Сервис помогает удобно соединить клиента и специалиста, упростить запись и убрать хаос из переписок. Авторизация может работать через Telegram, Google и другие способы входа, чтобы пользователю было удобно зайти с любого устройства.\n\n" +
+          "Что сделали в проекте\n" +
+          "• Продумали структуру сервиса для клиентов и мастеров\n" +
+          "• Собрали пользовательский путь от выбора услуги до записи\n" +
+          "• Разработали каталог категорий, услуг и мастеров\n" +
+          "• Сделали личный кабинет мастера\n" +
+          "• Реализовали запись на свободное время\n" +
+          "• Добавили основу для напоминаний и управления заявками\n" +
+          "• Подготовили продукт к развитию в полноценный marketplace\n\n" +
+          "Результат\n" +
+          "Slotty показывает, как локальный сервис записи может стать полноценным продуктом для мастеров, студий и клиентов. Пользователь быстро находит услугу и записывается, а мастер получает удобный инструмент для управления своим временем, услугами и клиентами.\n",
+        detailsEn:
+          "Format: SaaS / marketplace / online booking service\n\n" +
+          "Domain\n" +
+          "• slotty.of.by\n\n" +
+          "Status\n" +
+          "• In development / MVP\n\n" +
+          "Goal\n" +
+          "• Help users quickly find the right master or studio, pick a service, see open time slots and book online — without calls, endless chats or extra steps.\n\n" +
+          "How it works\n" +
+          "• The user picks a service category: nails, hair, skincare, brows, massage and more.\n" +
+          "• They browse masters, service cards, prices and open slots, then book in the app.\n" +
+          "• The master receives the request and manages schedule, services, profile and clients in a personal dashboard.\n\n" +
+          "What the service shows\n" +
+          "• Service and category catalog\n" +
+          "• Master and studio cards\n" +
+          "• Available dates and times\n" +
+          "• Online booking for a service\n" +
+          "• Booking status\n" +
+          "• User reminders\n" +
+          "• Visit history\n" +
+          "• Master dashboard\n\n" +
+          "Safety and positioning\n" +
+          "Slotty does not replace the master or interfere with the service itself. It connects client and specialist, simplifies booking and removes chaos from messaging. Sign-in can work via Telegram, Google and other methods so users can access the product from any device.\n\n" +
+          "What we delivered\n" +
+          "• Service structure for clients and masters\n" +
+          "• User journey from service pick to confirmed booking\n" +
+          "• Category, service and master catalog\n" +
+          "• Master personal area\n" +
+          "• Booking for open time slots\n" +
+          "• Foundation for reminders and request management\n" +
+          "• Product groundwork to grow into a full marketplace\n\n" +
+          "Outcome\n" +
+          "Slotty shows how a local booking service can become a full product for masters, studios and clients. Users find a service and book fast; masters get a practical tool to manage time, services and clients.\n",
+        domain: SLOTTY_DOMAIN,
+        status: "wip",
+        tags: ["Marketplace", "Booking", "Beauty", "SaaS", "Mobile App"],
+        cover: "/images/project-priew/slotty.png",
+        outcomes: [
+          isRu
+            ? "Онлайн-запись к мастерам без лишних переписок"
+            : "Online booking for masters without endless messaging",
+          isRu
+            ? "Каталог услуг, мастеров и свободного времени в одном месте"
+            : "Services, masters and open slots in one place",
+          isRu
+            ? "Удобный кабинет для мастера и клиента"
+            : "Convenient areas for master and client",
+          isRu
+            ? "Быстрый путь от выбора услуги до подтверждённой записи"
+            : "Fast path from service pick to confirmed booking",
+        ],
+        stack: [
+          "React",
+          "TypeScript",
+          "Node.js",
+          "Supabase",
+          "Telegram Auth",
+          "Google Auth",
+          "Calendar",
+          "Notifications",
+        ],
       },
   ];
 }
