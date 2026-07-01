@@ -341,7 +341,7 @@ function trackAdsConversion(eventLabel, eventCallback) {
 function cx$9(...a) {
   return a.filter(Boolean).join(" ");
 }
-function clamp$3(n, a = 0, b = 1) {
+function clamp$2(n, a = 0, b = 1) {
   return Math.max(a, Math.min(b, n));
 }
 const BRAND_CTA$1 = "linear-gradient(90deg, #FFD7B0 0%, #FF9A3D 45%, #FF6A1A 100%)";
@@ -368,7 +368,7 @@ function ModalProgressBar({
   progress,
   label
 }) {
-  const p = clamp$3(progress, 0, 1);
+  const p = clamp$2(progress, 0, 1);
   const pct = Math.round(p * 100);
   const thumbLeft = `calc(${pct}% - 8px)`;
   return /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
@@ -2401,7 +2401,7 @@ function Hero() {
 const STICKY_TOP = 96;
 const MOBILE_STICKY_TOP = "calc(var(--header-h, 72px) + 10px)";
 const MOBILE_CARD_MAX_W = 320;
-function clamp$2(n, a = 0, b = 1) {
+function clamp$1(n, a = 0, b = 1) {
   return Math.max(a, Math.min(b, n));
 }
 function ProgressBar({
@@ -2411,7 +2411,7 @@ function ProgressBar({
   showPercent = false
 }) {
   const w = thin ? 12 : 16;
-  const p = clamp$2(progress, 0, 1);
+  const p = clamp$1(progress, 0, 1);
   return /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center", "aria-hidden": "true", children: [
     /* @__PURE__ */ jsxs("div", { className: "relative flex justify-center", style: { height, width: w }, children: [
       /* @__PURE__ */ jsx("div", { className: "absolute inset-y-0 w-[2px] rounded-full bg-white/10" }),
@@ -2583,7 +2583,7 @@ function WhyUs() {
     }
     const midView = window.scrollY + window.innerHeight * 0.5;
     const raw = (midView - m.firstY) / (m.lastY - m.firstY);
-    const next = clamp$2(raw, 0, 1);
+    const next = clamp$1(raw, 0, 1);
     if (Math.abs(next - progressRef.current) > 5e-3) {
       progressRef.current = next;
       setScrollProgress(next);
@@ -3922,8 +3922,18 @@ const LABELOS_DOMAIN = "https://labelos.digital/";
 const HEADMIND_DOMAIN = "https://headmind.ru/";
 const LOGOVO_DOMAIN = "https://logovo24.by/";
 const GIFTSNIPER_DOMAIN = "https://t.me/GiftSniperTonBot";
-const SLOTTY_DOMAIN = "https://slotty.of.by/";
-function buildProjects(isRu) {
+const SLOTTY_DOMAIN = "https://slotty.of.by/book";
+const SPLITON_DOMAIN = "https://spliton.io/app";
+const PUBLIC_PROJECT_IDS = [
+  "headmind",
+  "logovo",
+  "giftsniper",
+  "slotty",
+  "spliton"
+];
+const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/r${i + 1}.png`);
+const SPLITON_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/spliton/g${i + 1}.png`);
+function buildAllProjects(isRu) {
   return [
     // 1) LABEL0S — 3 days
     {
@@ -4010,7 +4020,7 @@ function buildProjects(isRu) {
       domain: HEADMIND_DOMAIN,
       status: "live",
       tags: ["B2B", "Website", "UI/UX", "Structure", "Conversion"],
-      cover: "/images/project-priew/headmid.jpg",
+      cover: "/images/project-priew/headmind.png",
       outcomes: [
         isRu ? "Понятная упаковка услуг и подхода" : "Clear services & approach packaging",
         isRu ? "Усиление доверия через команду и структуру" : "Stronger trust via team + structure",
@@ -4040,7 +4050,7 @@ function buildProjects(isRu) {
         "Framer Motion",
         "Automotive"
       ],
-      cover: "/images/project-priew/logovvo.jpg",
+      cover: "/images/project-priew/logovo.png",
       outcomes: [
         isRu ? "Сделано за 12 дней" : "Delivered in 12 days",
         isRu ? "Структура под услуги, прайс и запись" : "Structure for services, pricing and booking",
@@ -4065,7 +4075,7 @@ function buildProjects(isRu) {
       domain: GIFTSNIPER_DOMAIN,
       status: "live",
       tags: ["Telegram Bot", "TON", "NFT", "Analytics", "Market Data"],
-      cover: "/images/project-priew/gift.jpg",
+      cover: "/images/project-priew/giftsniper.png",
       outcomes: [
         isRu ? "Оценка NFT и Gifts по данным рынка в одном окне" : "NFT and Gifts valuation from market data in one flow",
         isRu ? "Быстрый анализ: трейты, листинги, аналоги, ориентир цены" : "Fast analysis: traits, listings, comparables, pricing guidance",
@@ -4079,12 +4089,13 @@ function buildProjects(isRu) {
       title: "Slotty",
       subtitleRu: "Платформа для онлайн-записи к мастерам, студиям и услугам: выбор специалиста, свободное время, запись, напоминания и история посещений в одном сервисе.",
       subtitleEn: "Online booking platform for masters, studios and services: pick a specialist, see open slots, book, get reminders and visit history in one app.",
-      detailsRu: "Формат: SaaS / marketplace / сервис онлайн-записи\n\nДомен\n• slotty.of.by\n\nСтатус\n• В разработке / MVP\n\nЦель\n• Помочь пользователю быстро найти подходящего мастера или студию, выбрать услугу, увидеть свободное время и записаться онлайн без звонков, переписок и лишних шагов.\n\nКак это работает\n• Пользователь выбирает категорию услуги: маникюр, парикмахер, косметология, брови, массаж и другие направления.\n• Дальше он видит мастеров, карточки услуг, цены, свободные слоты и может оформить запись прямо в приложении.\n• Мастер получает заявку, управляет расписанием, услугами, профилем и клиентами в личном кабинете.\n\nЧто показывает сервис\n• Каталог услуг и категорий\n• Карточки мастеров и студий\n• Свободные даты и время\n• Онлайн-запись на услугу\n• Статус записи\n• Напоминания пользователю\n• Историю записей\n• Личный кабинет мастера\n\nБезопасность и позиционирование\nSlotty не заменяет мастера и не вмешивается в услугу. Сервис помогает удобно соединить клиента и специалиста, упростить запись и убрать хаос из переписок. Авторизация может работать через Telegram, Google и другие способы входа, чтобы пользователю было удобно зайти с любого устройства.\n\nЧто сделали в проекте\n• Продумали структуру сервиса для клиентов и мастеров\n• Собрали пользовательский путь от выбора услуги до записи\n• Разработали каталог категорий, услуг и мастеров\n• Сделали личный кабинет мастера\n• Реализовали запись на свободное время\n• Добавили основу для напоминаний и управления заявками\n• Подготовили продукт к развитию в полноценный marketplace\n\nРезультат\nSlotty показывает, как локальный сервис записи может стать полноценным продуктом для мастеров, студий и клиентов. Пользователь быстро находит услугу и записывается, а мастер получает удобный инструмент для управления своим временем, услугами и клиентами.\n",
-      detailsEn: "Format: SaaS / marketplace / online booking service\n\nDomain\n• slotty.of.by\n\nStatus\n• In development / MVP\n\nGoal\n• Help users quickly find the right master or studio, pick a service, see open time slots and book online — without calls, endless chats or extra steps.\n\nHow it works\n• The user picks a service category: nails, hair, skincare, brows, massage and more.\n• They browse masters, service cards, prices and open slots, then book in the app.\n• The master receives the request and manages schedule, services, profile and clients in a personal dashboard.\n\nWhat the service shows\n• Service and category catalog\n• Master and studio cards\n• Available dates and times\n• Online booking for a service\n• Booking status\n• User reminders\n• Visit history\n• Master dashboard\n\nSafety and positioning\nSlotty does not replace the master or interfere with the service itself. It connects client and specialist, simplifies booking and removes chaos from messaging. Sign-in can work via Telegram, Google and other methods so users can access the product from any device.\n\nWhat we delivered\n• Service structure for clients and masters\n• User journey from service pick to confirmed booking\n• Category, service and master catalog\n• Master personal area\n• Booking for open time slots\n• Foundation for reminders and request management\n• Product groundwork to grow into a full marketplace\n\nOutcome\nSlotty shows how a local booking service can become a full product for masters, studios and clients. Users find a service and book fast; masters get a practical tool to manage time, services and clients.\n",
+      detailsRu: "Формат: SaaS / marketplace / сервис онлайн-записи\n\nДомен\n• slotty.of.by/book\n\nСтатус\n• В продакшене\n\nЦель\n• Помочь пользователю быстро найти подходящего мастера или студию, выбрать услугу, увидеть свободное время и записаться онлайн без звонков, переписок и лишних шагов.\n\nКак это работает\n• Пользователь выбирает категорию услуги: маникюр, парикмахер, косметология, брови, массаж и другие направления.\n• Дальше он видит мастеров, карточки услуг, цены, свободные слоты и может оформить запись прямо в приложении.\n• Мастер получает заявку, управляет расписанием, услугами, профилем и клиентами в личном кабинете.\n\nЧто показывает сервис\n• Каталог услуг и категорий\n• Карточки мастеров и студий\n• Свободные даты и время\n• Онлайн-запись на услугу\n• Статус записи\n• Напоминания пользователю\n• Историю записей\n• Личный кабинет мастера\n\nБезопасность и позиционирование\nSlotty не заменяет мастера и не вмешивается в услугу. Сервис помогает удобно соединить клиента и специалиста, упростить запись и убрать хаос из переписок. Авторизация может работать через Telegram, Google и другие способы входа, чтобы пользователю было удобно зайти с любого устройства.\n\nЧто сделали в проекте\n• Продумали структуру сервиса для клиентов и мастеров\n• Собрали пользовательский путь от выбора услуги до записи\n• Разработали каталог категорий, услуг и мастеров\n• Сделали личный кабинет мастера\n• Реализовали запись на свободное время\n• Добавили основу для напоминаний и управления заявками\n• Подготовили продукт к развитию в полноценный marketplace\n\nРезультат\nSlotty показывает, как локальный сервис записи может стать полноценным продуктом для мастеров, студий и клиентов. Пользователь быстро находит услугу и записывается, а мастер получает удобный инструмент для управления своим временем, услугами и клиентами.\n",
+      detailsEn: "Format: SaaS / marketplace / online booking service\n\nDomain\n• slotty.of.by/book\n\nStatus\n• Live\n\nGoal\n• Help users quickly find the right master or studio, pick a service, see open time slots and book online — without calls, endless chats or extra steps.\n\nHow it works\n• The user picks a service category: nails, hair, skincare, brows, massage and more.\n• They browse masters, service cards, prices and open slots, then book in the app.\n• The master receives the request and manages schedule, services, profile and clients in a personal dashboard.\n\nWhat the service shows\n• Service and category catalog\n• Master and studio cards\n• Available dates and times\n• Online booking for a service\n• Booking status\n• User reminders\n• Visit history\n• Master dashboard\n\nSafety and positioning\nSlotty does not replace the master or interfere with the service itself. It connects client and specialist, simplifies booking and removes chaos from messaging. Sign-in can work via Telegram, Google and other methods so users can access the product from any device.\n\nWhat we delivered\n• Service structure for clients and masters\n• User journey from service pick to confirmed booking\n• Category, service and master catalog\n• Master personal area\n• Booking for open time slots\n• Foundation for reminders and request management\n• Product groundwork to grow into a full marketplace\n\nOutcome\nSlotty shows how a local booking service can become a full product for masters, studios and clients. Users find a service and book fast; masters get a practical tool to manage time, services and clients.\n",
       domain: SLOTTY_DOMAIN,
-      status: "wip",
+      status: "live",
       tags: ["Marketplace", "Booking", "Beauty", "SaaS", "Mobile App"],
       cover: "/images/project-priew/slotty.png",
+      gallery: SLOTTY_GALLERY,
       outcomes: [
         isRu ? "Онлайн-запись к мастерам без лишних переписок" : "Online booking for masters without endless messaging",
         isRu ? "Каталог услуг, мастеров и свободного времени в одном месте" : "Services, masters and open slots in one place",
@@ -4101,8 +4112,61 @@ function buildProjects(isRu) {
         "Calendar",
         "Notifications"
       ]
+    },
+    // 8) SPLITON — финтех-платформа для музыкальных активов
+    {
+      id: "spliton",
+      title: "Spliton",
+      subtitleRu: "Финтех-платформа для музыкальных активов: каталог релизов, покупка долей, вторичный рынок, кошелёк, выплаты, юридические согласия и админ-панель.",
+      subtitleEn: "Fintech platform for music assets: release catalog, share purchases, secondary market, wallet, payouts, legal consents and admin panel.",
+      detailsRu: "Срок: 8–12 недель\n\nДомен\n• spliton.io/app\n\nСтатус\n• В продакшене\n\nЦель\n• Создать сложную финтех-платформу для инвестирования в музыкальные активы, где пользователь может просматривать каталог релизов, покупать доли, отслеживать баланс, участвовать во вторичном рынке и получать выплаты.\n• Проект требовал не просто интерфейс, а полноценную продуктовую систему: пользовательскую часть, финансовые сценарии, юридические согласия, админку, статусы, роли, безопасность, локализацию и проверку бизнес-логики.\n\nЧто сделали\n• Сформировали продуктовую структуру: публичные страницы, авторизация, личный кабинет, каталог активов, покупка, кошелёк, вывод, вторичный рынок, профиль, согласия, новости, поддержка и админ-панель.\n• Разработали каталог релизов с карточками, финансовыми параметрами, доступностью и переходом к покупке.\n• Реализовали сценарий покупки долей: доступно, недоступно, требуется согласие, ошибка, подтверждение, обработка и результат.\n• Собрали кошелёк и финансовые экраны: баланс, история, депозит, вывод и понятные состояния операций.\n• Разработали вторичный рынок: фильтры, сортировка, статусы, поиск, покупка, продажа, ордера и серверные фильтры.\n• Продумали юридические consent-flow для критических финансовых действий.\n• Создали админ-панель: финансы, новости, документы, реквизиты, статусы, проверки и история изменений.\n• Реализовали модуль юридических документов: версии, активные редакции, статусы и фиксация согласий пользователя.\n• Проработали модуль платёжных реквизитов: пул, предпросмотр, история, мультиязычные тексты и API для депозита.\n• Подключили локализацию RU / EN / ES / PT: статусы, ошибки, кнопки и пустые состояния без жёстко прошитых строк.\n• Улучшили UI/UX финансовых сценариев: confirm → processing → result.\n• Оптимизировали производительность: lazy-блоки, словари, маршруты и поведение в dev/prod.\n• Провели аудит бизнес-логики: покупка, продажа, listing, вывод, согласия, роли, статусы и краевые случаи.\n• Провели техническую стабилизацию: e2e, i18n gate, consent-flow, мобильные слои и throttling.\n\nОсобенности\nSpliton — один из самых объёмных типов проектов: маркетплейс, финансы, личный кабинет, админ-панель, юридическая логика, локализация, вторичный рынок и множество состояний. Главная сложность — связать дизайн, бизнес-логику, роли, API, базу данных, безопасность и реальные сценарии пользователя в одну стабильную систему.\n\nПример сценария\nПользователь заходит на платформу, проходит авторизацию, открывает каталог музыкальных активов, выбирает релиз, смотрит параметры, принимает необходимые юридические условия и покупает доли. После покупки актив появляется в кабинете. Пользователь следит за балансом, историей операций и выплатами, а при необходимости выставляет доли на вторичный рынок. Администратор управляет документами, новостями, реквизитами, статусами и финансовыми разделами через админ-панель.\n",
+      detailsEn: "Timeline: 8–12 weeks\n\nDomain\n• spliton.io/app\n\nStatus\n• Live\n\nGoal\n• Build a fintech platform for investing in music assets: catalog, share purchases, balance tracking, secondary market and payouts.\n• Deliver a full product system — not just UI: user area, finance flows, legal consents, admin, roles, security, i18n and business-logic validation.\n\nWhat we delivered\n• Product structure: public pages, auth, user dashboard, asset catalog, purchase, wallet, withdrawals, secondary market, profile, consents, news, support and admin.\n• Release catalog with cards, financial parameters and purchase paths.\n• Share purchase flow with all critical states and consent gates.\n• Wallet and finance screens with clear operation states.\n• Secondary market with server-side filters, orders and statuses.\n• Legal consent flows for critical financial actions.\n• Admin panel for finance, news, documents, requisites and audits.\n• Legal documents module with versions and user acceptance tracking.\n• Payment requisites module for deposit scenarios.\n• Localization RU / EN / ES / PT across UI and errors.\n• Performance and navigation improvements; e2e and business-logic stabilization.\n\nHighlights\nSpliton combines marketplace, finance, user dashboard, admin, legal logic, i18n and secondary market in one high-complexity product.\n\nExample flow\nA user signs in, browses the catalog, reviews a release, accepts required legal terms, buys shares and tracks balance, payouts and secondary listings. Admins manage documents, news, requisites and platform status.\n",
+      domain: SPLITON_DOMAIN,
+      status: "live",
+      tags: [
+        "FinTech",
+        "Marketplace",
+        "SaaS",
+        "MusicTech",
+        "React",
+        "Next.js",
+        "Node.js",
+        "PostgreSQL",
+        "UI/UX",
+        "Admin Panel",
+        "Compliance"
+      ],
+      cover: "/images/project-priew/spliton.png",
+      gallery: SPLITON_GALLERY,
+      outcomes: [
+        isRu ? "Полноценная финтех-платформа для музыкальных активов" : "Full fintech platform for music assets",
+        isRu ? "Каталог релизов и сценарий покупки долей" : "Release catalog and share purchase flow",
+        isRu ? "Вторичный рынок с фильтрами, ордерами и статусами" : "Secondary market with filters, orders and statuses",
+        isRu ? "Кошелёк, баланс, депозит и вывод средств" : "Wallet, balance, deposit and withdrawal flows",
+        isRu ? "Юридические согласия и админ-панель" : "Legal consents and admin panel",
+        isRu ? "Мультиязычный интерфейс RU / EN / ES / PT" : "Multilingual UI RU / EN / ES / PT",
+        isRu ? "Платформа запущена и доступна в продакшене" : "Platform is live in production"
+      ],
+      stack: [
+        "Next.js",
+        "React",
+        "TypeScript",
+        "Tailwind",
+        "NestJS",
+        "PostgreSQL",
+        "Supabase",
+        "Prisma",
+        "Playwright",
+        "i18n"
+      ]
     }
   ];
+}
+function buildProjects(isRu) {
+  const all = buildAllProjects(isRu);
+  return PUBLIC_PROJECT_IDS.map((id) => all.find((p) => p.id === id)).filter(
+    (p) => Boolean(p)
+  );
 }
 function findProjectBySlug(slug, isRu) {
   if (!slug) return void 0;
@@ -4134,11 +4198,11 @@ const SECTION_LINKS = [
   { to: "/#admin", label: { ru: "Админ-панели", en: "Admin panels" } },
   { to: "/#services", label: { ru: "Тарифы", en: "Pricing" } }
 ];
-const GMAIL_EMAIL_URL$1 = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent("tivoonix@gmail.com")}&su=${encodeURIComponent("Проект (SaaS/MVP)")}`;
+const GMAIL_EMAIL_URL = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent("tivoonix@gmail.com")}&su=${encodeURIComponent("Проект (SaaS/MVP)")}`;
 const CONTACTS = {
   telegram: { href: "https://t.me/TIVONIX", label: "Telegram" },
   instagram: { href: "https://www.instagram.com/tivonix.tech/", label: "Instagram" },
-  email: { href: GMAIL_EMAIL_URL$1, label: "Email" }
+  email: { href: GMAIL_EMAIL_URL, label: "Email" }
 };
 const DOCS = {
   ru: [
@@ -5017,20 +5081,38 @@ const s$1 = (v) => v;
 function projectPreviewSrc(p) {
   return p.cover ?? HERO_IMG;
 }
-function ProjectPreviewFrame({ src }) {
+const PREVIEW_SPECS = {
+  card: { maxH: 240, aspect: 16 / 9 },
+  detail: { maxH: 360, aspect: 16 / 9 },
+  thumb: { maxH: 180, aspect: 3 / 2 },
+  grid: { maxH: 9999, aspect: 16 / 9, fullWidth: true }
+};
+function ProjectPreviewFrame({
+  src,
+  variant = "card"
+}) {
+  const { maxH, aspect, fullWidth } = PREVIEW_SPECS[variant];
   return /* @__PURE__ */ jsx(
     "div",
     {
       className: cx$1(
-        "relative w-full overflow-hidden rounded-2xl",
+        "relative overflow-hidden",
+        fullWidth ? "w-full rounded-xl" : "mx-auto w-full rounded-2xl",
         "border-0 bg-[#0c0c0f]"
       ),
+      style: {
+        aspectRatio: aspect,
+        ...fullWidth ? {} : {
+          maxHeight: maxH,
+          width: `min(100%, calc(${maxH}px * ${aspect}))`
+        }
+      },
       children: /* @__PURE__ */ jsx(
         "img",
         {
           src,
           alt: "",
-          className: "block h-auto w-full align-middle",
+          className: "block h-full w-full object-contain",
           draggable: false,
           loading: "lazy",
           decoding: "async"
@@ -5039,196 +5121,134 @@ function ProjectPreviewFrame({ src }) {
     }
   );
 }
-function DomainPill({
-  href,
-  status = "live",
-  isRu,
-  className
+function ProjectGalleryStrip({
+  images,
+  isRu
 }) {
-  const openLabel = isRu ? "Открыть" : "Open";
-  const wipLabel = isRu ? "В разработке" : "In progress";
-  if (!href || status === "wip") {
-    return /* @__PURE__ */ jsxs(
+  if (!images.length) return null;
+  const label = isRu ? "Скриншоты проекта" : "Project screenshots";
+  return /* @__PURE__ */ jsxs("div", { className: "mt-5", children: [
+    /* @__PURE__ */ jsx("p", { className: "mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/38", children: label }),
+    /* @__PURE__ */ jsx(
       "div",
       {
         className: cx$1(
-          "inline-flex min-h-[44px] w-full items-center justify-center gap-2",
-          "rounded-xl border border-white/[0.08] bg-white/[0.06] px-4",
-          "text-[13px] font-[600] tracking-tight text-white/72",
-          className
+          "flex gap-3 overflow-x-auto pb-1",
+          "snap-x snap-mandatory scroll-smooth",
+          "no-scrollbar"
         ),
-        children: [
-          /* @__PURE__ */ jsx("span", { className: "h-1.5 w-1.5 shrink-0 rounded-full bg-white/40" }),
-          /* @__PURE__ */ jsx("span", { children: wipLabel })
-        ]
+        role: "list",
+        "aria-label": label,
+        children: images.map((src) => /* @__PURE__ */ jsx("div", { role: "listitem", className: "shrink-0 snap-center", children: /* @__PURE__ */ jsx(ProjectPreviewFrame, { src, variant: "thumb" }) }, src))
       }
-    );
+    )
+  ] });
+}
+const HeroWebGLBg$2 = lazy(() => import("./assets/HeroWebGLBg-CnY8eKt4.js"));
+const HEADER_H$1 = 72;
+const ALL_FILTER = "all";
+function collectTags(projects) {
+  const set = /* @__PURE__ */ new Set();
+  for (const p of projects) {
+    for (const tag of p.tags) set.add(tag);
   }
-  const clean = href.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  return Array.from(set).sort((a, b) => a.localeCompare(b));
+}
+function ExternalIcon$1({ className }) {
   return /* @__PURE__ */ jsxs(
-    "a",
+    "svg",
     {
-      href,
-      target: "_blank",
-      rel: "noopener noreferrer",
-      className: cx$1(
-        "group relative flex min-h-[44px] w-full min-w-0 items-center justify-center",
-        "rounded-xl border border-white/[0.08] bg-white/[0.06] px-4 py-2.5 pr-[4.75rem]",
-        "text-white/85 transition hover:border-white/[0.12] hover:bg-white/[0.09]",
-        className
-      ),
-      "aria-label": `${clean} — ${openLabel}`,
-      title: clean,
+      className,
+      width: "12",
+      height: "12",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      "aria-hidden": true,
       children: [
-        /* @__PURE__ */ jsx("span", { className: "min-w-0 max-w-[calc(100%-4.5rem)] truncate text-center text-[13px] font-[600] tracking-tight", children: clean }),
-        /* @__PURE__ */ jsx("span", { className: "pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[12px] font-[500] text-white/50 group-hover:text-white/65", children: openLabel })
+        /* @__PURE__ */ jsx("path", { d: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" }),
+        /* @__PURE__ */ jsx("path", { d: "M15 3h6v6" }),
+        /* @__PURE__ */ jsx("path", { d: "M10 14 21 3" })
       ]
     }
   );
 }
-const HeroWebGLBg$2 = lazy(() => import("./assets/HeroWebGLBg-CnY8eKt4.js"));
-const HEADER_H$1 = 72;
-const GMAIL_EMAIL_URL = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent("tivoonix@gmail.com")}&su=${encodeURIComponent("Проект (SaaS/MVP)")}`;
-function clamp$1(n, a = 0, b = 1) {
-  return Math.max(a, Math.min(b, n));
-}
-function useParallaxCards() {
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const els = Array.from(
-      document.querySelectorAll("[data-parallax]")
-    );
-    if (!els.length) return;
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      const vh = window.innerHeight || 800;
-      for (const el of els) {
-        const r = el.getBoundingClientRect();
-        const mid = r.top + r.height / 2;
-        const p = 1 - clamp$1(mid / vh, 0, 1);
-        const amp = Number(el.dataset.parallaxAmp || 16);
-        const y = (p - 0.5) * amp * -1.1;
-        el.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
-      }
-    };
-    const onScroll = () => {
-      if (raf) return;
-      raf = window.requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      if (raf) window.cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, []);
-}
-function ProjectCard({
-  p,
-  idx,
-  isRu
-}) {
-  const labelProject = isRu ? "Проект" : "Project";
-  const moreLabel = isRu ? "Подробнее" : "Details";
-  const subtitle = isRu ? p.subtitleRu : p.subtitleEn;
+function ProjectGridCard({ p, isRu }) {
   const wip = p.status === "wip";
-  return /* @__PURE__ */ jsx(
-    "div",
-    {
-      "data-parallax": true,
-      "data-parallax-amp": String(14 + idx * 4),
-      className: cx$1(
-        "relative overflow-hidden rounded-[24px]",
-        "border border-white/[0.06] bg-white/[0.04] backdrop-blur-2xl",
-        "will-change-transform"
-      ),
-      children: /* @__PURE__ */ jsxs("div", { className: "relative z-10 flex flex-col gap-8 p-6 sm:p-8", children: [
-        /* @__PURE__ */ jsx(ProjectPreviewFrame, { src: projectPreviewSrc(p) }),
-        /* @__PURE__ */ jsxs("div", { className: "grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(200px,240px)] lg:items-start lg:gap-x-12", children: [
-          /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-            /* @__PURE__ */ jsx("p", { className: "text-[10px] font-semibold uppercase tracking-[0.22em] text-white/38", children: labelProject }),
-            /* @__PURE__ */ jsxs("div", { className: "mt-3 flex flex-wrap items-center gap-x-3 gap-y-2", children: [
-              /* @__PURE__ */ jsx("h2", { className: "text-[1.375rem] sm:text-[1.625rem] font-[780] tracking-[-0.03em] text-white/[0.94] leading-[1.12]", children: p.title }),
-              wip ? /* @__PURE__ */ jsx(
-                "span",
-                {
-                  className: cx$1(
-                    "inline-flex items-center rounded-md border border-white/[0.08] bg-white/[0.05]",
-                    "px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white/48"
-                  ),
-                  children: "WIP"
-                }
-              ) : null
-            ] }),
-            /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-[60ch] text-[14px] sm:text-[15px] font-[450] leading-[1.62] text-white/[0.58]", children: subtitle })
-          ] }),
-          /* @__PURE__ */ jsxs("div", { className: "flex w-full flex-col gap-2.5 lg:shrink-0", children: [
-            /* @__PURE__ */ jsx(DomainPill, { href: p.domain, status: p.status ?? "live", isRu }),
-            /* @__PURE__ */ jsx(
-              Link,
-              {
-                to: `/projects/${p.id}`,
-                className: cx$1(
-                  "flex h-11 w-full items-center justify-center rounded-xl px-5",
-                  "border-0 bg-[#FF9A3D] text-[13px] font-[650] text-black",
-                  "transition-colors hover:bg-[#FFAC5C] active:bg-[#F08A2E]",
-                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/55"
-                ),
-                "aria-label": isRu ? `Подробнее о проекте ${p.title}` : `More details about ${p.title}`,
-                children: moreLabel
-              }
-            )
-          ] })
-        ] }),
-        /* @__PURE__ */ jsx("div", { className: "border-t border-white/[0.06] pt-6", children: /* @__PURE__ */ jsx("ul", { className: "flex list-none flex-wrap gap-x-2 gap-y-2 p-0", role: "list", children: p.tags.map((tag) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(
-          "span",
+  const domainClean = p.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  return /* @__PURE__ */ jsxs("article", { className: "group min-w-0", children: [
+    /* @__PURE__ */ jsx(
+      Link,
+      {
+        to: `/projects/${p.id}`,
+        className: "block min-w-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/50 rounded-xl",
+        "aria-label": isRu ? `Кейс ${p.title}` : `Case study ${p.title}`,
+        children: /* @__PURE__ */ jsx(
+          "div",
           {
             className: cx$1(
-              "inline-flex items-center rounded-md border border-white/[0.06] bg-white/[0.05]",
-              "px-2.5 py-1 text-[11px] font-[550] tracking-wide text-white/[0.68]"
+              "overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.03]",
+              "transition duration-300 group-hover:border-white/[0.14] group-hover:bg-white/[0.05]"
             ),
-            children: tag
+            children: /* @__PURE__ */ jsx(ProjectPreviewFrame, { src: projectPreviewSrc(p), variant: "grid" })
           }
-        ) }, tag)) }) })
-      ] })
-    }
-  );
-}
-function MoreCard({ isRu }) {
-  const soonLabel = isRu ? "Дальше" : "Next";
-  const title = isRu ? "Дальше — больше" : "More coming soon";
-  const body = isRu ? "Добавим новые кейсы и продукты. Сейчас показываем живые домены + то, что в активной разработке." : "We’ll add more case studies and products. For now we show live domains + what’s in active development.";
-  return /* @__PURE__ */ jsx(
-    "div",
-    {
-      className: cx$1(
-        "relative overflow-hidden rounded-[24px]",
-        "border border-white/[0.06] bg-white/[0.04] backdrop-blur-2xl"
-      ),
-      children: /* @__PURE__ */ jsxs("div", { className: "p-6 sm:p-8", children: [
-        /* @__PURE__ */ jsx("div", { className: "text-[10px] font-semibold uppercase tracking-[0.22em] text-white/38", children: soonLabel }),
-        /* @__PURE__ */ jsx("div", { className: "mt-3 text-[1.375rem] sm:text-[1.625rem] font-[780] tracking-[-0.03em] text-white/[0.94] leading-[1.12]", children: title }),
-        /* @__PURE__ */ jsx("div", { className: "mt-4 max-w-[60ch] text-[14px] sm:text-[15px] leading-[1.62] text-white/[0.58]", children: body })
-      ] })
-    }
-  );
+        )
+      }
+    ),
+    /* @__PURE__ */ jsxs("div", { className: "mt-3 flex items-start justify-between gap-3", children: [
+      /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+        /* @__PURE__ */ jsx(
+          Link,
+          {
+            to: `/projects/${p.id}`,
+            className: "block min-w-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/50 rounded",
+            children: /* @__PURE__ */ jsx("h2", { className: "truncate text-[15px] font-[700] tracking-[-0.02em] text-white/[0.92] transition group-hover:text-white", children: p.title })
+          }
+        ),
+        domainClean && !wip ? /* @__PURE__ */ jsx("p", { className: "mt-0.5 truncate text-[12px] text-white/42", children: domainClean }) : /* @__PURE__ */ jsx("p", { className: "mt-0.5 text-[12px] text-white/38", children: isRu ? "В разработке" : "In progress" })
+      ] }),
+      wip ? /* @__PURE__ */ jsx("span", { className: "shrink-0 rounded-md border border-white/[0.08] bg-white/[0.05] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-white/45", children: "WIP" }) : p.domain ? /* @__PURE__ */ jsx(
+        "a",
+        {
+          href: p.domain,
+          target: "_blank",
+          rel: "noopener noreferrer",
+          className: cx$1(
+            "shrink-0 inline-flex items-center gap-1 rounded-md border border-white/[0.08]",
+            "bg-white/[0.04] px-2 py-1 text-[11px] font-[600] text-white/55",
+            "transition hover:border-white/[0.14] hover:text-white/80"
+          ),
+          "aria-label": isRu ? `Открыть ${p.title}` : `Open ${p.title}`,
+          children: /* @__PURE__ */ jsx(ExternalIcon$1, { className: "opacity-70" })
+        }
+      ) : null
+    ] })
+  ] });
 }
 function ProjectsPage() {
-  useParallaxCards();
   const { lang } = useLang();
   const isRu = lang === "ru";
   const [mounted, setMounted] = useState(false);
+  const [activeFilter, setActiveFilter] = useState(ALL_FILTER);
   useEffect(() => {
     setMounted(true);
   }, []);
   const projects = useMemo(() => buildProjects(isRu), [isRu]);
-  const gmailLabel = "Gmail";
-  const tgLabel = "Telegram";
+  const tags = useMemo(() => collectTags(projects), [projects]);
+  const filtered = useMemo(() => {
+    if (activeFilter === ALL_FILTER) return projects;
+    return projects.filter((p) => p.tags.includes(activeFilter));
+  }, [projects, activeFilter]);
   const seoTitle = isRu ? "Проекты и кейсы TIVONIX — сайты, веб-сервисы и MVP" : "TIVONIX projects and case studies — websites, web services and MVP";
   const seoDescription = isRu ? "Посмотрите проекты TIVONIX: лендинги, веб-сервисы, личные кабинеты, админки, MVP и Telegram-интеграции для бизнеса." : "Explore TIVONIX projects: landings, web services, client areas, admin panels, MVPs and Telegram integrations for business.";
+  const heroTitle = isRu ? "Проекты и кейсы" : "Projects and case studies";
+  const heroSubtitle = isRu ? `Подборка из ${projects.length} продуктов TIVONIX: живые домены, MVP, веб-сервисы и Telegram-боты — с разбором задач, стека и результата.` : `A curated set of ${projects.length} TIVONIX products: live domains, MVPs, web services and Telegram bots — with tasks, stack and outcomes.`;
+  const allLabel = isRu ? "Все" : "All";
+  const ctaLabel = isRu ? "Обсудить проект" : "Discuss a project";
+  const emptyLabel = isRu ? "Пока нет проектов в этой категории." : "No projects in this category yet.";
   return /* @__PURE__ */ jsxs("div", { className: "relative min-h-screen", style: s$1({ "--headerH": `${HEADER_H$1}px` }), children: [
     /* @__PURE__ */ jsx(
       SEO,
@@ -5242,61 +5262,73 @@ function ProjectsPage() {
     /* @__PURE__ */ jsx(Header, {}),
     /* @__PURE__ */ jsxs("div", { className: "pointer-events-none fixed inset-0 -z-10", "aria-hidden": true, children: [
       /* @__PURE__ */ jsx("div", { className: "absolute inset-0 overflow-hidden bg-black", children: /* @__PURE__ */ jsx("div", { className: "absolute inset-0 h-full w-full scale-[1.03] will-change-transform", children: mounted ? /* @__PURE__ */ jsx(Suspense, { fallback: null, children: /* @__PURE__ */ jsx(HeroWebGLBg$2, {}) }) : null }) }),
-      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.55),rgba(0,0,0,0.92))]" }),
-      /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.62),rgba(0,0,0,0.94))]" })
+    ] }),
+    /* @__PURE__ */ jsx(Section, { className: "pt-[calc(var(--headerH)+28px)] sm:pt-[calc(var(--headerH)+36px)] pb-20", children: /* @__PURE__ */ jsxs(Container, { className: "max-w-[1180px]", children: [
+      /* @__PURE__ */ jsxs("header", { className: "mx-auto max-w-[720px] text-center", children: [
+        /* @__PURE__ */ jsx("h1", { className: "text-[clamp(2rem,5vw,3.25rem)] font-[800] tracking-[-0.04em] text-white leading-[1.05]", children: heroTitle }),
+        /* @__PURE__ */ jsx("p", { className: "mx-auto mt-4 max-w-[58ch] text-[15px] sm:text-[16px] leading-[1.65] text-white/52", children: heroSubtitle }),
+        /* @__PURE__ */ jsx(
+          "a",
+          {
+            href: "https://t.me/TIVONIX",
+            target: "_blank",
+            rel: "noopener noreferrer",
+            className: cx$1(
+              "mt-7 inline-flex h-11 items-center justify-center rounded-full px-6",
+              "text-[14px] font-[750] text-black",
+              "bg-[linear-gradient(180deg,#FFD7B0_0%,#FF9A3D_52%,#FF6A1A_100%)]",
+              "hover:brightness-105 transition"
+            ),
+            children: ctaLabel
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs(
         "div",
         {
-          className: "absolute inset-0",
-          style: s$1({
-            background: "radial-gradient(1200px 650px at 18% 12%, rgba(255,154,61,0.18), transparent 60%),radial-gradient(900px 520px at 85% 20%, rgba(255,106,26,0.14), transparent 62%)"
-          })
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsx(Section, { className: "pt-[calc(var(--headerH)+20px)] sm:pt-[calc(var(--headerH)+28px)] pb-16", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs("div", { className: "grid gap-8 lg:grid-cols-[380px_1fr] lg:gap-10", children: [
-      /* @__PURE__ */ jsx("div", { className: "lg:sticky lg:top-[calc(var(--headerH)+14px)] lg:self-start", children: /* @__PURE__ */ jsxs("div", { className: "max-w-[520px]", children: [
-        /* @__PURE__ */ jsxs("h1", { className: "mt-7 text-[34px] sm:text-[48px] font-[800] tracking-[-0.03em] text-white leading-[1.05]", children: [
-          isRu ? "Проекты " : "Projects ",
-          /* @__PURE__ */ jsx("span", { className: "bg-[linear-gradient(90deg,#FFD7B0,#FF9A3D,#FF6A1A)] bg-clip-text text-transparent", children: "TIVONIX" })
-        ] }),
-        /* @__PURE__ */ jsxs("div", { className: "mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3", children: [
-          /* @__PURE__ */ jsx(
-            "a",
-            {
-              href: GMAIL_EMAIL_URL,
-              target: "_blank",
-              rel: "noopener noreferrer",
-              className: cx$1(
-                "inline-flex h-11 items-center justify-center rounded-2xl px-6",
-                "border-0 bg-white/[0.10] backdrop-blur",
-                "text-[14px] font-[650] text-white/85 hover:bg-white/[0.14] transition whitespace-nowrap"
-              ),
-              children: gmailLabel
-            }
+          className: cx$1(
+            "flex gap-2 overflow-x-auto pb-1 no-scrollbar",
+            "justify-start sm:flex-wrap sm:justify-center"
           ),
-          /* @__PURE__ */ jsx(
-            "a",
-            {
-              href: "https://t.me/TIVONIX",
-              target: "_blank",
-              rel: "noopener noreferrer",
-              className: cx$1(
-                "inline-flex h-11 items-center justify-center rounded-2xl px-6",
-                "text-[14px] font-[750] text-black whitespace-nowrap",
-                "bg-[linear-gradient(180deg,#FFD7B0_0%,#FF9A3D_52%,#FF6A1A_100%)]",
-                "shadow-[0_18px_55px_rgba(255,122,0,0.18)] hover:brightness-105 transition"
-              ),
-              children: tgLabel
-            }
-          )
-        ] })
-      ] }) }),
-      /* @__PURE__ */ jsxs("div", { className: "grid gap-6", children: [
-        projects.map((p, idx) => /* @__PURE__ */ jsx(ProjectCard, { p, idx, isRu }, p.id)),
-        /* @__PURE__ */ jsx(MoreCard, { isRu }),
-        /* @__PURE__ */ jsx("div", { id: "contact", className: "pt-2" })
-      ] })
-    ] }) }) })
+          role: "tablist",
+          "aria-label": isRu ? "Фильтр проектов" : "Project filter",
+          children: [
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                role: "tab",
+                "aria-selected": activeFilter === ALL_FILTER,
+                onClick: () => setActiveFilter(ALL_FILTER),
+                className: cx$1(
+                  "shrink-0 rounded-full border px-4 py-2 text-[13px] font-[600] transition",
+                  activeFilter === ALL_FILTER ? "border-white/[0.22] bg-white/[0.1] text-white" : "border-white/[0.1] bg-transparent text-white/55 hover:border-white/[0.16] hover:text-white/78"
+                ),
+                children: allLabel
+              }
+            ),
+            tags.map((tag) => /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                role: "tab",
+                "aria-selected": activeFilter === tag,
+                onClick: () => setActiveFilter(tag),
+                className: cx$1(
+                  "shrink-0 rounded-full border px-4 py-2 text-[13px] font-[600] transition",
+                  activeFilter === tag ? "border-white/[0.22] bg-white/[0.1] text-white" : "border-white/[0.1] bg-transparent text-white/55 hover:border-white/[0.16] hover:text-white/78"
+                ),
+                children: tag
+              },
+              tag
+            ))
+          ]
+        }
+      ) }),
+      filtered.length ? /* @__PURE__ */ jsx("div", { className: "mt-10 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3", children: filtered.map((p) => /* @__PURE__ */ jsx(ProjectGridCard, { p, isRu }, p.id)) }) : /* @__PURE__ */ jsx("p", { className: "mt-12 text-center text-[15px] text-white/45", children: emptyLabel }),
+      /* @__PURE__ */ jsx("p", { className: "mt-14 text-center text-[13px] text-white/35", children: isRu ? "Новые кейсы добавляем по мере запуска продуктов." : "We add new case studies as products go live." })
+    ] }) })
   ] });
 }
 const HEADER_H = 72;
@@ -5493,7 +5525,10 @@ function ProjectDetailPage() {
           /* @__PURE__ */ jsx("p", { className: "text-[13px] font-semibold tracking-tight text-white/80", children: pageEyebrow })
         ] }),
         /* @__PURE__ */ jsxs("div", { className: "mt-8 grid grid-cols-1 items-start gap-8 lg:mt-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(260px,400px)] lg:gap-10 xl:grid-cols-[minmax(0,1.25fr)_420px] xl:gap-12", children: [
-          /* @__PURE__ */ jsx("div", { className: "order-2 min-w-0 lg:order-1", children: /* @__PURE__ */ jsx(ProjectPreviewFrame, { src: projectPreviewSrc(project) }) }),
+          /* @__PURE__ */ jsxs("div", { className: "order-2 min-w-0 lg:order-1", children: [
+            /* @__PURE__ */ jsx(ProjectPreviewFrame, { src: projectPreviewSrc(project), variant: "detail" }),
+            project.gallery?.length ? /* @__PURE__ */ jsx(ProjectGalleryStrip, { images: project.gallery, isRu }) : null
+          ] }),
           /* @__PURE__ */ jsxs("div", { className: "order-1 min-w-0 space-y-8 lg:order-2 lg:pt-1", children: [
             /* @__PURE__ */ jsxs("header", { className: "space-y-3", children: [
               /* @__PURE__ */ jsx("h1", { className: "text-[clamp(1.6rem,3.2vw,2.1rem)] font-[800] tracking-[-0.03em] text-white leading-[1.1]", children: project.title }),

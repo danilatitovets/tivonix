@@ -16,6 +16,8 @@ export type Project = {
   domain?: string;
   tags: string[];
   cover?: string;
+  /** Горизонтальная лента скриншотов на странице кейса */
+  gallery?: string[];
   status?: ProjectStatus;
   outcomes?: string[];
   stack?: string[];
@@ -28,9 +30,22 @@ const LABELOS_DOMAIN = "https://labelos.digital/";
 const HEADMIND_DOMAIN = "https://headmind.ru/";
 const LOGOVO_DOMAIN = "https://logovo24.by/";
 const GIFTSNIPER_DOMAIN = "https://t.me/GiftSniperTonBot";
-const SLOTTY_DOMAIN = "https://slotty.of.by/";
+const SLOTTY_DOMAIN = "https://slotty.of.by/book";
+const SPLITON_DOMAIN = "https://spliton.io/app";
 
-export function buildProjects(isRu: boolean): Project[] {
+/** Публичные кейсы на /projects (остальные скрыты, но остаются в каталоге) */
+export const PUBLIC_PROJECT_IDS = [
+  "headmind",
+  "logovo",
+  "giftsniper",
+  "slotty",
+  "spliton",
+] as const;
+
+const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/r${i + 1}.png`);
+const SPLITON_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/spliton/g${i + 1}.png`);
+
+function buildAllProjects(isRu: boolean): Project[] {
   return [
       // 1) LABEL0S — 3 days
       {
@@ -241,7 +256,7 @@ export function buildProjects(isRu: boolean): Project[] {
         domain: HEADMIND_DOMAIN,
         status: "live",
         tags: ["B2B", "Website", "UI/UX", "Structure", "Conversion"],
-        cover: "/images/project-priew/headmid.jpg",
+        cover: "/images/project-priew/headmind.png",
         outcomes: [
           isRu ? "Понятная упаковка услуг и подхода" : "Clear services & approach packaging",
           isRu ? "Усиление доверия через команду и структуру" : "Stronger trust via team + structure",
@@ -308,7 +323,7 @@ export function buildProjects(isRu: boolean): Project[] {
           "Framer Motion",
           "Automotive",
         ],
-        cover: "/images/project-priew/logovvo.jpg",
+        cover: "/images/project-priew/logovo.png",
         outcomes: [
           isRu ? "Сделано за 12 дней" : "Delivered in 12 days",
           isRu
@@ -394,7 +409,7 @@ export function buildProjects(isRu: boolean): Project[] {
         domain: GIFTSNIPER_DOMAIN,
         status: "live",
         tags: ["Telegram Bot", "TON", "NFT", "Analytics", "Market Data"],
-        cover: "/images/project-priew/gift.jpg",
+        cover: "/images/project-priew/giftsniper.png",
         outcomes: [
           isRu
             ? "Оценка NFT и Gifts по данным рынка в одном окне"
@@ -420,9 +435,9 @@ export function buildProjects(isRu: boolean): Project[] {
         detailsRu:
           "Формат: SaaS / marketplace / сервис онлайн-записи\n\n" +
           "Домен\n" +
-          "• slotty.of.by\n\n" +
+          "• slotty.of.by/book\n\n" +
           "Статус\n" +
-          "• В разработке / MVP\n\n" +
+          "• В продакшене\n\n" +
           "Цель\n" +
           "• Помочь пользователю быстро найти подходящего мастера или студию, выбрать услугу, увидеть свободное время и записаться онлайн без звонков, переписок и лишних шагов.\n\n" +
           "Как это работает\n" +
@@ -453,9 +468,9 @@ export function buildProjects(isRu: boolean): Project[] {
         detailsEn:
           "Format: SaaS / marketplace / online booking service\n\n" +
           "Domain\n" +
-          "• slotty.of.by\n\n" +
+          "• slotty.of.by/book\n\n" +
           "Status\n" +
-          "• In development / MVP\n\n" +
+          "• Live\n\n" +
           "Goal\n" +
           "• Help users quickly find the right master or studio, pick a service, see open time slots and book online — without calls, endless chats or extra steps.\n\n" +
           "How it works\n" +
@@ -484,9 +499,10 @@ export function buildProjects(isRu: boolean): Project[] {
           "Outcome\n" +
           "Slotty shows how a local booking service can become a full product for masters, studios and clients. Users find a service and book fast; masters get a practical tool to manage time, services and clients.\n",
         domain: SLOTTY_DOMAIN,
-        status: "wip",
+        status: "live",
         tags: ["Marketplace", "Booking", "Beauty", "SaaS", "Mobile App"],
         cover: "/images/project-priew/slotty.png",
+        gallery: SLOTTY_GALLERY,
         outcomes: [
           isRu
             ? "Онлайн-запись к мастерам без лишних переписок"
@@ -512,7 +528,129 @@ export function buildProjects(isRu: boolean): Project[] {
           "Notifications",
         ],
       },
+
+      // 8) SPLITON — финтех-платформа для музыкальных активов
+      {
+        id: "spliton",
+        title: "Spliton",
+        subtitleRu:
+          "Финтех-платформа для музыкальных активов: каталог релизов, покупка долей, вторичный рынок, кошелёк, выплаты, юридические согласия и админ-панель.",
+        subtitleEn:
+          "Fintech platform for music assets: release catalog, share purchases, secondary market, wallet, payouts, legal consents and admin panel.",
+        detailsRu:
+          "Срок: 8–12 недель\n\n" +
+          "Домен\n" +
+          "• spliton.io/app\n\n" +
+          "Статус\n" +
+          "• В продакшене\n\n" +
+          "Цель\n" +
+          "• Создать сложную финтех-платформу для инвестирования в музыкальные активы, где пользователь может просматривать каталог релизов, покупать доли, отслеживать баланс, участвовать во вторичном рынке и получать выплаты.\n" +
+          "• Проект требовал не просто интерфейс, а полноценную продуктовую систему: пользовательскую часть, финансовые сценарии, юридические согласия, админку, статусы, роли, безопасность, локализацию и проверку бизнес-логики.\n\n" +
+          "Что сделали\n" +
+          "• Сформировали продуктовую структуру: публичные страницы, авторизация, личный кабинет, каталог активов, покупка, кошелёк, вывод, вторичный рынок, профиль, согласия, новости, поддержка и админ-панель.\n" +
+          "• Разработали каталог релизов с карточками, финансовыми параметрами, доступностью и переходом к покупке.\n" +
+          "• Реализовали сценарий покупки долей: доступно, недоступно, требуется согласие, ошибка, подтверждение, обработка и результат.\n" +
+          "• Собрали кошелёк и финансовые экраны: баланс, история, депозит, вывод и понятные состояния операций.\n" +
+          "• Разработали вторичный рынок: фильтры, сортировка, статусы, поиск, покупка, продажа, ордера и серверные фильтры.\n" +
+          "• Продумали юридические consent-flow для критических финансовых действий.\n" +
+          "• Создали админ-панель: финансы, новости, документы, реквизиты, статусы, проверки и история изменений.\n" +
+          "• Реализовали модуль юридических документов: версии, активные редакции, статусы и фиксация согласий пользователя.\n" +
+          "• Проработали модуль платёжных реквизитов: пул, предпросмотр, история, мультиязычные тексты и API для депозита.\n" +
+          "• Подключили локализацию RU / EN / ES / PT: статусы, ошибки, кнопки и пустые состояния без жёстко прошитых строк.\n" +
+          "• Улучшили UI/UX финансовых сценариев: confirm → processing → result.\n" +
+          "• Оптимизировали производительность: lazy-блоки, словари, маршруты и поведение в dev/prod.\n" +
+          "• Провели аудит бизнес-логики: покупка, продажа, listing, вывод, согласия, роли, статусы и краевые случаи.\n" +
+          "• Провели техническую стабилизацию: e2e, i18n gate, consent-flow, мобильные слои и throttling.\n\n" +
+          "Особенности\n" +
+          "Spliton — один из самых объёмных типов проектов: маркетплейс, финансы, личный кабинет, админ-панель, юридическая логика, локализация, вторичный рынок и множество состояний. Главная сложность — связать дизайн, бизнес-логику, роли, API, базу данных, безопасность и реальные сценарии пользователя в одну стабильную систему.\n\n" +
+          "Пример сценария\n" +
+          "Пользователь заходит на платформу, проходит авторизацию, открывает каталог музыкальных активов, выбирает релиз, смотрит параметры, принимает необходимые юридические условия и покупает доли. После покупки актив появляется в кабинете. Пользователь следит за балансом, историей операций и выплатами, а при необходимости выставляет доли на вторичный рынок. Администратор управляет документами, новостями, реквизитами, статусами и финансовыми разделами через админ-панель.\n",
+        detailsEn:
+          "Timeline: 8–12 weeks\n\n" +
+          "Domain\n" +
+          "• spliton.io/app\n\n" +
+          "Status\n" +
+          "• Live\n\n" +
+          "Goal\n" +
+          "• Build a fintech platform for investing in music assets: catalog, share purchases, balance tracking, secondary market and payouts.\n" +
+          "• Deliver a full product system — not just UI: user area, finance flows, legal consents, admin, roles, security, i18n and business-logic validation.\n\n" +
+          "What we delivered\n" +
+          "• Product structure: public pages, auth, user dashboard, asset catalog, purchase, wallet, withdrawals, secondary market, profile, consents, news, support and admin.\n" +
+          "• Release catalog with cards, financial parameters and purchase paths.\n" +
+          "• Share purchase flow with all critical states and consent gates.\n" +
+          "• Wallet and finance screens with clear operation states.\n" +
+          "• Secondary market with server-side filters, orders and statuses.\n" +
+          "• Legal consent flows for critical financial actions.\n" +
+          "• Admin panel for finance, news, documents, requisites and audits.\n" +
+          "• Legal documents module with versions and user acceptance tracking.\n" +
+          "• Payment requisites module for deposit scenarios.\n" +
+          "• Localization RU / EN / ES / PT across UI and errors.\n" +
+          "• Performance and navigation improvements; e2e and business-logic stabilization.\n\n" +
+          "Highlights\n" +
+          "Spliton combines marketplace, finance, user dashboard, admin, legal logic, i18n and secondary market in one high-complexity product.\n\n" +
+          "Example flow\n" +
+          "A user signs in, browses the catalog, reviews a release, accepts required legal terms, buys shares and tracks balance, payouts and secondary listings. Admins manage documents, news, requisites and platform status.\n",
+        domain: SPLITON_DOMAIN,
+        status: "live",
+        tags: [
+          "FinTech",
+          "Marketplace",
+          "SaaS",
+          "MusicTech",
+          "React",
+          "Next.js",
+          "Node.js",
+          "PostgreSQL",
+          "UI/UX",
+          "Admin Panel",
+          "Compliance",
+        ],
+        cover: "/images/project-priew/spliton.png",
+        gallery: SPLITON_GALLERY,
+        outcomes: [
+          isRu
+            ? "Полноценная финтех-платформа для музыкальных активов"
+            : "Full fintech platform for music assets",
+          isRu
+            ? "Каталог релизов и сценарий покупки долей"
+            : "Release catalog and share purchase flow",
+          isRu
+            ? "Вторичный рынок с фильтрами, ордерами и статусами"
+            : "Secondary market with filters, orders and statuses",
+          isRu
+            ? "Кошелёк, баланс, депозит и вывод средств"
+            : "Wallet, balance, deposit and withdrawal flows",
+          isRu
+            ? "Юридические согласия и админ-панель"
+            : "Legal consents and admin panel",
+          isRu
+            ? "Мультиязычный интерфейс RU / EN / ES / PT"
+            : "Multilingual UI RU / EN / ES / PT",
+          isRu
+            ? "Платформа запущена и доступна в продакшене"
+            : "Platform is live in production",
+        ],
+        stack: [
+          "Next.js",
+          "React",
+          "TypeScript",
+          "Tailwind",
+          "NestJS",
+          "PostgreSQL",
+          "Supabase",
+          "Prisma",
+          "Playwright",
+          "i18n",
+        ],
+      },
   ];
+}
+
+export function buildProjects(isRu: boolean): Project[] {
+  const all = buildAllProjects(isRu);
+  return PUBLIC_PROJECT_IDS.map((id) => all.find((p) => p.id === id)).filter(
+    (p): p is Project => Boolean(p)
+  );
 }
 
 export function findProjectBySlug(slug: string | undefined, isRu: boolean): Project | undefined {

@@ -15,23 +15,84 @@ export function projectPreviewSrc(p: Project) {
   return p.cover ?? HERO_IMG;
 }
 
-/** Превью проекта: без белой обводки, скрин на всю ширину блока, высота по пропорциям картинки. */
-export function ProjectPreviewFrame({ src }: { src: string }) {
+type PreviewVariant = "card" | "detail" | "thumb" | "grid";
+
+const PREVIEW_SPECS: Record<PreviewVariant, { maxH: number; aspect: number; fullWidth?: boolean }> = {
+  card: { maxH: 240, aspect: 16 / 9 },
+  detail: { maxH: 360, aspect: 16 / 9 },
+  thumb: { maxH: 180, aspect: 3 / 2 },
+  grid: { maxH: 9999, aspect: 16 / 9, fullWidth: true },
+};
+
+/** Превью: целиком в кадре, без обрезки и без полос по бокам внутри рамки. */
+export function ProjectPreviewFrame({
+  src,
+  variant = "card",
+}: {
+  src: string;
+  variant?: PreviewVariant;
+}) {
+  const { maxH, aspect, fullWidth } = PREVIEW_SPECS[variant];
+
   return (
     <div
       className={cx(
-        "relative w-full overflow-hidden rounded-2xl",
+        "relative overflow-hidden",
+        fullWidth ? "w-full rounded-xl" : "mx-auto w-full rounded-2xl",
         "border-0 bg-[#0c0c0f]"
       )}
+      style={{
+        aspectRatio: aspect,
+        ...(fullWidth
+          ? {}
+          : {
+              maxHeight: maxH,
+              width: `min(100%, calc(${maxH}px * ${aspect}))`,
+            }),
+      }}
     >
       <img
         src={src}
         alt=""
-        className="block h-auto w-full align-middle"
+        className="block h-full w-full object-contain"
         draggable={false}
         loading="lazy"
         decoding="async"
       />
+    </div>
+  );
+}
+
+/** Горизонтальная лента скриншотов (скроллбар) на странице кейса */
+export function ProjectGalleryStrip({
+  images,
+  isRu,
+}: {
+  images: string[];
+  isRu: boolean;
+}) {
+  if (!images.length) return null;
+
+  const label = isRu ? "Скриншоты проекта" : "Project screenshots";
+
+  return (
+    <div className="mt-5">
+      <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/38">{label}</p>
+      <div
+        className={cx(
+          "flex gap-3 overflow-x-auto pb-1",
+          "snap-x snap-mandatory scroll-smooth",
+          "no-scrollbar"
+        )}
+        role="list"
+        aria-label={label}
+      >
+        {images.map((src) => (
+          <div key={src} role="listitem" className="shrink-0 snap-center">
+            <ProjectPreviewFrame src={src} variant="thumb" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

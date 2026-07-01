@@ -14,13 +14,11 @@ const routes = [
   "/avtomatizaciya-biznesa",
   "/projects",
   "/contacts",
-  "/projects/labelos",
-  "/projects/upc",
-  "/projects/payclip",
   "/projects/headmind",
   "/projects/logovo",
   "/projects/giftsniper",
   "/projects/slotty",
+  "/projects/spliton",
 ];
 
 function outputFileForRoute(route) {

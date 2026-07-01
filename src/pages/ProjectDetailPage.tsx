@@ -8,7 +8,7 @@ import Header from "../components/landing/Header";
 import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
 import { findProjectBySlug } from "../data/projectsCatalog";
-import { cx, projectPreviewSrc, ProjectPreviewFrame, s } from "./projectBlocks";
+import { cx, projectPreviewSrc, ProjectPreviewFrame, ProjectGalleryStrip, s } from "./projectBlocks";
 
 const HEADER_H = 72;
 
@@ -231,7 +231,10 @@ export default function ProjectDetailPage() {
 
             <div className="mt-8 grid grid-cols-1 items-start gap-8 lg:mt-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(260px,400px)] lg:gap-10 xl:grid-cols-[minmax(0,1.25fr)_420px] xl:gap-12">
               <div className="order-2 min-w-0 lg:order-1">
-                <ProjectPreviewFrame src={projectPreviewSrc(project)} />
+                <ProjectPreviewFrame src={projectPreviewSrc(project)} variant="detail" />
+                {project.gallery?.length ? (
+                  <ProjectGalleryStrip images={project.gallery} isRu={isRu} />
+                ) : null}
               </div>
 
               <div className="order-1 min-w-0 space-y-8 lg:order-2 lg:pt-1">

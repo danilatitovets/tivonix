@@ -7,13 +7,11 @@ const requiredHtmlFiles = [
   "dist/contacts/index.html",
   "dist/sozdanie-sajtov/index.html",
   "dist/avtomatizaciya-biznesa/index.html",
-  "dist/projects/labelos/index.html",
-  "dist/projects/upc/index.html",
-  "dist/projects/payclip/index.html",
   "dist/projects/headmind/index.html",
   "dist/projects/logovo/index.html",
   "dist/projects/giftsniper/index.html",
   "dist/projects/slotty/index.html",
+  "dist/projects/spliton/index.html",
 ];
 
 const checks = [
@@ -42,7 +40,16 @@ const checks = [
   },
   {
     file: "dist/projects/index.html",
-    phrases: ["Проекты", "LabelOS", "UPC", "PayClip", "Headmind", "LOGOVO", "GiftSniper", "Slotty"],
+    phrases: ["Проекты", "Headmind", "LOGOVO", "GiftSniper", "Slotty", "Spliton"],
+  },
+  {
+    file: "dist/projects/spliton/index.html",
+    phrases: [
+      "Spliton",
+      "музыкальных активов",
+      "https://www.tivonix.tech/projects/spliton",
+      "spliton.io",
+    ],
   },
   {
     file: "dist/projects/slotty/index.html",
