@@ -1,12 +1,11 @@
-import { Suspense, lazy, useEffect, useMemo, useState } from "react";
+﻿import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Section from "../ui/Section";
 import Container from "../ui/Container";
-import { useLang, type Lang } from "../../i18n/LangProvider";
-import { TG_BOT_URL } from "../../constants/links";
+import { useLang } from "../../i18n/LangProvider";
+import { TG_BOT_URL, TG_CHANNEL_URL } from "../../constants/links";
 
 const HERO_BG_IMG = "/images/hero1.png"; // mobile hero image
-const CONTACT_EMAIL = "tivoonix@gmail.com";
 const HeroWebGLBg = lazy(() => import("./HeroWebGLBg"));
 
 function cx(...a: Array<string | false | null | undefined>) {
@@ -304,47 +303,9 @@ const HERO_STYLES = `
   }
 `;
 
-function buildMailBody(lang: Lang) {
-  if (lang === "ru") {
-    return (
-      "Здравствуйте!\n\n" +
-      "Хочу получить оценку разработки.\n\n" +
-      "1) Что нужно сделать (1–2 предложения):\n- \n\n" +
-      "2) Ключевые функции:\n- \n- \n- \n\n" +
-      "3) Есть ли дизайн/ТЗ/прототип:\n- \n\n" +
-      "4) Сроки / бюджет (если есть):\n- \n\n" +
-      "Контакты для связи:\n- \n\n" +
-      "Спасибо!"
-    );
-  }
-
-  return (
-    "Hi!\n\n" +
-    "I'd like to get an estimate.\n\n" +
-    "1) What we’re building (1–2 sentences):\n- \n\n" +
-    "2) Key features:\n- \n- \n- \n\n" +
-    "3) Do you have design/spec/prototype:\n- \n\n" +
-    "4) Timeline / budget (if any):\n- \n\n" +
-    "Contact details:\n- \n\n" +
-    "Thank you!"
-  );
-}
-
-function getSubject(lang: Lang) {
-  return lang === "ru" ? "Запрос оценки с сайта TIVONIX" : "TIVONIX inquiry: estimate";
-}
-
-function buildGmailUrl(to: string, subject: string, body: string) {
-  return (
-    "https://mail.google.com/mail/?view=cm&fs=1" +
-    `&to=${encodeURIComponent(to)}` +
-    `&su=${encodeURIComponent(subject)}` +
-    `&body=${encodeURIComponent(body)}`
-  );
-}
 
 export default function Hero() {
-  const { lang, dict } = useLang();
+  const { dict } = useLang();
   const hero = dict.hero;
   const [mounted, setMounted] = useState(false);
 
@@ -355,15 +316,13 @@ export default function Hero() {
   // Оставляем ТОЛЬКО это условие: фон WebGL на десктопе (это не ломает разметку текста/кнопок)
   const isDesktop = useMediaQuery("(min-width: 900px)");
 
-  const { gmailUrl, gmailLabel, tgLabel } = useMemo(() => {
-    const subject = getSubject(lang);
-    const body = buildMailBody(lang);
-    return {
-      gmailUrl: buildGmailUrl(CONTACT_EMAIL, subject, body),
+  const { gmailLabel, tgLabel } = useMemo(
+    () => ({
       gmailLabel: hero.btnTelegram,
       tgLabel: hero.btnDemo,
-    };
-  }, [lang, hero.btnDemo, hero.btnTelegram]);
+    }),
+    [hero.btnDemo, hero.btnTelegram]
+  );
 
   return (
     <Section
@@ -464,7 +423,7 @@ export default function Hero() {
                 </a>
 
                 <a
-                  href={gmailUrl}
+                  href={TG_CHANNEL_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={gmailLabel}

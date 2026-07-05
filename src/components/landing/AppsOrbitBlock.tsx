@@ -1,4 +1,4 @@
-// src/components/landing/AppsOrbitBlock.tsx
+﻿// src/components/landing/AppsOrbitBlock.tsx
 import React,
   {
     useEffect,
@@ -49,23 +49,27 @@ const delay = (ms: number): CSSProperties =>
 
 const COPY = {
   ru: {
-    eyebrow: "САЙТЫ • СЕРВИСЫ • ЗАПУСК",
-    h: "Создадим сайт или веб-сервис\nдля вашего бизнеса",
-    p: "Поможем понять, что нужно разработать, сколько это займёт и с чего лучше начать. Дизайн, разработка и запуск — в одном процессе.",
+    eyebrow: "ОТ ИДЕИ ДО ЗАПУСКА",
+    h: "Поможем понять,\nчто именно нужно вашему бизнесу",
+    p:
+      "Лендинг, Telegram-бот, CRM, личный кабинет или автоматизация — подберём решение под вашу задачу, а не будем навязывать лишнюю разработку.\n\n" +
+      "Сначала разберём, где теряются заявки, время или деньги. Потом предложим понятный план: что сделать сейчас, что можно отложить и как быстрее выйти к рабочему результату.",
     pCompact:
-      "Поможем понять, что нужно разработать, сколько это займёт и с чего лучше начать. Дизайн, разработка и запуск — в одном процессе.",
+      "Подберём решение под задачу — без лишней разработки. Разберём, где теряются заявки, и предложим понятный план запуска.",
     trust: "Ответим в течение дня • Первая консультация — бесплатно",
     tg: "Написать в Telegram",
     emailBtnLabel: "Открыть в Gmail",
     emailAria: "Открыть Gmail",
   },
   en: {
-    eyebrow: "SaaS • MVP • Landing pages",
-    h: "Launch your product faster",
-    p: "UX/UI + frontend: from idea to design and build. Send 2–3 lines — I’ll reply with the best format, a rough budget range, and next steps.",
+    eyebrow: "FROM IDEA TO LAUNCH",
+    h: "We'll help you understand\nwhat your business actually needs",
+    p:
+      "Landing page, Telegram bot, CRM, client portal or automation — we'll match the solution to your task, not push unnecessary development.\n\n" +
+      "First we'll map where leads, time or money are being lost. Then we'll propose a clear plan: what to build now, what can wait, and how to reach a working result faster.",
     pCompact:
-      "UX/UI + frontend: from idea to design and build. Send 2–3 lines — I’ll reply with next steps.",
-    trust: "I reply within a day • Free 15-min intro call",
+      "We'll match the solution to your task — without extra scope. We'll find where you lose leads and outline a clear launch plan.",
+    trust: "We reply within a day • First consultation is free",
     tg: "Write on Telegram",
     emailBtnLabel: "Open in Gmail",
     emailAria: "Open Gmail compose",
@@ -359,7 +363,7 @@ export default function AppsOrbitBlock() {
                       {t.h}
                     </h2>
 
-                    <p className="mt-2.5 text-pretty text-[12.8px] leading-[1.55] text-white/80 sm:mt-4 sm:text-[16px] sm:leading-[1.6]">
+                    <p className="mt-2.5 whitespace-pre-line text-pretty text-[12.8px] leading-[1.55] text-white/80 sm:mt-4 sm:text-[16px] sm:leading-[1.6]">
                       {compact ? t.pCompact : t.p}
                     </p>
 
