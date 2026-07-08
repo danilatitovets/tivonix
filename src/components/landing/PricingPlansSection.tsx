@@ -3,7 +3,6 @@ import { Check, ChevronDown, Minus } from "lucide-react";
 import Container from "../ui/Container";
 import Section from "../ui/Section";
 import Reveal from "../ui/Reveal";
-import StartModal from "./StartModal";
 import PricingFAQSection from "./PricingFAQSection";
 import PricingPlanScopeGrid from "./PricingPlanScopeGrid";
 import { useLang } from "../../i18n/LangProvider";
@@ -346,21 +345,9 @@ function CompactPlanCard({
 export default function PricingPlansSection({ className }: { className?: string }) {
   const { lang } = useLang();
   const copy = pricingCopy(lang);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedPlanId, setSelectedPlanId] = useState<PlanId | null>(null);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(COMPARISON_GROUPS.map((g) => [g.id, true]))
   );
-
-  const openPlanModal = (planId: PlanId) => {
-    setSelectedPlanId(planId);
-    setModalOpen(true);
-  };
-
-  const closePlanModal = () => {
-    setModalOpen(false);
-    setSelectedPlanId(null);
-  };
   const allExpanded = useMemo(
     () => COMPARISON_GROUPS.every((g) => openGroups[g.id]),
     [openGroups]
@@ -376,9 +363,7 @@ export default function PricingPlansSection({ className }: { className?: string 
   };
 
   const handlePlanCta = (planId: PlanId) => {
-    const plan = PLANS.find((p) => p.id === planId);
-    if (plan?.ctaAction === "modal") openPlanModal(planId);
-    else openPlanTelegram(planId);
+    openPlanTelegram(planId);
   };
 
   return (
@@ -623,12 +608,6 @@ export default function PricingPlansSection({ className }: { className?: string 
           })}
         </Reveal>
       </Container>
-
-      <StartModal
-        open={modalOpen}
-        onClose={closePlanModal}
-        selectedPlanId={selectedPlanId}
-      />
     </Section>
   );
 }

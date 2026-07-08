@@ -7,7 +7,7 @@
       "destination": "/api/telegram"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],

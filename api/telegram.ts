@@ -46,7 +46,7 @@ function getWebhookHandler() {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === "GET") {
     const env = readBotEnv();
-    return res.status(200).json({
+    const base: Record<string, unknown> = {
       ok: true,
       service: SERVICE_NAME,
       configured: {
@@ -54,7 +54,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         admin: Boolean(env.ADMIN_IDS),
         webhookSecret: Boolean(env.WEBHOOK_SECRET),
       },
-    });
+      webhookUrl: `${getBaseUrl(req)}/api/telegram`,
+    };
+
+    if (env.BOT_TOKEN) {
+      try {
+        const res = await fetch(
+          `https://api.telegram.org/bot${env.BOT_TOKEN}/getWebhookInfo`
+        );
+        const data = (await res.json()) as {
+          ok?: boolean;
+          result?: {
+            url?: string;
+            has_custom_certificate?: boolean;
+            pending_update_count?: number;
+            last_error_date?: number;
+            last_error_message?: string;
+            max_connections?: number;
+            ip_address?: string;
+          };
+        };
+        if (data.ok && data.result) {
+          base.webhook = {
+            url: data.result.url || null,
+            pendingUpdates: data.result.pending_update_count ?? 0,
+            lastError: data.result.last_error_message ?? null,
+            lastErrorAt: data.result.last_error_date
+              ? new Date(data.result.last_error_date * 1000).toISOString()
+              : null,
+          };
+        }
+      } catch (err) {
+        base.webhook = {
+          error: err instanceof Error ? err.message : String(err),
+        };
+      }
+    }
+
+    return res.status(200).json(base);
   }
 
   if (req.method !== "POST") {

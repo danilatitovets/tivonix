@@ -2,9 +2,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Container from "../ui/Container";
-import { CalcButton } from "./LandingCTA";
+import { TelegramLink } from "./LandingCTA";
 import { useLang } from "../../i18n/LangProvider";
-import StartModal from "./StartModal";
+import { TG_BOT_URL } from "../../constants/links";
 
 // Десктоп-режим (бургер скрыт, показывается полоса навигации) с xl (>=1280).
 
@@ -190,7 +190,6 @@ function PillNav({
 
 export default function Header() {
   const [open, setOpen] = useState(false);
-  const [startOpen, setStartOpen] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -317,11 +316,6 @@ export default function Header() {
     window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
   };
 
-  const openStartModal = () => {
-    setOpen(false);
-    setStartOpen(true);
-  };
-
   const ariaHome = isRu ? "На главную" : "Go to home";
   const ariaMenu = isRu ? "Меню" : "Menu";
 
@@ -400,25 +394,25 @@ export default function Header() {
 
                 {/* RIGHT: CTA (desktop xl+) */}
                 <div className="ml-auto hidden min-w-0 shrink-0 items-center xl:ml-0 xl:flex xl:justify-self-end">
-                  <CalcButton
+                  <TelegramLink
+                    href={TG_BOT_URL}
                     variant="white"
-                    onClick={openStartModal}
                     className="h-11 px-7 text-[14px]"
                   >
                     {ctaTop}
-                  </CalcButton>
+                  </TelegramLink>
                 </div>
 
                 {/* RIGHT: tablet/mobile (до xl) — CTA + бургер */}
                 <div className="ml-auto xl:hidden flex items-center gap-2">
                   <div className="hidden md:block">
-                    <CalcButton
+                    <TelegramLink
+                      href={TG_BOT_URL}
                       variant="white"
-                      onClick={openStartModal}
                       className="h-11 px-6 text-[13px]"
                     >
                       {ctaTop}
-                    </CalcButton>
+                    </TelegramLink>
                   </div>
 
                   <button
@@ -605,13 +599,13 @@ export default function Header() {
             </nav>
 
             <div className="mt-auto flex flex-col gap-2 px-2 pt-6 pb-[max(1rem,env(safe-area-inset-bottom))]">
-              <CalcButton
+              <TelegramLink
+                href={TG_BOT_URL}
                 variant="plain"
-                onClick={openStartModal}
                 className="h-12 w-full rounded-xl border border-white/[0.08] text-[14px]"
               >
                 {isRu ? "Обсудить проект" : "Contact sales"}
-              </CalcButton>
+              </TelegramLink>
               <Link
                 to="/plans"
                 className={cx(
@@ -627,8 +621,6 @@ export default function Header() {
           </div>
         </div>
       </div>
-
-      <StartModal open={startOpen} onClose={() => setStartOpen(false)} />
     </>
   );
 }

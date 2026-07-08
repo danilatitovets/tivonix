@@ -19,7 +19,7 @@ export type PlanCatalogEntry = {
 
 /**
  * Единая карта планов для /plans, Telegram-бота и StartModal.
- * Growth/Product — форма (больше деталей для продажи); остальное — Telegram.
+ * Все CTA на /plans ведут в Telegram-бота (deep link ?start=...).
  */
 export const PLAN_CATALOG: Record<PlanLeadId, PlanCatalogEntry> = {
   start: {
@@ -42,7 +42,7 @@ export const PLAN_CATALOG: Record<PlanLeadId, PlanCatalogEntry> = {
     },
     telegramPayload: "plan_growth",
     adminSource: "Growth (/plans)",
-    ctaAction: "modal",
+    ctaAction: "telegram",
   },
   product: {
     id: "product",
@@ -53,7 +53,7 @@ export const PLAN_CATALOG: Record<PlanLeadId, PlanCatalogEntry> = {
     },
     telegramPayload: "plan_product",
     adminSource: "Product (/plans)",
-    ctaAction: "modal",
+    ctaAction: "telegram",
   },
   custom: {
     id: "custom",

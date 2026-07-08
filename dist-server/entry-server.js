@@ -1,9 +1,8 @@
 import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import React, { createContext, useState, useEffect, useMemo, useContext, useRef, useLayoutEffect, useCallback, lazy, Suspense } from "react";
 import { renderToString } from "react-dom/server";
-import { useLocation, useNavigate, Link, useParams, Navigate, Routes, Route, MemoryRouter } from "react-router-dom";
+import { useNavigate, useLocation, Link, useParams, Navigate, Routes, Route, MemoryRouter } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
-import { createPortal } from "react-dom";
 import { ChevronDown, ArrowRight, Loader2, Check, Shield, ArrowUpRight, Phone, Mail, Globe, Globe2, MapPin, Maximize2, Search, Bot, Zap, LayoutDashboard, Users, TrendingUp, ShieldCheck, ChevronLeft, ChevronRight, FolderOpen, Plus, Minus } from "lucide-react";
 import { SiTelegram, SiInstagram, SiWhatsapp, SiGmail, SiHubspot, SiGooglesheets, SiNotion, SiGooglecalendar, SiClickup, SiStripe, SiGoogledocs, SiGoogleanalytics, SiZapier } from "react-icons/si";
 import createGlobe from "cobe";
@@ -405,7 +404,7 @@ const PLAN_CATALOG = {
     },
     telegramPayload: "plan_growth",
     adminSource: "Growth (/plans)",
-    ctaAction: "modal"
+    ctaAction: "telegram"
   },
   product: {
     id: "product",
@@ -416,7 +415,7 @@ const PLAN_CATALOG = {
     },
     telegramPayload: "plan_product",
     adminSource: "Product (/plans)",
-    ctaAction: "modal"
+    ctaAction: "telegram"
   },
   custom: {
     id: "custom",
@@ -473,7 +472,7 @@ function buildPricingPlanTelegramUrl(planId) {
 function buildHelpPlanTelegramUrl() {
   return buildTelegramBotUrl(HELP_TELEGRAM_PAYLOAD);
 }
-function cx$d(...a) {
+function cx$c(...a) {
   return a.filter(Boolean).join(" ");
 }
 function TelegramLink({
@@ -494,18 +493,9 @@ function TelegramLink({
     }
   );
 }
-function CalcButton({
-  variant = "primary",
-  size = "md",
-  className,
-  children,
-  onClick
-}) {
-  return /* @__PURE__ */ jsx("button", { type: "button", onClick, className: ctaClass(variant, size, className), children });
-}
 function ctaClass(variant, size, className) {
   const isSquare = variant === "plain";
-  return cx$d(
+  return cx$c(
     "inline-flex items-center justify-center font-bold tracking-[-0.015em] transition duration-200",
     isSquare ? "rounded-none shadow-none" : "rounded-full",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
@@ -517,1412 +507,6 @@ function ctaClass(variant, size, className) {
     variant === "plain" && "border-0 bg-transparent font-semibold text-white/88 hover:bg-white/[0.04] hover:text-white",
     variant === "white" && "border-0 bg-white font-bold text-black shadow-none hover:bg-white/92",
     className
-  );
-}
-function trackAdsConversion(eventLabel, eventCallback) {
-  {
-    return;
-  }
-}
-function Button({ variant = "primary", className, ...props }) {
-  const base = "inline-flex items-center justify-center rounded-2xl px-6 py-4 text-[16px] font-semibold transition active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-white/15";
-  const styles = variant === "primary" ? "text-black shadow-[0_20px_60px_rgba(0,0,0,0.45)]" : "bg-white/5 text-white border border-white/10 hover:bg-white/8";
-  return /* @__PURE__ */ jsx(
-    "button",
-    {
-      className: [
-        base,
-        styles,
-        variant === "primary" ? "bg-[var(--g)]" : "",
-        className
-      ].filter(Boolean).join(" "),
-      ...props
-    }
-  );
-}
-const LAUNCH_DISCOUNT_PERCENT = 10;
-const PLAN_PRICE_USD = {
-  start: 400,
-  growth: 900,
-  product: 2e3
-};
-function planPriceStrings(fromLabel, usd) {
-  const discounted = Math.round(usd * (1 - LAUNCH_DISCOUNT_PERCENT / 100));
-  return {
-    price: `${fromLabel} $${discounted}`,
-    priceOriginal: `${fromLabel} $${usd}`
-  };
-}
-function planPagePrice(lang, planId) {
-  const copy = pricingCopy(lang);
-  const p = copy.plans[planId];
-  return p.price !== "индивидуально" && p.price !== "custom" ? p.price : void 0;
-}
-const COPY_RU$1 = {
-  title: "Планы запуска",
-  subtitle: "Понятные тарифы под вашу задачу — от первых заявок до полноценного веб-сервиса",
-  includesLabel: "Что входит",
-  launchDiscount: {
-    percent: "10%",
-    note: "* Скидка — мы только начинаем: первые проекты запускаем по сниженной цене."
-  },
-  afterSelect: {
-    title: "Что будет после выбора плана",
-    steps: [
-      "Вы выбираете подходящий план",
-      "Мы уточняем задачу и объём",
-      "Предлагаем понятный вариант запуска",
-      "После согласования начинаем работу"
-    ],
-    note: "Цены указаны «от», потому что итог зависит от экранов, логики, интеграций и сроков. Оплата происходит после обсуждения и согласования задачи."
-  },
-  compareTitle: "Сравнение тарифов",
-  expandAll: "Развернуть всё",
-  collapseAll: "Свернуть",
-  cell: {
-    yes: "Да",
-    no: "—",
-    option: "Опция",
-    basic: "Базово"
-  },
-  cellText: {
-    support7: "7 дней",
-    support14: "14 дней",
-    support30: "30 дней",
-    supportCustom: "По договорённости"
-  },
-  badges: {
-    popular: "Чаще выбирают",
-    product: "Для веб-сервиса"
-  },
-  plans: {
-    start: {
-      name: "Start",
-      tagline: "Для быстрого запуска заявок",
-      ...planPriceStrings("от", PLAN_PRICE_USD.start),
-      desc: "Когда нужно быстро запустить страницу под рекламу, Instagram или Telegram и начать собирать заявки в одном месте.",
-      includes: [
-        "лендинг или страница услуги",
-        "форма заявки",
-        "кнопки связи",
-        "уведомления в Telegram/email",
-        "адаптация под телефон",
-        "базовая аналитика",
-        "запуск на домене"
-      ],
-      cta: "Обсудить запуск",
-      ctaHint: "Откроется Telegram-бот, займёт около 2 минут.",
-      compactCta: "Обсудить Start"
-    },
-    growth: {
-      name: "Growth",
-      tagline: "Система заявок для бизнеса",
-      ...planPriceStrings("от", PLAN_PRICE_USD.growth),
-      desc: "Когда заявок становится больше, они приходят из разных каналов и команде нужен порядок: статусы, ответственные, таблица или mini-CRM.",
-      includes: [
-        "сайт или несколько страниц",
-        "форма заявки",
-        "Telegram-уведомления",
-        "таблица или мини-CRM",
-        "статусы заявок",
-        "базовая админка",
-        "подключение аналитики",
-        "помощь с запуском"
-      ],
-      cta: "Рассчитать систему",
-      ctaHint: "Откроется короткая форма. План уже будет выбран.",
-      compactCta: "Оставить заявку"
-    },
-    product: {
-      name: "Product",
-      tagline: "Веб-сервис под ключ",
-      ...planPriceStrings("от", PLAN_PRICE_USD.product),
-      desc: "Когда нужен не просто сайт, а рабочий веб-сервис: пользователи, личные кабинеты, роли, база данных и админ-панель.",
-      includes: [
-        "личный кабинет",
-        "админ-панель",
-        "регистрация и авторизация",
-        "роли пользователей",
-        "заявки, статусы, уведомления",
-        "база данных",
-        "интеграции",
-        "оплата",
-        "адаптивный интерфейс",
-        "подготовка к запуску"
-      ],
-      cta: "Обсудить продукт",
-      ctaHint: "Откроется короткая форма. Опишете продукт — мы оценим объём.",
-      compactCta: "Описать продукт"
-    },
-    custom: {
-      name: "Custom",
-      tagline: "Автоматизация и AI-решения",
-      price: "индивидуально",
-      desc: "Когда задача не помещается в готовый тариф: AI-бот, сложная CRM, автоматизация документов, интеграции или внутренняя система.",
-      includes: [
-        "AI-боты и ассистенты",
-        "автоматизация заявок",
-        "интеграции с сервисами",
-        "обработка данных и документов",
-        "личные кабинеты",
-        "сложные роли и сценарии",
-        "кастомная CRM",
-        "поддержка и развитие"
-      ],
-      cta: "Запросить план",
-      ctaHint: "Откроется Telegram-бот для обсуждения нестандартной задачи.",
-      compactCta: "Обсудить Custom"
-    }
-  },
-  faq: {
-    title: "Частые вопросы о тарифах",
-    items: [
-      {
-        id: "price-from",
-        q: "Что значит цена «от»?",
-        a: "Это минимальная стоимость запуска. Итог зависит от количества экранов, логики, интеграций, личного кабинета, CRM и сроков."
-      },
-      {
-        id: "pay-now",
-        q: "Нужно ли платить сразу?",
-        a: "Нет. Сначала мы обсуждаем задачу, уточняем объём и только потом согласуем стоимость и этапы работы."
-      },
-      {
-        id: "which-plan",
-        q: "Какой план выбрать, если я не понимаю?",
-        a: "Можно выбрать Growth или просто написать нам. Мы разберём задачу и подскажем, нужен сайт, бот, CRM, кабинет или кастомная автоматизация."
-      },
-      {
-        id: "start-expand",
-        q: "Можно начать со Start, а потом расширить?",
-        a: "Да. Часто лучше запустить простую версию, проверить заявки, а потом добавить CRM, статусы, кабинет или интеграции."
-      },
-      {
-        id: "growth-includes",
-        q: "Что входит в Growth?",
-        a: "Growth подходит, когда нужно не просто принять заявку, а навести порядок: формы, Telegram-уведомления, статусы, таблица или mini-CRM, понятный процесс обработки."
-      },
-      {
-        id: "when-product",
-        q: "Когда нужен Product?",
-        a: "Product нужен, если это уже не просто сайт, а веб-сервис: пользователи, личные кабинеты, роли, база данных, оплата, админ-панель."
-      },
-      {
-        id: "when-custom",
-        q: "Когда выбирать Custom?",
-        a: "Custom подходит для нестандартных задач: AI-боты, сложные CRM, автоматизация документов, интеграции, внутренние панели и процессы под вашу команду."
-      }
-    ]
-  },
-  groups: {
-    core: "Основное",
-    crm: "Заявки и CRM",
-    product: "Продуктовая логика",
-    automation: "Автоматизация и AI",
-    launch: "Запуск и поддержка"
-  },
-  features: {
-    landing: "Лендинг / страница",
-    responsive: "Адаптив под телефон",
-    form: "Форма заявки",
-    contactButtons: "Кнопки связи",
-    telegramNotify: "Telegram-уведомления",
-    emailNotify: "Email-уведомления",
-    leadStorage: "Хранение заявок",
-    leadTable: "Таблица заявок",
-    miniCrm: "Мини-CRM",
-    statuses: "Статусы заявок",
-    history: "История обработки",
-    roles: "Роли сотрудников",
-    cabinet: "Личный кабинет",
-    admin: "Админ-панель",
-    auth: "Авторизация",
-    database: "База данных",
-    booking: "Онлайн-запись",
-    payments: "Оплата",
-    autoNotify: "Автоуведомления",
-    integrations: "Интеграции",
-    aiBot: "AI-бот",
-    aiLeads: "AI-обработка заявок",
-    documents: "Обработка документов",
-    customFlows: "Кастомные сценарии",
-    domain: "Помощь с доменом",
-    deploy: "Деплой",
-    guide: "Базовая инструкция",
-    testing: "Тестирование сценариев",
-    support: "Поддержка после запуска"
-  },
-  footer: {
-    valueTitle: "Платите только за",
-    valueTitleHighlight: "нужный объём запуска",
-    valueAside: "Не за лишние модули, которыми пока не пользуетесь",
-    valueLead: "Сначала запускаем то, что помогает получать и обрабатывать заявки. Когда бизнесу становится тесно — добавляем CRM, кабинет, оплату, интеграции или автоматизацию.",
-    helpTitle: "Не уверены, какой план выбрать?",
-    helpLead: "Опишите задачу своими словами — подскажем, с чего лучше начать: Start, Growth, Product или Custom.",
-    helpCta: "Написать в Telegram",
-    helpModalCta: "Оставить заявку",
-    planScopeCaption: "Объём запуска по планам",
-    chips: {
-      start: ["Лендинг", "Форма", "Telegram"],
-      growth: ["Мини-CRM", "Статусы", "Админка"],
-      product: ["Кабинет", "Оплата", "Роли"],
-      custom: ["AI-боты", "Интеграции", "CRM"]
-    },
-    shortDesc: {
-      start: "Быстрый запуск страницы и заявок",
-      growth: "Система заявок для команды",
-      product: "Полноценный веб-сервис",
-      custom: "Индивидуальная автоматизация"
-    }
-  }
-};
-const COPY_EN$1 = {
-  title: "Launch plans",
-  subtitle: "Clear plans for your task — from first leads to a full web service",
-  includesLabel: "What's included",
-  launchDiscount: {
-    percent: "10%",
-    note: "* Launch discount — we're just getting started: early projects at a reduced rate."
-  },
-  afterSelect: {
-    title: "What happens after you choose a plan",
-    steps: [
-      "You pick the plan that fits",
-      "We clarify the task and scope",
-      "We propose a clear launch option",
-      "After agreement, we start work"
-    ],
-    note: "Prices are shown “from” because the final cost depends on screens, logic, integrations and timeline. Payment happens after we discuss and agree on the scope."
-  },
-  compareTitle: "Compare plans",
-  expandAll: "Expand all",
-  collapseAll: "Collapse",
-  cell: {
-    yes: "Yes",
-    no: "—",
-    option: "Optional",
-    basic: "Basic"
-  },
-  cellText: {
-    support7: "7 days",
-    support14: "14 days",
-    support30: "30 days",
-    supportCustom: "By agreement"
-  },
-  badges: {
-    popular: "Most popular",
-    product: "For web products"
-  },
-  plans: {
-    start: {
-      name: "Start",
-      tagline: "Fast lead capture launch",
-      ...planPriceStrings("from", PLAN_PRICE_USD.start),
-      desc: "When you need a page for ads, Instagram or Telegram — and want to collect inquiries in one place quickly.",
-      includes: [
-        "landing or service page",
-        "lead form",
-        "contact buttons",
-        "Telegram/email alerts",
-        "mobile-friendly layout",
-        "basic analytics",
-        "domain launch"
-      ],
-      cta: "Discuss launch",
-      ctaHint: "Opens our Telegram bot — takes about 2 minutes.",
-      compactCta: "Discuss Start"
-    },
-    growth: {
-      name: "Growth",
-      tagline: "Lead system for business",
-      ...planPriceStrings("from", PLAN_PRICE_USD.growth),
-      desc: "When leads grow and come from multiple channels — your team needs order: statuses, owners, a sheet or mini-CRM.",
-      includes: [
-        "site or multiple pages",
-        "lead form",
-        "Telegram alerts",
-        "sheet or mini-CRM",
-        "lead statuses",
-        "basic admin",
-        "analytics setup",
-        "launch assistance"
-      ],
-      cta: "Get a quote",
-      ctaHint: "Opens a short form. The Growth plan will already be selected.",
-      compactCta: "Submit request"
-    },
-    product: {
-      name: "Product",
-      tagline: "Full web service",
-      ...planPriceStrings("from", PLAN_PRICE_USD.product),
-      desc: "When you need more than a website — a working web service with users, client areas, roles, a database and admin panel.",
-      includes: [
-        "client area",
-        "admin panel",
-        "sign-up and auth",
-        "user roles",
-        "leads, statuses, alerts",
-        "database",
-        "integrations",
-        "payments",
-        "responsive UI",
-        "launch preparation"
-      ],
-      cta: "Discuss product",
-      ctaHint: "Opens a short form. Describe the product — we'll estimate scope.",
-      compactCta: "Describe product"
-    },
-    custom: {
-      name: "Custom",
-      tagline: "Automation & AI",
-      price: "custom",
-      desc: "When the task doesn't fit a ready plan: AI bots, complex CRM, document automation, integrations or an internal system.",
-      includes: [
-        "AI bots and assistants",
-        "lead automation",
-        "service integrations",
-        "data and document processing",
-        "client areas",
-        "complex roles and flows",
-        "custom CRM",
-        "support and evolution"
-      ],
-      cta: "Request a plan",
-      ctaHint: "Opens our Telegram bot to discuss a non-standard task.",
-      compactCta: "Discuss Custom"
-    }
-  },
-  faq: {
-    title: "Pricing FAQ",
-    items: [
-      {
-        id: "price-from",
-        q: "What does “from” mean?",
-        a: "It's the minimum launch cost. The final price depends on screens, logic, integrations, client area, CRM and timeline."
-      },
-      {
-        id: "pay-now",
-        q: "Do I pay right away?",
-        a: "No. We discuss the task, clarify scope, then agree on cost and stages before any payment."
-      },
-      {
-        id: "which-plan",
-        q: "Which plan if I'm not sure?",
-        a: "Pick Growth or message us. We'll review your task and tell you if you need a site, bot, CRM, client area or custom automation."
-      },
-      {
-        id: "start-expand",
-        q: "Can I start with Start and expand later?",
-        a: "Yes. Often it's better to launch a simple version, test leads, then add CRM, statuses, client area or integrations."
-      },
-      {
-        id: "growth-includes",
-        q: "What's in Growth?",
-        a: "Growth is for when you need order, not just a form: alerts, statuses, a sheet or mini-CRM and a clear processing flow."
-      },
-      {
-        id: "when-product",
-        q: "When do I need Product?",
-        a: "Product is for a real web service: users, client areas, roles, database, payments and admin panel."
-      },
-      {
-        id: "when-custom",
-        q: "When to choose Custom?",
-        a: "Custom fits non-standard work: AI bots, complex CRM, document automation, integrations and internal tools for your team."
-      }
-    ]
-  },
-  groups: {
-    core: "Core",
-    crm: "Leads & CRM",
-    product: "Product logic",
-    automation: "Automation & AI",
-    launch: "Launch & support"
-  },
-  features: {
-    landing: "Landing / page",
-    responsive: "Mobile layout",
-    form: "Lead form",
-    contactButtons: "Contact buttons",
-    telegramNotify: "Telegram alerts",
-    emailNotify: "Email alerts",
-    leadStorage: "Lead storage",
-    leadTable: "Lead table",
-    miniCrm: "Mini-CRM",
-    statuses: "Lead statuses",
-    history: "Processing history",
-    roles: "Staff roles",
-    cabinet: "Client area",
-    admin: "Admin panel",
-    auth: "Authentication",
-    database: "Database",
-    booking: "Online booking",
-    payments: "Payments",
-    autoNotify: "Auto alerts",
-    integrations: "Integrations",
-    aiBot: "AI bot",
-    aiLeads: "AI lead processing",
-    documents: "Document processing",
-    customFlows: "Custom scenarios",
-    domain: "Domain help",
-    deploy: "Deploy",
-    guide: "Basic guide",
-    testing: "Scenario testing",
-    support: "Post-launch support"
-  },
-  footer: {
-    valueTitle: "Pay only for",
-    valueTitleHighlight: "the launch scope you need",
-    valueAside: "Not for modules you don't use yet",
-    valueLead: "We launch what helps you capture and process leads first. When the business outgrows it — we add CRM, client area, payments, integrations or automation.",
-    helpTitle: "Not sure which plan to pick?",
-    helpLead: "Describe your task in your own words — we'll suggest whether to start with Start, Growth, Product or Custom.",
-    helpCta: "Message on Telegram",
-    helpModalCta: "Submit request",
-    planScopeCaption: "Launch scope by plan",
-    chips: {
-      start: ["Landing", "Form", "Telegram"],
-      growth: ["Mini-CRM", "Statuses", "Admin"],
-      product: ["Client area", "Payments", "Roles"],
-      custom: ["AI bots", "Integrations", "CRM"]
-    },
-    shortDesc: {
-      start: "Fast page and lead launch",
-      growth: "Lead system for your team",
-      product: "Full web service",
-      custom: "Custom automation"
-    }
-  }
-};
-function pricingCopy(lang) {
-  return lang === "ru" ? COPY_RU$1 : COPY_EN$1;
-}
-function cx$c(...a) {
-  return a.filter(Boolean).join(" ");
-}
-function clamp$2(n, a = 0, b = 1) {
-  return Math.max(a, Math.min(b, n));
-}
-const BRAND_CTA = "linear-gradient(90deg, #FFD7B0 0%, #FF9A3D 45%, #FF6A1A 100%)";
-const ORANGE_STATIC = "linear-gradient(90deg, rgba(255,160,70,0) 0%, rgba(255,120,40,0.95) 18%, rgba(255,198,120,1) 50%, rgba(255,120,40,0.95) 82%, rgba(255,160,70,0) 100%)";
-const CONIC_FRAME = "conic-gradient(from 210deg at 50% 50%, rgba(143,191,179,0.95), rgba(143,168,200,0.95), rgba(232,220,200,0.95), rgba(143,191,179,0.95))";
-const CONTACT_EMAIL = "tivoonix@gmail.com";
-function isProbablyMobile() {
-  if (typeof window === "undefined") return false;
-  const ua = navigator.userAgent || "";
-  const coarse = window.matchMedia?.("(pointer: coarse)")?.matches;
-  return !!coarse || /Android|iPhone|iPad|iPod|Windows Phone|Mobile/i.test(ua) || window.innerWidth < 820;
-}
-function openEmailDraft(to, subject, body) {
-  const mailto = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  if (isProbablyMobile()) {
-    window.location.href = mailto;
-    return;
-  }
-  const w = window.open(gmail, "_blank", "noopener,noreferrer");
-  if (!w) window.location.href = mailto;
-}
-function ModalProgressBar({
-  progress,
-  label
-}) {
-  const p = clamp$2(progress, 0, 1);
-  const pct = Math.round(p * 100);
-  const thumbLeft = `calc(${pct}% - 8px)`;
-  return /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
-    /* @__PURE__ */ jsxs("div", { className: "relative h-6 w-full", children: [
-      /* @__PURE__ */ jsx("div", { className: "absolute left-0 right-0 top-1/2 h-[2px] -translate-y-1/2 rounded-full bg-white/10" }),
-      /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 top-1/2 h-[8px] -translate-y-1/2 overflow-hidden rounded-full bg-white/8", children: /* @__PURE__ */ jsx(
-        "div",
-        {
-          className: "absolute top-0 bottom-0 left-0 rounded-full",
-          style: {
-            width: `${pct}%`,
-            background: BRAND_CTA,
-            boxShadow: "0 0 28px rgba(255,120,40,0.55)",
-            transition: "width 260ms cubic-bezier(.2,.9,.2,1)",
-            backgroundSize: "200% 100%",
-            animation: pct > 0 ? "tivonixBar 1.8s linear infinite" : "none"
-          }
-        }
-      ) }),
-      /* @__PURE__ */ jsx(
-        "div",
-        {
-          className: "absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border border-white/45 bg-black/85",
-          style: {
-            left: thumbLeft,
-            transition: "left 260ms cubic-bezier(.2,.9,.2,1)"
-          }
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsxs("div", { className: "flex min-w-[64px] flex-col items-end", children: [
-      /* @__PURE__ */ jsxs("div", { className: "text-[12px] font-extrabold tracking-wide text-white/90", children: [
-        pct,
-        "%"
-      ] }),
-      /* @__PURE__ */ jsx("div", { className: "text-[11px] uppercase tracking-[0.18em] text-white/45", children: label })
-    ] })
-  ] });
-}
-function CurvyCheck({ on }) {
-  return /* @__PURE__ */ jsx(
-    "svg",
-    {
-      width: "18",
-      height: "18",
-      viewBox: "0 0 24 24",
-      fill: "none",
-      className: cx$c("transition-opacity", on ? "opacity-100" : "opacity-0"),
-      children: /* @__PURE__ */ jsx(
-        "path",
-        {
-          d: "M5.5 12.6c2.0 1.6 3.3 3.2 4.2 5.1 2.6-4.8 5.8-8.2 10.0-11.2",
-          stroke: "#FF9A3D",
-          strokeWidth: "2.4",
-          strokeLinecap: "round",
-          strokeLinejoin: "round"
-        }
-      )
-    }
-  );
-}
-function Chevron({ open }) {
-  return /* @__PURE__ */ jsx(
-    "svg",
-    {
-      width: "18",
-      height: "18",
-      viewBox: "0 0 24 24",
-      fill: "none",
-      className: cx$c(
-        "transition-transform duration-200",
-        open ? "rotate-180" : "rotate-0"
-      ),
-      children: /* @__PURE__ */ jsx(
-        "path",
-        {
-          d: "M6 9l6 6 6-6",
-          stroke: "rgba(255,255,255,0.75)",
-          strokeWidth: "2",
-          strokeLinecap: "round",
-          strokeLinejoin: "round"
-        }
-      )
-    }
-  );
-}
-function FancySelect({
-  label,
-  value,
-  onChange,
-  options
-}) {
-  const [open, setOpen] = useState(false);
-  const btnRef = useRef(null);
-  const [pos, setPos] = useState(null);
-  const current = options.find((o) => o.value === value)?.label ?? value;
-  useEffect(() => {
-    if (!open) return;
-    const update = () => {
-      const b = btnRef.current;
-      if (!b) return;
-      const r = b.getBoundingClientRect();
-      const gap = 8;
-      const top = Math.round(r.bottom + gap);
-      const maxH = Math.max(160, Math.round(window.innerHeight - top - 16));
-      setPos({
-        left: Math.round(r.left),
-        top,
-        width: Math.round(r.width),
-        maxH
-      });
-    };
-    update();
-    window.addEventListener("resize", update);
-    window.addEventListener("scroll", update, true);
-    return () => {
-      window.removeEventListener("resize", update);
-      window.removeEventListener("scroll", update, true);
-    };
-  }, [open]);
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e) => {
-      const t = e.target;
-      const b = btnRef.current;
-      if (b && b.contains(t)) return;
-      setOpen(false);
-    };
-    const onKey = (e) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("mousedown", onDown);
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-  const dropdown = open && pos ? createPortal(
-    /* @__PURE__ */ jsx(
-      "div",
-      {
-        className: "z-[9999]",
-        style: {
-          position: "fixed",
-          left: pos.left,
-          top: pos.top,
-          width: pos.width
-        },
-        children: /* @__PURE__ */ jsx(
-          "div",
-          {
-            className: "overflow-hidden rounded-2xl p-[1px] shadow-[0_28px_90px_rgba(0,0,0,0.65)]",
-            style: { background: CONIC_FRAME },
-            children: /* @__PURE__ */ jsx(
-              "div",
-              {
-                className: "tivonix-dd max-h-[320px] overflow-auto rounded-2xl border border-white/10 bg-black/75 backdrop-blur-2xl",
-                style: {
-                  maxHeight: pos.maxH,
-                  WebkitOverflowScrolling: "touch"
-                },
-                children: options.map((o) => {
-                  const active = o.value === value;
-                  return /* @__PURE__ */ jsxs(
-                    "button",
-                    {
-                      type: "button",
-                      onClick: () => {
-                        onChange(o.value);
-                        setOpen(false);
-                      },
-                      className: cx$c(
-                        "flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition",
-                        active ? "bg-white/[0.08] text-white" : "bg-transparent text-white/78 hover:bg-white/[0.06] hover:text-white"
-                      ),
-                      children: [
-                        /* @__PURE__ */ jsx("span", { className: "text-[13px] font-semibold", children: o.label }),
-                        /* @__PURE__ */ jsx(CurvyCheck, { on: active })
-                      ]
-                    },
-                    o.value
-                  );
-                })
-              }
-            )
-          }
-        )
-      }
-    ),
-    document.body
-  ) : null;
-  return /* @__PURE__ */ jsxs("div", { children: [
-    /* @__PURE__ */ jsx("div", { className: "mb-1.5 text-[11.5px] font-semibold text-white/70", children: label }),
-    /* @__PURE__ */ jsx(
-      "div",
-      {
-        className: "rounded-2xl p-[1px]",
-        style: {
-          background: "linear-gradient(90deg, rgba(255,154,61,0.72), rgba(255,255,255,0.10), rgba(143,168,200,0.35))"
-        },
-        children: /* @__PURE__ */ jsxs(
-          "button",
-          {
-            ref: btnRef,
-            type: "button",
-            onClick: () => setOpen((v) => !v),
-            className: cx$c(
-              "flex h-11 w-full items-center justify-between gap-3 rounded-2xl px-4",
-              "border border-white/12 bg-white/[0.07] text-white",
-              "backdrop-blur-xl outline-none",
-              "hover:bg-white/[0.09] transition"
-            ),
-            children: [
-              /* @__PURE__ */ jsx("span", { className: "text-[13px] text-white/90", children: current }),
-              /* @__PURE__ */ jsx("span", { className: "shrink-0", children: /* @__PURE__ */ jsx(Chevron, { open }) })
-            ]
-          }
-        )
-      }
-    ),
-    dropdown
-  ] });
-}
-function StartModal({ open, onClose, selectedPlanId = null }) {
-  const { lang } = useLang();
-  const isRu = lang === "ru";
-  const location = useLocation();
-  const pricing = pricingCopy(lang);
-  const defaults = useMemo(
-    () => ({
-      type: isRu ? "Лендинг / сайт" : "Landing / website",
-      budget: isRu ? "Не знаю" : "Not sure",
-      time: isRu ? "1–2 недели" : "1–2 weeks"
-    }),
-    [isRu]
-  );
-  const docs = useMemo(() => {
-    if (isRu) {
-      return [
-        {
-          label: "Согласие на обработку персональных данных",
-          href: "/doc/Согласие_на_обработку_ПД_Tivonix_RU.pdf"
-        },
-        {
-          label: "Политика обработки персональных данных",
-          href: "/doc/Политика_обработки_ПД_Tivonix_RU.pdf"
-        }
-      ];
-    }
-    return [
-      { label: "Consent to personal data processing", href: "/doc/Consent_Tivonix_EN.pdf" },
-      { label: "Privacy Policy", href: "/doc/Privacy_Policy_Tivonix_EN.pdf" }
-    ];
-  }, [isRu]);
-  const [mounted, setMounted] = useState(open);
-  const [visible, setVisible] = useState(false);
-  const nameRef = useRef(null);
-  const [sending, setSending] = useState(false);
-  const [errorText, setErrorText] = useState("");
-  const [form, setForm] = useState(() => ({
-    name: "",
-    email: "",
-    telegram: "",
-    company: "",
-    projectType: defaults.type,
-    budget: defaults.budget,
-    timeframe: defaults.time,
-    details: "",
-    consent: false
-    // ✅ добавили
-  }));
-  useEffect(() => {
-    setForm((p) => {
-      const wasDefaultType = p.projectType === "Лендинг / сайт" || p.projectType === "Landing / website";
-      const wasDefaultBudget = p.budget === "Не знаю" || p.budget === "Not sure";
-      const wasDefaultTime = p.timeframe === "1–2 недели" || p.timeframe === "1–2 weeks";
-      return {
-        ...p,
-        projectType: wasDefaultType ? defaults.type : p.projectType,
-        budget: wasDefaultBudget ? defaults.budget : p.budget,
-        timeframe: wasDefaultTime ? defaults.time : p.timeframe
-      };
-    });
-  }, [defaults.type, defaults.budget, defaults.time]);
-  useEffect(() => {
-    if (open) {
-      setMounted(true);
-      requestAnimationFrame(() => setVisible(true));
-    } else {
-      setVisible(false);
-      const t = window.setTimeout(() => setMounted(false), 200);
-      return () => window.clearTimeout(t);
-    }
-  }, [open]);
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.documentElement.style.overflow;
-    document.documentElement.style.overflow = "hidden";
-    return () => {
-      document.documentElement.style.overflow = prev;
-    };
-  }, [open]);
-  useEffect(() => {
-    if (!open) return;
-    const t = window.setTimeout(() => nameRef.current?.focus(), 120);
-    return () => window.clearTimeout(t);
-  }, [open]);
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === "Escape") onClose();
-    };
-    if (open) window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-  const txt = useMemo(
-    () => ({
-      title: isRu ? "Заявка на сайт" : "Request",
-      subtitle: isRu ? "Заполни пару полей — отвечу быстро." : "Fill a few fields — I’ll reply fast.",
-      name: isRu ? "Имя" : "Name",
-      email: "Email",
-      telegram: isRu ? "Telegram / телефон" : "Telegram / phone",
-      company: isRu ? "Компания" : "Company",
-      projectType: isRu ? "Тип проекта" : "Project type",
-      budget: isRu ? "Бюджет" : "Budget",
-      timeframe: isRu ? "Сроки" : "Timeframe",
-      details: isRu ? "Задача" : "Task",
-      detailsPh: isRu ? "Коротко: страницы, примеры, функции…" : "Short: pages, examples, features…",
-      send: isRu ? "Отправить" : "Send",
-      cancel: isRu ? "Отмена" : "Cancel",
-      required: isRu ? "Укажи имя и контакт." : "Add name and a contact.",
-      consentRequired: isRu ? "Нужно согласиться с документами (галочка)." : "Please accept the documents (checkbox).",
-      consentText: isRu ? "Я принимаю условия и согласен(на) с документами:" : "I agree with the documents:",
-      selectedPlan: isRu ? "Выбранный план" : "Selected plan",
-      planNotSelected: isRu ? "План пока не выбран" : "No plan selected yet",
-      pagePrice: isRu ? "Цена на странице" : "Page price",
-      source: isRu ? "Источник" : "Source",
-      close: isRu ? "Закрыть" : "Close",
-      progressLabel: isRu ? "ГОТОВО" : "DONE",
-      note: isRu ? "Откроется письмо в почте." : "Opens an email draft.",
-      openDoc: isRu ? "Открыть" : "Open"
-    }),
-    [isRu]
-  );
-  const planLabel = useMemo(() => {
-    if (!selectedPlanId) return txt.planNotSelected;
-    return pricing.plans[selectedPlanId].name;
-  }, [selectedPlanId, pricing.plans, txt.planNotSelected]);
-  const planPriceLabel = useMemo(() => {
-    if (!selectedPlanId) return "—";
-    return planPagePrice(lang, selectedPlanId) ?? "—";
-  }, [selectedPlanId, lang]);
-  const emailSubjectPlanPart = useMemo(() => {
-    if (!selectedPlanId) return isRu ? "расчёт проекта" : "project quote";
-    return isRu ? `план ${pricing.plans[selectedPlanId].name}` : `${pricing.plans[selectedPlanId].name} plan`;
-  }, [selectedPlanId, isRu, pricing.plans]);
-  const has = (v) => v.trim().length > 0;
-  const progressPct = useMemo(() => {
-    const steps = [
-      has(form.name),
-      has(form.email) || has(form.telegram),
-      form.projectType !== defaults.type,
-      form.budget !== defaults.budget,
-      form.timeframe !== defaults.time,
-      has(form.details),
-      form.consent
-      // ✅ добавили в прогресс
-    ];
-    const total = steps.length;
-    const done = steps.filter(Boolean).length;
-    let pct = Math.round(done / total * 100);
-    const any = has(form.name) || has(form.email) || has(form.telegram) || has(form.details) || form.projectType !== defaults.type || form.budget !== defaults.budget || form.timeframe !== defaults.time || form.consent;
-    if (pct === 0 && any) pct = 5;
-    return pct;
-  }, [form, defaults.type, defaults.budget, defaults.time]);
-  const shouldRender = mounted || open;
-  const update = (k, v) => {
-    setErrorText("");
-    setForm((p) => ({ ...p, [k]: v }));
-  };
-  const submit = async () => {
-    const hasName = form.name.trim().length > 1;
-    const hasContact = form.email.trim().length > 3 || form.telegram.trim().length > 2;
-    if (!hasName || !hasContact) {
-      setErrorText(txt.required);
-      return;
-    }
-    if (!form.consent) {
-      setErrorText(txt.consentRequired);
-      return;
-    }
-    setSending(true);
-    try {
-      const subject = `[TIVONIX] ${isRu ? "Заявка" : "Request"} — ${emailSubjectPlanPart} — ${form.name.trim().slice(0, 64)}`;
-      const body = (isRu ? "Заявка на создание сайта" : "Website request") + `
-
-${txt.selectedPlan}: ${planLabel}
-${txt.pagePrice}: ${planPriceLabel}
-${txt.source}: ${location.pathname || "/plans"}
-
-${txt.name}: ${form.name || "-"}
-${txt.email}: ${form.email || "-"}
-${txt.telegram}: ${form.telegram || "-"}
-${txt.company}: ${form.company || "-"}
-${txt.projectType}: ${form.projectType || "-"}
-${txt.budget}: ${form.budget || "-"}
-${txt.timeframe}: ${form.timeframe || "-"}
-
-${txt.details}:
-${form.details || "-"}
-
-${isRu ? "Согласие: Да" : "Consent: Yes"}
-${isRu ? "Документы:" : "Documents:"}
-` + docs.map((d) => `- ${d.label}: ${location.origin}${d.href}`).join("\n") + "\n";
-      openEmailDraft(CONTACT_EMAIL, subject, body);
-      trackAdsConversion("form_request");
-      onClose();
-    } finally {
-      setSending(false);
-    }
-  };
-  const onOverlayMouseDown = (e) => {
-    if (e.target === e.currentTarget) onClose();
-  };
-  const inputBase = cx$c(
-    "w-full h-11 rounded-2xl px-4",
-    "border border-white/12 bg-white/[0.07] text-white placeholder:text-white/35",
-    "outline-none focus:border-white/22 focus:bg-white/[0.09]",
-    "backdrop-blur-xl text-[13px]"
-  );
-  const cardH = "min(860px, calc(100dvh - 28px))";
-  if (!shouldRender) return null;
-  return /* @__PURE__ */ jsxs(
-    "div",
-    {
-      className: cx$c(
-        "fixed inset-0 z-[70]",
-        "flex items-center justify-center",
-        "px-3 sm:px-5 py-4"
-      ),
-      onMouseDown: onOverlayMouseDown,
-      "aria-hidden": !open,
-      children: [
-        /* @__PURE__ */ jsx("style", { children: `
-          @keyframes tivonixBar {
-            0% { background-position: 0% 0%; }
-            100% { background-position: 200% 0%; }
-          }
-
-          /* кастомный скролл только в модалке */
-          .tivonix-body {
-            overflow-y: auto;
-            overflow-x: hidden;
-            -webkit-overflow-scrolling: touch;
-          }
-
-          /* desktop: скрываем полосу */
-          @media (min-width: 1024px) {
-            .tivonix-body { scrollbar-width: none; }
-            .tivonix-body::-webkit-scrollbar { width: 0; height: 0; }
-          }
-
-          /* mobile: тонкий кастомный */
-          @media (max-width: 1023.98px) {
-            .tivonix-body {
-              scrollbar-width: thin;
-              scrollbar-color: rgba(255,154,61,.75) rgba(255,255,255,.08);
-            }
-            .tivonix-body::-webkit-scrollbar { width: 7px; }
-            .tivonix-body::-webkit-scrollbar-track {
-              background: rgba(255,255,255,.08);
-              border-radius: 999px;
-            }
-            .tivonix-body::-webkit-scrollbar-thumb {
-              background: linear-gradient(180deg, rgba(255,215,176,.95), rgba(255,154,61,.98), rgba(255,106,26,.98));
-              border-radius: 999px;
-              border: 2px solid rgba(0,0,0,.45);
-            }
-          }
-
-          /* dropdown scroll */
-          .tivonix-dd {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255,154,61,.75) rgba(255,255,255,.08);
-          }
-          .tivonix-dd::-webkit-scrollbar { width: 7px; }
-          .tivonix-dd::-webkit-scrollbar-track { background: rgba(255,255,255,.08); border-radius: 999px; }
-          .tivonix-dd::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, rgba(255,215,176,.95), rgba(255,154,61,.98), rgba(255,106,26,.98));
-            border-radius: 999px;
-            border: 2px solid rgba(0,0,0,.45);
-          }
-        ` }),
-        /* @__PURE__ */ jsx(
-          "div",
-          {
-            className: "absolute inset-0 bg-black/70 backdrop-blur-[12px] transition-opacity duration-200 cursor-pointer",
-            style: { opacity: open && visible ? 1 : 0, pointerEvents: open ? "auto" : "none" },
-            onClick: onClose,
-            "aria-hidden": "true"
-          }
-        ),
-        /* @__PURE__ */ jsx(
-          "div",
-          {
-            className: cx$c(
-              "relative w-full",
-              "max-w-[430px] sm:max-w-[760px] lg:max-w-[940px]",
-              "transition-[transform,opacity] duration-200 ease-out"
-            ),
-            style: {
-              opacity: open && visible ? 1 : 0,
-              transform: open && visible ? "translateY(0) scale(1)" : "translateY(16px) scale(0.97)",
-              pointerEvents: open ? "auto" : "none"
-            },
-            onMouseDown: (e) => e.stopPropagation(),
-            role: "dialog",
-            "aria-modal": "true",
-            "aria-label": txt.title,
-            children: /* @__PURE__ */ jsx(
-              "div",
-              {
-                className: "rounded-[26px] p-[1px] shadow-[0_30px_110px_rgba(0,0,0,0.70)]",
-                style: { background: CONIC_FRAME },
-                children: /* @__PURE__ */ jsxs(
-                  "div",
-                  {
-                    className: "relative overflow-hidden rounded-[26px] border border-white/10 bg-black/45 backdrop-blur-2xl",
-                    style: { height: cardH },
-                    children: [
-                      /* @__PURE__ */ jsx(
-                        "div",
-                        {
-                          "aria-hidden": true,
-                          className: "pointer-events-none absolute inset-0 opacity-[0.85]",
-                          style: {
-                            backgroundImage: "url(/images/121.webp)",
-                            backgroundSize: "cover",
-                            backgroundPosition: "center",
-                            filter: "blur(20px)",
-                            transform: "scale(1.06)"
-                          }
-                        }
-                      ),
-                      /* @__PURE__ */ jsx(
-                        "div",
-                        {
-                          "aria-hidden": true,
-                          className: "pointer-events-none absolute inset-0 opacity-90",
-                          style: {
-                            backgroundImage: "radial-gradient(760px 420px at 18% 10%, rgba(255,154,61,0.18), transparent 60%),radial-gradient(720px 520px at 86% 35%, rgba(143,168,200,0.18), transparent 62%),radial-gradient(520px 520px at 42% 110%, rgba(143,191,179,0.16), transparent 60%)"
-                          }
-                        }
-                      ),
-                      /* @__PURE__ */ jsx(
-                        "div",
-                        {
-                          "aria-hidden": true,
-                          className: "pointer-events-none absolute inset-0 opacity-[0.24]",
-                          style: {
-                            backgroundImage: "radial-gradient(rgba(255,255,255,0.20) 1px, transparent 1px)",
-                            backgroundSize: "18px 18px",
-                            maskImage: "radial-gradient(closest-side at 50% 40%, black, transparent 82%)",
-                            WebkitMaskImage: "radial-gradient(closest-side at 50% 40%, black, transparent 82%)"
-                          }
-                        }
-                      ),
-                      /* @__PURE__ */ jsxs("div", { className: "relative z-10 grid h-full grid-rows-[auto_minmax(0,1fr)_auto]", children: [
-                        /* @__PURE__ */ jsxs("div", { className: "px-4 pt-4 sm:px-6 md:px-8", children: [
-                          /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between gap-3", children: [
-                            /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
-                              /* @__PURE__ */ jsx("div", { className: "grid h-10 w-10 place-items-center overflow-hidden rounded-2xl border border-white/12 bg-white/[0.06] backdrop-blur-xl sm:hidden", children: /* @__PURE__ */ jsx(
-                                "img",
-                                {
-                                  src: "/images/tivonix-logo-icon.webp",
-                                  alt: "TIVONIX",
-                                  className: "h-6 w-6 opacity-90",
-                                  draggable: false
-                                }
-                              ) }),
-                              /* @__PURE__ */ jsx(
-                                "img",
-                                {
-                                  src: "/images/tivonix-logo-lockup.webp",
-                                  alt: "TIVONIX",
-                                  draggable: false,
-                                  className: "hidden h-9 w-auto opacity-90 sm:block"
-                                }
-                              )
-                            ] }),
-                            /* @__PURE__ */ jsx(
-                              "button",
-                              {
-                                type: "button",
-                                onClick: onClose,
-                                className: cx$c(
-                                  "group grid h-9 w-9 place-items-center rounded-2xl sm:h-10 sm:w-10",
-                                  "border border-white/14 bg-white/[0.07] backdrop-blur-xl",
-                                  "transition-all duration-200 ease-out",
-                                  "hover:scale-110 hover:bg-white/[0.12] hover:border-white/20",
-                                  "active:scale-95",
-                                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                                ),
-                                "aria-label": txt.close,
-                                children: /* @__PURE__ */ jsxs(
-                                  "svg",
-                                  {
-                                    width: "16",
-                                    height: "16",
-                                    viewBox: "0 0 24 24",
-                                    fill: "none",
-                                    className: "transition-transform duration-200 ease-out group-hover:rotate-90",
-                                    children: [
-                                      /* @__PURE__ */ jsx(
-                                        "path",
-                                        {
-                                          d: "M6 6L18 18",
-                                          stroke: "#FFB36A",
-                                          strokeWidth: "2",
-                                          strokeLinecap: "round",
-                                          className: "transition-opacity group-hover:opacity-90"
-                                        }
-                                      ),
-                                      /* @__PURE__ */ jsx(
-                                        "path",
-                                        {
-                                          d: "M18 6L6 18",
-                                          stroke: "#FFB36A",
-                                          strokeWidth: "2",
-                                          strokeLinecap: "round",
-                                          className: "transition-opacity group-hover:opacity-90"
-                                        }
-                                      )
-                                    ]
-                                  }
-                                )
-                              }
-                            )
-                          ] }),
-                          /* @__PURE__ */ jsx("div", { className: "mt-3", children: /* @__PURE__ */ jsx(
-                            ModalProgressBar,
-                            {
-                              progress: progressPct / 100,
-                              label: txt.progressLabel
-                            }
-                          ) }),
-                          /* @__PURE__ */ jsxs("div", { className: "pointer-events-none mt-3 h-5", children: [
-                            /* @__PURE__ */ jsx(
-                              "div",
-                              {
-                                className: "mx-auto h-[2px] w-full rounded-full opacity-95",
-                                style: { background: ORANGE_STATIC }
-                              }
-                            ),
-                            /* @__PURE__ */ jsx(
-                              "div",
-                              {
-                                className: "mx-auto mt-[-2px] h-6 w-full blur-2xl opacity-40",
-                                style: { background: ORANGE_STATIC }
-                              }
-                            )
-                          ] })
-                        ] }),
-                        /* @__PURE__ */ jsxs("div", { className: "tivonix-body px-4 pb-4 pt-2 sm:px-6 md:px-8", children: [
-                          /* @__PURE__ */ jsxs("div", { className: "mt-1", children: [
-                            /* @__PURE__ */ jsx("div", { className: "text-[18px] font-extrabold tracking-tight text-white sm:text-[20px]", children: txt.title }),
-                            /* @__PURE__ */ jsx("div", { className: "mt-1 text-[12px] leading-relaxed text-white/65 sm:text-[12.5px]", children: txt.subtitle })
-                          ] }),
-                          /* @__PURE__ */ jsxs("div", { className: "mt-4 rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 backdrop-blur-xl", children: [
-                            /* @__PURE__ */ jsx("p", { className: "text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45", children: txt.selectedPlan }),
-                            /* @__PURE__ */ jsx("p", { className: "mt-1 text-[14px] font-semibold text-white", children: planLabel }),
-                            selectedPlanId ? /* @__PURE__ */ jsxs("p", { className: "mt-1 text-[12px] text-white/55", children: [
-                              txt.pagePrice,
-                              ": ",
-                              planPriceLabel
-                            ] }) : null
-                          ] }),
-                          /* @__PURE__ */ jsxs("div", { className: "mt-4 grid grid-cols-1 gap-3.5 sm:mt-5 sm:grid-cols-2 sm:gap-4", children: [
-                            /* @__PURE__ */ jsxs("div", { children: [
-                              /* @__PURE__ */ jsxs("div", { className: "mb-1.5 text-[11.5px] font-semibold text-white/70", children: [
-                                txt.name,
-                                " *"
-                              ] }),
-                              /* @__PURE__ */ jsx(
-                                "input",
-                                {
-                                  ref: nameRef,
-                                  className: inputBase,
-                                  value: form.name,
-                                  onChange: (e) => update("name", e.target.value),
-                                  autoComplete: "name"
-                                }
-                              )
-                            ] }),
-                            /* @__PURE__ */ jsxs("div", { children: [
-                              /* @__PURE__ */ jsx("div", { className: "mb-1.5 text-[11.5px] font-semibold text-white/70", children: txt.email }),
-                              /* @__PURE__ */ jsx(
-                                "input",
-                                {
-                                  className: inputBase,
-                                  value: form.email,
-                                  onChange: (e) => update("email", e.target.value),
-                                  autoComplete: "email"
-                                }
-                              )
-                            ] }),
-                            /* @__PURE__ */ jsxs("div", { children: [
-                              /* @__PURE__ */ jsx("div", { className: "mb-1.5 text-[11.5px] font-semibold text-white/70", children: txt.telegram }),
-                              /* @__PURE__ */ jsx(
-                                "input",
-                                {
-                                  className: inputBase,
-                                  value: form.telegram,
-                                  onChange: (e) => update("telegram", e.target.value),
-                                  autoComplete: "tel"
-                                }
-                              )
-                            ] }),
-                            /* @__PURE__ */ jsxs("div", { children: [
-                              /* @__PURE__ */ jsx("div", { className: "mb-1.5 text-[11.5px] font-semibold text-white/70", children: txt.company }),
-                              /* @__PURE__ */ jsx(
-                                "input",
-                                {
-                                  className: inputBase,
-                                  value: form.company,
-                                  onChange: (e) => update("company", e.target.value)
-                                }
-                              )
-                            ] }),
-                            /* @__PURE__ */ jsx(
-                              FancySelect,
-                              {
-                                label: txt.projectType,
-                                value: form.projectType,
-                                onChange: (v) => update("projectType", v),
-                                options: [
-                                  { value: defaults.type, label: defaults.type },
-                                  {
-                                    value: isRu ? "Сайт-визитка" : "Business card website",
-                                    label: isRu ? "Сайт-визитка" : "Business card website"
-                                  },
-                                  {
-                                    value: isRu ? "Интернет-магазин" : "E-commerce",
-                                    label: isRu ? "Интернет-магазин" : "E-commerce"
-                                  },
-                                  {
-                                    value: isRu ? "SaaS / сервис" : "SaaS / product",
-                                    label: isRu ? "SaaS / сервис" : "SaaS / product"
-                                  },
-                                  { value: isRu ? "Другое" : "Other", label: isRu ? "Другое" : "Other" }
-                                ]
-                              }
-                            ),
-                            /* @__PURE__ */ jsx(
-                              FancySelect,
-                              {
-                                label: txt.budget,
-                                value: form.budget,
-                                onChange: (v) => update("budget", v),
-                                options: [
-                                  { value: defaults.budget, label: defaults.budget },
-                                  { value: isRu ? "до $500" : "under $500", label: isRu ? "до $500" : "under $500" },
-                                  { value: "$500–1000", label: "$500–1000" },
-                                  { value: "$1000–2000", label: "$1000–2000" },
-                                  { value: "$2000+", label: "$2000+" }
-                                ]
-                              }
-                            ),
-                            /* @__PURE__ */ jsx("div", { className: "sm:col-span-2", children: /* @__PURE__ */ jsx(
-                              FancySelect,
-                              {
-                                label: txt.timeframe,
-                                value: form.timeframe,
-                                onChange: (v) => update("timeframe", v),
-                                options: [
-                                  { value: defaults.time, label: defaults.time },
-                                  { value: isRu ? "2–4 недели" : "2–4 weeks", label: isRu ? "2–4 недели" : "2–4 weeks" },
-                                  { value: isRu ? "1–2 месяца" : "1–2 months", label: isRu ? "1–2 месяца" : "1–2 months" },
-                                  { value: isRu ? "Гибко" : "Flexible", label: isRu ? "Гибко" : "Flexible" }
-                                ]
-                              }
-                            ) }),
-                            /* @__PURE__ */ jsxs("div", { className: "sm:col-span-2", children: [
-                              /* @__PURE__ */ jsx("div", { className: "mb-1.5 text-[11.5px] font-semibold text-white/70", children: txt.details }),
-                              /* @__PURE__ */ jsx(
-                                "textarea",
-                                {
-                                  className: cx$c(
-                                    "min-h-[120px] w-full rounded-2xl px-4 py-3 text-[13px]",
-                                    "border border-white/12 bg-white/[0.07] text-white placeholder:text-white/35",
-                                    "outline-none focus:border-white/22 focus:bg-white/[0.09] backdrop-blur-xl"
-                                  ),
-                                  value: form.details,
-                                  onChange: (e) => update("details", e.target.value),
-                                  placeholder: txt.detailsPh
-                                }
-                              )
-                            ] }),
-                            /* @__PURE__ */ jsx("div", { className: "sm:col-span-2", children: /* @__PURE__ */ jsx(
-                              "div",
-                              {
-                                className: "rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 backdrop-blur-xl",
-                                children: /* @__PURE__ */ jsxs("label", { className: "flex cursor-pointer items-start gap-3", children: [
-                                  /* @__PURE__ */ jsx("span", { className: "mt-[2px] grid h-5 w-5 place-items-center rounded-[8px] border border-white/18 bg-black/30", children: /* @__PURE__ */ jsx(
-                                    "input",
-                                    {
-                                      type: "checkbox",
-                                      checked: form.consent,
-                                      onChange: (e) => update("consent", e.target.checked),
-                                      className: "h-4 w-4 accent-[#FF9A3D]"
-                                    }
-                                  ) }),
-                                  /* @__PURE__ */ jsxs("span", { className: "text-[12px] leading-relaxed text-white/75", children: [
-                                    /* @__PURE__ */ jsx("span", { className: "font-semibold text-white/85", children: txt.consentText }),
-                                    " ",
-                                    /* @__PURE__ */ jsxs("span", { className: "text-white/55", children: [
-                                      "(",
-                                      isRu ? "откроются в новой вкладке" : "opens in a new tab",
-                                      ")"
-                                    ] }),
-                                    /* @__PURE__ */ jsx("div", { className: "mt-2 flex flex-col gap-1.5", children: docs.map((d) => /* @__PURE__ */ jsxs(
-                                      "a",
-                                      {
-                                        href: d.href,
-                                        target: "_blank",
-                                        rel: "noopener noreferrer",
-                                        className: "inline-flex w-fit items-center gap-2 text-[12px] font-semibold text-white/80 hover:text-white",
-                                        children: [
-                                          /* @__PURE__ */ jsx(
-                                            "span",
-                                            {
-                                              className: "h-[6px] w-[6px] rounded-full",
-                                              style: { background: "#FF9A3D" }
-                                            }
-                                          ),
-                                          /* @__PURE__ */ jsx("span", { className: "underline decoration-white/25 underline-offset-4", children: d.label }),
-                                          /* @__PURE__ */ jsxs("span", { className: "text-white/45", children: [
-                                            "— ",
-                                            txt.openDoc
-                                          ] })
-                                        ]
-                                      },
-                                      d.href
-                                    )) })
-                                  ] })
-                                ] })
-                              }
-                            ) }),
-                            errorText ? /* @__PURE__ */ jsx("div", { className: "sm:col-span-2 text-[11.5px] text-[#FFB36A]", children: errorText }) : null
-                          ] }),
-                          /* @__PURE__ */ jsx("div", { className: "h-6" })
-                        ] }),
-                        /* @__PURE__ */ jsx("div", { className: "border-t border-white/10 bg-black/40 px-4 pb-4 pt-3 sm:px-6 sm:pb-5 md:px-8", children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between", children: [
-                          /* @__PURE__ */ jsx("div", { className: "text-[11.5px] text-white/45", children: txt.note }),
-                          /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-                            /* @__PURE__ */ jsx(
-                              Button,
-                              {
-                                onClick: onClose,
-                                className: cx$c(
-                                  "h-10 rounded-2xl px-5 text-[13px] font-semibold sm:h-11",
-                                  "border border-white/12 bg-white/[0.06] text-white",
-                                  "hover:bg-white/[0.09]"
-                                ),
-                                children: txt.cancel
-                              }
-                            ),
-                            /* @__PURE__ */ jsx(
-                              Button,
-                              {
-                                onClick: submit,
-                                disabled: sending || !form.consent,
-                                className: cx$c(
-                                  "h-10 rounded-2xl px-5 text-[13px] font-semibold sm:h-11",
-                                  "!text-black",
-                                  "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
-                                  "hover:brightness-[1.04] active:brightness-[0.96]",
-                                  (sending || !form.consent) && "opacity-70 cursor-not-allowed"
-                                ),
-                                style: { background: BRAND_CTA },
-                                children: sending ? isRu ? "Отправляю…" : "Sending…" : txt.send
-                              }
-                            )
-                          ] })
-                        ] }) })
-                      ] })
-                    ]
-                  }
-                )
-              }
-            )
-          }
-        )
-      ]
-    }
   );
 }
 function cx$b(...a) {
@@ -2066,7 +650,6 @@ function PillNav({
 }
 function Header() {
   const [open, setOpen] = useState(false);
-  const [startOpen, setStartOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const reducedMotion = usePrefersReducedMotion$2();
@@ -2174,10 +757,6 @@ function Header() {
     if (location.pathname !== "/") navigate("/");
     window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
   };
-  const openStartModal = () => {
-    setOpen(false);
-    setStartOpen(true);
-  };
   const ariaHome = isRu ? "На главную" : "Go to home";
   const ariaMenu = isRu ? "Меню" : "Menu";
   const ctaTop = isRu ? "Обсудить проект" : "Discuss the project";
@@ -2252,20 +831,20 @@ function Header() {
                 }
               ) }),
               /* @__PURE__ */ jsx("div", { className: "ml-auto hidden min-w-0 shrink-0 items-center xl:ml-0 xl:flex xl:justify-self-end", children: /* @__PURE__ */ jsx(
-                CalcButton,
+                TelegramLink,
                 {
+                  href: TG_BOT_URL,
                   variant: "white",
-                  onClick: openStartModal,
                   className: "h-11 px-7 text-[14px]",
                   children: ctaTop
                 }
               ) }),
               /* @__PURE__ */ jsxs("div", { className: "ml-auto xl:hidden flex items-center gap-2", children: [
                 /* @__PURE__ */ jsx("div", { className: "hidden md:block", children: /* @__PURE__ */ jsx(
-                  CalcButton,
+                  TelegramLink,
                   {
+                    href: TG_BOT_URL,
                     variant: "white",
-                    onClick: openStartModal,
                     className: "h-11 px-6 text-[13px]",
                     children: ctaTop
                   }
@@ -2489,10 +1068,10 @@ function Header() {
                 )) }),
                 /* @__PURE__ */ jsxs("div", { className: "mt-auto flex flex-col gap-2 px-2 pt-6 pb-[max(1rem,env(safe-area-inset-bottom))]", children: [
                   /* @__PURE__ */ jsx(
-                    CalcButton,
+                    TelegramLink,
                     {
+                      href: TG_BOT_URL,
                       variant: "plain",
-                      onClick: openStartModal,
                       className: "h-12 w-full rounded-xl border border-white/[0.08] text-[14px]",
                       children: isRu ? "Обсудить проект" : "Contact sales"
                     }
@@ -2516,8 +1095,7 @@ function Header() {
           }
         )
       }
-    ),
-    /* @__PURE__ */ jsx(StartModal, { open: startOpen, onClose: () => setStartOpen(false) })
+    )
   ] });
 }
 function Section({
@@ -2529,9 +1107,9 @@ function Section({
 }
 function landingCopy(lang) {
   const isRu = lang === "ru";
-  return isRu ? COPY_RU : COPY_EN;
+  return isRu ? COPY_RU$1 : COPY_EN$1;
 }
-const COPY_RU = {
+const COPY_RU$1 = {
   hero: {
     titleLines: ["Сайты, боты и сервисы,", "чтобы заявки не терялись"],
     scrollStages: [
@@ -3026,7 +1604,7 @@ const COPY_RU = {
     }
   }
 };
-const COPY_EN = {
+const COPY_EN$1 = {
   hero: {
     titleLines: ["Websites, bots and services", "so leads don't get lost"],
     scrollStages: [
@@ -5386,6 +3964,458 @@ function usePrefersReducedMotion$1() {
     return () => mq.removeEventListener("change", apply);
   }, []);
   return reduced;
+}
+const LAUNCH_DISCOUNT_PERCENT = 10;
+const PLAN_PRICE_USD = {
+  start: 400,
+  growth: 900,
+  product: 2e3
+};
+function planPriceStrings(fromLabel, usd) {
+  const discounted = Math.round(usd * (1 - LAUNCH_DISCOUNT_PERCENT / 100));
+  return {
+    price: `${fromLabel} $${discounted}`,
+    priceOriginal: `${fromLabel} $${usd}`
+  };
+}
+const COPY_RU = {
+  title: "Планы запуска",
+  subtitle: "Понятные тарифы под вашу задачу — от первых заявок до полноценного веб-сервиса",
+  includesLabel: "Что входит",
+  launchDiscount: {
+    percent: "10%",
+    note: "* Скидка — мы только начинаем: первые проекты запускаем по сниженной цене."
+  },
+  afterSelect: {
+    title: "Что будет после выбора плана",
+    steps: [
+      "Вы выбираете подходящий план",
+      "Мы уточняем задачу и объём",
+      "Предлагаем понятный вариант запуска",
+      "После согласования начинаем работу"
+    ],
+    note: "Цены указаны «от», потому что итог зависит от экранов, логики, интеграций и сроков. Оплата происходит после обсуждения и согласования задачи."
+  },
+  compareTitle: "Сравнение тарифов",
+  expandAll: "Развернуть всё",
+  collapseAll: "Свернуть",
+  cell: {
+    yes: "Да",
+    no: "—",
+    option: "Опция",
+    basic: "Базово"
+  },
+  cellText: {
+    support7: "7 дней",
+    support14: "14 дней",
+    support30: "30 дней",
+    supportCustom: "По договорённости"
+  },
+  badges: {
+    popular: "Чаще выбирают",
+    product: "Для веб-сервиса"
+  },
+  plans: {
+    start: {
+      name: "Start",
+      tagline: "Для быстрого запуска заявок",
+      ...planPriceStrings("от", PLAN_PRICE_USD.start),
+      desc: "Когда нужно быстро запустить страницу под рекламу, Instagram или Telegram и начать собирать заявки в одном месте.",
+      includes: [
+        "лендинг или страница услуги",
+        "форма заявки",
+        "кнопки связи",
+        "уведомления в Telegram/email",
+        "адаптация под телефон",
+        "базовая аналитика",
+        "запуск на домене"
+      ],
+      cta: "Обсудить запуск",
+      ctaHint: "Откроется Telegram-бот, займёт около 2 минут.",
+      compactCta: "Обсудить Start"
+    },
+    growth: {
+      name: "Growth",
+      tagline: "Система заявок для бизнеса",
+      ...planPriceStrings("от", PLAN_PRICE_USD.growth),
+      desc: "Когда заявок становится больше, они приходят из разных каналов и команде нужен порядок: статусы, ответственные, таблица или mini-CRM.",
+      includes: [
+        "сайт или несколько страниц",
+        "форма заявки",
+        "Telegram-уведомления",
+        "таблица или мини-CRM",
+        "статусы заявок",
+        "базовая админка",
+        "подключение аналитики",
+        "помощь с запуском"
+      ],
+      cta: "Рассчитать систему",
+      ctaHint: "Откроется короткая форма. План уже будет выбран.",
+      compactCta: "Оставить заявку"
+    },
+    product: {
+      name: "Product",
+      tagline: "Веб-сервис под ключ",
+      ...planPriceStrings("от", PLAN_PRICE_USD.product),
+      desc: "Когда нужен не просто сайт, а рабочий веб-сервис: пользователи, личные кабинеты, роли, база данных и админ-панель.",
+      includes: [
+        "личный кабинет",
+        "админ-панель",
+        "регистрация и авторизация",
+        "роли пользователей",
+        "заявки, статусы, уведомления",
+        "база данных",
+        "интеграции",
+        "оплата",
+        "адаптивный интерфейс",
+        "подготовка к запуску"
+      ],
+      cta: "Обсудить продукт",
+      ctaHint: "Откроется короткая форма. Опишете продукт — мы оценим объём.",
+      compactCta: "Описать продукт"
+    },
+    custom: {
+      name: "Custom",
+      tagline: "Автоматизация и AI-решения",
+      price: "индивидуально",
+      desc: "Когда задача не помещается в готовый тариф: AI-бот, сложная CRM, автоматизация документов, интеграции или внутренняя система.",
+      includes: [
+        "AI-боты и ассистенты",
+        "автоматизация заявок",
+        "интеграции с сервисами",
+        "обработка данных и документов",
+        "личные кабинеты",
+        "сложные роли и сценарии",
+        "кастомная CRM",
+        "поддержка и развитие"
+      ],
+      cta: "Запросить план",
+      ctaHint: "Откроется Telegram-бот для обсуждения нестандартной задачи.",
+      compactCta: "Обсудить Custom"
+    }
+  },
+  faq: {
+    title: "Частые вопросы о тарифах",
+    items: [
+      {
+        id: "price-from",
+        q: "Что значит цена «от»?",
+        a: "Это минимальная стоимость запуска. Итог зависит от количества экранов, логики, интеграций, личного кабинета, CRM и сроков."
+      },
+      {
+        id: "pay-now",
+        q: "Нужно ли платить сразу?",
+        a: "Нет. Сначала мы обсуждаем задачу, уточняем объём и только потом согласуем стоимость и этапы работы."
+      },
+      {
+        id: "which-plan",
+        q: "Какой план выбрать, если я не понимаю?",
+        a: "Можно выбрать Growth или просто написать нам. Мы разберём задачу и подскажем, нужен сайт, бот, CRM, кабинет или кастомная автоматизация."
+      },
+      {
+        id: "start-expand",
+        q: "Можно начать со Start, а потом расширить?",
+        a: "Да. Часто лучше запустить простую версию, проверить заявки, а потом добавить CRM, статусы, кабинет или интеграции."
+      },
+      {
+        id: "growth-includes",
+        q: "Что входит в Growth?",
+        a: "Growth подходит, когда нужно не просто принять заявку, а навести порядок: формы, Telegram-уведомления, статусы, таблица или mini-CRM, понятный процесс обработки."
+      },
+      {
+        id: "when-product",
+        q: "Когда нужен Product?",
+        a: "Product нужен, если это уже не просто сайт, а веб-сервис: пользователи, личные кабинеты, роли, база данных, оплата, админ-панель."
+      },
+      {
+        id: "when-custom",
+        q: "Когда выбирать Custom?",
+        a: "Custom подходит для нестандартных задач: AI-боты, сложные CRM, автоматизация документов, интеграции, внутренние панели и процессы под вашу команду."
+      }
+    ]
+  },
+  groups: {
+    core: "Основное",
+    crm: "Заявки и CRM",
+    product: "Продуктовая логика",
+    automation: "Автоматизация и AI",
+    launch: "Запуск и поддержка"
+  },
+  features: {
+    landing: "Лендинг / страница",
+    responsive: "Адаптив под телефон",
+    form: "Форма заявки",
+    contactButtons: "Кнопки связи",
+    telegramNotify: "Telegram-уведомления",
+    emailNotify: "Email-уведомления",
+    leadStorage: "Хранение заявок",
+    leadTable: "Таблица заявок",
+    miniCrm: "Мини-CRM",
+    statuses: "Статусы заявок",
+    history: "История обработки",
+    roles: "Роли сотрудников",
+    cabinet: "Личный кабинет",
+    admin: "Админ-панель",
+    auth: "Авторизация",
+    database: "База данных",
+    booking: "Онлайн-запись",
+    payments: "Оплата",
+    autoNotify: "Автоуведомления",
+    integrations: "Интеграции",
+    aiBot: "AI-бот",
+    aiLeads: "AI-обработка заявок",
+    documents: "Обработка документов",
+    customFlows: "Кастомные сценарии",
+    domain: "Помощь с доменом",
+    deploy: "Деплой",
+    guide: "Базовая инструкция",
+    testing: "Тестирование сценариев",
+    support: "Поддержка после запуска"
+  },
+  footer: {
+    valueTitle: "Платите только за",
+    valueTitleHighlight: "нужный объём запуска",
+    valueAside: "Не за лишние модули, которыми пока не пользуетесь",
+    valueLead: "Сначала запускаем то, что помогает получать и обрабатывать заявки. Когда бизнесу становится тесно — добавляем CRM, кабинет, оплату, интеграции или автоматизацию.",
+    helpTitle: "Не уверены, какой план выбрать?",
+    helpLead: "Опишите задачу своими словами — подскажем, с чего лучше начать: Start, Growth, Product или Custom.",
+    helpCta: "Написать в Telegram",
+    helpModalCta: "Оставить заявку",
+    planScopeCaption: "Объём запуска по планам",
+    chips: {
+      start: ["Лендинг", "Форма", "Telegram"],
+      growth: ["Мини-CRM", "Статусы", "Админка"],
+      product: ["Кабинет", "Оплата", "Роли"],
+      custom: ["AI-боты", "Интеграции", "CRM"]
+    },
+    shortDesc: {
+      start: "Быстрый запуск страницы и заявок",
+      growth: "Система заявок для команды",
+      product: "Полноценный веб-сервис",
+      custom: "Индивидуальная автоматизация"
+    }
+  }
+};
+const COPY_EN = {
+  title: "Launch plans",
+  subtitle: "Clear plans for your task — from first leads to a full web service",
+  includesLabel: "What's included",
+  launchDiscount: {
+    percent: "10%",
+    note: "* Launch discount — we're just getting started: early projects at a reduced rate."
+  },
+  afterSelect: {
+    title: "What happens after you choose a plan",
+    steps: [
+      "You pick the plan that fits",
+      "We clarify the task and scope",
+      "We propose a clear launch option",
+      "After agreement, we start work"
+    ],
+    note: "Prices are shown “from” because the final cost depends on screens, logic, integrations and timeline. Payment happens after we discuss and agree on the scope."
+  },
+  compareTitle: "Compare plans",
+  expandAll: "Expand all",
+  collapseAll: "Collapse",
+  cell: {
+    yes: "Yes",
+    no: "—",
+    option: "Optional",
+    basic: "Basic"
+  },
+  cellText: {
+    support7: "7 days",
+    support14: "14 days",
+    support30: "30 days",
+    supportCustom: "By agreement"
+  },
+  badges: {
+    popular: "Most popular",
+    product: "For web products"
+  },
+  plans: {
+    start: {
+      name: "Start",
+      tagline: "Fast lead capture launch",
+      ...planPriceStrings("from", PLAN_PRICE_USD.start),
+      desc: "When you need a page for ads, Instagram or Telegram — and want to collect inquiries in one place quickly.",
+      includes: [
+        "landing or service page",
+        "lead form",
+        "contact buttons",
+        "Telegram/email alerts",
+        "mobile-friendly layout",
+        "basic analytics",
+        "domain launch"
+      ],
+      cta: "Discuss launch",
+      ctaHint: "Opens our Telegram bot — takes about 2 minutes.",
+      compactCta: "Discuss Start"
+    },
+    growth: {
+      name: "Growth",
+      tagline: "Lead system for business",
+      ...planPriceStrings("from", PLAN_PRICE_USD.growth),
+      desc: "When leads grow and come from multiple channels — your team needs order: statuses, owners, a sheet or mini-CRM.",
+      includes: [
+        "site or multiple pages",
+        "lead form",
+        "Telegram alerts",
+        "sheet or mini-CRM",
+        "lead statuses",
+        "basic admin",
+        "analytics setup",
+        "launch assistance"
+      ],
+      cta: "Get a quote",
+      ctaHint: "Opens a short form. The Growth plan will already be selected.",
+      compactCta: "Submit request"
+    },
+    product: {
+      name: "Product",
+      tagline: "Full web service",
+      ...planPriceStrings("from", PLAN_PRICE_USD.product),
+      desc: "When you need more than a website — a working web service with users, client areas, roles, a database and admin panel.",
+      includes: [
+        "client area",
+        "admin panel",
+        "sign-up and auth",
+        "user roles",
+        "leads, statuses, alerts",
+        "database",
+        "integrations",
+        "payments",
+        "responsive UI",
+        "launch preparation"
+      ],
+      cta: "Discuss product",
+      ctaHint: "Opens a short form. Describe the product — we'll estimate scope.",
+      compactCta: "Describe product"
+    },
+    custom: {
+      name: "Custom",
+      tagline: "Automation & AI",
+      price: "custom",
+      desc: "When the task doesn't fit a ready plan: AI bots, complex CRM, document automation, integrations or an internal system.",
+      includes: [
+        "AI bots and assistants",
+        "lead automation",
+        "service integrations",
+        "data and document processing",
+        "client areas",
+        "complex roles and flows",
+        "custom CRM",
+        "support and evolution"
+      ],
+      cta: "Request a plan",
+      ctaHint: "Opens our Telegram bot to discuss a non-standard task.",
+      compactCta: "Discuss Custom"
+    }
+  },
+  faq: {
+    title: "Pricing FAQ",
+    items: [
+      {
+        id: "price-from",
+        q: "What does “from” mean?",
+        a: "It's the minimum launch cost. The final price depends on screens, logic, integrations, client area, CRM and timeline."
+      },
+      {
+        id: "pay-now",
+        q: "Do I pay right away?",
+        a: "No. We discuss the task, clarify scope, then agree on cost and stages before any payment."
+      },
+      {
+        id: "which-plan",
+        q: "Which plan if I'm not sure?",
+        a: "Pick Growth or message us. We'll review your task and tell you if you need a site, bot, CRM, client area or custom automation."
+      },
+      {
+        id: "start-expand",
+        q: "Can I start with Start and expand later?",
+        a: "Yes. Often it's better to launch a simple version, test leads, then add CRM, statuses, client area or integrations."
+      },
+      {
+        id: "growth-includes",
+        q: "What's in Growth?",
+        a: "Growth is for when you need order, not just a form: alerts, statuses, a sheet or mini-CRM and a clear processing flow."
+      },
+      {
+        id: "when-product",
+        q: "When do I need Product?",
+        a: "Product is for a real web service: users, client areas, roles, database, payments and admin panel."
+      },
+      {
+        id: "when-custom",
+        q: "When to choose Custom?",
+        a: "Custom fits non-standard work: AI bots, complex CRM, document automation, integrations and internal tools for your team."
+      }
+    ]
+  },
+  groups: {
+    core: "Core",
+    crm: "Leads & CRM",
+    product: "Product logic",
+    automation: "Automation & AI",
+    launch: "Launch & support"
+  },
+  features: {
+    landing: "Landing / page",
+    responsive: "Mobile layout",
+    form: "Lead form",
+    contactButtons: "Contact buttons",
+    telegramNotify: "Telegram alerts",
+    emailNotify: "Email alerts",
+    leadStorage: "Lead storage",
+    leadTable: "Lead table",
+    miniCrm: "Mini-CRM",
+    statuses: "Lead statuses",
+    history: "Processing history",
+    roles: "Staff roles",
+    cabinet: "Client area",
+    admin: "Admin panel",
+    auth: "Authentication",
+    database: "Database",
+    booking: "Online booking",
+    payments: "Payments",
+    autoNotify: "Auto alerts",
+    integrations: "Integrations",
+    aiBot: "AI bot",
+    aiLeads: "AI lead processing",
+    documents: "Document processing",
+    customFlows: "Custom scenarios",
+    domain: "Domain help",
+    deploy: "Deploy",
+    guide: "Basic guide",
+    testing: "Scenario testing",
+    support: "Post-launch support"
+  },
+  footer: {
+    valueTitle: "Pay only for",
+    valueTitleHighlight: "the launch scope you need",
+    valueAside: "Not for modules you don't use yet",
+    valueLead: "We launch what helps you capture and process leads first. When the business outgrows it — we add CRM, client area, payments, integrations or automation.",
+    helpTitle: "Not sure which plan to pick?",
+    helpLead: "Describe your task in your own words — we'll suggest whether to start with Start, Growth, Product or Custom.",
+    helpCta: "Message on Telegram",
+    helpModalCta: "Submit request",
+    planScopeCaption: "Launch scope by plan",
+    chips: {
+      start: ["Landing", "Form", "Telegram"],
+      growth: ["Mini-CRM", "Statuses", "Admin"],
+      product: ["Client area", "Payments", "Roles"],
+      custom: ["AI bots", "Integrations", "CRM"]
+    },
+    shortDesc: {
+      start: "Fast page and lead launch",
+      growth: "Lead system for your team",
+      product: "Full web service",
+      custom: "Custom automation"
+    }
+  }
+};
+function pricingCopy(lang) {
+  return lang === "ru" ? COPY_RU : COPY_EN;
 }
 const PLAN_IDS = ["start", "growth", "product", "custom"];
 const COMPARISON_GROUPS = [
@@ -11118,19 +10148,9 @@ function CompactPlanCard({
 function PricingPlansSection({ className }) {
   const { lang } = useLang();
   const copy = pricingCopy(lang);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [openGroups, setOpenGroups] = useState(
     () => Object.fromEntries(COMPARISON_GROUPS.map((g) => [g.id, true]))
   );
-  const openPlanModal = (planId) => {
-    setSelectedPlanId(planId);
-    setModalOpen(true);
-  };
-  const closePlanModal = () => {
-    setModalOpen(false);
-    setSelectedPlanId(null);
-  };
   const allExpanded = useMemo(
     () => COMPARISON_GROUPS.every((g) => openGroups[g.id]),
     [openGroups]
@@ -11143,11 +10163,9 @@ function PricingPlansSection({ className }) {
     setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
   };
   const handlePlanCta = (planId) => {
-    const plan = PLANS.find((p) => p.id === planId);
-    if (plan?.ctaAction === "modal") openPlanModal(planId);
-    else openPlanTelegram(planId);
+    openPlanTelegram(planId);
   };
-  return /* @__PURE__ */ jsxs(
+  return /* @__PURE__ */ jsx(
     Section,
     {
       id: "pricing",
@@ -11155,151 +10173,110 @@ function PricingPlansSection({ className }) {
         "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-10 sm:py-20 lg:py-24",
         className
       ),
-      children: [
-        /* @__PURE__ */ jsxs(Container, { children: [
-          /* @__PURE__ */ jsxs(Reveal, { className: "mx-auto max-w-[48rem] text-center", children: [
-            /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.85rem,4.2vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white", children: copy.title }),
-            /* @__PURE__ */ jsxs("div", { className: "mx-auto mt-3 flex flex-wrap items-baseline justify-center gap-x-2.5 gap-y-1 sm:mt-4", children: [
-              /* @__PURE__ */ jsx("span", { className: "font-hero shrink-0 text-[clamp(1.85rem,3.8vw,2.5rem)] font-bold leading-none tracking-[-0.03em] text-[#FF9A3D]", children: copy.launchDiscount.percent }),
-              /* @__PURE__ */ jsx("span", { className: "max-w-[42ch] text-center text-[11px] leading-snug text-[#FF9A3D]/72 sm:text-left sm:text-[12px]", children: copy.launchDiscount.note })
-            ] })
-          ] }),
-          /* @__PURE__ */ jsx(Reveal, { delay: 80, className: "pricing-plans-grid mt-10 sm:mt-12", children: PLANS.map((plan) => {
-            const planCopy = copy.plans[plan.id];
-            return /* @__PURE__ */ jsx(
-              PlanCard,
+      children: /* @__PURE__ */ jsxs(Container, { children: [
+        /* @__PURE__ */ jsxs(Reveal, { className: "mx-auto max-w-[48rem] text-center", children: [
+          /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.85rem,4.2vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white", children: copy.title }),
+          /* @__PURE__ */ jsxs("div", { className: "mx-auto mt-3 flex flex-wrap items-baseline justify-center gap-x-2.5 gap-y-1 sm:mt-4", children: [
+            /* @__PURE__ */ jsx("span", { className: "font-hero shrink-0 text-[clamp(1.85rem,3.8vw,2.5rem)] font-bold leading-none tracking-[-0.03em] text-[#FF9A3D]", children: copy.launchDiscount.percent }),
+            /* @__PURE__ */ jsx("span", { className: "max-w-[42ch] text-center text-[11px] leading-snug text-[#FF9A3D]/72 sm:text-left sm:text-[12px]", children: copy.launchDiscount.note })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx(Reveal, { delay: 80, className: "pricing-plans-grid mt-10 sm:mt-12", children: PLANS.map((plan) => {
+          const planCopy = copy.plans[plan.id];
+          return /* @__PURE__ */ jsx(
+            PlanCard,
+            {
+              planId: plan.id,
+              highlight: plan.highlight,
+              badge: plan.badgeKey ? copy.badges[plan.badgeKey] : void 0,
+              name: planCopy.name,
+              tagline: planCopy.tagline,
+              price: planCopy.price,
+              priceOriginal: planCopy.priceOriginal,
+              desc: planCopy.desc,
+              includes: planCopy.includes,
+              cta: planCopy.cta,
+              onCta: () => handlePlanCta(plan.id)
+            },
+            plan.id
+          );
+        }) }),
+        /* @__PURE__ */ jsx(Reveal, { delay: 120, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs("div", { className: "pricing-compare", children: [
+          /* @__PURE__ */ jsxs("div", { className: "pricing-compare__intro", children: [
+            /* @__PURE__ */ jsx("h3", { className: "font-hero text-[clamp(1.35rem,2.8vw,1.85rem)] font-semibold tracking-[-0.03em] text-white", children: copy.compareTitle }),
+            /* @__PURE__ */ jsx(
+              "button",
               {
-                planId: plan.id,
-                highlight: plan.highlight,
-                badge: plan.badgeKey ? copy.badges[plan.badgeKey] : void 0,
+                type: "button",
+                onClick: toggleAll,
+                className: "pricing-compare__toggle lg:hidden",
+                children: allExpanded ? copy.collapseAll : copy.expandAll
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile-plans lg:hidden", children: /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile-plans-scroll", children: PLAN_IDS.map((id) => {
+            const planCopy = copy.plans[id];
+            const plan = PLANS.find((p) => p.id === id);
+            return /* @__PURE__ */ jsx(
+              ComparePlanHead,
+              {
+                planId: id,
                 name: planCopy.name,
-                tagline: planCopy.tagline,
                 price: planCopy.price,
                 priceOriginal: planCopy.priceOriginal,
-                desc: planCopy.desc,
-                includes: planCopy.includes,
-                cta: planCopy.cta,
-                onCta: () => handlePlanCta(plan.id)
+                cta: planCopy.compactCta,
+                featured: plan.highlight,
+                onAction: () => handlePlanCta(id),
+                layout: "card"
               },
-              plan.id
+              `mobile-head-${id}`
             );
-          }) }),
-          /* @__PURE__ */ jsx(Reveal, { delay: 120, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs("div", { className: "pricing-compare", children: [
-            /* @__PURE__ */ jsxs("div", { className: "pricing-compare__intro", children: [
-              /* @__PURE__ */ jsx("h3", { className: "font-hero text-[clamp(1.35rem,2.8vw,1.85rem)] font-semibold tracking-[-0.03em] text-white", children: copy.compareTitle }),
-              /* @__PURE__ */ jsx(
-                "button",
+          }) }) }),
+          /* @__PURE__ */ jsxs("div", { className: "pricing-compare__desktop hidden lg:block", children: [
+            /* @__PURE__ */ jsxs("div", { className: "pricing-compare__head", children: [
+              /* @__PURE__ */ jsx("div", { className: "pricing-compare__feature-col pricing-compare__feature-col--head", children: /* @__PURE__ */ jsx(
+                "img",
                 {
-                  type: "button",
-                  onClick: toggleAll,
-                  className: "pricing-compare__toggle lg:hidden",
-                  children: allExpanded ? copy.collapseAll : copy.expandAll
+                  src: COMPARE_LOGO,
+                  alt: "TIVONIX",
+                  className: "pricing-compare__logo",
+                  width: 176,
+                  height: 40,
+                  loading: "lazy",
+                  decoding: "async"
                 }
-              )
-            ] }),
-            /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile-plans lg:hidden", children: /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile-plans-scroll", children: PLAN_IDS.map((id) => {
-              const planCopy = copy.plans[id];
-              const plan = PLANS.find((p) => p.id === id);
-              return /* @__PURE__ */ jsx(
-                ComparePlanHead,
-                {
-                  planId: id,
-                  name: planCopy.name,
-                  price: planCopy.price,
-                  priceOriginal: planCopy.priceOriginal,
-                  cta: planCopy.compactCta,
-                  featured: plan.highlight,
-                  onAction: () => handlePlanCta(id),
-                  layout: "card"
-                },
-                `mobile-head-${id}`
-              );
-            }) }) }),
-            /* @__PURE__ */ jsxs("div", { className: "pricing-compare__desktop hidden lg:block", children: [
-              /* @__PURE__ */ jsxs("div", { className: "pricing-compare__head", children: [
-                /* @__PURE__ */ jsx("div", { className: "pricing-compare__feature-col pricing-compare__feature-col--head", children: /* @__PURE__ */ jsx(
-                  "img",
+              ) }),
+              PLAN_IDS.map((id) => {
+                const planCopy = copy.plans[id];
+                const plan = PLANS.find((p) => p.id === id);
+                return /* @__PURE__ */ jsx(
+                  ComparePlanHead,
                   {
-                    src: COMPARE_LOGO,
-                    alt: "TIVONIX",
-                    className: "pricing-compare__logo",
-                    width: 176,
-                    height: 40,
-                    loading: "lazy",
-                    decoding: "async"
-                  }
-                ) }),
-                PLAN_IDS.map((id) => {
-                  const planCopy = copy.plans[id];
-                  const plan = PLANS.find((p) => p.id === id);
-                  return /* @__PURE__ */ jsx(
-                    ComparePlanHead,
-                    {
-                      planId: id,
-                      name: planCopy.name,
-                      price: planCopy.price,
-                      priceOriginal: planCopy.priceOriginal,
-                      cta: planCopy.compactCta,
-                      featured: plan.highlight,
-                      onAction: () => handlePlanCta(id),
-                      layout: "column"
-                    },
-                    `head-${id}`
-                  );
-                })
-              ] }),
-              COMPARISON_GROUPS.map((group) => /* @__PURE__ */ jsxs("div", { className: "pricing-compare__group", children: [
-                /* @__PURE__ */ jsx("div", { className: "pricing-compare__group-title", children: copy.groups[group.id] }),
-                group.rows.map((row) => /* @__PURE__ */ jsxs("div", { className: "pricing-compare__row", children: [
-                  /* @__PURE__ */ jsx("div", { className: "pricing-compare__feature-col", children: copy.features[row.id] }),
-                  PLAN_IDS.map((planId) => /* @__PURE__ */ jsx(
-                    "div",
-                    {
-                      className: cx(
-                        "pricing-compare__plan-col",
-                        planId === "growth" && "pricing-compare__plan-col--growth"
-                      ),
-                      children: /* @__PURE__ */ jsx(
-                        ComparisonValue,
-                        {
-                          cell: row.values[planId],
-                          labels: copy.cell,
-                          textLabels: copy.cellText
-                        }
-                      )
-                    },
-                    planId
-                  ))
-                ] }, row.id))
-              ] }, group.id))
+                    planId: id,
+                    name: planCopy.name,
+                    price: planCopy.price,
+                    priceOriginal: planCopy.priceOriginal,
+                    cta: planCopy.compactCta,
+                    featured: plan.highlight,
+                    onAction: () => handlePlanCta(id),
+                    layout: "column"
+                  },
+                  `head-${id}`
+                );
+              })
             ] }),
-            /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile lg:hidden", children: COMPARISON_GROUPS.map((group) => {
-              const open = openGroups[group.id];
-              return /* @__PURE__ */ jsxs("div", { className: "pricing-compare__mobile-group", children: [
-                /* @__PURE__ */ jsxs(
-                  "button",
+            COMPARISON_GROUPS.map((group) => /* @__PURE__ */ jsxs("div", { className: "pricing-compare__group", children: [
+              /* @__PURE__ */ jsx("div", { className: "pricing-compare__group-title", children: copy.groups[group.id] }),
+              group.rows.map((row) => /* @__PURE__ */ jsxs("div", { className: "pricing-compare__row", children: [
+                /* @__PURE__ */ jsx("div", { className: "pricing-compare__feature-col", children: copy.features[row.id] }),
+                PLAN_IDS.map((planId) => /* @__PURE__ */ jsx(
+                  "div",
                   {
-                    type: "button",
-                    onClick: () => toggleGroup(group.id),
-                    className: "pricing-compare__mobile-group-btn",
-                    children: [
-                      /* @__PURE__ */ jsx("span", { children: copy.groups[group.id] }),
-                      /* @__PURE__ */ jsx(
-                        ChevronDown,
-                        {
-                          size: 16,
-                          className: cx("text-white/45 transition", open && "rotate-180"),
-                          "aria-hidden": true
-                        }
-                      )
-                    ]
-                  }
-                ),
-                open ? /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile-rows", children: group.rows.map((row) => /* @__PURE__ */ jsxs("div", { className: "pricing-compare__mobile-row", children: [
-                  /* @__PURE__ */ jsx("p", { className: "pricing-compare__mobile-feature", children: copy.features[row.id] }),
-                  /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile-values", children: PLAN_IDS.map((planId) => /* @__PURE__ */ jsxs("div", { className: "pricing-compare__mobile-value", children: [
-                    /* @__PURE__ */ jsx("p", { className: "pricing-compare__mobile-plan-label", children: copy.plans[planId].name }),
-                    /* @__PURE__ */ jsx(
+                    className: cx(
+                      "pricing-compare__plan-col",
+                      planId === "growth" && "pricing-compare__plan-col--growth"
+                    ),
+                    children: /* @__PURE__ */ jsx(
                       ComparisonValue,
                       {
                         cell: row.values[planId],
@@ -11307,62 +10284,93 @@ function PricingPlansSection({ className }) {
                         textLabels: copy.cellText
                       }
                     )
-                  ] }, planId)) })
-                ] }, row.id)) }) : null
-              ] }, group.id);
-            }) })
-          ] }) }),
-          /* @__PURE__ */ jsx(Reveal, { delay: 150, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs("div", { className: "pricing-value-band", children: [
-            /* @__PURE__ */ jsxs("div", { className: "pricing-value-band__copy", children: [
-              /* @__PURE__ */ jsxs("h3", { className: "font-hero text-[clamp(1.35rem,2.8vw,2rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-white", children: [
-                copy.footer.valueTitle,
-                " ",
-                /* @__PURE__ */ jsx("span", { className: "pricing-value-band__highlight", children: copy.footer.valueTitleHighlight })
-              ] }),
-              /* @__PURE__ */ jsx("p", { className: "mt-2 text-[12px] text-white/38", children: copy.footer.valueAside }),
-              /* @__PURE__ */ jsx("p", { className: "mt-5 max-w-[38ch] text-[14px] leading-[1.65] text-white/50", children: copy.footer.valueLead })
-            ] }),
-            /* @__PURE__ */ jsx(PricingPlanScopeGrid, { onPlanAction: handlePlanCta })
-          ] }) }),
-          /* @__PURE__ */ jsx(PricingFAQSection, {}),
-          /* @__PURE__ */ jsx(Reveal, { delay: 170, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsx("div", { className: "pricing-help-band", children: /* @__PURE__ */ jsx(
-            "a",
-            {
-              href: buildHelpPlanTelegramUrl(),
-              target: "_blank",
-              rel: "noopener noreferrer",
-              className: "pricing-help-band__link",
-              children: copy.footer.helpCta
-            }
-          ) }) }),
-          /* @__PURE__ */ jsx(Reveal, { delay: 180, className: "pricing-footer-grid mt-0 hidden md:grid", children: PLANS.map((plan) => {
-            const planCopy = copy.plans[plan.id];
-            return /* @__PURE__ */ jsx(
-              CompactPlanCard,
-              {
-                planId: plan.id,
-                name: planCopy.name,
-                shortDesc: copy.footer.shortDesc[plan.id],
-                price: planCopy.price,
-                priceOriginal: planCopy.priceOriginal,
-                chips: copy.footer.chips[plan.id],
-                compactCta: planCopy.compactCta,
-                highlight: plan.highlight,
-                onCta: () => handlePlanCta(plan.id)
-              },
-              `footer-${plan.id}`
-            );
+                  },
+                  planId
+                ))
+              ] }, row.id))
+            ] }, group.id))
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile lg:hidden", children: COMPARISON_GROUPS.map((group) => {
+            const open = openGroups[group.id];
+            return /* @__PURE__ */ jsxs("div", { className: "pricing-compare__mobile-group", children: [
+              /* @__PURE__ */ jsxs(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => toggleGroup(group.id),
+                  className: "pricing-compare__mobile-group-btn",
+                  children: [
+                    /* @__PURE__ */ jsx("span", { children: copy.groups[group.id] }),
+                    /* @__PURE__ */ jsx(
+                      ChevronDown,
+                      {
+                        size: 16,
+                        className: cx("text-white/45 transition", open && "rotate-180"),
+                        "aria-hidden": true
+                      }
+                    )
+                  ]
+                }
+              ),
+              open ? /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile-rows", children: group.rows.map((row) => /* @__PURE__ */ jsxs("div", { className: "pricing-compare__mobile-row", children: [
+                /* @__PURE__ */ jsx("p", { className: "pricing-compare__mobile-feature", children: copy.features[row.id] }),
+                /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile-values", children: PLAN_IDS.map((planId) => /* @__PURE__ */ jsxs("div", { className: "pricing-compare__mobile-value", children: [
+                  /* @__PURE__ */ jsx("p", { className: "pricing-compare__mobile-plan-label", children: copy.plans[planId].name }),
+                  /* @__PURE__ */ jsx(
+                    ComparisonValue,
+                    {
+                      cell: row.values[planId],
+                      labels: copy.cell,
+                      textLabels: copy.cellText
+                    }
+                  )
+                ] }, planId)) })
+              ] }, row.id)) }) : null
+            ] }, group.id);
           }) })
-        ] }),
-        /* @__PURE__ */ jsx(
-          StartModal,
+        ] }) }),
+        /* @__PURE__ */ jsx(Reveal, { delay: 150, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs("div", { className: "pricing-value-band", children: [
+          /* @__PURE__ */ jsxs("div", { className: "pricing-value-band__copy", children: [
+            /* @__PURE__ */ jsxs("h3", { className: "font-hero text-[clamp(1.35rem,2.8vw,2rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-white", children: [
+              copy.footer.valueTitle,
+              " ",
+              /* @__PURE__ */ jsx("span", { className: "pricing-value-band__highlight", children: copy.footer.valueTitleHighlight })
+            ] }),
+            /* @__PURE__ */ jsx("p", { className: "mt-2 text-[12px] text-white/38", children: copy.footer.valueAside }),
+            /* @__PURE__ */ jsx("p", { className: "mt-5 max-w-[38ch] text-[14px] leading-[1.65] text-white/50", children: copy.footer.valueLead })
+          ] }),
+          /* @__PURE__ */ jsx(PricingPlanScopeGrid, { onPlanAction: handlePlanCta })
+        ] }) }),
+        /* @__PURE__ */ jsx(PricingFAQSection, {}),
+        /* @__PURE__ */ jsx(Reveal, { delay: 170, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsx("div", { className: "pricing-help-band", children: /* @__PURE__ */ jsx(
+          "a",
           {
-            open: modalOpen,
-            onClose: closePlanModal,
-            selectedPlanId
+            href: buildHelpPlanTelegramUrl(),
+            target: "_blank",
+            rel: "noopener noreferrer",
+            className: "pricing-help-band__link",
+            children: copy.footer.helpCta
           }
-        )
-      ]
+        ) }) }),
+        /* @__PURE__ */ jsx(Reveal, { delay: 180, className: "pricing-footer-grid mt-0 hidden md:grid", children: PLANS.map((plan) => {
+          const planCopy = copy.plans[plan.id];
+          return /* @__PURE__ */ jsx(
+            CompactPlanCard,
+            {
+              planId: plan.id,
+              name: planCopy.name,
+              shortDesc: copy.footer.shortDesc[plan.id],
+              price: planCopy.price,
+              priceOriginal: planCopy.priceOriginal,
+              chips: copy.footer.chips[plan.id],
+              compactCta: planCopy.compactCta,
+              highlight: plan.highlight,
+              onCta: () => handlePlanCta(plan.id)
+            },
+            `footer-${plan.id}`
+          );
+        }) })
+      ] })
     }
   );
 }
