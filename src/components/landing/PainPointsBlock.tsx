@@ -22,17 +22,17 @@ const defaultPainPoints: PainPointItem[] = [
   {
     title: "Заявки теряются между каналами",
     text: "Клиенты пишут в Telegram, WhatsApp, почту и формы, а команда не всегда видит всё вовремя.",
-    image: "1.png",
+    image: "1.webp",
   },
   {
     title: "Команда тратит время вручную",
     text: "Менеджеры переносят данные, обновляют статусы и собирают отчёты руками вместо автоматизации.",
-    image: "2.png",
+    image: "2.webp",
   },
   {
     title: "Нет контроля над процессами",
     text: "Руководителю сложно понять, где застряли заявки, кто отвечает и сколько денег теряется.",
-    image: "3.png",
+    image: "3.webp",
   },
 ];
 
@@ -52,7 +52,7 @@ function PainCard({
   return (
     <article className="group relative min-h-[25rem] overflow-hidden border border-white/[0.12] bg-black">
       <SmokeMaskedIllustration
-        image={item.image ?? `${index + 1}.png`}
+        image={item.image ?? `${index + 1}.webp`}
         imageDir={imageDir}
         title={item.title}
         smokeBase={smokeBase}

@@ -17,7 +17,7 @@ import {
 } from "../../lib/pricingData";
 import { buildHelpPlanTelegramUrl, buildPricingPlanTelegramUrl } from "../../constants/links";
 
-const COMPARE_LOGO = "/images/tivonix-logo-white.png";
+const COMPARE_LOGO = "/images/tivonix-logo-white.webp";
 
 function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");

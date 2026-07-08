@@ -128,16 +128,16 @@ function rowPositionLegacy(index: number, total: number) {
 }
 
 const MODEL_DEFS = [
-  { id: "openai", name: "OpenAI", file: "openai.png", scale: 1.88 },
-  { id: "claude", name: "Claude", file: "claude.png", scale: 1.08, colorful: true },
-  { id: "gemini", name: "Gemini", file: "gemini.png", scale: 2.12 },
-  { id: "grok", name: "Grok", file: "grok.png", scale: 2.65 },
-  { id: "deepseek", name: "DeepSeek", file: "deepseek.png", scale: 1.72, brighten: true },
-  { id: "copilot", name: "Copilot", file: "copilot.png", scale: 1.06 },
-  { id: "meta", name: "Meta AI", file: "meta.png", scale: 1.45 },
-  { id: "mistral", name: "Mistral", file: "mistral.png", scale: 0.96 },
-  { id: "ollama", name: "Ollama", file: "ollama.png", scale: 1.02 },
-  { id: "perplexity", name: "Perplexity", file: "perplexity.png", scale: 1.28 },
+  { id: "openai", name: "OpenAI", file: "openai.webp", scale: 1.88 },
+  { id: "claude", name: "Claude", file: "claude.webp", scale: 1.08, colorful: true },
+  { id: "gemini", name: "Gemini", file: "gemini.webp", scale: 2.12 },
+  { id: "grok", name: "Grok", file: "grok.webp", scale: 2.65 },
+  { id: "deepseek", name: "DeepSeek", file: "deepseek.webp", scale: 1.72, brighten: true },
+  { id: "copilot", name: "Copilot", file: "copilot.webp", scale: 1.06 },
+  { id: "meta", name: "Meta AI", file: "meta.webp", scale: 1.45 },
+  { id: "mistral", name: "Mistral", file: "mistral.webp", scale: 0.96 },
+  { id: "ollama", name: "Ollama", file: "ollama.webp", scale: 1.02 },
+  { id: "perplexity", name: "Perplexity", file: "perplexity.webp", scale: 1.28 },
 ] as const;
 
 export const AI_MODELS: AiModel[] = MODEL_DEFS.map((model, index) => {

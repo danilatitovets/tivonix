@@ -96,7 +96,7 @@ export default function CasesSection() {
           <Reveal className="case-split">
             <div className="case-split__visual">
               <img
-                src={spliton.cover ?? "/images/project-priew/spliton.png"}
+                src={spliton.cover ?? "/images/project-priew/spliton.webp"}
                 alt={spliton.title}
                 loading="lazy"
                 decoding="async"

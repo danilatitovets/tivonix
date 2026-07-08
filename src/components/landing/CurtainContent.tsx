@@ -2,8 +2,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLang } from "../../i18n/LangProvider";
 
-const HERO_IMG = "/images/hero.png";
-const BRAND_LOCKUP = "/images/tivonix-logo-lockup.png";
+const HERO_IMG = "/images/hero.webp";
+const BRAND_LOCKUP = "/images/tivonix-logo-lockup.webp";
 
 // фиксированное положение
 const HEADER_H = -50;

@@ -27,9 +27,9 @@ export function buildHomePageSchema({ pageTitle, pageDescription }: HomeSchemaIn
         url: "https://tivonix.tech/",
         logo: {
           "@type": "ImageObject",
-          url: "https://tivonix.tech/images/tivonix-logo-icon.png",
+          url: "https://tivonix.tech/images/tivonix-logo-icon.webp",
         },
-        image: "https://tivonix.tech/images/ceo.png",
+        image: "https://tivonix.tech/images/ceo.webp",
         description: pageDescription,
         contactPoint: [
           {

@@ -25,8 +25,8 @@ const NAV_MAIN: NavItem[] = [
 // Важно: десктоп-режим теперь только с xl (>=1280).
 const DESKTOP_MIN_WIDTH = 1280;
 
-const LOGO_DEFAULT = "/images/tivonix-logo-lockup.png";
-const LOGO_WHITE = "/images/tivonix-logo-white.png";
+const LOGO_DEFAULT = "/images/tivonix-logo-lockup.webp";
+const LOGO_WHITE = "/images/tivonix-logo-white.webp";
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);

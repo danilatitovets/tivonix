@@ -109,7 +109,7 @@ export default function NewCaseSection() {
 
   const spliton = buildProjects(isRu).find((p) => p.id === "spliton");
   const subtitle = spliton ? (isRu ? spliton.subtitleRu : spliton.subtitleEn) : "";
-  const cover = spliton?.cover ?? "/images/project-priew/spliton.png";
+  const cover = spliton?.cover ?? "/images/project-priew/spliton.webp";
   const domain = spliton?.domain?.replace(/^https?:\/\//, "") ?? "spliton.io/app";
   const outcome = spliton?.outcomes?.[0] ?? "";
 

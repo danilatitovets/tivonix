@@ -35,7 +35,7 @@ type LocalFaqItem = {
 
 type CatFilter = "all" | Cat;
 
-const LOGO_ICON = "/images/tivonix-logo-icon.png";
+const LOGO_ICON = "/images/tivonix-logo-icon.webp";
 
 const PAGE_SIZE = 6;
 const ORANGE = "#FF9A3D";

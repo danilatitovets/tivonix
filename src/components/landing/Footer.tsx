@@ -10,8 +10,8 @@ function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
 
-const LOGO_LOCKUP_PNG = "/images/tivonix-logo-lockup.png";
-const FOOTER_BG = `/images/${encodeURI("как рабоает")}/${encodeURI("футер.png")}`;
+const LOGO_LOCKUP_PNG = "/images/tivonix-logo-lockup.webp";
+const FOOTER_BG = `/images/${encodeURI("как рабоает")}/${encodeURI("футер.webp")}`;
 const ACCENT = "#FF6B2C";
 
 const FOOTER_PAGES = [

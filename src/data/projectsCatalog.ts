@@ -42,8 +42,8 @@ export const PUBLIC_PROJECT_IDS = [
   "spliton",
 ] as const;
 
-const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/r${i + 1}.png`);
-const SPLITON_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/spliton/g${i + 1}.png`);
+const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/r${i + 1}.webp`);
+const SPLITON_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/spliton/g${i + 1}.webp`);
 
 function buildAllProjects(isRu: boolean): Project[] {
   return [
@@ -82,7 +82,7 @@ function buildAllProjects(isRu: boolean): Project[] {
         domain: LABELOS_DOMAIN,
         status: "live",
         tags: ["SaaS", "Landing", "UI/UX", "React", "Tailwind"],
-        cover: "/images/project-priew/labelo.jpg",
+        cover: "/images/project-priew/labelo.webp",
         outcomes: [
           isRu
             ? "Готовый промо-лендинг за 3 дня"
@@ -138,7 +138,7 @@ function buildAllProjects(isRu: boolean): Project[] {
         domain: UPC_DOMAIN,
         status: "live",
         tags: ["SaaS", "MVP", "React", "TypeScript", "Supabase"],
-        cover: "/images/project-priew/upcwatc.png",
+        cover: "/images/project-priew/upcwatc.webp",
         outcomes: [
           isRu ? "MVP с циклом трек → ссылка → монетизация просмотров" : "MVP loop: track → link → view-based monetization",
           isRu ? "Премиум UI + стабильная скорость" : "Premium UI + solid performance",
@@ -205,7 +205,7 @@ function buildAllProjects(isRu: boolean): Project[] {
         domain: PAYCLIP_DOMAIN,
         status: "live",
         tags: ["Fintech", "Landing", "Onboarding", "UI/UX", "Conversion"],
-        cover: "/images/project-priew/payslip.jpg",
+        cover: "/images/project-priew/payslip.webp",
         outcomes: [
           isRu ? "Сделано за 2 недели" : "Delivered in 2 weeks",
           isRu ? "Структура под конверсию" : "Conversion-driven structure",
@@ -256,7 +256,7 @@ function buildAllProjects(isRu: boolean): Project[] {
         domain: HEADMIND_DOMAIN,
         status: "live",
         tags: ["B2B", "Website", "UI/UX", "Structure", "Conversion"],
-        cover: "/images/project-priew/headmind.png",
+        cover: "/images/project-priew/headmind.webp",
         outcomes: [
           isRu ? "Понятная упаковка услуг и подхода" : "Clear services & approach packaging",
           isRu ? "Усиление доверия через команду и структуру" : "Stronger trust via team + structure",
@@ -323,7 +323,7 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Framer Motion",
           "Automotive",
         ],
-        cover: "/images/project-priew/logovo.png",
+        cover: "/images/project-priew/logovo.webp",
         outcomes: [
           isRu ? "Сделано за 12 дней" : "Delivered in 12 days",
           isRu
@@ -409,7 +409,7 @@ function buildAllProjects(isRu: boolean): Project[] {
         domain: GIFTSNIPER_DOMAIN,
         status: "live",
         tags: ["Telegram Bot", "TON", "NFT", "Analytics", "Market Data"],
-        cover: "/images/project-priew/giftsniper.png",
+        cover: "/images/project-priew/giftsniper.webp",
         outcomes: [
           isRu
             ? "Оценка NFT и Gifts по данным рынка в одном окне"
@@ -501,7 +501,7 @@ function buildAllProjects(isRu: boolean): Project[] {
         domain: SLOTTY_DOMAIN,
         status: "live",
         tags: ["Marketplace", "Booking", "Beauty", "SaaS", "Mobile App"],
-        cover: "/images/project-priew/slotty.png",
+        cover: "/images/project-priew/slotty.webp",
         gallery: SLOTTY_GALLERY,
         outcomes: [
           isRu
@@ -605,7 +605,7 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Admin Panel",
           "Compliance",
         ],
-        cover: "/images/project-priew/spliton.png",
+        cover: "/images/project-priew/spliton.webp",
         gallery: SPLITON_GALLERY,
         outcomes: [
           isRu

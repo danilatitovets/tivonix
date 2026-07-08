@@ -5,8 +5,8 @@ import ProcessStepStage from "./ProcessStepStage";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
 
-const PROCESS_BG_MUTED = `/images/${encodeURI("как рабоает")}/${encodeURI("чер.png")}`;
-const PROCESS_BG_WARM = `/images/${encodeURI("как рабоает")}/${encodeURI("яр.png")}`;
+const PROCESS_BG_MUTED = `/images/${encodeURI("как рабоает")}/${encodeURI("чер.webp")}`;
+const PROCESS_BG_WARM = `/images/${encodeURI("как рабоает")}/${encodeURI("яр.webp")}`;
 const STEP_SCROLL_VH = 80;
 const APPROACH_RUNWAY_VH = 32;
 

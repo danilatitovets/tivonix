@@ -759,7 +759,7 @@ export default function StartModal({ open, onClose, selectedPlanId = null }: Pro
                   <div className="flex items-center gap-3">
                     <div className="grid h-10 w-10 place-items-center overflow-hidden rounded-2xl border border-white/12 bg-white/[0.06] backdrop-blur-xl sm:hidden">
                       <img
-                        src="/images/tivonix-logo-icon.png"
+                        src="/images/tivonix-logo-icon.webp"
                         alt="TIVONIX"
                         className="h-6 w-6 opacity-90"
                         draggable={false}
@@ -767,7 +767,7 @@ export default function StartModal({ open, onClose, selectedPlanId = null }: Pro
                     </div>
 
                     <img
-                      src="/images/tivonix-logo-lockup.png"
+                      src="/images/tivonix-logo-lockup.webp"
                       alt="TIVONIX"
                       draggable={false}
                       className="hidden h-9 w-auto opacity-90 sm:block"

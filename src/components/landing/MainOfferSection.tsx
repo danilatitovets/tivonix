@@ -21,8 +21,8 @@ type CardReveal = {
   text: number;
 };
 
-const OFFER_MOSAIC_BG = `/images/${encodeURI("как рабоает/пп/блоки/ffon.png")}`;
-const OFFER_BOTTOM_MOBILE_BG = `/images/${encodeURI("как рабоает/пп/6.png")}`;
+const OFFER_MOSAIC_BG = `/images/${encodeURI("как рабоает/пп/блоки/ffon.webp")}`;
+const OFFER_BOTTOM_MOBILE_BG = `/images/${encodeURI("как рабоает/пп/6.webp")}`;
 const TOP_ENTER_STAGGER_MS = 130;
 const TOP_ENTER_DURATION_MS = 820;
 const REVEAL_DELAY_MS = 200;

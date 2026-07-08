@@ -2,7 +2,7 @@
 import type { CSSProperties } from "react";
 import type { Project, ProjectStatus } from "../data/projectsCatalog";
 
-export const HERO_IMG = "/images/hero.png";
+export const HERO_IMG = "/images/hero.webp";
 
 export function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");

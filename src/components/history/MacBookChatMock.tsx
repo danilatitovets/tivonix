@@ -15,8 +15,8 @@ function ease(t: number) {
   return t * t * (3 - 2 * t);
 }
 
-const MACBOOK_IMG = "/images/mak.png";
-const BRAND_LOGO = "/images/favicon.png";
+const MACBOOK_IMG = "/images/mak.webp";
+const BRAND_LOGO = "/images/favicon.webp";
 
 // 🔧 ТОЛЬКО ЭТО ЧИСЛО МЕНЯЕШЬ, ЧТОБЫ ПОДБИВАТЬ РАЗМЕР МАКБУКА
 const MACBOOK_MAX_WIDTH = 1040; // максимальная ширина макбука в пикселях

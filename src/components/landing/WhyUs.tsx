@@ -183,16 +183,16 @@ export default function WhyUs() {
   const stack = useMemo<StackItem[]>(
     () => [
       // public/images/stack — имена файлов как в папке (PNG с заглавной / полным названием)
-      { id: "supabase", label: "Supabase", src: "/images/stack/Supabase.png", category: "Platform" },
-      { id: "react", label: "React", src: "/images/stack/React.png", category: "Frontend" },
-      { id: "ts", label: "TypeScript", src: "/images/stack/TypeScript.png", category: "Frontend" },
-      { id: "tw", label: "Tailwind", src: "/images/stack/Tailwind.png", category: "Frontend" },
-      { id: "node", label: "Node.js", src: "/images/stack/Node.js.png", category: "Backend" },
-      { id: "ex", label: "Express", src: "/images/stack/Express.png", category: "Backend" },
-      { id: "pg", label: "Postgres", src: "/images/stack/Postgres.png", category: "Database" },
-      { id: "html", label: "HTML", src: "/images/stack/HTML.png", category: "Frontend" },
-      { id: "css", label: "CSS", src: "/images/stack/CSS.png", category: "Frontend" },
-      { id: "js", label: "JavaScript", src: "/images/stack/JavaScript.png", category: "Frontend" },
+      { id: "supabase", label: "Supabase", src: "/images/stack/Supabase.webp", category: "Platform" },
+      { id: "react", label: "React", src: "/images/stack/React.webp", category: "Frontend" },
+      { id: "ts", label: "TypeScript", src: "/images/stack/TypeScript.webp", category: "Frontend" },
+      { id: "tw", label: "Tailwind", src: "/images/stack/Tailwind.webp", category: "Frontend" },
+      { id: "node", label: "Node.js", src: "/images/stack/Node.js.webp", category: "Backend" },
+      { id: "ex", label: "Express", src: "/images/stack/Express.webp", category: "Backend" },
+      { id: "pg", label: "Postgres", src: "/images/stack/Postgres.webp", category: "Database" },
+      { id: "html", label: "HTML", src: "/images/stack/HTML.webp", category: "Frontend" },
+      { id: "css", label: "CSS", src: "/images/stack/CSS.webp", category: "Frontend" },
+      { id: "js", label: "JavaScript", src: "/images/stack/JavaScript.webp", category: "Frontend" },
     ],
     []
   );

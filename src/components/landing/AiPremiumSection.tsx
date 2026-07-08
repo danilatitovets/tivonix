@@ -24,8 +24,8 @@ import TivonixGlowBorder from "../ui/TivonixGlowBorder";
 
 const ANIM_PIN_VH = 235;
 const DRIFT_RUNWAY_VH = 32;
-const TIVONIX_LOGO = "/images/logo-black.png";
-const AI_SECTION_BG = "/images/foooa.png";
+const TIVONIX_LOGO = "/images/logo-black.webp";
+const AI_SECTION_BG = "/images/foooa.webp";
 const DROP_START = 0.68;
 const DROP_END = 0.88;
 const ORBIT_START = 0.14;
@@ -600,7 +600,8 @@ export default function AiPremiumSection() {
                                 ].join(" ")}
                                 style={{ transform: "scale(var(--ai-logo-scale, 1))" }}
                                 draggable={false}
-                                loading="eager"
+                                loading="lazy"
+                                decoding="async"
                               />
                             </div>
                           </div>

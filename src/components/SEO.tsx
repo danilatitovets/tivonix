@@ -3,8 +3,8 @@ import { Helmet } from "react-helmet-async";
 
 const CANONICAL_ORIGIN = "https://tivonix.tech";
 export const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN}/images/ceo.png`;
-const OG_IMAGE_WIDTH = "1672";
-const OG_IMAGE_HEIGHT = "941";
+const OG_IMAGE_WIDTH = "1200";
+const OG_IMAGE_HEIGHT = "630";
 
 export type SEOProps = {
   title: string;

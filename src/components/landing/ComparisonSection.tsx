@@ -10,7 +10,7 @@ import { landingCopy } from "../../i18n/landingCopy";
 import { pricingCopy } from "../../i18n/pricingCopy";
 import { PLAN_IDS, type PlanId } from "../../lib/pricingData";
 
-const COMPARE_GLOBE = "/images/pain-bg-4.png";
+const COMPARE_GLOBE = "/images/pain-bg-4.webp";
 
 function clamp01(v: number) {
   return Math.min(1, Math.max(0, v));

@@ -1602,7 +1602,7 @@ ${isRu ? "Документы:" : "Documents:"}
                               /* @__PURE__ */ jsx("div", { className: "grid h-10 w-10 place-items-center overflow-hidden rounded-2xl border border-white/12 bg-white/[0.06] backdrop-blur-xl sm:hidden", children: /* @__PURE__ */ jsx(
                                 "img",
                                 {
-                                  src: "/images/tivonix-logo-icon.png",
+                                  src: "/images/tivonix-logo-icon.webp",
                                   alt: "TIVONIX",
                                   className: "h-6 w-6 opacity-90",
                                   draggable: false
@@ -1611,7 +1611,7 @@ ${isRu ? "Документы:" : "Documents:"}
                               /* @__PURE__ */ jsx(
                                 "img",
                                 {
-                                  src: "/images/tivonix-logo-lockup.png",
+                                  src: "/images/tivonix-logo-lockup.webp",
                                   alt: "TIVONIX",
                                   draggable: false,
                                   className: "hidden h-9 w-auto opacity-90 sm:block"
@@ -1935,8 +1935,8 @@ const NAV_MAIN = [
   { to: "/projects", key: "projects" }
 ];
 const DESKTOP_MIN_WIDTH = 1280;
-const LOGO_DEFAULT = "/images/tivonix-logo-lockup.png";
-const LOGO_WHITE = "/images/tivonix-logo-white.png";
+const LOGO_DEFAULT = "/images/tivonix-logo-lockup.webp";
+const LOGO_WHITE = "/images/tivonix-logo-white.webp";
 function usePrefersReducedMotion$2() {
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
@@ -3600,9 +3600,9 @@ function LangToggle({
   );
 }
 const HERO_IMAGES = [
-  "/images/hero-stage-1.png",
-  "/images/hero-stage-2.png",
-  "/images/hero-stage-3.png"
+  "/images/hero-stage-1.webp",
+  "/images/hero-stage-2.webp",
+  "/images/hero-stage-3.webp"
 ];
 const SCROLL_TRACK_VH = 240;
 function cx$9(...a) {
@@ -3709,7 +3709,8 @@ function HeroCard({
             className: "pointer-events-none absolute inset-0 h-full w-full object-cover object-[center_92%] sm:object-[center_94%]",
             style: { opacity: imageOpacity[i] },
             decoding: "async",
-            fetchPriority: i === 0 ? "high" : "low"
+            fetchPriority: i === 0 ? "high" : "low",
+            loading: i === 0 ? "eager" : "lazy"
           },
           src
         )),
@@ -3802,13 +3803,12 @@ function Hero() {
 const CARD_DARK = "#141414";
 const CARD_SOFT = "#262626";
 const ACCENT$1 = "#FF5722";
-const PAIN_BG_DIR = "/images";
 const PAIN_CARD_BACKGROUNDS = [
-  `${PAIN_BG_DIR}/pain-bg-1.png`,
-  `${PAIN_BG_DIR}/pain-bg-4.png`,
-  `${PAIN_BG_DIR}/pain-bg-2.png`,
-  `${PAIN_BG_DIR}/pain-bg-2.png`,
-  `${PAIN_BG_DIR}/pain-bg-3.png`
+  "/images/hero-stage-1.webp",
+  "/images/pain-bg-4.webp",
+  "/images/hero-stage-2.webp",
+  "/images/hero-stage-2.webp",
+  "/images/hero-stage-3.webp"
 ];
 function animStyle(delayMs, durationMs) {
   return {
@@ -4410,8 +4410,8 @@ function Reveal({ children, className, delay = 0 }) {
     }
   );
 }
-const OFFER_MOSAIC_BG = `/images/${encodeURI("как рабоает/пп/блоки/ffon.png")}`;
-const OFFER_BOTTOM_MOBILE_BG = `/images/${encodeURI("как рабоает/пп/6.png")}`;
+const OFFER_MOSAIC_BG = `/images/${encodeURI("как рабоает/пп/блоки/ffon.webp")}`;
+const OFFER_BOTTOM_MOBILE_BG = `/images/${encodeURI("как рабоает/пп/6.webp")}`;
 const TOP_ENTER_STAGGER_MS = 130;
 const TOP_ENTER_DURATION_MS = 820;
 const REVEAL_DELAY_MS = 200;
@@ -4822,16 +4822,16 @@ function rowPositionLegacy(index, total) {
   return rowPosition(index, total, ROW_BLOCK_REF, ROW_OVERLAP);
 }
 const MODEL_DEFS = [
-  { id: "openai", name: "OpenAI", file: "openai.png", scale: 1.88 },
-  { id: "claude", name: "Claude", file: "claude.png", scale: 1.08, colorful: true },
-  { id: "gemini", name: "Gemini", file: "gemini.png", scale: 2.12 },
-  { id: "grok", name: "Grok", file: "grok.png", scale: 2.65 },
-  { id: "deepseek", name: "DeepSeek", file: "deepseek.png", scale: 1.72, brighten: true },
-  { id: "copilot", name: "Copilot", file: "copilot.png", scale: 1.06 },
-  { id: "meta", name: "Meta AI", file: "meta.png", scale: 1.45 },
-  { id: "mistral", name: "Mistral", file: "mistral.png", scale: 0.96 },
-  { id: "ollama", name: "Ollama", file: "ollama.png", scale: 1.02 },
-  { id: "perplexity", name: "Perplexity", file: "perplexity.png", scale: 1.28 }
+  { id: "openai", name: "OpenAI", file: "openai.webp", scale: 1.88 },
+  { id: "claude", name: "Claude", file: "claude.webp", scale: 1.08, colorful: true },
+  { id: "gemini", name: "Gemini", file: "gemini.webp", scale: 2.12 },
+  { id: "grok", name: "Grok", file: "grok.webp", scale: 2.65 },
+  { id: "deepseek", name: "DeepSeek", file: "deepseek.webp", scale: 1.72, brighten: true },
+  { id: "copilot", name: "Copilot", file: "copilot.webp", scale: 1.06 },
+  { id: "meta", name: "Meta AI", file: "meta.webp", scale: 1.45 },
+  { id: "mistral", name: "Mistral", file: "mistral.webp", scale: 0.96 },
+  { id: "ollama", name: "Ollama", file: "ollama.webp", scale: 1.02 },
+  { id: "perplexity", name: "Perplexity", file: "perplexity.webp", scale: 1.28 }
 ];
 const AI_MODELS = MODEL_DEFS.map((model, index) => {
   const { x, y } = orbitPositionLegacy(index, MODEL_DEFS.length);
@@ -4858,8 +4858,8 @@ function TivonixGlowBorder({ className, children }) {
 }
 const ANIM_PIN_VH = 235;
 const DRIFT_RUNWAY_VH = 32;
-const TIVONIX_LOGO = "/images/logo-black.png";
-const AI_SECTION_BG = "/images/foooa.png";
+const TIVONIX_LOGO = "/images/logo-black.webp";
+const AI_SECTION_BG = "/images/foooa.webp";
 const DROP_START = 0.68;
 const DROP_END = 0.88;
 const ORBIT_START = 0.14;
@@ -5354,7 +5354,8 @@ function AiPremiumSection() {
                                       ].join(" "),
                                       style: { transform: "scale(var(--ai-logo-scale, 1))" },
                                       draggable: false,
-                                      loading: "eager"
+                                      loading: "lazy",
+                                      decoding: "async"
                                     }
                                   )
                                 }
@@ -5457,7 +5458,7 @@ const PLANS = [
   { id: "product", badgeKey: "product", ctaAction: getPlanCtaAction("product") },
   { id: "custom", ctaAction: getPlanCtaAction("custom") }
 ];
-const COMPARE_GLOBE = "/images/pain-bg-4.png";
+const COMPARE_GLOBE = "/images/pain-bg-4.webp";
 function clamp01$3(v) {
   return Math.min(1, Math.max(0, v));
 }
@@ -5851,8 +5852,8 @@ const PUBLIC_PROJECT_IDS = [
   "slotty",
   "spliton"
 ];
-const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/r${i + 1}.png`);
-const SPLITON_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/spliton/g${i + 1}.png`);
+const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/r${i + 1}.webp`);
+const SPLITON_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/spliton/g${i + 1}.webp`);
 function buildAllProjects(isRu) {
   return [
     // 1) LABEL0S — 3 days
@@ -5866,7 +5867,7 @@ function buildAllProjects(isRu) {
       domain: LABELOS_DOMAIN,
       status: "live",
       tags: ["SaaS", "Landing", "UI/UX", "React", "Tailwind"],
-      cover: "/images/project-priew/labelo.jpg",
+      cover: "/images/project-priew/labelo.webp",
       outcomes: [
         isRu ? "Готовый промо-лендинг за 3 дня" : "Promo landing delivered in 3 days",
         isRu ? "Чёткая структура под конверсию" : "Conversion-focused structure",
@@ -5885,7 +5886,7 @@ function buildAllProjects(isRu) {
       domain: UPC_DOMAIN,
       status: "live",
       tags: ["SaaS", "MVP", "React", "TypeScript", "Supabase"],
-      cover: "/images/project-priew/upcwatc.png",
+      cover: "/images/project-priew/upcwatc.webp",
       outcomes: [
         isRu ? "MVP с циклом трек → ссылка → монетизация просмотров" : "MVP loop: track → link → view-based monetization",
         isRu ? "Премиум UI + стабильная скорость" : "Premium UI + solid performance",
@@ -5916,7 +5917,7 @@ function buildAllProjects(isRu) {
       domain: PAYCLIP_DOMAIN,
       status: "live",
       tags: ["Fintech", "Landing", "Onboarding", "UI/UX", "Conversion"],
-      cover: "/images/project-priew/payslip.jpg",
+      cover: "/images/project-priew/payslip.webp",
       outcomes: [
         isRu ? "Сделано за 2 недели" : "Delivered in 2 weeks",
         isRu ? "Структура под конверсию" : "Conversion-driven structure",
@@ -5940,7 +5941,7 @@ function buildAllProjects(isRu) {
       domain: HEADMIND_DOMAIN,
       status: "live",
       tags: ["B2B", "Website", "UI/UX", "Structure", "Conversion"],
-      cover: "/images/project-priew/headmind.png",
+      cover: "/images/project-priew/headmind.webp",
       outcomes: [
         isRu ? "Понятная упаковка услуг и подхода" : "Clear services & approach packaging",
         isRu ? "Усиление доверия через команду и структуру" : "Stronger trust via team + structure",
@@ -5970,7 +5971,7 @@ function buildAllProjects(isRu) {
         "Framer Motion",
         "Automotive"
       ],
-      cover: "/images/project-priew/logovo.png",
+      cover: "/images/project-priew/logovo.webp",
       outcomes: [
         isRu ? "Сделано за 12 дней" : "Delivered in 12 days",
         isRu ? "Структура под услуги, прайс и запись" : "Structure for services, pricing and booking",
@@ -5995,7 +5996,7 @@ function buildAllProjects(isRu) {
       domain: GIFTSNIPER_DOMAIN,
       status: "live",
       tags: ["Telegram Bot", "TON", "NFT", "Analytics", "Market Data"],
-      cover: "/images/project-priew/giftsniper.png",
+      cover: "/images/project-priew/giftsniper.webp",
       outcomes: [
         isRu ? "Оценка NFT и Gifts по данным рынка в одном окне" : "NFT and Gifts valuation from market data in one flow",
         isRu ? "Быстрый анализ: трейты, листинги, аналоги, ориентир цены" : "Fast analysis: traits, listings, comparables, pricing guidance",
@@ -6014,7 +6015,7 @@ function buildAllProjects(isRu) {
       domain: SLOTTY_DOMAIN,
       status: "live",
       tags: ["Marketplace", "Booking", "Beauty", "SaaS", "Mobile App"],
-      cover: "/images/project-priew/slotty.png",
+      cover: "/images/project-priew/slotty.webp",
       gallery: SLOTTY_GALLERY,
       outcomes: [
         isRu ? "Онлайн-запись к мастерам без лишних переписок" : "Online booking for masters without endless messaging",
@@ -6056,7 +6057,7 @@ function buildAllProjects(isRu) {
         "Admin Panel",
         "Compliance"
       ],
-      cover: "/images/project-priew/spliton.png",
+      cover: "/images/project-priew/spliton.webp",
       gallery: SPLITON_GALLERY,
       outcomes: [
         isRu ? "Полноценная финтех-платформа для музыкальных активов" : "Full fintech platform for music assets",
@@ -6166,7 +6167,7 @@ function CasesSection() {
       /* @__PURE__ */ jsx(
         "img",
         {
-          src: spliton.cover ?? "/images/project-priew/spliton.png",
+          src: spliton.cover ?? "/images/project-priew/spliton.webp",
           alt: spliton.title,
           loading: "lazy",
           decoding: "async",
@@ -6496,8 +6497,8 @@ function ProcessStepStage({
     ] }) : null
   ] });
 }
-const PROCESS_BG_MUTED = `/images/${encodeURI("как рабоает")}/${encodeURI("чер.png")}`;
-const PROCESS_BG_WARM = `/images/${encodeURI("как рабоает")}/${encodeURI("яр.png")}`;
+const PROCESS_BG_MUTED = `/images/${encodeURI("как рабоает")}/${encodeURI("чер.webp")}`;
+const PROCESS_BG_WARM = `/images/${encodeURI("как рабоает")}/${encodeURI("яр.webp")}`;
 const STEP_SCROLL_VH = 80;
 const APPROACH_RUNWAY_VH = 32;
 function sectionApproach(rectTop, viewport, headerSpacer) {
@@ -6738,7 +6739,7 @@ function ProcessTimelineSection() {
     }
   );
 }
-const LOGO_ICON = "/images/tivonix-logo-icon.png";
+const LOGO_ICON = "/images/tivonix-logo-icon.webp";
 const PAGE_SIZE = 6;
 const ORANGE$1 = "#FF9A3D";
 const PRIMARY_CATS = ["start", "price", "process", "dev", "support"];
@@ -7327,7 +7328,7 @@ function FAQSection() {
     ] })
   ] });
 }
-const FINAL_CTA_BG = `/images/${encodeURI("как рабоает")}/future.png`;
+const FINAL_CTA_BG = `/images/${encodeURI("как рабоает")}/future.webp`;
 function clamp01(v) {
   return Math.min(1, Math.max(0, v));
 }
@@ -7431,8 +7432,8 @@ function FinalCTASection() {
 function cx$5(...a) {
   return a.filter(Boolean).join(" ");
 }
-const LOGO_LOCKUP_PNG = "/images/tivonix-logo-lockup.png";
-const FOOTER_BG = `/images/${encodeURI("как рабоает")}/${encodeURI("футер.png")}`;
+const LOGO_LOCKUP_PNG = "/images/tivonix-logo-lockup.webp";
+const FOOTER_BG = `/images/${encodeURI("как рабоает")}/${encodeURI("футер.webp")}`;
 const ACCENT = "#FF6B2C";
 const FOOTER_PAGES = [
   { to: "/", label: { ru: "Главная", en: "Home" } },
@@ -7693,8 +7694,8 @@ function Footer() {
 }
 const CANONICAL_ORIGIN = "https://tivonix.tech";
 const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN}/images/ceo.png`;
-const OG_IMAGE_WIDTH = "1672";
-const OG_IMAGE_HEIGHT = "941";
+const OG_IMAGE_WIDTH = "1200";
+const OG_IMAGE_HEIGHT = "630";
 function SEO({
   title,
   description,
@@ -7740,9 +7741,9 @@ function buildHomePageSchema({ pageTitle, pageDescription }) {
         url: "https://tivonix.tech/",
         logo: {
           "@type": "ImageObject",
-          url: "https://tivonix.tech/images/tivonix-logo-icon.png"
+          url: "https://tivonix.tech/images/tivonix-logo-icon.webp"
         },
-        image: "https://tivonix.tech/images/ceo.png",
+        image: "https://tivonix.tech/images/ceo.webp",
         description: pageDescription,
         contactPoint: [
           {
@@ -7864,7 +7865,7 @@ function LandingPage() {
     /* @__PURE__ */ jsx(Footer, {})
   ] });
 }
-const HERO_IMG = "/images/hero.png";
+const HERO_IMG = "/images/hero.webp";
 function cx$4(...a) {
   return a.filter(Boolean).join(" ");
 }
@@ -9396,17 +9397,17 @@ const defaultPainPoints = [
   {
     title: "Заявки теряются между каналами",
     text: "Клиенты пишут в Telegram, WhatsApp, почту и формы, а команда не всегда видит всё вовремя.",
-    image: "1.png"
+    image: "1.webp"
   },
   {
     title: "Команда тратит время вручную",
     text: "Менеджеры переносят данные, обновляют статусы и собирают отчёты руками вместо автоматизации.",
-    image: "2.png"
+    image: "2.webp"
   },
   {
     title: "Нет контроля над процессами",
     text: "Руководителю сложно понять, где застряли заявки, кто отвечает и сколько денег теряется.",
-    image: "3.png"
+    image: "3.webp"
   }
 ];
 function PainCard({
@@ -9420,7 +9421,7 @@ function PainCard({
     /* @__PURE__ */ jsx(
       SmokeMaskedIllustration,
       {
-        image: item.image ?? `${index + 1}.png`,
+        image: item.image ?? `${index + 1}.webp`,
         imageDir,
         title: item.title,
         smokeBase,
@@ -9499,43 +9500,43 @@ const ru = {
         number: "01",
         title: "Потерянные заявки",
         text: "Заявки приходят из разных источников и не собираются в одной системе, часть обращений теряется или обрабатывается слишком поздно.",
-        image: "1.png"
+        image: "1.webp"
       },
       {
         number: "02",
         title: "Клиенты ведутся вручную",
         text: "Менеджеры хранят информацию в таблицах, чатах и заметках, поэтому история клиента быстро распадается на куски.",
-        image: "2.png"
+        image: "2.webp"
       },
       {
         number: "03",
         title: "Ручной перенос данных",
         text: "Одни и те же данные копируются между CRM, таблицами, почтой и документами. Это забирает время и создаёт ошибки.",
-        image: "3.png"
+        image: "3.webp"
       },
       {
         number: "04",
         title: "Нет прозрачной аналитики",
         text: "Данные разбросаны по разным местам. Чтобы понять, что происходит в бизнесе, приходится собирать всё вручную.",
-        image: "4.png"
+        image: "4.webp"
       },
       {
         number: "05",
         title: "Повторяющиеся вопросы клиентов",
         text: "Команда снова и снова отвечает на одинаковые сообщения вместо того, чтобы заниматься продажами и развитием.",
-        image: "5.png"
+        image: "5.webp"
       },
       {
         number: "06",
         title: "Много повторяющихся действий",
         text: "Статусы, уведомления, напоминания, отчёты и передача задач выполняются руками, хотя это можно автоматизировать.",
-        image: "6.png"
+        image: "6.webp"
       },
       {
         number: "07",
         title: "Готовые сервисы не подходят под вашу логику работы",
         text: "Бизнес работает по своим правилам, а стандартные инструменты не закрывают процесс полностью.",
-        image: "7.png"
+        image: "7.webp"
       }
     ]
   },
@@ -9546,17 +9547,17 @@ const ru = {
       {
         title: "Ручной перенос данных",
         text: "Информация копируется между таблицами, CRM, почтой и мессенджерами. Из-за этого появляются ошибки, дубли и потери данных.",
-        image: "1.png"
+        image: "1.webp"
       },
       {
         title: "Потерянные заявки",
         text: "Когда заявки приходят из разных каналов и не собираются в одной системе, часть обращений теряется или обрабатывается слишком поздно.",
-        image: "2.png"
+        image: "2.webp"
       },
       {
         title: "Нет прозрачной аналитики",
         text: "Данные разбросаны по разным местам. Чтобы понять, что происходит в бизнесе, приходится собирать всё вручную.",
-        image: "3.png"
+        image: "3.webp"
       }
     ]
   },
@@ -9601,42 +9602,42 @@ const ru = {
       {
         title: "Обработка заявок",
         text: "Соберём заявки с сайта, форм, Telegram, email и других источников в одном месте.",
-        image: "1.png"
+        image: "1.webp"
       },
       {
         title: "CRM и воронки продаж",
         text: "Настроим систему для работы с клиентами, статусами, задачами и этапами продаж.",
-        image: "2.png"
+        image: "2.webp"
       },
       {
         title: "Личные кабинеты",
         text: "Разработаем кабинеты для клиентов, сотрудников или партнёров с нужными функциями и ролями.",
-        image: "3.png"
+        image: "3.webp"
       },
       {
         title: "Админ-панели",
         text: "Сделаем удобные внутренние панели управления для заявок, пользователей, заказов, контента и процессов.",
-        image: "4.png"
+        image: "4.webp"
       },
       {
         title: "Уведомления и напоминания",
         text: "Настроим автоматические уведомления в Telegram, email или внутри системы.",
-        image: "5.png"
+        image: "5.webp"
       },
       {
         title: "Отчёты и аналитика",
         text: "Соберём ключевые показатели в удобные дашборды и понятные отчёты.",
-        image: "6.png"
+        image: "6.webp"
       },
       {
         title: "Оплаты и документы",
         text: "Подключим оплату, статусы платежей, подтверждения, документы и логику после оплаты.",
-        image: "7.png"
+        image: "7.webp"
       },
       {
         title: "Интеграции с внешними сервисами",
         text: "Свяжем сайт, CRM, Telegram, таблицы, платёжные системы, API и другие инструменты.",
-        image: "8.png"
+        image: "8.webp"
       }
     ]
   },
@@ -9761,43 +9762,43 @@ const en = {
         number: "01",
         title: "Lost leads",
         text: "Inquiries arrive from many channels and never land in one system—some are lost or handled too late.",
-        image: "1.png"
+        image: "1.webp"
       },
       {
         number: "02",
         title: "Clients tracked by hand",
         text: "Teams keep context in spreadsheets, chats, and notes, so the customer story falls apart.",
-        image: "2.png"
+        image: "2.webp"
       },
       {
         number: "03",
         title: "Manual data copying",
         text: "The same data is retyped across CRM, sheets, email, and documents—slow and error-prone.",
-        image: "3.png"
+        image: "3.webp"
       },
       {
         number: "04",
         title: "No clear analytics",
         text: "Metrics live in different places; understanding the business means stitching reports manually.",
-        image: "4.png"
+        image: "4.webp"
       },
       {
         number: "05",
         title: "Repetitive client questions",
         text: "The team answers the same messages again and again instead of selling and growing.",
-        image: "5.png"
+        image: "5.webp"
       },
       {
         number: "06",
         title: "Too many repeat tasks",
         text: "Statuses, alerts, reminders, reports, and handoffs are done manually though they could run automatically.",
-        image: "6.png"
+        image: "6.webp"
       },
       {
         number: "07",
         title: "Off-the-shelf tools don’t fit",
         text: "Your business has its own rules; standard products rarely cover the full process.",
-        image: "7.png"
+        image: "7.webp"
       }
     ]
   },
@@ -9808,17 +9809,17 @@ const en = {
       {
         title: "Manual data transfer",
         text: "Information is copied between spreadsheets, CRM, email, and chat—creating errors, duplicates, and gaps.",
-        image: "1.png"
+        image: "1.webp"
       },
       {
         title: "Lost leads",
         text: "When leads come from many channels and aren’t unified, some inquiries are lost or handled too late.",
-        image: "2.png"
+        image: "2.webp"
       },
       {
         title: "No transparent analytics",
         text: "Data is scattered; seeing what’s really happening means manual reporting.",
-        image: "3.png"
+        image: "3.webp"
       }
     ]
   },
@@ -9863,42 +9864,42 @@ const en = {
       {
         title: "Lead capture",
         text: "Bring leads from your site, forms, Telegram, email, and other sources into one place.",
-        image: "1.png"
+        image: "1.webp"
       },
       {
         title: "CRM & sales pipelines",
         text: "Set up clients, statuses, tasks, and pipeline stages the way you sell.",
-        image: "2.png"
+        image: "2.webp"
       },
       {
         title: "Client portals",
         text: "Build portals for customers, staff, or partners with the right features and roles.",
-        image: "3.png"
+        image: "3.webp"
       },
       {
         title: "Admin panels",
         text: "Internal tools for leads, users, orders, content, and operations—tailored to your process.",
-        image: "4.png"
+        image: "4.webp"
       },
       {
         title: "Notifications & reminders",
         text: "Automated alerts in Telegram, email, or inside your product.",
-        image: "5.png"
+        image: "5.webp"
       },
       {
         title: "Reporting & analytics",
         text: "Dashboards and reports for the KPIs that matter.",
-        image: "6.png"
+        image: "6.webp"
       },
       {
         title: "Payments & documents",
         text: "Payments, statuses, confirmations, documents, and post-payment logic.",
-        image: "7.png"
+        image: "7.webp"
       },
       {
         title: "External integrations",
         text: "Connect site, CRM, Telegram, spreadsheets, payments, APIs, and more.",
-        image: "8.png"
+        image: "8.webp"
       }
     ]
   },
@@ -10000,10 +10001,10 @@ function getAutomationPageCopy(lang) {
   return lang === "en" ? en : ru;
 }
 const AUTOMATION_SIGNS_IMG_DIR = "/images/avtomatizaciya-biznesa/Когда уже пора";
-const AUTOMATION_HERO_IMG = "/images/avtomatizaciya-biznesa/hero.png";
+const AUTOMATION_HERO_IMG = "/images/avtomatizaciya-biznesa/hero.webp";
 const AUTOMATION_CONTACT_EMAIL = "tivoonix@gmail.com";
 const WHY_TIVONIX_BAND_IMG = "/images/sunset.webp";
-const TIVONIX_LOGO_MARK = "/images/tivonix-logo-icon.png";
+const TIVONIX_LOGO_MARK = "/images/tivonix-logo-icon.webp";
 const HeroWebGLBg = lazy(() => import("./assets/HeroWebGLBg-CnY8eKt4.js"));
 const PAIN_POINTS_IMG_DIR = "/images/avtomatizaciya-biznesa/Где бизнес теряет";
 function usePrefetchHeroWebGL() {
@@ -10877,7 +10878,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
     }) })
   ] });
 }
-const COMPARE_LOGO = "/images/tivonix-logo-white.png";
+const COMPARE_LOGO = "/images/tivonix-logo-white.webp";
 function cx(...parts) {
   return parts.filter(Boolean).join(" ");
 }

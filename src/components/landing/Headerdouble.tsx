@@ -409,7 +409,7 @@ export default function Header() {
                     aria-label={ariaHome}
                   >
                     <img
-                      src="/images/tivonix-logo-lockup.png"
+                      src="/images/tivonix-logo-lockup.webp"
                       alt="TIVONIX"
                       className="h-8 sm:h-9 w-auto object-contain opacity-95 transition-opacity hover:opacity-100"
                       draggable={false}

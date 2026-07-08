@@ -6,7 +6,7 @@ import { landingCopy } from "../../i18n/landingCopy";
 import { TelegramLink } from "./LandingCTA";
 import { TG_BOT_URL, TG_CHANNEL_URL } from "../../constants/links";
 
-const FINAL_CTA_BG = `/images/${encodeURI("как рабоает")}/future.png`;
+const FINAL_CTA_BG = `/images/${encodeURI("как рабоает")}/future.webp`;
 
 function clamp01(v: number) {
   return Math.min(1, Math.max(0, v));

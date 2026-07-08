@@ -12,11 +12,11 @@ const ACCENT = "#FF5722";
 const PAIN_BG_DIR = "/images";
 
 const PAIN_CARD_BACKGROUNDS = [
-  `${PAIN_BG_DIR}/pain-bg-1.png`,
-  `${PAIN_BG_DIR}/pain-bg-4.png`,
-  `${PAIN_BG_DIR}/pain-bg-2.png`,
-  `${PAIN_BG_DIR}/pain-bg-2.png`,
-  `${PAIN_BG_DIR}/pain-bg-3.png`,
+  "/images/hero-stage-1.webp",
+  "/images/pain-bg-4.webp",
+  "/images/hero-stage-2.webp",
+  "/images/hero-stage-2.webp",
+  "/images/hero-stage-3.webp",
 ] as const;
 
 function animStyle(delayMs: number, durationMs?: number): CSSProperties {

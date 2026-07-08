@@ -7,9 +7,9 @@ import { HERO_SCROLL_HEADLINE_CLASS, HERO_SCROLL_LEAD_CLASS } from "../../lib/la
 import LangToggle from "./LangToggle";
 
 const HERO_IMAGES = [
-  "/images/hero-stage-1.png",
-  "/images/hero-stage-2.png",
-  "/images/hero-stage-3.png",
+  "/images/hero-stage-1.webp",
+  "/images/hero-stage-2.webp",
+  "/images/hero-stage-3.webp",
 ] as const;
 
 const SCROLL_TRACK_VH = 240;
@@ -147,6 +147,7 @@ function HeroCard({
           style={{ opacity: imageOpacity[i] } as CSSProperties}
           decoding="async"
           fetchPriority={i === 0 ? "high" : "low"}
+          loading={i === 0 ? "eager" : "lazy"}
         />
       ))}
 

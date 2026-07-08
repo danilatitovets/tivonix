@@ -40,10 +40,10 @@ import { automationTypo } from "../i18n/automationTypography";
 import { useLang } from "../i18n/LangProvider";
 import { TG_BOT_URL } from "../constants/links";
 
-const AUTOMATION_HERO_IMG = "/images/avtomatizaciya-biznesa/hero.png";
+const AUTOMATION_HERO_IMG = "/images/avtomatizaciya-biznesa/hero.webp";
 const AUTOMATION_CONTACT_EMAIL = "tivoonix@gmail.com";
 const WHY_TIVONIX_BAND_IMG = "/images/sunset.webp";
-const TIVONIX_LOGO_MARK = "/images/tivonix-logo-icon.png";
+const TIVONIX_LOGO_MARK = "/images/tivonix-logo-icon.webp";
 const HeroWebGLBg = lazy(() => import("../components/landing/HeroWebGLBg"));
 const PAIN_POINTS_IMG_DIR = "/images/avtomatizaciya-biznesa/Где бизнес теряет";
 
