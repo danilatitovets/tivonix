@@ -10,7 +10,7 @@
  */
 
 const token = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN;
-const secret = process.env.TELEGRAM_WEBHOOK_SECRET || process.env.WEBHOOK_SECRET || "";
+const secret = (process.env.TELEGRAM_WEBHOOK_SECRET || process.env.WEBHOOK_SECRET || "").trim();
 const webhookUrl =
   process.env.WEBHOOK_URL || "https://www.tivonix.tech/api/telegram";
 

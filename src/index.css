@@ -3283,7 +3283,9 @@
 @media (max-width: 639px) {
   .ai-premium-orbit-stage {
     min-height: min(68svh, 580px);
-    padding-inline: 0.15rem;
+    padding-inline: 0.25rem;
+    overflow-x: clip;
+    overflow-y: visible;
   }
 
   .ai-premium-frame__body {
@@ -3299,19 +3301,37 @@
   }
 
   .ai-logo-row-item--row .ai-logo-block-slot {
-    width: auto !important;
-    height: auto !important;
-    min-width: 0;
-    background: transparent !important;
-    border: none;
-    box-shadow: none;
-    border-radius: 0;
-    overflow: visible;
+    width: 4rem !important;
+    height: 2.35rem !important;
+    min-width: 4rem;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-radius: 10px;
+    overflow: hidden;
   }
 
   .ai-logo-row-item--row .ai-logo-img {
-    max-height: 48px !important;
-    max-width: 92px !important;
+    max-height: 32px !important;
+    max-width: 56px !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .ai-premium-orbit-stage {
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+
+  .ai-logo-row-item--row .ai-logo-block-slot {
+    width: 5rem !important;
+    height: 2.75rem !important;
+    min-width: 5rem;
+    flex-shrink: 0;
+  }
+
+  .ai-logo-row-item--row .ai-logo-img {
+    max-height: 38px !important;
+    max-width: 68px !important;
   }
 }
 

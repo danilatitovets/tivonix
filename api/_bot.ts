@@ -1,5 +1,12 @@
 // api/_bot.ts
 import { Bot, Context, InlineKeyboard, session, SessionFlavor } from "grammy";
+import type { PlanId } from "../src/lib/pricingData.js";
+import {
+  formatPlanHighlightsForTelegram,
+  formatPlanPriceLine,
+  formatPlansOverviewForTelegram,
+  PLAN_PRICE_USD,
+} from "../src/i18n/pricingCopy.js";
 
 type Lang = "ru" | "en";
 
@@ -94,21 +101,73 @@ function formatBotSource(source: string) {
   return map[source] ?? source;
 }
 
-const PLAN_WELCOMES: Record<string, string> = {
-  plan_start:
-    "Привет! Вы выбрали Start — быстрый запуск: лендинг, заявки и Telegram. Напишите коротко, чем занимается ваш бизнес, и мы подскажем следующий шаг.",
-  plan_growth:
-    "Привет! Вы выбрали Growth — система заявок, Telegram и мини-CRM. Напишите, чем занимается бизнес и сколько заявок в месяц — подскажем, как собрать систему.",
-  plan_product:
-    "Привет! Вы выбрали Product — веб-сервис с кабинетом, админкой и оплатой. Коротко опишите продукт и ключевые функции.",
-  plan_custom:
-    "Привет! Вы выбрали Custom — автоматизация, AI или индивидуальное решение. Напишите, какой процесс хотите автоматизировать.",
-  plan_help:
-    "Привет! Поможем выбрать подходящий план. Напишите, что хотите запустить: сайт, бот, CRM, кабинет, автоматизацию или просто идею.",
+type PlanWelcomeEntry = {
+  intro: string;
+  cta: string;
+  planId?: PlanId;
+  priceNote?: string;
+  useHtml?: boolean;
 };
+
+const PLAN_WELCOME_ENTRIES: Record<string, PlanWelcomeEntry> = {
+  plan_start: {
+    planId: "start",
+    intro: "Привет! Вы выбрали <b>Start</b> — быстрый запуск: лендинг, заявки и Telegram.",
+    cta: "📝 Напишите коротко, чем занимается ваш бизнес — подскажем следующий шаг.",
+    useHtml: true,
+  },
+  plan_growth: {
+    planId: "growth",
+    intro: "Привет! Вы выбрали <b>Growth</b> — система заявок, Telegram и мини-CRM.",
+    cta: "📝 Напишите, чем занимается бизнес и сколько заявок в месяц — подскажем, как собрать систему.",
+    useHtml: true,
+  },
+  plan_product: {
+    planId: "product",
+    intro: "Привет! Вы выбрали <b>Product</b> — веб-сервис с кабинетом, админкой и оплатой.",
+    cta: "📝 Коротко опишите продукт и ключевые функции.",
+    useHtml: true,
+  },
+  plan_custom: {
+    planId: "custom",
+    intro: "Привет! Вы выбрали <b>Custom</b> — автоматизация, AI или индивидуальное решение.",
+    priceNote: "💰 Стоимость: индивидуально — зависит от задачи и объёма.",
+    cta: "📝 Напишите, какой процесс хотите автоматизировать.",
+    useHtml: true,
+  },
+  plan_help: {
+    intro: "Привет! Поможем выбрать подходящий план.",
+    cta: "📝 Напишите, что хотите запустить: сайт, бот, CRM, кабинет, автоматизацию или просто идею.",
+    useHtml: true,
+  },
+};
+
+function buildPlanWelcome(payload: string): { text: string; parseMode?: "HTML" } | undefined {
+  const entry = PLAN_WELCOME_ENTRIES[payload];
+  if (!entry) return undefined;
+
+  const priceLine =
+    entry.priceNote ??
+    (entry.planId && entry.planId in PLAN_PRICE_USD
+      ? formatPlanPriceLine(entry.planId as keyof typeof PLAN_PRICE_USD, "ru")
+      : undefined);
+
+  const highlightsLine = entry.planId
+    ? formatPlanHighlightsForTelegram(entry.planId, "ru")
+    : payload === "plan_help"
+      ? formatPlansOverviewForTelegram("ru")
+      : undefined;
+
+  const text = [entry.intro, priceLine, highlightsLine, entry.cta].filter(Boolean).join("\n\n");
+
+  return entry.useHtml ? { text, parseMode: "HTML" } : { text };
+}
 
 const DEFAULT_WELCOME =
   "Привет! Это TIVONIX. Мы делаем сайты, боты, CRM, веб-сервисы и автоматизации, чтобы заявки не терялись. Напишите, что хотите запустить.";
+
+const WELCOME_PHOTO_PATH = "/images/photo_2026-07-08_16-44-47.jpg";
+const TELEGRAM_CAPTION_LIMIT = 1024;
 
 const LEAD_ACK =
   "Спасибо! Заявка принята. Мы ответим вам в ближайшее время.";
@@ -280,6 +339,50 @@ function getBaseUrlFromContext(ctx: MyContext) {
   return typeof baseUrl === "string" && baseUrl.startsWith("http")
     ? baseUrl
     : "https://www.tivonix.tech";
+}
+
+function splitWelcomeForPhoto(text: string): { caption: string; followUp?: string } {
+  const blocks = text.split("\n\n");
+  const captionBlocks: string[] = [];
+  const restBlocks: string[] = [];
+
+  for (const block of blocks) {
+    const candidate = [...captionBlocks, block].join("\n\n");
+    if (candidate.length <= TELEGRAM_CAPTION_LIMIT) {
+      captionBlocks.push(block);
+    } else {
+      restBlocks.push(block);
+    }
+  }
+
+  return {
+    caption: captionBlocks.join("\n\n"),
+    followUp: restBlocks.length ? restBlocks.join("\n\n") : undefined,
+  };
+}
+
+async function replyWithWelcomePhoto(
+  ctx: MyContext,
+  text: string,
+  parseMode?: "HTML"
+) {
+  const photoUrl = `${getBaseUrlFromContext(ctx)}${WELCOME_PHOTO_PATH}`;
+  const { caption, followUp } = splitWelcomeForPhoto(text);
+  const textOpts = {
+    parse_mode: parseMode,
+    link_preview_options: { is_disabled: true as const },
+  };
+
+  try {
+    await ctx.replyWithPhoto(photoUrl, { caption, ...textOpts });
+    if (followUp) {
+      await ctx.reply(followUp, textOpts);
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[bot] welcome photo fail, fallback to text", { error: message });
+    await ctx.reply(text, textOpts);
+  }
 }
 
 function docUrl(base: string, fileName: string) {
@@ -487,7 +590,7 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     }
 
     const source = payload || "direct";
-    const welcome = PLAN_WELCOMES[payload] ?? DEFAULT_WELCOME;
+    const welcome = buildPlanWelcome(payload);
     const startMessage = payload ? `/start ${payload}` : "/start";
 
     ctx.session = {
@@ -497,7 +600,11 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
       adminTracker: ctx.session.adminTracker,
     };
 
-    await ctx.reply(welcome);
+    if (welcome) {
+      await replyWithWelcomePhoto(ctx, welcome.text, welcome.parseMode);
+    } else {
+      await replyWithWelcomePhoto(ctx, DEFAULT_WELCOME);
+    }
     await notifyAdminLead(ctx, { kind: "start", messageText: startMessage });
   });
 

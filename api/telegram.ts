@@ -99,11 +99,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const env = readBotEnv();
-  const secret = env.WEBHOOK_SECRET;
-  const header = req.headers["x-telegram-bot-api-secret-token"];
+  const secret = env.WEBHOOK_SECRET.trim();
+  const rawHeader = req.headers["x-telegram-bot-api-secret-token"];
+  const header = (Array.isArray(rawHeader) ? rawHeader[0] : rawHeader)?.trim();
 
   if (secret && header !== secret) {
-    console.warn("[bot] webhook rejected: invalid secret token");
+    console.warn("[bot] webhook rejected: invalid secret token", {
+      hasHeader: Boolean(header),
+      secretConfigured: Boolean(secret),
+    });
     return res.status(401).json({ ok: false, error: "Unauthorized" });
   }
 

@@ -1,5 +1,5 @@
 import type { Lang } from "./LangProvider";
-import type { PlanId } from "../lib/pricingData";
+import { COMPARISON_GROUPS, type PlanId } from "../lib/pricingData";
 
 export const LAUNCH_DISCOUNT_PERCENT = 10;
 
@@ -9,12 +9,109 @@ export const PLAN_PRICE_USD = {
   product: 2000,
 } as const;
 
+export type PricedPlanId = keyof typeof PLAN_PRICE_USD;
+
 function planPriceStrings(fromLabel: string, usd: number) {
   const discounted = Math.round(usd * (1 - LAUNCH_DISCOUNT_PERCENT / 100));
   return {
     price: `${fromLabel} $${discounted}`,
     priceOriginal: `${fromLabel} $${usd}`,
   };
+}
+
+/** Строка с ценой для Telegram-бота и других коротких CTA */
+export function formatPlanPriceLine(planId: PricedPlanId, lang: Lang = "ru"): string {
+  const usd = PLAN_PRICE_USD[planId];
+  const discounted = Math.round(usd * (1 - LAUNCH_DISCOUNT_PERCENT / 100));
+  const fromLabel = lang === "ru" ? "от" : "from";
+  if (lang === "ru") {
+    return `💰 Стоимость: ${fromLabel} $${discounted} (скидка ${LAUNCH_DISCOUNT_PERCENT}% на запуск, обычно ${fromLabel} $${usd}). Итог зависит от объёма.`;
+  }
+  return `💰 Price: ${fromLabel} $${discounted} (${LAUNCH_DISCOUNT_PERCENT}% launch discount, usually ${fromLabel} $${usd}). Final scope may vary.`;
+}
+
+const PLAN_GROUP_EMOJI: Record<string, string> = {
+  core: "🌐",
+  crm: "📋",
+  product: "⚙️",
+  automation: "🤖",
+  launch: "🚀",
+};
+
+/** Блок «что входит» для Telegram — те же строки, что в таблице сравнения на /plans */
+export function formatPlanHighlightsForTelegram(planId: PlanId, lang: Lang = "ru"): string {
+  const copy = pricingCopy(lang);
+  const planName = copy.plans[planId].name;
+  const title =
+    lang === "ru" ? `✨ Что входит в ${planName}` : `✨ What's included in ${planName}`;
+  const sections: string[] = [];
+
+  for (const group of COMPARISON_GROUPS) {
+    const groupLabel = copy.groups[group.id as keyof typeof copy.groups];
+    const emoji = PLAN_GROUP_EMOJI[group.id] ?? "📌";
+    const included: string[] = [];
+    const optional: string[] = [];
+
+    for (const row of group.rows) {
+      const cell = row.values[planId];
+      const label = copy.features[row.id as keyof typeof copy.features];
+      if (!label) continue;
+
+      if (cell.kind === "yes") {
+        included.push(`  ✅ ${label}`);
+      } else if (cell.kind === "basic") {
+        included.push(
+          `  ✅ ${label}${lang === "ru" ? " (базово)" : " (basic)"}`
+        );
+      } else if (cell.kind === "text" && cell.textKey) {
+        const value =
+          copy.cellText[cell.textKey as keyof typeof copy.cellText] ?? cell.textKey;
+        included.push(`  ✅ ${label}: ${value}`);
+      } else if (cell.kind === "option") {
+        optional.push(
+          `  ➕ ${label}${lang === "ru" ? " (опция)" : " (optional)"}`
+        );
+      }
+    }
+
+    if (included.length === 0 && optional.length === 0) continue;
+
+    const lines = [...included, ...optional];
+    sections.push(`${emoji} ${groupLabel}\n${lines.join("\n")}`);
+  }
+
+  if (sections.length === 0) {
+    const fallback = copy.plans[planId].includes
+      .map((item) => `  ✅ ${item}`)
+      .join("\n");
+    return `${title}:\n\n${fallback}`;
+  }
+
+  return `${title}:\n\n${sections.join("\n\n")}`;
+}
+
+/** Краткий обзор всех тарифов для сценария plan_help */
+export function formatPlansOverviewForTelegram(lang: Lang = "ru"): string {
+  const copy = pricingCopy(lang);
+  const planIds: PlanId[] = ["start", "growth", "product", "custom"];
+  const title = lang === "ru" ? "📊 Тарифы TIVONIX" : "📊 TIVONIX plans";
+
+  const blocks = planIds.map((id) => {
+    const plan = copy.plans[id];
+    const chips = copy.footer.chips[id].map((c) => `• ${c}`).join("\n   ");
+    const price =
+      id === "custom"
+        ? (lang === "ru" ? "индивидуально" : "custom")
+        : (() => {
+            const usd = PLAN_PRICE_USD[id];
+            const discounted = Math.round(usd * (1 - LAUNCH_DISCOUNT_PERCENT / 100));
+            const fromLabel = lang === "ru" ? "от" : "from";
+            return `${fromLabel} $${discounted}`;
+          })();
+    return `▸ <b>${plan.name}</b> — ${price}\n   ${chips}`;
+  });
+
+  return `${title}:\n\n${blocks.join("\n\n")}`;
 }
 
 export function planPagePrice(lang: Lang, planId: PlanId): string | undefined {
