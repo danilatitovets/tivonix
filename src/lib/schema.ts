@@ -22,14 +22,14 @@ export function buildHomePageSchema({ pageTitle, pageDescription }: HomeSchemaIn
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://www.tivonix.tech/#org",
+        "@id": "https://tivonix.tech/#org",
         name: "TIVONIX",
-        url: "https://www.tivonix.tech/",
+        url: "https://tivonix.tech/",
         logo: {
           "@type": "ImageObject",
-          url: "https://www.tivonix.tech/images/tivonix-logo-icon.png",
+          url: "https://tivonix.tech/images/tivonix-logo-icon.png",
         },
-        image: "https://www.tivonix.tech/og.jpg",
+        image: "https://tivonix.tech/images/ceo.png",
         description: pageDescription,
         contactPoint: [
           {
@@ -43,20 +43,20 @@ export function buildHomePageSchema({ pageTitle, pageDescription }: HomeSchemaIn
       },
       {
         "@type": "WebSite",
-        "@id": "https://www.tivonix.tech/#website",
-        url: "https://www.tivonix.tech/",
+        "@id": "https://tivonix.tech/#website",
+        url: "https://tivonix.tech/",
         name: "TIVONIX",
-        publisher: { "@id": "https://www.tivonix.tech/#org" },
+        publisher: { "@id": "https://tivonix.tech/#org" },
         inLanguage: ["ru", "en"],
       },
       {
         "@type": "WebPage",
-        "@id": "https://www.tivonix.tech/#home",
-        url: "https://www.tivonix.tech/",
+        "@id": "https://tivonix.tech/#home",
+        url: "https://tivonix.tech/",
         name: pageTitle,
         description: pageDescription,
-        isPartOf: { "@id": "https://www.tivonix.tech/#website" },
-        about: { "@id": "https://www.tivonix.tech/#org" },
+        isPartOf: { "@id": "https://tivonix.tech/#website" },
+        about: { "@id": "https://tivonix.tech/#org" },
         inLanguage: ["ru", "en"],
       },
     ],
@@ -89,8 +89,8 @@ export function buildPricingPageSchema({ pageTitle, pageDescription, lang }: Pri
             },
           }
         : {}),
-      url: "https://www.tivonix.tech/plans#pricing",
-      seller: { "@id": "https://www.tivonix.tech/#org" },
+      url: "https://tivonix.tech/plans#pricing",
+      seller: { "@id": "https://tivonix.tech/#org" },
     };
   });
 
@@ -99,25 +99,25 @@ export function buildPricingPageSchema({ pageTitle, pageDescription, lang }: Pri
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://www.tivonix.tech/#org",
+        "@id": "https://tivonix.tech/#org",
         name: "TIVONIX",
-        url: "https://www.tivonix.tech/",
+        url: "https://tivonix.tech/",
       },
       {
         "@type": "WebPage",
-        "@id": "https://www.tivonix.tech/plans#webpage",
-        url: "https://www.tivonix.tech/plans",
+        "@id": "https://tivonix.tech/plans#webpage",
+        url: "https://tivonix.tech/plans",
         name: pageTitle,
         description: pageDescription,
-        isPartOf: { "@id": "https://www.tivonix.tech/#website" },
+        isPartOf: { "@id": "https://tivonix.tech/#website" },
         inLanguage: lang === "ru" ? "ru" : "en",
       },
       {
         "@type": "Service",
-        "@id": "https://www.tivonix.tech/plans#service",
+        "@id": "https://tivonix.tech/plans#service",
         name: pageTitle,
         description: pageDescription,
-        provider: { "@id": "https://www.tivonix.tech/#org" },
+        provider: { "@id": "https://tivonix.tech/#org" },
         areaServed: "Worldwide",
         offers,
       },

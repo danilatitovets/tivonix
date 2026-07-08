@@ -19,23 +19,23 @@ const checks = [
   {
     file: "dist/index.html",
     phrases: [
-      "Сайты, боты и CRM для бизнеса — TIVONIX",
-      "Сайты, боты и веб-сервисы, которые помогают получать заявки",
-      "TIVONIX делает сайты",
+      "TIVONIX — сайты, боты и AI-сервисы для бизнеса",
+      "Создаём сайты, Telegram-ботов, CRM, личные кабинеты и автоматизацию заявок под ключ.",
       "Кому помогаем",
       "Что мы делаем",
       "Новый кейс",
       "Spliton",
       "Частые вопросы",
       "Расскажите, что хотите запустить или автоматизировать",
-      "https://www.tivonix.tech/",
+      "https://tivonix.tech/",
+      'property="og:image" content="https://tivonix.tech/images/ceo.png"',
     ],
   },
   {
     file: "dist/sozdanie-sajtov/index.html",
     phrases: [
       "Создание сайтов под ключ — TIVONIX",
-      "https://www.tivonix.tech/sozdanie-sajtov",
+      "https://tivonix.tech/sozdanie-sajtov",
       "лендинги",
       "базовое SEO",
     ],
@@ -49,7 +49,7 @@ const checks = [
     phrases: [
       "Spliton",
       "музыкальных активов",
-      "https://www.tivonix.tech/projects/spliton",
+      "https://tivonix.tech/projects/spliton",
       "spliton.io",
     ],
   },
@@ -58,7 +58,7 @@ const checks = [
     phrases: [
       "Slotty",
       "онлайн-записи к мастерам",
-      "https://www.tivonix.tech/projects/slotty",
+      "https://tivonix.tech/projects/slotty",
       "slotty.of.by",
     ],
   },
@@ -67,13 +67,13 @@ const checks = [
     phrases: [
       "GiftSniper",
       "Telegram-бот для оценки NFT и Telegram Gifts",
-      "https://www.tivonix.tech/projects/giftsniper",
+      "https://tivonix.tech/projects/giftsniper",
       "https://t.me/GiftSniperTonBot",
     ],
   },
   {
     file: "dist/plans/index.html",
-    phrases: ["Планы запуска", "Start", "Growth", "Product", "https://www.tivonix.tech/plans"],
+    phrases: ["Планы запуска", "Start", "Growth", "Product", "https://tivonix.tech/plans"],
   },
   {
     file: "dist/contacts/index.html",
@@ -84,8 +84,8 @@ const checks = [
     phrases: [
       "Автоматизация бизнеса — TIVONIX",
       "Автоматизация процессов, CRM, личные кабинеты, админ-панели и интеграции под реальные задачи бизнеса.",
-      'href="https://www.tivonix.tech/avtomatizaciya-biznesa"',
-      'property="og:url" content="https://www.tivonix.tech/avtomatizaciya-biznesa"',
+      'href="https://tivonix.tech/avtomatizaciya-biznesa"',
+      'property="og:url" content="https://tivonix.tech/avtomatizaciya-biznesa"',
       "Автоматизируем процессы",
       "вашего бизнеса",
     ],
@@ -95,7 +95,7 @@ const checks = [
 const forbiddenPhrases = [
   "Tivonix Loading",
   "TIVONIX — Сайты, боты и веб-сервисы",
-  "https://tivonix.tech/",
+  "https://www.tivonix.tech/",
   "chrome-headless",
   "playwright",
 ];
@@ -196,7 +196,7 @@ try {
     console.log(`OK ${automationFile}: exactly 1 link rel="canonical"`);
   }
 
-  const homeTitleWrong = "<title>Сайты, боты и CRM для бизнеса — TIVONIX</title>";
+  const homeTitleWrong = "<title>TIVONIX — сайты, боты и AI-сервисы для бизнеса</title>";
   if (autoHtml.includes(homeTitleWrong)) {
     console.error(`${automationFile}: must not contain home page <title>`);
     hasErrors = true;

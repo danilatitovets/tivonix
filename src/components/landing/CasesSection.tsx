@@ -6,7 +6,7 @@ import PillActionBar from "../ui/PillActionBar";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
 import { buildProjects } from "../../data/projectsCatalog";
-import StartModal from "./StartModal";
+import { TG_BOT_URL } from "../../constants/links";
 
 function clamp01(v: number) {
   return Math.min(1, Math.max(0, v));
@@ -58,7 +58,6 @@ export default function CasesSection() {
   const { lang } = useLang();
   const copy = landingCopy(lang);
   const isRu = lang === "ru";
-  const [modalOpen, setModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("view");
   const caseBlockRef = useRef<HTMLDivElement>(null);
   const coverX = useCaseCoverPan(caseBlockRef);
@@ -86,14 +85,13 @@ export default function CasesSection() {
     tabs.push({
       id: "cta",
       label: copy.cases.cta,
-      onClick: () => setModalOpen(true),
+      href: TG_BOT_URL,
     });
     return tabs;
   }, [copy.cases.cta, copy.cases.openProduct, copy.cases.viewCase, spliton.domain, spliton.id]);
 
   return (
-    <>
-      <Section id="cases" className="scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24">
+    <Section id="cases" className="scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24">
         <Container>
           <Reveal className="case-split">
             <div className="case-split__visual">
@@ -152,9 +150,6 @@ export default function CasesSection() {
             </div>
           </Reveal>
         </Container>
-      </Section>
-
-      <StartModal open={modalOpen} onClose={() => setModalOpen(false)} />
-    </>
+    </Section>
   );
 }

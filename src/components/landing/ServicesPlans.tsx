@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Container from "../ui/Container";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
-import { TG_BOT_URL } from "../../constants/links";
+import { buildTelegramTextUrl } from "../../constants/links";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -187,7 +187,7 @@ function useVideoBlock(ref: React.RefObject<HTMLVideoElement | null>, src?: stri
 // ✅ открываем TG (в новой вкладке) + с префиллом текста
 function openTelegram(planName: string, isRu: boolean) {
   const text = isRu ? `${TG_TEXT_RU}${planName}` : `${TG_TEXT_EN}${planName}`;
-  const url = `${TG_BOT_URL}?text=${encodeURIComponent(text)}`;
+  const url = buildTelegramTextUrl(text);
   window.open(url, "_blank", "noopener,noreferrer");
 }
 

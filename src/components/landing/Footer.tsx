@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import Container from "../ui/Container";
 import { useLang } from "../../i18n/LangProvider";
 import { buildProjects } from "../../data/projectsCatalog";
+import { TG_CHANNEL_URL } from "../../constants/links";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -32,16 +33,15 @@ const FOOTER_HOME = [
   { to: "/#faq", label: { ru: "Частые вопросы", en: "FAQ" } },
 ] as const;
 
+const FOOTER_GMAIL_URL =
+  "https://mail.google.com/mail/?view=cm&fs=1" +
+  `&to=${encodeURIComponent("tivoonix@gmail.com")}` +
+  `&su=${encodeURIComponent("Проект (SaaS/MVP)")}`;
+
 const FOOTER_CONNECT = [
-  { href: "https://t.me/TIVONIX", label: "Telegram" },
+  { href: TG_CHANNEL_URL, label: "Telegram" },
   { href: "https://www.instagram.com/tivonix.tech/", label: "Instagram" },
-  {
-    href:
-      "https://mail.google.com/mail/?view=cm&fs=1" +
-      `&to=${encodeURIComponent("tivoonix@gmail.com")}` +
-      `&su=${encodeURIComponent("Проект (SaaS/MVP)")}`,
-    label: "Email",
-  },
+  { href: FOOTER_GMAIL_URL, label: "Gmail" },
 ] as const;
 
 const DOCS = {
@@ -131,6 +131,72 @@ function ColNav({
       </h2>
       <ul className="site-footer__col-list">{children}</ul>
     </nav>
+  );
+}
+
+function SocialIconLink({
+  href,
+  label,
+  children,
+}: {
+  href: string;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className="site-footer__social-link"
+    >
+      {children}
+    </a>
+  );
+}
+
+function IconTelegram({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M21.8 4.6c.2-.8-.6-1.5-1.4-1.2L3.4 10c-1 .4-1 1.8 0 2.2l4.5 1.7 1.7 4.9c.3.9 1.5 1 2 .2l2.6-4.2 4.7 3.6c.7.5 1.7.1 1.9-.8L21.8 4.6Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path d="M8 13.8 19.6 6.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconInstagram({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect x="2.5" y="2.5" width="19" height="19" rx="5" stroke="currentColor" strokeWidth="1.55" />
+      <circle cx="12" cy="12" r="4.25" stroke="currentColor" strokeWidth="1.55" />
+      <circle cx="17.5" cy="6.5" r="1.35" fill="currentColor" />
+    </svg>
+  );
+}
+
+function IconMail({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M4.5 7.5v9a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-11a2 2 0 0 0-2 2Z"
+        stroke="currentColor"
+        strokeWidth="1.65"
+        opacity="0.95"
+      />
+      <path
+        d="M6 8.5 12 12.5l6-4"
+        stroke="currentColor"
+        strokeWidth="1.65"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
@@ -253,13 +319,30 @@ function Footer() {
               <p className="site-footer__tagline">{tagline}</p>
             </div>
 
-            <nav className="site-footer__legal-nav" aria-label={isRu ? "Документы" : "Legal"}>
-              {docs.map((d) => (
-                <ExternalLink key={d.href} href={d.href} newTab aria-label={d.aria}>
-                  {d.label}
-                </ExternalLink>
-              ))}
-            </nav>
+            <div className="site-footer__legal-end">
+              <nav
+                className="site-footer__social"
+                aria-label={isRu ? "Соцсети и почта" : "Social and email"}
+              >
+                <SocialIconLink href={FOOTER_CONNECT[0].href} label={FOOTER_CONNECT[0].label}>
+                  <IconTelegram className="site-footer__social-icon" />
+                </SocialIconLink>
+                <SocialIconLink href={FOOTER_CONNECT[1].href} label={FOOTER_CONNECT[1].label}>
+                  <IconInstagram className="site-footer__social-icon" />
+                </SocialIconLink>
+                <SocialIconLink href={FOOTER_CONNECT[2].href} label={FOOTER_CONNECT[2].label}>
+                  <IconMail className="site-footer__social-icon" />
+                </SocialIconLink>
+              </nav>
+
+              <nav className="site-footer__legal-nav" aria-label={isRu ? "Документы" : "Legal"}>
+                {docs.map((d) => (
+                  <ExternalLink key={d.href} href={d.href} newTab aria-label={d.aria}>
+                    {d.label}
+                  </ExternalLink>
+                ))}
+              </nav>
+            </div>
           </div>
         </div>
       </Container>

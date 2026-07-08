@@ -963,7 +963,7 @@ export default function AutomationBusinessPage() {
       serviceType: "Automation and custom web systems",
       provider: { "@type": "Organization", name: "TIVONIX" },
       areaServed: "CIS",
-      url: "https://www.tivonix.tech/avtomatizaciya-biznesa",
+      url: "https://tivonix.tech/avtomatizaciya-biznesa",
     }),
     [t.schemaServiceName]
   );

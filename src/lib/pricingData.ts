@@ -84,7 +84,10 @@ export const COMPARISON_GROUPS: ComparisonGroup[] = [
   },
 ];
 
-export type PlanCtaAction = "telegram" | "modal";
+import type { PlanCtaAction } from "./planCatalog";
+import { getPlanCtaAction, PLAN_TELEGRAM_PAYLOADS } from "./planCatalog";
+
+export type { PlanCtaAction } from "./planCatalog";
 
 export type PlanConfig = {
   id: PlanId;
@@ -93,15 +96,12 @@ export type PlanConfig = {
   ctaAction: PlanCtaAction;
 };
 
-/** Payload для Telegram deep link (?start=...) */
-export const PLAN_TELEGRAM_START: Partial<Record<PlanId, string>> = {
-  start: "plan_start",
-  custom: "plan_custom",
-};
+/** @deprecated Используйте PLAN_TELEGRAM_PAYLOADS из planCatalog */
+export const PLAN_TELEGRAM_START = PLAN_TELEGRAM_PAYLOADS;
 
 export const PLANS: PlanConfig[] = [
-  { id: "start", ctaAction: "telegram" },
-  { id: "growth", badgeKey: "popular", highlight: true, ctaAction: "modal" },
-  { id: "product", badgeKey: "product", ctaAction: "modal" },
-  { id: "custom", ctaAction: "telegram" },
+  { id: "start", ctaAction: getPlanCtaAction("start") },
+  { id: "growth", badgeKey: "popular", highlight: true, ctaAction: getPlanCtaAction("growth") },
+  { id: "product", badgeKey: "product", ctaAction: getPlanCtaAction("product") },
+  { id: "custom", ctaAction: getPlanCtaAction("custom") },
 ];

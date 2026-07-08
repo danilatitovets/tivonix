@@ -6,7 +6,7 @@ import Reveal from "../ui/Reveal";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
 import { LANDING_HEADLINE_CLASS } from "../../lib/landingLayout";
-import StartModal from "./StartModal";
+import { TG_BOT_URL } from "../../constants/links";
 
 type Metric = {
   badge: string;
@@ -329,7 +329,6 @@ function FeaturedCard({
   metricLabel,
   quote,
   linkText,
-  onLinkClick,
   className,
   visible,
 }: {
@@ -338,7 +337,6 @@ function FeaturedCard({
   metricLabel: string;
   quote: string;
   linkText: string;
-  onLinkClick: () => void;
   className?: string;
   visible: boolean;
 }) {
@@ -357,9 +355,10 @@ function FeaturedCard({
 
         <div className="my-4 max-w-[52ch] flex-1 sm:my-5 lg:my-3">
           <p className="text-[15px] leading-[1.7] text-white/58 sm:text-[16px]">{quote}</p>
-          <button
-            type="button"
-            onClick={onLinkClick}
+          <a
+            href={TG_BOT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="group mt-5 inline-flex items-center gap-1.5 text-[14px] font-medium text-white/80 transition hover:text-[#FFAE66]"
           >
             {linkText}
@@ -368,7 +367,7 @@ function FeaturedCard({
               className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
               aria-hidden
             />
-          </button>
+          </a>
         </div>
 
         <div>
@@ -384,7 +383,6 @@ function FeaturedCard({
 
 export default function MainOfferSection() {
   const copy = landingCopy(useLang().lang);
-  const [modalOpen, setModalOpen] = useState(false);
   const mosaicRef = useRef<HTMLDivElement>(null);
   const bottomCardRefs = useRef<(HTMLElement | null)[]>([]);
   useOfferMosaicBackground(mosaicRef);
@@ -397,8 +395,7 @@ export default function MainOfferSection() {
   const [topMetric, ...bottomMetrics] = copy.offer.metrics;
 
   return (
-    <>
-      <Section
+    <Section
         id="offer"
         className="scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24"
       >
@@ -427,7 +424,6 @@ export default function MainOfferSection() {
                   metricLabel={copy.offer.featured.metricLabel}
                   quote={copy.offer.featured.quote}
                   linkText={copy.offer.featured.linkText}
-                  onLinkClick={() => setModalOpen(true)}
                   visible={topVisible[0]}
                 />
               </div>
@@ -472,9 +468,6 @@ export default function MainOfferSection() {
             </div>
           </div>
         </Container>
-      </Section>
-
-      <StartModal open={modalOpen} onClose={() => setModalOpen(false)} />
-    </>
+    </Section>
   );
 }

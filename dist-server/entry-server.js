@@ -363,8 +363,8 @@ function homePageSeoFromDict(dict) {
   const isRu = dict.header.home === "На главную";
   if (isRu) {
     return {
-      title: "Сайты, боты и CRM для бизнеса — TIVONIX",
-      description: "TIVONIX делает сайты, Telegram-ботов, CRM и веб-сервисы под задачу бизнеса: заявки не теряются, команда видит статусы и знает, что делать дальше. Первая консультация бесплатно."
+      title: "TIVONIX — сайты, боты и AI-сервисы для бизнеса",
+      description: "Создаём сайты, Telegram-ботов, CRM, личные кабинеты и автоматизацию заявок под ключ."
     };
   }
   const { titleLine1, titleLine2Prefix, titleLine2Premium, subtitle } = dict.hero;
@@ -384,10 +384,94 @@ function Container({
 }) {
   return /* @__PURE__ */ jsx("div", { className: [LANDING_SHELL_CLASS, className].filter(Boolean).join(" "), children });
 }
+const PLAN_CATALOG = {
+  start: {
+    id: "start",
+    name: "Start",
+    tagline: {
+      ru: "Лендинг + заявки + Telegram",
+      en: "Landing page + leads + Telegram"
+    },
+    telegramPayload: "plan_start",
+    adminSource: "Start (/plans)",
+    ctaAction: "telegram"
+  },
+  growth: {
+    id: "growth",
+    name: "Growth",
+    tagline: {
+      ru: "Система заявок + Telegram + мини-CRM",
+      en: "Lead system + Telegram + mini-CRM"
+    },
+    telegramPayload: "plan_growth",
+    adminSource: "Growth (/plans)",
+    ctaAction: "modal"
+  },
+  product: {
+    id: "product",
+    name: "Product",
+    tagline: {
+      ru: "Веб-сервис, кабинет, админка, оплата",
+      en: "Web service, client area, admin, payments"
+    },
+    telegramPayload: "plan_product",
+    adminSource: "Product (/plans)",
+    ctaAction: "modal"
+  },
+  custom: {
+    id: "custom",
+    name: "Custom",
+    tagline: {
+      ru: "Автоматизация, AI и индивидуальное решение",
+      en: "Automation, AI and a custom build"
+    },
+    telegramPayload: "plan_custom",
+    adminSource: "Custom (/plans)",
+    ctaAction: "telegram"
+  },
+  help: {
+    id: "help",
+    name: "Help",
+    tagline: {
+      ru: "Подбор подходящего формата запуска",
+      en: "Finding the right launch format"
+    },
+    telegramPayload: "plan_help",
+    adminSource: "Help (/plans)",
+    ctaAction: "telegram"
+  }
+};
+({
+  start: PLAN_CATALOG.start.telegramPayload,
+  growth: PLAN_CATALOG.growth.telegramPayload,
+  product: PLAN_CATALOG.product.telegramPayload,
+  custom: PLAN_CATALOG.custom.telegramPayload
+});
+const HELP_TELEGRAM_PAYLOAD = PLAN_CATALOG.help.telegramPayload;
+function getPlanCtaAction(planId) {
+  return PLAN_CATALOG[planId].ctaAction;
+}
+function getPlanTelegramPayload(planId) {
+  return PLAN_CATALOG[planId].telegramPayload;
+}
+Object.fromEntries(
+  Object.values(PLAN_CATALOG).map((entry) => [entry.telegramPayload, entry.adminSource])
+);
 const TG_BOT_BASE_URL = "https://t.me/tivonixtech_leads_bot";
-const TG_BOT_URL = `${TG_BOT_BASE_URL}?start=calc`;
+const TG_CHANNEL_URL = "https://t.me/TIVONIX";
+const TG_BOT_URL = buildTelegramBotUrl("calc");
 function buildTelegramBotUrl(startPayload) {
+  if (!startPayload) return TG_BOT_BASE_URL;
   return `${TG_BOT_BASE_URL}?start=${encodeURIComponent(startPayload)}`;
+}
+function buildPlanTelegramUrl(planId) {
+  return buildTelegramBotUrl(getPlanTelegramPayload(planId));
+}
+function buildPricingPlanTelegramUrl(planId) {
+  return buildPlanTelegramUrl(planId);
+}
+function buildHelpPlanTelegramUrl() {
+  return buildTelegramBotUrl(HELP_TELEGRAM_PAYLOAD);
 }
 function cx$d(...a) {
   return a.filter(Boolean).join(" ");
@@ -1996,6 +2080,7 @@ function Header() {
   const { lang } = useLang();
   const isRu = lang === "ru";
   const burgerRef = useRef(null);
+  const scrollLockYRef = useRef(0);
   useEffect(() => {
     const onResize = () => {
       if (window.innerWidth >= DESKTOP_MIN_WIDTH) setOpen(false);
@@ -2013,13 +2098,38 @@ function Header() {
   useEffect(() => {
     if (!open) return;
     const html = document.documentElement;
+    const body = document.body;
+    const scrollY = window.scrollY;
+    scrollLockYRef.current = scrollY;
     const prevHtmlOverflow = html.style.overflow;
-    const prevBodyOverflow = document.body.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    const prevBodyPosition = body.style.position;
+    const prevBodyTop = body.style.top;
+    const prevBodyLeft = body.style.left;
+    const prevBodyRight = body.style.right;
+    const prevBodyWidth = body.style.width;
+    const prevBodyPaddingRight = body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - html.clientWidth;
     html.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
+    if (scrollbarWidth > 0) {
+      body.style.paddingRight = `${scrollbarWidth}px`;
+    }
     return () => {
       html.style.overflow = prevHtmlOverflow;
-      document.body.style.overflow = prevBodyOverflow;
+      body.style.overflow = prevBodyOverflow;
+      body.style.position = prevBodyPosition;
+      body.style.top = prevBodyTop;
+      body.style.left = prevBodyLeft;
+      body.style.right = prevBodyRight;
+      body.style.width = prevBodyWidth;
+      body.style.paddingRight = prevBodyPaddingRight;
+      window.scrollTo(0, scrollLockYRef.current);
     };
   }, [open]);
   const navLabel = (key) => {
@@ -2071,11 +2181,10 @@ function Header() {
   const ariaHome = isRu ? "На главную" : "Go to home";
   const ariaMenu = isRu ? "Меню" : "Menu";
   const ctaTop = isRu ? "Обсудить проект" : "Discuss the project";
-  const ctaScrolled = isRu ? "Написать нам" : "Message us";
   const dur = reducedMotion ? 0 : 280;
   const closeMenu = () => {
     setOpen(false);
-    requestAnimationFrame(() => burgerRef.current?.focus());
+    requestAnimationFrame(() => burgerRef.current?.focus({ preventScroll: true }));
   };
   return /* @__PURE__ */ jsxs(Fragment, { children: [
     /* @__PURE__ */ jsx(
@@ -2258,7 +2367,7 @@ function Header() {
           "div",
           {
             className: cx$b(
-              "mobile-menu-panel absolute inset-0 flex min-h-[100dvh] flex-col bg-[#0a0a0a]",
+              "mobile-menu-panel absolute inset-0 flex min-h-[100dvh] flex-col overflow-hidden bg-[#161313]",
               "transition-[opacity,transform,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
               open ? "visible translate-y-0 opacity-100" : "invisible -translate-y-4 opacity-0"
             ),
@@ -2266,17 +2375,7 @@ function Header() {
             "aria-modal": "true",
             "aria-label": isRu ? "Меню" : "Menu",
             children: [
-              /* @__PURE__ */ jsx(
-                "div",
-                {
-                  "aria-hidden": true,
-                  className: "pointer-events-none absolute inset-x-0 top-0 h-28 opacity-90",
-                  style: {
-                    background: "radial-gradient(600px 80px at 50% 0%, rgba(255,154,61,0.2), transparent 65%)"
-                  }
-                }
-              ),
-              /* @__PURE__ */ jsxs("div", { className: "relative flex items-center justify-between border-b border-white/[0.08] px-5 pb-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6", children: [
+              /* @__PURE__ */ jsxs("div", { className: "relative flex items-center justify-between px-4 pb-4 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5", children: [
                 /* @__PURE__ */ jsx(
                   Link,
                   {
@@ -2290,9 +2389,9 @@ function Header() {
                     children: /* @__PURE__ */ jsx(
                       "img",
                       {
-                        src: LOGO_WHITE,
+                        src: heroInView ? LOGO_WHITE : LOGO_DEFAULT,
                         alt: "TIVONIX",
-                        className: "h-9 w-auto object-contain opacity-95",
+                        className: "h-7 w-auto object-contain opacity-95",
                         draggable: false,
                         decoding: "async"
                       }
@@ -2305,26 +2404,76 @@ function Header() {
                     type: "button",
                     onClick: closeMenu,
                     className: cx$b(
-                      "grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-2xl border-0",
-                      "bg-white/[0.08] transition hover:bg-white/[0.13] active:scale-95",
+                      "grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-xl border-0",
+                      "bg-white/[0.04] text-white/72 transition hover:bg-white/[0.08] active:scale-95",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
                     ),
                     "aria-label": isRu ? "Закрыть меню" : "Close menu",
-                    children: /* @__PURE__ */ jsxs("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: [
-                      /* @__PURE__ */ jsx("path", { d: "M6 6L18 18", stroke: "#FF9A3D", strokeWidth: "2", strokeLinecap: "round" }),
-                      /* @__PURE__ */ jsx("path", { d: "M18 6L6 18", stroke: "#FF9A3D", strokeWidth: "2", strokeLinecap: "round" })
-                    ] })
+                    children: /* @__PURE__ */ jsxs(
+                      "svg",
+                      {
+                        width: "22",
+                        height: "22",
+                        viewBox: "0 0 24 24",
+                        fill: "none",
+                        className: "transition-transform duration-200 ease-out",
+                        "aria-hidden": true,
+                        children: [
+                          /* @__PURE__ */ jsx(
+                            "path",
+                            {
+                              d: "M4 7H20",
+                              stroke: "#FF9A3D",
+                              strokeWidth: "2",
+                              strokeLinecap: "round",
+                              style: {
+                                transformOrigin: "12px 7px",
+                                transform: "translateY(5px) rotate(45deg)",
+                                transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)"
+                              }
+                            }
+                          ),
+                          /* @__PURE__ */ jsx(
+                            "path",
+                            {
+                              d: "M4 12H20",
+                              stroke: "#FF9A3D",
+                              strokeWidth: "2",
+                              strokeLinecap: "round",
+                              style: {
+                                opacity: 0,
+                                transition: reducedMotion ? "none" : "opacity 0.18s ease-out"
+                              }
+                            }
+                          ),
+                          /* @__PURE__ */ jsx(
+                            "path",
+                            {
+                              d: "M4 17H20",
+                              stroke: "#FF9A3D",
+                              strokeWidth: "2",
+                              strokeLinecap: "round",
+                              style: {
+                                transformOrigin: "12px 17px",
+                                transform: "translateY(-5px) rotate(-45deg)",
+                                transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)"
+                              }
+                            }
+                          )
+                        ]
+                      }
+                    )
                   }
                 )
               ] }),
-              /* @__PURE__ */ jsxs("div", { className: "relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain", children: [
-                /* @__PURE__ */ jsx("nav", { className: "flex flex-col", "aria-label": isRu ? "Навигация" : "Navigation", children: tabsItems.map((item) => /* @__PURE__ */ jsxs(
+              /* @__PURE__ */ jsxs("div", { className: "relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2 pb-5 sm:px-3", children: [
+                /* @__PURE__ */ jsx("nav", { className: "mt-1 flex flex-col", "aria-label": isRu ? "Навигация" : "Navigation", children: tabsItems.map((item) => /* @__PURE__ */ jsxs(
                   Link,
                   {
                     to: item.to,
                     className: cx$b(
-                      "flex items-center justify-between border-b border-white/[0.08] px-5 py-4 text-[15px] font-medium text-white/92",
-                      "transition-colors hover:bg-white/[0.04] active:bg-white/[0.03]",
+                      "flex items-center justify-between border-b border-white/[0.08] px-3 py-4 text-[15px] font-medium text-white/92",
+                      "transition-colors hover:bg-white/[0.03] active:bg-white/[0.02]",
                       activeKey === item.key && "text-[#FFAE66]"
                     ),
                     onClick: (e) => {
@@ -2333,38 +2482,19 @@ function Header() {
                     },
                     children: [
                       /* @__PURE__ */ jsx("span", { className: "capitalize", children: item.label }),
-                      /* @__PURE__ */ jsx("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", className: "shrink-0 text-white/40", "aria-hidden": true, children: /* @__PURE__ */ jsx("path", { d: "M9 18l6-6-6-6", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) })
+                      /* @__PURE__ */ jsx("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", className: "shrink-0 text-white/32", "aria-hidden": true, children: /* @__PURE__ */ jsx("path", { d: "M9 18l6-6-6-6", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) })
                     ]
                   },
                   item.key
                 )) }),
-                /* @__PURE__ */ jsxs("div", { className: "mt-auto flex flex-col gap-3 px-5 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6", children: [
-                  /* @__PURE__ */ jsx(
-                    "a",
-                    {
-                      href: TG_BOT_URL,
-                      target: "_blank",
-                      rel: "noopener noreferrer",
-                      className: cx$b(
-                        "inline-flex h-12 items-center justify-center rounded-full px-6 font-semibold",
-                        "bg-gradient-to-r from-[#FFD7B0] via-[#FF9A3D] to-[#FF6A1A] text-black",
-                        "shadow-[0_18px_50px_rgba(255,107,44,0.22)] hover:brightness-105",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40"
-                      ),
-                      onClick: () => setOpen(false),
-                      children: ctaScrolled
-                    }
-                  ),
+                /* @__PURE__ */ jsxs("div", { className: "mt-auto flex flex-col gap-2 px-2 pt-6 pb-[max(1rem,env(safe-area-inset-bottom))]", children: [
                   /* @__PURE__ */ jsx(
                     CalcButton,
                     {
-                      variant: "white",
-                      onClick: () => {
-                        closeMenu();
-                        openStartModal();
-                      },
-                      className: "h-12 w-full text-[14px]",
-                      children: ctaTop
+                      variant: "plain",
+                      onClick: openStartModal,
+                      className: "h-12 w-full rounded-xl border border-white/[0.08] text-[14px]",
+                      children: isRu ? "Обсудить проект" : "Contact sales"
                     }
                   ),
                   /* @__PURE__ */ jsx(
@@ -2372,9 +2502,9 @@ function Header() {
                     {
                       to: "/plans",
                       className: cx$b(
-                        "inline-flex h-12 items-center justify-center rounded-full border border-white/20 px-6 text-[14px] font-semibold text-white/88",
-                        "transition hover:border-white/35 hover:text-white",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25"
+                        "inline-flex h-12 items-center justify-center rounded-xl px-6 text-[14px] font-semibold text-black",
+                        "bg-[#ff6a21] transition hover:brightness-105",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40"
                       ),
                       onClick: () => setOpen(false),
                       children: isRu ? "Планы" : "Plans"
@@ -3568,9 +3698,7 @@ function HeroCard({
     "div",
     {
       className: cx$9(
-        "relative isolate h-full min-h-0 flex-1 overflow-hidden rounded-[28px]",
-        "sm:min-h-[min(65vh,730px)] sm:h-auto",
-        "lg:min-h-[700px] lg:rounded-[32px]"
+        "relative isolate h-full min-h-0 flex-1 overflow-hidden rounded-[28px] lg:rounded-[32px]"
       ),
       children: [
         HERO_IMAGES.map((src, i) => /* @__PURE__ */ jsx(
@@ -3612,7 +3740,7 @@ function HeroCard({
               stage.headline
             );
           }) }) }) }),
-          /* @__PURE__ */ jsxs("div", { className: "pointer-events-auto flex shrink-0 flex-col items-center gap-3 pb-5 sm:pb-8", children: [
+          /* @__PURE__ */ jsxs("div", { className: "pointer-events-auto flex shrink-0 flex-col items-center gap-3 pb-5 sm:pb-7 lg:pb-8", children: [
             /* @__PURE__ */ jsx(LangToggle, { variant: "hero" }),
             /* @__PURE__ */ jsx(
               "button",
@@ -3652,15 +3780,16 @@ function Hero() {
         {
           className: cx$9(
             "sticky top-0 z-[1] isolate overflow-hidden bg-transparent !py-0",
-            "min-h-[100dvh] pb-0 sm:min-h-0 sm:pb-7 lg:pb-9"
+            "min-h-[100dvh] pb-0"
           ),
           children: /* @__PURE__ */ jsx(
             "div",
             {
               className: cx$9(
-                "flex h-[calc(100dvh-1.25rem)] min-h-0 w-full max-w-none flex-col",
+                "mx-auto flex h-[calc(100dvh-1.25rem)] min-h-0 w-full max-w-none flex-col",
                 "px-3 pt-2.5 pb-2.5",
-                "sm:mx-auto sm:h-auto sm:max-w-[min(98vw,1840px)] sm:px-3 sm:pt-2.5 sm:pb-0 lg:px-4"
+                "sm:max-w-[min(98vw,1840px)] sm:px-3",
+                "lg:px-4 lg:pt-3 lg:pb-3"
               ),
               children: /* @__PURE__ */ jsx(HeroCard, { progress, stages, isRu })
             }
@@ -4282,10 +4411,12 @@ function Reveal({ children, className, delay = 0 }) {
   );
 }
 const OFFER_MOSAIC_BG = `/images/${encodeURI("как рабоает/пп/блоки/ffon.png")}`;
+const OFFER_BOTTOM_MOBILE_BG = `/images/${encodeURI("как рабоает/пп/6.png")}`;
 const TOP_ENTER_STAGGER_MS = 130;
 const TOP_ENTER_DURATION_MS = 820;
 const REVEAL_DELAY_MS = 200;
 const REVEAL_DURATION_MS = 2800;
+const OFFER_MOBILE_MAX_WIDTH = 1023;
 function clamp$1(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
@@ -4310,13 +4441,21 @@ function useOfferMosaicBackground(mosaicRef) {
     const update = () => {
       const mosaicRect = mosaic.getBoundingClientRect();
       if (mosaicRect.width <= 0 || mosaicRect.height <= 0) return;
-      const rowBottom = mosaic.querySelector(".offer-mosaic__row-bottom");
+      const rowBottom2 = mosaic.querySelector(".offer-mosaic__row-bottom");
       const isMobile = window.innerWidth < 1024;
-      const gridW = isMobile && rowBottom ? Math.max(mosaicRect.width, rowBottom.scrollWidth) : mosaicRect.width;
+      const gridW = isMobile && rowBottom2 ? Math.max(mosaicRect.width, rowBottom2.scrollWidth) : mosaicRect.width;
       const gridH = mosaicRect.height;
       mosaic.style.setProperty("--offer-grid-w", `${gridW}px`);
       mosaic.style.setProperty("--offer-grid-h", `${gridH}px`);
       mosaic.querySelectorAll("[data-offer-slice]").forEach((card) => {
+        const inBottomRow = card.closest(".offer-mosaic__row-bottom") !== null;
+        if (isMobile && inBottomRow) {
+          card.style.removeProperty("--offer-bg-w");
+          card.style.removeProperty("--offer-bg-h");
+          card.style.removeProperty("--offer-bg-pos-x");
+          card.style.removeProperty("--offer-bg-pos-y");
+          return;
+        }
         const cardRect = card.getBoundingClientRect();
         const scroll = getAccumulatedScroll(card, mosaic);
         const posX = cardRect.left - mosaicRect.left + scroll.x;
@@ -4337,10 +4476,13 @@ function useOfferMosaicBackground(mosaicRef) {
     ro.observe(mosaic);
     window.addEventListener("resize", scheduleUpdate);
     document.fonts?.ready.then(scheduleUpdate).catch(() => void 0);
+    const rowBottom = mosaic.querySelector(".offer-mosaic__row-bottom");
+    rowBottom?.addEventListener("scroll", scheduleUpdate, { passive: true });
     return () => {
       cancelAnimationFrame(frame);
       ro.disconnect();
       window.removeEventListener("resize", scheduleUpdate);
+      rowBottom?.removeEventListener("scroll", scheduleUpdate);
     };
   }, [mosaicRef]);
 }
@@ -4393,10 +4535,11 @@ function useOfferSectionAnimation(mosaicRef, bottomCardRefs) {
   }, [measureBottomRow]);
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mobile = window.matchMedia(`(max-width: ${OFFER_MOBILE_MAX_WIDTH}px)`).matches;
     setReducedMotion(reduced);
     const mosaic = mosaicRef.current;
     if (!mosaic) return;
-    if (reduced) {
+    if (reduced || mobile) {
       finishInstant();
       return;
     }
@@ -4495,9 +4638,9 @@ function MetricCard({
       className: ["min-h-[200px] sm:min-h-[220px] lg:min-h-0", className].filter(Boolean).join(" "),
       children: [
         /* @__PURE__ */ jsx("div", { className: "text-[15px] font-semibold tracking-[-0.01em] text-white/90 sm:text-[16px]", children: badge }),
-        /* @__PURE__ */ jsxs("div", { className: "ml-auto text-right", children: [
-          /* @__PURE__ */ jsx("p", { className: "font-hero text-[2rem] font-semibold leading-none tracking-[-0.04em] text-white sm:text-[2.5rem] lg:text-[2.75rem]", children: metric }),
-          /* @__PURE__ */ jsx("p", { className: "mt-2 text-[14px] leading-snug text-white/48 sm:text-[15px]", children: label })
+        /* @__PURE__ */ jsxs("div", { className: "ml-auto w-full min-w-0 shrink-0 text-right", children: [
+          /* @__PURE__ */ jsx("p", { className: "font-hero whitespace-nowrap text-[2rem] font-semibold leading-none tracking-[-0.04em] text-white sm:text-[2.5rem] lg:text-[2.75rem]", children: metric }),
+          /* @__PURE__ */ jsx("p", { className: "mt-2 text-pretty text-[14px] leading-snug text-white/48 sm:text-[15px]", children: label })
         ] })
       ]
     }
@@ -4509,7 +4652,6 @@ function FeaturedCard({
   metricLabel,
   quote,
   linkText,
-  onLinkClick,
   className,
   visible
 }) {
@@ -4526,10 +4668,11 @@ function FeaturedCard({
         /* @__PURE__ */ jsxs("div", { className: "my-4 max-w-[52ch] flex-1 sm:my-5 lg:my-3", children: [
           /* @__PURE__ */ jsx("p", { className: "text-[15px] leading-[1.7] text-white/58 sm:text-[16px]", children: quote }),
           /* @__PURE__ */ jsxs(
-            "button",
+            "a",
             {
-              type: "button",
-              onClick: onLinkClick,
+              href: TG_BOT_URL,
+              target: "_blank",
+              rel: "noopener noreferrer",
               className: "group mt-5 inline-flex items-center gap-1.5 text-[14px] font-medium text-white/80 transition hover:text-[#FFAE66]",
               children: [
                 linkText,
@@ -4546,8 +4689,8 @@ function FeaturedCard({
           )
         ] }),
         /* @__PURE__ */ jsxs("div", { children: [
-          /* @__PURE__ */ jsx("p", { className: "font-hero text-[2.25rem] font-semibold leading-none tracking-[-0.04em] text-white sm:text-[2.75rem] lg:text-[3.25rem]", children: metric }),
-          /* @__PURE__ */ jsx("p", { className: "mt-2 text-[14px] leading-snug text-white/48 sm:text-[15px]", children: metricLabel })
+          /* @__PURE__ */ jsx("p", { className: "font-hero whitespace-nowrap text-[2.25rem] font-semibold leading-none tracking-[-0.04em] text-white sm:text-[2.75rem] lg:text-[3.25rem]", children: metric }),
+          /* @__PURE__ */ jsx("p", { className: "mt-2 text-pretty text-[14px] leading-snug text-white/48 sm:text-[15px]", children: metricLabel })
         ] })
       ] })
     }
@@ -4555,7 +4698,6 @@ function FeaturedCard({
 }
 function MainOfferSection() {
   const copy = landingCopy(useLang().lang);
-  const [modalOpen, setModalOpen] = useState(false);
   const mosaicRef = useRef(null);
   const bottomCardRefs = useRef([]);
   useOfferMosaicBackground(mosaicRef);
@@ -4564,93 +4706,96 @@ function MainOfferSection() {
     bottomCardRefs
   );
   const [topMetric, ...bottomMetrics] = copy.offer.metrics;
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx(
-      Section,
-      {
-        id: "offer",
-        className: "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24",
-        children: /* @__PURE__ */ jsxs(Container, { children: [
-          /* @__PURE__ */ jsx(Reveal, { delay: 0, children: /* @__PURE__ */ jsx("div", { className: "min-w-0 text-center", children: /* @__PURE__ */ jsx("h2", { className: `${LANDING_HEADLINE_CLASS} text-center text-balance`, children: copy.offer.title }) }) }),
-          /* @__PURE__ */ jsxs(
-            "div",
-            {
-              ref: mosaicRef,
-              className: "offer-mosaic relative mt-10 flex flex-col gap-2.5 sm:mt-12 sm:gap-4",
-              style: { ["--offer-mosaic-image"]: `url("${OFFER_MOSAIC_BG}")` },
-              children: [
-                /* @__PURE__ */ jsxs("div", { className: "offer-mosaic__row-top grid grid-cols-1 gap-2.5 sm:gap-4", children: [
-                  /* @__PURE__ */ jsx("div", { className: "offer-mosaic__cell min-h-[220px] min-w-0 w-full sm:min-h-[240px] lg:col-span-8 lg:min-h-0", children: /* @__PURE__ */ jsx(
-                    FeaturedCard,
-                    {
-                      badge: copy.offer.featured.badge,
-                      metric: copy.offer.featured.metric,
-                      metricLabel: copy.offer.featured.metricLabel,
-                      quote: copy.offer.featured.quote,
-                      linkText: copy.offer.featured.linkText,
-                      onLinkClick: () => setModalOpen(true),
-                      visible: topVisible[0]
-                    }
-                  ) }),
-                  topMetric ? /* @__PURE__ */ jsx(
-                    "div",
-                    {
-                      className: [
-                        "offer-mosaic__cell offer-top-enter min-h-[220px] sm:min-h-[240px] lg:col-span-4 lg:flex lg:min-h-0",
-                        topVisible[1] ? "offer-top-enter--visible" : ""
-                      ].filter(Boolean).join(" "),
-                      style: { transitionDelay: `${TOP_ENTER_STAGGER_MS}ms` },
-                      children: /* @__PURE__ */ jsx(
-                        MetricCard,
-                        {
-                          slice: 2,
-                          ...topMetric,
-                          className: "w-full lg:h-full lg:min-h-0"
-                        }
-                      )
-                    }
-                  ) : null
-                ] }),
-                /* @__PURE__ */ jsx("div", { className: "offer-mosaic__row-bottom grid grid-cols-4 gap-2 sm:gap-3 lg:gap-4", children: bottomMetrics.map((item, i) => /* @__PURE__ */ jsx(
+  return /* @__PURE__ */ jsx(
+    Section,
+    {
+      id: "offer",
+      className: "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24",
+      children: /* @__PURE__ */ jsxs(Container, { children: [
+        /* @__PURE__ */ jsx(Reveal, { delay: 0, children: /* @__PURE__ */ jsx("div", { className: "min-w-0 text-center", children: /* @__PURE__ */ jsx("h2", { className: `${LANDING_HEADLINE_CLASS} text-center text-balance`, children: copy.offer.title }) }) }),
+        /* @__PURE__ */ jsxs(
+          "div",
+          {
+            ref: mosaicRef,
+            className: "offer-mosaic relative mt-10 flex flex-col gap-2.5 sm:mt-12 sm:gap-4",
+            style: {
+              ["--offer-mosaic-image"]: `url("${OFFER_MOSAIC_BG}")`,
+              ["--offer-mobile-bottom-image"]: `url("${OFFER_BOTTOM_MOBILE_BG}")`
+            },
+            children: [
+              /* @__PURE__ */ jsxs("div", { className: "offer-mosaic__row-top grid grid-cols-1 gap-2.5 sm:gap-4", children: [
+                /* @__PURE__ */ jsx("div", { className: "offer-mosaic__cell min-h-[220px] min-w-0 w-full sm:min-h-[240px] lg:col-span-8 lg:min-h-0", children: /* @__PURE__ */ jsx(
+                  FeaturedCard,
+                  {
+                    badge: copy.offer.featured.badge,
+                    metric: copy.offer.featured.metric,
+                    metricLabel: copy.offer.featured.metricLabel,
+                    quote: copy.offer.featured.quote,
+                    linkText: copy.offer.featured.linkText,
+                    visible: topVisible[0]
+                  }
+                ) }),
+                topMetric ? /* @__PURE__ */ jsx(
                   "div",
                   {
-                    ref: (el) => {
-                      bottomCardRefs.current[i] = el;
-                    },
-                    className: "offer-mosaic__cell min-w-0 lg:col-span-3",
+                    className: [
+                      "offer-mosaic__cell offer-top-enter min-h-[220px] sm:min-h-[240px] lg:col-span-4 lg:flex lg:min-h-0",
+                      topVisible[1] ? "offer-top-enter--visible" : ""
+                    ].filter(Boolean).join(" "),
+                    style: { transitionDelay: `${TOP_ENTER_STAGGER_MS}ms` },
                     children: /* @__PURE__ */ jsx(
                       MetricCard,
                       {
-                        slice: i + 3,
-                        ...item,
-                        bgReveal: cardReveals[i]?.bg ?? 0,
-                        textReveal: cardReveals[i]?.text ?? 0,
-                        className: "h-full lg:min-h-0"
+                        slice: 2,
+                        ...topMetric,
+                        className: "w-full lg:h-full lg:min-h-0"
                       }
                     )
+                  }
+                ) : null
+              ] }),
+              /* @__PURE__ */ jsx("div", { className: "offer-mosaic__row-bottom grid grid-cols-4 gap-2 sm:gap-3 lg:gap-4", children: bottomMetrics.map((item, i) => /* @__PURE__ */ jsx(
+                "div",
+                {
+                  ref: (el) => {
+                    bottomCardRefs.current[i] = el;
                   },
-                  item.badge
-                )) })
-              ]
-            }
-          )
-        ] })
-      }
-    ),
-    /* @__PURE__ */ jsx(StartModal, { open: modalOpen, onClose: () => setModalOpen(false) })
-  ] });
+                  className: "offer-mosaic__cell min-w-0 lg:col-span-3",
+                  children: /* @__PURE__ */ jsx(
+                    MetricCard,
+                    {
+                      slice: i + 3,
+                      ...item,
+                      bgReveal: cardReveals[i]?.bg ?? 0,
+                      textReveal: cardReveals[i]?.text ?? 0,
+                      className: "h-full lg:min-h-0"
+                    }
+                  )
+                },
+                item.badge
+              )) })
+            ]
+          }
+        )
+      ] })
+    }
+  );
 }
 const ORBIT_RX = 33;
 const ORBIT_RY = 31;
-const ORBIT_RX_MOBILE = 37;
-const ORBIT_RY_MOBILE = 32;
+const ORBIT_RX_MOBILE = 35;
+const ORBIT_RY_MOBILE = 25;
+const ORBIT_RX_PHONE = 36;
+const ORBIT_RY_PHONE = 24;
 const ROW_Y = 84;
+const ROW_Y_MOBILE = 86;
 const ROW_BLOCK_REF = 136;
-const ROW_BLOCK_REF_MOBILE_ROW = 76;
-const ROW_COLS_MOBILE = 4;
-const ROW_Y_MOBILE_ROWS = [66, 78, 90];
 const ROW_OVERLAP = 10;
-const ROW_OVERLAP_MOBILE = 0;
+const ROW_BLOCK_REF_TABLET = 80;
+const ROW_OVERLAP_TABLET = 6;
+const ROW_STEP_PHONE = 118;
+const ROW_Y_PHONE = 80;
+const ROW_STRIP_LEADING_PHONE = 24;
 function orbitPosition(index, total, rx = ORBIT_RX, ry = ORBIT_RY) {
   const angle = index / total * Math.PI * 2 - Math.PI / 2;
   return {
@@ -4658,22 +4803,16 @@ function orbitPosition(index, total, rx = ORBIT_RX, ry = ORBIT_RY) {
     y: 50 + ry * Math.sin(angle)
   };
 }
-function rowPosition(index, total, blockRef = ROW_BLOCK_REF, overlap = ROW_OVERLAP) {
+function rowPosition(index, total, blockRef = ROW_BLOCK_REF, overlap = ROW_OVERLAP, rowY = ROW_Y) {
   const step = blockRef - overlap;
   const layoutW = blockRef + (total - 1) * step;
   const centerPx = blockRef / 2 + index * step;
   const rowX = centerPx / layoutW * 100;
-  return { rowX, rowY: ROW_Y };
+  return { rowX, rowY };
 }
-function rowPositionMultiRow(index, total, colsPerRow, blockRef, rowYs, overlap = ROW_OVERLAP_MOBILE) {
-  const rowIndex = Math.floor(index / colsPerRow);
-  const colIndex = index % colsPerRow;
-  const itemsInRow = Math.min(colsPerRow, total - rowIndex * colsPerRow);
-  const step = blockRef - overlap;
-  const layoutW = blockRef + Math.max(0, itemsInRow - 1) * step;
-  const centerPx = blockRef / 2 + colIndex * step;
-  const rowX = itemsInRow === 1 ? 50 : centerPx / layoutW * 100;
-  const rowY = rowYs[Math.min(rowIndex, rowYs.length - 1)] ?? rowYs[rowYs.length - 1];
+function rowPositionScrollStrip(index, itemStep, stageWidth, rowY, leadingPad = 28) {
+  const centerPx = leadingPad + itemStep * 0.5 + index * itemStep;
+  const rowX = stageWidth > 0 ? centerPx / stageWidth * 100 : 50;
   return { rowX, rowY };
 }
 function orbitPositionLegacy(index, total) {
@@ -4686,11 +4825,11 @@ const MODEL_DEFS = [
   { id: "openai", name: "OpenAI", file: "openai.png", scale: 1.88 },
   { id: "claude", name: "Claude", file: "claude.png", scale: 1.08, colorful: true },
   { id: "gemini", name: "Gemini", file: "gemini.png", scale: 2.12 },
-  { id: "grok", name: "Grok", file: "grok.png", scale: 2.38 },
+  { id: "grok", name: "Grok", file: "grok.png", scale: 2.65 },
   { id: "deepseek", name: "DeepSeek", file: "deepseek.png", scale: 1.72, brighten: true },
   { id: "copilot", name: "Copilot", file: "copilot.png", scale: 1.06 },
   { id: "meta", name: "Meta AI", file: "meta.png", scale: 1.45 },
-  { id: "mistral", name: "Mistral", file: "mistral.png", scale: 1.16 },
+  { id: "mistral", name: "Mistral", file: "mistral.png", scale: 0.96 },
   { id: "ollama", name: "Ollama", file: "ollama.png", scale: 1.02 },
   { id: "perplexity", name: "Perplexity", file: "perplexity.png", scale: 1.28 }
 ];
@@ -4793,6 +4932,14 @@ function dropToBlocks(progress) {
 }
 function rowExitScroll(drift) {
   return smoothstep$2(drift);
+}
+function phoneLogoScale(modelId, scale) {
+  if (modelId === "grok") return 1.6;
+  if (modelId === "mistral") return 1.06;
+  return Math.min(scale, 1.32);
+}
+function mobileLogoScale(modelId, scale, phone) {
+  return phoneLogoScale(modelId, scale);
 }
 function backgroundFade(drift, drop, exitScroll) {
   if (exitScroll > 0.08 && exitScroll < 0.96) return 0;
@@ -4907,9 +5054,30 @@ function AiPremiumSection() {
         sectionEl.classList.toggle("ai-premium-section--pinned", isPinned);
         sectionEl.classList.toggle("ai-premium-section--drift", drift > 0.01);
       }
+      const phoneLayout = viewport < 640;
+      const tabletLayout = viewport >= 640 && viewport < 1024;
+      const orbitRx = phoneLayout ? ORBIT_RX_PHONE : tabletLayout ? ORBIT_RX_MOBILE : 33;
+      const orbitRy = phoneLayout ? ORBIT_RY_PHONE : tabletLayout ? ORBIT_RY_MOBILE : 31;
+      const stageEl = rowItemRefs.current[0]?.closest(".ai-premium-orbit-stage");
+      const stageW = stageEl?.clientWidth ?? viewport;
+      const mobileStripStep = ROW_STEP_PHONE;
+      const mobileStripLeading = ROW_STRIP_LEADING_PHONE;
+      const mobileStripWidth = mobileStripLeading + mobileStripStep * AI_MODEL_COUNT;
+      const mobileDriftMax = Math.max(
+        mobileStripWidth - stageW + mobileStripStep * 0.6,
+        mobileStripStep * 2
+      );
+      const mobileStripReveal = phoneLayout && drop > 0.68 ? smoothstep$2((drop - 0.68) / 0.25) : 0;
+      const mobileStripProgress = mobileStripReveal * (1 - exitScroll);
+      const driftPxBase = exitScroll * Math.max(viewport * 0.72, 480);
+      const driftPx = phoneLayout ? -mobileStripProgress * mobileDriftMax : driftPxBase;
+      const orbitBlend = 1 - smoothstep$2(drop / 0.24);
+      const inOrbitPhase = orbitBlend > 0.04;
+      const orbitBlocksIn = progress < ORBIT_START ? 0 : smoothstep$2((progress - ORBIT_START) / 0.07);
+      const logoExitFade = phoneLayout ? smoothstep$2((exitScroll - 0.9) / 0.1) : smoothstep$2((exitScroll - 0.28) / 0.72);
       const hubEl = hubRef.current;
       if (hubEl) {
-        const hubTop = mobileLayout ? lerp(46, 38, drop) : lerp(50, 42, drop);
+        const hubTop = phoneLayout ? lerp(46, 36, drop) : tabletLayout ? lerp(48, 40, drop) : lerp(50, 42, drop);
         hubEl.style.top = `${hubTop}%`;
         hubEl.style.opacity = String(hubOpacity);
         hubEl.style.transform = `translate3d(-50%, -50%, 0) scale(${0.84 + hub * 0.16 - drop * 0.08})`;
@@ -4936,26 +5104,23 @@ function AiPremiumSection() {
         const showCursor = typedChars < headline.length && textOpacity > 0.15 && drop > 0.93;
         cursorRef.current.style.display = showCursor ? "inline-block" : "none";
       }
-      const driftPx = exitScroll * Math.max(viewport * 0.72, 480);
-      const orbitBlend = 1 - smoothstep$2(drop / 0.24);
-      const inOrbitPhase = orbitBlend > 0.04;
-      const orbitBlocksIn = progress < ORBIT_START ? 0 : smoothstep$2((progress - ORBIT_START) / 0.07);
-      const logoExitFade = smoothstep$2((exitScroll - 0.28) / 0.72);
-      const mobileLayout = viewport < 1024;
-      const orbitRx = mobileLayout ? ORBIT_RX_MOBILE : 33;
-      const orbitRy = mobileLayout ? ORBIT_RY_MOBILE : 31;
       AI_MODELS.forEach((model, index) => {
         const el = rowItemRefs.current[index];
         if (!el) return;
         const { x: orbitX, y: orbitY } = orbitPosition(index, AI_MODEL_COUNT, orbitRx, orbitRy);
-        const rowPos = mobileLayout ? rowPositionMultiRow(
+        const rowPos = phoneLayout ? rowPositionScrollStrip(
+          index,
+          mobileStripStep,
+          stageW,
+          ROW_Y_PHONE,
+          mobileStripLeading
+        ) : tabletLayout ? rowPosition(
           index,
           AI_MODEL_COUNT,
-          ROW_COLS_MOBILE,
-          ROW_BLOCK_REF_MOBILE_ROW,
-          ROW_Y_MOBILE_ROWS,
-          ROW_OVERLAP_MOBILE
-        ) : rowPosition(index, AI_MODEL_COUNT, ROW_BLOCK_REF, 10);
+          ROW_BLOCK_REF_TABLET,
+          ROW_OVERLAP_TABLET,
+          ROW_Y_MOBILE
+        ) : rowPosition(index, AI_MODEL_COUNT, ROW_BLOCK_REF, ROW_OVERLAP);
         const reveal = logoReveal(progress, index);
         const x = lerp(orbitX, rowPos.rowX, drop);
         const y = lerp(orbitY, rowPos.rowY, drop);
@@ -4964,8 +5129,9 @@ function AiPremiumSection() {
         const rowOpacity = smoothstep$2(drop);
         const baseOpacity = drop < 0.02 ? Math.max(reveal, orbitBlocksIn) : Math.max(reveal * (1 - drop * 0.35), rowOpacity);
         const itemOpacity = String(baseOpacity * (1 - logoExitFade));
-        const mobileScaleTarget = Math.min(model.scale, 1.55);
-        const logoScale = mobileLayout ? lerp(mobileScaleTarget * 0.94, mobileScaleTarget, 1 - orbitBlend) : lerp(model.scale * 0.96, model.scale, 1 - orbitBlend);
+        const tabletScaleTarget = Math.min(model.scale, 1.4);
+        const phoneScaleTarget = mobileLogoScale(model.id, model.scale);
+        const logoScale = phoneLayout ? lerp(phoneScaleTarget * 0.97, phoneScaleTarget, 1 - orbitBlend) : tabletLayout ? lerp(tabletScaleTarget * 0.97, tabletScaleTarget, 1 - orbitBlend) : lerp(model.scale * 0.96, model.scale, 1 - orbitBlend);
         const imgOpacity = inOrbitPhase ? String(reveal * orbitBlend + (1 - orbitBlend)) : "1";
         const inRowLayout = drop > 0.68;
         const left = `${x}%`;
@@ -5166,7 +5332,11 @@ function AiPremiumSection() {
                                   ref: (el) => {
                                     blockSlotRefs.current[index] = el;
                                   },
-                                  className: "ai-logo-block-slot flex items-center justify-center",
+                                  className: [
+                                    "ai-logo-block-slot flex items-center justify-center",
+                                    "max-sm:!size-[4.5rem] max-sm:!rounded-xl max-sm:!overflow-hidden",
+                                    "max-sm:bg-white/[0.04]"
+                                  ].join(" "),
                                   children: /* @__PURE__ */ jsx(
                                     "img",
                                     {
@@ -5176,7 +5346,9 @@ function AiPremiumSection() {
                                       src: model.src,
                                       alt: model.name,
                                       className: [
-                                        "ai-logo-img max-h-[54px] max-w-[100px] object-contain sm:max-h-[60px] sm:max-w-[112px] lg:max-h-[64px] lg:max-w-[120px]",
+                                        "ai-logo-img object-contain",
+                                        "max-sm:max-h-10 max-sm:max-w-12",
+                                        "max-h-[54px] max-w-[100px] sm:max-h-[60px] sm:max-w-[112px] lg:max-h-[64px] lg:max-w-[120px]",
                                         model.brighten ? "ai-logo-img--bright" : "",
                                         model.colorful ? "ai-logo-img--colorful" : ""
                                       ].join(" "),
@@ -5279,15 +5451,11 @@ const COMPARISON_GROUPS = [
     ]
   }
 ];
-const PLAN_TELEGRAM_START = {
-  start: "plan_start",
-  custom: "plan_custom"
-};
 const PLANS = [
-  { id: "start", ctaAction: "telegram" },
-  { id: "growth", badgeKey: "popular", highlight: true, ctaAction: "modal" },
-  { id: "product", badgeKey: "product", ctaAction: "modal" },
-  { id: "custom", ctaAction: "telegram" }
+  { id: "start", ctaAction: getPlanCtaAction("start") },
+  { id: "growth", badgeKey: "popular", highlight: true, ctaAction: getPlanCtaAction("growth") },
+  { id: "product", badgeKey: "product", ctaAction: getPlanCtaAction("product") },
+  { id: "custom", ctaAction: getPlanCtaAction("custom") }
 ];
 const COMPARE_GLOBE = "/images/pain-bg-4.png";
 function clamp01$3(v) {
@@ -5528,11 +5696,11 @@ function ComparisonSection() {
                     /* @__PURE__ */ jsx(Check, { size: 14, className: "mt-0.5 shrink-0 text-white", strokeWidth: 2.5, "aria-hidden": true }),
                     /* @__PURE__ */ jsx("span", { children: item })
                   ] }, item)) }),
-                  /* @__PURE__ */ jsxs("div", { className: "compare-split__badge mt-6", children: [
+                  /* @__PURE__ */ jsxs("div", { className: "compare-split__badge mt-5 sm:mt-6", children: [
                     /* @__PURE__ */ jsx(Check, { size: 14, strokeWidth: 2.5, "aria-hidden": true }),
-                    /* @__PURE__ */ jsx("span", { children: copy.compare.tivonix.badge })
+                    /* @__PURE__ */ jsx("span", { className: "text-pretty leading-[1.45]", children: copy.compare.tivonix.badge })
                   ] }),
-                  /* @__PURE__ */ jsx("ul", { className: "mt-5 space-y-2.5 text-left sm:hidden", children: copy.compare.tivonix.items.slice(0, 4).map((item) => /* @__PURE__ */ jsxs("li", { className: "flex items-start gap-2 text-[13px] text-white/90", children: [
+                  /* @__PURE__ */ jsx("ul", { className: "compare-split__mobile-list mt-6 space-y-2.5 text-left sm:mt-5 sm:hidden", children: copy.compare.tivonix.items.slice(0, 4).map((item) => /* @__PURE__ */ jsxs("li", { className: "flex items-start gap-2 text-[13px] text-white/90", children: [
                     /* @__PURE__ */ jsx(Check, { size: 13, className: "mt-0.5 shrink-0", strokeWidth: 2.5, "aria-hidden": true }),
                     /* @__PURE__ */ jsx("span", { children: item })
                   ] }, item)) })
@@ -5965,7 +6133,6 @@ function CasesSection() {
   const { lang } = useLang();
   const copy = landingCopy(lang);
   const isRu = lang === "ru";
-  const [modalOpen, setModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("view");
   const caseBlockRef = useRef(null);
   const coverX = useCaseCoverPan(caseBlockRef);
@@ -5990,60 +6157,57 @@ function CasesSection() {
     tabs.push({
       id: "cta",
       label: copy.cases.cta,
-      onClick: () => setModalOpen(true)
+      href: TG_BOT_URL
     });
     return tabs;
   }, [copy.cases.cta, copy.cases.openProduct, copy.cases.viewCase, spliton.domain, spliton.id]);
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx(Section, { id: "cases", className: "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs(Reveal, { className: "case-split", children: [
-      /* @__PURE__ */ jsxs("div", { className: "case-split__visual", children: [
-        /* @__PURE__ */ jsx(
-          "img",
-          {
-            src: spliton.cover ?? "/images/project-priew/spliton.png",
-            alt: spliton.title,
-            loading: "lazy",
-            decoding: "async",
-            className: "case-split__img",
-            style: { objectPosition: `${coverX}% 58%` }
-          }
-        ),
-        /* @__PURE__ */ jsx("div", { className: "case-split__visual-overlay", "aria-hidden": true })
-      ] }),
-      /* @__PURE__ */ jsxs("div", { ref: caseBlockRef, className: "case-split__grid", children: [
-        /* @__PURE__ */ jsx("div", { className: "case-split__visual-gap", "aria-hidden": true }),
-        /* @__PURE__ */ jsxs("div", { className: "case-split__content", children: [
-          /* @__PURE__ */ jsx("span", { className: "case-split__badge", children: copy.cases.badge }),
-          /* @__PURE__ */ jsx("h2", { className: "mt-4 font-hero text-[clamp(1.75rem,4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white", children: spliton.title }),
-          /* @__PURE__ */ jsx("p", { className: "mt-3 text-[14px] leading-relaxed text-white/48 sm:text-[15px]", children: subtitle }),
-          /* @__PURE__ */ jsxs("div", { className: "mt-6 space-y-3 text-[13.5px] leading-relaxed text-white/62", children: [
-            /* @__PURE__ */ jsxs("p", { children: [
-              /* @__PURE__ */ jsx("span", { className: "font-medium text-white/78", children: isRu ? "Задача:" : "Need:" }),
-              " ",
-              copy.cases.spliton.need
-            ] }),
-            /* @__PURE__ */ jsxs("p", { children: [
-              /* @__PURE__ */ jsx("span", { className: "font-medium text-white/78", children: isRu ? "Сделали:" : "Built:" }),
-              " ",
-              copy.cases.spliton.done
-            ] })
-          ] }),
-          /* @__PURE__ */ jsx("div", { className: "case-split__chips mt-5 flex flex-wrap gap-2", children: copy.cases.spliton.modules.map((m) => /* @__PURE__ */ jsx("span", { className: "case-split__chip", children: m }, m)) })
-        ] })
-      ] }),
-      /* @__PURE__ */ jsx("div", { className: "case-split__tabs", children: /* @__PURE__ */ jsx(
-        PillActionBar,
+  return /* @__PURE__ */ jsx(Section, { id: "cases", className: "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs(Reveal, { className: "case-split", children: [
+    /* @__PURE__ */ jsxs("div", { className: "case-split__visual", children: [
+      /* @__PURE__ */ jsx(
+        "img",
         {
-          items: caseTabs,
-          activeId: activeTab,
-          onActiveChange: setActiveTab,
-          className: "case-split__tab-bar",
-          ariaLabel: isRu ? "Действия с кейсом" : "Case actions"
+          src: spliton.cover ?? "/images/project-priew/spliton.png",
+          alt: spliton.title,
+          loading: "lazy",
+          decoding: "async",
+          className: "case-split__img",
+          style: { objectPosition: `${coverX}% 58%` }
         }
-      ) })
-    ] }) }) }),
-    /* @__PURE__ */ jsx(StartModal, { open: modalOpen, onClose: () => setModalOpen(false) })
-  ] });
+      ),
+      /* @__PURE__ */ jsx("div", { className: "case-split__visual-overlay", "aria-hidden": true })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { ref: caseBlockRef, className: "case-split__grid", children: [
+      /* @__PURE__ */ jsx("div", { className: "case-split__visual-gap", "aria-hidden": true }),
+      /* @__PURE__ */ jsxs("div", { className: "case-split__content", children: [
+        /* @__PURE__ */ jsx("span", { className: "case-split__badge", children: copy.cases.badge }),
+        /* @__PURE__ */ jsx("h2", { className: "mt-4 font-hero text-[clamp(1.75rem,4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white", children: spliton.title }),
+        /* @__PURE__ */ jsx("p", { className: "mt-3 text-[14px] leading-relaxed text-white/48 sm:text-[15px]", children: subtitle }),
+        /* @__PURE__ */ jsxs("div", { className: "mt-6 space-y-3 text-[13.5px] leading-relaxed text-white/62", children: [
+          /* @__PURE__ */ jsxs("p", { children: [
+            /* @__PURE__ */ jsx("span", { className: "font-medium text-white/78", children: isRu ? "Задача:" : "Need:" }),
+            " ",
+            copy.cases.spliton.need
+          ] }),
+          /* @__PURE__ */ jsxs("p", { children: [
+            /* @__PURE__ */ jsx("span", { className: "font-medium text-white/78", children: isRu ? "Сделали:" : "Built:" }),
+            " ",
+            copy.cases.spliton.done
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "case-split__chips mt-5 flex flex-wrap gap-2", children: copy.cases.spliton.modules.map((m) => /* @__PURE__ */ jsx("span", { className: "case-split__chip", children: m }, m)) })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: "case-split__tabs", children: /* @__PURE__ */ jsx(
+      PillActionBar,
+      {
+        items: caseTabs,
+        activeId: activeTab,
+        onActiveChange: setActiveTab,
+        className: "case-split__tab-bar",
+        ariaLabel: isRu ? "Действия с кейсом" : "Case actions"
+      }
+    ) })
+  ] }) }) });
 }
 const ORANGE_DIM = [0.12, 0.04, 0.01];
 const ORANGE_BASE = [0.2, 0.07, 0.01];
@@ -6881,7 +7045,7 @@ function FAQSection() {
       /* @__PURE__ */ jsxs("div", { ref: rootRef, className: "relative mx-auto max-w-2xl text-center", children: [
         /* @__PURE__ */ jsx("h2", { className: "mt-5 font-display text-[30px] leading-[34px] sm:text-[40px] sm:leading-[44px] font-extrabold tracking-tight text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)]", children: title }),
         /* @__PURE__ */ jsx("div", { className: "mt-6", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[720px]", children: [
-          /* @__PURE__ */ jsxs("div", { className: "grid gap-3 sm:grid-cols-[1fr_auto] items-center", children: [
+          /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 sm:gap-3", children: [
             /* @__PURE__ */ jsxs("div", { className: "faq-search-wrap relative", children: [
               /* @__PURE__ */ jsx("label", { className: "sr-only", htmlFor: "faq-search", children: placeholder }),
               /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute left-3 top-1/2 z-[2] -translate-y-1/2", children: /* @__PURE__ */ jsx("span", { style: s$2({ color: ORANGE$1 }), children: /* @__PURE__ */ jsx(Icon, { name: "search" }) }) }),
@@ -6911,7 +7075,7 @@ function FAQSection() {
                 },
                 "aria-disabled": resetDisabled,
                 className: cx$6(
-                  "h-11 sm:h-12 px-4 rounded-full border-0",
+                  "h-11 shrink-0 whitespace-nowrap px-3.5 sm:h-12 sm:px-4 rounded-full border-0",
                   "bg-[#1c1c1f]",
                   resetDisabled ? "text-white/35 cursor-not-allowed opacity-70" : "text-white/80 hover:text-white hover:bg-[#262626] transition",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/15"
@@ -7204,68 +7368,65 @@ function useSectionScrollScale(sectionRef) {
 function FinalCTASection() {
   const { lang } = useLang();
   const copy = landingCopy(lang);
-  const [modalOpen, setModalOpen] = useState(false);
   const cardRef = useRef(null);
   const bgScale = useSectionScrollScale(cardRef);
   const bgStyle = {
     transform: `translate3d(-50%, -50%, 0) scale(${bgScale})`
   };
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx(
-      Section,
-      {
-        id: "contact",
-        className: "final-cta-section scroll-mt-[var(--tivonix-header-spacer)] py-14 sm:py-16 lg:py-20",
-        children: /* @__PURE__ */ jsx(Container, { className: "pb-2 sm:pb-4 lg:pb-6", children: /* @__PURE__ */ jsxs(
-          "div",
-          {
-            ref: cardRef,
-            className: "final-cta-card relative overflow-hidden rounded-[28px] px-6 py-12 text-center sm:rounded-[32px] sm:px-10 sm:py-14 lg:px-16 lg:py-16",
-            children: [
-              /* @__PURE__ */ jsxs("div", { className: "final-cta-card__bg", "aria-hidden": true, children: [
-                /* @__PURE__ */ jsx(
-                  "img",
-                  {
-                    src: FINAL_CTA_BG,
-                    alt: "",
-                    className: "final-cta-card__bg-img",
-                    style: bgStyle,
-                    loading: "lazy",
-                    decoding: "async",
-                    draggable: false
-                  }
-                ),
-                /* @__PURE__ */ jsx("div", { className: "final-cta-card__bg-overlay" })
-              ] }),
-              /* @__PURE__ */ jsx("h2", { className: "relative z-[1] mx-auto max-w-[20ch] font-hero text-[clamp(1.75rem,4.5vw,2.85rem)] font-semibold leading-[1.06] tracking-[-0.03em] text-white text-balance", children: copy.finalCta.title }),
-              /* @__PURE__ */ jsxs("div", { className: "final-cta-card__actions relative z-[1] mt-6 flex flex-col items-center justify-center gap-3 sm:mt-7 sm:flex-row sm:gap-4", children: [
-                /* @__PURE__ */ jsx("div", { className: "projects-cta-glow final-cta-glow w-full max-w-[280px] sm:w-auto sm:min-w-[220px]", children: /* @__PURE__ */ jsx(
-                  TelegramLink,
-                  {
-                    variant: "white",
-                    size: "lg",
-                    className: "projects-cta-glow__btn final-cta-glow__btn w-full",
-                    children: copy.finalCta.ctaPrimary
-                  }
-                ) }),
-                /* @__PURE__ */ jsx(
-                  CalcButton,
-                  {
-                    variant: "white",
-                    size: "lg",
-                    onClick: () => setModalOpen(true),
-                    className: "final-cta-btn final-cta-btn--secondary w-full max-w-[280px] sm:w-auto sm:min-w-[220px]",
-                    children: copy.finalCta.ctaSecondary
-                  }
-                )
-              ] })
-            ]
-          }
-        ) })
-      }
-    ),
-    /* @__PURE__ */ jsx(StartModal, { open: modalOpen, onClose: () => setModalOpen(false) })
-  ] });
+  return /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsx(
+    Section,
+    {
+      id: "contact",
+      className: "final-cta-section scroll-mt-[var(--tivonix-header-spacer)] py-14 sm:py-16 lg:py-20",
+      children: /* @__PURE__ */ jsx(Container, { className: "pb-2 sm:pb-4 lg:pb-6", children: /* @__PURE__ */ jsxs(
+        "div",
+        {
+          ref: cardRef,
+          className: "final-cta-card relative overflow-hidden rounded-[28px] px-6 py-12 text-center sm:rounded-[32px] sm:px-10 sm:py-14 lg:px-16 lg:py-16",
+          children: [
+            /* @__PURE__ */ jsxs("div", { className: "final-cta-card__bg", "aria-hidden": true, children: [
+              /* @__PURE__ */ jsx(
+                "img",
+                {
+                  src: FINAL_CTA_BG,
+                  alt: "",
+                  className: "final-cta-card__bg-img",
+                  style: bgStyle,
+                  loading: "lazy",
+                  decoding: "async",
+                  draggable: false
+                }
+              ),
+              /* @__PURE__ */ jsx("div", { className: "final-cta-card__bg-overlay" })
+            ] }),
+            /* @__PURE__ */ jsx("h2", { className: "relative z-[1] mx-auto max-w-[20ch] font-hero text-[clamp(1.75rem,4.5vw,2.85rem)] font-semibold leading-[1.06] tracking-[-0.03em] text-white text-balance", children: copy.finalCta.title }),
+            /* @__PURE__ */ jsxs("div", { className: "final-cta-card__actions relative z-[1] mt-6 flex flex-col items-center justify-center gap-3 sm:mt-7 sm:flex-row sm:gap-4", children: [
+              /* @__PURE__ */ jsx("div", { className: "projects-cta-glow final-cta-glow w-full max-w-[280px] sm:w-auto sm:min-w-[220px]", children: /* @__PURE__ */ jsx(
+                TelegramLink,
+                {
+                  variant: "white",
+                  size: "lg",
+                  href: TG_BOT_URL,
+                  className: "projects-cta-glow__btn final-cta-glow__btn w-full",
+                  children: copy.finalCta.ctaPrimary
+                }
+              ) }),
+              /* @__PURE__ */ jsx(
+                TelegramLink,
+                {
+                  variant: "white",
+                  size: "lg",
+                  href: TG_CHANNEL_URL,
+                  className: "final-cta-btn final-cta-btn--secondary w-full max-w-[280px] sm:w-auto sm:min-w-[220px]",
+                  children: copy.finalCta.ctaSecondary
+                }
+              )
+            ] })
+          ]
+        }
+      ) })
+    }
+  ) });
 }
 function cx$5(...a) {
   return a.filter(Boolean).join(" ");
@@ -7290,13 +7451,11 @@ const FOOTER_HOME = [
   { to: "/#process", label: { ru: "Как проходит работа", en: "How we work" } },
   { to: "/#faq", label: { ru: "Частые вопросы", en: "FAQ" } }
 ];
+const FOOTER_GMAIL_URL = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent("tivoonix@gmail.com")}&su=${encodeURIComponent("Проект (SaaS/MVP)")}`;
 const FOOTER_CONNECT = [
-  { href: "https://t.me/TIVONIX", label: "Telegram" },
+  { href: TG_CHANNEL_URL, label: "Telegram" },
   { href: "https://www.instagram.com/tivonix.tech/", label: "Instagram" },
-  {
-    href: `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent("tivoonix@gmail.com")}&su=${encodeURIComponent("Проект (SaaS/MVP)")}`,
-    label: "Email"
-  }
+  { href: FOOTER_GMAIL_URL, label: "Gmail" }
 ];
 const DOCS = {
   ru: [
@@ -7363,6 +7522,67 @@ function ColNav({
   return /* @__PURE__ */ jsxs("nav", { "aria-labelledby": id, className: "site-footer__col min-w-0", children: [
     /* @__PURE__ */ jsx("h2", { id, className: "site-footer__col-title", children: title }),
     /* @__PURE__ */ jsx("ul", { className: "site-footer__col-list", children })
+  ] });
+}
+function SocialIconLink({
+  href,
+  label,
+  children
+}) {
+  return /* @__PURE__ */ jsx(
+    "a",
+    {
+      href,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      "aria-label": label,
+      className: "site-footer__social-link",
+      children
+    }
+  );
+}
+function IconTelegram({ className }) {
+  return /* @__PURE__ */ jsxs("svg", { className, viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: [
+    /* @__PURE__ */ jsx(
+      "path",
+      {
+        d: "M21.8 4.6c.2-.8-.6-1.5-1.4-1.2L3.4 10c-1 .4-1 1.8 0 2.2l4.5 1.7 1.7 4.9c.3.9 1.5 1 2 .2l2.6-4.2 4.7 3.6c.7.5 1.7.1 1.9-.8L21.8 4.6Z",
+        stroke: "currentColor",
+        strokeWidth: "1.6",
+        strokeLinejoin: "round"
+      }
+    ),
+    /* @__PURE__ */ jsx("path", { d: "M8 13.8 19.6 6.4", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round" })
+  ] });
+}
+function IconInstagram$1({ className }) {
+  return /* @__PURE__ */ jsxs("svg", { className, viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: [
+    /* @__PURE__ */ jsx("rect", { x: "2.5", y: "2.5", width: "19", height: "19", rx: "5", stroke: "currentColor", strokeWidth: "1.55" }),
+    /* @__PURE__ */ jsx("circle", { cx: "12", cy: "12", r: "4.25", stroke: "currentColor", strokeWidth: "1.55" }),
+    /* @__PURE__ */ jsx("circle", { cx: "17.5", cy: "6.5", r: "1.35", fill: "currentColor" })
+  ] });
+}
+function IconMail$1({ className }) {
+  return /* @__PURE__ */ jsxs("svg", { className, viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: [
+    /* @__PURE__ */ jsx(
+      "path",
+      {
+        d: "M4.5 7.5v9a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-11a2 2 0 0 0-2 2Z",
+        stroke: "currentColor",
+        strokeWidth: "1.65",
+        opacity: "0.95"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      "path",
+      {
+        d: "M6 8.5 12 12.5l6-4",
+        stroke: "currentColor",
+        strokeWidth: "1.65",
+        strokeLinecap: "round",
+        strokeLinejoin: "round"
+      }
+    )
   ] });
 }
 function Footer() {
@@ -7450,15 +7670,31 @@ function Footer() {
               ),
               /* @__PURE__ */ jsx("p", { className: "site-footer__tagline", children: tagline })
             ] }),
-            /* @__PURE__ */ jsx("nav", { className: "site-footer__legal-nav", "aria-label": isRu ? "Документы" : "Legal", children: docs.map((d) => /* @__PURE__ */ jsx(ExternalLink, { href: d.href, newTab: true, "aria-label": d.aria, children: d.label }, d.href)) })
+            /* @__PURE__ */ jsxs("div", { className: "site-footer__legal-end", children: [
+              /* @__PURE__ */ jsxs(
+                "nav",
+                {
+                  className: "site-footer__social",
+                  "aria-label": isRu ? "Соцсети и почта" : "Social and email",
+                  children: [
+                    /* @__PURE__ */ jsx(SocialIconLink, { href: FOOTER_CONNECT[0].href, label: FOOTER_CONNECT[0].label, children: /* @__PURE__ */ jsx(IconTelegram, { className: "site-footer__social-icon" }) }),
+                    /* @__PURE__ */ jsx(SocialIconLink, { href: FOOTER_CONNECT[1].href, label: FOOTER_CONNECT[1].label, children: /* @__PURE__ */ jsx(IconInstagram$1, { className: "site-footer__social-icon" }) }),
+                    /* @__PURE__ */ jsx(SocialIconLink, { href: FOOTER_CONNECT[2].href, label: FOOTER_CONNECT[2].label, children: /* @__PURE__ */ jsx(IconMail$1, { className: "site-footer__social-icon" }) })
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsx("nav", { className: "site-footer__legal-nav", "aria-label": isRu ? "Документы" : "Legal", children: docs.map((d) => /* @__PURE__ */ jsx(ExternalLink, { href: d.href, newTab: true, "aria-label": d.aria, children: d.label }, d.href)) })
+            ] })
           ] })
         ] }) })
       ]
     }
   );
 }
-const CANONICAL_ORIGIN = "https://www.tivonix.tech";
-const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN}/og.jpg`;
+const CANONICAL_ORIGIN = "https://tivonix.tech";
+const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN}/images/ceo.png`;
+const OG_IMAGE_WIDTH = "1672";
+const OG_IMAGE_HEIGHT = "941";
 function SEO({
   title,
   description,
@@ -7482,8 +7718,8 @@ function SEO({
     /* @__PURE__ */ jsx("meta", { property: "og:description", content: description }),
     /* @__PURE__ */ jsx("meta", { property: "og:url", content: canonicalUrl }),
     /* @__PURE__ */ jsx("meta", { property: "og:image", content: ogImage }),
-    /* @__PURE__ */ jsx("meta", { property: "og:image:width", content: "1200" }),
-    /* @__PURE__ */ jsx("meta", { property: "og:image:height", content: "630" }),
+    /* @__PURE__ */ jsx("meta", { property: "og:image:width", content: OG_IMAGE_WIDTH }),
+    /* @__PURE__ */ jsx("meta", { property: "og:image:height", content: OG_IMAGE_HEIGHT }),
     /* @__PURE__ */ jsx("meta", { property: "og:image:alt", content: "TIVONIX" }),
     /* @__PURE__ */ jsx("meta", { name: "twitter:card", content: "summary_large_image" }),
     /* @__PURE__ */ jsx("meta", { name: "twitter:title", content: title }),
@@ -7499,14 +7735,14 @@ function buildHomePageSchema({ pageTitle, pageDescription }) {
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://www.tivonix.tech/#org",
+        "@id": "https://tivonix.tech/#org",
         name: "TIVONIX",
-        url: "https://www.tivonix.tech/",
+        url: "https://tivonix.tech/",
         logo: {
           "@type": "ImageObject",
-          url: "https://www.tivonix.tech/images/tivonix-logo-icon.png"
+          url: "https://tivonix.tech/images/tivonix-logo-icon.png"
         },
-        image: "https://www.tivonix.tech/og.jpg",
+        image: "https://tivonix.tech/images/ceo.png",
         description: pageDescription,
         contactPoint: [
           {
@@ -7520,20 +7756,20 @@ function buildHomePageSchema({ pageTitle, pageDescription }) {
       },
       {
         "@type": "WebSite",
-        "@id": "https://www.tivonix.tech/#website",
-        url: "https://www.tivonix.tech/",
+        "@id": "https://tivonix.tech/#website",
+        url: "https://tivonix.tech/",
         name: "TIVONIX",
-        publisher: { "@id": "https://www.tivonix.tech/#org" },
+        publisher: { "@id": "https://tivonix.tech/#org" },
         inLanguage: ["ru", "en"]
       },
       {
         "@type": "WebPage",
-        "@id": "https://www.tivonix.tech/#home",
-        url: "https://www.tivonix.tech/",
+        "@id": "https://tivonix.tech/#home",
+        url: "https://tivonix.tech/",
         name: pageTitle,
         description: pageDescription,
-        isPartOf: { "@id": "https://www.tivonix.tech/#website" },
-        about: { "@id": "https://www.tivonix.tech/#org" },
+        isPartOf: { "@id": "https://tivonix.tech/#website" },
+        about: { "@id": "https://tivonix.tech/#org" },
         inLanguage: ["ru", "en"]
       }
     ]
@@ -7559,8 +7795,8 @@ function buildPricingPageSchema({ pageTitle, pageDescription, lang }) {
           priceCurrency: "USD"
         }
       } : {},
-      url: "https://www.tivonix.tech/plans#pricing",
-      seller: { "@id": "https://www.tivonix.tech/#org" }
+      url: "https://tivonix.tech/plans#pricing",
+      seller: { "@id": "https://tivonix.tech/#org" }
     };
   });
   return {
@@ -7568,25 +7804,25 @@ function buildPricingPageSchema({ pageTitle, pageDescription, lang }) {
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://www.tivonix.tech/#org",
+        "@id": "https://tivonix.tech/#org",
         name: "TIVONIX",
-        url: "https://www.tivonix.tech/"
+        url: "https://tivonix.tech/"
       },
       {
         "@type": "WebPage",
-        "@id": "https://www.tivonix.tech/plans#webpage",
-        url: "https://www.tivonix.tech/plans",
+        "@id": "https://tivonix.tech/plans#webpage",
+        url: "https://tivonix.tech/plans",
         name: pageTitle,
         description: pageDescription,
-        isPartOf: { "@id": "https://www.tivonix.tech/#website" },
+        isPartOf: { "@id": "https://tivonix.tech/#website" },
         inLanguage: lang === "ru" ? "ru" : "en"
       },
       {
         "@type": "Service",
-        "@id": "https://www.tivonix.tech/plans#service",
+        "@id": "https://tivonix.tech/plans#service",
         name: pageTitle,
         description: pageDescription,
-        provider: { "@id": "https://www.tivonix.tech/#org" },
+        provider: { "@id": "https://tivonix.tech/#org" },
         areaServed: "Worldwide",
         offers
       }
@@ -10447,7 +10683,7 @@ function AutomationBusinessPage() {
       serviceType: "Automation and custom web systems",
       provider: { "@type": "Organization", name: "TIVONIX" },
       areaServed: "CIS",
-      url: "https://www.tivonix.tech/avtomatizaciya-biznesa"
+      url: "https://tivonix.tech/avtomatizaciya-biznesa"
     }),
     [t.schemaServiceName]
   );
@@ -10670,8 +10906,7 @@ function PlanCtaButton({
   );
 }
 function openPlanTelegram(planId) {
-  const payload = PLAN_TELEGRAM_START[planId] ?? "calc";
-  window.open(buildTelegramBotUrl(payload), "_blank", "noopener,noreferrer");
+  window.open(buildPricingPlanTelegramUrl(planId), "_blank", "noopener,noreferrer");
 }
 function ComparisonValue({
   cell,
@@ -10790,8 +11025,7 @@ function PlanCard({
   desc,
   includes,
   cta,
-  ctaAction,
-  onModal
+  onCta
 }) {
   return /* @__PURE__ */ jsxs(
     "article",
@@ -10835,14 +11069,7 @@ function PlanCard({
           ] }, item)) }) }),
           /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__spacer flex-1", "aria-hidden": true })
         ] }),
-        /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__footer border-t border-white/[0.08] p-5 sm:p-6", children: /* @__PURE__ */ jsx(
-          PlanCtaButton,
-          {
-            featured: planId === "growth",
-            onClick: ctaAction === "modal" ? onModal : () => openPlanTelegram(planId),
-            children: cta
-          }
-        ) })
+        /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__footer border-t border-white/[0.08] p-5 sm:p-6", children: /* @__PURE__ */ jsx(PlanCtaButton, { featured: planId === "growth", onClick: onCta, children: cta }) })
       ]
     }
   );
@@ -10854,15 +11081,10 @@ function CompactPlanCard({
   price,
   priceOriginal,
   chips,
-  ctaAction,
   compactCta,
   highlight,
-  onModal
+  onCta
 }) {
-  const onCta = () => {
-    if (ctaAction === "modal") onModal();
-    else openPlanTelegram(planId);
-  };
   return /* @__PURE__ */ jsxs(
     "article",
     {
@@ -10956,8 +11178,7 @@ function PricingPlansSection({ className }) {
                 desc: planCopy.desc,
                 includes: planCopy.includes,
                 cta: planCopy.cta,
-                ctaAction: plan.ctaAction,
-                onModal: () => openPlanModal(plan.id)
+                onCta: () => handlePlanCta(plan.id)
               },
               plan.id
             );
@@ -11106,7 +11327,7 @@ function PricingPlansSection({ className }) {
           /* @__PURE__ */ jsx(Reveal, { delay: 170, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsx("div", { className: "pricing-help-band", children: /* @__PURE__ */ jsx(
             "a",
             {
-              href: buildTelegramBotUrl("plan_help"),
+              href: buildHelpPlanTelegramUrl(),
               target: "_blank",
               rel: "noopener noreferrer",
               className: "pricing-help-band__link",
@@ -11124,10 +11345,9 @@ function PricingPlansSection({ className }) {
                 price: planCopy.price,
                 priceOriginal: planCopy.priceOriginal,
                 chips: copy.footer.chips[plan.id],
-                ctaAction: plan.ctaAction,
                 compactCta: planCopy.compactCta,
                 highlight: plan.highlight,
-                onModal: () => openPlanModal(plan.id)
+                onCta: () => handlePlanCta(plan.id)
               },
               `footer-${plan.id}`
             );

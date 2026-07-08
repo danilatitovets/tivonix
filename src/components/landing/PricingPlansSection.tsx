@@ -12,11 +12,10 @@ import {
   COMPARISON_GROUPS,
   PLAN_IDS,
   PLANS,
-  PLAN_TELEGRAM_START,
   type ComparisonCell,
   type PlanId,
 } from "../../lib/pricingData";
-import { buildTelegramBotUrl } from "../../constants/links";
+import { buildHelpPlanTelegramUrl, buildPricingPlanTelegramUrl } from "../../constants/links";
 
 const COMPARE_LOGO = "/images/tivonix-logo-white.png";
 
@@ -56,8 +55,7 @@ function PlanCtaButton({
 }
 
 function openPlanTelegram(planId: PlanId) {
-  const payload = PLAN_TELEGRAM_START[planId] ?? "calc";
-  window.open(buildTelegramBotUrl(payload), "_blank", "noopener,noreferrer");
+  window.open(buildPricingPlanTelegramUrl(planId), "_blank", "noopener,noreferrer");
 }
 
 function ComparisonValue({
@@ -207,8 +205,7 @@ function PlanCard({
   desc,
   includes,
   cta,
-  ctaAction,
-  onModal,
+  onCta,
 }: {
   planId: PlanId;
   highlight?: boolean;
@@ -220,8 +217,7 @@ function PlanCard({
   desc: string;
   includes: string[];
   cta: string;
-  ctaAction: "telegram" | "modal";
-  onModal: () => void;
+  onCta: () => void;
 }) {
   return (
     <article
@@ -280,10 +276,7 @@ function PlanCard({
       </div>
 
       <div className="pricing-plan-card__footer border-t border-white/[0.08] p-5 sm:p-6">
-        <PlanCtaButton
-          featured={planId === "growth"}
-          onClick={ctaAction === "modal" ? onModal : () => openPlanTelegram(planId)}
-        >
+        <PlanCtaButton featured={planId === "growth"} onClick={onCta}>
           {cta}
         </PlanCtaButton>
       </div>
@@ -298,10 +291,9 @@ function CompactPlanCard({
   price,
   priceOriginal,
   chips,
-  ctaAction,
   compactCta,
   highlight,
-  onModal,
+  onCta,
 }: {
   planId: PlanId;
   name: string;
@@ -309,16 +301,10 @@ function CompactPlanCard({
   price: string;
   priceOriginal?: string;
   chips: string[];
-  ctaAction: "telegram" | "modal";
   compactCta: string;
   highlight?: boolean;
-  onModal: () => void;
+  onCta: () => void;
 }) {
-  const onCta = () => {
-    if (ctaAction === "modal") onModal();
-    else openPlanTelegram(planId);
-  };
-
   return (
     <article
       className={cx(
@@ -375,7 +361,6 @@ export default function PricingPlansSection({ className }: { className?: string 
     setModalOpen(false);
     setSelectedPlanId(null);
   };
-
   const allExpanded = useMemo(
     () => COMPARISON_GROUPS.every((g) => openGroups[g.id]),
     [openGroups]
@@ -435,8 +420,7 @@ export default function PricingPlansSection({ className }: { className?: string 
                 desc={planCopy.desc}
                 includes={planCopy.includes}
                 cta={planCopy.cta}
-                ctaAction={plan.ctaAction}
-                onModal={() => openPlanModal(plan.id)}
+                onCta={() => handlePlanCta(plan.id)}
               />
             );
           })}
@@ -609,7 +593,7 @@ export default function PricingPlansSection({ className }: { className?: string 
         <Reveal delay={170} className="mt-10 sm:mt-12">
           <div className="pricing-help-band">
             <a
-              href={buildTelegramBotUrl("plan_help")}
+              href={buildHelpPlanTelegramUrl()}
               target="_blank"
               rel="noopener noreferrer"
               className="pricing-help-band__link"
@@ -631,10 +615,9 @@ export default function PricingPlansSection({ className }: { className?: string 
                 price={planCopy.price}
                 priceOriginal={planCopy.priceOriginal}
                 chips={copy.footer.chips[plan.id]}
-                ctaAction={plan.ctaAction}
                 compactCta={planCopy.compactCta}
                 highlight={plan.highlight}
-                onModal={() => openPlanModal(plan.id)}
+                onCta={() => handlePlanCta(plan.id)}
               />
             );
           })}

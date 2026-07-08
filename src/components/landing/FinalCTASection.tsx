@@ -3,8 +3,8 @@ import Container from "../ui/Container";
 import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
-import { CalcButton, TelegramLink } from "./LandingCTA";
-import StartModal from "./StartModal";
+import { TelegramLink } from "./LandingCTA";
+import { TG_BOT_URL, TG_CHANNEL_URL } from "../../constants/links";
 
 const FINAL_CTA_BG = `/images/${encodeURI("как рабоает")}/future.png`;
 
@@ -58,7 +58,6 @@ function useSectionScrollScale(sectionRef: React.RefObject<HTMLElement | null>) 
 export default function FinalCTASection() {
   const { lang } = useLang();
   const copy = landingCopy(lang);
-  const [modalOpen, setModalOpen] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const bgScale = useSectionScrollScale(cardRef);
 
@@ -99,25 +98,24 @@ export default function FinalCTASection() {
                 <TelegramLink
                   variant="white"
                   size="lg"
+                  href={TG_BOT_URL}
                   className="projects-cta-glow__btn final-cta-glow__btn w-full"
                 >
                   {copy.finalCta.ctaPrimary}
                 </TelegramLink>
               </div>
-              <CalcButton
+              <TelegramLink
                 variant="white"
                 size="lg"
-                onClick={() => setModalOpen(true)}
+                href={TG_CHANNEL_URL}
                 className="final-cta-btn final-cta-btn--secondary w-full max-w-[280px] sm:w-auto sm:min-w-[220px]"
               >
                 {copy.finalCta.ctaSecondary}
-              </CalcButton>
+              </TelegramLink>
             </div>
           </div>
         </Container>
       </Section>
-
-      <StartModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </>
   );
 }

@@ -538,9 +538,9 @@ export function homePageSeoFromDict(dict: Dictionary): { title: string; descript
   const isRu = dict.header.home === "На главную";
   if (isRu) {
     return {
-      title: "Сайты, боты и CRM для бизнеса — TIVONIX",
+      title: "TIVONIX — сайты, боты и AI-сервисы для бизнеса",
       description:
-        "TIVONIX делает сайты, Telegram-ботов, CRM и веб-сервисы под задачу бизнеса: заявки не теряются, команда видит статусы и знает, что делать дальше. Первая консультация бесплатно.",
+        "Создаём сайты, Telegram-ботов, CRM, личные кабинеты и автоматизацию заявок под ключ.",
     };
   }
 

@@ -1,8 +1,10 @@
 // src/components/SEO.tsx
 import { Helmet } from "react-helmet-async";
 
-const CANONICAL_ORIGIN = "https://www.tivonix.tech";
-const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN}/og.jpg`;
+const CANONICAL_ORIGIN = "https://tivonix.tech";
+export const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN}/images/ceo.png`;
+const OG_IMAGE_WIDTH = "1672";
+const OG_IMAGE_HEIGHT = "941";
 
 export type SEOProps = {
   title: string;
@@ -44,8 +46,8 @@ export function SEO({
       <meta property="og:description" content={description} />
       <meta property="og:url" content={canonicalUrl} />
       <meta property="og:image" content={ogImage} />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
+      <meta property="og:image:width" content={OG_IMAGE_WIDTH} />
+      <meta property="og:image:height" content={OG_IMAGE_HEIGHT} />
       <meta property="og:image:alt" content="TIVONIX" />
 
       <meta name="twitter:card" content="summary_large_image" />

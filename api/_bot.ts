@@ -86,6 +86,8 @@ function formatBotSource(source: string) {
     calc: "calc (default)",
     direct: "Direct (без параметра)",
     plan_start: "Start (/plans)",
+    plan_growth: "Growth (/plans)",
+    plan_product: "Product (/plans)",
     plan_custom: "Custom (/plans)",
     plan_help: "Help (/plans)",
   };
@@ -95,6 +97,10 @@ function formatBotSource(source: string) {
 const PLAN_WELCOMES: Record<string, string> = {
   plan_start:
     "Привет! Вы выбрали Start — быстрый запуск: лендинг, заявки и Telegram. Напишите коротко, чем занимается ваш бизнес, и мы подскажем следующий шаг.",
+  plan_growth:
+    "Привет! Вы выбрали Growth — система заявок, Telegram и мини-CRM. Напишите, чем занимается бизнес и сколько заявок в месяц — подскажем, как собрать систему.",
+  plan_product:
+    "Привет! Вы выбрали Product — веб-сервис с кабинетом, админкой и оплатой. Коротко опишите продукт и ключевые функции.",
   plan_custom:
     "Привет! Вы выбрали Custom — автоматизация, AI или индивидуальное решение. Напишите, какой процесс хотите автоматизировать.",
   plan_help:
@@ -687,7 +693,7 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     const from = ctx.from;
     const username = from?.username ? `@${from.username}` : "—";
     const name = [from?.first_name, from?.last_name].filter(Boolean).join(" ").trim() || "—";
-    const source = ctx.session.source ?? "direct";
+    const source = formatBotSource(ctx.session.source ?? "direct");
 
     await upsertAdminTracker(ctx, note || "—");
 

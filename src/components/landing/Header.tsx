@@ -606,12 +606,9 @@ export default function Header() {
 
             <div className="mt-auto flex flex-col gap-2 px-2 pt-6 pb-[max(1rem,env(safe-area-inset-bottom))]">
               <CalcButton
-                variant="white"
-                onClick={() => {
-                  closeMenu();
-                  openStartModal();
-                }}
-                className="h-12 w-full rounded-xl bg-transparent !text-white/88 text-[14px] border border-white/[0.08] hover:!bg-white/[0.03]"
+                variant="plain"
+                onClick={openStartModal}
+                className="h-12 w-full rounded-xl border border-white/[0.08] text-[14px]"
               >
                 {isRu ? "Обсудить проект" : "Contact sales"}
               </CalcButton>
