@@ -30,16 +30,16 @@ const ROW_Y_MOBILE_BOTTOM = 84;
 /** Лёгкое наезжание плашек друг на друга */
 export const ROW_OVERLAP = 10;
 export const ROW_OVERLAP_MOBILE = 0;
-export const ROW_BLOCK_REF_PHONE = 64;
+export const ROW_BLOCK_REF_PHONE = 72;
 export const ROW_OVERLAP_PHONE = 0;
 export const ROW_BLOCK_REF_TABLET = 80;
-export const ROW_OVERLAP_TABLET = 0;
-/** Шаг между плашками в горизонтальной ленте (px): ширина блока + зазор */
-export const ROW_STEP_PHONE = 76;
+export const ROW_OVERLAP_TABLET = 6;
+/** Шаг между логотипами в горизонтальной ленте (телефон, шире экрана → drift-скролл) */
+export const ROW_STEP_PHONE = 112;
 export const ROW_STEP_TABLET = 92;
 export const ROW_Y_PHONE = 80;
-export const ROW_STRIP_LEADING_PHONE = 40;
-export const ROW_STRIP_LEADING_TABLET = 36;
+export const ROW_STRIP_LEADING_PHONE = 32;
+export const ROW_STRIP_LEADING_TABLET = 32;
 
 export function orbitPosition(index: number, total: number, rx = ORBIT_RX, ry = ORBIT_RY) {
   const angle = (index / total) * Math.PI * 2 - Math.PI / 2;

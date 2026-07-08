@@ -2,9 +2,10 @@
 import { Helmet } from "react-helmet-async";
 
 const CANONICAL_ORIGIN = "https://tivonix.tech";
-export const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN}/images/ceo.png`;
+export const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN}/images/og-social.jpg`;
 const OG_IMAGE_WIDTH = "1200";
 const OG_IMAGE_HEIGHT = "630";
+const OG_IMAGE_ALT = "TIVONIX AI — сайты, боты и автоматизация для бизнеса";
 
 export type SEOProps = {
   title: string;
@@ -48,13 +49,14 @@ export function SEO({
       <meta property="og:image" content={ogImage} />
       <meta property="og:image:width" content={OG_IMAGE_WIDTH} />
       <meta property="og:image:height" content={OG_IMAGE_HEIGHT} />
-      <meta property="og:image:alt" content="TIVONIX" />
+      <meta property="og:image:type" content="image/jpeg" />
+      <meta property="og:image:alt" content={OG_IMAGE_ALT} />
 
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={ogImage} />
-      <meta name="twitter:image:alt" content="TIVONIX" />
+      <meta name="twitter:image:alt" content={OG_IMAGE_ALT} />
 
       {schemaJsonLd != null && (
         <script type="application/ld+json">

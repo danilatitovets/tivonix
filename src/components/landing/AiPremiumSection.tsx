@@ -10,15 +10,8 @@ import {
   ORBIT_RY_PHONE,
   ROW_BLOCK_REF,
   ROW_OVERLAP,
-  ROW_STEP_PHONE,
-  ROW_STEP_TABLET,
-  ROW_STRIP_LEADING_PHONE,
-  ROW_STRIP_LEADING_TABLET,
-  ROW_Y_PHONE,
-  ROW_Y_MOBILE,
   orbitPosition,
   rowPosition,
-  rowPositionScrollStrip,
 } from "../../lib/aiModels";
 import TivonixGlowBorder from "../ui/TivonixGlowBorder";
 
@@ -125,23 +118,14 @@ function rowExitScroll(drift: number) {
 }
 
 function phoneLogoScale(modelId: string, scale: number) {
-  if (modelId === "grok") return 1.35;
-  if (modelId === "gemini") return 1.15;
-  if (modelId === "mistral") return 0.95;
-  return Math.min(scale, 1.15);
-}
-
-function rowLogoScale(modelId: string, scale: number, phone: boolean) {
-  const cap = phone ? 0.78 : 0.92;
-  if (modelId === "grok") return phone ? 0.82 : 0.95;
-  if (modelId === "gemini") return phone ? 0.8 : 0.92;
-  if (modelId === "openai") return phone ? 0.76 : 0.88;
-  return Math.min(scale, cap);
+  if (modelId === "grok") return 1.6;
+  if (modelId === "mistral") return 1.06;
+  return Math.min(scale, 1.32);
 }
 
 function mobileLogoScale(modelId: string, scale: number, phone: boolean) {
   if (phone) return phoneLogoScale(modelId, scale);
-  return Math.min(scale, 1.25);
+  return Math.min(scale, 1.4);
 }
 
 function backgroundFade(drift: number, drop: number, exitScroll: number) {
@@ -163,6 +147,7 @@ export default function AiPremiumSection() {
   const headlineRef = useRef<HTMLSpanElement>(null);
   const cursorRef = useRef<HTMLSpanElement>(null);
   const aiMarkRef = useRef<HTMLDivElement>(null);
+  const phoneStripRef = useRef<HTMLDivElement>(null);
   const rowItemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const blockSlotRefs = useRef<(HTMLElement | null)[]>([]);
   const logoImgRefs = useRef<(HTMLImageElement | null)[]>([]);
@@ -288,32 +273,50 @@ export default function AiPremiumSection() {
 
       const phoneLayout = viewport < 640;
       const tabletLayout = viewport >= 640 && viewport < 1024;
-      const scrollStrip = phoneLayout || tabletLayout;
+      const compactLayout = viewport < 1024;
       const orbitRx = phoneLayout ? ORBIT_RX_PHONE : tabletLayout ? ORBIT_RX_MOBILE : 33;
       const orbitRy = phoneLayout ? ORBIT_RY_PHONE : tabletLayout ? ORBIT_RY_MOBILE : 31;
-      const stageEl = rowItemRefs.current[0]?.closest(".ai-premium-orbit-stage");
-      const stageW = stageEl?.clientWidth ?? viewport;
-      const stripStep = phoneLayout ? ROW_STEP_PHONE : ROW_STEP_TABLET;
-      const stripLeading = phoneLayout ? ROW_STRIP_LEADING_PHONE : ROW_STRIP_LEADING_TABLET;
-      const stripWidth = stripLeading + stripStep * AI_MODEL_COUNT;
-      const stripDriftMax = Math.max(
-        stripWidth - stageW + stripStep * 0.55,
-        stripStep * 2
-      );
-      const stripReveal =
-        scrollStrip && drop > 0.52 ? smoothstep((drop - 0.52) / 0.3) : 0;
-      const stripProgress = stripReveal * (1 - exitScroll);
+      const stripActive = compactLayout && drop > 0.68;
+      const stripFadeIn = compactLayout ? smoothstep((drop - 0.68) / 0.2) : 0;
       const driftPxBase = exitScroll * Math.max(viewport * 0.72, 480);
-      const driftPx = scrollStrip ? -stripProgress * stripDriftMax : driftPxBase;
-      const rowDrop = scrollStrip ? smoothstep((drop - 0.38) / 0.4) : drop;
+      const driftPx = driftPxBase;
 
       const orbitBlend = 1 - smoothstep(drop / 0.24);
       const inOrbitPhase = orbitBlend > 0.04;
       const orbitBlocksIn =
         progress < ORBIT_START ? 0 : smoothstep((progress - ORBIT_START) / 0.07);
-      const logoExitFade = phoneLayout
+      const logoExitFade = compactLayout
         ? smoothstep((exitScroll - 0.9) / 0.1)
         : smoothstep((exitScroll - 0.28) / 0.72);
+
+      const phoneStrip = phoneStripRef.current;
+      const stageEl = rowItemRefs.current[0]?.closest(".ai-premium-orbit-stage");
+      if (stageEl instanceof HTMLElement) {
+        stageEl.classList.toggle("ai-premium-orbit-stage--strip-active", stripActive);
+      }
+
+      if (phoneStrip) {
+        const stripFade = stripActive ? stripFadeIn * (1 - logoExitFade) : 0;
+        phoneStrip.style.opacity = String(stripFade);
+        phoneStrip.style.visibility = stripFade > 0.01 ? "visible" : "hidden";
+        phoneStrip.style.pointerEvents = stripActive && stripFade > 0.08 ? "auto" : "none";
+        phoneStrip.setAttribute("aria-hidden", stripActive ? "false" : "true");
+
+        if (stripActive) {
+          const maxScroll = Math.max(0, phoneStrip.scrollWidth - phoneStrip.clientWidth);
+          const scrollT = clamp01(
+            stripFadeIn * 0.35 + smoothstep((progress - 0.75) / 0.18) * 0.35 + exitScroll * 0.3
+          );
+          const targetScroll = scrollT * maxScroll;
+          if (Math.abs(phoneStrip.scrollLeft - targetScroll) > 0.5) {
+            phoneStrip.scrollLeft = targetScroll;
+          }
+        } else if (phoneStrip.scrollLeft !== 0) {
+          phoneStrip.scrollLeft = 0;
+        }
+      }
+
+      frameRef.current?.classList.toggle("ai-premium-frame--phone-scroll", stripActive);
 
       const hubEl = hubRef.current;
       if (hubEl) {
@@ -358,20 +361,72 @@ export default function AiPremiumSection() {
         const el = rowItemRefs.current[index];
         if (!el) return;
 
-        const { x: orbitX, y: orbitY } = orbitPosition(index, AI_MODEL_COUNT, orbitRx, orbitRy);
-        const rowPos = scrollStrip
-          ? rowPositionScrollStrip(
-              index,
-              stripStep,
-              stageW,
-              phoneLayout ? ROW_Y_PHONE : ROW_Y_MOBILE,
-              stripLeading
-            )
-          : rowPosition(index, AI_MODEL_COUNT, ROW_BLOCK_REF, ROW_OVERLAP);
+        if (compactLayout && stripActive) {
+          el.style.opacity = "0";
+          el.style.visibility = "hidden";
+          el.style.pointerEvents = "none";
+          return;
+        }
 
+        const { x: orbitX, y: orbitY } = orbitPosition(index, AI_MODEL_COUNT, orbitRx, orbitRy);
+
+        if (compactLayout) {
+          const reveal = logoReveal(progress, index);
+          const orbitScale = 0.94 + reveal * 0.06;
+          const itemScale = lerp(orbitScale, 1, drop * 0.35);
+          const baseOpacity =
+            drop < 0.02
+              ? Math.max(reveal, orbitBlocksIn)
+              : Math.max(reveal * (1 - drop * 0.35), smoothstep(drop));
+          const itemOpacity = String(baseOpacity * (1 - logoExitFade));
+          const phoneScaleTarget = mobileLogoScale(model.id, model.scale, phoneLayout);
+          const logoScale = lerp(phoneScaleTarget * 0.97, phoneScaleTarget, 1 - orbitBlend);
+          const imgOpacity = inOrbitPhase ? String(reveal * orbitBlend + (1 - orbitBlend)) : "1";
+          const left = `${orbitX}%`;
+          const top = `${orbitY}%`;
+          const transform = `translate3d(-50%, -50%, 0) scale(${itemScale})`;
+          const state = logoFrame[index];
+
+          if (state.left !== left) {
+            state.left = left;
+            el.style.left = left;
+          }
+          if (state.top !== top) {
+            state.top = top;
+            el.style.top = top;
+          }
+          if (state.opacity !== itemOpacity) {
+            state.opacity = itemOpacity;
+            el.style.opacity = itemOpacity;
+            el.style.visibility = "";
+            el.style.pointerEvents = "";
+          }
+          if (state.transform !== transform) {
+            state.transform = transform;
+            el.style.transform = transform;
+          }
+          if (state.rowMode) {
+            state.rowMode = false;
+            el.classList.remove("ai-logo-row-item--row");
+          }
+
+          const img = logoImgRefs.current[index];
+          const scaleStr = String(logoScale);
+          if (img && state.logoScale !== scaleStr) {
+            state.logoScale = scaleStr;
+            img.style.setProperty("--ai-logo-scale", scaleStr);
+          }
+          if (img && state.imgOpacity !== imgOpacity) {
+            state.imgOpacity = imgOpacity;
+            img.style.opacity = imgOpacity;
+          }
+          return;
+        }
+
+        const rowPos = rowPosition(index, AI_MODEL_COUNT, ROW_BLOCK_REF, ROW_OVERLAP);
         const reveal = logoReveal(progress, index);
-        const x = lerp(orbitX, rowPos.rowX, rowDrop);
-        const y = lerp(orbitY, rowPos.rowY, rowDrop);
+        const x = lerp(orbitX, rowPos.rowX, drop);
+        const y = lerp(orbitY, rowPos.rowY, drop);
         const orbitScale = 0.94 + reveal * 0.06;
         const itemScale = lerp(orbitScale, 1, drop);
         const rowOpacity = smoothstep(drop);
@@ -380,19 +435,9 @@ export default function AiPremiumSection() {
             ? Math.max(reveal, orbitBlocksIn)
             : Math.max(reveal * (1 - drop * 0.35), rowOpacity);
         const itemOpacity = String(baseOpacity * (1 - logoExitFade));
-        const tabletScaleTarget = Math.min(model.scale, 1.25);
-        const phoneScaleTarget = mobileLogoScale(model.id, model.scale, phoneLayout);
-        let logoScale = phoneLayout
-          ? lerp(phoneScaleTarget * 0.97, phoneScaleTarget, 1 - orbitBlend)
-          : tabletLayout
-            ? lerp(tabletScaleTarget * 0.97, tabletScaleTarget, 1 - orbitBlend)
-            : lerp(model.scale * 0.96, model.scale, 1 - orbitBlend);
+        const logoScale = lerp(model.scale * 0.96, model.scale, 1 - orbitBlend);
         const imgOpacity = inOrbitPhase ? String(reveal * orbitBlend + (1 - orbitBlend)) : "1";
         const inRowLayout = drop > 0.68;
-
-        if (inRowLayout && scrollStrip) {
-          logoScale = rowLogoScale(model.id, model.scale, phoneLayout);
-        }
 
         const left = `${x}%`;
         const top = `${y}%`;
@@ -414,6 +459,7 @@ export default function AiPremiumSection() {
         if (state.opacity !== opacity) {
           state.opacity = opacity;
           el.style.opacity = opacity;
+          el.style.pointerEvents = "";
         }
         if (state.zIndex !== zIndex) {
           state.zIndex = zIndex;
@@ -573,6 +619,34 @@ export default function AiPremiumSection() {
                           </div>
                         </div>
 
+                        <div
+                          ref={phoneStripRef}
+                          className="ai-logo-phone-strip lg:hidden"
+                          style={{ opacity: 0 }}
+                          aria-hidden
+                        >
+                          <div className="ai-logo-phone-strip__track">
+                            {AI_MODELS.map((model) => (
+                              <div key={`phone-${model.id}`} className="ai-logo-phone-strip__item">
+                                <img
+                                  src={model.src}
+                                  alt={model.name}
+                                  className={[
+                                    "ai-logo-phone-strip__img",
+                                    model.brighten ? "ai-logo-img--bright" : "",
+                                    model.colorful ? "ai-logo-img--colorful" : "",
+                                  ]
+                                    .filter(Boolean)
+                                    .join(" ")}
+                                  draggable={false}
+                                  loading="lazy"
+                                  decoding="async"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
                         {AI_MODELS.map((model, index) => (
                           <div
                             key={model.id}
@@ -587,8 +661,9 @@ export default function AiPremiumSection() {
                                 blockSlotRefs.current[index] = el;
                               }}
                               className={[
-                                "ai-logo-block-slot flex shrink-0 items-center justify-center",
-                                "max-sm:rounded-[10px] max-sm:bg-white/[0.04]",
+                                "ai-logo-block-slot flex items-center justify-center",
+                                "max-sm:!size-[4.5rem] max-sm:!rounded-xl max-sm:!overflow-hidden",
+                                "max-sm:bg-white/[0.04]",
                               ].join(" ")}
                             >
                               <img
@@ -599,6 +674,7 @@ export default function AiPremiumSection() {
                                 alt={model.name}
                                 className={[
                                   "ai-logo-img object-contain",
+                                  "max-sm:max-h-10 max-sm:max-w-12",
                                   "max-h-[54px] max-w-[100px] sm:max-h-[60px] sm:max-w-[112px] lg:max-h-[64px] lg:max-w-[120px]",
                                   model.brighten ? "ai-logo-img--bright" : "",
                                   model.colorful ? "ai-logo-img--colorful" : "",

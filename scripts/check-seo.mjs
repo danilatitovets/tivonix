@@ -28,7 +28,7 @@ const checks = [
       "Частые вопросы",
       "Расскажите, что хотите запустить или автоматизировать",
       "https://tivonix.tech/",
-      'property="og:image" content="https://tivonix.tech/images/ceo.png"',
+      'property="og:image" content="https://tivonix.tech/images/og-social.jpg"',
     ],
   },
   {

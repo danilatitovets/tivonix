@@ -3280,10 +3280,73 @@
   }
 }
 
+@media (max-width: 1023px) {
+  .ai-logo-phone-strip {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 11%;
+    z-index: 16;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    touch-action: pan-x pan-y;
+    pointer-events: none;
+  }
+
+  .ai-logo-phone-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ai-logo-phone-strip__track {
+    display: inline-flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.625rem;
+    width: max-content;
+    min-width: 100%;
+    padding: 0.15rem 0.75rem 0.35rem;
+  }
+
+  .ai-logo-phone-strip__item {
+    flex: 0 0 auto;
+    width: 4.5rem;
+    min-width: 4.5rem;
+    height: 2.65rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    overflow: hidden;
+  }
+
+  .ai-logo-phone-strip__img {
+    flex-shrink: 0;
+    max-height: 34px;
+    max-width: 60px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .ai-premium-orbit-stage--strip-active .ai-logo-row-item {
+    display: none !important;
+  }
+
+  .ai-premium-frame--phone-scroll,
+  .ai-premium-pin--active .ai-premium-frame--phone-scroll {
+    overflow: visible !important;
+  }
+}
+
 @media (max-width: 639px) {
   .ai-premium-orbit-stage {
     min-height: min(68svh, 580px);
-    padding-inline: 0.25rem;
+    padding-inline: 0.15rem;
     overflow-x: clip;
     overflow-y: visible;
   }
@@ -3301,9 +3364,9 @@
   }
 
   .ai-logo-row-item--row .ai-logo-block-slot {
-    width: 4rem !important;
-    height: 2.35rem !important;
-    min-width: 4rem;
+    width: 4.5rem !important;
+    height: 2.65rem !important;
+    min-width: 4.5rem;
     flex-shrink: 0;
     background: rgba(255, 255, 255, 0.04) !important;
     border-radius: 10px;
@@ -3311,27 +3374,8 @@
   }
 
   .ai-logo-row-item--row .ai-logo-img {
-    max-height: 32px !important;
-    max-width: 56px !important;
-  }
-}
-
-@media (min-width: 640px) and (max-width: 1023px) {
-  .ai-premium-orbit-stage {
-    overflow-x: clip;
-    overflow-y: visible;
-  }
-
-  .ai-logo-row-item--row .ai-logo-block-slot {
-    width: 5rem !important;
-    height: 2.75rem !important;
-    min-width: 5rem;
-    flex-shrink: 0;
-  }
-
-  .ai-logo-row-item--row .ai-logo-img {
-    max-height: 38px !important;
-    max-width: 68px !important;
+    max-height: 36px !important;
+    max-width: 64px !important;
   }
 }
 
