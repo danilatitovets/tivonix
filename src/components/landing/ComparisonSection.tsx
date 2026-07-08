@@ -337,12 +337,12 @@ export default function ComparisonSection() {
                 ))}
               </ul>
 
-              <div className="compare-split__badge mt-6">
+              <div className="compare-split__badge mt-5 sm:mt-6">
                 <Check size={14} strokeWidth={2.5} aria-hidden />
-                <span>{copy.compare.tivonix.badge}</span>
+                <span className="text-pretty leading-[1.45]">{copy.compare.tivonix.badge}</span>
               </div>
 
-              <ul className="mt-5 space-y-2.5 text-left sm:hidden">
+              <ul className="compare-split__mobile-list mt-6 space-y-2.5 text-left sm:mt-5 sm:hidden">
                 {copy.compare.tivonix.items.slice(0, 4).map((item) => (
                   <li key={item} className="flex items-start gap-2 text-[13px] text-white/90">
                     <Check size={13} className="mt-0.5 shrink-0" strokeWidth={2.5} aria-hidden />

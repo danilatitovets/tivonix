@@ -22,10 +22,12 @@ type CardReveal = {
 };
 
 const OFFER_MOSAIC_BG = `/images/${encodeURI("как рабоает/пп/блоки/ffon.png")}`;
+const OFFER_BOTTOM_MOBILE_BG = `/images/${encodeURI("как рабоает/пп/6.png")}`;
 const TOP_ENTER_STAGGER_MS = 130;
 const TOP_ENTER_DURATION_MS = 820;
 const REVEAL_DELAY_MS = 200;
 const REVEAL_DURATION_MS = 2800;
+const OFFER_MOBILE_MAX_WIDTH = 1023;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
@@ -70,6 +72,15 @@ function useOfferMosaicBackground(mosaicRef: React.RefObject<HTMLDivElement | nu
       mosaic.style.setProperty("--offer-grid-h", `${gridH}px`);
 
       mosaic.querySelectorAll<HTMLElement>("[data-offer-slice]").forEach((card) => {
+        const inBottomRow = card.closest(".offer-mosaic__row-bottom") !== null;
+        if (isMobile && inBottomRow) {
+          card.style.removeProperty("--offer-bg-w");
+          card.style.removeProperty("--offer-bg-h");
+          card.style.removeProperty("--offer-bg-pos-x");
+          card.style.removeProperty("--offer-bg-pos-y");
+          return;
+        }
+
         const cardRect = card.getBoundingClientRect();
         const scroll = getAccumulatedScroll(card, mosaic);
         const posX = cardRect.left - mosaicRect.left + scroll.x;
@@ -96,10 +107,14 @@ function useOfferMosaicBackground(mosaicRef: React.RefObject<HTMLDivElement | nu
     window.addEventListener("resize", scheduleUpdate);
     document.fonts?.ready.then(scheduleUpdate).catch(() => undefined);
 
+    const rowBottom = mosaic.querySelector(".offer-mosaic__row-bottom");
+    rowBottom?.addEventListener("scroll", scheduleUpdate, { passive: true });
+
     return () => {
       cancelAnimationFrame(frame);
       ro.disconnect();
       window.removeEventListener("resize", scheduleUpdate);
+      rowBottom?.removeEventListener("scroll", scheduleUpdate);
     };
   }, [mosaicRef]);
 }
@@ -167,12 +182,13 @@ function useOfferSectionAnimation(
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mobile = window.matchMedia(`(max-width: ${OFFER_MOBILE_MAX_WIDTH}px)`).matches;
     setReducedMotion(reduced);
 
     const mosaic = mosaicRef.current;
     if (!mosaic) return;
 
-    if (reduced) {
+    if (reduced || mobile) {
       finishInstant();
       return;
     }
@@ -297,11 +313,11 @@ function MetricCard({
       className={["min-h-[200px] sm:min-h-[220px] lg:min-h-0", className].filter(Boolean).join(" ")}
     >
       <div className="text-[15px] font-semibold tracking-[-0.01em] text-white/90 sm:text-[16px]">{badge}</div>
-      <div className="ml-auto text-right">
-        <p className="font-hero text-[2rem] font-semibold leading-none tracking-[-0.04em] text-white sm:text-[2.5rem] lg:text-[2.75rem]">
+      <div className="ml-auto w-full min-w-0 shrink-0 text-right">
+        <p className="font-hero whitespace-nowrap text-[2rem] font-semibold leading-none tracking-[-0.04em] text-white sm:text-[2.5rem] lg:text-[2.75rem]">
           {metric}
         </p>
-        <p className="mt-2 text-[14px] leading-snug text-white/48 sm:text-[15px]">{label}</p>
+        <p className="mt-2 text-pretty text-[14px] leading-snug text-white/48 sm:text-[15px]">{label}</p>
       </div>
     </OfferBlockCard>
   );
@@ -356,10 +372,10 @@ function FeaturedCard({
         </div>
 
         <div>
-          <p className="font-hero text-[2.25rem] font-semibold leading-none tracking-[-0.04em] text-white sm:text-[2.75rem] lg:text-[3.25rem]">
+          <p className="font-hero whitespace-nowrap text-[2.25rem] font-semibold leading-none tracking-[-0.04em] text-white sm:text-[2.75rem] lg:text-[3.25rem]">
             {metric}
           </p>
-          <p className="mt-2 text-[14px] leading-snug text-white/48 sm:text-[15px]">{metricLabel}</p>
+          <p className="mt-2 text-pretty text-[14px] leading-snug text-white/48 sm:text-[15px]">{metricLabel}</p>
         </div>
       </OfferBlockCard>
     </div>
@@ -398,7 +414,10 @@ export default function MainOfferSection() {
           <div
             ref={mosaicRef}
             className="offer-mosaic relative mt-10 flex flex-col gap-2.5 sm:mt-12 sm:gap-4"
-            style={{ ["--offer-mosaic-image" as string]: `url("${OFFER_MOSAIC_BG}")` }}
+            style={{
+              ["--offer-mosaic-image" as string]: `url("${OFFER_MOSAIC_BG}")`,
+              ["--offer-mobile-bottom-image" as string]: `url("${OFFER_BOTTOM_MOBILE_BG}")`,
+            }}
           >
             <div className="offer-mosaic__row-top grid grid-cols-1 gap-2.5 sm:gap-4">
               <div className="offer-mosaic__cell min-h-[220px] min-w-0 w-full sm:min-h-[240px] lg:col-span-8 lg:min-h-0">
