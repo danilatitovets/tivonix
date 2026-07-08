@@ -34,13 +34,7 @@ const SLOTTY_DOMAIN = "https://slotty.of.by/book";
 const SPLITON_DOMAIN = "https://spliton.io/app";
 
 /** Публичные кейсы на /projects (остальные скрыты, но остаются в каталоге) */
-export const PUBLIC_PROJECT_IDS = [
-  "headmind",
-  "logovo",
-  "giftsniper",
-  "slotty",
-  "spliton",
-] as const;
+export const PUBLIC_PROJECT_IDS = ["spliton", "slotty", "giftsniper"] as const;
 
 const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/r${i + 1}.webp`);
 const SPLITON_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/spliton/g${i + 1}.webp`);

@@ -3371,9 +3371,9 @@ const ROW_BLOCK_REF = 136;
 const ROW_OVERLAP = 10;
 const ROW_BLOCK_REF_TABLET = 80;
 const ROW_OVERLAP_TABLET = 6;
-const ROW_STEP_PHONE = 118;
+const ROW_STEP_PHONE = 112;
 const ROW_Y_PHONE = 80;
-const ROW_STRIP_LEADING_PHONE = 24;
+const ROW_STRIP_LEADING_PHONE = 32;
 function orbitPosition(index, total, rx = ORBIT_RX, ry = ORBIT_RY) {
   const angle = index / total * Math.PI * 2 - Math.PI / 2;
   return {
@@ -3440,6 +3440,8 @@ const TIVONIX_LOGO = "/images/logo-black.webp";
 const AI_SECTION_BG = "/images/foooa.webp";
 const DROP_START = 0.68;
 const DROP_END = 0.88;
+const STRIP_DROP_THRESHOLD = 0.94;
+const STRIP_FADE_SPAN = 0.06;
 const ORBIT_START = 0.14;
 const ORBIT_REVEAL_END = 0.46;
 const HUB_START = 0.36;
@@ -3519,12 +3521,6 @@ function phoneLogoScale(modelId, scale) {
 function mobileLogoScale(modelId, scale, phone) {
   return phoneLogoScale(modelId, scale);
 }
-function backgroundFade(drift, drop, exitScroll) {
-  if (exitScroll > 0.08 && exitScroll < 0.96) return 0;
-  if (drift > 0.02) return smoothstep$2(clamp01$4(drift / 0.72)) * 0.4;
-  if (drop < 0.9) return 0;
-  return smoothstep$2((drop - 0.9) / 0.1) * 0.25;
-}
 function AiPremiumSection() {
   const copy = landingCopy(useLang().lang);
   const pinWrapRef = useRef(null);
@@ -3537,6 +3533,7 @@ function AiPremiumSection() {
   const headlineRef = useRef(null);
   const cursorRef = useRef(null);
   const aiMarkRef = useRef(null);
+  const phoneStripRef = useRef(null);
   const rowItemRefs = useRef([]);
   const blockSlotRefs = useRef([]);
   const logoImgRefs = useRef([]);
@@ -3608,8 +3605,7 @@ function AiPremiumSection() {
       const smoothRate = reducedMotion ? 1 : scrollY === lastScrollY ? 0.1 : 0.18;
       smoothExitScroll += (targetExitScroll - smoothExitScroll) * smoothRate;
       const exitScroll = smoothExitScroll;
-      const bgReveal = Math.max(approach, smoothstep$2(progress / 0.05), expand);
-      const auroraStrength = clamp01$4(bgReveal) * (1 - backgroundFade(drift, drop, exitScroll));
+      const auroraStrength = 1;
       const inAnimPin = scrollInTrack >= 0 && scrollInTrack < animScrollable;
       const isPinned = inAnimPin && rectTop <= 0;
       lastScrollY = scrollY;
@@ -3621,10 +3617,18 @@ function AiPremiumSection() {
         lastAuroraStrength = auroraStrength;
         frameRef.current?.style.setProperty("--ai-aurora-fade", String(auroraStrength));
       }
+      const phoneLayout = viewport < 640;
+      const tabletLayout = viewport >= 640 && viewport < 1024;
+      const desktopLayout = viewport >= 1024;
+      const compactLayout = viewport < 1024;
       const frameEl = frameRef.current;
       if (frameEl) {
         frameEl.classList.toggle("ai-premium-frame--live", isEntered);
-        frameEl.classList.toggle("ai-premium-frame--orbit", inAnimPin && progress > ORBIT_START - 0.06 && drop < 0.35);
+        frameEl.classList.toggle("ai-premium-frame--desktop", desktopLayout);
+        frameEl.classList.toggle(
+          "ai-premium-frame--orbit",
+          inAnimPin && progress > ORBIT_START - 0.06 && (desktopLayout || drop < 0.35)
+        );
       }
       pinWrapRef.current?.classList.toggle("ai-premium-pin--active", inAnimPin && progress > 0.02);
       const sectionEl = sectionRef.current;
@@ -3632,8 +3636,6 @@ function AiPremiumSection() {
         sectionEl.classList.toggle("ai-premium-section--pinned", isPinned);
         sectionEl.classList.toggle("ai-premium-section--drift", drift > 0.01);
       }
-      const phoneLayout = viewport < 640;
-      const tabletLayout = viewport >= 640 && viewport < 1024;
       const orbitRx = phoneLayout ? ORBIT_RX_PHONE : tabletLayout ? ORBIT_RX_MOBILE : 33;
       const orbitRy = phoneLayout ? ORBIT_RY_PHONE : tabletLayout ? ORBIT_RY_MOBILE : 31;
       const stageEl = rowItemRefs.current[0]?.closest(".ai-premium-orbit-stage");
@@ -3647,12 +3649,37 @@ function AiPremiumSection() {
       );
       const mobileStripReveal = phoneLayout && drop > 0.68 ? smoothstep$2((drop - 0.68) / 0.25) : 0;
       const mobileStripProgress = mobileStripReveal * (1 - exitScroll);
+      const stripActive = compactLayout && drop >= STRIP_DROP_THRESHOLD;
+      const stripFadeIn = stripActive ? smoothstep$2((drop - STRIP_DROP_THRESHOLD) / STRIP_FADE_SPAN) : 0;
       const driftPxBase = exitScroll * Math.max(viewport * 0.72, 480);
-      const driftPx = phoneLayout ? -mobileStripProgress * mobileDriftMax : driftPxBase;
+      const driftPx = phoneLayout && !stripActive ? -mobileStripProgress * mobileDriftMax : driftPxBase;
       const orbitBlend = 1 - smoothstep$2(drop / 0.24);
       const inOrbitPhase = orbitBlend > 0.04;
       const orbitBlocksIn = progress < ORBIT_START ? 0 : smoothstep$2((progress - ORBIT_START) / 0.07);
       const logoExitFade = phoneLayout ? smoothstep$2((exitScroll - 0.9) / 0.1) : smoothstep$2((exitScroll - 0.28) / 0.72);
+      if (stageEl instanceof HTMLElement) {
+        stageEl.classList.toggle("ai-premium-orbit-stage--strip-active", stripActive);
+      }
+      const phoneStrip = phoneStripRef.current;
+      if (phoneStrip) {
+        const stripFade = stripActive ? stripFadeIn * (1 - logoExitFade) : 0;
+        phoneStrip.style.opacity = String(stripFade);
+        phoneStrip.style.visibility = stripFade > 0.01 ? "visible" : "hidden";
+        phoneStrip.style.pointerEvents = stripActive && stripFade > 0.92 && progress > 0.96 ? "auto" : "none";
+        phoneStrip.setAttribute("aria-hidden", stripActive ? "false" : "true");
+        if (stripActive) {
+          const maxScroll = Math.max(0, phoneStrip.scrollWidth - phoneStrip.clientWidth);
+          const animSettled = smoothstep$2((progress - 0.97) / 0.03);
+          const scrollT = clamp01$4(animSettled * 0.15 + exitScroll * 0.85);
+          const targetScroll = scrollT * maxScroll;
+          if (Math.abs(phoneStrip.scrollLeft - targetScroll) > 0.5) {
+            phoneStrip.scrollLeft = targetScroll;
+          }
+        } else if (phoneStrip.scrollLeft !== 0) {
+          phoneStrip.scrollLeft = 0;
+        }
+      }
+      frameRef.current?.classList.toggle("ai-premium-frame--phone-scroll", stripActive);
       const hubEl = hubRef.current;
       if (hubEl) {
         const hubTop = phoneLayout ? lerp(46, 36, drop) : tabletLayout ? lerp(48, 40, drop) : lerp(50, 42, drop);
@@ -3685,6 +3712,12 @@ function AiPremiumSection() {
       AI_MODELS.forEach((model, index) => {
         const el = rowItemRefs.current[index];
         if (!el) return;
+        if (stripActive) {
+          el.style.opacity = "0";
+          el.style.visibility = "hidden";
+          el.style.pointerEvents = "none";
+          return;
+        }
         const { x: orbitX, y: orbitY } = orbitPosition(index, AI_MODEL_COUNT, orbitRx, orbitRy);
         const rowPos = phoneLayout ? rowPositionScrollStrip(
           index,
@@ -3732,6 +3765,8 @@ function AiPremiumSection() {
           state.opacity = opacity;
           el.style.opacity = opacity;
         }
+        el.style.visibility = "";
+        el.style.pointerEvents = "";
         if (state.zIndex !== zIndex) {
           state.zIndex = zIndex;
           el.style.zIndex = zIndex;
@@ -3816,7 +3851,7 @@ function AiPremiumSection() {
                     {
                       ref: frameRef,
                       className: "ai-premium-frame relative flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-[inherit]",
-                      style: { ["--ai-aurora-fade"]: "0" },
+                      style: { ["--ai-aurora-fade"]: "1" },
                       children: [
                         /* @__PURE__ */ jsx("div", { className: "ai-premium-bg", "aria-hidden": true, children: /* @__PURE__ */ jsx(
                           "div",
@@ -3896,6 +3931,30 @@ function AiPremiumSection() {
                               ]
                             }
                           ),
+                          /* @__PURE__ */ jsx(
+                            "div",
+                            {
+                              ref: phoneStripRef,
+                              className: "ai-logo-phone-strip lg:hidden",
+                              style: { opacity: 0 },
+                              "aria-hidden": true,
+                              children: /* @__PURE__ */ jsx("div", { className: "ai-logo-phone-strip__track", children: AI_MODELS.map((model) => /* @__PURE__ */ jsx("div", { className: "ai-logo-phone-strip__item", children: /* @__PURE__ */ jsx(
+                                "img",
+                                {
+                                  src: model.src,
+                                  alt: model.name,
+                                  className: [
+                                    "ai-logo-phone-strip__img",
+                                    model.brighten ? "ai-logo-img--bright" : "",
+                                    model.colorful ? "ai-logo-img--colorful" : ""
+                                  ].filter(Boolean).join(" "),
+                                  draggable: false,
+                                  loading: "lazy",
+                                  decoding: "async"
+                                }
+                              ) }, `phone-${model.id}`)) })
+                            }
+                          ),
                           AI_MODELS.map((model, index) => /* @__PURE__ */ jsx(
                             "div",
                             {
@@ -3932,7 +3991,7 @@ function AiPremiumSection() {
                                       ].join(" "),
                                       style: { transform: "scale(var(--ai-logo-scale, 1))" },
                                       draggable: false,
-                                      loading: "lazy",
+                                      loading: "eager",
                                       decoding: "async"
                                     }
                                   )
@@ -3965,6 +4024,77 @@ function usePrefersReducedMotion$1() {
   }, []);
   return reduced;
 }
+const PLAN_IDS = ["start", "growth", "product", "custom"];
+const COMPARISON_GROUPS = [
+  {
+    id: "core",
+    rows: [
+      { id: "landing", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "responsive", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "form", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "contactButtons", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "telegramNotify", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "emailNotify", values: { start: { kind: "option" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
+    ]
+  },
+  {
+    id: "crm",
+    rows: [
+      { id: "leadStorage", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "leadTable", values: { start: { kind: "option" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "miniCrm", values: { start: { kind: "no" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "statuses", values: { start: { kind: "no" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "history", values: { start: { kind: "no" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "roles", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
+    ]
+  },
+  {
+    id: "product",
+    rows: [
+      { id: "cabinet", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "admin", values: { start: { kind: "no" }, growth: { kind: "basic" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "auth", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "database", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "booking", values: { start: { kind: "option" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "payments", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
+    ]
+  },
+  {
+    id: "automation",
+    rows: [
+      { id: "autoNotify", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "integrations", values: { start: { kind: "no" }, growth: { kind: "basic" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "aiBot", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "option" }, custom: { kind: "yes" } } },
+      { id: "aiLeads", values: { start: { kind: "no" }, growth: { kind: "no" }, product: { kind: "option" }, custom: { kind: "yes" } } },
+      { id: "documents", values: { start: { kind: "no" }, growth: { kind: "no" }, product: { kind: "option" }, custom: { kind: "yes" } } },
+      { id: "customFlows", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
+    ]
+  },
+  {
+    id: "launch",
+    rows: [
+      { id: "domain", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "deploy", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "guide", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "testing", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      {
+        id: "support",
+        values: {
+          start: { kind: "text", textKey: "support7" },
+          growth: { kind: "text", textKey: "support14" },
+          product: { kind: "text", textKey: "support30" },
+          custom: { kind: "text", textKey: "supportCustom" }
+        }
+      }
+    ]
+  }
+];
+const PLANS = [
+  { id: "start", ctaAction: getPlanCtaAction("start") },
+  { id: "growth", badgeKey: "popular", highlight: true, ctaAction: getPlanCtaAction("growth") },
+  { id: "product", badgeKey: "product", ctaAction: getPlanCtaAction("product") },
+  { id: "custom", ctaAction: getPlanCtaAction("custom") }
+];
 const LAUNCH_DISCOUNT_PERCENT = 10;
 const PLAN_PRICE_USD = {
   start: 400,
@@ -4417,77 +4547,6 @@ const COPY_EN = {
 function pricingCopy(lang) {
   return lang === "ru" ? COPY_RU : COPY_EN;
 }
-const PLAN_IDS = ["start", "growth", "product", "custom"];
-const COMPARISON_GROUPS = [
-  {
-    id: "core",
-    rows: [
-      { id: "landing", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "responsive", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "form", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "contactButtons", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "telegramNotify", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "emailNotify", values: { start: { kind: "option" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
-    ]
-  },
-  {
-    id: "crm",
-    rows: [
-      { id: "leadStorage", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "leadTable", values: { start: { kind: "option" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "miniCrm", values: { start: { kind: "no" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "statuses", values: { start: { kind: "no" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "history", values: { start: { kind: "no" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "roles", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
-    ]
-  },
-  {
-    id: "product",
-    rows: [
-      { id: "cabinet", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "admin", values: { start: { kind: "no" }, growth: { kind: "basic" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "auth", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "database", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "booking", values: { start: { kind: "option" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "payments", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
-    ]
-  },
-  {
-    id: "automation",
-    rows: [
-      { id: "autoNotify", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "integrations", values: { start: { kind: "no" }, growth: { kind: "basic" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "aiBot", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "option" }, custom: { kind: "yes" } } },
-      { id: "aiLeads", values: { start: { kind: "no" }, growth: { kind: "no" }, product: { kind: "option" }, custom: { kind: "yes" } } },
-      { id: "documents", values: { start: { kind: "no" }, growth: { kind: "no" }, product: { kind: "option" }, custom: { kind: "yes" } } },
-      { id: "customFlows", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
-    ]
-  },
-  {
-    id: "launch",
-    rows: [
-      { id: "domain", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "deploy", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "guide", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "testing", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      {
-        id: "support",
-        values: {
-          start: { kind: "text", textKey: "support7" },
-          growth: { kind: "text", textKey: "support14" },
-          product: { kind: "text", textKey: "support30" },
-          custom: { kind: "text", textKey: "supportCustom" }
-        }
-      }
-    ]
-  }
-];
-const PLANS = [
-  { id: "start", ctaAction: getPlanCtaAction("start") },
-  { id: "growth", badgeKey: "popular", highlight: true, ctaAction: getPlanCtaAction("growth") },
-  { id: "product", badgeKey: "product", ctaAction: getPlanCtaAction("product") },
-  { id: "custom", ctaAction: getPlanCtaAction("custom") }
-];
 const COMPARE_GLOBE = "/images/pain-bg-4.webp";
 function clamp01$3(v) {
   return Math.min(1, Math.max(0, v));
@@ -4875,13 +4934,7 @@ const LOGOVO_DOMAIN = "https://logovo24.by/";
 const GIFTSNIPER_DOMAIN = "https://t.me/GiftSniperTonBot";
 const SLOTTY_DOMAIN = "https://slotty.of.by/book";
 const SPLITON_DOMAIN = "https://spliton.io/app";
-const PUBLIC_PROJECT_IDS = [
-  "headmind",
-  "logovo",
-  "giftsniper",
-  "slotty",
-  "spliton"
-];
+const PUBLIC_PROJECT_IDS = ["spliton", "slotty", "giftsniper"];
 const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/r${i + 1}.webp`);
 const SPLITON_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/spliton/g${i + 1}.webp`);
 function buildAllProjects(isRu) {
@@ -6723,9 +6776,10 @@ function Footer() {
   );
 }
 const CANONICAL_ORIGIN = "https://tivonix.tech";
-const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN}/images/ceo.png`;
+const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN}/images/og-social.jpg`;
 const OG_IMAGE_WIDTH = "1200";
 const OG_IMAGE_HEIGHT = "630";
+const OG_IMAGE_ALT = "TIVONIX AI — сайты, боты и автоматизация для бизнеса";
 function SEO({
   title,
   description,
@@ -6751,12 +6805,13 @@ function SEO({
     /* @__PURE__ */ jsx("meta", { property: "og:image", content: ogImage }),
     /* @__PURE__ */ jsx("meta", { property: "og:image:width", content: OG_IMAGE_WIDTH }),
     /* @__PURE__ */ jsx("meta", { property: "og:image:height", content: OG_IMAGE_HEIGHT }),
-    /* @__PURE__ */ jsx("meta", { property: "og:image:alt", content: "TIVONIX" }),
+    /* @__PURE__ */ jsx("meta", { property: "og:image:type", content: "image/jpeg" }),
+    /* @__PURE__ */ jsx("meta", { property: "og:image:alt", content: OG_IMAGE_ALT }),
     /* @__PURE__ */ jsx("meta", { name: "twitter:card", content: "summary_large_image" }),
     /* @__PURE__ */ jsx("meta", { name: "twitter:title", content: title }),
     /* @__PURE__ */ jsx("meta", { name: "twitter:description", content: description }),
     /* @__PURE__ */ jsx("meta", { name: "twitter:image", content: ogImage }),
-    /* @__PURE__ */ jsx("meta", { name: "twitter:image:alt", content: "TIVONIX" }),
+    /* @__PURE__ */ jsx("meta", { name: "twitter:image:alt", content: OG_IMAGE_ALT }),
     schemaJsonLd != null && /* @__PURE__ */ jsx("script", { type: "application/ld+json", children: JSON.stringify(schemaJsonLd) })
   ] });
 }
@@ -7057,7 +7112,6 @@ function ProjectsPage() {
   const seoDescription = isRu ? "Посмотрите проекты TIVONIX: лендинги, веб-сервисы, личные кабинеты, админки, MVP и Telegram-интеграции для бизнеса." : "Explore TIVONIX projects: landings, web services, client areas, admin panels, MVPs and Telegram integrations for business.";
   const heroTitle = isRu ? "Проекты и кейсы" : "Projects and case studies";
   const allLabel = isRu ? "Все" : "All";
-  const ctaLabel = isRu ? "Обсудить проект" : "Discuss a project";
   const emptyLabel = isRu ? "Пока нет проектов в этой категории." : "No projects in this category yet.";
   return /* @__PURE__ */ jsxs("div", { className: "min-h-screen overflow-x-clip bg-black", children: [
     /* @__PURE__ */ jsx(
@@ -7071,19 +7125,7 @@ function ProjectsPage() {
     ),
     /* @__PURE__ */ jsx(Header, {}),
     /* @__PURE__ */ jsx("main", { children: /* @__PURE__ */ jsx(Section, { className: "projects-page scroll-mt-[var(--tivonix-header-spacer)] !pb-20 !pt-[calc(var(--tivonix-header-spacer)+1.75rem)] sm:!pt-[calc(var(--tivonix-header-spacer)+2.25rem)]", children: /* @__PURE__ */ jsxs(Container, { className: "max-w-[1180px]", children: [
-      /* @__PURE__ */ jsxs("header", { className: "mx-auto max-w-[720px] text-center", children: [
-        /* @__PURE__ */ jsx("h1", { className: "font-display text-[clamp(2rem,5vw,3.25rem)] font-extrabold leading-[1.05] tracking-[-0.04em] text-white", children: heroTitle }),
-        /* @__PURE__ */ jsx("div", { className: "projects-cta-glow mt-6 sm:mt-7", children: /* @__PURE__ */ jsx(
-          "a",
-          {
-            href: "https://t.me/TIVONIX",
-            target: "_blank",
-            rel: "noopener noreferrer",
-            className: "projects-cta-glow__btn",
-            children: ctaLabel
-          }
-        ) })
-      ] }),
+      /* @__PURE__ */ jsx("header", { className: "mx-auto max-w-[720px] text-center", children: /* @__PURE__ */ jsx("h1", { className: "font-display text-[clamp(2rem,5vw,3.25rem)] font-extrabold leading-[1.05] tracking-[-0.04em] text-white", children: heroTitle }) }),
       /* @__PURE__ */ jsx("div", { className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs(
         "div",
         {

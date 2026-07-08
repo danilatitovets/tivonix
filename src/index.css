@@ -940,7 +940,7 @@
     inset: 0;
     z-index: 0;
     overflow: hidden;
-    opacity: var(--ai-aurora-fade, 0);
+    opacity: 1;
     pointer-events: none;
   }
 
@@ -1095,6 +1095,19 @@
   @media (min-width: 1024px) {
     .ai-premium-orbit-stage {
       min-height: min(76vh, 700px);
+    }
+
+    .ai-premium-frame {
+      contain: none !important;
+    }
+
+    .ai-premium-pin--active .ai-premium-frame,
+    .ai-premium-section--drift .ai-premium-frame {
+      overflow: visible !important;
+    }
+
+    .ai-logo-row-item--row .ai-logo-block-slot {
+      background: rgba(255, 255, 255, 0.04);
     }
   }
 
@@ -3589,5 +3602,34 @@
 
   #pricing .pricing-faq h3 {
     font-size: 1.05rem;
+  }
+}
+
+/* Desktop-only: AI logo orbit/row must stay visible (mobile rules unchanged) */
+@media (min-width: 1024px) {
+  .ai-premium-frame.ai-premium-frame--desktop,
+  .ai-premium-frame.ai-premium-frame--desktop .ai-premium-orbit-stage {
+    contain: none !important;
+    overflow: visible !important;
+  }
+
+  .ai-premium-pin--active .ai-premium-border-stage {
+    overflow: visible !important;
+  }
+
+  .ai-premium-pin--active .ai-premium-frame--desktop,
+  .ai-premium-section--drift .ai-premium-frame--desktop,
+  .ai-premium-frame--desktop.ai-premium-frame--orbit {
+    overflow: visible !important;
+  }
+
+  .ai-premium-pin--active .ai-premium-frame--desktop .ai-logo-row-item,
+  .ai-premium-frame--desktop .ai-logo-row-item {
+    contain: none !important;
+    will-change: transform, opacity;
+  }
+
+  .ai-premium-frame--desktop .ai-logo-row-item--row .ai-logo-block-slot {
+    background-color: rgba(255, 255, 255, 0.04);
   }
 }

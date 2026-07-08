@@ -130,7 +130,6 @@ export default function ProjectsPage() {
 
   const heroTitle = isRu ? "Проекты и кейсы" : "Projects and case studies";
   const allLabel = isRu ? "Все" : "All";
-  const ctaLabel = isRu ? "Обсудить проект" : "Discuss a project";
   const emptyLabel = isRu ? "Пока нет проектов в этой категории." : "No projects in this category yet.";
 
   return (
@@ -150,17 +149,6 @@ export default function ProjectsPage() {
               <h1 className="font-display text-[clamp(2rem,5vw,3.25rem)] font-extrabold leading-[1.05] tracking-[-0.04em] text-white">
                 {heroTitle}
               </h1>
-
-              <div className="projects-cta-glow mt-6 sm:mt-7">
-                <a
-                  href="https://t.me/TIVONIX"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="projects-cta-glow__btn"
-                >
-                  {ctaLabel}
-                </a>
-              </div>
             </header>
 
             <div className="mt-10 sm:mt-12">
