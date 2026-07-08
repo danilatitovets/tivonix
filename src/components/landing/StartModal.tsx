@@ -1,8 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useLocation } from "react-router-dom";
 import { trackAdsConversion } from "../../lib/ads";
 import { Button } from "../ui/Button";
 import { useLang } from "../../i18n/LangProvider";
+import { planPagePrice, pricingCopy } from "../../i18n/pricingCopy";
+import type { PlanId } from "../../lib/pricingData";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -324,7 +327,11 @@ function FancySelect({
 
 /* ================= Modal ================= */
 
-type Props = { open: boolean; onClose: () => void };
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  selectedPlanId?: PlanId | null;
+};
 
 type FormState = {
   name: string;
@@ -338,9 +345,11 @@ type FormState = {
   consent: boolean; // ✅ добавили
 };
 
-export default function StartModal({ open, onClose }: Props) {
+export default function StartModal({ open, onClose, selectedPlanId = null }: Props) {
   const { lang } = useLang();
   const isRu = lang === "ru";
+  const location = useLocation();
+  const pricing = pricingCopy(lang);
 
   // дефолты зависят от языка
   const defaults = useMemo(
@@ -472,6 +481,10 @@ export default function StartModal({ open, onClose }: Props) {
       consentText: isRu
         ? "Я принимаю условия и согласен(на) с документами:"
         : "I agree with the documents:",
+      selectedPlan: isRu ? "Выбранный план" : "Selected plan",
+      planNotSelected: isRu ? "План пока не выбран" : "No plan selected yet",
+      pagePrice: isRu ? "Цена на странице" : "Page price",
+      source: isRu ? "Источник" : "Source",
       close: isRu ? "Закрыть" : "Close",
       progressLabel: isRu ? "ГОТОВО" : "DONE",
       note: isRu ? "Откроется письмо в почте." : "Opens an email draft.",
@@ -479,6 +492,21 @@ export default function StartModal({ open, onClose }: Props) {
     }),
     [isRu]
   );
+
+  const planLabel = useMemo(() => {
+    if (!selectedPlanId) return txt.planNotSelected;
+    return pricing.plans[selectedPlanId].name;
+  }, [selectedPlanId, pricing.plans, txt.planNotSelected]);
+
+  const planPriceLabel = useMemo(() => {
+    if (!selectedPlanId) return "—";
+    return planPagePrice(lang, selectedPlanId) ?? "—";
+  }, [selectedPlanId, lang]);
+
+  const emailSubjectPlanPart = useMemo(() => {
+    if (!selectedPlanId) return isRu ? "расчёт проекта" : "project quote";
+    return isRu ? `план ${pricing.plans[selectedPlanId].name}` : `${pricing.plans[selectedPlanId].name} plan`;
+  }, [selectedPlanId, isRu, pricing.plans]);
 
   const has = (v: string) => v.trim().length > 0;
 
@@ -534,13 +562,16 @@ export default function StartModal({ open, onClose }: Props) {
 
     setSending(true);
     try {
-      const subject = `[TIVONIX] ${isRu ? "Заявка" : "Request"} — ${form.name
+      const subject = `[TIVONIX] ${isRu ? "Заявка" : "Request"} — ${emailSubjectPlanPart} — ${form.name
         .trim()
         .slice(0, 64)}`;
 
       const body =
         (isRu ? "Заявка на создание сайта" : "Website request") +
         "\n\n" +
+        `${txt.selectedPlan}: ${planLabel}\n` +
+        `${txt.pagePrice}: ${planPriceLabel}\n` +
+        `${txt.source}: ${location.pathname || "/plans"}\n\n` +
         `${txt.name}: ${form.name || "-"}\n` +
         `${txt.email}: ${form.email || "-"}\n` +
         `${txt.telegram}: ${form.telegram || "-"}\n` +
@@ -812,6 +843,18 @@ export default function StartModal({ open, onClose }: Props) {
                   </div>
                 </div>
 
+                <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 backdrop-blur-xl">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">
+                    {txt.selectedPlan}
+                  </p>
+                  <p className="mt-1 text-[14px] font-semibold text-white">{planLabel}</p>
+                  {selectedPlanId ? (
+                    <p className="mt-1 text-[12px] text-white/55">
+                      {txt.pagePrice}: {planPriceLabel}
+                    </p>
+                  ) : null}
+                </div>
+
                 <div className="mt-4 grid grid-cols-1 gap-3.5 sm:mt-5 sm:grid-cols-2 sm:gap-4">
                   <div>
                     <div className="mb-1.5 text-[11.5px] font-semibold text-white/70">
@@ -889,10 +932,10 @@ export default function StartModal({ open, onClose }: Props) {
                     onChange={(v) => update("budget", v)}
                     options={[
                       { value: defaults.budget, label: defaults.budget },
-                      { value: "€200–€500", label: "€200–€500" },
-                      { value: "€500–€1,000", label: "€500–€1,000" },
-                      { value: "€1,000–€3,000", label: "€1,000–€3,000" },
-                      { value: "€3,000+", label: "€3,000+" },
+                      { value: isRu ? "до $500" : "under $500", label: isRu ? "до $500" : "under $500" },
+                      { value: "$500–1000", label: "$500–1000" },
+                      { value: "$1000–2000", label: "$1000–2000" },
+                      { value: "$2000+", label: "$2000+" },
                     ]}
                   />
 

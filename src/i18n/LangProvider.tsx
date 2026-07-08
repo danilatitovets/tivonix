@@ -26,15 +26,41 @@ type HeaderDict = {
   language: string;
 };
 
+export type HeroLeadChannel =
+  | "telegram"
+  | "instagram"
+  | "whatsapp"
+  | "gmail"
+  | "website"
+  | "facebook"
+  | "vk"
+  | "hubspot"
+  | "notion"
+  | "calendar";
+
+type HeroLead = {
+  title: string;
+  source: string;
+  time: string;
+  channel: HeroLeadChannel;
+};
+
 type HeroDict = {
+  eyebrow: string;
   titleLine1: string;
   titleLine2Prefix: string;
   titleLine2Premium: string;
+  titleLine3: string;
+  titleLine4: string;
   subtitle: string;
+  note: string;
   emailPlaceholder: string;
   btnDemo: string;
   btnTelegram: string;
   btnAutomation: string;
+  statLabel: string;
+  leadsAria: string;
+  leads: HeroLead[];
 };
 
 type CurtainDict = {
@@ -99,11 +125,20 @@ type BenefitsDict = {
   }[];
 };
 
+type NewCaseDict = {
+  label: string;
+  title: string;
+  live: string;
+  cta: string;
+  ctaExternal: string;
+};
+
 export type Dictionary = {
   header: HeaderDict;
   hero: HeroDict;
   curtain: CurtainDict;
   whyUs: WhyUsDict;
+  newCase: NewCaseDict;
   orbit: OrbitDict;
   benefits: BenefitsDict;
 };
@@ -122,15 +157,37 @@ const DICT: Record<Lang, Dictionary> = {
       language: "Язык",
     },
     hero: {
-      titleLine1: "Сайты, боты и веб-сервисы",
-      titleLine2Prefix: "которые приводят заявки",
-      titleLine2Premium: "",
+      eyebrow: "TIVONIX • САЙТЫ, БОТЫ, CRM",
+      titleLine1: "Сайты,",
+      titleLine2Prefix: "боты",
+      titleLine2Premium: "и веб-сервисы",
+      titleLine3: "которые помогают",
+      titleLine4: "получать заявки",
       subtitle:
-        "Разберём вашу задачу, предложим решение и запустим продукт под ключ: лендинг, Telegram-бот, личный кабинет, CRM или автоматизацию для бизнеса.",
+        "Разбираем задачу, предлагаем решение и запускаем продукт под ключ: лендинг, Telegram-бот, личный кабинет, CRM или автоматизацию.",
+      note: "Ответим в течение дня • Первая консультация — бесплатно",
       emailPlaceholder: "Рабочий email",
-      btnDemo: "Рассчитать проект",
+      btnDemo: "Обсудить проект",
       btnTelegram: "Написать в Telegram",
-      btnAutomation: "Посмотреть услуги",
+      btnAutomation: "Посмотреть, что делаем",
+      statLabel: "заявок сегодня",
+      leadsAria: "Примеры входящих заявок",
+      leads: [
+        { title: "TIVONIX Bot", source: "Новая заявка: нужен расчёт сайта под рекламу", time: "сейчас", channel: "telegram" },
+        { title: "maria_beauty", source: "Здравствуйте, хочу консультацию по услугам", time: "1 мин", channel: "instagram" },
+        { title: "Анна", source: "Можно записаться на маникюр в субботу?", time: "2 мин", channel: "whatsapp" },
+        { title: "Коммерческое предложение", source: "Отправил КП по разработке — посмотрите вложение", time: "3 мин", channel: "gmail" },
+        { title: "Форма на сайте", source: "Иван · лендинг под рекламу · +7 999 123-45-67", time: "4 мин", channel: "website" },
+        { title: "Реклама · Лиды", source: "Новый лид: автоматизация для салона красоты", time: "6 мин", channel: "facebook" },
+        { title: "Сообщение", source: "Интересует автоматизация заявок — какая цена?", time: "7 мин", channel: "vk" },
+        { title: "Новый контакт", source: "ООО «СтройДом» — оставил заявку в CRM", time: "9 мин", channel: "hubspot" },
+        { title: "Бриф проекта", source: "Заполнили бриф в Notion — можно смотреть", time: "11 мин", channel: "notion" },
+        { title: "Встреча с клиентом", source: "Завтра в 15:00 · обсуждение MVP", time: "13 мин", channel: "calendar" },
+        { title: "TIVONIX Bot", source: "Заявка с бота: интеграция Telegram и CRM", time: "14 мин", channel: "telegram" },
+        { title: "studio_pro", source: "Сколько стоит сайт с онлайн-записью?", time: "15 мин", channel: "instagram" },
+        { title: "Дмитрий", source: "Хочу онлайн-запись для клиентов в салон", time: "16 мин", channel: "whatsapp" },
+        { title: "Форма на сайте", source: "Новая заявка: лендинг + уведомления в Telegram", time: "18 мин", channel: "website" },
+      ],
     },
     curtain: {
       title: "Процесс разработки — по шагам",
@@ -166,6 +223,13 @@ const DICT: Record<Lang, Dictionary> = {
         saas: { label: "SaaS UI / UX", sub: "Стекло, сетка, детали, премиум-типографика" },
         perf: { label: "Performance", sub: "Оптимизация, lazy, UX-скорость" },
       },
+    },
+    newCase: {
+      label: "новый кейс",
+      title: "NEW",
+      live: "В продакшене",
+      cta: "Смотреть кейс",
+      ctaExternal: "Открыть spliton.io",
     },
     orbit: {
       badge: "ADMIN PANEL • SaaS",
@@ -249,15 +313,37 @@ const DICT: Record<Lang, Dictionary> = {
       language: "Language",
     },
     hero: {
-      titleLine1: "Websites, bots and web apps",
-      titleLine2Prefix: "that bring leads",
-      titleLine2Premium: "",
+      eyebrow: "TIVONIX • WEBSITES, BOTS, CRM",
+      titleLine1: "Websites,",
+      titleLine2Prefix: "bots",
+      titleLine2Premium: "and web apps",
+      titleLine3: "that help you",
+      titleLine4: "capture leads",
       subtitle:
-        "We understand your task, suggest the best solution and launch it end-to-end: landing page, Telegram bot, client portal, CRM or business automation.",
+        "We review your task, suggest a solution and launch it end-to-end: landing page, Telegram bot, client area, CRM or automation.",
+      note: "We reply within a day • First consultation is free",
       emailPlaceholder: "Work email",
-      btnDemo: "Estimate my project",
+      btnDemo: "Discuss the project",
       btnTelegram: "Message us on Telegram",
-      btnAutomation: "View services",
+      btnAutomation: "See what we build",
+      statLabel: "leads today",
+      leadsAria: "Sample incoming leads",
+      leads: [
+        { title: "TIVONIX Bot", source: "New lead: need a website quote for ads", time: "now", channel: "telegram" },
+        { title: "maria_beauty", source: "Hi, I'd like a consultation about your services", time: "1 min", channel: "instagram" },
+        { title: "Anna", source: "Can I book a manicure for Saturday?", time: "2 min", channel: "whatsapp" },
+        { title: "Commercial proposal", source: "Sent the dev proposal — see the attachment", time: "3 min", channel: "gmail" },
+        { title: "Website form", source: "Ivan · landing for ads · +1 555 123-4567", time: "4 min", channel: "website" },
+        { title: "Ads · Leads", source: "New lead: automation for a beauty salon", time: "6 min", channel: "facebook" },
+        { title: "Message", source: "Interested in lead automation — what's the price?", time: "7 min", channel: "vk" },
+        { title: "New contact", source: "BuildCo LLC — submitted a CRM inquiry", time: "9 min", channel: "hubspot" },
+        { title: "Project brief", source: "Brief filled in Notion — ready to review", time: "11 min", channel: "notion" },
+        { title: "Client meeting", source: "Tomorrow at 3 PM · MVP discussion", time: "13 min", channel: "calendar" },
+        { title: "TIVONIX Bot", source: "Bot lead: Telegram + CRM integration", time: "14 min", channel: "telegram" },
+        { title: "studio_pro", source: "How much for a site with online booking?", time: "15 min", channel: "instagram" },
+        { title: "Dmitry", source: "Need online booking for salon clients", time: "16 min", channel: "whatsapp" },
+        { title: "Website form", source: "New lead: landing page + Telegram alerts", time: "18 min", channel: "website" },
+      ],
     },
     curtain: {
       title: "Development process — step by step",
@@ -293,6 +379,13 @@ const DICT: Record<Lang, Dictionary> = {
         saas: { label: "SaaS UI / UX", sub: "Glassmorphism, grid, details, premium typography" },
         perf: { label: "Performance", sub: "Optimization, lazy, UX speed" },
       },
+    },
+    newCase: {
+      label: "new case",
+      title: "NEW",
+      live: "Live",
+      cta: "View case study",
+      ctaExternal: "Open spliton.io",
     },
     orbit: {
       badge: "ADMIN PANEL • SaaS",
@@ -445,15 +538,16 @@ export function homePageSeoFromDict(dict: Dictionary): { title: string; descript
   const isRu = dict.header.home === "На главную";
   if (isRu) {
     return {
-      title: "Создание сайтов и веб-сервисов под ключ — TIVONIX",
+      title: "Сайты, боты и CRM для бизнеса — TIVONIX",
       description:
-        "TIVONIX создаёт сайты, лендинги, веб-сервисы, MVP, личные кабинеты, админки и Telegram-боты для бизнеса. Дизайн, разработка и запуск в одном процессе.",
+        "TIVONIX делает сайты, Telegram-ботов, CRM и веб-сервисы под задачу бизнеса: заявки не теряются, команда видит статусы и знает, что делать дальше. Первая консультация бесплатно.",
     };
   }
 
-  const { titleLine1, subtitle } = dict.hero;
+  const { titleLine1, titleLine2Prefix, titleLine2Premium, subtitle } = dict.hero;
+  const heroTitle = `${titleLine1} ${titleLine2Prefix} ${titleLine2Premium}`.replace(/\s+/g, " ").trim();
   return {
-    title: `TIVONIX — ${titleLine1}`,
+    title: `TIVONIX — ${heroTitle}`,
     description: subtitle,
   };
 }

@@ -2,6 +2,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Container from "../ui/Container";
 import { useLang } from "../../i18n/LangProvider";
+import { landingCopy } from "../../i18n/landingCopy";
+import { TG_BOT_URL } from "../../constants/links";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -13,10 +15,7 @@ const VIDEOS = ["/video/1.mp4", "/video/2.mp4", "/video/3.mp4", "/video/4.mp4"] 
 // смещение “фокуса” видео вниз (без translate, без дыр сверху)
 const VIDEO_OFFSET_PX = 14;
 
-// ✅ TG
-const TG_USERNAME = "TIVONIX";
-const TG_URL = `https://t.me/${TG_USERNAME}`;
-// можно накинуть текст в старт: https://t.me/<user>?text=...
+// ✅ TG bot for quotes
 const TG_TEXT_RU = "Привет! Хочу рассчитать стоимость. Пакет: ";
 const TG_TEXT_EN = "Hi! I want a quote. Package: ";
 
@@ -188,7 +187,7 @@ function useVideoBlock(ref: React.RefObject<HTMLVideoElement | null>, src?: stri
 // ✅ открываем TG (в новой вкладке) + с префиллом текста
 function openTelegram(planName: string, isRu: boolean) {
   const text = isRu ? `${TG_TEXT_RU}${planName}` : `${TG_TEXT_EN}${planName}`;
-  const url = `${TG_URL}?text=${encodeURIComponent(text)}`;
+  const url = `${TG_BOT_URL}?text=${encodeURIComponent(text)}`;
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
@@ -417,102 +416,83 @@ function PlanCard({ p, isRu }: { p: Plan; isRu: boolean }) {
 export default function ServicesPlans({ className }: { className?: string }) {
   const { lang } = useLang();
   const isRu = lang === "ru";
+  const packages = landingCopy(lang).packages;
 
   const plans = useMemo<Plan[]>(
     () => [
       {
         key: "launch",
-        labelRu: "Лендинги + боты",
-        labelEn: "Landing + Bots",
-        titleRu: "БЫСТРЫЙ ЗАПУСК",
-        titleEn: "LAUNCH",
-        subtitleRu: "Лендинг + заявки + Telegram",
-        subtitleEn: "Fast start: landing + Telegram bot",
-        ctaRu: "Рассчитать стоимость",
-        ctaEn: "Get a quote",
+        labelRu: packages.launch.title,
+        labelEn: packages.launch.title,
+        titleRu: packages.launch.title.toUpperCase(),
+        titleEn: packages.launch.title.toUpperCase(),
+        subtitleRu: packages.launch.subtitle,
+        subtitleEn: packages.launch.subtitle,
+        ctaRu: packages.launch.cta,
+        ctaEn: packages.launch.cta,
         noteRu: "Ответим в течение дня",
         noteEn: "Reply within 24h",
-        descRu:
-          "Сделаем страницу для рекламы и подключим приём заявок, чтобы вы быстро начали получать обращения от клиентов.",
-        descEn: "Launch package: conversion landing + bot for leads and support.",
-        bulletsRu: [
-          "Страница под рекламу и продажи",
-          "Форма заявки и кнопки связи",
-          "Уведомления о заявках в Telegram",
-          "Адаптация под телефон и базовая аналитика",
-        ],
-        bulletsEn: [
-          "Conversion landing for ads",
-          "Bot flows, menus, commands",
-          "Integrations: CRM / Google / Notion",
-          "Responsive, SEO basics, fast load",
-        ],
-        badgeRu: "Подходит для быстрого старта",
-        badgeEn: "INCLUDED",
+        descRu: packages.launch.forWho,
+        descEn: packages.launch.forWho,
+        bulletsRu: [...packages.launch.bullets],
+        bulletsEn: [...packages.launch.bullets],
+        badgeRu: "Для быстрого старта",
+        badgeEn: "Quick start",
         chip: { ru: "ПАКЕТ", en: "BUNDLE" },
         videoSrc: VIDEOS[0],
       },
       {
         key: "product",
-        labelRu: "Продукт",
-        labelEn: "Product",
-        titleRu: "ОНЛАЙН-СЕРВИС",
-        titleEn: "PRODUCT",
-        subtitleRu: "Личный кабинет, админка, оплата",
-        subtitleEn: "MVP / dashboard / admin panel",
-        ctaRu: "Рассчитать стоимость",
-        ctaEn: "Get a quote",
+        labelRu: packages.service.title,
+        labelEn: packages.service.title,
+        titleRu: packages.service.title.toUpperCase(),
+        titleEn: packages.service.title.toUpperCase(),
+        subtitleRu: packages.service.subtitle,
+        subtitleEn: packages.service.subtitle,
+        ctaRu: packages.service.cta,
+        ctaEn: packages.service.cta,
         noteRu: "Предварительная оценка за 24 часа",
         noteEn: "Estimate in 24h",
-        descRu:
-          "Разработаем полноценный веб-сервис: пользователи смогут регистрироваться, пользоваться продуктом, оплачивать и получать нужный результат.",
-        descEn: "Bigger builds: MVPs, dashboards, admin panels, roles, databases and integrations.",
-        bulletsRu: [
-          "Личный кабинет для клиентов",
-          "Админ-панель для управления",
-          "Роли пользователей и доступы",
-          "Оплата, уведомления и интеграции",
-        ],
-        bulletsEn: ["Architecture, FE/BE, deploy", "Auth, roles, payments", "Admin, tables, filters", "Post-launch support"],
-        badgeRu: "Рекомендуем для продукта",
-        badgeEn: "RECOMMENDED",
+        descRu: packages.service.forWho,
+        descEn: packages.service.forWho,
+        bulletsRu: [...packages.service.bullets],
+        bulletsEn: [...packages.service.bullets],
+        badgeRu: "Для полноценного сервиса",
+        badgeEn: "Full service",
         chip: { ru: "ЛУЧШИЙ ВЫБОР", en: "BEST VALUE" },
         videoSrc: VIDEOS[1],
         featured: true,
       },
       {
         key: "automation",
-        labelRu: "Автоматизация",
-        labelEn: "Automation",
-        titleRu: "АВТОМАТИЗАЦИЯ",
-        titleEn: "AUTOMATION",
-        subtitleRu: "Меньше ручной работы",
-        subtitleEn: "Integrations / scripts / routine",
-        ctaRu: "Рассчитать стоимость",
-        ctaEn: "Get a quote",
+        labelRu: packages.automation.title,
+        labelEn: packages.automation.title,
+        titleRu: packages.automation.title.toUpperCase(),
+        titleEn: packages.automation.title.toUpperCase(),
+        subtitleRu: packages.automation.subtitle,
+        subtitleEn: packages.automation.subtitle,
+        ctaRu: packages.automation.cta,
+        ctaEn: packages.automation.cta,
         noteRu: "Поможем упростить процессы",
-        noteEn: "No fluff",
-        descRu:
-          "Настроим процессы, которые сейчас отнимают время: заявки, таблицы, отчёты, уведомления и работу с клиентами.",
-        descEn: "Automate routine: leads, sheets, reports, messaging and integrations.",
-        bulletsRu: [
-          "Автоматизация заявок и задач",
-          "Связка таблиц и сервисов",
-          "Уведомления в Telegram или email",
-          "Отчёты, статусы и контроль процессов",
-        ],
-        bulletsEn: ["Make / Zapier / API integrations", "Google Sheets / Notion / CRM", "Telegram notifications", "Logs and stability"],
-        badgeRu: "Подходит для бизнеса и команды",
-        badgeEn: "INCLUDED",
+        noteEn: "We simplify workflows",
+        descRu: packages.automation.forWho,
+        descEn: packages.automation.forWho,
+        bulletsRu: [...packages.automation.bullets],
+        bulletsEn: [...packages.automation.bullets],
+        badgeRu: "Для команды и бизнеса",
+        badgeEn: "For teams",
         videoSrc: VIDEOS[3],
       },
     ],
-    []
+    [packages]
   );
 
   return (
-    <section className={cx("relative", className)} style={{ ["--accent" as any]: ACCENT }}>
+    <section className={cx("relative", className)} style={{ ["--accent" as string]: ACCENT }} id="packages">
       <Container>
+        <h2 className="mb-8 max-w-[20ch] font-hero text-[clamp(1.75rem,4vw,2.75rem)] font-semibold leading-[1.06] tracking-[-0.03em] text-white sm:mb-10">
+          {packages.sectionTitle}
+        </h2>
         <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
           {plans.map((p) => (
             <PlanCard key={p.key} p={p} isRu={isRu} />

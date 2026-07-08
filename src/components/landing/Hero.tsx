@@ -1,466 +1,242 @@
-﻿import { Suspense, lazy, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { ChevronDown } from "lucide-react";
 import Section from "../ui/Section";
-import Container from "../ui/Container";
 import { useLang } from "../../i18n/LangProvider";
-import { TG_BOT_URL, TG_CHANNEL_URL } from "../../constants/links";
+import { landingCopy } from "../../i18n/landingCopy";
+import { HERO_SCROLL_HEADLINE_CLASS, HERO_SCROLL_LEAD_CLASS } from "../../lib/landingLayout";
+import LangToggle from "./LangToggle";
 
-const HERO_BG_IMG = "/images/hero1.png"; // mobile hero image
-const HeroWebGLBg = lazy(() => import("./HeroWebGLBg"));
+const HERO_IMAGES = [
+  "/images/hero-stage-1.png",
+  "/images/hero-stage-2.png",
+  "/images/hero-stage-3.png",
+] as const;
+
+const SCROLL_TRACK_VH = 240;
+
+type HeroScrollStage = {
+  headline: string;
+  lead: string;
+};
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
 
-function useMediaQuery(query: string) {
-  const getMatch = () =>
-    typeof window !== "undefined" ? window.matchMedia(query).matches : false;
-  const [matches, setMatches] = useState<boolean>(getMatch);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const m = window.matchMedia(query);
-    const onChange = () => setMatches(m.matches);
-    onChange();
-    if (m.addEventListener) m.addEventListener("change", onChange);
-    else m.addListener(onChange);
-    return () => {
-      if (m.removeEventListener) m.removeEventListener("change", onChange);
-      else m.removeListener(onChange);
-    };
-  }, [query]);
-
-  return matches;
+function clamp01(v: number) {
+  return Math.min(1, Math.max(0, v));
 }
 
-/**
- * ВАЖНО: чтобы не было “резкого перехода”
- * - НЕ делаем условный рендер mobile/desktop разметки.
- * - Разметка ОДНА, а переключение стилей — только через CSS media queries.
- * Тогда нет “скачка” из-за гидрации/JS-брейкпоинта.
- */
-const HERO_STYLES = `
-  .hero{
-    --tiv-amber: 255,154,61;
-    --tiv-orange: 255,106,26;
-    --tiv-cream: 255,215,176;
-    --tiv-ice: 245,246,248;
+function smoothstep(t: number) {
+  const x = clamp01(t);
+  return x * x * (3 - 2 * x);
+}
 
-    /* mobile bg knobs */
-    --hero-img-shift: 0vh;
-    --hero-img-scale: 1.04;
+function imageOpacities(progress: number): [number, number, number] {
+  if (progress <= 0.5) {
+    const t = smoothstep(progress / 0.5);
+    return [1 - t, t, 0];
+  }
+  const t = smoothstep((progress - 0.5) / 0.5);
+  return [0, 1 - t, t];
+}
+
+function textOpacities(progress: number): [number, number, number] {
+  const stage = progress * 3;
+  const i = Math.min(2, Math.floor(stage));
+  const local = stage - i;
+  const hold = 0.72;
+  const op: [number, number, number] = [0, 0, 0];
+
+  if (local < hold) {
+    op[i] = 1;
+    return op;
   }
 
-  .heroBg{ position:absolute; inset:0; background:#000000; overflow:hidden; }
-
-  .heroBg .heroImg{
-    position:absolute; inset:0;
-    width:100%; height:100%;
-    object-fit:cover;
-    object-position:50% 50%;
-    transform: translate3d(0,var(--hero-img-shift),0) scale(var(--hero-img-scale));
-    filter:saturate(1.05) contrast(1.04);
-    will-change: transform;
+  if (i >= 2) {
+    op[2] = 1;
+    return op;
   }
 
-  .heroWebgl{
-    position:absolute; inset:0;
-    width:100%; height:100%;
-    transform:scale(1.03);
-    will-change: transform;
-    pointer-events:auto;
-  }
-  .heroWebgl canvas{ pointer-events:auto; }
+  const t = smoothstep((local - hold) / (1 - hold));
+  op[i] = 1 - t;
+  if (i < 2) op[i + 1] = t;
+  return op;
+}
 
-  .heroOverlay{
-    position:absolute; inset:0;
-    background:
-      linear-gradient(90deg,
-        rgba(0,0,0,0.82) 0%,
-        rgba(0,0,0,0.64) 28%,
-        rgba(0,0,0,0.30) 52%,
-        rgba(0,0,0,0.12) 68%,
-        rgba(0,0,0,0.26) 100%),
-      radial-gradient(120% 90% at 55% 35%,
-        rgba(var(--tiv-amber),0.14) 0%,
-        rgba(var(--tiv-orange),0.10) 32%,
-        rgba(0,0,0,0) 62%),
-      radial-gradient(120% 120% at 50% 55%,
-        rgba(0,0,0,0.18) 0%,
-        rgba(0,0,0,0.84) 72%,
-        rgba(0,0,0,1) 100%);
-  }
-
-  .heroGrain{
-    position:absolute; inset:0;
-    opacity:.10;
-    background-image:
-      radial-gradient(circle at 1px 1px, rgba(255,255,255,0.26) 1px, transparent 0);
-    background-size:28px 28px;
-    mix-blend-mode:overlay;
-    pointer-events:none;
-  }
-
-  /* ===== DESKTOP typography (как было) ===== */
-  .heroH1{
-    font-weight:850;
-    letter-spacing:-0.03em;
-    line-height:1.06;
-    text-shadow:0 14px 38px rgba(0,0,0,0.86);
-  }
-
-  /* ===== CTA Gmail: тёмно-серый фирменный, без обводки ===== */
-  .gmailBtn{
-    border-radius:14px;
-    border:none;
-    background:#2a2a2a;
-    backdrop-filter:none;
-    -webkit-backdrop-filter:none;
-    box-shadow:none;
-    transition:transform .18s ease, background .18s ease;
-  }
-  .gmailBtn:hover{
-    transform:translateY(-1px);
-    background:#363636;
-  }
-  .gmailBtn:active{ transform:translateY(0px); }
-
-  /* ===== Mobile (Vercel-like): центр, сетка, pill-кнопки ===== */
-
-  /* Резерв снизу, чтобы фон не лез на текст */
-  @media (max-width: 640px){
-    .hero{
-      --hero-img-shift: 16vh;
-      --hero-img-scale: 1;
-    }
-
-    .heroBg::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      opacity:0.45;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
-      background-size: 40px 40px;
-      background-position: center top;
-      mask-image: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, transparent 88%);
-    }
-    .heroBg .heroImg{
-      inset: auto;
-      width: 88%;
-      height: 88%;
-      left: 50%;
-      top: 68%;
-      object-fit: contain;
-      object-position: 50% 50%;
-      transform: translate3d(-50%, -50%, 0) scale(var(--hero-img-scale));
-    }
-
-    /* Моб. оверлей: верх темнее, низ чище */
-    .heroOverlay{
-      background:
-        linear-gradient(0deg, rgba(0,0,0,0.32), rgba(0,0,0,0.32)),
-        linear-gradient(180deg,
-          rgba(0,0,0,0.88) 0%,
-          rgba(0,0,0,0.62) 22%,
-          rgba(0,0,0,0.28) 52%,
-          rgba(0,0,0,0.12) 68%,
-          rgba(0,0,0,0.72) 100%
-        );
-    }
-
-    .heroGrain{ opacity:0.055; }
-
-    .hero .heroWrap{
-      text-align:center;
-      padding-top: 4px;
-      padding-bottom: clamp(200px, 38vh, 420px);
-    }
-    .hero .heroSubtitle{ margin-left:auto; margin-right:auto; }
-
-    /* Типографика: как Vercel — плотный заголовок, лид #A1A1AA */
-    .hero .heroTitleCaps{ text-transform:none !important; letter-spacing:-0.032em !important; }
-    .hero .heroH1{
-      line-height:1.04;
-      letter-spacing:-0.04em;
-      text-shadow:none;
-      text-wrap: balance;
-    }
-
-    .hero .heroH1{
-      max-width: 17ch;
-      margin-left:auto;
-      margin-right:auto;
-    }
-    .hero .heroH1 .heroTitleCaps{
-      color:#fafafa !important;
-    }
-    .hero .heroH1 .heroTitleCaps:nth-child(2){
-      color:rgba(250,250,250,0.82) !important;
-    }
-    .hero .heroSubtitle{
-      font-size: 15px !important;
-      line-height: 1.65 !important;
-      color: #a1a1aa !important;
-      max-width: 34ch;
-      font-weight: 400 !important;
-    }
-
-    /* CTA: ряд из двух pill + третий outline на всю ширину пары */
-    .hero .heroCtas{
-      margin-top: 28px !important;
-      display:flex !important;
-      flex-direction: column !important;
-      align-items: center !important;
-      gap: 12px !important;
-      max-width: 100% !important;
-      margin-left: auto !important;
-      margin-right: auto !important;
-    }
-
-    .hero .heroCtasPair{
-      display:flex;
-      width:100%;
-      max-width:min(100%, 20.5rem);
-      gap:10px;
-    }
-
-    .hero .heroCtasPair .tgBtn,
-    .hero .heroCtasPair .gmailBtn{
-      flex:1;
-      min-width:0;
-    }
-
-    .hero .gmailBtn,
-    .hero .tgBtn,
-    .hero .heroAutomationBtn{
-      height: 48px !important;
-      border-radius: 9999px !important;
-      font-size: 14px !important;
-      font-weight: 600 !important;
-      letter-spacing: -0.02em !important;
-      box-shadow: none !important;
-      -webkit-tap-highlight-color: transparent;
-      transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
-    }
-
-    /* Primary: белая pill (как Deploy у Vercel) */
-    .hero .tgBtn{
-      background: #ffffff !important;
-      color: #0a0a0a !important;
-      border: 1px solid rgba(255,255,255,0.14) !important;
-    }
-
-    /* Secondary: тёмная с тонкой обводкой (как Get a demo) */
-    .hero .gmailBtn{
-      background: transparent !important;
-      color: rgba(255,255,255,0.92) !important;
-      border: 1px solid rgba(255,255,255,0.22) !important;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-    }
-    .hero .tgBtn:hover{
-      background: rgba(255,255,255,0.96) !important;
-      border-color: rgba(255,255,255,0.22) !important;
-    }
-    .hero .gmailBtn:hover{
-      background: rgba(255,255,255,0.06) !important;
-      border-color: rgba(255,255,255,0.32) !important;
-    }
-    .hero .tgBtn:active,
-    .hero .gmailBtn:active,
-    .hero .heroAutomationBtn:active{
-      transform: scale(0.98);
-    }
-
-    .hero .heroAutomationBtn{
-      width:100%;
-      max-width:min(100%, 20.5rem);
-      background: #FF8A1E !important;
-      color: rgba(0,0,0,0.92) !important;
-      border: 1px solid rgba(255,140,60,0.55) !important;
-      font-weight: 600 !important;
-      box-shadow: 0 10px 28px rgba(255,138,30,0.22) !important;
-    }
-    .hero .heroAutomationBtn:hover{
-      background: #ff9a38 !important;
-      border-color: rgba(255,154,56,0.65) !important;
-      box-shadow: 0 12px 32px rgba(255,138,30,0.28) !important;
-    }
-
-    @media (max-width: 360px){
-      .hero .gmailBtn, .hero .tgBtn, .hero .heroAutomationBtn{ height: 46px !important; font-size: 13px !important; }
-      .hero .heroH1{ max-width: 16ch; }
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce){
-    .heroBg .heroImg{ transform:none; will-change:auto; }
-    .heroWebgl{ transform:none; }
-    .gmailBtn{ transition:none; }
-  }
-`;
-
-
-export default function Hero() {
-  const { dict } = useLang();
-  const hero = dict.hero;
-  const [mounted, setMounted] = useState(false);
+function useHeroScrollProgress(trackRef: React.RefObject<HTMLElement | null>) {
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    const el = trackRef.current;
+    if (!el || typeof window === "undefined") return;
 
-  // Оставляем ТОЛЬКО это условие: фон WebGL на десктопе (это не ломает разметку текста/кнопок)
-  const isDesktop = useMediaQuery("(min-width: 900px)");
+    let raf = 0;
+    let trackTop = 0;
+    let scrollable = 1;
 
-  const { gmailLabel, tgLabel } = useMemo(
-    () => ({
-      gmailLabel: hero.btnTelegram,
-      tgLabel: hero.btnDemo,
-    }),
-    [hero.btnDemo, hero.btnTelegram]
-  );
+    const measure = () => {
+      const rect = el.getBoundingClientRect();
+      trackTop = window.scrollY + rect.top;
+      scrollable = Math.max(1, el.offsetHeight - window.innerHeight);
+    };
+
+    const update = () => {
+      raf = 0;
+      setProgress(clamp01((window.scrollY - trackTop) / scrollable));
+    };
+
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+
+    const onResize = () => {
+      measure();
+      update();
+    };
+
+    measure();
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [trackRef]);
+
+  return progress;
+}
+
+function HeroCard({
+  progress,
+  stages,
+  isRu,
+}: {
+  progress: number;
+  stages: ReadonlyArray<HeroScrollStage>;
+  isRu: boolean;
+}) {
+  const imageOpacity = useMemo(() => imageOpacities(progress), [progress]);
+  const textOpacity = useMemo(() => textOpacities(progress), [progress]);
+  const activeStage = textOpacity[2] > 0.5 ? 2 : textOpacity[1] > 0.5 ? 1 : 0;
+
+  const scrollDown = () => {
+    const next = document.getElementById("pain");
+    if (next) {
+      next.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    window.scrollBy({ top: window.innerHeight * 0.9, behavior: "smooth" });
+  };
 
   return (
-    <Section
+    <div
       className={cx(
-        "hero relative isolate overflow-hidden flex items-center",
-        "pt-16 pb-14 sm:pt-20 sm:pb-16 lg:pt-24 lg:pb-20",
-        "min-h-[78vh] sm:min-h-[82vh] lg:min-h-[86vh]"
+        "relative isolate h-full min-h-0 flex-1 overflow-hidden rounded-[28px] lg:rounded-[32px]"
       )}
     >
-      <style>{HERO_STYLES}</style>
+      {HERO_IMAGES.map((src, i) => (
+        <img
+          key={src}
+          src={src}
+          alt=""
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[center_92%] sm:object-[center_94%]"
+          style={{ opacity: imageOpacity[i] } as CSSProperties}
+          decoding="async"
+          fetchPriority={i === 0 ? "high" : "low"}
+        />
+      ))}
 
-      {/* BG */}
-      <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-        <div className="heroBg">
-          {mounted && isDesktop ? (
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "radial-gradient(120% 90% at 55% 35%, rgba(255,154,61,0.18) 0%, rgba(255,106,26,0.10) 34%, rgba(0,0,0,0) 62%), linear-gradient(180deg, #000000 0%, #030303 100%)",
-              }}
-            />
-          ) : null}
-          {mounted && isDesktop ? (
-            <div className="heroWebgl pointer-events-auto">
-              <Suspense fallback={null}>
-                <HeroWebGLBg />
-              </Suspense>
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/18 via-transparent to-black/16"
+        aria-hidden
+      />
+
+      <div className="absolute inset-0 z-10 flex flex-col px-6 pt-[calc(4.875rem+0.5rem)] sm:px-10 sm:pt-[calc(var(--tivonix-header-spacer)+2rem)] lg:px-14">
+        <div className="flex min-h-0 flex-1 items-center justify-center">
+          <div className="relative w-full max-w-[52rem]">
+            <div className="relative grid w-full justify-items-center">
+              {stages.map((stage, i) => {
+                const opacity = textOpacity[i];
+                return (
+                  <div
+                    key={stage.headline}
+                    className="hero-stage-copy col-start-1 row-start-1 flex w-full max-w-[52rem] flex-col items-center justify-center text-center"
+                    style={
+                      {
+                        opacity,
+                        visibility: opacity < 0.04 ? "hidden" : "visible",
+                      } as CSSProperties
+                    }
+                    aria-hidden={i !== activeStage}
+                  >
+                    <h1 className={cx(HERO_SCROLL_HEADLINE_CLASS, "mx-auto w-full text-center")}>
+                      {stage.headline}
+                    </h1>
+                    <p className={cx(HERO_SCROLL_LEAD_CLASS, "mx-auto w-full max-w-[34rem] text-center")}>
+                      {stage.lead}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
-          ) : (
-            <img
-              className="heroImg"
-              src={HERO_BG_IMG}
-              alt=""
-              draggable={false}
-              loading="eager"
-              decoding="async"
-            />
-          )}
+          </div>
         </div>
 
-        <div className="heroOverlay" />
-        <div className="heroGrain" />
-
-        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/85 via-black/40 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black via-black/80 to-transparent max-sm:h-56 max-sm:from-black/[0.58] max-sm:via-black/38 max-sm:to-transparent" />
+        <div className="pointer-events-auto flex shrink-0 flex-col items-center gap-3 pb-5 sm:pb-7 lg:pb-8">
+          <LangToggle variant="hero" />
+          <button
+            type="button"
+            onClick={scrollDown}
+            className={cx(
+              "hero-scroll-hint grid h-10 w-10 place-items-center rounded-full border-0 sm:hidden",
+              "bg-white/[0.08] text-white/75 transition hover:bg-white/[0.12] hover:text-white",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
+            )}
+            aria-label={isRu ? "Прокрутить вниз" : "Scroll down"}
+          >
+            <ChevronDown size={22} strokeWidth={2.25} aria-hidden />
+          </button>
+        </div>
       </div>
+    </div>
+  );
+}
 
-        <Container>
-          <div className="relative mx-auto max-w-6xl px-1 sm:px-0 w-full">
-          {/* ОДНА разметка для всех экранов (без резких скачков) */}
-          <div className="pt-2 sm:pt-6 lg:pt-8 heroWrap">
-            <h1
-              className={cx(
-                "heroH1 tracking-[-0.02em]",
-                "text-[clamp(2.05rem,7.5vw,2.2rem)] max-sm:font-[820] sm:text-[46px] lg:text-[54px]"
-              )}
-            >
-              <span className="block font-[850] text-white/95 uppercase heroTitleCaps">{hero.titleLine1}</span>
-              <span className="block font-[850] text-white/80 uppercase heroTitleCaps">{hero.titleLine2Prefix}</span>
-              {hero.titleLine2Premium ? (
-                <span className="block font-[850] text-white/95 uppercase heroTitleCaps">{hero.titleLine2Premium}</span>
-              ) : null}
-            </h1>
+export default function Hero() {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const progress = useHeroScrollProgress(trackRef);
+  const { lang } = useLang();
+  const isRu = lang === "ru";
+  const copy = landingCopy(lang);
+  const stages = copy.hero.scrollStages as ReadonlyArray<HeroScrollStage>;
 
-            <p className="mt-4 max-w-2xl max-sm:mt-5 text-[15px] sm:text-[16px] leading-relaxed font-medium text-white/85 heroSubtitle">
-              {hero.subtitle}
-            </p>
-
-            <div className="heroCtas mt-7 flex w-full max-w-2xl flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start">
-              <div className="heroCtasPair flex w-full max-w-[20.5rem] gap-2.5 sm:contents sm:max-w-none">
-                <a
-                  href={TG_BOT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={tgLabel}
-                  className={cx(
-                    "tgBtn group relative w-full sm:w-auto",
-                    "inline-flex items-center justify-center",
-                    "rounded-xl max-sm:rounded-full h-[50px] sm:h-[52px] px-5 sm:px-6",
-                    "text-center font-[780] tracking-[-0.01em] max-sm:font-semibold",
-                    "text-[14px] sm:text-[15px] text-black whitespace-nowrap",
-                    "border border-orange-500/45 shadow-[0_12px_40px_rgba(255,106,40,0.22)] max-sm:border-white/15 max-sm:shadow-none",
-                    "transition active:translate-y-[1px]",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black max-sm:focus-visible:ring-white/30"
-                  )}
-                  style={{
-                    background: "#FF8A1E",
-                  }}
-                >
-                  <span className="relative z-10">{tgLabel}</span>
-                  <span
-                    className="pointer-events-none absolute inset-0 max-sm:hidden rounded-xl opacity-0 blur-xl transition duration-300 group-hover:opacity-70"
-                    style={{
-                      background: "radial-gradient(700px 120px at 50% 30%, rgba(255,176,32,0.65), rgba(0,0,0,0))",
-                    }}
-                  />
-                </a>
-
-                <a
-                  href={TG_CHANNEL_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={gmailLabel}
-                  className={cx(
-                    "gmailBtn",
-                    "inline-flex items-center justify-center",
-                    "rounded-xl max-sm:rounded-full h-[50px] sm:h-[52px] px-5 sm:px-6",
-                    "w-full sm:w-auto whitespace-nowrap",
-                    "text-white/90 text-[14px] sm:text-[15px] font-[780] max-sm:font-semibold",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                  )}
-                >
-                  {gmailLabel}
-                </a>
-              </div>
-
-              <Link
-                to="/avtomatizaciya-biznesa"
-                className={cx(
-                  "heroAutomationBtn",
-                  "inline-flex items-center justify-center",
-                  "rounded-xl max-sm:rounded-full h-[50px] sm:h-[52px] px-5 sm:px-6",
-                  "w-full sm:w-auto",
-                  "text-center font-[780] tracking-[-0.01em] max-sm:font-semibold",
-                  "text-[14px] sm:text-[15px] whitespace-nowrap",
-                  "border border-white/50 bg-white text-black hover:bg-white/95",
-                  "transition active:translate-y-[1px]",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black max-sm:focus-visible:ring-orange-300/50"
-                )}
-              >
-                {hero.btnAutomation}
-              </Link>
-            </div>
-
-          </div>
-          </div>
-        </Container>
-    </Section>
+  return (
+    <div
+      ref={trackRef}
+      className="relative"
+      style={{ height: `${SCROLL_TRACK_VH}vh` } as CSSProperties}
+    >
+      <Section
+        className={cx(
+          "sticky top-0 z-[1] isolate overflow-hidden bg-transparent !py-0",
+          "min-h-[100dvh] pb-0"
+        )}
+      >
+        <div
+          className={cx(
+            "mx-auto flex h-[calc(100dvh-1.25rem)] min-h-0 w-full max-w-none flex-col",
+            "px-3 pt-2.5 pb-2.5",
+            "sm:max-w-[min(98vw,1840px)] sm:px-3",
+            "lg:px-4 lg:pt-3 lg:pb-3"
+          )}
+        >
+          <HeroCard progress={progress} stages={stages} isRu={isRu} />
+        </div>
+      </Section>
+    </div>
   );
 }

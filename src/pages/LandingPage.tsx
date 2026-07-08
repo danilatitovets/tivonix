@@ -1,13 +1,17 @@
 // src/pages/LandingPage.tsx
 import Header from "../components/landing/Header";
 import Hero from "../components/landing/Hero";
-import WhyUs from "../components/landing/WhyUs";
-import AppsOrbitBlock from "../components/landing/AppsOrbitBlock";
-import Benefits from "../components/landing/Benefits";
+import LandingPainSection from "../components/landing/LandingPainSection";
+import MainOfferSection from "../components/landing/MainOfferSection";
+import AiPremiumSection from "../components/landing/AiPremiumSection";
+import ComparisonSection from "../components/landing/ComparisonSection";
+import CasesSection from "../components/landing/CasesSection";
+import TivonixAudienceSection from "../components/landing/TivonixAudienceSection";
+import ProcessTimelineSection from "../components/landing/ProcessTimelineSection";
 import FAQ from "../components/landing/FAQ";
+import FinalCTASection from "../components/landing/FinalCTASection";
 import Footer from "../components/landing/Footer";
 import { SEO } from "../components/SEO";
-import ServicesPlans from "../components/landing/ServicesPlans";
 import { buildHomePageSchema } from "../lib/schema";
 import { homePageSeoFromDict, useLang } from "../i18n/LangProvider";
 
@@ -20,7 +24,7 @@ export default function LandingPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[var(--bg)]">
+    <div className="min-h-screen overflow-x-clip bg-black">
       <SEO
         title={seo.title}
         description={seo.description}
@@ -36,26 +40,26 @@ export default function LandingPage() {
           <Hero />
         </div>
 
-        <div id="stack">
-          <WhyUs />
+        <LandingPainSection />
+
+        <MainOfferSection />
+
+        <AiPremiumSection />
+
+        <ComparisonSection />
+
+        <div id="new-case">
+          <CasesSection />
         </div>
 
+        <TivonixAudienceSection />
 
-        <div id="benefits">
-          <Benefits />
-        </div>
-
-        <div id="admin">
-          <AppsOrbitBlock />
-        </div>
-                {/* NEW: 4 cards block */}
-        <div id="services">
-          <ServicesPlans className="py-14 sm:py-16" />
-        </div>
+        <ProcessTimelineSection />
 
         <FAQ />
-        <div id="contact" />
       </main>
+
+      <FinalCTASection />
 
       <Footer />
     </div>

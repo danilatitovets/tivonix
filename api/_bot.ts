@@ -6,6 +6,7 @@ type Lang = "ru" | "en";
 type SessionData = {
   step:
     | "idle"
+    | "lead_chat"
     | "lang"
     | "consent"
     | "project_type"
@@ -78,6 +79,36 @@ function botTokenOrThrow(token?: string) {
 
 function escapeHtml(s: string) {
   return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+}
+
+function formatBotSource(source: string) {
+  const map: Record<string, string> = {
+    calc: "calc (default)",
+    direct: "Direct (без параметра)",
+    plan_start: "Start (/plans)",
+    plan_custom: "Custom (/plans)",
+    plan_help: "Help (/plans)",
+  };
+  return map[source] ?? source;
+}
+
+const PLAN_WELCOMES: Record<string, string> = {
+  plan_start:
+    "Привет! Вы выбрали Start — быстрый запуск: лендинг, заявки и Telegram. Напишите коротко, чем занимается ваш бизнес, и мы подскажем следующий шаг.",
+  plan_custom:
+    "Привет! Вы выбрали Custom — автоматизация, AI или индивидуальное решение. Напишите, какой процесс хотите автоматизировать.",
+  plan_help:
+    "Привет! Поможем выбрать подходящий план. Напишите, что хотите запустить: сайт, бот, CRM, кабинет, автоматизацию или просто идею.",
+};
+
+const DEFAULT_WELCOME =
+  "Привет! Это TIVONIX. Мы делаем сайты, боты, CRM, веб-сервисы и автоматизации, чтобы заявки не терялись. Напишите, что хотите запустить.";
+
+const LEAD_ACK =
+  "Спасибо! Заявка принята. Мы ответим вам в ближайшее время.";
+
+function formatNowRu() {
+  return new Date().toLocaleString("ru-RU", { timeZone: "Europe/Moscow" });
 }
 
 function t(lang: Lang, key: string, vars?: Record<string, string>) {
@@ -273,6 +304,7 @@ function userLabel(ctx: MyContext) {
 function stepName(lang: Lang, step: SessionData["step"]) {
   const map: Record<SessionData["step"], string> = {
     idle: "-",
+    lead_chat: "Диалог (/plans)",
     lang: t(lang, "step_lang"),
     consent: t(lang, "step_consent"),
     project_type: t(lang, "step_project"),
@@ -297,7 +329,52 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     })
   );
 
+  bot.use(async (ctx, next) => {
+    const updateType = ctx.message
+      ? "message"
+      : ctx.callbackQuery
+        ? "callback_query"
+        : "other";
+    console.log("[bot] update", {
+      updateId: ctx.update.update_id,
+      type: updateType,
+      chatId: ctx.chat?.id ?? null,
+    });
+    await next();
+  });
+
   const ensureLang = (ctx: MyContext): Lang => ctx.session.lang ?? "ru";
+
+  async function notifyAdminLead(
+    ctx: MyContext,
+    opts: { kind: "start" | "message"; messageText: string }
+  ) {
+    if (!admins.size) {
+      console.warn("[bot] admin notify skipped: ADMIN_IDS not configured");
+      return;
+    }
+
+    const source = formatBotSource(ctx.session.source ?? "direct");
+    const text =
+      `<b>📩 Новая заявка из Telegram</b>\n\n` +
+      `<b>Источник:</b> ${escapeHtml(source)}\n` +
+      `<b>Пользователь:</b> ${escapeHtml(userLabel(ctx))}\n` +
+      `<b>Сообщение:</b> ${escapeHtml(opts.messageText)}\n` +
+      `<b>Время:</b> ${escapeHtml(formatNowRu())}`;
+
+    for (const adminId of admins) {
+      try {
+        await ctx.api.sendMessage(adminId, text, {
+          parse_mode: "HTML",
+          link_preview_options: { is_disabled: true },
+        });
+        console.log("[bot] admin notify success", { adminId, kind: opts.kind });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error("[bot] admin notify fail", { adminId, kind: opts.kind, error: message });
+      }
+    }
+  }
 
   async function upsertAdminTracker(ctx: MyContext, extraStatus?: string) {
     if (!ctx.from) return;
@@ -306,7 +383,7 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     const text =
       `<b>🧾 ${escapeHtml(t(lang, "tracker_title"))}</b>\n\n` +
       `<b>${escapeHtml(t(lang, "tracker_user"))}:</b> ${escapeHtml(userLabel(ctx))}\n` +
-      `<b>${escapeHtml(t(lang, "tracker_source"))}:</b> ${escapeHtml(ctx.session.source ?? "direct")}\n` +
+      `<b>${escapeHtml(t(lang, "tracker_source"))}:</b> ${escapeHtml(formatBotSource(ctx.session.source ?? "direct"))}\n` +
       `<b>${escapeHtml(t(lang, "tracker_lang"))}:</b> ${escapeHtml(ctx.session.lang ?? "—")}\n` +
       `<b>${escapeHtml(t(lang, "tracker_step"))}:</b> ${escapeHtml(stepName(lang, ctx.session.step))}\n\n` +
       `<b>${escapeHtml(t(lang, "tracker_project"))}:</b> ${escapeHtml(ctx.session.projectType ?? "—")}\n` +
@@ -390,14 +467,32 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
 
   bot.command("start", async (ctx) => {
     const payload = (ctx.match?.trim?.() as string | undefined) || "";
+    console.log("[bot] /start payload", { payload: payload || "(empty)" });
+
+    if (payload === "calc") {
+      ctx.session = {
+        step: "idle",
+        source: "calc",
+        lang: ctx.session.lang,
+        adminTracker: ctx.session.adminTracker,
+      };
+      await goChooseLang(ctx, "calc");
+      return;
+    }
+
     const source = payload || "direct";
+    const welcome = PLAN_WELCOMES[payload] ?? DEFAULT_WELCOME;
+    const startMessage = payload ? `/start ${payload}` : "/start";
+
     ctx.session = {
-      step: "idle",
+      step: "lead_chat",
       source,
       lang: ctx.session.lang,
       adminTracker: ctx.session.adminTracker,
     };
-    await goChooseLang(ctx, source);
+
+    await ctx.reply(welcome);
+    await notifyAdminLead(ctx, { kind: "start", messageText: startMessage });
   });
 
   bot.command("estimate", async (ctx) => {
@@ -470,6 +565,23 @@ export function createBot(env: { BOT_TOKEN: string; ADMIN_IDS?: string }) {
     await upsertAdminTracker(ctx, `project=${ctx.session.projectType}`);
 
     await ctx.reply(t(lang, "q_features"), { reply_markup: featuresKeyboard(lang, new Set()) });
+  });
+
+  // Простой диалог после /start plan_* или пустого /start
+  bot.on("message:text", async (ctx, next) => {
+    if (ctx.session.step !== "lead_chat") {
+      await next();
+      return;
+    }
+
+    const text = ctx.message.text.trim();
+    if (text.startsWith("/")) {
+      await next();
+      return;
+    }
+
+    await ctx.reply(LEAD_ACK);
+    await notifyAdminLead(ctx, { kind: "message", messageText: text });
   });
 
   // ✅ custom project type text handler

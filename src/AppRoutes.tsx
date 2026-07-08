@@ -6,6 +6,7 @@ import ProjectDetailPage from "./pages/ProjectDetailPage";
 import ContactsPage from "./pages/ContactsPage";
 import WebsiteCreationPage from "./pages/WebsiteCreationPage";
 import AutomationBusinessPage from "./pages/AutomationBusinessPage";
+import PricingPage from "./pages/PricingPage";
 
 const HEADER_OFFSET = 84;
 
@@ -39,6 +40,7 @@ export function AppRoutes() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/projects/:slug" element={<ProjectDetailPage />} />
+        <Route path="/plans" element={<PricingPage />} />
         <Route path="/contacts" element={<ContactsPage />} />
         <Route path="/sozdanie-sajtov" element={<WebsiteCreationPage />} />
         <Route path="/avtomatizaciya-biznesa" element={<AutomationBusinessPage />} />

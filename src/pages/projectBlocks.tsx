@@ -39,7 +39,7 @@ export function ProjectPreviewFrame({
       className={cx(
         "relative overflow-hidden",
         fullWidth ? "w-full rounded-xl" : "mx-auto w-full rounded-2xl",
-        "border-0 bg-[#0c0c0f]"
+        "border-0 bg-[#141416]"
       )}
       style={{
         aspectRatio: aspect,

@@ -1,11 +1,12 @@
 import { jsx, jsxs, Fragment } from "react/jsx-runtime";
-import React, { createContext, useState, useEffect, useMemo, useContext, useRef, lazy, Suspense, useId, useCallback, useLayoutEffect } from "react";
+import React, { createContext, useState, useEffect, useMemo, useContext, useRef, useLayoutEffect, useCallback, lazy, Suspense } from "react";
 import { renderToString } from "react-dom/server";
-import { useNavigate, useLocation, Link, useParams, Navigate, Routes, Route, MemoryRouter } from "react-router-dom";
+import { useLocation, useNavigate, Link, useParams, Navigate, Routes, Route, MemoryRouter } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { createPortal } from "react-dom";
-import { Bot, Zap, LayoutDashboard, Users, TrendingUp, ShieldCheck, ChevronLeft, ChevronRight, FolderOpen, Check, Plus } from "lucide-react";
-import { SiTelegram, SiGmail, SiHubspot, SiGooglesheets, SiWhatsapp, SiNotion, SiGooglecalendar, SiClickup, SiStripe, SiGoogledocs, SiGoogleanalytics, SiZapier } from "react-icons/si";
+import { ChevronDown, ArrowRight, Loader2, Check, Shield, ArrowUpRight, Phone, Mail, Globe, Globe2, MapPin, Maximize2, Search, Bot, Zap, LayoutDashboard, Users, TrendingUp, ShieldCheck, ChevronLeft, ChevronRight, FolderOpen, Plus, Minus } from "lucide-react";
+import { SiTelegram, SiInstagram, SiWhatsapp, SiGmail, SiHubspot, SiGooglesheets, SiNotion, SiGooglecalendar, SiClickup, SiStripe, SiGoogledocs, SiGoogleanalytics, SiZapier } from "react-icons/si";
+import createGlobe from "cobe";
 import { FiBell } from "react-icons/fi";
 const LANG_STORAGE_KEY = "tivonix_lang";
 const DICT = {
@@ -22,14 +23,36 @@ const DICT = {
       language: "Язык"
     },
     hero: {
-      titleLine1: "Сайты, боты и веб-сервисы",
-      titleLine2Prefix: "которые приводят заявки",
-      titleLine2Premium: "",
-      subtitle: "Разберём вашу задачу, предложим решение и запустим продукт под ключ: лендинг, Telegram-бот, личный кабинет, CRM или автоматизацию для бизнеса.",
+      eyebrow: "TIVONIX • САЙТЫ, БОТЫ, CRM",
+      titleLine1: "Сайты,",
+      titleLine2Prefix: "боты",
+      titleLine2Premium: "и веб-сервисы",
+      titleLine3: "которые помогают",
+      titleLine4: "получать заявки",
+      subtitle: "Разбираем задачу, предлагаем решение и запускаем продукт под ключ: лендинг, Telegram-бот, личный кабинет, CRM или автоматизацию.",
+      note: "Ответим в течение дня • Первая консультация — бесплатно",
       emailPlaceholder: "Рабочий email",
-      btnDemo: "Рассчитать проект",
+      btnDemo: "Обсудить проект",
       btnTelegram: "Написать в Telegram",
-      btnAutomation: "Посмотреть услуги"
+      btnAutomation: "Посмотреть, что делаем",
+      statLabel: "заявок сегодня",
+      leadsAria: "Примеры входящих заявок",
+      leads: [
+        { title: "TIVONIX Bot", source: "Новая заявка: нужен расчёт сайта под рекламу", time: "сейчас", channel: "telegram" },
+        { title: "maria_beauty", source: "Здравствуйте, хочу консультацию по услугам", time: "1 мин", channel: "instagram" },
+        { title: "Анна", source: "Можно записаться на маникюр в субботу?", time: "2 мин", channel: "whatsapp" },
+        { title: "Коммерческое предложение", source: "Отправил КП по разработке — посмотрите вложение", time: "3 мин", channel: "gmail" },
+        { title: "Форма на сайте", source: "Иван · лендинг под рекламу · +7 999 123-45-67", time: "4 мин", channel: "website" },
+        { title: "Реклама · Лиды", source: "Новый лид: автоматизация для салона красоты", time: "6 мин", channel: "facebook" },
+        { title: "Сообщение", source: "Интересует автоматизация заявок — какая цена?", time: "7 мин", channel: "vk" },
+        { title: "Новый контакт", source: "ООО «СтройДом» — оставил заявку в CRM", time: "9 мин", channel: "hubspot" },
+        { title: "Бриф проекта", source: "Заполнили бриф в Notion — можно смотреть", time: "11 мин", channel: "notion" },
+        { title: "Встреча с клиентом", source: "Завтра в 15:00 · обсуждение MVP", time: "13 мин", channel: "calendar" },
+        { title: "TIVONIX Bot", source: "Заявка с бота: интеграция Telegram и CRM", time: "14 мин", channel: "telegram" },
+        { title: "studio_pro", source: "Сколько стоит сайт с онлайн-записью?", time: "15 мин", channel: "instagram" },
+        { title: "Дмитрий", source: "Хочу онлайн-запись для клиентов в салон", time: "16 мин", channel: "whatsapp" },
+        { title: "Форма на сайте", source: "Новая заявка: лендинг + уведомления в Telegram", time: "18 мин", channel: "website" }
+      ]
     },
     curtain: {
       title: "Процесс разработки — по шагам",
@@ -64,6 +87,13 @@ const DICT = {
         saas: { label: "SaaS UI / UX", sub: "Стекло, сетка, детали, премиум-типографика" },
         perf: { label: "Performance", sub: "Оптимизация, lazy, UX-скорость" }
       }
+    },
+    newCase: {
+      label: "новый кейс",
+      title: "NEW",
+      live: "В продакшене",
+      cta: "Смотреть кейс",
+      ctaExternal: "Открыть spliton.io"
     },
     orbit: {
       badge: "ADMIN PANEL • SaaS",
@@ -143,14 +173,36 @@ const DICT = {
       language: "Language"
     },
     hero: {
-      titleLine1: "Websites, bots and web apps",
-      titleLine2Prefix: "that bring leads",
-      titleLine2Premium: "",
-      subtitle: "We understand your task, suggest the best solution and launch it end-to-end: landing page, Telegram bot, client portal, CRM or business automation.",
+      eyebrow: "TIVONIX • WEBSITES, BOTS, CRM",
+      titleLine1: "Websites,",
+      titleLine2Prefix: "bots",
+      titleLine2Premium: "and web apps",
+      titleLine3: "that help you",
+      titleLine4: "capture leads",
+      subtitle: "We review your task, suggest a solution and launch it end-to-end: landing page, Telegram bot, client area, CRM or automation.",
+      note: "We reply within a day • First consultation is free",
       emailPlaceholder: "Work email",
-      btnDemo: "Estimate my project",
+      btnDemo: "Discuss the project",
       btnTelegram: "Message us on Telegram",
-      btnAutomation: "View services"
+      btnAutomation: "See what we build",
+      statLabel: "leads today",
+      leadsAria: "Sample incoming leads",
+      leads: [
+        { title: "TIVONIX Bot", source: "New lead: need a website quote for ads", time: "now", channel: "telegram" },
+        { title: "maria_beauty", source: "Hi, I'd like a consultation about your services", time: "1 min", channel: "instagram" },
+        { title: "Anna", source: "Can I book a manicure for Saturday?", time: "2 min", channel: "whatsapp" },
+        { title: "Commercial proposal", source: "Sent the dev proposal — see the attachment", time: "3 min", channel: "gmail" },
+        { title: "Website form", source: "Ivan · landing for ads · +1 555 123-4567", time: "4 min", channel: "website" },
+        { title: "Ads · Leads", source: "New lead: automation for a beauty salon", time: "6 min", channel: "facebook" },
+        { title: "Message", source: "Interested in lead automation — what's the price?", time: "7 min", channel: "vk" },
+        { title: "New contact", source: "BuildCo LLC — submitted a CRM inquiry", time: "9 min", channel: "hubspot" },
+        { title: "Project brief", source: "Brief filled in Notion — ready to review", time: "11 min", channel: "notion" },
+        { title: "Client meeting", source: "Tomorrow at 3 PM · MVP discussion", time: "13 min", channel: "calendar" },
+        { title: "TIVONIX Bot", source: "Bot lead: Telegram + CRM integration", time: "14 min", channel: "telegram" },
+        { title: "studio_pro", source: "How much for a site with online booking?", time: "15 min", channel: "instagram" },
+        { title: "Dmitry", source: "Need online booking for salon clients", time: "16 min", channel: "whatsapp" },
+        { title: "Website form", source: "New lead: landing page + Telegram alerts", time: "18 min", channel: "website" }
+      ]
     },
     curtain: {
       title: "Development process — step by step",
@@ -185,6 +237,13 @@ const DICT = {
         saas: { label: "SaaS UI / UX", sub: "Glassmorphism, grid, details, premium typography" },
         perf: { label: "Performance", sub: "Optimization, lazy, UX speed" }
       }
+    },
+    newCase: {
+      label: "new case",
+      title: "NEW",
+      live: "Live",
+      cta: "View case study",
+      ctaExternal: "Open spliton.io"
     },
     orbit: {
       badge: "ADMIN PANEL • SaaS",
@@ -304,18 +363,82 @@ function homePageSeoFromDict(dict) {
   const isRu = dict.header.home === "На главную";
   if (isRu) {
     return {
-      title: "Создание сайтов и веб-сервисов под ключ — TIVONIX",
-      description: "TIVONIX создаёт сайты, лендинги, веб-сервисы, MVP, личные кабинеты, админки и Telegram-боты для бизнеса. Дизайн, разработка и запуск в одном процессе."
+      title: "Сайты, боты и CRM для бизнеса — TIVONIX",
+      description: "TIVONIX делает сайты, Telegram-ботов, CRM и веб-сервисы под задачу бизнеса: заявки не теряются, команда видит статусы и знает, что делать дальше. Первая консультация бесплатно."
     };
   }
-  const { titleLine1, subtitle } = dict.hero;
+  const { titleLine1, titleLine2Prefix, titleLine2Premium, subtitle } = dict.hero;
+  const heroTitle = `${titleLine1} ${titleLine2Prefix} ${titleLine2Premium}`.replace(/\s+/g, " ").trim();
   return {
-    title: `TIVONIX — ${titleLine1}`,
+    title: `TIVONIX — ${heroTitle}`,
     description: subtitle
   };
 }
-function Container({ children }) {
-  return /* @__PURE__ */ jsx("div", { className: "mx-auto w-full max-w-6xl px-4 sm:px-6", children });
+const LANDING_SHELL_CLASS = "mx-auto w-full max-w-[1480px] px-6 sm:px-8 md:px-12 lg:px-16 xl:px-[100px]";
+const HERO_SCROLL_HEADLINE_CLASS = "font-sans text-balance font-bold tracking-[-0.022em] text-white leading-[1.05] text-[clamp(1.9rem,4.6vw,3.65rem)] sm:text-[clamp(2.2rem,4vw,4.1rem)] lg:text-[clamp(2.35rem,3.6vw,4.35rem)]";
+const HERO_SCROLL_LEAD_CLASS = "mx-auto mt-5 max-w-[38rem] font-sans text-[clamp(0.95rem,1.4vw,1.2rem)] font-normal leading-[1.55] text-white/92 sm:mt-6";
+const LANDING_HEADLINE_CLASS = "font-hero font-semibold tracking-[-0.04em] text-white leading-[0.98] text-[clamp(2.25rem,7.2vw,3.25rem)] sm:text-[clamp(2.75rem,5.8vw,4rem)] lg:text-[clamp(3rem,4.8vw,4.75rem)]";
+function Container({
+  children,
+  className
+}) {
+  return /* @__PURE__ */ jsx("div", { className: [LANDING_SHELL_CLASS, className].filter(Boolean).join(" "), children });
+}
+const TG_BOT_BASE_URL = "https://t.me/tivonixtech_leads_bot";
+const TG_BOT_URL = `${TG_BOT_BASE_URL}?start=calc`;
+function buildTelegramBotUrl(startPayload) {
+  return `${TG_BOT_BASE_URL}?start=${encodeURIComponent(startPayload)}`;
+}
+function cx$d(...a) {
+  return a.filter(Boolean).join(" ");
+}
+function TelegramLink({
+  variant = "primary",
+  size = "md",
+  className,
+  children,
+  href = TG_BOT_URL
+}) {
+  return /* @__PURE__ */ jsx(
+    "a",
+    {
+      href,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      className: ctaClass(variant, size, className),
+      children
+    }
+  );
+}
+function CalcButton({
+  variant = "primary",
+  size = "md",
+  className,
+  children,
+  onClick
+}) {
+  return /* @__PURE__ */ jsx("button", { type: "button", onClick, className: ctaClass(variant, size, className), children });
+}
+function ctaClass(variant, size, className) {
+  const isSquare = variant === "plain";
+  return cx$d(
+    "inline-flex items-center justify-center font-bold tracking-[-0.015em] transition duration-200",
+    isSquare ? "rounded-none shadow-none" : "rounded-full",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+    "active:scale-[0.98]",
+    size === "lg" ? "h-12 px-8 text-[15px] sm:h-[52px] sm:px-9 sm:text-[16px]" : "h-11 px-7 text-[14px] sm:px-8",
+    (variant === "primary" || variant === "cream") && "tivonix-cta-primary",
+    variant === "secondary" && "tivonix-cta-secondary",
+    variant === "ghost" && "text-white/75 hover:text-white",
+    variant === "plain" && "border-0 bg-transparent font-semibold text-white/88 hover:bg-white/[0.04] hover:text-white",
+    variant === "white" && "border-0 bg-white font-bold text-black shadow-none hover:bg-white/92",
+    className
+  );
+}
+function trackAdsConversion(eventLabel, eventCallback) {
+  {
+    return;
+  }
 }
 function Button({ variant = "primary", className, ...props }) {
   const base = "inline-flex items-center justify-center rounded-2xl px-6 py-4 text-[16px] font-semibold transition active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-white/15";
@@ -333,21 +456,473 @@ function Button({ variant = "primary", className, ...props }) {
     }
   );
 }
-function trackAdsConversion(eventLabel, eventCallback) {
-  {
-    return;
-  }
+const LAUNCH_DISCOUNT_PERCENT = 10;
+const PLAN_PRICE_USD = {
+  start: 400,
+  growth: 900,
+  product: 2e3
+};
+function planPriceStrings(fromLabel, usd) {
+  const discounted = Math.round(usd * (1 - LAUNCH_DISCOUNT_PERCENT / 100));
+  return {
+    price: `${fromLabel} $${discounted}`,
+    priceOriginal: `${fromLabel} $${usd}`
+  };
 }
-function cx$9(...a) {
+function planPagePrice(lang, planId) {
+  const copy = pricingCopy(lang);
+  const p = copy.plans[planId];
+  return p.price !== "индивидуально" && p.price !== "custom" ? p.price : void 0;
+}
+const COPY_RU$1 = {
+  title: "Планы запуска",
+  subtitle: "Понятные тарифы под вашу задачу — от первых заявок до полноценного веб-сервиса",
+  includesLabel: "Что входит",
+  launchDiscount: {
+    percent: "10%",
+    note: "* Скидка — мы только начинаем: первые проекты запускаем по сниженной цене."
+  },
+  afterSelect: {
+    title: "Что будет после выбора плана",
+    steps: [
+      "Вы выбираете подходящий план",
+      "Мы уточняем задачу и объём",
+      "Предлагаем понятный вариант запуска",
+      "После согласования начинаем работу"
+    ],
+    note: "Цены указаны «от», потому что итог зависит от экранов, логики, интеграций и сроков. Оплата происходит после обсуждения и согласования задачи."
+  },
+  compareTitle: "Сравнение тарифов",
+  expandAll: "Развернуть всё",
+  collapseAll: "Свернуть",
+  cell: {
+    yes: "Да",
+    no: "—",
+    option: "Опция",
+    basic: "Базово"
+  },
+  cellText: {
+    support7: "7 дней",
+    support14: "14 дней",
+    support30: "30 дней",
+    supportCustom: "По договорённости"
+  },
+  badges: {
+    popular: "Чаще выбирают",
+    product: "Для веб-сервиса"
+  },
+  plans: {
+    start: {
+      name: "Start",
+      tagline: "Для быстрого запуска заявок",
+      ...planPriceStrings("от", PLAN_PRICE_USD.start),
+      desc: "Когда нужно быстро запустить страницу под рекламу, Instagram или Telegram и начать собирать заявки в одном месте.",
+      includes: [
+        "лендинг или страница услуги",
+        "форма заявки",
+        "кнопки связи",
+        "уведомления в Telegram/email",
+        "адаптация под телефон",
+        "базовая аналитика",
+        "запуск на домене"
+      ],
+      cta: "Обсудить запуск",
+      ctaHint: "Откроется Telegram-бот, займёт около 2 минут.",
+      compactCta: "Обсудить Start"
+    },
+    growth: {
+      name: "Growth",
+      tagline: "Система заявок для бизнеса",
+      ...planPriceStrings("от", PLAN_PRICE_USD.growth),
+      desc: "Когда заявок становится больше, они приходят из разных каналов и команде нужен порядок: статусы, ответственные, таблица или mini-CRM.",
+      includes: [
+        "сайт или несколько страниц",
+        "форма заявки",
+        "Telegram-уведомления",
+        "таблица или мини-CRM",
+        "статусы заявок",
+        "базовая админка",
+        "подключение аналитики",
+        "помощь с запуском"
+      ],
+      cta: "Рассчитать систему",
+      ctaHint: "Откроется короткая форма. План уже будет выбран.",
+      compactCta: "Оставить заявку"
+    },
+    product: {
+      name: "Product",
+      tagline: "Веб-сервис под ключ",
+      ...planPriceStrings("от", PLAN_PRICE_USD.product),
+      desc: "Когда нужен не просто сайт, а рабочий веб-сервис: пользователи, личные кабинеты, роли, база данных и админ-панель.",
+      includes: [
+        "личный кабинет",
+        "админ-панель",
+        "регистрация и авторизация",
+        "роли пользователей",
+        "заявки, статусы, уведомления",
+        "база данных",
+        "интеграции",
+        "оплата",
+        "адаптивный интерфейс",
+        "подготовка к запуску"
+      ],
+      cta: "Обсудить продукт",
+      ctaHint: "Откроется короткая форма. Опишете продукт — мы оценим объём.",
+      compactCta: "Описать продукт"
+    },
+    custom: {
+      name: "Custom",
+      tagline: "Автоматизация и AI-решения",
+      price: "индивидуально",
+      desc: "Когда задача не помещается в готовый тариф: AI-бот, сложная CRM, автоматизация документов, интеграции или внутренняя система.",
+      includes: [
+        "AI-боты и ассистенты",
+        "автоматизация заявок",
+        "интеграции с сервисами",
+        "обработка данных и документов",
+        "личные кабинеты",
+        "сложные роли и сценарии",
+        "кастомная CRM",
+        "поддержка и развитие"
+      ],
+      cta: "Запросить план",
+      ctaHint: "Откроется Telegram-бот для обсуждения нестандартной задачи.",
+      compactCta: "Обсудить Custom"
+    }
+  },
+  faq: {
+    title: "Частые вопросы о тарифах",
+    items: [
+      {
+        id: "price-from",
+        q: "Что значит цена «от»?",
+        a: "Это минимальная стоимость запуска. Итог зависит от количества экранов, логики, интеграций, личного кабинета, CRM и сроков."
+      },
+      {
+        id: "pay-now",
+        q: "Нужно ли платить сразу?",
+        a: "Нет. Сначала мы обсуждаем задачу, уточняем объём и только потом согласуем стоимость и этапы работы."
+      },
+      {
+        id: "which-plan",
+        q: "Какой план выбрать, если я не понимаю?",
+        a: "Можно выбрать Growth или просто написать нам. Мы разберём задачу и подскажем, нужен сайт, бот, CRM, кабинет или кастомная автоматизация."
+      },
+      {
+        id: "start-expand",
+        q: "Можно начать со Start, а потом расширить?",
+        a: "Да. Часто лучше запустить простую версию, проверить заявки, а потом добавить CRM, статусы, кабинет или интеграции."
+      },
+      {
+        id: "growth-includes",
+        q: "Что входит в Growth?",
+        a: "Growth подходит, когда нужно не просто принять заявку, а навести порядок: формы, Telegram-уведомления, статусы, таблица или mini-CRM, понятный процесс обработки."
+      },
+      {
+        id: "when-product",
+        q: "Когда нужен Product?",
+        a: "Product нужен, если это уже не просто сайт, а веб-сервис: пользователи, личные кабинеты, роли, база данных, оплата, админ-панель."
+      },
+      {
+        id: "when-custom",
+        q: "Когда выбирать Custom?",
+        a: "Custom подходит для нестандартных задач: AI-боты, сложные CRM, автоматизация документов, интеграции, внутренние панели и процессы под вашу команду."
+      }
+    ]
+  },
+  groups: {
+    core: "Основное",
+    crm: "Заявки и CRM",
+    product: "Продуктовая логика",
+    automation: "Автоматизация и AI",
+    launch: "Запуск и поддержка"
+  },
+  features: {
+    landing: "Лендинг / страница",
+    responsive: "Адаптив под телефон",
+    form: "Форма заявки",
+    contactButtons: "Кнопки связи",
+    telegramNotify: "Telegram-уведомления",
+    emailNotify: "Email-уведомления",
+    leadStorage: "Хранение заявок",
+    leadTable: "Таблица заявок",
+    miniCrm: "Мини-CRM",
+    statuses: "Статусы заявок",
+    history: "История обработки",
+    roles: "Роли сотрудников",
+    cabinet: "Личный кабинет",
+    admin: "Админ-панель",
+    auth: "Авторизация",
+    database: "База данных",
+    booking: "Онлайн-запись",
+    payments: "Оплата",
+    autoNotify: "Автоуведомления",
+    integrations: "Интеграции",
+    aiBot: "AI-бот",
+    aiLeads: "AI-обработка заявок",
+    documents: "Обработка документов",
+    customFlows: "Кастомные сценарии",
+    domain: "Помощь с доменом",
+    deploy: "Деплой",
+    guide: "Базовая инструкция",
+    testing: "Тестирование сценариев",
+    support: "Поддержка после запуска"
+  },
+  footer: {
+    valueTitle: "Платите только за",
+    valueTitleHighlight: "нужный объём запуска",
+    valueAside: "Не за лишние модули, которыми пока не пользуетесь",
+    valueLead: "Сначала запускаем то, что помогает получать и обрабатывать заявки. Когда бизнесу становится тесно — добавляем CRM, кабинет, оплату, интеграции или автоматизацию.",
+    helpTitle: "Не уверены, какой план выбрать?",
+    helpLead: "Опишите задачу своими словами — подскажем, с чего лучше начать: Start, Growth, Product или Custom.",
+    helpCta: "Написать в Telegram",
+    helpModalCta: "Оставить заявку",
+    planScopeCaption: "Объём запуска по планам",
+    chips: {
+      start: ["Лендинг", "Форма", "Telegram"],
+      growth: ["Мини-CRM", "Статусы", "Админка"],
+      product: ["Кабинет", "Оплата", "Роли"],
+      custom: ["AI-боты", "Интеграции", "CRM"]
+    },
+    shortDesc: {
+      start: "Быстрый запуск страницы и заявок",
+      growth: "Система заявок для команды",
+      product: "Полноценный веб-сервис",
+      custom: "Индивидуальная автоматизация"
+    }
+  }
+};
+const COPY_EN$1 = {
+  title: "Launch plans",
+  subtitle: "Clear plans for your task — from first leads to a full web service",
+  includesLabel: "What's included",
+  launchDiscount: {
+    percent: "10%",
+    note: "* Launch discount — we're just getting started: early projects at a reduced rate."
+  },
+  afterSelect: {
+    title: "What happens after you choose a plan",
+    steps: [
+      "You pick the plan that fits",
+      "We clarify the task and scope",
+      "We propose a clear launch option",
+      "After agreement, we start work"
+    ],
+    note: "Prices are shown “from” because the final cost depends on screens, logic, integrations and timeline. Payment happens after we discuss and agree on the scope."
+  },
+  compareTitle: "Compare plans",
+  expandAll: "Expand all",
+  collapseAll: "Collapse",
+  cell: {
+    yes: "Yes",
+    no: "—",
+    option: "Optional",
+    basic: "Basic"
+  },
+  cellText: {
+    support7: "7 days",
+    support14: "14 days",
+    support30: "30 days",
+    supportCustom: "By agreement"
+  },
+  badges: {
+    popular: "Most popular",
+    product: "For web products"
+  },
+  plans: {
+    start: {
+      name: "Start",
+      tagline: "Fast lead capture launch",
+      ...planPriceStrings("from", PLAN_PRICE_USD.start),
+      desc: "When you need a page for ads, Instagram or Telegram — and want to collect inquiries in one place quickly.",
+      includes: [
+        "landing or service page",
+        "lead form",
+        "contact buttons",
+        "Telegram/email alerts",
+        "mobile-friendly layout",
+        "basic analytics",
+        "domain launch"
+      ],
+      cta: "Discuss launch",
+      ctaHint: "Opens our Telegram bot — takes about 2 minutes.",
+      compactCta: "Discuss Start"
+    },
+    growth: {
+      name: "Growth",
+      tagline: "Lead system for business",
+      ...planPriceStrings("from", PLAN_PRICE_USD.growth),
+      desc: "When leads grow and come from multiple channels — your team needs order: statuses, owners, a sheet or mini-CRM.",
+      includes: [
+        "site or multiple pages",
+        "lead form",
+        "Telegram alerts",
+        "sheet or mini-CRM",
+        "lead statuses",
+        "basic admin",
+        "analytics setup",
+        "launch assistance"
+      ],
+      cta: "Get a quote",
+      ctaHint: "Opens a short form. The Growth plan will already be selected.",
+      compactCta: "Submit request"
+    },
+    product: {
+      name: "Product",
+      tagline: "Full web service",
+      ...planPriceStrings("from", PLAN_PRICE_USD.product),
+      desc: "When you need more than a website — a working web service with users, client areas, roles, a database and admin panel.",
+      includes: [
+        "client area",
+        "admin panel",
+        "sign-up and auth",
+        "user roles",
+        "leads, statuses, alerts",
+        "database",
+        "integrations",
+        "payments",
+        "responsive UI",
+        "launch preparation"
+      ],
+      cta: "Discuss product",
+      ctaHint: "Opens a short form. Describe the product — we'll estimate scope.",
+      compactCta: "Describe product"
+    },
+    custom: {
+      name: "Custom",
+      tagline: "Automation & AI",
+      price: "custom",
+      desc: "When the task doesn't fit a ready plan: AI bots, complex CRM, document automation, integrations or an internal system.",
+      includes: [
+        "AI bots and assistants",
+        "lead automation",
+        "service integrations",
+        "data and document processing",
+        "client areas",
+        "complex roles and flows",
+        "custom CRM",
+        "support and evolution"
+      ],
+      cta: "Request a plan",
+      ctaHint: "Opens our Telegram bot to discuss a non-standard task.",
+      compactCta: "Discuss Custom"
+    }
+  },
+  faq: {
+    title: "Pricing FAQ",
+    items: [
+      {
+        id: "price-from",
+        q: "What does “from” mean?",
+        a: "It's the minimum launch cost. The final price depends on screens, logic, integrations, client area, CRM and timeline."
+      },
+      {
+        id: "pay-now",
+        q: "Do I pay right away?",
+        a: "No. We discuss the task, clarify scope, then agree on cost and stages before any payment."
+      },
+      {
+        id: "which-plan",
+        q: "Which plan if I'm not sure?",
+        a: "Pick Growth or message us. We'll review your task and tell you if you need a site, bot, CRM, client area or custom automation."
+      },
+      {
+        id: "start-expand",
+        q: "Can I start with Start and expand later?",
+        a: "Yes. Often it's better to launch a simple version, test leads, then add CRM, statuses, client area or integrations."
+      },
+      {
+        id: "growth-includes",
+        q: "What's in Growth?",
+        a: "Growth is for when you need order, not just a form: alerts, statuses, a sheet or mini-CRM and a clear processing flow."
+      },
+      {
+        id: "when-product",
+        q: "When do I need Product?",
+        a: "Product is for a real web service: users, client areas, roles, database, payments and admin panel."
+      },
+      {
+        id: "when-custom",
+        q: "When to choose Custom?",
+        a: "Custom fits non-standard work: AI bots, complex CRM, document automation, integrations and internal tools for your team."
+      }
+    ]
+  },
+  groups: {
+    core: "Core",
+    crm: "Leads & CRM",
+    product: "Product logic",
+    automation: "Automation & AI",
+    launch: "Launch & support"
+  },
+  features: {
+    landing: "Landing / page",
+    responsive: "Mobile layout",
+    form: "Lead form",
+    contactButtons: "Contact buttons",
+    telegramNotify: "Telegram alerts",
+    emailNotify: "Email alerts",
+    leadStorage: "Lead storage",
+    leadTable: "Lead table",
+    miniCrm: "Mini-CRM",
+    statuses: "Lead statuses",
+    history: "Processing history",
+    roles: "Staff roles",
+    cabinet: "Client area",
+    admin: "Admin panel",
+    auth: "Authentication",
+    database: "Database",
+    booking: "Online booking",
+    payments: "Payments",
+    autoNotify: "Auto alerts",
+    integrations: "Integrations",
+    aiBot: "AI bot",
+    aiLeads: "AI lead processing",
+    documents: "Document processing",
+    customFlows: "Custom scenarios",
+    domain: "Domain help",
+    deploy: "Deploy",
+    guide: "Basic guide",
+    testing: "Scenario testing",
+    support: "Post-launch support"
+  },
+  footer: {
+    valueTitle: "Pay only for",
+    valueTitleHighlight: "the launch scope you need",
+    valueAside: "Not for modules you don't use yet",
+    valueLead: "We launch what helps you capture and process leads first. When the business outgrows it — we add CRM, client area, payments, integrations or automation.",
+    helpTitle: "Not sure which plan to pick?",
+    helpLead: "Describe your task in your own words — we'll suggest whether to start with Start, Growth, Product or Custom.",
+    helpCta: "Message on Telegram",
+    helpModalCta: "Submit request",
+    planScopeCaption: "Launch scope by plan",
+    chips: {
+      start: ["Landing", "Form", "Telegram"],
+      growth: ["Mini-CRM", "Statuses", "Admin"],
+      product: ["Client area", "Payments", "Roles"],
+      custom: ["AI bots", "Integrations", "CRM"]
+    },
+    shortDesc: {
+      start: "Fast page and lead launch",
+      growth: "Lead system for your team",
+      product: "Full web service",
+      custom: "Custom automation"
+    }
+  }
+};
+function pricingCopy(lang) {
+  return lang === "ru" ? COPY_RU$1 : COPY_EN$1;
+}
+function cx$c(...a) {
   return a.filter(Boolean).join(" ");
 }
 function clamp$2(n, a = 0, b = 1) {
   return Math.max(a, Math.min(b, n));
 }
-const BRAND_CTA$1 = "linear-gradient(90deg, #FFD7B0 0%, #FF9A3D 45%, #FF6A1A 100%)";
+const BRAND_CTA = "linear-gradient(90deg, #FFD7B0 0%, #FF9A3D 45%, #FF6A1A 100%)";
 const ORANGE_STATIC = "linear-gradient(90deg, rgba(255,160,70,0) 0%, rgba(255,120,40,0.95) 18%, rgba(255,198,120,1) 50%, rgba(255,120,40,0.95) 82%, rgba(255,160,70,0) 100%)";
 const CONIC_FRAME = "conic-gradient(from 210deg at 50% 50%, rgba(143,191,179,0.95), rgba(143,168,200,0.95), rgba(232,220,200,0.95), rgba(143,191,179,0.95))";
-const CONTACT_EMAIL$1 = "tivoonix@gmail.com";
+const CONTACT_EMAIL = "tivoonix@gmail.com";
 function isProbablyMobile() {
   if (typeof window === "undefined") return false;
   const ua = navigator.userAgent || "";
@@ -380,7 +955,7 @@ function ModalProgressBar({
           className: "absolute top-0 bottom-0 left-0 rounded-full",
           style: {
             width: `${pct}%`,
-            background: BRAND_CTA$1,
+            background: BRAND_CTA,
             boxShadow: "0 0 28px rgba(255,120,40,0.55)",
             transition: "width 260ms cubic-bezier(.2,.9,.2,1)",
             backgroundSize: "200% 100%",
@@ -416,7 +991,7 @@ function CurvyCheck({ on }) {
       height: "18",
       viewBox: "0 0 24 24",
       fill: "none",
-      className: cx$9("transition-opacity", on ? "opacity-100" : "opacity-0"),
+      className: cx$c("transition-opacity", on ? "opacity-100" : "opacity-0"),
       children: /* @__PURE__ */ jsx(
         "path",
         {
@@ -438,7 +1013,7 @@ function Chevron({ open }) {
       height: "18",
       viewBox: "0 0 24 24",
       fill: "none",
-      className: cx$9(
+      className: cx$c(
         "transition-transform duration-200",
         open ? "rotate-180" : "rotate-0"
       ),
@@ -541,7 +1116,7 @@ function FancySelect({
                         onChange(o.value);
                         setOpen(false);
                       },
-                      className: cx$9(
+                      className: cx$c(
                         "flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition",
                         active ? "bg-white/[0.08] text-white" : "bg-transparent text-white/78 hover:bg-white/[0.06] hover:text-white"
                       ),
@@ -576,7 +1151,7 @@ function FancySelect({
             ref: btnRef,
             type: "button",
             onClick: () => setOpen((v) => !v),
-            className: cx$9(
+            className: cx$c(
               "flex h-11 w-full items-center justify-between gap-3 rounded-2xl px-4",
               "border border-white/12 bg-white/[0.07] text-white",
               "backdrop-blur-xl outline-none",
@@ -593,9 +1168,11 @@ function FancySelect({
     dropdown
   ] });
 }
-function StartModal({ open, onClose }) {
+function StartModal({ open, onClose, selectedPlanId = null }) {
   const { lang } = useLang();
   const isRu = lang === "ru";
+  const location = useLocation();
+  const pricing = pricingCopy(lang);
   const defaults = useMemo(
     () => ({
       type: isRu ? "Лендинг / сайт" : "Landing / website",
@@ -700,6 +1277,10 @@ function StartModal({ open, onClose }) {
       required: isRu ? "Укажи имя и контакт." : "Add name and a contact.",
       consentRequired: isRu ? "Нужно согласиться с документами (галочка)." : "Please accept the documents (checkbox).",
       consentText: isRu ? "Я принимаю условия и согласен(на) с документами:" : "I agree with the documents:",
+      selectedPlan: isRu ? "Выбранный план" : "Selected plan",
+      planNotSelected: isRu ? "План пока не выбран" : "No plan selected yet",
+      pagePrice: isRu ? "Цена на странице" : "Page price",
+      source: isRu ? "Источник" : "Source",
       close: isRu ? "Закрыть" : "Close",
       progressLabel: isRu ? "ГОТОВО" : "DONE",
       note: isRu ? "Откроется письмо в почте." : "Opens an email draft.",
@@ -707,6 +1288,18 @@ function StartModal({ open, onClose }) {
     }),
     [isRu]
   );
+  const planLabel = useMemo(() => {
+    if (!selectedPlanId) return txt.planNotSelected;
+    return pricing.plans[selectedPlanId].name;
+  }, [selectedPlanId, pricing.plans, txt.planNotSelected]);
+  const planPriceLabel = useMemo(() => {
+    if (!selectedPlanId) return "—";
+    return planPagePrice(lang, selectedPlanId) ?? "—";
+  }, [selectedPlanId, lang]);
+  const emailSubjectPlanPart = useMemo(() => {
+    if (!selectedPlanId) return isRu ? "расчёт проекта" : "project quote";
+    return isRu ? `план ${pricing.plans[selectedPlanId].name}` : `${pricing.plans[selectedPlanId].name} plan`;
+  }, [selectedPlanId, isRu, pricing.plans]);
   const has = (v) => v.trim().length > 0;
   const progressPct = useMemo(() => {
     const steps = [
@@ -744,8 +1337,12 @@ function StartModal({ open, onClose }) {
     }
     setSending(true);
     try {
-      const subject = `[TIVONIX] ${isRu ? "Заявка" : "Request"} — ${form.name.trim().slice(0, 64)}`;
+      const subject = `[TIVONIX] ${isRu ? "Заявка" : "Request"} — ${emailSubjectPlanPart} — ${form.name.trim().slice(0, 64)}`;
       const body = (isRu ? "Заявка на создание сайта" : "Website request") + `
+
+${txt.selectedPlan}: ${planLabel}
+${txt.pagePrice}: ${planPriceLabel}
+${txt.source}: ${location.pathname || "/plans"}
 
 ${txt.name}: ${form.name || "-"}
 ${txt.email}: ${form.email || "-"}
@@ -761,7 +1358,7 @@ ${form.details || "-"}
 ${isRu ? "Согласие: Да" : "Consent: Yes"}
 ${isRu ? "Документы:" : "Documents:"}
 ` + docs.map((d) => `- ${d.label}: ${location.origin}${d.href}`).join("\n") + "\n";
-      openEmailDraft(CONTACT_EMAIL$1, subject, body);
+      openEmailDraft(CONTACT_EMAIL, subject, body);
       trackAdsConversion("form_request");
       onClose();
     } finally {
@@ -771,7 +1368,7 @@ ${isRu ? "Документы:" : "Documents:"}
   const onOverlayMouseDown = (e) => {
     if (e.target === e.currentTarget) onClose();
   };
-  const inputBase = cx$9(
+  const inputBase = cx$c(
     "w-full h-11 rounded-2xl px-4",
     "border border-white/12 bg-white/[0.07] text-white placeholder:text-white/35",
     "outline-none focus:border-white/22 focus:bg-white/[0.09]",
@@ -782,7 +1379,7 @@ ${isRu ? "Документы:" : "Documents:"}
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$9(
+      className: cx$c(
         "fixed inset-0 z-[70]",
         "flex items-center justify-center",
         "px-3 sm:px-5 py-4"
@@ -852,7 +1449,7 @@ ${isRu ? "Документы:" : "Documents:"}
         /* @__PURE__ */ jsx(
           "div",
           {
-            className: cx$9(
+            className: cx$c(
               "relative w-full",
               "max-w-[430px] sm:max-w-[760px] lg:max-w-[940px]",
               "transition-[transform,opacity] duration-200 ease-out"
@@ -942,7 +1539,7 @@ ${isRu ? "Документы:" : "Documents:"}
                               {
                                 type: "button",
                                 onClick: onClose,
-                                className: cx$9(
+                                className: cx$c(
                                   "group grid h-9 w-9 place-items-center rounded-2xl sm:h-10 sm:w-10",
                                   "border border-white/14 bg-white/[0.07] backdrop-blur-xl",
                                   "transition-all duration-200 ease-out",
@@ -1014,6 +1611,15 @@ ${isRu ? "Документы:" : "Documents:"}
                           /* @__PURE__ */ jsxs("div", { className: "mt-1", children: [
                             /* @__PURE__ */ jsx("div", { className: "text-[18px] font-extrabold tracking-tight text-white sm:text-[20px]", children: txt.title }),
                             /* @__PURE__ */ jsx("div", { className: "mt-1 text-[12px] leading-relaxed text-white/65 sm:text-[12.5px]", children: txt.subtitle })
+                          ] }),
+                          /* @__PURE__ */ jsxs("div", { className: "mt-4 rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 backdrop-blur-xl", children: [
+                            /* @__PURE__ */ jsx("p", { className: "text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45", children: txt.selectedPlan }),
+                            /* @__PURE__ */ jsx("p", { className: "mt-1 text-[14px] font-semibold text-white", children: planLabel }),
+                            selectedPlanId ? /* @__PURE__ */ jsxs("p", { className: "mt-1 text-[12px] text-white/55", children: [
+                              txt.pagePrice,
+                              ": ",
+                              planPriceLabel
+                            ] }) : null
                           ] }),
                           /* @__PURE__ */ jsxs("div", { className: "mt-4 grid grid-cols-1 gap-3.5 sm:mt-5 sm:grid-cols-2 sm:gap-4", children: [
                             /* @__PURE__ */ jsxs("div", { children: [
@@ -1099,10 +1705,10 @@ ${isRu ? "Документы:" : "Documents:"}
                                 onChange: (v) => update("budget", v),
                                 options: [
                                   { value: defaults.budget, label: defaults.budget },
-                                  { value: "€200–€500", label: "€200–€500" },
-                                  { value: "€500–€1,000", label: "€500–€1,000" },
-                                  { value: "€1,000–€3,000", label: "€1,000–€3,000" },
-                                  { value: "€3,000+", label: "€3,000+" }
+                                  { value: isRu ? "до $500" : "under $500", label: isRu ? "до $500" : "under $500" },
+                                  { value: "$500–1000", label: "$500–1000" },
+                                  { value: "$1000–2000", label: "$1000–2000" },
+                                  { value: "$2000+", label: "$2000+" }
                                 ]
                               }
                             ),
@@ -1125,7 +1731,7 @@ ${isRu ? "Документы:" : "Documents:"}
                               /* @__PURE__ */ jsx(
                                 "textarea",
                                 {
-                                  className: cx$9(
+                                  className: cx$c(
                                     "min-h-[120px] w-full rounded-2xl px-4 py-3 text-[13px]",
                                     "border border-white/12 bg-white/[0.07] text-white placeholder:text-white/35",
                                     "outline-none focus:border-white/22 focus:bg-white/[0.09] backdrop-blur-xl"
@@ -1197,7 +1803,7 @@ ${isRu ? "Документы:" : "Documents:"}
                               Button,
                               {
                                 onClick: onClose,
-                                className: cx$9(
+                                className: cx$c(
                                   "h-10 rounded-2xl px-5 text-[13px] font-semibold sm:h-11",
                                   "border border-white/12 bg-white/[0.06] text-white",
                                   "hover:bg-white/[0.09]"
@@ -1210,14 +1816,14 @@ ${isRu ? "Документы:" : "Documents:"}
                               {
                                 onClick: submit,
                                 disabled: sending || !form.consent,
-                                className: cx$9(
+                                className: cx$c(
                                   "h-10 rounded-2xl px-5 text-[13px] font-semibold sm:h-11",
                                   "!text-black",
                                   "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
                                   "hover:brightness-[1.04] active:brightness-[0.96]",
                                   (sending || !form.consent) && "opacity-70 cursor-not-allowed"
                                 ),
-                                style: { background: BRAND_CTA$1 },
+                                style: { background: BRAND_CTA },
                                 children: sending ? isRu ? "Отправляю…" : "Sending…" : txt.send
                               }
                             )
@@ -1235,20 +1841,19 @@ ${isRu ? "Документы:" : "Documents:"}
     }
   );
 }
-const TG_BOT_URL = "https://t.me/tivonixtech_leads_bot?start=calc";
-function cx$8(...a) {
+function cx$b(...a) {
   return a.filter(Boolean).join(" ");
 }
 const NAV_MAIN = [
   { to: "/", key: "home" },
   { to: "/avtomatizaciya-biznesa", key: "automation" },
-  { to: "/contacts", key: "contacts" },
+  { to: "/plans", key: "plans" },
   { to: "/projects", key: "projects" }
 ];
-const BRAND_CTA = "linear-gradient(90deg, #FFD7B0 0%, #FF9A3D 45%, #FF6A1A 100%)";
-const ORANGE_LINE = "linear-gradient(90deg, rgba(255,160,70,0) 0%, rgba(255,120,40,0.95) 18%, rgba(255,198,120,1) 50%, rgba(255,120,40,0.95) 82%, rgba(255,160,70,0) 100%)";
 const DESKTOP_MIN_WIDTH = 1280;
-function usePrefersReducedMotion$1() {
+const LOGO_DEFAULT = "/images/tivonix-logo-lockup.png";
+const LOGO_WHITE = "/images/tivonix-logo-white.png";
+function usePrefersReducedMotion$2() {
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1264,98 +1869,75 @@ function usePrefersReducedMotion$1() {
   }, []);
   return reduced;
 }
-function useScrolled(threshold = 22) {
-  const [scrolled, setScrolled] = useState(false);
+function useHomeHeroInView(pathname) {
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    if (pathname !== "/") {
+      setInView(false);
+      return;
+    }
+    const hero = document.getElementById("hero");
+    if (!hero) {
+      setInView(true);
+      return;
+    }
+    if (typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => setInView(!!entry?.isIntersecting),
+      { threshold: 0.06, rootMargin: "-80px 0px -30% 0px" }
+    );
+    io.observe(hero);
+    return () => io.disconnect();
+  }, [pathname]);
+  return inView;
+}
+function useFooterInView(pathname) {
+  const [inView, setInView] = useState(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
-    let raf = 0;
-    const on = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        setScrolled(window.scrollY > threshold);
-      });
+    let io = null;
+    const attach = () => {
+      const footer = document.getElementById("site-footer");
+      if (!footer) {
+        setInView(false);
+        return;
+      }
+      io?.disconnect();
+      io = new IntersectionObserver(
+        ([entry]) => setInView(!!entry?.isIntersecting),
+        { threshold: 0, rootMargin: "-72px 0px 0px 0px" }
+      );
+      io.observe(footer);
     };
-    on();
-    window.addEventListener("scroll", on, { passive: true });
+    attach();
+    const t = window.setTimeout(attach, 0);
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", on);
+      window.clearTimeout(t);
+      io?.disconnect();
     };
-  }, [threshold]);
-  return scrolled;
+  }, [pathname]);
+  return inView;
 }
-function LangToggle({
-  compact,
-  reducedMotion
-}) {
-  const { lang, setLang } = useLang();
-  const label = lang === "ru" ? "Выбор языка" : "Language";
-  const h = compact ? "h-9 w-[5.25rem]" : "h-10 w-[5.75rem]";
-  const text = compact ? "text-[11px]" : "text-xs";
-  return /* @__PURE__ */ jsxs(
-    "div",
-    {
-      className: cx$8(
-        "relative shrink-0 select-none rounded-full bg-white/[0.07] p-1 backdrop-blur-xl",
-        "shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_6px_22px_rgba(0,0,0,0.22)]",
-        h
-      ),
-      role: "radiogroup",
-      "aria-label": label,
-      "aria-orientation": "horizontal",
-      children: [
-        /* @__PURE__ */ jsx(
-          "span",
-          {
-            "aria-hidden": true,
-            className: cx$8(
-              "pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-8px)/2)] rounded-full",
-              !reducedMotion && "transition-transform duration-200 ease-[cubic-bezier(0.33,1,0.68,1)]"
-            ),
-            style: {
-              background: BRAND_CTA,
-              boxShadow: "0 4px 16px rgba(255,106,26,0.38)",
-              transform: lang === "en" ? "translateX(100%)" : "translateX(0)"
-            }
-          }
-        ),
-        /* @__PURE__ */ jsxs("div", { className: "relative z-10 grid h-full grid-cols-2", children: [
-          /* @__PURE__ */ jsx(
-            "button",
-            {
-              type: "button",
-              role: "radio",
-              "aria-checked": lang === "ru",
-              onClick: () => setLang("ru"),
-              className: cx$8(
-                "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
-                "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
-                text,
-                lang === "ru" ? "text-black" : "text-white/60 hover:text-white/88"
-              ),
-              children: "RU"
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            "button",
-            {
-              type: "button",
-              role: "radio",
-              "aria-checked": lang === "en",
-              onClick: () => setLang("en"),
-              className: cx$8(
-                "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
-                "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
-                text,
-                lang === "en" ? "text-black" : "text-white/60 hover:text-white/88"
-              ),
-              children: "EN"
-            }
-          )
-        ] })
-      ]
-    }
+function useIsMobile(maxWidth = 899) {
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth <= maxWidth
   );
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia(`(max-width: ${maxWidth}px)`);
+    const on = () => setIsMobile(mq.matches);
+    on();
+    if (mq.addEventListener) mq.addEventListener("change", on);
+    else mq.addListener(on);
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener("change", on);
+      else mq.removeListener(on);
+    };
+  }, [maxWidth]);
+  return isMobile;
 }
 function PillNav({
   activeKey,
@@ -1365,148 +1947,101 @@ function PillNav({
   compact
 }) {
   const dur = 260;
-  return /* @__PURE__ */ jsxs(
+  return /* @__PURE__ */ jsx(
     "nav",
     {
-      className: cx$8(
-        "relative inline-flex items-center gap-1 rounded-full",
-        "border-0 bg-white/[0.07] backdrop-blur-xl p-1",
-        compact ? "shadow-[0_12px_44px_rgba(0,0,0,0.38)]" : "shadow-[0_18px_64px_rgba(0,0,0,0.42)]"
+      className: cx$b(
+        "relative inline-flex items-center gap-0.5 rounded-full border-0 bg-[#141414] p-1"
       ),
       "aria-label": "Header navigation",
-      children: [
-        /* @__PURE__ */ jsx(
-          "div",
+      children: items.map((it) => {
+        const isActive = it.key === activeKey;
+        const pad = compact ? "px-3.5 h-9" : "px-5 h-10";
+        const text = compact ? "text-[10.5px]" : "text-[11px]";
+        return /* @__PURE__ */ jsx(
+          Link,
           {
-            "aria-hidden": true,
-            className: "pointer-events-none absolute inset-0 rounded-full",
-            style: {
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.09)"
-            }
-          }
-        ),
-        items.map((it) => {
-          const isActive = it.key === activeKey;
-          const pad = compact ? "px-3 h-9" : "px-4 h-10";
-          const text = compact ? "text-[11px]" : "text-xs";
-          return /* @__PURE__ */ jsxs(
-            Link,
-            {
-              to: it.to,
-              onClick: onItemClick(it.to),
-              "aria-current": isActive ? "page" : void 0,
-              className: cx$8(
-                "relative rounded-full font-semibold transition flex items-center gap-2 select-none uppercase tracking-wide outline-none border-0",
-                "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
-                pad,
-                text,
-                isActive ? "text-white bg-white/14 shadow-[0_10px_28px_rgba(0,0,0,0.32)]" : "text-white/75 hover:text-white hover:bg-white/[0.07]"
-              ),
-              style: reducedMotion ? void 0 : { transitionDuration: `${dur}ms` },
-              children: [
-                /* @__PURE__ */ jsx("span", { className: "leading-none", children: it.label }),
-                isActive && /* @__PURE__ */ jsx(
-                  "span",
-                  {
-                    "aria-hidden": true,
-                    className: "pointer-events-none absolute left-3 right-3 -bottom-[6px] h-[2px] rounded-full opacity-95",
-                    style: { background: ORANGE_LINE }
-                  }
-                )
-              ]
-            },
-            it.key
-          );
-        })
-      ]
+            to: it.to,
+            onClick: onItemClick(it.to),
+            "aria-current": isActive ? "page" : void 0,
+            className: cx$b(
+              "relative flex items-center gap-2 rounded-full border-0 font-bold uppercase tracking-[0.14em] outline-none select-none transition",
+              "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
+              pad,
+              text,
+              isActive ? "bg-[#2c2c2c] text-white" : "bg-transparent text-white/55 hover:bg-white/[0.04] hover:text-white/85"
+            ),
+            style: reducedMotion ? void 0 : { transitionDuration: `${dur}ms` },
+            children: /* @__PURE__ */ jsx("span", { className: "leading-none", children: it.label })
+          },
+          it.key
+        );
+      })
     }
   );
 }
 function Header() {
   const [open, setOpen] = useState(false);
   const [startOpen, setStartOpen] = useState(false);
-  const reducedMotion = usePrefersReducedMotion$1();
-  const scrolled = useScrolled(26);
   const navigate = useNavigate();
-  const location2 = useLocation();
+  const location = useLocation();
+  const reducedMotion = usePrefersReducedMotion$2();
+  const isMobile = useIsMobile();
+  const heroInView = useHomeHeroInView(location.pathname);
+  const footerInView = useFooterInView(location.pathname);
+  const hideHeader = footerInView && !open;
+  const logoSrc = heroInView ? LOGO_WHITE : LOGO_DEFAULT;
+  const isHome = location.pathname === "/";
+  const needsSpacer = isMobile && !isHome;
   const { lang } = useLang();
   const isRu = lang === "ru";
   const burgerRef = useRef(null);
-  const barRef = useRef(null);
-  const [barH, setBarH] = useState(92);
-  const measureBar = () => {
-    const h = barRef.current?.getBoundingClientRect().height;
-    if (h && Number.isFinite(h)) setBarH(Math.round(h));
-  };
   useEffect(() => {
     const onResize = () => {
-      measureBar();
       if (window.innerWidth >= DESKTOP_MIN_WIDTH) setOpen(false);
     };
-    measureBar();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === "Escape") {
-        setOpen(false);
-        requestAnimationFrame(() => burgerRef.current?.focus());
-      }
+      if (e.key === "Escape") closeMenu();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
   useEffect(() => {
     if (!open) return;
-    const y = window.scrollY;
-    const body = document.body;
-    const prevPosition = body.style.position;
-    const prevTop = body.style.top;
-    const prevLeft = body.style.left;
-    const prevRight = body.style.right;
-    const prevWidth = body.style.width;
-    body.style.position = "fixed";
-    body.style.top = `-${y}px`;
-    body.style.left = "0";
-    body.style.right = "0";
-    body.style.width = "100%";
+    const html = document.documentElement;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = document.body.style.overflow;
+    html.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
     return () => {
-      body.style.position = prevPosition;
-      body.style.top = prevTop;
-      body.style.left = prevLeft;
-      body.style.right = prevRight;
-      body.style.width = prevWidth;
-      window.scrollTo(0, y);
+      html.style.overflow = prevHtmlOverflow;
+      document.body.style.overflow = prevBodyOverflow;
     };
   }, [open]);
-  useEffect(() => {
-    if (!open) return;
-    measureBar();
-    const onResize = () => measureBar();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [open, scrolled]);
   const navLabel = (key) => {
     if (isRu) {
       if (key === "home") return "главная";
       if (key === "automation") return "автоматизация";
-      if (key === "contacts") return "контакты";
+      if (key === "plans") return "планы";
       if (key === "projects") return "проекты";
     } else {
       if (key === "home") return "home";
       if (key === "automation") return "automation";
-      if (key === "contacts") return "contacts";
+      if (key === "plans") return "plans";
       if (key === "projects") return "projects";
     }
     return key;
   };
   const activeKey = useMemo(() => {
-    if (location2.pathname === "/contacts") return "contacts";
-    if (location2.pathname === "/projects") return "projects";
-    if (location2.pathname === "/avtomatizaciya-biznesa") return "automation";
+    if (location.pathname === "/plans") return "plans";
+    if (location.pathname === "/projects") return "projects";
+    if (location.pathname === "/avtomatizaciya-biznesa") return "automation";
     return "home";
-  }, [location2.pathname]);
+  }, [location.pathname]);
   const tabsItems = useMemo(
     () => NAV_MAIN.map((it) => ({
       key: it.key,
@@ -1520,426 +2055,338 @@ function Header() {
     setOpen(false);
     if (to === "/") {
       e.preventDefault();
-      if (location2.pathname !== "/") navigate("/");
+      if (location.pathname !== "/") navigate("/");
       window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
     }
   };
   const goHome = () => {
     setOpen(false);
-    if (location2.pathname !== "/") navigate("/");
+    if (location.pathname !== "/") navigate("/");
     window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
   };
   const openStartModal = () => {
     setOpen(false);
-    window.open(TG_BOT_URL, "_blank", "noopener,noreferrer");
+    setStartOpen(true);
   };
   const ariaHome = isRu ? "На главную" : "Go to home";
   const ariaMenu = isRu ? "Меню" : "Menu";
-  const ctaTop = isRu ? "Рассчитать стоимость" : "Get an estimate";
-  const ctaScrolled = isRu ? "Заказать сайт" : "Order a website";
+  const ctaTop = isRu ? "Обсудить проект" : "Discuss the project";
+  const ctaScrolled = isRu ? "Написать нам" : "Message us";
   const dur = reducedMotion ? 0 : 280;
-  const menuMaxH = `calc(100dvh - ${barH}px - 16px)`;
+  const closeMenu = () => {
+    setOpen(false);
+    requestAnimationFrame(() => burgerRef.current?.focus());
+  };
   return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx("div", { "aria-hidden": true, className: "h-[92px] sm:h-[100px] xl:h-[104px]" }),
-    /* @__PURE__ */ jsxs("header", { className: "fixed inset-x-0 top-0 z-50", children: [
-      /* @__PURE__ */ jsx("div", { className: "pt-3", ref: barRef, children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs(
-        "div",
-        {
-          className: cx$8(
-            "relative transition-all",
-            scrolled ? "rounded-[999px] bg-black/58 backdrop-blur-2xl border-0 shadow-[0_22px_72px_rgba(0,0,0,0.52),inset_0_1px_0_rgba(255,255,255,0.06)]" : "rounded-[999px]"
-          ),
-          style: reducedMotion ? void 0 : { transitionDuration: `${dur}ms` },
-          children: [
-            /* @__PURE__ */ jsx(
-              "div",
-              {
-                "aria-hidden": true,
-                className: "pointer-events-none absolute inset-0 rounded-[999px] opacity-0 transition-opacity",
-                style: {
-                  opacity: scrolled ? 1 : 0,
-                  transitionDuration: `${dur}ms`,
-                  background: "radial-gradient(900px 120px at 50% 0%, rgba(255,122,32,0.28), transparent 60%)"
-                }
-              }
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        "aria-hidden": true,
+        className: cx$b(
+          needsSpacer ? "h-[78px] sm:h-[82px]" : "h-0"
+        )
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      "header",
+      {
+        className: cx$b(
+          "fixed inset-x-0 z-[120] transition-[top,transform,opacity]",
+          heroInView && !isMobile ? "top-3 sm:top-4" : "top-0",
+          hideHeader ? "pointer-events-none -translate-y-full opacity-0" : "translate-y-0 opacity-100"
+        ),
+        style: reducedMotion ? void 0 : { transitionDuration: `${dur}ms` },
+        children: /* @__PURE__ */ jsx("div", { className: "h-[78px] w-full bg-transparent sm:h-[82px]", children: /* @__PURE__ */ jsx(Container, { className: "h-full", children: /* @__PURE__ */ jsxs(
+          "div",
+          {
+            className: cx$b(
+              "relative flex h-full w-full min-w-0 items-center xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:items-center xl:gap-x-4"
             ),
-            /* @__PURE__ */ jsx(
-              "div",
-              {
-                "aria-hidden": true,
-                className: "pointer-events-none absolute left-10 right-10 top-0 h-[3px] rounded-full opacity-0 transition-opacity",
-                style: {
-                  opacity: scrolled ? 0.95 : 0,
-                  transitionDuration: `${dur}ms`,
-                  background: ORANGE_LINE
-                }
-              }
-            ),
-            /* @__PURE__ */ jsxs(
-              "div",
-              {
-                className: cx$8(
-                  "relative flex w-full min-w-0 items-center xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:items-center xl:gap-x-4",
-                  scrolled ? "px-4 sm:px-5" : "px-3 sm:px-4",
-                  scrolled ? "h-[70px] sm:h-[74px]" : "h-[78px] sm:h-[82px]"
-                ),
-                style: reducedMotion ? void 0 : { transitionDuration: `${dur}ms` },
-                children: [
-                  /* @__PURE__ */ jsx("div", { className: "flex min-w-0 items-center gap-3 shrink-0 xl:justify-self-start", children: /* @__PURE__ */ jsx(
-                    Link,
+            children: [
+              /* @__PURE__ */ jsx("div", { className: "flex min-w-0 items-center gap-3 shrink-0 xl:justify-self-start", children: /* @__PURE__ */ jsx(
+                Link,
+                {
+                  to: "/",
+                  onClick: (e) => {
+                    e.preventDefault();
+                    goHome();
+                  },
+                  className: cx$b(
+                    "flex items-center outline-none",
+                    "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 rounded-xl"
+                  ),
+                  "aria-label": ariaHome,
+                  children: /* @__PURE__ */ jsx(
+                    "img",
                     {
-                      to: "/",
-                      onClick: (e) => {
-                        e.preventDefault();
-                        goHome();
-                      },
-                      className: cx$8(
-                        "flex items-center outline-none",
-                        "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 rounded-xl"
+                      src: logoSrc,
+                      alt: "TIVONIX",
+                      className: cx$b(
+                        "w-auto object-contain opacity-95 transition-all hover:opacity-100",
+                        heroInView ? "h-10 sm:h-11 lg:h-12" : "h-8 sm:h-9"
                       ),
-                      "aria-label": ariaHome,
-                      children: /* @__PURE__ */ jsx(
-                        "img",
-                        {
-                          src: "/images/tivonix-logo-lockup.png",
-                          alt: "TIVONIX",
-                          className: "h-8 sm:h-9 w-auto object-contain opacity-95 transition-opacity hover:opacity-100",
-                          draggable: false,
-                          loading: "eager",
-                          decoding: "async"
-                        }
-                      )
+                      draggable: false,
+                      loading: "eager",
+                      decoding: "async"
                     }
-                  ) }),
-                  /* @__PURE__ */ jsx("div", { className: "hidden min-w-0 justify-self-center xl:block", children: /* @__PURE__ */ jsx(
-                    PillNav,
-                    {
-                      activeKey,
-                      reducedMotion,
-                      items: tabsItems,
-                      onItemClick: onNav,
-                      compact: scrolled
-                    }
-                  ) }),
-                  /* @__PURE__ */ jsxs("div", { className: "ml-auto hidden min-w-0 shrink-0 items-center gap-3 xl:ml-0 xl:flex xl:justify-self-end", children: [
-                    /* @__PURE__ */ jsx(LangToggle, { reducedMotion }),
-                    /* @__PURE__ */ jsx(
-                      Button,
+                  )
+                }
+              ) }),
+              /* @__PURE__ */ jsx("div", { className: "hidden min-w-0 justify-self-center xl:block", children: /* @__PURE__ */ jsx(
+                PillNav,
+                {
+                  activeKey,
+                  reducedMotion,
+                  items: tabsItems,
+                  onItemClick: onNav,
+                  compact: false
+                }
+              ) }),
+              /* @__PURE__ */ jsx("div", { className: "ml-auto hidden min-w-0 shrink-0 items-center xl:ml-0 xl:flex xl:justify-self-end", children: /* @__PURE__ */ jsx(
+                CalcButton,
+                {
+                  variant: "white",
+                  onClick: openStartModal,
+                  className: "h-11 px-7 text-[14px]",
+                  children: ctaTop
+                }
+              ) }),
+              /* @__PURE__ */ jsxs("div", { className: "ml-auto xl:hidden flex items-center gap-2", children: [
+                /* @__PURE__ */ jsx("div", { className: "hidden md:block", children: /* @__PURE__ */ jsx(
+                  CalcButton,
+                  {
+                    variant: "white",
+                    onClick: openStartModal,
+                    className: "h-11 px-6 text-[13px]",
+                    children: ctaTop
+                  }
+                ) }),
+                /* @__PURE__ */ jsx(
+                  "button",
+                  {
+                    ref: burgerRef,
+                    type: "button",
+                    className: cx$b(
+                      "grid place-items-center outline-none border-0",
+                      "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
+                      "h-11 w-11 rounded-2xl",
+                      "bg-[#1a1a1a]",
+                      "transition-[transform,background-color] duration-200 ease-out",
+                      "hover:bg-[#242424]",
+                      "active:scale-95",
+                      open && "bg-[#242424]"
+                    ),
+                    "aria-label": open ? isRu ? "Закрыть меню" : "Close menu" : ariaMenu,
+                    "aria-expanded": open,
+                    "aria-controls": "mobile-header-menu",
+                    onClick: (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setOpen((v) => !v);
+                    },
+                    children: /* @__PURE__ */ jsxs(
+                      "svg",
                       {
-                        type: "button",
-                        onClick: openStartModal,
-                        className: cx$8(
-                          "rounded-full font-semibold !text-black outline-none !py-0",
-                          "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
-                          "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
-                          "hover:brightness-[1.04] active:brightness-[0.96]",
-                          scrolled ? "h-10 px-5" : "h-11 px-6"
-                        ),
-                        style: { background: BRAND_CTA },
-                        children: /* @__PURE__ */ jsxs("span", { className: "relative grid grid-cols-1 grid-rows-1 place-items-center leading-none", children: [
+                        width: "22",
+                        height: "22",
+                        viewBox: "0 0 24 24",
+                        fill: "none",
+                        className: "transition-transform duration-200 ease-out",
+                        children: [
                           /* @__PURE__ */ jsx(
-                            "span",
+                            "path",
                             {
-                              className: cx$8(
-                                "col-start-1 row-start-1 transition-all",
-                                scrolled ? "opacity-0 -translate-y-1" : "opacity-100 translate-y-0"
-                              ),
-                              style: reducedMotion ? void 0 : { transitionDuration: `${dur}ms` },
-                              children: ctaTop
+                              d: "M4 7H20",
+                              stroke: "#FF9A3D",
+                              strokeWidth: "2",
+                              strokeLinecap: "round",
+                              style: {
+                                transformOrigin: "12px 7px",
+                                transform: open ? "translateY(5px) rotate(45deg)" : "translateY(0) rotate(0deg)",
+                                transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)"
+                              }
                             }
                           ),
                           /* @__PURE__ */ jsx(
-                            "span",
+                            "path",
                             {
-                              className: cx$8(
-                                "col-start-1 row-start-1 transition-all",
-                                scrolled ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
-                              ),
-                              style: reducedMotion ? void 0 : { transitionDuration: `${dur}ms` },
-                              children: ctaScrolled
+                              d: "M4 12H20",
+                              stroke: "#FF9A3D",
+                              strokeWidth: "2",
+                              strokeLinecap: "round",
+                              style: {
+                                opacity: open ? 0 : 1,
+                                transition: reducedMotion ? "none" : "opacity 0.18s ease-out"
+                              }
+                            }
+                          ),
+                          /* @__PURE__ */ jsx(
+                            "path",
+                            {
+                              d: "M4 17H20",
+                              stroke: "#FF9A3D",
+                              strokeWidth: "2",
+                              strokeLinecap: "round",
+                              style: {
+                                transformOrigin: "12px 17px",
+                                transform: open ? "translateY(-5px) rotate(-45deg)" : "translateY(0) rotate(0deg)",
+                                transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)"
+                              }
                             }
                           )
-                        ] })
+                        ]
                       }
                     )
-                  ] }),
-                  /* @__PURE__ */ jsxs("div", { className: "ml-auto xl:hidden flex items-center gap-2", children: [
-                    /* @__PURE__ */ jsx("div", { className: "hidden md:block", children: /* @__PURE__ */ jsx(
-                      Button,
-                      {
-                        type: "button",
-                        onClick: openStartModal,
-                        className: cx$8(
-                          "rounded-2xl font-semibold !text-black outline-none !py-0",
-                          "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
-                          "shadow-[0_18px_70px_rgba(255,120,40,0.30)]",
-                          "hover:brightness-[1.04] active:brightness-[0.96]",
-                          scrolled ? "h-10 px-4 text-sm" : "h-11 px-5 text-sm"
-                        ),
-                        style: { background: BRAND_CTA },
-                        children: scrolled ? ctaScrolled : ctaTop
-                      }
-                    ) }),
-                    /* @__PURE__ */ jsx(
-                      "button",
-                      {
-                        ref: burgerRef,
-                        type: "button",
-                        className: cx$8(
-                          "grid place-items-center outline-none border-0",
-                          "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
-                          scrolled ? "h-10 w-10 rounded-2xl" : "h-11 w-11 rounded-2xl",
-                          "bg-white/[0.08] backdrop-blur-xl shadow-[0_10px_36px_rgba(0,0,0,0.45)]",
-                          "transition-[transform,background-color,box-shadow] duration-200 ease-out",
-                          "hover:bg-white/[0.12] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)]",
-                          "active:scale-95",
-                          open && "bg-white/[0.14] shadow-[0_14px_44px_rgba(0,0,0,0.5)]"
-                        ),
-                        "aria-label": open ? isRu ? "Закрыть меню" : "Close menu" : ariaMenu,
-                        "aria-expanded": open,
-                        "aria-controls": "mobile-header-menu",
-                        onClick: (e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setOpen((v) => !v);
-                        },
-                        children: /* @__PURE__ */ jsxs(
-                          "svg",
-                          {
-                            width: "22",
-                            height: "22",
-                            viewBox: "0 0 24 24",
-                            fill: "none",
-                            className: "transition-transform duration-200 ease-out",
-                            children: [
-                              /* @__PURE__ */ jsx(
-                                "path",
-                                {
-                                  d: "M4 7H20",
-                                  stroke: "#FF9A3D",
-                                  strokeWidth: "2",
-                                  strokeLinecap: "round",
-                                  style: {
-                                    transformOrigin: "12px 7px",
-                                    transform: open ? "translateY(5px) rotate(45deg)" : "translateY(0) rotate(0deg)",
-                                    transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)"
-                                  }
-                                }
-                              ),
-                              /* @__PURE__ */ jsx(
-                                "path",
-                                {
-                                  d: "M4 12H20",
-                                  stroke: "#FF9A3D",
-                                  strokeWidth: "2",
-                                  strokeLinecap: "round",
-                                  style: {
-                                    opacity: open ? 0 : 1,
-                                    transition: reducedMotion ? "none" : "opacity 0.18s ease-out"
-                                  }
-                                }
-                              ),
-                              /* @__PURE__ */ jsx(
-                                "path",
-                                {
-                                  d: "M4 17H20",
-                                  stroke: "#FF9A3D",
-                                  strokeWidth: "2",
-                                  strokeLinecap: "round",
-                                  style: {
-                                    transformOrigin: "12px 17px",
-                                    transform: open ? "translateY(-5px) rotate(-45deg)" : "translateY(0) rotate(0deg)",
-                                    transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)"
-                                  }
-                                }
-                              )
-                            ]
-                          }
-                        )
-                      }
-                    )
-                  ] })
-                ]
-              }
-            )
-          ]
-        }
-      ) }) }),
-      /* @__PURE__ */ jsxs(
-        "div",
-        {
-          id: "mobile-header-menu",
-          className: cx$8("xl:hidden fixed inset-0 z-50", open ? "pointer-events-auto" : "pointer-events-none"),
-          "aria-hidden": !open,
-          children: [
-            /* @__PURE__ */ jsx(
-              "div",
-              {
-                className: cx$8("absolute inset-0 transition-opacity duration-300", open ? "opacity-100" : "opacity-0"),
-                style: {
-                  background: "rgba(0,0,0,0.72)",
-                  backdropFilter: "blur(32px)",
-                  WebkitBackdropFilter: "blur(32px)"
-                },
-                onClick: () => {
-                  setOpen(false);
-                  requestAnimationFrame(() => burgerRef.current?.focus());
-                }
-              }
+                  }
+                )
+              ] })
+            ]
+          }
+        ) }) })
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        id: "mobile-header-menu",
+        className: cx$b(
+          "xl:hidden fixed inset-0 z-[200]",
+          open ? "pointer-events-auto" : "pointer-events-none"
+        ),
+        "aria-hidden": !open,
+        children: /* @__PURE__ */ jsxs(
+          "div",
+          {
+            className: cx$b(
+              "mobile-menu-panel absolute inset-0 flex min-h-[100dvh] flex-col bg-[#0a0a0a]",
+              "transition-[opacity,transform,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+              open ? "visible translate-y-0 opacity-100" : "invisible -translate-y-4 opacity-0"
             ),
-            /* @__PURE__ */ jsxs(
-              "div",
-              {
-                className: cx$8(
-                  "absolute inset-0 flex flex-col bg-[#0a0a0c]",
-                  "transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
-                ),
-                style: { transform: open ? "translateX(0)" : "translateX(100%)" },
-                onClick: (e) => e.stopPropagation(),
-                children: [
-                  /* @__PURE__ */ jsx(
-                    "div",
-                    {
-                      "aria-hidden": true,
-                      className: "pointer-events-none absolute inset-x-0 top-0 h-32 rounded-b-2xl opacity-90",
-                      style: {
-                        background: "radial-gradient(600px 80px at 50% 0%, rgba(255,154,61,0.22), transparent 65%)"
-                      }
-                    }
-                  ),
-                  /* @__PURE__ */ jsx(
-                    "div",
-                    {
-                      "aria-hidden": true,
-                      className: "pointer-events-none absolute left-6 right-6 top-0 h-[3px] rounded-full",
-                      style: { background: ORANGE_LINE }
-                    }
-                  ),
-                  /* @__PURE__ */ jsxs("div", { className: "relative flex-1 flex flex-col min-h-0 pt-2", children: [
-                    /* @__PURE__ */ jsx("div", { className: "flex justify-end pt-5 pr-5 sm:pt-6 sm:pr-6 mb-5", children: /* @__PURE__ */ jsx(
-                      "button",
+            role: "dialog",
+            "aria-modal": "true",
+            "aria-label": isRu ? "Меню" : "Menu",
+            children: [
+              /* @__PURE__ */ jsx(
+                "div",
+                {
+                  "aria-hidden": true,
+                  className: "pointer-events-none absolute inset-x-0 top-0 h-28 opacity-90",
+                  style: {
+                    background: "radial-gradient(600px 80px at 50% 0%, rgba(255,154,61,0.2), transparent 65%)"
+                  }
+                }
+              ),
+              /* @__PURE__ */ jsxs("div", { className: "relative flex items-center justify-between border-b border-white/[0.08] px-5 pb-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6", children: [
+                /* @__PURE__ */ jsx(
+                  Link,
+                  {
+                    to: "/",
+                    onClick: (e) => {
+                      e.preventDefault();
+                      goHome();
+                    },
+                    className: "flex items-center outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70 rounded-xl",
+                    "aria-label": ariaHome,
+                    children: /* @__PURE__ */ jsx(
+                      "img",
                       {
-                        type: "button",
-                        onClick: (e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setOpen(false);
-                          requestAnimationFrame(() => burgerRef.current?.focus());
-                        },
-                        className: cx$8(
-                          "group grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-2xl shrink-0 border-0",
-                          "bg-white/[0.08] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]",
-                          "transition-all duration-200 ease-out cursor-pointer",
-                          "hover:scale-110 hover:bg-white/[0.13] active:scale-95",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
-                        ),
-                        "aria-label": isRu ? "Закрыть меню" : "Close menu",
-                        children: /* @__PURE__ */ jsxs(
-                          "svg",
-                          {
-                            width: "18",
-                            height: "18",
-                            viewBox: "0 0 24 24",
-                            fill: "none",
-                            className: "transition-transform duration-200 ease-out",
-                            children: [
-                              /* @__PURE__ */ jsx(
-                                "path",
-                                {
-                                  d: "M6 6L18 18",
-                                  stroke: "#FF9A3D",
-                                  strokeWidth: "2",
-                                  strokeLinecap: "round"
-                                }
-                              ),
-                              /* @__PURE__ */ jsx(
-                                "path",
-                                {
-                                  d: "M18 6L6 18",
-                                  stroke: "#FF9A3D",
-                                  strokeWidth: "2",
-                                  strokeLinecap: "round"
-                                }
-                              )
-                            ]
-                          }
-                        )
+                        src: LOGO_WHITE,
+                        alt: "TIVONIX",
+                        className: "h-9 w-auto object-contain opacity-95",
+                        draggable: false,
+                        decoding: "async"
                       }
-                    ) }),
-                    /* @__PURE__ */ jsxs("div", { className: "px-6 pb-6 pt-0 overflow-y-auto overscroll-contain", style: { maxHeight: menuMaxH }, onClick: (e) => e.stopPropagation(), children: [
-                      /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-3", children: [
-                        /* @__PURE__ */ jsx(
-                          "a",
-                          {
-                            href: TG_BOT_URL,
-                            target: "_blank",
-                            rel: "noopener noreferrer",
-                            className: cx$8(
-                              "h-12 rounded-2xl font-semibold flex items-center justify-center",
-                              "bg-[#FF9A3D] text-black hover:brightness-105 active:brightness-95",
-                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0c]"
-                            ),
-                            onClick: () => setOpen(false),
-                            children: ctaScrolled
-                          }
-                        ),
-                        /* @__PURE__ */ jsx(
-                          Link,
-                          {
-                            to: "/contacts",
-                            className: cx$8(
-                              "h-12 rounded-2xl font-medium flex items-center justify-center border-0 bg-white/[0.07] text-white",
-                              "shadow-[0_8px_28px_rgba(0,0,0,0.35)] hover:bg-white/[0.11] active:bg-white/[0.08]",
-                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0c]"
-                            ),
-                            onClick: () => setOpen(false),
-                            children: isRu ? "Контакты" : "Contact"
-                          }
-                        )
-                      ] }),
-                      /* @__PURE__ */ jsx("nav", { className: "mt-6 flex flex-col gap-1", "aria-label": isRu ? "Навигация" : "Navigation", children: tabsItems.map((item) => /* @__PURE__ */ jsxs(
-                        Link,
-                        {
-                          to: item.to,
-                          className: cx$8(
-                            "flex items-center justify-between rounded-xl px-3 py-3.5 text-white/90 hover:text-white",
-                            "hover:bg-white/[0.05] active:bg-white/[0.03] transition-colors"
-                          ),
-                          onClick: () => {
-                            setOpen(false);
-                            requestAnimationFrame(() => burgerRef.current?.focus());
-                          },
-                          children: [
-                            /* @__PURE__ */ jsx("span", { children: item.label }),
-                            /* @__PURE__ */ jsx("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", className: "shrink-0 text-white/50", children: /* @__PURE__ */ jsx("path", { d: "M9 18l6-6-6-6", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) })
-                          ]
-                        },
-                        item.key
-                      )) }),
-                      /* @__PURE__ */ jsx(
-                        "div",
-                        {
-                          className: "my-5 h-px w-full opacity-80",
-                          style: {
-                            background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)"
-                          },
-                          "aria-hidden": true
-                        }
-                      ),
-                      /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between", children: [
-                        /* @__PURE__ */ jsx("span", { className: "text-sm text-white/70", children: isRu ? "Язык" : "Language" }),
-                        /* @__PURE__ */ jsx(LangToggle, { compact: true, reducedMotion })
-                      ] }),
-                      /* @__PURE__ */ jsx("div", { className: "h-4" })
+                    )
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: closeMenu,
+                    className: cx$b(
+                      "grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-2xl border-0",
+                      "bg-white/[0.08] transition hover:bg-white/[0.13] active:scale-95",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
+                    ),
+                    "aria-label": isRu ? "Закрыть меню" : "Close menu",
+                    children: /* @__PURE__ */ jsxs("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: [
+                      /* @__PURE__ */ jsx("path", { d: "M6 6L18 18", stroke: "#FF9A3D", strokeWidth: "2", strokeLinecap: "round" }),
+                      /* @__PURE__ */ jsx("path", { d: "M18 6L6 18", stroke: "#FF9A3D", strokeWidth: "2", strokeLinecap: "round" })
                     ] })
-                  ] })
-                ]
-              }
-            )
-          ]
-        }
-      )
-    ] }),
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsxs("div", { className: "relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain", children: [
+                /* @__PURE__ */ jsx("nav", { className: "flex flex-col", "aria-label": isRu ? "Навигация" : "Navigation", children: tabsItems.map((item) => /* @__PURE__ */ jsxs(
+                  Link,
+                  {
+                    to: item.to,
+                    className: cx$b(
+                      "flex items-center justify-between border-b border-white/[0.08] px-5 py-4 text-[15px] font-medium text-white/92",
+                      "transition-colors hover:bg-white/[0.04] active:bg-white/[0.03]",
+                      activeKey === item.key && "text-[#FFAE66]"
+                    ),
+                    onClick: (e) => {
+                      onNav(item.to)(e);
+                      closeMenu();
+                    },
+                    children: [
+                      /* @__PURE__ */ jsx("span", { className: "capitalize", children: item.label }),
+                      /* @__PURE__ */ jsx("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", className: "shrink-0 text-white/40", "aria-hidden": true, children: /* @__PURE__ */ jsx("path", { d: "M9 18l6-6-6-6", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) })
+                    ]
+                  },
+                  item.key
+                )) }),
+                /* @__PURE__ */ jsxs("div", { className: "mt-auto flex flex-col gap-3 px-5 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6", children: [
+                  /* @__PURE__ */ jsx(
+                    "a",
+                    {
+                      href: TG_BOT_URL,
+                      target: "_blank",
+                      rel: "noopener noreferrer",
+                      className: cx$b(
+                        "inline-flex h-12 items-center justify-center rounded-full px-6 font-semibold",
+                        "bg-gradient-to-r from-[#FFD7B0] via-[#FF9A3D] to-[#FF6A1A] text-black",
+                        "shadow-[0_18px_50px_rgba(255,107,44,0.22)] hover:brightness-105",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40"
+                      ),
+                      onClick: () => setOpen(false),
+                      children: ctaScrolled
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    CalcButton,
+                    {
+                      variant: "white",
+                      onClick: () => {
+                        closeMenu();
+                        openStartModal();
+                      },
+                      className: "h-12 w-full text-[14px]",
+                      children: ctaTop
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    Link,
+                    {
+                      to: "/plans",
+                      className: cx$b(
+                        "inline-flex h-12 items-center justify-center rounded-full border border-white/20 px-6 text-[14px] font-semibold text-white/88",
+                        "transition hover:border-white/35 hover:text-white",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25"
+                      ),
+                      onClick: () => setOpen(false),
+                      children: isRu ? "Планы" : "Plans"
+                    }
+                  )
+                ] })
+              ] })
+            ]
+          }
+        )
+      }
+    ),
     /* @__PURE__ */ jsx(StartModal, { open: startOpen, onClose: () => setStartOpen(false) })
   ] });
 }
@@ -1950,1971 +2397,3276 @@ function Section({
 }) {
   return /* @__PURE__ */ jsx("section", { id, className: ["py-14 sm:py-20", className].filter(Boolean).join(" "), children });
 }
-const HERO_BG_IMG = "/images/hero1.png";
-const CONTACT_EMAIL = "tivoonix@gmail.com";
-const HeroWebGLBg$4 = lazy(() => import("./assets/HeroWebGLBg-CnY8eKt4.js"));
-function cx$7(...a) {
-  return a.filter(Boolean).join(" ");
+function landingCopy(lang) {
+  const isRu = lang === "ru";
+  return isRu ? COPY_RU : COPY_EN;
 }
-function useMediaQuery(query) {
-  const getMatch = () => typeof window !== "undefined" ? window.matchMedia(query).matches : false;
-  const [matches, setMatches] = useState(getMatch);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const m = window.matchMedia(query);
-    const onChange = () => setMatches(m.matches);
-    onChange();
-    if (m.addEventListener) m.addEventListener("change", onChange);
-    else m.addListener(onChange);
-    return () => {
-      if (m.removeEventListener) m.removeEventListener("change", onChange);
-      else m.removeListener(onChange);
-    };
-  }, [query]);
-  return matches;
-}
-const HERO_STYLES$1 = `
-  .hero{
-    --tiv-amber: 255,154,61;
-    --tiv-orange: 255,106,26;
-    --tiv-cream: 255,215,176;
-    --tiv-ice: 245,246,248;
-
-    /* mobile bg knobs */
-    --hero-img-shift: 0vh;
-    --hero-img-scale: 1.04;
-  }
-
-  .heroBg{ position:absolute; inset:0; background:#000000; overflow:hidden; }
-
-  .heroBg .heroImg{
-    position:absolute; inset:0;
-    width:100%; height:100%;
-    object-fit:cover;
-    object-position:50% 50%;
-    transform: translate3d(0,var(--hero-img-shift),0) scale(var(--hero-img-scale));
-    filter:saturate(1.05) contrast(1.04);
-    will-change: transform;
-  }
-
-  .heroWebgl{
-    position:absolute; inset:0;
-    width:100%; height:100%;
-    transform:scale(1.03);
-    will-change: transform;
-    pointer-events:auto;
-  }
-  .heroWebgl canvas{ pointer-events:auto; }
-
-  .heroOverlay{
-    position:absolute; inset:0;
-    background:
-      linear-gradient(90deg,
-        rgba(0,0,0,0.82) 0%,
-        rgba(0,0,0,0.64) 28%,
-        rgba(0,0,0,0.30) 52%,
-        rgba(0,0,0,0.12) 68%,
-        rgba(0,0,0,0.26) 100%),
-      radial-gradient(120% 90% at 55% 35%,
-        rgba(var(--tiv-amber),0.14) 0%,
-        rgba(var(--tiv-orange),0.10) 32%,
-        rgba(0,0,0,0) 62%),
-      radial-gradient(120% 120% at 50% 55%,
-        rgba(0,0,0,0.18) 0%,
-        rgba(0,0,0,0.84) 72%,
-        rgba(0,0,0,1) 100%);
-  }
-
-  .heroGrain{
-    position:absolute; inset:0;
-    opacity:.10;
-    background-image:
-      radial-gradient(circle at 1px 1px, rgba(255,255,255,0.26) 1px, transparent 0);
-    background-size:28px 28px;
-    mix-blend-mode:overlay;
-    pointer-events:none;
-  }
-
-  /* ===== DESKTOP typography (как было) ===== */
-  .heroH1{
-    font-weight:850;
-    letter-spacing:-0.03em;
-    line-height:1.06;
-    text-shadow:0 14px 38px rgba(0,0,0,0.86);
-  }
-
-  /* ===== CTA Gmail: тёмно-серый фирменный, без обводки ===== */
-  .gmailBtn{
-    border-radius:14px;
-    border:none;
-    background:#2a2a2a;
-    backdrop-filter:none;
-    -webkit-backdrop-filter:none;
-    box-shadow:none;
-    transition:transform .18s ease, background .18s ease;
-  }
-  .gmailBtn:hover{
-    transform:translateY(-1px);
-    background:#363636;
-  }
-  .gmailBtn:active{ transform:translateY(0px); }
-
-  /* ===== Mobile (Vercel-like): центр, сетка, pill-кнопки ===== */
-
-  /* Резерв снизу, чтобы фон не лез на текст */
-  @media (max-width: 640px){
-    .hero{
-      --hero-img-shift: 16vh;
-      --hero-img-scale: 1;
+const COPY_RU = {
+  hero: {
+    titleLines: ["Сайты, боты и сервисы,", "чтобы заявки не терялись"],
+    scrollStages: [
+      {
+        headline: "Сайты, боты и веб-сервисы, которые помогают получать заявки",
+        lead: "Разбираем задачу, предлагаем решение и запускаем продукт под ключ: лендинг, бот, CRM, кабинет или автоматизацию."
+      },
+      {
+        headline: "Заявки приходят в разные места — и теряются",
+        lead: "Сайт, Telegram, Instagram, звонки, таблица. Менеджер забывает ответить — клиент уходит."
+      },
+      {
+        headline: "Собираем систему, где заявка не теряется",
+        lead: "Клиент оставил заявку — команда сразу видит её в Telegram или CRM и знает, кто отвечает и что делать дальше."
+      }
+    ],
+    subtitle: "Делаем сайты, Telegram-ботов, CRM, админ-панели и веб-сервисы под конкретную задачу бизнеса — чтобы заявки не терялись и команда работала без ручного хаоса.",
+    ctaPrimary: "Обсудить проект",
+    ctaSecondary: "Посмотреть, что делаем",
+    micro: "Ответим в течение дня • Первая консультация бесплатно • Можно начать с идеи",
+    flowNodes: ["Заявка", "Обработка", "Telegram", "CRM"],
+    flowNodeHints: ["С сайта", "Автообработка", "Уведомление", "В CRM"],
+    flowTelegramBot: "TIVONIX Bot",
+    flowDisplayChips: ["Лендинг", "Форма", "Telegram"],
+    flowAnalysis: {
+      headline: "Задача разобрана",
+      lead: "Лендинг принимает трафик, форма сохраняет контакт, Telegram сразу уведомляет команду — заявка не зависает в переписке.",
+      routeLabel: "Маршрут:",
+      routeText: "сайт → форма → Telegram → CRM.",
+      modulesLabel: "Состав:"
+    },
+    flowTelegramDetail: {
+      sourceLabel: "Источник",
+      sourceValue: "форма на лендинге",
+      actionLabel: "Действие",
+      actionValue: "менеджер получил уведомление — заявка не потерялась"
+    },
+    flowCrmDetail: {
+      summary: "Заявка в CRM. Статус и ответственный на месте — не нужно искать по чатам и таблицам."
+    },
+    flowScenarios: [
+      {
+        prompt: "Нужен лендинг для рекламы",
+        chips: ["Лендинг", "Форма", "Telegram"],
+        notify: "Уведомление отправлено в Telegram",
+        result: {
+          kind: "crm",
+          title: "Новая заявка",
+          lines: [
+            { label: "Имя", value: "Анна" },
+            { label: "Услуга", value: "Лендинг" },
+            { label: "Статус", value: "Новая" }
+          ]
+        }
+      },
+      {
+        prompt: "Хочу Telegram-бота для заявок",
+        chips: ["Telegram", "Автоматизация", "Уведомления"],
+        notify: "Уведомление отправлено в Telegram",
+        result: {
+          kind: "telegram",
+          title: "Telegram",
+          lines: [
+            { label: "Сообщение", value: "Новая заявка с сайта" },
+            { label: "Имя", value: "Анна" },
+            { label: "Телефон", value: "+375 ••• •• 42" }
+          ]
+        }
+      },
+      {
+        prompt: "Нужен сайт + уведомления в Telegram",
+        chips: ["Лендинг", "Форма", "Telegram", "Уведомления"],
+        notify: "Уведомление отправлено в Telegram",
+        result: {
+          kind: "telegram",
+          title: "Telegram",
+          lines: [
+            { label: "Сообщение", value: "Заявка с формы сайта" },
+            { label: "Имя", value: "Мария" },
+            { label: "Услуга", value: "Консультация" }
+          ]
+        }
+      },
+      {
+        prompt: "Нужна система записи для клиентов",
+        chips: ["Форма", "CRM", "Уведомления"],
+        notify: "Заявка добавлена в CRM",
+        result: {
+          kind: "crm",
+          title: "Новая заявка",
+          lines: [
+            { label: "Имя", value: "Елена" },
+            { label: "Услуга", value: "Запись на услугу" },
+            { label: "Статус", value: "Новая" }
+          ]
+        }
+      },
+      {
+        prompt: "Хотим автоматизировать обработку заявок",
+        chips: ["Автоматизация", "CRM", "Telegram"],
+        notify: "Статус обновлён",
+        result: {
+          kind: "crm",
+          title: "Новая заявка",
+          lines: [
+            { label: "Имя", value: "Дмитрий" },
+            { label: "Услуга", value: "Автоматизация" },
+            { label: "Статус", value: "В работе" }
+          ]
+        }
+      }
+    ],
+    visualStatus: [
+      { main: "Собираем систему заявок…", sub: "Лендинг, форма, Telegram" },
+      { main: "Новая заявка получена", sub: "Уведомление отправлено в Telegram" },
+      { main: "Заявка в мини-CRM", sub: "Статус: в работе" }
+    ]
+  },
+  pain: {
+    title: "Почему заявки теряются",
+    titleLines: ["Почему заявки", "теряются"],
+    subtitle: "Обычно дело не в продукте, а в том, что нет нормальной системы приёма и обработки.",
+    hoverCta: "Как закрываем",
+    items: [
+      {
+        title: "Заявки в разных местах",
+        text: "Сайт, Telegram, Instagram, звонки, email — всё в разных окнах. Непонятно, кто уже ответил.",
+        solution: "Собираем обращения в одно место: форма, бот, CRM или админка — команда видит все заявки сразу."
+      },
+      {
+        title: "Ответили слишком поздно",
+        text: "Клиент написал утром, менеджер увидел вечером. К этому моменту он уже записался к другим.",
+        solution: "Уведомления в Telegram или email — заявка не ждёт в переписке."
+      },
+      {
+        title: "Нет статусов",
+        text: "Непонятно, кто новый, кто ждёт ответа, кто записан, а кто просто потерялся.",
+        solution: "Статусы в CRM или таблице: новая → в работе → записан → оплачен."
+      },
+      {
+        title: "Всё держится на одном человеке",
+        text: "Блокнот, Excel или память администратора. Он вышел из чата — процесс встал.",
+        solution: "Процесс в системе: заявки идут по правилам, а не по памяти одного человека."
+      },
+      {
+        title: "Реклама идёт, заявки теряются",
+        text: "Трафик есть, форма есть, но дальше заявка снова уходит в ручную обработку без контроля.",
+        solution: "Лендинг + форма + Telegram + CRM — заявка сразу попадает в работу, а не в заметки."
+      }
+    ]
+  },
+  offer: {
+    title: "Что мы делаем",
+    featured: {
+      badge: "TIVONIX",
+      metric: "6",
+      metricLabel: "направлений под задачу",
+      quote: "Сайт под рекламу, Telegram-бот, CRM или мини-панель, личный кабинет, автоматизация и интеграции. Сначала разбираем, где теряются заявки — потом собираем то, что реально нужно.",
+      linkText: "Разобрать задачу"
+    },
+    metrics: [
+      { badge: "Срок", metric: "1–4", label: "недели до первого запуска" },
+      { badge: "Уведомления", metric: "< 1 мин", label: "заявка у команды в Telegram" },
+      { badge: "Статусы", metric: "CRM", label: "или таблица для команды" },
+      { badge: "Код", metric: "100%", label: "остаётся у вас" },
+      { badge: "Старт", metric: "MVP", label: "можно с простой версии" }
+    ],
+    ctaBar: {
+      title: "Соберём систему, где заявки не теряются.",
+      primary: "Обсудить проект",
+      secondary: "Рассчитать проект"
     }
-
-    .heroBg::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      opacity:0.45;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
-      background-size: 40px 40px;
-      background-position: center top;
-      mask-image: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, transparent 88%);
-    }
-    .heroBg .heroImg{
-      inset: auto;
-      width: 88%;
-      height: 88%;
-      left: 50%;
-      top: 68%;
-      object-fit: contain;
-      object-position: 50% 50%;
-      transform: translate3d(-50%, -50%, 0) scale(var(--hero-img-scale));
-    }
-
-    /* Моб. оверлей: верх темнее, низ чище */
-    .heroOverlay{
-      background:
-        linear-gradient(0deg, rgba(0,0,0,0.32), rgba(0,0,0,0.32)),
-        linear-gradient(180deg,
-          rgba(0,0,0,0.88) 0%,
-          rgba(0,0,0,0.62) 22%,
-          rgba(0,0,0,0.28) 52%,
-          rgba(0,0,0,0.12) 68%,
-          rgba(0,0,0,0.72) 100%
-        );
-    }
-
-    .heroGrain{ opacity:0.055; }
-
-    .hero .heroWrap{
-      text-align:center;
-      padding-top: 4px;
-      padding-bottom: clamp(200px, 38vh, 420px);
-    }
-    .hero .heroSubtitle{ margin-left:auto; margin-right:auto; }
-
-    /* Типографика: как Vercel — плотный заголовок, лид #A1A1AA */
-    .hero .heroTitleCaps{ text-transform:none !important; letter-spacing:-0.032em !important; }
-    .hero .heroH1{
-      line-height:1.04;
-      letter-spacing:-0.04em;
-      text-shadow:none;
-      text-wrap: balance;
-    }
-
-    .hero .heroH1{
-      max-width: 17ch;
-      margin-left:auto;
-      margin-right:auto;
-    }
-    .hero .heroH1 .heroTitleCaps{
-      color:#fafafa !important;
-    }
-    .hero .heroH1 .heroTitleCaps:nth-child(2){
-      color:rgba(250,250,250,0.82) !important;
-    }
-    .hero .heroSubtitle{
-      font-size: 15px !important;
-      line-height: 1.65 !important;
-      color: #a1a1aa !important;
-      max-width: 34ch;
-      font-weight: 400 !important;
-    }
-
-    /* CTA: ряд из двух pill + третий outline на всю ширину пары */
-    .hero .heroCtas{
-      margin-top: 28px !important;
-      display:flex !important;
-      flex-direction: column !important;
-      align-items: center !important;
-      gap: 12px !important;
-      max-width: 100% !important;
-      margin-left: auto !important;
-      margin-right: auto !important;
-    }
-
-    .hero .heroCtasPair{
-      display:flex;
-      width:100%;
-      max-width:min(100%, 20.5rem);
-      gap:10px;
-    }
-
-    .hero .heroCtasPair .tgBtn,
-    .hero .heroCtasPair .gmailBtn{
-      flex:1;
-      min-width:0;
-    }
-
-    .hero .gmailBtn,
-    .hero .tgBtn,
-    .hero .heroAutomationBtn{
-      height: 48px !important;
-      border-radius: 9999px !important;
-      font-size: 14px !important;
-      font-weight: 600 !important;
-      letter-spacing: -0.02em !important;
-      box-shadow: none !important;
-      -webkit-tap-highlight-color: transparent;
-      transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
-    }
-
-    /* Primary: белая pill (как Deploy у Vercel) */
-    .hero .tgBtn{
-      background: #ffffff !important;
-      color: #0a0a0a !important;
-      border: 1px solid rgba(255,255,255,0.14) !important;
-    }
-
-    /* Secondary: тёмная с тонкой обводкой (как Get a demo) */
-    .hero .gmailBtn{
-      background: transparent !important;
-      color: rgba(255,255,255,0.92) !important;
-      border: 1px solid rgba(255,255,255,0.22) !important;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-    }
-    .hero .tgBtn:hover{
-      background: rgba(255,255,255,0.96) !important;
-      border-color: rgba(255,255,255,0.22) !important;
-    }
-    .hero .gmailBtn:hover{
-      background: rgba(255,255,255,0.06) !important;
-      border-color: rgba(255,255,255,0.32) !important;
-    }
-    .hero .tgBtn:active,
-    .hero .gmailBtn:active,
-    .hero .heroAutomationBtn:active{
-      transform: scale(0.98);
-    }
-
-    .hero .heroAutomationBtn{
-      width:100%;
-      max-width:min(100%, 20.5rem);
-      background: #FF8A1E !important;
-      color: rgba(0,0,0,0.92) !important;
-      border: 1px solid rgba(255,140,60,0.55) !important;
-      font-weight: 600 !important;
-      box-shadow: 0 10px 28px rgba(255,138,30,0.22) !important;
-    }
-    .hero .heroAutomationBtn:hover{
-      background: #ff9a38 !important;
-      border-color: rgba(255,154,56,0.65) !important;
-      box-shadow: 0 12px 32px rgba(255,138,30,0.28) !important;
-    }
-
-    @media (max-width: 360px){
-      .hero .gmailBtn, .hero .tgBtn, .hero .heroAutomationBtn{ height: 46px !important; font-size: 13px !important; }
-      .hero .heroH1{ max-width: 16ch; }
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce){
-    .heroBg .heroImg{ transform:none; will-change:auto; }
-    .heroWebgl{ transform:none; }
-    .gmailBtn{ transition:none; }
-  }
-`;
-function buildMailBody$1(lang) {
-  if (lang === "ru") {
-    return "Здравствуйте!\n\nХочу получить оценку разработки.\n\n1) Что нужно сделать (1–2 предложения):\n- \n\n2) Ключевые функции:\n- \n- \n- \n\n3) Есть ли дизайн/ТЗ/прототип:\n- \n\n4) Сроки / бюджет (если есть):\n- \n\nКонтакты для связи:\n- \n\nСпасибо!";
-  }
-  return "Hi!\n\nI'd like to get an estimate.\n\n1) What we’re building (1–2 sentences):\n- \n\n2) Key features:\n- \n- \n- \n\n3) Do you have design/spec/prototype:\n- \n\n4) Timeline / budget (if any):\n- \n\nContact details:\n- \n\nThank you!";
-}
-function getSubject$1(lang) {
-  return lang === "ru" ? "Запрос оценки с сайта TIVONIX" : "TIVONIX inquiry: estimate";
-}
-function buildGmailUrl$1(to, subject, body) {
-  return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-}
-function Hero() {
-  const { lang, dict } = useLang();
-  const hero = dict.hero;
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  const isDesktop = useMediaQuery("(min-width: 900px)");
-  const { gmailUrl, gmailLabel, tgLabel } = useMemo(() => {
-    const subject = getSubject$1(lang);
-    const body = buildMailBody$1(lang);
-    return {
-      gmailUrl: buildGmailUrl$1(CONTACT_EMAIL, subject, body),
-      gmailLabel: hero.btnTelegram,
-      tgLabel: hero.btnDemo
-    };
-  }, [lang, hero.btnDemo, hero.btnTelegram]);
-  return /* @__PURE__ */ jsxs(
-    Section,
-    {
-      className: cx$7(
-        "hero relative isolate overflow-hidden flex items-center",
-        "pt-16 pb-14 sm:pt-20 sm:pb-16 lg:pt-24 lg:pb-20",
-        "min-h-[78vh] sm:min-h-[82vh] lg:min-h-[86vh]"
-      ),
-      children: [
-        /* @__PURE__ */ jsx("style", { children: HERO_STYLES$1 }),
-        /* @__PURE__ */ jsxs("div", { className: "pointer-events-none absolute inset-0 -z-10", "aria-hidden": "true", children: [
-          /* @__PURE__ */ jsxs("div", { className: "heroBg", children: [
-            mounted && isDesktop ? /* @__PURE__ */ jsx(
-              "div",
-              {
-                className: "absolute inset-0",
-                style: {
-                  background: "radial-gradient(120% 90% at 55% 35%, rgba(255,154,61,0.18) 0%, rgba(255,106,26,0.10) 34%, rgba(0,0,0,0) 62%), linear-gradient(180deg, #000000 0%, #030303 100%)"
-                }
-              }
-            ) : null,
-            mounted && isDesktop ? /* @__PURE__ */ jsx("div", { className: "heroWebgl pointer-events-auto", children: /* @__PURE__ */ jsx(Suspense, { fallback: null, children: /* @__PURE__ */ jsx(HeroWebGLBg$4, {}) }) }) : /* @__PURE__ */ jsx(
-              "img",
-              {
-                className: "heroImg",
-                src: HERO_BG_IMG,
-                alt: "",
-                draggable: false,
-                loading: "eager",
-                decoding: "async"
-              }
-            )
-          ] }),
-          /* @__PURE__ */ jsx("div", { className: "heroOverlay" }),
-          /* @__PURE__ */ jsx("div", { className: "heroGrain" }),
-          /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/85 via-black/40 to-transparent" }),
-          /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black via-black/80 to-transparent max-sm:h-56 max-sm:from-black/[0.58] max-sm:via-black/38 max-sm:to-transparent" })
-        ] }),
-        /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsx("div", { className: "relative mx-auto max-w-6xl px-1 sm:px-0 w-full", children: /* @__PURE__ */ jsxs("div", { className: "pt-2 sm:pt-6 lg:pt-8 heroWrap", children: [
-          /* @__PURE__ */ jsxs(
-            "h1",
-            {
-              className: cx$7(
-                "heroH1 tracking-[-0.02em]",
-                "text-[clamp(2.05rem,7.5vw,2.2rem)] max-sm:font-[820] sm:text-[46px] lg:text-[54px]"
-              ),
-              children: [
-                /* @__PURE__ */ jsx("span", { className: "block font-[850] text-white/95 uppercase heroTitleCaps", children: hero.titleLine1 }),
-                /* @__PURE__ */ jsx("span", { className: "block font-[850] text-white/80 uppercase heroTitleCaps", children: hero.titleLine2Prefix }),
-                hero.titleLine2Premium ? /* @__PURE__ */ jsx("span", { className: "block font-[850] text-white/95 uppercase heroTitleCaps", children: hero.titleLine2Premium }) : null
-              ]
-            }
-          ),
-          /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-2xl max-sm:mt-5 text-[15px] sm:text-[16px] leading-relaxed font-medium text-white/85 heroSubtitle", children: hero.subtitle }),
-          /* @__PURE__ */ jsxs("div", { className: "heroCtas mt-7 flex w-full max-w-2xl flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start", children: [
-            /* @__PURE__ */ jsxs("div", { className: "heroCtasPair flex w-full max-w-[20.5rem] gap-2.5 sm:contents sm:max-w-none", children: [
-              /* @__PURE__ */ jsxs(
-                "a",
-                {
-                  href: TG_BOT_URL,
-                  target: "_blank",
-                  rel: "noopener noreferrer",
-                  "aria-label": tgLabel,
-                  className: cx$7(
-                    "tgBtn group relative w-full sm:w-auto",
-                    "inline-flex items-center justify-center",
-                    "rounded-xl max-sm:rounded-full h-[50px] sm:h-[52px] px-5 sm:px-6",
-                    "text-center font-[780] tracking-[-0.01em] max-sm:font-semibold",
-                    "text-[14px] sm:text-[15px] text-black whitespace-nowrap",
-                    "border border-orange-500/45 shadow-[0_12px_40px_rgba(255,106,40,0.22)] max-sm:border-white/15 max-sm:shadow-none",
-                    "transition active:translate-y-[1px]",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black max-sm:focus-visible:ring-white/30"
-                  ),
-                  style: {
-                    background: "#FF8A1E"
-                  },
-                  children: [
-                    /* @__PURE__ */ jsx("span", { className: "relative z-10", children: tgLabel }),
-                    /* @__PURE__ */ jsx(
-                      "span",
-                      {
-                        className: "pointer-events-none absolute inset-0 max-sm:hidden rounded-xl opacity-0 blur-xl transition duration-300 group-hover:opacity-70",
-                        style: {
-                          background: "radial-gradient(700px 120px at 50% 30%, rgba(255,176,32,0.65), rgba(0,0,0,0))"
-                        }
-                      }
-                    )
-                  ]
-                }
-              ),
-              /* @__PURE__ */ jsx(
-                "a",
-                {
-                  href: gmailUrl,
-                  target: "_blank",
-                  rel: "noopener noreferrer",
-                  "aria-label": gmailLabel,
-                  className: cx$7(
-                    "gmailBtn",
-                    "inline-flex items-center justify-center",
-                    "rounded-xl max-sm:rounded-full h-[50px] sm:h-[52px] px-5 sm:px-6",
-                    "w-full sm:w-auto whitespace-nowrap",
-                    "text-white/90 text-[14px] sm:text-[15px] font-[780] max-sm:font-semibold",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                  ),
-                  children: gmailLabel
-                }
-              )
-            ] }),
-            /* @__PURE__ */ jsx(
-              Link,
-              {
-                to: "/avtomatizaciya-biznesa",
-                className: cx$7(
-                  "heroAutomationBtn",
-                  "inline-flex items-center justify-center",
-                  "rounded-xl max-sm:rounded-full h-[50px] sm:h-[52px] px-5 sm:px-6",
-                  "w-full sm:w-auto",
-                  "text-center font-[780] tracking-[-0.01em] max-sm:font-semibold",
-                  "text-[14px] sm:text-[15px] whitespace-nowrap",
-                  "border border-white/50 bg-white text-black hover:bg-white/95",
-                  "transition active:translate-y-[1px]",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black max-sm:focus-visible:ring-orange-300/50"
-                ),
-                children: hero.btnAutomation
-              }
-            )
-          ] })
-        ] }) }) })
+  },
+  ai: {
+    ariaLabel: "TIVONIX — AI в продуктах для бизнеса",
+    centerBadge: "TIVONIX AI",
+    headline: "Подключаем AI там, где он реально экономит время: ответы, разбор заявок, поддержка",
+    models: ["OpenAI", "Claude", "Gemini", "Grok"],
+    tags: ["AI-боты", "Автоответы", "Разбор заявок", "CRM", "Поддержка", "Аналитика"]
+  },
+  flow: {
+    label: "Схема",
+    title: "Как работает система",
+    titleMuted: "от заявки до результата — без потерь по пути",
+    steps: [
+      {
+        label: "Заявка",
+        title: "Клиент оставляет заявку",
+        desc: "На сайте, в форме, боте или с рекламы"
+      },
+      {
+        label: "Telegram",
+        title: "Команда получает уведомление",
+        desc: "В Telegram или на email — сразу, без задержки"
+      },
+      {
+        label: "CRM",
+        title: "Заявка попадает в CRM",
+        desc: "В таблицу, мини-CRM или админ-панель"
+      },
+      {
+        label: "Статус",
+        title: "У заявки есть статус",
+        desc: "Новая → в работе → записан → оплачен"
+      },
+      {
+        label: "Результат",
+        title: "Понятно, что делать дальше",
+        desc: "Есть ответственный — клиент не теряется"
+      }
+    ]
+  },
+  pricingTeaser: {
+    eyebrow: "Тарифы",
+    title: "Планы запуска",
+    more: "Подробнее"
+  },
+  compare: {
+    title: "Мы делаем не страницу, а рабочую систему заявок",
+    subtitle: "Чтобы заявка не зависала в переписке — от формы до CRM и команды.",
+    regular: {
+      title: "Обычный сайт",
+      headline: "Форма есть — дальше вручную",
+      items: ["Есть текст", "Есть кнопка", "Есть форма", "Дальше — в чаты и таблицы"]
+    },
+    chaosTags: ["Заявка потерялась", "Нет статуса", "Вручную в Excel", "Ответили через день"],
+    hover: {
+      chaosMessages: [
+        { channel: "Instagram", text: "Здравствуйте, сколько стоит?", time: "сейчас" },
+        { channel: "Telegram", text: "Можно записаться на завтра?", time: "4 мин" },
+        { channel: "WhatsApp", text: "А в субботу работаете?", time: "11 мин" },
+        { channel: "Сайт", text: "Оставил заявку на сайте", time: "18 мин" },
+        { channel: "Звонок", text: "Пропущенный звонок", time: "25 мин" },
+        { channel: "Instagram", text: "??? вы тут?", time: "38 мин" },
+        { channel: "Telegram", text: "Жду ответ уже час", time: "1 ч" },
+        { channel: "Email", text: "Re: запрос с формы", time: "вчера" },
+        { channel: "WhatsApp", text: "Есть окно сегодня вечером?", time: "1 ч" },
+        { channel: "Сайт", text: "Нужен расчёт под ключ", time: "2 ч" },
+        { channel: "Instagram", text: "Скиньте прайс, пожалуйста", time: "3 ч" },
+        { channel: "Telegram", text: "Перезвоните, срочно", time: "4 ч" },
+        { channel: "Звонок", text: "2 пропущенных", time: "5 ч" },
+        { channel: "Email", text: "Fwd: коммерческое предложение", time: "6 ч" }
+      ],
+      crm: {
+        title: "TIVONIX CRM",
+        sidebar: [
+          { label: "Заявки", active: true, count: 4 },
+          { label: "Клиенты", active: false },
+          { label: "Календарь", active: false },
+          { label: "Отчёты", active: false }
+        ],
+        leadsTitle: "Заявки",
+        leads: [
+          {
+            name: "Анна К.",
+            source: "Сайт",
+            preview: "Запись на консультацию",
+            time: "2 мин",
+            status: "Новая",
+            tone: "new"
+          },
+          {
+            name: "Игорь П.",
+            source: "Telegram",
+            preview: "Нужен расчёт проекта",
+            time: "14 мин",
+            status: "В работе",
+            tone: "progress"
+          },
+          {
+            name: "Салон Lux",
+            source: "Instagram",
+            preview: "Онлайн-запись на пятницу",
+            time: "32 мин",
+            status: "Записан",
+            tone: "done"
+          },
+          {
+            name: "Олег М.",
+            source: "Форма",
+            preview: "Оплата подтверждена",
+            time: "1 ч",
+            status: "Оплачен",
+            tone: "paid"
+          }
+        ]
+      }
+    },
+    tivonix: {
+      title: "TIVONIX-система",
+      headline: "Заявка под контролем",
+      badge: "Заявка не висит в переписке — команда видит следующий шаг",
+      items: [
+        "Заявка не теряется",
+        "Приходит в Telegram или email",
+        "Попадает в CRM или таблицу",
+        "Имеет статус и ответственного",
+        "Команда понимает, что делать",
+        "Можно наращивать рекламу без хаоса"
       ]
     }
-  );
-}
-const STICKY_TOP = 96;
-const MOBILE_STICKY_TOP = "calc(var(--header-h, 72px) + 10px)";
-const MOBILE_CARD_MAX_W = 320;
-function clamp$1(n, a = 0, b = 1) {
-  return Math.max(a, Math.min(b, n));
-}
-function ProgressBar({
-  progress,
-  height,
-  thin = false,
-  showPercent = false
-}) {
-  const w = thin ? 12 : 16;
-  const p = clamp$1(progress, 0, 1);
-  return /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center", "aria-hidden": "true", children: [
-    /* @__PURE__ */ jsxs("div", { className: "relative flex justify-center", style: { height, width: w }, children: [
-      /* @__PURE__ */ jsx("div", { className: "absolute inset-y-0 w-[2px] rounded-full bg-white/10" }),
-      /* @__PURE__ */ jsx("div", { className: "absolute inset-y-0 left-1/2 w-[6px] -translate-x-1/2 overflow-hidden rounded-full bg-white/8", children: /* @__PURE__ */ jsx(
-        "div",
-        {
-          className: "absolute bottom-0 left-0 right-0 rounded-full",
-          style: {
-            height: `${p * 100}%`,
-            background: "#F97316"
-          }
+  },
+  cases: {
+    badge: "Новый кейс",
+    cta: "Хочу похожую систему",
+    viewCase: "Смотреть кейс",
+    openProduct: "Открыть продукт",
+    spliton: {
+      need: "Нужна была финтех-платформа для инвестиций в музыкальные активы — не лендинг, а полноценный продукт",
+      done: "Собрали каталог релизов, покупку долей, кошелёк, вторичный рынок, юридические согласия и админ-панель",
+      modules: [
+        "Каталог релизов",
+        "Покупка долей",
+        "Кошелёк",
+        "Вторичный рынок",
+        "Юр. согласия",
+        "Админ-панель",
+        "i18n RU/EN/ES/PT",
+        "Выплаты"
+      ]
+    }
+  },
+  audience: {
+    badge: "TIVONIX",
+    title: "Кому помогаем",
+    subtitle: "Тем, кому нужен не просто красивый сайт, а рабочая система: заявки, записи, статусы, оплата или кабинет.",
+    callouts: {
+      left: {
+        text: "Заявка у менеджера за минуту — не в переписке и не в таблице на завтра."
+      },
+      right: {
+        text: "Instagram, Telegram, сайт и звонки — все обращения в одном процессе."
+      }
+    },
+    pins: [
+      { id: "masters", label: "Мастера", lat: 55.75, lng: 37.62 },
+      { id: "studios", label: "Студии", lat: 48.85, lng: 2.35 },
+      { id: "autoservice", label: "Автосервисы", lat: 40.71, lng: -74.01 },
+      { id: "schools", label: "Школы", lat: 51.5, lng: -0.12 },
+      { id: "startups", label: "Стартапы", lat: 1.35, lng: 103.82 },
+      { id: "agencies", label: "Агентства", lat: 25.2, lng: 55.27 }
+    ],
+    marquee: [
+      "Мастера",
+      "Студии",
+      "Салоны",
+      "Автосервисы",
+      "Онлайн-школы",
+      "Эксперты",
+      "Стартапы",
+      "Агентства",
+      "Малый бизнес",
+      "Локальные услуги"
+    ],
+    pillars: [
+      {
+        title: "Заявки из любых каналов",
+        text: "Реклама, мессенджеры, сайт — всё собираем в одну систему."
+      },
+      {
+        title: "Быстрый ответ",
+        text: "Уведомления в Telegram, статусы — клиент не ждёт и не уходит."
+      },
+      {
+        title: "Рост без хаоса",
+        text: "CRM, админка и автоматизация — когда заявок становится больше."
+      }
+    ],
+    ctaPrimary: "Обсудить проект",
+    ctaSecondary: "Посмотреть, что делаем",
+    items: [
+      { title: "Салоны, студии и мастера", desc: "Запись, заявки и напоминания без ручного хаоса" },
+      { title: "Автосервисы и локальные услуги", desc: "Быстрый приём заявок с рекламы и понятный статус по каждому клиенту" },
+      { title: "Онлайн-школы и курсы", desc: "Регистрация, оплата, кабинет ученика и статусы обучения" },
+      { title: "Эксперты и консультанты", desc: "Заявки с лендинга сразу в Telegram и CRM" },
+      { title: "Стартапы и MVP", desc: "Быстрый запуск продукта с нужными модулями, без лишнего" },
+      { title: "Агентства и команды", desc: "Лендинги под рекламу с рабочей воронкой заявок" },
+      { title: "Малый бизнес", desc: "Когда заявки идут вручную — и это уже мешает работать" }
+    ]
+  },
+  process: {
+    title: "Как проходит работа",
+    steps: [
+      {
+        kind: "bullets",
+        title: "Разбираем задачу",
+        items: [
+          "Что хотите получить на выходе",
+          "Откуда сейчас приходят заявки",
+          "Что уже есть: сайт, CRM, мессенджеры",
+          "Где команда теряет время"
+        ]
+      },
+      {
+        kind: "search",
+        title: "Предлагаем решение",
+        query: "что лучше — сайт, бот, CRM или кабинет для моей задачи",
+        hint: "Смотрим, что подойдёт под ваш объём и сроки"
+      },
+      {
+        kind: "bullets",
+        title: "Собираем дизайн и логику",
+        items: [
+          "Ключевые экраны и путь клиента",
+          "Сценарии для менеджера и команды",
+          "UI под ваш бренд"
+        ]
+      },
+      {
+        kind: "bullets",
+        title: "Разрабатываем продукт",
+        items: [
+          "Фронтенд и логика заявок",
+          "База данных и роли доступа",
+          "Проверяем сценарии до запуска"
+        ]
+      },
+      {
+        kind: "bullets",
+        title: "Подключаем заявки, оплату, CRM или Telegram",
+        items: [
+          "Формы и точки входа",
+          "Интеграции с мессенджерами и почтой",
+          "Оплата, таблицы, аналитика"
+        ]
+      },
+      {
+        kind: "bullets",
+        title: "Запускаем и помогаем проверить",
+        items: [
+          "Публикуем и смотрим на реальных заявках",
+          "Показываем команде, как работать",
+          "Остаёмся на связи после запуска"
+        ]
+      }
+    ]
+  },
+  finalCta: {
+    title: "Расскажите, что хотите запустить или автоматизировать",
+    subtitle: "Посмотрим задачу и предложим понятный первый шаг: сайт, бот, CRM, кабинет или MVP.",
+    ctaPrimary: "Обсудить проект",
+    ctaSecondary: "Получить разбор задачи",
+    micro: "Ответим в течение дня • Первая консультация бесплатно"
+  },
+  packages: {
+    sectionTitle: "Три направления под вашу задачу",
+    launch: {
+      title: "Сайт под рекламу",
+      subtitle: "Лендинг + форма + Telegram",
+      forWho: "Когда нужно быстро принимать заявки с рекламы, Instagram или сайта.",
+      cta: "Рассчитать запуск",
+      bullets: [
+        "Страница под рекламу",
+        "Форма заявки",
+        "Кнопки связи",
+        "Уведомления в Telegram или email",
+        "Адаптив под телефон",
+        "Базовая аналитика",
+        "Запуск"
+      ]
+    },
+    service: {
+      title: "Личный кабинет и админка",
+      subtitle: "Кабинет клиента + панель команды + оплата",
+      forWho: "Когда нужен полноценный веб-сервис: регистрация, кабинет, статусы, оплата.",
+      cta: "Обсудить сервис",
+      bullets: [
+        "Регистрация",
+        "Личный кабинет",
+        "Админ-панель",
+        "Роли пользователей",
+        "Заявки и статусы",
+        "Уведомления",
+        "Оплата",
+        "Интеграции"
+      ]
+    },
+    automation: {
+      title: "Автоматизация",
+      subtitle: "Меньше ручных действий",
+      forWho: "Когда заявки, таблицы, отчёты и уведомления сейчас ведутся вручную.",
+      cta: "Автоматизировать процесс",
+      bullets: [
+        "Автоматизация заявок",
+        "Связка Telegram, email и таблиц",
+        "Мини-CRM",
+        "Статусы задач",
+        "Уведомления команде",
+        "Отчёты",
+        "Интеграции"
+      ]
+    }
+  }
+};
+const COPY_EN = {
+  hero: {
+    titleLines: ["Websites, bots and services", "so leads don't get lost"],
+    scrollStages: [
+      {
+        headline: "Websites, bots and web apps that help you capture leads",
+        lead: "We review your task, suggest a solution and launch it end-to-end: landing page, bot, CRM, client area or automation."
+      },
+      {
+        headline: "Leads arrive in different places — and get lost",
+        lead: "Website, Telegram, Instagram, calls, spreadsheets. A manager forgets to reply — the client leaves."
+      },
+      {
+        headline: "We build a system where leads stay tracked",
+        lead: "A client submits a request — your team sees it in Telegram or CRM right away and knows who owns it and what to do next."
+      }
+    ],
+    subtitle: "We build websites, Telegram bots, CRMs, admin panels and web services for real business tasks — so leads don't slip away and your team isn't stuck in manual chaos.",
+    ctaPrimary: "Discuss the project",
+    ctaSecondary: "See what we build",
+    micro: "We reply within a day • First consultation is free • You can start with just an idea",
+    flowNodes: ["Lead", "Processing", "Telegram", "CRM"],
+    flowNodeHints: ["From site", "Auto", "Alert", "In CRM"],
+    flowTelegramBot: "TIVONIX Bot",
+    flowDisplayChips: ["Landing", "Form", "Telegram"],
+    flowAnalysis: {
+      headline: "Task reviewed",
+      lead: "The landing captures traffic, the form saves contact details, Telegram alerts your team — the lead doesn't sit in a chat thread.",
+      routeLabel: "Route:",
+      routeText: "site → form → Telegram → CRM.",
+      modulesLabel: "Stack:"
+    },
+    flowTelegramDetail: {
+      sourceLabel: "Source",
+      sourceValue: "landing page form",
+      actionLabel: "Action",
+      actionValue: "manager got the alert — lead not lost"
+    },
+    flowCrmDetail: {
+      summary: "Lead in CRM. Status and owner are clear — no digging through chats and spreadsheets."
+    },
+    flowScenarios: [
+      {
+        prompt: "Need a landing page for ads",
+        chips: ["Landing", "Form", "Telegram"],
+        notify: "Notification sent to Telegram",
+        result: {
+          kind: "crm",
+          title: "New lead",
+          lines: [
+            { label: "Name", value: "Anna" },
+            { label: "Service", value: "Landing page" },
+            { label: "Status", value: "New" }
+          ]
         }
-      ) }),
-      /* @__PURE__ */ jsx(
-        "div",
-        {
-          className: "absolute left-1/2 h-3 w-3 -translate-x-1/2 rounded-full border border-white/45 bg-black/85",
-          style: {
-            top: `${p * 100}%`,
-            marginTop: -6
-          }
+      },
+      {
+        prompt: "Want a Telegram bot for leads",
+        chips: ["Telegram", "Automation", "Alerts"],
+        notify: "Notification sent to Telegram",
+        result: {
+          kind: "telegram",
+          title: "Telegram",
+          lines: [
+            { label: "Message", value: "New lead from website" },
+            { label: "Name", value: "Anna" },
+            { label: "Phone", value: "+1 ••• •• 42" }
+          ]
         }
-      )
-    ] }),
-    showPercent && /* @__PURE__ */ jsxs("div", { className: "mt-3 text-[11px] font-semibold tracking-[0.18em] text-white/40 uppercase", children: [
-      Math.round(p * 100),
-      "%"
-    ] })
-  ] });
+      },
+      {
+        prompt: "Need a site + Telegram alerts",
+        chips: ["Landing", "Form", "Telegram", "Alerts"],
+        notify: "Notification sent to Telegram",
+        result: {
+          kind: "telegram",
+          title: "Telegram",
+          lines: [
+            { label: "Message", value: "Lead from website form" },
+            { label: "Name", value: "Maria" },
+            { label: "Service", value: "Consultation" }
+          ]
+        }
+      },
+      {
+        prompt: "Need a booking system for clients",
+        chips: ["Form", "CRM", "Alerts"],
+        notify: "Lead added to CRM",
+        result: {
+          kind: "crm",
+          title: "New lead",
+          lines: [
+            { label: "Name", value: "Elena" },
+            { label: "Service", value: "Appointment" },
+            { label: "Status", value: "New" }
+          ]
+        }
+      },
+      {
+        prompt: "Want to automate lead handling",
+        chips: ["Automation", "CRM", "Telegram"],
+        notify: "Status updated",
+        result: {
+          kind: "crm",
+          title: "New lead",
+          lines: [
+            { label: "Name", value: "Dmitry" },
+            { label: "Service", value: "Automation" },
+            { label: "Status", value: "In progress" }
+          ]
+        }
+      }
+    ],
+    visualStatus: [
+      { main: "Building your lead system…", sub: "Landing, form, Telegram" },
+      { main: "New lead received", sub: "Notification sent to Telegram" },
+      { main: "Lead in mini-CRM", sub: "Status: in progress" }
+    ]
+  },
+  pain: {
+    title: "Why leads get lost",
+    titleLines: ["Why leads", "get lost"],
+    subtitle: "Usually it's not the product — it's the lack of a proper intake and follow-up system.",
+    hoverCta: "How we fix it",
+    items: [
+      {
+        title: "Leads in different places",
+        text: "Website, Telegram, Instagram, calls, email — all in separate windows. Unclear who already replied.",
+        solution: "We pull inquiries into one place: form, bot, CRM or admin panel — the team sees every lead at once."
+      },
+      {
+        title: "Reply came too late",
+        text: "A client wrote in the morning, the manager saw it in the evening. By then they booked elsewhere.",
+        solution: "Telegram or email alerts — leads don't wait in chat threads."
+      },
+      {
+        title: "No statuses",
+        text: "Unclear who is new, who is waiting, who is booked, and who simply fell through.",
+        solution: "Statuses in CRM or a sheet: new → in progress → booked → paid."
+      },
+      {
+        title: "Everything depends on one person",
+        text: "A notebook, Excel or the admin's memory. They go offline — the process stops.",
+        solution: "The process lives in the system: leads move by rules, not one person's memory."
+      },
+      {
+        title: "Ads run, leads get lost",
+        text: "Traffic is there, the form is there, but after submit everything goes back to manual handling.",
+        solution: "Landing + form + Telegram + CRM — every lead enters the workflow immediately."
+      }
+    ]
+  },
+  offer: {
+    title: "What we build",
+    featured: {
+      badge: "TIVONIX",
+      metric: "6",
+      metricLabel: "directions for your task",
+      quote: "Ad landing pages, Telegram bots, CRM or mini-panels, client areas, automation and integrations. First we map where leads get lost — then we build what you actually need.",
+      linkText: "Review your task"
+    },
+    metrics: [
+      { badge: "Timeline", metric: "1–4", label: "weeks to first launch" },
+      { badge: "Alerts", metric: "< 1 min", label: "lead reaches the team in Telegram" },
+      { badge: "Statuses", metric: "CRM", label: "or a sheet for your team" },
+      { badge: "Code", metric: "100%", label: "stays with you" },
+      { badge: "Start", metric: "MVP", label: "you can begin with a simple version" }
+    ],
+    ctaBar: {
+      title: "We'll build a system where leads don't get lost.",
+      primary: "Discuss the project",
+      secondary: "Get an estimate"
+    }
+  },
+  ai: {
+    ariaLabel: "TIVONIX — AI in business products",
+    centerBadge: "TIVONIX AI",
+    headline: "We add AI where it actually saves time: replies, lead triage, support",
+    models: ["OpenAI", "Claude", "Gemini", "Grok"],
+    tags: ["AI bots", "Auto-replies", "Lead triage", "CRM", "Support", "Analytics"]
+  },
+  flow: {
+    label: "Flow",
+    title: "How the system works",
+    titleMuted: "from lead to result — without losses along the way",
+    steps: [
+      {
+        label: "Lead",
+        title: "Client submits a request",
+        desc: "On the site, in a form, bot or from ads"
+      },
+      {
+        label: "Telegram",
+        title: "Team gets an alert",
+        desc: "In Telegram or email — right away"
+      },
+      {
+        label: "CRM",
+        title: "Lead lands in CRM",
+        desc: "In a sheet, mini-CRM or admin panel"
+      },
+      {
+        label: "Status",
+        title: "Lead gets a status",
+        desc: "New → in progress → booked → paid"
+      },
+      {
+        label: "Result",
+        title: "Clear what to do next",
+        desc: "There's an owner — the client isn't lost"
+      }
+    ]
+  },
+  pricingTeaser: {
+    eyebrow: "Pricing",
+    title: "Launch plans",
+    more: "Learn more"
+  },
+  compare: {
+    title: "We build a working lead system — not just a page",
+    subtitle: "So leads don't sit in chat threads — from form to CRM and your team.",
+    regular: {
+      title: "Typical website",
+      headline: "Form submitted — then manual chaos",
+      items: ["Some text", "A button", "A form", "Then — chats and spreadsheets"]
+    },
+    chaosTags: ["Lead lost", "No status", "Manual spreadsheet", "Reply next day"],
+    hover: {
+      chaosMessages: [
+        { channel: "Instagram", text: "Hi, how much is it?", time: "now" },
+        { channel: "Telegram", text: "Can I book for tomorrow?", time: "4 min" },
+        { channel: "WhatsApp", text: "Are you open Saturday?", time: "11 min" },
+        { channel: "Website", text: "Submitted the form", time: "18 min" },
+        { channel: "Call", text: "Missed call", time: "25 min" },
+        { channel: "Instagram", text: "??? anyone there?", time: "38 min" },
+        { channel: "Telegram", text: "Waiting an hour already", time: "1 hr" },
+        { channel: "Email", text: "Re: form inquiry", time: "yesterday" },
+        { channel: "WhatsApp", text: "Any slot tonight?", time: "1 hr" },
+        { channel: "Website", text: "Need a full quote", time: "2 hr" },
+        { channel: "Instagram", text: "Please send pricing", time: "3 hr" },
+        { channel: "Telegram", text: "Call me back, urgent", time: "4 hr" },
+        { channel: "Call", text: "2 missed calls", time: "5 hr" },
+        { channel: "Email", text: "Fwd: proposal request", time: "6 hr" }
+      ],
+      crm: {
+        title: "TIVONIX CRM",
+        sidebar: [
+          { label: "Leads", active: true, count: 4 },
+          { label: "Clients", active: false },
+          { label: "Calendar", active: false },
+          { label: "Reports", active: false }
+        ],
+        leadsTitle: "Leads",
+        leads: [
+          {
+            name: "Anna K.",
+            source: "Website",
+            preview: "Book a consultation",
+            time: "2 min",
+            status: "New",
+            tone: "new"
+          },
+          {
+            name: "Igor P.",
+            source: "Telegram",
+            preview: "Need a project estimate",
+            time: "14 min",
+            status: "In progress",
+            tone: "progress"
+          },
+          {
+            name: "Lux Salon",
+            source: "Instagram",
+            preview: "Online booking for Friday",
+            time: "32 min",
+            status: "Booked",
+            tone: "done"
+          },
+          {
+            name: "Oleg M.",
+            source: "Form",
+            preview: "Payment confirmed",
+            time: "1 hr",
+            status: "Paid",
+            tone: "paid"
+          }
+        ]
+      }
+    },
+    tivonix: {
+      title: "TIVONIX system",
+      headline: "Lead under control",
+      badge: "Lead doesn't sit in chat — the team sees the next step",
+      items: [
+        "Lead is not lost",
+        "Arrives in Telegram or email",
+        "Lands in CRM or a sheet",
+        "Has a status and owner",
+        "Team knows what to do",
+        "You can scale ads without chaos"
+      ]
+    }
+  },
+  cases: {
+    badge: "New case",
+    cta: "I want a similar system",
+    viewCase: "View case",
+    openProduct: "Open product",
+    spliton: {
+      need: "Needed a fintech platform for music-asset investing — a full product, not a landing page",
+      done: "Built release catalog, share purchases, wallet, secondary market, legal consents and admin panel",
+      modules: [
+        "Release catalog",
+        "Share purchases",
+        "Wallet",
+        "Secondary market",
+        "Legal consents",
+        "Admin panel",
+        "i18n RU/EN/ES/PT",
+        "Payouts"
+      ]
+    }
+  },
+  audience: {
+    badge: "TIVONIX",
+    title: "Who we help",
+    subtitle: "Businesses that need more than a pretty site — a working system: leads, bookings, statuses, payments or a client area.",
+    callouts: {
+      left: {
+        text: "Leads reach the manager in under a minute — not buried in chats or tomorrow's spreadsheet."
+      },
+      right: {
+        text: "Instagram, Telegram, website and calls — every channel in one flow."
+      }
+    },
+    pins: [
+      { id: "masters", label: "Masters", lat: 55.75, lng: 37.62 },
+      { id: "studios", label: "Studios", lat: 48.85, lng: 2.35 },
+      { id: "autoservice", label: "Auto shops", lat: 40.71, lng: -74.01 },
+      { id: "schools", label: "Online schools", lat: 51.5, lng: -0.12 },
+      { id: "startups", label: "Startups", lat: 1.35, lng: 103.82 },
+      { id: "agencies", label: "Agencies", lat: 25.2, lng: 55.27 }
+    ],
+    marquee: [
+      "Masters",
+      "Studios",
+      "Salons",
+      "Auto shops",
+      "Online schools",
+      "Experts",
+      "Startups",
+      "Agencies",
+      "Small business",
+      "Local services"
+    ],
+    pillars: [
+      {
+        title: "Leads from any channel",
+        text: "Ads, messengers, website — we pull it into one system."
+      },
+      {
+        title: "Fast response",
+        text: "Telegram alerts, statuses — clients don't wait and leave."
+      },
+      {
+        title: "Growth without chaos",
+        text: "CRM, admin and automation — when lead volume grows."
+      }
+    ],
+    ctaPrimary: "Discuss the project",
+    ctaSecondary: "See what we build",
+    items: [
+      { title: "Salons, studios and masters", desc: "Booking, leads and reminders without manual chaos" },
+      { title: "Auto shops and local services", desc: "Fast lead intake from ads and a clear status for every client" },
+      { title: "Online schools and courses", desc: "Registration, payments, student area and learning statuses" },
+      { title: "Experts and consultants", desc: "Leads from landing straight to Telegram and CRM" },
+      { title: "Startups and MVPs", desc: "Fast product launch with the modules you need — nothing extra" },
+      { title: "Agencies and teams", desc: "Ad landing pages with a working lead funnel" },
+      { title: "Small business", desc: "When leads are handled manually — and that's already getting in the way" }
+    ]
+  },
+  process: {
+    title: "How we work",
+    steps: [
+      {
+        kind: "bullets",
+        title: "We review the task",
+        items: [
+          "What outcome you need",
+          "Where leads come from today",
+          "What already exists: site, CRM, messengers",
+          "Where the team loses time"
+        ]
+      },
+      {
+        kind: "search",
+        title: "We suggest a solution",
+        query: "what fits better — website, bot, CRM or client area for my task",
+        hint: "We look at scope and timeline — not buzzwords"
+      },
+      {
+        kind: "bullets",
+        title: "We shape design and logic",
+        items: [
+          "Key screens and client journey",
+          "Scenarios for managers and the team",
+          "UI aligned with your brand"
+        ]
+      },
+      {
+        kind: "bullets",
+        title: "We build the product",
+        items: [
+          "Frontend and lead logic",
+          "Database and access roles",
+          "We test scenarios before launch"
+        ]
+      },
+      {
+        kind: "bullets",
+        title: "We connect leads, payments, CRM or Telegram",
+        items: [
+          "Forms and entry points",
+          "Messenger and email integrations",
+          "Payments, sheets, analytics"
+        ]
+      },
+      {
+        kind: "bullets",
+        title: "We launch and help you verify",
+        items: [
+          "Go live and check with real leads",
+          "Walk the team through daily use",
+          "Stay in touch after launch"
+        ]
+      }
+    ]
+  },
+  finalCta: {
+    title: "Tell us what you want to launch or automate",
+    subtitle: "We'll review the task and suggest a clear first step: site, bot, CRM, client area or MVP.",
+    ctaPrimary: "Discuss the project",
+    ctaSecondary: "Get a task review",
+    micro: "We reply within a day • First consultation is free"
+  },
+  packages: {
+    sectionTitle: "Three directions for your task",
+    launch: {
+      title: "Ad landing page",
+      subtitle: "Landing + form + Telegram",
+      forWho: "When you need to capture leads from ads, Instagram or your website fast.",
+      cta: "Estimate launch",
+      bullets: [
+        "Ad-ready page",
+        "Lead form",
+        "Contact buttons",
+        "Telegram or email alerts",
+        "Mobile responsive",
+        "Basic analytics",
+        "Launch"
+      ]
+    },
+    service: {
+      title: "Client area and admin",
+      subtitle: "Client portal + team panel + payments",
+      forWho: "When you need a full web service: registration, client area, statuses, payments.",
+      cta: "Discuss the service",
+      bullets: [
+        "Registration",
+        "Client area",
+        "Admin panel",
+        "User roles",
+        "Leads and statuses",
+        "Notifications",
+        "Payments",
+        "Integrations"
+      ]
+    },
+    automation: {
+      title: "Automation",
+      subtitle: "Less manual work",
+      forWho: "When leads, sheets, reports and alerts are still handled manually.",
+      cta: "Automate the process",
+      bullets: [
+        "Lead automation",
+        "Telegram, email and sheets wiring",
+        "Mini-CRM",
+        "Task statuses",
+        "Team notifications",
+        "Reports",
+        "Integrations"
+      ]
+    }
+  }
+};
+const ORANGE_PILL = "bg-gradient-to-r from-[#FFD7B0] via-[#FF9A3D] to-[#FF6A1A] shadow-[0_6px_20px_rgba(255,107,44,0.2)]";
+function cx$a(...a) {
+  return a.filter(Boolean).join(" ");
 }
-function StackCard({
-  item,
-  index,
-  reveal,
-  setRef,
-  labelId,
-  descId
+function LangToggle({
+  compact,
+  reducedMotion,
+  variant = "header"
 }) {
+  const { lang, setLang } = useLang();
+  const isHero = variant === "hero";
+  const label = lang === "ru" ? "Выбор языка" : "Language";
+  const h = compact ? "h-9 w-[5.25rem]" : isHero ? "h-11 w-[6.5rem]" : "h-10 w-[5.75rem]";
+  const text = compact ? "text-[11px]" : isHero ? "text-[13px]" : "text-xs";
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      ref: setRef,
-      className: "relative mx-auto w-[min(86vw,var(--cardW))] text-left sm:w-full sm:mx-0",
-      style: {
-        ["--cardW"]: `${MOBILE_CARD_MAX_W}px`,
-        opacity: reveal ? 1 : 0,
-        transform: reveal ? "translateY(0)" : "translateY(14px)",
-        transition: "transform .45s cubic-bezier(.2,.9,.2,1), opacity .4s ease",
-        transitionDelay: `${index * 26}ms`,
-        contentVisibility: "auto",
-        containIntrinsicSize: "320px 320px"
-      },
+      className: cx$a(
+        "relative shrink-0 select-none rounded-full p-1",
+        isHero ? "border border-white/35 bg-white/[0.10] backdrop-blur-md" : "border border-white/[0.08] bg-[#121212]",
+        h
+      ),
+      role: "radiogroup",
+      "aria-label": label,
+      "aria-orientation": "horizontal",
       children: [
         /* @__PURE__ */ jsx(
-          "div",
+          "span",
           {
-            className: "\n          relative w-full overflow-hidden rounded-[30px] p-[2px]\n          aspect-square\n          sm:aspect-auto sm:h-[200px]\n          focus-visible:outline-none\n        ",
+            "aria-hidden": true,
+            className: cx$a(
+              "pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-8px)/2)] rounded-full",
+              isHero ? "bg-[#FFFCF5] shadow-[0_4px_14px_rgba(0,0,0,0.18)]" : ORANGE_PILL,
+              !reducedMotion && "transition-transform duration-200 ease-[cubic-bezier(0.33,1,0.68,1)]"
+            ),
             style: {
-              background: "linear-gradient(135deg, rgba(255,255,255,.09) 0%, rgba(255,255,255,.04) 45%, rgba(255,255,255,.08) 100%)"
-            },
-            children: /* @__PURE__ */ jsxs("div", { className: "relative h-full w-full overflow-hidden rounded-[28px] bg-black/55", children: [
-              /* @__PURE__ */ jsx(
-                "img",
-                {
-                  src: item.src,
-                  alt: "",
-                  loading: "lazy",
-                  decoding: "async",
-                  draggable: false,
-                  className: "h-full w-full select-none brightness-[0.88] saturate-[0.68] contrast-[0.96]",
-                  style: { objectFit: "cover", objectPosition: "center" }
-                }
-              ),
-              /* @__PURE__ */ jsx(
-                "div",
-                {
-                  className: "pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/45",
-                  "aria-hidden": true
-                }
-              ),
-              /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-0 ring-1 ring-white/6" })
-            ] })
+              transform: lang === "en" ? "translateX(100%)" : "translateX(0)"
+            }
           }
         ),
-        /* @__PURE__ */ jsxs("div", { className: "mt-3 w-full", children: [
-          /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between gap-3", children: [
-            /* @__PURE__ */ jsx("div", { id: labelId, className: "text-[12px] font-semibold tracking-[0.20em] uppercase text-white/72", children: item.label }),
-            /* @__PURE__ */ jsx("div", { className: "text-[11px] font-semibold tracking-[0.18em] uppercase text-white/38", children: item.category })
-          ] }),
-          item.note && descId && /* @__PURE__ */ jsx("div", { id: descId, className: "mt-1 text-[12.5px] leading-relaxed text-white/55", children: item.note })
+        /* @__PURE__ */ jsxs("div", { className: "relative z-10 grid h-full grid-cols-2", children: [
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              role: "radio",
+              "aria-checked": lang === "ru",
+              onClick: () => setLang("ru"),
+              className: cx$a(
+                "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
+                "focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+                text,
+                lang === "ru" ? "text-[#1A202C]" : isHero ? "text-white/70 hover:text-white/90" : "text-white/45 hover:text-white/72"
+              ),
+              children: "RU"
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              role: "radio",
+              "aria-checked": lang === "en",
+              onClick: () => setLang("en"),
+              className: cx$a(
+                "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
+                "focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+                text,
+                lang === "en" ? "text-[#1A202C]" : isHero ? "text-white/70 hover:text-white/90" : "text-white/45 hover:text-white/72"
+              ),
+              children: "EN"
+            }
+          )
         ] })
       ]
     }
   );
 }
-function WhyUs() {
-  const { dict, lang } = useLang();
-  const isRu = lang === "ru";
-  const w = dict.whyUs;
-  const sectionId = useId();
-  const badgeLeft = w?.badgeLeft ?? (isRu ? "СТЕК" : "STACK");
-  const badgeCenter = w?.badgeCenter ?? (isRu ? "ТЕХНОЛОГИИ" : "TECH");
-  const badgeRight = w?.badgeRight ?? (isRu ? "МОДУЛИ" : "MODULES");
-  const title1 = w.titleTop ?? (isRu ? "С чем мы" : "Our");
-  const title2 = w.titleBottom ?? (isRu ? "работаем" : "stack");
-  const stack = useMemo(
-    () => [
-      // public/images/stack — имена файлов как в папке (PNG с заглавной / полным названием)
-      { id: "supabase", label: "Supabase", src: "/images/stack/Supabase.png", category: "Platform" },
-      { id: "react", label: "React", src: "/images/stack/React.png", category: "Frontend" },
-      { id: "ts", label: "TypeScript", src: "/images/stack/TypeScript.png", category: "Frontend" },
-      { id: "tw", label: "Tailwind", src: "/images/stack/Tailwind.png", category: "Frontend" },
-      { id: "node", label: "Node.js", src: "/images/stack/Node.js.png", category: "Backend" },
-      { id: "ex", label: "Express", src: "/images/stack/Express.png", category: "Backend" },
-      { id: "pg", label: "Postgres", src: "/images/stack/Postgres.png", category: "Database" },
-      { id: "html", label: "HTML", src: "/images/stack/HTML.png", category: "Frontend" },
-      { id: "css", label: "CSS", src: "/images/stack/CSS.png", category: "Frontend" },
-      { id: "js", label: "JavaScript", src: "/images/stack/JavaScript.png", category: "Frontend" }
-    ],
-    []
-  );
-  const rootRef = useRef(null);
-  const itemRefs = useRef([]);
-  const metricsRef = useRef({
-    firstY: 0,
-    lastY: 0,
-    ready: false
-  });
-  const [reveal, setReveal] = useState(true);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const progressRef = useRef(0);
+const HERO_IMAGES = [
+  "/images/hero-stage-1.png",
+  "/images/hero-stage-2.png",
+  "/images/hero-stage-3.png"
+];
+const SCROLL_TRACK_VH = 240;
+function cx$9(...a) {
+  return a.filter(Boolean).join(" ");
+}
+function clamp01$5(v) {
+  return Math.min(1, Math.max(0, v));
+}
+function smoothstep$3(t) {
+  const x = clamp01$5(t);
+  return x * x * (3 - 2 * x);
+}
+function imageOpacities(progress) {
+  if (progress <= 0.5) {
+    const t2 = smoothstep$3(progress / 0.5);
+    return [1 - t2, t2, 0];
+  }
+  const t = smoothstep$3((progress - 0.5) / 0.5);
+  return [0, 1 - t, t];
+}
+function textOpacities(progress) {
+  const stage = progress * 3;
+  const i = Math.min(2, Math.floor(stage));
+  const local = stage - i;
+  const hold = 0.72;
+  const op = [0, 0, 0];
+  if (local < hold) {
+    op[i] = 1;
+    return op;
+  }
+  if (i >= 2) {
+    op[2] = 1;
+    return op;
+  }
+  const t = smoothstep$3((local - hold) / (1 - hold));
+  op[i] = 1 - t;
+  if (i < 2) op[i + 1] = t;
+  return op;
+}
+function useHeroScrollProgress(trackRef) {
+  const [progress, setProgress] = useState(0);
   useEffect(() => {
-    const el = rootRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) setReveal(true);
-      },
-      { threshold: 0.12 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-  const recalcMetrics = useCallback(() => {
-    if (typeof window === "undefined") return;
-    const els = itemRefs.current.filter(Boolean);
-    if (!els.length) {
-      metricsRef.current.ready = false;
-      return;
-    }
-    let first = Number.POSITIVE_INFINITY;
-    let last = Number.NEGATIVE_INFINITY;
-    for (const el of els) {
-      const r = el.getBoundingClientRect();
-      const centerY = r.top + window.scrollY + r.height / 2;
-      if (centerY < first) first = centerY;
-      if (centerY > last) last = centerY;
-    }
-    metricsRef.current.firstY = first;
-    metricsRef.current.lastY = last;
-    metricsRef.current.ready = last - first > 8;
-  }, []);
-  const updateProgress = useCallback(() => {
-    if (typeof window === "undefined") return;
-    const m = metricsRef.current;
-    if (!m.ready) {
-      setScrollProgress(0);
-      return;
-    }
-    const midView = window.scrollY + window.innerHeight * 0.5;
-    const raw = (midView - m.firstY) / (m.lastY - m.firstY);
-    const next = clamp$1(raw, 0, 1);
-    if (Math.abs(next - progressRef.current) > 5e-3) {
-      progressRef.current = next;
-      setScrollProgress(next);
-    }
-  }, []);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+    const el = trackRef.current;
+    if (!el || typeof window === "undefined") return;
     let raf = 0;
+    let trackTop = 0;
+    let scrollable = 1;
+    const measure = () => {
+      const rect = el.getBoundingClientRect();
+      trackTop = window.scrollY + rect.top;
+      scrollable = Math.max(1, el.offsetHeight - window.innerHeight);
+    };
+    const update = () => {
+      raf = 0;
+      setProgress(clamp01$5((window.scrollY - trackTop) / scrollable));
+    };
     const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        updateProgress();
-      });
+      if (!raf) raf = requestAnimationFrame(update);
     };
     const onResize = () => {
-      recalcMetrics();
-      onScroll();
+      measure();
+      update();
     };
-    const ro = rootRef.current ? new ResizeObserver(onResize) : null;
-    if (ro && rootRef.current) ro.observe(rootRef.current);
-    const t = window.setTimeout(() => {
-      recalcMetrics();
-      updateProgress();
-    }, 0);
+    measure();
+    update();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
     return () => {
-      window.clearTimeout(t);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
       if (raf) cancelAnimationFrame(raf);
-      if (ro) ro.disconnect();
     };
-  }, [recalcMetrics, updateProgress]);
-  useEffect(() => {
-    if (!reveal) return;
-    const id = requestAnimationFrame(() => {
-      recalcMetrics();
-      updateProgress();
-    });
-    return () => cancelAnimationFrame(id);
-  }, [reveal, recalcMetrics, updateProgress]);
-  return /* @__PURE__ */ jsx(Section, { className: "pt-[150px] sm:pt-[200px] pb-16 sm:pb-24", children: /* @__PURE__ */ jsxs("div", { ref: rootRef, className: "relative", children: [
-    /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-0 -z-10 bg-black" }),
-    /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute left-0 right-0 top-0 -z-10 h-32 bg-gradient-to-b from-black via-black/90 to-transparent" }),
-    /* @__PURE__ */ jsxs("div", { className: "pointer-events-none absolute -z-10 inset-0", children: [
-      /* @__PURE__ */ jsx(
-        "div",
-        {
-          className: "absolute -left-24 top-20 h-[520px] w-[520px] rounded-full opacity-[0.22]",
-          style: {
-            background: "radial-gradient(circle at 30% 30%, rgba(249,115,22,.25), rgba(249,115,22,0) 60%)"
-          }
-        }
-      ),
-      /* @__PURE__ */ jsx(
-        "div",
-        {
-          className: "absolute -right-24 top-40 h-[520px] w-[520px] rounded-full opacity-[0.18]",
-          style: {
-            background: "radial-gradient(circle at 35% 35%, rgba(255,255,255,.12), rgba(255,255,255,0) 62%)"
-          }
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs("div", { className: "grid items-start gap-10 lg:grid-cols-[520px_minmax(0,1fr)_60px]", children: [
-      /* @__PURE__ */ jsxs("div", { className: "lg:sticky", style: { top: STICKY_TOP }, children: [
-        /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
-          /* @__PURE__ */ jsxs("div", { className: "text-[12px] font-semibold tracking-[0.26em] uppercase", children: [
-            /* @__PURE__ */ jsx("span", { className: "text-white/85", children: badgeLeft }),
-            /* @__PURE__ */ jsx("span", { className: "text-white/25", children: " • " }),
-            /* @__PURE__ */ jsx("span", { className: "text-[#F97316]/95", children: badgeCenter }),
-            /* @__PURE__ */ jsx("span", { className: "text-white/25", children: " • " }),
-            /* @__PURE__ */ jsx("span", { className: "text-white/70", children: badgeRight })
-          ] }),
-          /* @__PURE__ */ jsx("div", { className: "h-px flex-1 bg-gradient-to-r from-white/18 via-white/8 to-transparent" })
-        ] }),
-        /* @__PURE__ */ jsxs(
-          "h2",
-          {
-            className: "\n                  mt-5 uppercase leading-[0.98] tracking-[-0.02em]\n                  text-[34px] sm:text-[48px] lg:text-[58px]\n                ",
-            "aria-label": isRu ? "С чем мы работаем" : "Our stack",
-            children: [
-              /* @__PURE__ */ jsx("span", { className: "block font-[820] text-white/95", children: title1 }),
-              /* @__PURE__ */ jsx(
-                "span",
-                {
-                  className: "block font-[820] bg-gradient-to-r from-white via-white to-[#F97316] bg-clip-text text-transparent",
-                  style: { WebkitTextFillColor: "transparent" },
-                  children: title2
-                }
-              )
-            ]
-          }
-        )
-      ] }),
-      /* @__PURE__ */ jsxs("div", { className: "relative", children: [
-        /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-[16px_minmax(0,1fr)] items-start gap-4 lg:block", children: [
-          /* @__PURE__ */ jsx(
-            "div",
-            {
-              className: "sticky self-start lg:hidden",
-              style: { top: MOBILE_STICKY_TOP },
-              children: /* @__PURE__ */ jsx(ProgressBar, { progress: scrollProgress, height: 220, thin: true })
-            }
-          ),
-          /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 gap-6 justify-items-center sm:justify-items-stretch sm:grid-cols-2 sm:gap-7", children: stack.map((it, i) => {
-            const labelId = `${sectionId}-${it.id}-label`;
-            const descId = it.note ? `${sectionId}-${it.id}-desc` : void 0;
-            return /* @__PURE__ */ jsx(
-              StackCard,
-              {
-                item: it,
-                index: i,
-                reveal,
-                labelId,
-                descId,
-                setRef: (el) => {
-                  itemRefs.current[i] = el;
-                }
-              },
-              it.id
-            );
-          }) })
-        ] }),
-        /* @__PURE__ */ jsx("div", { className: "pointer-events-none sticky bottom-0 mt-10 h-16 w-full bg-gradient-to-t from-black via-black/95 to-transparent" })
-      ] }),
-      /* @__PURE__ */ jsx("div", { className: "hidden lg:block lg:sticky", style: { top: STICKY_TOP }, children: /* @__PURE__ */ jsx(ProgressBar, { progress: scrollProgress, height: 320, showPercent: true }) })
-    ] }) })
-  ] }) });
+  }, [trackRef]);
+  return progress;
 }
-function cx$6(...a) {
-  return a.filter(Boolean).join(" ");
-}
-const IMG = "/images/gen.webp";
-const TG_URL$1 = "https://t.me/TIVONIX";
-const EMAIL = "tivoonix@gmail.com";
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const onChange = () => setReduced(!!mq.matches);
-    onChange();
-    if (mq.addEventListener) mq.addEventListener("change", onChange);
-    else mq.addListener(onChange);
-    return () => {
-      if (mq.removeEventListener) mq.removeEventListener("change", onChange);
-      else mq.removeListener(onChange);
-    };
-  }, []);
-  return reduced;
-}
-const appear = (on) => cx$6(
-  "will-change-[opacity,transform]",
-  "transition-[opacity,transform] duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
-  on ? "opacity-100 translate-y-0" : "opacity-0 translate-y-[12px]"
-);
-const delay = (ms) => ({ ["transitionDelay"]: `${ms}ms` });
-const COPY = {
-  ru: {
-    eyebrow: "САЙТЫ • СЕРВИСЫ • ЗАПУСК",
-    h: "Создадим сайт или веб-сервис\nдля вашего бизнеса",
-    p: "Поможем понять, что нужно разработать, сколько это займёт и с чего лучше начать. Дизайн, разработка и запуск — в одном процессе.",
-    pCompact: "Поможем понять, что нужно разработать, сколько это займёт и с чего лучше начать. Дизайн, разработка и запуск — в одном процессе.",
-    trust: "Ответим в течение дня • Первая консультация — бесплатно",
-    tg: "Написать в Telegram",
-    emailBtnLabel: "Открыть в Gmail",
-    emailAria: "Открыть Gmail"
-  },
-  en: {
-    eyebrow: "SaaS • MVP • Landing pages",
-    h: "Launch your product faster",
-    p: "UX/UI + frontend: from idea to design and build. Send 2–3 lines — I’ll reply with the best format, a rough budget range, and next steps.",
-    pCompact: "UX/UI + frontend: from idea to design and build. Send 2–3 lines — I’ll reply with next steps.",
-    trust: "I reply within a day • Free 15-min intro call",
-    tg: "Write on Telegram",
-    emailBtnLabel: "Open in Gmail",
-    emailAria: "Open Gmail compose"
-  }
-};
-const HERO_STYLES = `
-  .gmailBtn{
-    border-radius:18px;
-    border:1px solid rgba(255,255,255,0.25);
-    background:rgba(0,0,0,0.35);
-    backdrop-filter:blur(12px);
-    -webkit-backdrop-filter:blur(12px);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);
-    transition:transform .18s ease, background .18s ease, border-color .18s ease;
-  }
-  .gmailBtn:hover{
-    transform:translateY(-1px);
-    background:rgba(255,255,255,0.06);
-    border-color:rgba(255,255,255,0.30);
-  }
-  .gmailBtn:active{ transform:translateY(0px); }
-
-  .tgBtn{
-    border-radius:18px;
-    border:1px solid rgba(255,255,255,0.18);
-    background:rgba(0,0,0,0.34);
-    backdrop-filter:blur(12px);
-    -webkit-backdrop-filter:blur(12px);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);
-    transition:transform .18s ease, background .18s ease, border-color .18s ease;
-  }
-  .tgBtn:hover{
-    transform:translateY(-1px);
-    background:rgba(255,255,255,0.06);
-    border-color:rgba(255,255,255,0.26);
-  }
-  .tgBtn:active{ transform:translateY(0px); }
-`;
-function buildMailBody(lang) {
-  if (lang === "ru") {
-    return "Здравствуйте!\n\nХочу получить оценку разработки.\n\n1) Что нужно сделать (1–2 предложения):\n- \n\n2) Ключевые функции:\n- \n- \n- \n\n3) Есть ли дизайн/ТЗ/прототип:\n- \n\n4) Сроки / бюджет (если есть):\n- \n\nКонтакты для связи:\n- \n\nСпасибо!";
-  }
-  return "Hi!\n\nI'd like to get an estimate.\n\n1) What we’re building (1–2 sentences):\n- \n\n2) Key features:\n- \n- \n- \n\n3) Do you have design/spec/prototype:\n- \n\n4) Timeline / budget (if any):\n- \n\nContact details:\n- \n\nThank you!";
-}
-function getSubject(lang) {
-  return lang === "ru" ? "Запрос оценки с сайта TIVONIX" : "TIVONIX inquiry: estimate";
-}
-function buildGmailUrl(to, subject, body) {
-  return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-}
-function AppsOrbitBlock() {
-  const { lang } = useLang();
-  const t = lang === "ru" ? COPY.ru : COPY.en;
-  const [bgFailed, setBgFailed] = useState(false);
-  const reducedMotion = usePrefersReducedMotion();
-  const rootRef = useRef(null);
-  const [visible, setVisible] = useState(reducedMotion);
-  const screenRef = useRef(null);
-  const contentRef = useRef(null);
-  const [mobileScale, setMobileScale] = useState(1);
-  const [compact, setCompact] = useState(false);
-  useEffect(() => {
-    if (reducedMotion) return;
-    const el = rootRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          setVisible(true);
-          io.disconnect();
-        }
-      },
-      { threshold: 0.18, rootMargin: "0px 0px -10% 0px" }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [reducedMotion]);
-  const gmailUrl = useMemo(() => {
-    const subject = getSubject(lang);
-    const body = buildMailBody(lang);
-    return buildGmailUrl(EMAIL, subject, body);
-  }, [lang]);
-  useLayoutEffect(() => {
-    if (typeof window === "undefined") return;
-    let raf = 0;
-    const compute = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const screen = screenRef.current;
-        const content = contentRef.current;
-        if (!screen || !content) return;
-        const isMobile = window.matchMedia("(max-width: 639px)").matches;
-        if (!isMobile) {
-          setMobileScale(1);
-          setCompact(false);
-          return;
-        }
-        setCompact(false);
-        requestAnimationFrame(() => {
-          const screen2 = screenRef.current;
-          const content2 = contentRef.current;
-          if (!screen2 || !content2) return;
-          const H = screen2.clientHeight;
-          const needed = content2.scrollHeight;
-          const safety = 10;
-          const ratio = (H - safety) / Math.max(1, needed);
-          if (ratio >= 1) {
-            setMobileScale(1);
-            return;
-          }
-          if (ratio < 0.92) {
-            setCompact(true);
-            requestAnimationFrame(() => {
-              const screen3 = screenRef.current;
-              const content3 = contentRef.current;
-              if (!screen3 || !content3) return;
-              const H3 = screen3.clientHeight;
-              const needed3 = content3.scrollHeight;
-              const ratio3 = (H3 - safety) / Math.max(1, needed3);
-              const s22 = Math.max(0.88, Math.min(1, ratio3));
-              setMobileScale(s22);
-            });
-            return;
-          }
-          const s2 = Math.max(0.92, Math.min(1, ratio));
-          setMobileScale(s2);
-        });
-      });
-    };
-    compute();
-    window.addEventListener("resize", compute);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", compute);
-    };
-  }, [lang]);
-  useLayoutEffect(() => {
-    if (typeof window === "undefined") return;
-    const screen = screenRef.current;
-    const content = contentRef.current;
-    if (!screen || !content) return;
-    const isMobile = window.matchMedia("(max-width: 639px)").matches;
-    if (!isMobile) return;
-    const H = screen.clientHeight;
-    const needed = content.scrollHeight;
-    const safety = 10;
-    const ratio = (H - safety) / Math.max(1, needed);
-    if (ratio >= 1) setMobileScale(1);
-    else setMobileScale(Math.max(0.88, Math.min(1, ratio)));
-  }, [compact]);
-  return /* @__PURE__ */ jsxs(Section, { className: "bg-black py-10 sm:py-12 lg:py-14", children: [
-    /* @__PURE__ */ jsx("style", { children: HERO_STYLES }),
-    /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsx(
-      "div",
-      {
-        ref: rootRef,
-        className: cx$6("mx-auto max-w-6xl", appear(visible)),
-        style: delay(30),
-        children: /* @__PURE__ */ jsxs(
-          "div",
-          {
-            className: cx$6(
-              "relative overflow-hidden rounded-[28px]",
-              "border border-white/10",
-              "bg-black"
-            ),
-            style: { height: "clamp(680px, 145vw, 900px)" },
-            children: [
-              /* @__PURE__ */ jsxs("div", { className: "absolute inset-0 z-0", children: [
-                /* @__PURE__ */ jsx(
-                  "div",
-                  {
-                    className: "absolute inset-0",
-                    style: {
-                      background: "radial-gradient(120% 90% at 50% 0%, rgba(255,154,61,0.30) 0%, rgba(255,106,26,0.16) 28%, rgba(0,0,0,0) 62%), linear-gradient(180deg, #000000 0%, #070707 100%)"
-                    }
-                  }
-                ),
-                !bgFailed && /* @__PURE__ */ jsx(
-                  "img",
-                  {
-                    src: IMG,
-                    alt: "",
-                    draggable: false,
-                    width: 1536,
-                    height: 1024,
-                    decoding: "async",
-                    loading: "lazy",
-                    onError: () => setBgFailed(true),
-                    className: "h-full w-full object-cover",
-                    style: {
-                      objectPosition: "50% 50%",
-                      transform: "scale(1.02)",
-                      filter: "brightness(1.02) contrast(1.02)"
-                    }
-                  }
-                )
-              ] }),
-              /* @__PURE__ */ jsx(
-                "div",
-                {
-                  ref: screenRef,
-                  className: cx$6(
-                    "absolute z-10",
-                    "inset-[25%_6%_20%_6%]",
-                    // mobile
-                    "sm:inset-[28%_18%_26%_18%]"
-                    // desktop
-                  ),
-                  children: /* @__PURE__ */ jsx("div", { className: "flex h-full w-full items-center justify-center text-center", children: /* @__PURE__ */ jsx(
-                    "div",
-                    {
-                      ref: contentRef,
-                      className: "w-full max-w-[60ch] px-2 sm:px-0",
-                      style: {
-                        transform: mobileScale < 1 ? `scale(${mobileScale})` : void 0,
-                        transformOrigin: "center center"
-                      },
-                      children: /* @__PURE__ */ jsxs("div", { className: "px-1 sm:px-0", children: [
-                        /* @__PURE__ */ jsx("div", { className: "text-[10.5px] sm:text-[13px] tracking-[0.22em] uppercase text-white/70", children: t.eyebrow }),
-                        /* @__PURE__ */ jsx("h2", { className: "mt-2.5 whitespace-pre-line text-balance text-[20px] font-[850] leading-[1.06] tracking-[-0.02em] text-white sm:mt-4 sm:text-[40px]", children: t.h }),
-                        /* @__PURE__ */ jsx("p", { className: "mt-2.5 text-pretty text-[12.8px] leading-[1.55] text-white/80 sm:mt-4 sm:text-[16px] sm:leading-[1.6]", children: compact ? t.pCompact : t.p }),
-                        /* @__PURE__ */ jsx(
-                          "div",
-                          {
-                            className: cx$6(
-                              "mt-2.5 text-[11.5px] text-white/60 sm:mt-4 sm:text-[12.5px]",
-                              compact ? "hidden sm:block" : "block"
-                            ),
-                            children: t.trust
-                          }
-                        ),
-                        /* @__PURE__ */ jsxs("div", { className: "mt-4 grid grid-cols-1 gap-2.5 sm:mt-6 sm:grid-cols-2 sm:gap-3", children: [
-                          /* @__PURE__ */ jsx(
-                            "a",
-                            {
-                              href: gmailUrl,
-                              target: "_blank",
-                              rel: "noopener noreferrer",
-                              "aria-label": t.emailAria,
-                              className: cx$6(
-                                "gmailBtn block w-full",
-                                "px-6 py-[13px] sm:py-[16px]",
-                                "text-center font-[750] tracking-[-0.01em]",
-                                "text-[14.5px] sm:text-[16px]",
-                                "text-white/92",
-                                "transition active:translate-y-[1px]",
-                                "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                              ),
-                              children: t.emailBtnLabel
-                            }
-                          ),
-                          /* @__PURE__ */ jsxs(
-                            "a",
-                            {
-                              href: TG_URL$1,
-                              target: "_blank",
-                              rel: "noopener noreferrer",
-                              className: cx$6(
-                                "group relative block w-full",
-                                "rounded-2xl px-6 py-[13px] sm:py-[16px]",
-                                "text-center font-[750] tracking-[-0.01em]",
-                                "text-[14.5px] sm:text-[16px]",
-                                "text-black",
-                                "shadow-[0_18px_70px_rgba(0,0,0,.55)]",
-                                "transition active:translate-y-[1px]",
-                                "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                              ),
-                              style: {
-                                background: "linear-gradient(180deg, #FFB020 0%, #FF7A18 45%, #FF5A12 100%)"
-                              },
-                              children: [
-                                /* @__PURE__ */ jsx("span", { className: "relative z-10", children: t.tg }),
-                                /* @__PURE__ */ jsx(
-                                  "span",
-                                  {
-                                    className: "pointer-events-none absolute inset-0 rounded-2xl opacity-0 blur-xl transition duration-300 group-hover:opacity-70",
-                                    style: {
-                                      background: "radial-gradient(700px 120px at 50% 30%, rgba(255,176,32,0.65), rgba(0,0,0,0))"
-                                    }
-                                  }
-                                )
-                              ]
-                            }
-                          )
-                        ] })
-                      ] })
-                    }
-                  ) })
-                }
-              ),
-              /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-0 rounded-[28px] ring-1 ring-white/8" })
-            ]
-          }
-        )
-      }
-    ) })
-  ] });
-}
-function cx$5(...a) {
-  return a.filter(Boolean).join(" ");
-}
-const LOGO_IMG = "/images/logopad.webp";
-function LogoCircle({ src }) {
-  return /* @__PURE__ */ jsx("div", { className: "flex justify-center", "aria-hidden": "true", children: /* @__PURE__ */ jsx(
+function HeroCard({
+  progress,
+  stages,
+  isRu
+}) {
+  const imageOpacity = useMemo(() => imageOpacities(progress), [progress]);
+  const textOpacity = useMemo(() => textOpacities(progress), [progress]);
+  const activeStage = textOpacity[2] > 0.5 ? 2 : textOpacity[1] > 0.5 ? 1 : 0;
+  const scrollDown = () => {
+    const next = document.getElementById("pain");
+    if (next) {
+      next.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    window.scrollBy({ top: window.innerHeight * 0.9, behavior: "smooth" });
+  };
+  return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$5(
-        "rounded-full overflow-hidden",
-        "h-[122px] w-[122px] sm:h-[168px] sm:w-[168px] lg:h-[198px] lg:w-[198px]",
-        "shadow-[0_26px_90px_rgba(0,0,0,0.62)]"
+      className: cx$9(
+        "relative isolate h-full min-h-0 flex-1 overflow-hidden rounded-[28px]",
+        "sm:min-h-[min(65vh,730px)] sm:h-auto",
+        "lg:min-h-[700px] lg:rounded-[32px]"
       ),
+      children: [
+        HERO_IMAGES.map((src, i) => /* @__PURE__ */ jsx(
+          "img",
+          {
+            src,
+            alt: "",
+            className: "pointer-events-none absolute inset-0 h-full w-full object-cover object-[center_92%] sm:object-[center_94%]",
+            style: { opacity: imageOpacity[i] },
+            decoding: "async",
+            fetchPriority: i === 0 ? "high" : "low"
+          },
+          src
+        )),
+        /* @__PURE__ */ jsx(
+          "div",
+          {
+            className: "pointer-events-none absolute inset-0 bg-gradient-to-b from-black/18 via-transparent to-black/16",
+            "aria-hidden": true
+          }
+        ),
+        /* @__PURE__ */ jsxs("div", { className: "absolute inset-0 z-10 flex flex-col px-6 pt-[calc(4.875rem+0.5rem)] sm:px-10 sm:pt-[calc(var(--tivonix-header-spacer)+2rem)] lg:px-14", children: [
+          /* @__PURE__ */ jsx("div", { className: "flex min-h-0 flex-1 items-center justify-center", children: /* @__PURE__ */ jsx("div", { className: "relative w-full max-w-[52rem]", children: /* @__PURE__ */ jsx("div", { className: "relative grid w-full justify-items-center", children: stages.map((stage, i) => {
+            const opacity = textOpacity[i];
+            return /* @__PURE__ */ jsxs(
+              "div",
+              {
+                className: "hero-stage-copy col-start-1 row-start-1 flex w-full max-w-[52rem] flex-col items-center justify-center text-center",
+                style: {
+                  opacity,
+                  visibility: opacity < 0.04 ? "hidden" : "visible"
+                },
+                "aria-hidden": i !== activeStage,
+                children: [
+                  /* @__PURE__ */ jsx("h1", { className: cx$9(HERO_SCROLL_HEADLINE_CLASS, "mx-auto w-full text-center"), children: stage.headline }),
+                  /* @__PURE__ */ jsx("p", { className: cx$9(HERO_SCROLL_LEAD_CLASS, "mx-auto w-full max-w-[34rem] text-center"), children: stage.lead })
+                ]
+              },
+              stage.headline
+            );
+          }) }) }) }),
+          /* @__PURE__ */ jsxs("div", { className: "pointer-events-auto flex shrink-0 flex-col items-center gap-3 pb-5 sm:pb-8", children: [
+            /* @__PURE__ */ jsx(LangToggle, { variant: "hero" }),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                onClick: scrollDown,
+                className: cx$9(
+                  "hero-scroll-hint grid h-10 w-10 place-items-center rounded-full border-0 sm:hidden",
+                  "bg-white/[0.08] text-white/75 transition hover:bg-white/[0.12] hover:text-white",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
+                ),
+                "aria-label": isRu ? "Прокрутить вниз" : "Scroll down",
+                children: /* @__PURE__ */ jsx(ChevronDown, { size: 22, strokeWidth: 2.25, "aria-hidden": true })
+              }
+            )
+          ] })
+        ] })
+      ]
+    }
+  );
+}
+function Hero() {
+  const trackRef = useRef(null);
+  const progress = useHeroScrollProgress(trackRef);
+  const { lang } = useLang();
+  const isRu = lang === "ru";
+  const copy = landingCopy(lang);
+  const stages = copy.hero.scrollStages;
+  return /* @__PURE__ */ jsx(
+    "div",
+    {
+      ref: trackRef,
+      className: "relative",
+      style: { height: `${SCROLL_TRACK_VH}vh` },
       children: /* @__PURE__ */ jsx(
-        "img",
+        Section,
         {
-          src,
-          alt: "",
-          draggable: false,
-          loading: "lazy",
-          decoding: "async",
-          className: "w-full h-full object-cover"
+          className: cx$9(
+            "sticky top-0 z-[1] isolate overflow-hidden bg-transparent !py-0",
+            "min-h-[100dvh] pb-0 sm:min-h-0 sm:pb-7 lg:pb-9"
+          ),
+          children: /* @__PURE__ */ jsx(
+            "div",
+            {
+              className: cx$9(
+                "flex h-[calc(100dvh-1.25rem)] min-h-0 w-full max-w-none flex-col",
+                "px-3 pt-2.5 pb-2.5",
+                "sm:mx-auto sm:h-auto sm:max-w-[min(98vw,1840px)] sm:px-3 sm:pt-2.5 sm:pb-0 lg:px-4"
+              ),
+              children: /* @__PURE__ */ jsx(HeroCard, { progress, stages, isRu })
+            }
+          )
         }
       )
+    }
+  );
+}
+const CARD_DARK = "#141414";
+const CARD_SOFT = "#262626";
+const ACCENT$1 = "#FF5722";
+const PAIN_BG_DIR = "/images";
+const PAIN_CARD_BACKGROUNDS = [
+  `${PAIN_BG_DIR}/pain-bg-1.png`,
+  `${PAIN_BG_DIR}/pain-bg-4.png`,
+  `${PAIN_BG_DIR}/pain-bg-2.png`,
+  `${PAIN_BG_DIR}/pain-bg-2.png`,
+  `${PAIN_BG_DIR}/pain-bg-3.png`
+];
+function animStyle(delayMs, durationMs) {
+  return {
+    animationDelay: `${delayMs}ms`,
+    ...durationMs ? { animationDuration: `${durationMs}ms` } : {}
+  };
+}
+function FadeList({ children }) {
+  return /* @__PURE__ */ jsxs("div", { className: "relative", children: [
+    children,
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-[#141414] to-transparent",
+        "aria-hidden": true
+      }
+    )
+  ] });
+}
+function ChannelsVisual({ isRu }) {
+  const rows = isRu ? [
+    { ch: "Instagram", status: "3 непрочитанных", pending: true },
+    { ch: "Telegram", status: "Ответ через 47 мин", pending: true },
+    { ch: "Сайт", status: "В таблице", pending: false },
+    { ch: "Звонок", status: "Не зафиксирован", pending: true }
+  ] : [
+    { ch: "Instagram", status: "3 unread", pending: true },
+    { ch: "Telegram", status: "Reply in 47 min", pending: true },
+    { ch: "Website", status: "In spreadsheet", pending: false },
+    { ch: "Call", status: "Not logged", pending: true }
+  ];
+  return /* @__PURE__ */ jsx(FadeList, { children: /* @__PURE__ */ jsx("div", { className: "space-y-1.5", children: rows.map((r, i) => /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: "pain-row-pulse flex items-center justify-between gap-3 rounded-lg bg-white/[0.05] px-3 py-2.5",
+      style: animStyle(i * 420, 2800),
+      children: [
+        /* @__PURE__ */ jsx("span", { className: "text-[12px] font-medium text-white/90", children: r.ch }),
+        /* @__PURE__ */ jsxs("span", { className: "flex items-center gap-1.5 text-[11px] text-white/40", children: [
+          r.pending ? /* @__PURE__ */ jsx(Loader2, { size: 11, className: "animate-spin text-[#FF5722]/90" }) : /* @__PURE__ */ jsx(Check, { size: 11, className: "text-white/35" }),
+          /* @__PURE__ */ jsx("span", { className: "pain-shimmer", style: animStyle(i * 300 + 200), children: r.status })
+        ] })
+      ]
+    },
+    r.ch
+  )) }) });
+}
+function TelegramVisual({ isRu }) {
+  const message = isRu ? "Здравствуйте, хочу записаться на консультацию…" : "Hi, I'd like to book a consultation…";
+  const times = isRu ? ["сейчас", "32 мин", "1 ч назад"] : ["now", "32 min", "1 hr ago"];
+  const status = isRu ? "Менеджер ещё не видел" : "Manager hasn't seen it";
+  const [typed, setTyped] = useState("");
+  const [timeIdx, setTimeIdx] = useState(0);
+  const [showStatus, setShowStatus] = useState(false);
+  const [cycle, setCycle] = useState(0);
+  const isTyping = typed.length < message.length;
+  const isLate = timeIdx >= 2;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      setTyped(message);
+      setTimeIdx(2);
+      setShowStatus(true);
+      return;
+    }
+    let cancelled = false;
+    const timeouts = [];
+    const t = (fn, ms) => {
+      timeouts.push(window.setTimeout(() => {
+        if (!cancelled) fn();
+      }, ms));
+    };
+    setTyped("");
+    setTimeIdx(0);
+    setShowStatus(false);
+    message.split("").forEach((_, i) => {
+      t(() => setTyped(message.slice(0, i + 1)), 38 * (i + 1));
+    });
+    const typingDone = 38 * message.length + 320;
+    t(() => setShowStatus(true), typingDone);
+    t(() => setTimeIdx(1), typingDone + 1600);
+    t(() => setTimeIdx(2), typingDone + 3400);
+    t(() => setCycle((c) => c + 1), typingDone + 6200);
+    return () => {
+      cancelled = true;
+      timeouts.forEach(clearTimeout);
+    };
+  }, [message, cycle]);
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: "flex items-start gap-2.5 rounded-xl p-3 sm:p-3.5",
+      style: { backgroundColor: CARD_SOFT },
+      children: [
+        /* @__PURE__ */ jsx("span", { className: "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.1]", children: /* @__PURE__ */ jsx(SiTelegram, { size: 20, className: "text-[#FF9A3D]", "aria-hidden": true }) }),
+        /* @__PURE__ */ jsxs("div", { className: "min-w-0 flex-1 pt-0.5", children: [
+          /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+            /* @__PURE__ */ jsx("span", { className: "text-[11px] font-medium text-white/55", children: "Telegram" }),
+            /* @__PURE__ */ jsx(
+              "span",
+              {
+                className: [
+                  "text-[10px] tabular-nums transition-colors duration-500",
+                  isLate ? "text-[#FFAB91] pain-blink" : "text-white/38"
+                ].join(" "),
+                children: times[timeIdx]
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxs("p", { className: "mt-1.5 min-h-[2.6rem] text-[12px] leading-snug text-white/90 sm:text-[13px]", children: [
+            typed,
+            isTyping && /* @__PURE__ */ jsx("span", { className: "pain-cursor ml-0.5 inline-block text-[#FF9A3D]", "aria-hidden": true })
+          ] }),
+          /* @__PURE__ */ jsxs(
+            "div",
+            {
+              className: [
+                "mt-2.5 flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] transition-all duration-500 ease-out",
+                showStatus ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-1 opacity-0",
+                isLate ? "bg-[#FF5722]/28 text-white pain-glow" : "bg-white/10 text-white/88"
+              ].join(" "),
+              children: [
+                /* @__PURE__ */ jsx(
+                  "span",
+                  {
+                    className: [
+                      "h-1.5 w-1.5 rounded-full",
+                      isLate ? "pain-dot-pulse bg-[#FF5722]" : "pain-dot-pulse bg-white/90"
+                    ].join(" "),
+                    "aria-hidden": true
+                  }
+                ),
+                /* @__PURE__ */ jsx("span", { className: isLate ? "pain-blink" : void 0, children: status })
+              ]
+            }
+          )
+        ] })
+      ]
+    }
+  );
+}
+function StatusPill({
+  label,
+  variant = "ok"
+}) {
+  const styles = {
+    ok: "bg-white/[0.06] text-white/58",
+    warn: "bg-white/[0.05] text-white/42 pain-shimmer",
+    unknown: "bg-white/[0.05] text-white/30 pain-blink",
+    lost: "pain-glow bg-[#FF5722]/20 text-[#FF8A5C]"
+  };
+  return /* @__PURE__ */ jsx("span", { className: `shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium ${styles[variant]}`, children: label });
+}
+const STATUS_MARQUEE_STYLES = `
+  @keyframes pain-status-left {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes pain-status-right {
+    from { transform: translateX(-50%); }
+    to { transform: translateX(0); }
+  }
+  .pain-status-track-left {
+    animation: pain-status-left 26s linear infinite;
+  }
+  .pain-status-track-right {
+    animation: pain-status-right 30s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pain-status-track-left,
+    .pain-status-track-right {
+      animation: none !important;
+    }
+  }
+`;
+function StatusMarqueeRow({
+  items,
+  direction
+}) {
+  const track = [...items, ...items];
+  return /* @__PURE__ */ jsx("div", { className: "overflow-hidden", children: /* @__PURE__ */ jsx(
+    "div",
+    {
+      className: [
+        "flex w-max gap-2",
+        direction === "left" ? "pain-status-track-left" : "pain-status-track-right"
+      ].join(" "),
+      children: track.map((item, i) => /* @__PURE__ */ jsx(StatusPill, { label: item.label, variant: item.variant }, `${item.label}-${i}`))
     }
   ) });
 }
-function Bullet({ children }) {
-  return /* @__PURE__ */ jsxs("li", { className: "group flex gap-3", children: [
-    /* @__PURE__ */ jsx(
-      "span",
-      {
-        className: "mt-[9px] h-[7px] w-[7px] rounded-full shrink-0",
-        style: { background: "#F97316" },
-        "aria-hidden": "true"
-      }
-    ),
-    /* @__PURE__ */ jsx("span", { className: "text-white/78 group-hover:text-white/88 transition-colors", children })
+function StatusVisual({ isRu }) {
+  const rowLeft = isRu ? [
+    { label: "Новая", variant: "ok" },
+    { label: "В работе", variant: "ok" },
+    { label: "Записан", variant: "warn" },
+    { label: "Оплачен", variant: "ok" },
+    { label: "На связи", variant: "warn" }
+  ] : [
+    { label: "New", variant: "ok" },
+    { label: "In progress", variant: "ok" },
+    { label: "Booked", variant: "warn" },
+    { label: "Paid", variant: "ok" },
+    { label: "Contacted", variant: "warn" }
+  ];
+  const rowRight = isRu ? [
+    { label: "???", variant: "unknown" },
+    { label: "Потеряна", variant: "lost" },
+    { label: "Не обработана", variant: "warn" },
+    { label: "Ждёт ответа", variant: "unknown" },
+    { label: "Пропущена", variant: "lost" }
+  ] : [
+    { label: "???", variant: "unknown" },
+    { label: "Lost", variant: "lost" },
+    { label: "Unprocessed", variant: "warn" },
+    { label: "Awaiting reply", variant: "unknown" },
+    { label: "Missed", variant: "lost" }
+  ];
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx("style", { children: STATUS_MARQUEE_STYLES }),
+    /* @__PURE__ */ jsxs("div", { className: "min-w-0 pt-4 sm:pt-5", children: [
+      /* @__PURE__ */ jsx(
+        Shield,
+        {
+          size: 14,
+          className: "pain-shimmer mb-3 text-[#FF5722]",
+          strokeWidth: 1.75,
+          "aria-hidden": true
+        }
+      ),
+      /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx(StatusMarqueeRow, { items: rowLeft, direction: "left" }),
+        /* @__PURE__ */ jsx(StatusMarqueeRow, { items: rowRight, direction: "right" })
+      ] })
+    ] })
   ] });
 }
-function Chip({ children }) {
-  return /* @__PURE__ */ jsx(
-    "span",
+function AdminVisual({ isRu }) {
+  const lines = isRu ? [
+    { label: "Блокнот", value: "Анна — перезвонить" },
+    { label: "Таблица", value: "строка 14" },
+    { label: "Память", value: "«вроде ответил»", uncertain: true }
+  ] : [
+    { label: "Notebook", value: "Anna — call back" },
+    { label: "Sheet", value: "row 14" },
+    { label: "Memory", value: "«think I replied»", uncertain: true }
+  ];
+  return /* @__PURE__ */ jsx("div", { className: "space-y-2 font-mono text-[11px] leading-relaxed sm:text-[12px]", children: lines.map((line, i) => /* @__PURE__ */ jsxs(
+    "p",
     {
-      className: cx$5(
-        "inline-flex items-center",
-        "rounded-full bg-white/[0.06]",
-        "px-3 py-1.5",
-        "text-[11.5px] sm:text-[12px] leading-none text-white/80"
-      ),
-      children
+      className: line.uncertain ? "pain-blink text-white/50" : "pain-fade-cycle text-white/48",
+      style: animStyle(i * 500, 3200),
+      children: [
+        /* @__PURE__ */ jsx("span", { className: "text-[#FF9A3D]", children: "›" }),
+        " ",
+        /* @__PURE__ */ jsxs("span", { className: "text-white/55", children: [
+          line.label,
+          ":"
+        ] }),
+        " ",
+        line.value
+      ]
+    },
+    line.label
+  )) });
+}
+function FlowTerminalVisual({ isRu }) {
+  const header = "form.submit → email";
+  const branches = isRu ? [
+    { prefix: "└─", text: "вручную в таблицу" },
+    { prefix: "└─", text: "статус: неизвестно" },
+    { prefix: "└─", label: "Telegram:", value: "нет", missing: true }
+  ] : [
+    { prefix: "└─", text: "manual spreadsheet" },
+    { prefix: "└─", text: "status: unknown" },
+    { prefix: "└─", label: "Telegram:", value: "none", missing: true }
+  ];
+  const [step, setStep] = useState(0);
+  const [cycle, setCycle] = useState(0);
+  const totalSteps = 1 + branches.length;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      setStep(totalSteps);
+      return;
+    }
+    let cancelled = false;
+    const timeouts = [];
+    const t = (fn, ms) => {
+      timeouts.push(window.setTimeout(() => {
+        if (!cancelled) fn();
+      }, ms));
+    };
+    setStep(0);
+    for (let i = 1; i <= totalSteps; i++) {
+      t(() => setStep(i), 520 * i);
+    }
+    t(() => setCycle((c) => c + 1), 520 * totalSteps + 2400);
+    return () => {
+      cancelled = true;
+      timeouts.forEach(clearTimeout);
+    };
+  }, [totalSteps, cycle, isRu]);
+  const showEnter = step >= totalSteps;
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: "rounded-xl p-3.5 font-mono sm:p-4",
+      style: { backgroundColor: CARD_SOFT },
+      children: [
+        /* @__PURE__ */ jsxs("div", { className: "mb-3 flex items-center gap-1.5 border-b border-white/[0.06] pb-2.5", children: [
+          /* @__PURE__ */ jsx("span", { className: "h-2 w-2 rounded-full bg-[#FF5F57]/80", "aria-hidden": true }),
+          /* @__PURE__ */ jsx("span", { className: "h-2 w-2 rounded-full bg-[#FEBC2E]/80", "aria-hidden": true }),
+          /* @__PURE__ */ jsx("span", { className: "h-2 w-2 rounded-full bg-[#28C840]/80", "aria-hidden": true }),
+          /* @__PURE__ */ jsx("span", { className: "ml-auto text-[9px] uppercase tracking-wide text-white/28", children: isRu ? "обработка" : "handler" })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-1 text-[10px] leading-[1.8] sm:text-[11px]", children: [
+          /* @__PURE__ */ jsx(
+            "p",
+            {
+              className: [
+                "text-white/78 transition-opacity duration-300",
+                step >= 1 ? "opacity-100" : "opacity-0"
+              ].join(" "),
+              children: header
+            }
+          ),
+          branches.map((line, i) => {
+            const visible = step >= i + 2;
+            return /* @__PURE__ */ jsxs(
+              "p",
+              {
+                className: [
+                  "transition-opacity duration-300",
+                  visible ? "opacity-100" : "opacity-0",
+                  line.missing ? "" : "text-white/42"
+                ].join(" "),
+                children: [
+                  /* @__PURE__ */ jsxs("span", { className: "text-white/35", children: [
+                    line.prefix,
+                    " "
+                  ] }),
+                  line.missing ? /* @__PURE__ */ jsxs(Fragment, { children: [
+                    /* @__PURE__ */ jsxs("span", { className: "text-white/42", children: [
+                      line.label,
+                      " "
+                    ] }),
+                    /* @__PURE__ */ jsx("span", { className: "pain-blink text-[#FF5722]", children: line.value })
+                  ] }) : line.text
+                ]
+              },
+              line.text ?? line.label
+            );
+          })
+        ] }),
+        /* @__PURE__ */ jsxs(
+          "div",
+          {
+            className: [
+              "mt-4 flex items-center justify-end gap-1.5 transition-all duration-500",
+              showEnter ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
+            ].join(" "),
+            children: [
+              /* @__PURE__ */ jsx("span", { className: "pain-cursor text-[#FF9A3D]", "aria-hidden": true }),
+              /* @__PURE__ */ jsx("span", { className: "inline-flex items-center gap-1.5 rounded-md bg-[#FF5722] px-2.5 py-1 text-[10px] font-medium text-white", children: "Enter ↵" })
+            ]
+          }
+        )
+      ]
     }
   );
 }
-function Benefits() {
-  const { dict, lang } = useLang();
-  const isRu = lang === "ru";
-  const bd = dict?.benefits;
-  const heroLine1 = bd?.heroLine1 ?? (isRu ? "Запустим ваш веб-сервис" : "Launch your web service");
-  const heroLine2 = bd?.heroLine2 ?? (isRu ? "от идеи до" : "from idea to");
-  const heroLine3 = bd?.heroLine3 ?? (isRu ? "первых клиентов" : "first customers");
-  const problemTitle = bd?.problemTitle ?? (isRu ? "Где чаще всего теряются время и бюджет" : "Where time and budget usually slip away");
-  const solutionTitle = bd?.solutionTitle ?? (isRu ? "КАК МЫ РАБОТАЕМ" : "HOW WE WORK");
-  const problemBullets = bd?.problemBullets ?? (isRu ? [
-    "Нет чёткого плана: что делаем, в каком порядке и зачем",
-    "Дизайн сделан отдельно от разработки — потом всё приходится переделывать",
-    "Не продуманы личный кабинет, админка, оплата и другие важные сценарии",
-    "Проект долго дорабатывается, вместо того чтобы быстрее выйти на рынок"
-  ] : [
-    "No clear plan: what we build, in what order, and why",
-    "Design is done apart from development — then everything has to be reworked",
-    "User area, admin, payments, and other key flows aren’t thought through",
-    "The project keeps getting polished instead of reaching the market faster"
-  ]);
-  const solutionBullets = bd?.solutionBullets ?? (isRu ? [
-    "Сначала разбираемся в задаче: что нужно пользователям и как должен работать продукт",
-    "Затем составляем структуру: какие страницы, личные кабинеты, формы и функции нужны",
-    "После этого делаем дизайн и сразу учитываем, как он будет реализован в разработке",
-    "Подключаем нужные сервисы: заявки, оплату, аналитику и другое",
-    "На выходе вы получаете не просто макеты, а готовый продукт, который можно запускать"
-  ] : [
-    "We start by clarifying the task: what users need and how the product should work",
-    "Then we map the structure: pages, user areas, forms, and required features",
-    "After that we design with implementation in mind from day one",
-    "We connect the required services: leads, payments, analytics, and more",
-    "You get more than mockups - you get a launch-ready product"
-  ]);
-  const supportLine = bd?.supportLine ?? (isRu ? "Отвечаем в течение 24 часов. Можно начать с короткого обсуждения идеи — поможем понять объём, сроки и первые шаги." : "We reply within 24 hours. Start with a short idea discussion - we will help define scope, timeline, and first steps.");
-  const eyebrow = isRu ? "дизайн • разработка • запуск" : "design • build • launch";
-  const trustChips = useMemo(
-    () => isRu ? ["Один подрядчик", "Понятный процесс", "Дизайн + разработка", "Готово к запуску"] : ["Single team", "Clear process", "Design + development", "Launch-ready"],
-    [isRu]
-  );
-  const PrimaryTitle = "h2";
-  return /* @__PURE__ */ jsx(
-    Section,
+function PainBentoCard({
+  title,
+  text,
+  solution,
+  hoverCta,
+  visual,
+  accent = false,
+  split = false,
+  bgImage,
+  bgAlways = false,
+  bgPosition = "center center",
+  className
+}) {
+  return /* @__PURE__ */ jsxs(
+    "article",
     {
-      id: "benefits",
-      className: cx$5(
-        "relative overflow-hidden bg-black",
-        "py-16 sm:py-20 lg:py-24"
-      ),
-      children: /* @__PURE__ */ jsxs(Container, { children: [
-        /* @__PURE__ */ jsxs("div", { className: "text-center", children: [
-          /* @__PURE__ */ jsx("div", { className: "text-[11px] sm:text-[12px] tracking-[0.28em] uppercase text-white/45", children: eyebrow }),
-          /* @__PURE__ */ jsxs(PrimaryTitle, { className: "mt-4 leading-[0.96] tracking-[-0.02em] text-[34px] sm:text-[52px] lg:text-[66px]", children: [
-            /* @__PURE__ */ jsx("span", { className: "block font-[820] text-white/95", children: heroLine1 }),
-            /* @__PURE__ */ jsx("span", { className: "block font-[820] text-white/82", children: heroLine2 }),
-            /* @__PURE__ */ jsx("span", { className: "block font-[820] text-white/58", children: heroLine3 })
-          ] }),
-          /* @__PURE__ */ jsx("p", { className: "mx-auto mt-5 max-w-[58ch] text-[15px] sm:text-[16.5px] leading-[1.75] text-white/72", children: isRu ? "Продумываем структуру, дизайн и разработку вместе — чтобы быстрее получить готовый продукт, который удобно использовать и легко развивать." : "We plan structure, design, and development together — so you get a finished product faster: easy to use and easy to grow." }),
-          /* @__PURE__ */ jsx("div", { className: "mt-6 flex flex-wrap justify-center gap-2", children: trustChips.map((t) => /* @__PURE__ */ jsx(Chip, { children: t }, t)) })
-        ] }),
-        /* @__PURE__ */ jsx("div", { className: "mt-8 sm:mt-10", children: /* @__PURE__ */ jsx(LogoCircle, { src: LOGO_IMG }) }),
-        /* @__PURE__ */ jsxs("div", { className: "mt-12 sm:mt-14 grid gap-8 lg:grid-cols-2", children: [
-          /* @__PURE__ */ jsxs("div", { className: "benefitsTextPlate rounded-3xl border-0 ring-0 p-6 sm:p-7 bg-white/[0.05] shadow-[0_20px_60px_rgba(0,0,0,0.42)] backdrop-blur-md", children: [
-            /* @__PURE__ */ jsx("div", { className: "text-[18px] sm:text-[22px] leading-tight font-[780] text-white/95", children: problemTitle }),
-            /* @__PURE__ */ jsx("ul", { className: "mt-5 space-y-4 text-[14.5px] sm:text-[15px] leading-[1.75]", children: problemBullets.map((t, i) => /* @__PURE__ */ jsx(Bullet, { children: t }, `problem-${i}`)) })
-          ] }),
-          /* @__PURE__ */ jsxs("div", { className: "benefitsTextPlate rounded-3xl border-0 ring-0 p-6 sm:p-7 bg-white/[0.05] shadow-[0_20px_60px_rgba(0,0,0,0.42)] backdrop-blur-md", children: [
-            /* @__PURE__ */ jsx("div", { className: "text-[18px] sm:text-[22px] leading-tight font-[780] text-white/95", children: solutionTitle }),
-            /* @__PURE__ */ jsx("ul", { className: "mt-5 space-y-4 text-[14.5px] sm:text-[15px] leading-[1.75]", children: solutionBullets.map((t, i) => /* @__PURE__ */ jsx(Bullet, { children: t }, `solution-${i}`)) }),
-            /* @__PURE__ */ jsx("div", { className: "mt-6 text-[13px] sm:text-[13.5px] leading-[1.65] text-white/58", children: supportLine })
-          ] })
+      className: [
+        "group relative flex min-h-[260px] flex-col overflow-hidden rounded-2xl transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        accent ? "bg-[#FF5722]" : "bg-[#141414]",
+        className ?? ""
+      ].join(" "),
+      style: accent ? void 0 : { backgroundColor: CARD_DARK },
+      children: [
+        bgImage ? /* @__PURE__ */ jsxs(Fragment, { children: [
+          /* @__PURE__ */ jsx(
+            "img",
+            {
+              src: bgImage,
+              alt: "",
+              loading: "lazy",
+              decoding: "async",
+              draggable: false,
+              className: [
+                "absolute inset-0 z-0 h-full w-full object-cover transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                bgAlways ? "opacity-100" : "opacity-0 motion-safe:group-hover:opacity-100"
+              ].join(" "),
+              style: { objectPosition: bgPosition }
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "div",
+            {
+              className: [
+                "pointer-events-none absolute inset-0 z-0 transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                bgAlways ? "opacity-100" : "opacity-0 motion-safe:group-hover:opacity-100",
+                accent ? "bg-gradient-to-b from-[#FF5722]/55 via-[#FF5722]/35 to-[#FF5722]/72" : bgAlways ? "bg-gradient-to-b from-black/55 via-black/42 to-black/68" : "bg-gradient-to-b from-black/72 via-black/58 to-black/82"
+              ].join(" "),
+              "aria-hidden": true
+            }
+          )
+        ] }) : null,
+        /* @__PURE__ */ jsx(
+          "div",
+          {
+            className: [
+              "relative z-[1] flex flex-1 flex-col p-6 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-8",
+              "motion-safe:group-hover:opacity-0 motion-safe:group-hover:translate-y-[-6px]"
+            ].join(" "),
+            children: split ? /* @__PURE__ */ jsxs("div", { className: "grid flex-1 gap-6 lg:grid-cols-[1fr_minmax(260px,440px)] lg:items-center", children: [
+              /* @__PURE__ */ jsxs("div", { className: "order-2 lg:order-1", children: [
+                /* @__PURE__ */ jsx("h3", { className: "font-hero text-[17px] font-semibold leading-snug tracking-[-0.02em] text-white sm:text-[18px]", children: title }),
+                /* @__PURE__ */ jsx("p", { className: "mt-2 text-[13px] leading-[1.6] text-white/48 sm:text-[14px]", children: text })
+              ] }),
+              /* @__PURE__ */ jsx("div", { className: "order-1 lg:order-2 lg:self-start", children: visual })
+            ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+              /* @__PURE__ */ jsx("div", { className: "mb-5 min-h-[88px] sm:min-h-[96px]", children: visual }),
+              /* @__PURE__ */ jsxs("div", { className: "mt-auto", children: [
+                /* @__PURE__ */ jsx("h3", { className: "font-hero text-[17px] font-semibold leading-snug tracking-[-0.02em] text-white sm:text-[18px]", children: title }),
+                /* @__PURE__ */ jsx(
+                  "p",
+                  {
+                    className: [
+                      "mt-2 text-[13px] leading-[1.6] sm:text-[14px]",
+                      accent ? "text-white/80" : "text-white/48"
+                    ].join(" "),
+                    children: text
+                  }
+                )
+              ] })
+            ] })
+          }
+        ),
+        /* @__PURE__ */ jsxs(
+          "div",
+          {
+            className: [
+              "absolute inset-0 z-[2] flex flex-col opacity-0 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+              "translate-y-2 motion-safe:group-hover:translate-y-0 motion-safe:group-hover:opacity-100",
+              "max-md:pointer-events-none max-md:opacity-0"
+            ].join(" "),
+            children: [
+              /* @__PURE__ */ jsx("div", { className: "flex flex-1 flex-col justify-end p-6 pb-5 sm:p-8 sm:pb-6", style: { backgroundColor: ACCENT$1 }, children: /* @__PURE__ */ jsx("p", { className: "max-w-[42ch] text-[14px] leading-[1.65] text-white sm:text-[15px] sm:leading-[1.7]", children: solution }) }),
+              /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between gap-3 bg-[#141414] px-6 py-4 sm:px-8 sm:py-5", children: [
+                /* @__PURE__ */ jsx("span", { className: "text-[13px] font-medium text-white sm:text-[14px]", children: hoverCta }),
+                /* @__PURE__ */ jsx("span", { className: "flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white motion-safe:group-hover:animate-pulse", children: /* @__PURE__ */ jsx(ArrowRight, { size: 14, strokeWidth: 2, "aria-hidden": true }) })
+              ] })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsx("div", { className: "bg-white/[0.04] px-6 py-4 md:hidden", children: /* @__PURE__ */ jsx("p", { className: "text-[13px] leading-[1.6] text-white/55", children: solution }) })
+      ]
+    }
+  );
+}
+function LandingPainSection() {
+  const { lang } = useLang();
+  const copy = landingCopy(lang);
+  const isRu = lang === "ru";
+  const items = copy.pain.items;
+  return /* @__PURE__ */ jsx(
+    "section",
+    {
+      id: "pain",
+      className: "relative z-[1] mt-4 scroll-mt-[var(--tivonix-header-spacer)] bg-black pt-2 pb-16 sm:mt-6 sm:pt-4 sm:pb-20 lg:mt-8 lg:pt-6 lg:pb-24",
+      children: /* @__PURE__ */ jsxs(Container, { className: "relative", children: [
+        /* @__PURE__ */ jsx("div", { className: "min-w-0 text-center", children: /* @__PURE__ */ jsx("h2", { className: `${LANDING_HEADLINE_CLASS} text-center`, children: copy.pain.titleLines.map((line) => /* @__PURE__ */ jsx("span", { className: "block", children: line }, line)) }) }),
+        /* @__PURE__ */ jsxs("div", { className: "mt-6 grid grid-cols-1 gap-5 sm:mt-8 sm:grid-cols-2 lg:grid-cols-12 lg:items-stretch", children: [
+          /* @__PURE__ */ jsx(
+            PainBentoCard,
+            {
+              className: "h-full lg:col-span-8 lg:min-h-[340px]",
+              title: items[0].title,
+              text: items[0].text,
+              solution: items[0].solution,
+              hoverCta: copy.pain.hoverCta,
+              bgImage: PAIN_CARD_BACKGROUNDS[0],
+              visual: /* @__PURE__ */ jsx(ChannelsVisual, { isRu })
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            PainBentoCard,
+            {
+              className: "h-full lg:col-span-4 lg:min-h-[340px]",
+              title: items[1].title,
+              text: items[1].text,
+              solution: items[1].solution,
+              hoverCta: copy.pain.hoverCta,
+              accent: true,
+              bgImage: PAIN_CARD_BACKGROUNDS[1],
+              bgAlways: true,
+              visual: /* @__PURE__ */ jsx(TelegramVisual, { isRu })
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            PainBentoCard,
+            {
+              className: "h-full lg:col-span-6",
+              title: items[3].title,
+              text: items[3].text,
+              solution: items[3].solution,
+              hoverCta: copy.pain.hoverCta,
+              bgImage: PAIN_CARD_BACKGROUNDS[3],
+              visual: /* @__PURE__ */ jsx(AdminVisual, { isRu })
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            PainBentoCard,
+            {
+              className: "h-full lg:col-span-6",
+              title: items[2].title,
+              text: items[2].text,
+              solution: items[2].solution,
+              hoverCta: copy.pain.hoverCta,
+              bgImage: PAIN_CARD_BACKGROUNDS[2],
+              visual: /* @__PURE__ */ jsx(StatusVisual, { isRu })
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            PainBentoCard,
+            {
+              className: "h-full sm:col-span-2 lg:col-span-12 lg:min-h-[280px]",
+              title: items[4].title,
+              text: items[4].text,
+              solution: items[4].solution,
+              hoverCta: copy.pain.hoverCta,
+              bgImage: PAIN_CARD_BACKGROUNDS[4],
+              bgAlways: true,
+              bgPosition: "center center",
+              split: true,
+              visual: /* @__PURE__ */ jsx(FlowTerminalVisual, { isRu })
+            }
+          )
         ] })
       ] })
     }
   );
 }
-const LOGO_ICON = "/images/tivonix-logo-icon.png";
-const BG_IMG = "/images/sunset.webp";
-const PAGE_SIZE = 6;
-const ORANGE$1 = "#FF9A3D";
-const PRIMARY_CATS = ["start", "price", "time", "process", "design", "dev"];
-const SECONDARY_CATS = ["content", "seo", "tech", "support", "fix"];
-const s$3 = (v) => v;
-const CAT_LABELS = {
-  start: { ru: "Старт", en: "Start" },
-  price: { ru: "Стоимость", en: "Pricing" },
-  time: { ru: "Сроки", en: "Timeline" },
-  process: { ru: "Процесс", en: "Process" },
-  design: { ru: "Дизайн", en: "Design" },
-  dev: { ru: "Разработка", en: "Development" },
-  content: { ru: "Контент", en: "Content" },
-  seo: { ru: "SEO", en: "SEO" },
-  tech: { ru: "Тех.часть", en: "Tech" },
-  support: { ru: "Поддержка", en: "Support" },
-  fix: { ru: "Правки", en: "Edits" }
-};
-const TEASER_TEXTS = {
-  start: {
-    ru: "Как мы заходим в проект и что нужно от вас на старте.",
-    en: "How we get into the project and what we need from you at the start."
-  },
-  price: {
-    ru: "Ориентиры по бюджету и что реально входит в стоимость.",
-    en: "Budget guidelines and what is actually included in the price."
-  },
-  time: {
-    ru: "Типичные сроки и когда можно ускориться до 1–2 дней.",
-    en: "Typical timelines and when we can speed up to 1–2 days."
-  },
-  process: {
-    ru: "Пошаговый процесс от брифа до запуска без хаоса.",
-    en: "Step-by-step process from brief to launch without chaos."
-  },
-  design: {
-    ru: "Как собираем премиум-визуал и попадаем в ваш бренд.",
-    en: "How we build premium visuals that match your brand."
-  },
-  dev: {
-    ru: "На чём всё собрано и какие интеграции возможны.",
-    en: "What we build on and which integrations are possible."
-  },
-  content: {
-    ru: "Как помогаем с текстами, оффером и структурой блоков.",
-    en: "How we help with copy, offer, and block structure."
-  },
-  seo: {
-    ru: "Что делаем по SEO уже на уровне лендинга.",
-    en: "What we do for SEO already on the landing level."
-  },
-  tech: {
-    ru: "Про скорость загрузки, адаптив и тех.часть проекта.",
-    en: "About load speed, responsiveness, and the tech side."
-  },
-  support: {
-    ru: "Как сопровождаем проект после запуска и что входит.",
-    en: "How we support the project after launch and what is included."
-  },
-  fix: {
-    ru: "Как работаем с правками, отступами и мелкими доработками.",
-    en: "How we handle edits, spacing, and small improvements."
-  }
-};
-const FAQ_ITEMS = [
-  // Старт
-  {
-    id: "start-brief",
-    cat: "start",
-    q: { ru: "С чего начинается работа?", en: "Where does the work start?" },
-    a: {
-      ru: "С короткого брифа: чем занимаетесь, кому продаёте, какие услуги/продукты, примеры сайтов которые нравятся, и цель (заявки/продажи/презентация). Затем фиксируем структуру страницы и план работ.",
-      en: "With a short brief: what you do, who your customers are, what services or products you sell, examples of sites you like, and the main goal (leads, sales, presentation). Then we lock the page structure and the work plan."
-    }
-  },
-  {
-    id: "start-need",
-    cat: "start",
-    q: { ru: "Что нужно от нас, чтобы начать?", en: "What do you need from us to get started?" },
-    a: {
-      ru: "Логотип (если есть), контакты/соцсети, черновые тексты (можно без идеала), фото/кейсы (если есть). Если чего-то нет — подскажем, чем заменить и как быстро собрать.",
-      en: "Logo (if you have one), contacts/social links, rough texts (they do not have to be perfect), photos/case studies (if available). If something is missing, we suggest how to replace it and how to collect it quickly."
-    }
-  },
-  {
-    id: "start-domain",
-    cat: "start",
-    q: { ru: "Вы помогаете с доменом и хостингом?", en: "Do you help with domain and hosting?" },
-    a: {
-      ru: "Да. Поможем купить домен, настроить DNS и развернуть сайт на хостинге/сервере (или Vercel/Netlify).",
-      en: "Yes. We help you buy a domain, configure DNS and deploy the site to hosting/server (or Vercel / Netlify)."
-    }
-  },
-  // Стоимость
-  {
-    id: "price-from",
-    cat: "price",
-    q: { ru: "Сколько стоит сайт-визитка / лендинг?", en: "How much does a promo site / landing page cost?" },
-    a: {
-      ru: "Цена зависит от количества блоков, сложности анимаций и интеграций. Обычно есть 3 уровня: мини (до 6 блоков), стандарт (8–12 блоков), премиум (сложные блоки/анимации/интеграции).",
-      en: "The price depends on the number of sections, animation complexity, and integrations. Usually there are 3 tiers: mini (up to 6 sections), standard (8–12 sections), and premium (complex sections/animations/integrations)."
-    }
-  },
-  {
-    id: "price-included",
-    cat: "price",
-    q: { ru: "Что входит в стоимость?", en: "What is included in the price?" },
-    a: {
-      ru: "Премиум-дизайн, адаптив, сборка на React+Tailwind, оптимизация изображений, базовое SEO, подключение форм/уведомлений (по запросу), деплой и мини-инструкция как менять контент.",
-      en: "Premium design, responsive layout, React + Tailwind build, image optimization, basic SEO, forms/notifications integration (on request), deployment, and a short guide on how to edit the content."
-    }
-  },
-  {
-    id: "price-payments",
-    cat: "price",
-    q: { ru: "Как происходит оплата?", en: "How does payment work?" },
-    a: {
-      ru: "Обычно по этапам: 50% старт — 50% по готовности (или 3 этапа: дизайн/сборка/деплой).",
-      en: "Usually in stages: 50% upfront and 50% on completion (or 3 stages: design / build / deploy)."
-    }
-  },
-  // Сроки
-  {
-    id: "time-howlong",
-    cat: "time",
-    q: { ru: "Сколько по времени делается сайт?", en: "How long does it take to build the site?" },
-    a: {
-      ru: "Чаще всего 3–10 дней. Зависит от готовности контента и скорости согласований.",
-      en: "Most often 3–10 days. It depends on how ready the content is and how fast approvals go."
-    }
-  },
-  {
-    id: "time-urgent",
-    cat: "time",
-    q: { ru: "Можно срочно за 1–2 дня?", en: "Is it possible to do it urgently in 1–2 days?" },
-    a: {
-      ru: "Можно, если структура простая и контент готов. Тогда делаем 1–2 итерации правок и быстро выкатываем на домен.",
-      en: "Yes, if the structure is simple and the content is ready. Then we do 1–2 rounds of edits and quickly launch it on the domain."
-    }
-  },
-  // Процесс
-  {
-    id: "process-steps",
-    cat: "process",
-    q: { ru: "Какие этапы работы?", en: "What are the main steps of the process?" },
-    a: {
-      ru: "1) Бриф и структура 2) Дизайн ключевых блоков 3) Сборка и адаптив 4) Правки 5) Оптимизация 6) Деплой 7) Передача + инструкция.",
-      en: "1) Brief and structure 2) Design of key sections 3) Build and responsive layout 4) Edits 5) Optimization 6) Deploy 7) Handover and a short guide."
-    }
-  },
-  {
-    id: "process-revisions",
-    cat: "process",
-    q: { ru: "Сколько правок включено?", en: "How many revisions are included?" },
-    a: {
-      ru: "Обычно 2 круга по дизайну и 2 круга по текстам/мелочам. Если нужно больше — согласуем объём.",
-      en: "Usually 2 rounds for design and 2 rounds for texts/small details. If you need more, we discuss the extra scope."
-    }
-  },
-  // Дизайн
-  {
-    id: "design-saas",
-    cat: "design",
-    q: { ru: "Сделаете как у топ-SaaS?", en: "Can you make it look like a top-tier SaaS?" },
-    a: {
-      ru: "Да. Делаем премиум-стиль: стекло, мягкие свечения, градиенты, аккуратная типографика, точки/шум, правильная сетка.",
-      en: "Yes. We build a premium style: glassmorphism, soft glows, gradients, tidy typography, noise/dots, and a proper layout grid."
-    }
-  },
-  {
-    id: "design-brand",
-    cat: "design",
-    q: { ru: "Можно в фирменных цветах?", en: "Can you use our brand colors?" },
-    a: {
-      ru: "Да. Подстроим палитру/градиенты под бренд, чтобы всё было едино и «дорого».",
-      en: "Yes. We adapt the palette and gradients to your brand so everything feels consistent and premium."
-    }
-  },
-  // Разработка
-  {
-    id: "dev-tech",
-    cat: "dev",
-    q: { ru: "На чём сделан сайт? Это WordPress?", en: "What is the tech stack? Is it WordPress?" },
-    a: {
-      ru: "Нет. Сайт на React + TypeScript + Tailwind: быстрее, гибче, чище и легче масштабируется.",
-      en: "No. It is built with React + TypeScript + Tailwind: faster, more flexible, cleaner, and easier to scale."
-    }
-  },
-  {
-    id: "dev-integrations",
-    cat: "dev",
-    q: { ru: "Можно подключить формы, Telegram, CRM?", en: "Can you connect forms, Telegram, or CRM?" },
-    a: {
-      ru: "Да. Подключим форму (email/Telegram), Google Sheets, CRM (amo/Bitrix) и события аналитики.",
-      en: "Yes. We can connect a form (email/Telegram), Google Sheets, CRM (amo/Bitrix), and analytics events."
-    }
-  },
-  // Контент
-  {
-    id: "content-text",
-    cat: "content",
-    q: { ru: "Помогаете с текстами, если у нас их нет?", en: "Do you help with copy if we do not have it yet?" },
-    a: {
-      ru: "Да. Поможем оформить оффер, преимущества, блоки, CTA и FAQ — даже из черновиков.",
-      en: "Yes. We help shape the offer, benefits, sections, CTAs, and FAQ — even from rough drafts."
-    }
-  },
-  // SEO
-  {
-    id: "seo-basic",
-    cat: "seo",
-    q: { ru: "Будет ли сайт находиться в Google?", en: "Will the site be discoverable in Google?" },
-    a: {
-      ru: "Сделаем базовую SEO-основу: заголовки, мета, alt, скорость. Для полноценного продвижения нужен отдельный план и контент-стратегия.",
-      en: "We set up basic SEO: titles, meta tags, alts, and performance. For full-scale promotion you will need a separate SEO and content strategy."
-    }
-  },
-  // Тех.часть
-  {
-    id: "tech-speed",
-    cat: "tech",
-    q: { ru: "Сайт будет быстро грузиться?", en: "Will the site load fast?" },
-    a: {
-      ru: "Да. Оптимизация изображений, кеширование, аккуратные шрифты и лёгкая сборка дают быструю загрузку.",
-      en: "Yes. Image optimization, caching, lean fonts and a light build make the site load quickly."
-    }
-  },
-  {
-    id: "tech-mobile",
-    cat: "tech",
-    q: { ru: "Будет адаптив под телефон?", en: "Will it be responsive on mobile?" },
-    a: {
-      ru: "Да. Адаптив — стандарт: телефон, планшет, ноутбук, большой экран.",
-      en: "Yes. Responsive layout is standard: phone, tablet, laptop, and large screens."
-    }
-  },
-  // Поддержка
-  {
-    id: "support-after",
-    cat: "support",
-    q: { ru: "Вы помогаете после запуска?", en: "Do you help after the launch?" },
-    a: {
-      ru: "Да. Можем сопровождать: правки, новые блоки/страницы, интеграции, улучшения конверсии.",
-      en: "Yes. We can support you after launch: edits, new blocks/pages, integrations, and conversion improvements."
-    }
-  },
-  // Правки
-  {
-    id: "fix-after",
-    cat: "fix",
-    q: { ru: "Если после запуска найдём косяк/отступ?", en: "What if we find a bug or spacing issue after launch?" },
-    a: {
-      ru: "Исправим. Доводим визуал до аккуратного состояния.",
-      en: "We fix it. We bring the visuals to a clean and tidy state."
-    }
-  }
-];
-function cx$4(...a) {
-  return a.filter(Boolean).join(" ");
-}
-function Icon({ name }) {
-  const common = "h-4 w-4 shrink-0";
-  switch (name) {
-    case "search":
-      return /* @__PURE__ */ jsxs("svg", { className: common, viewBox: "0 0 24 24", fill: "none", "aria-hidden": "true", children: [
-        /* @__PURE__ */ jsx("path", { d: "M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z", stroke: "currentColor", strokeWidth: "1.8" }),
-        /* @__PURE__ */ jsx("path", { d: "M16.2 16.2 21 21", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round" })
-      ] });
-    case "copy":
-      return /* @__PURE__ */ jsxs("svg", { className: common, viewBox: "0 0 24 24", fill: "none", "aria-hidden": "true", children: [
-        /* @__PURE__ */ jsx("path", { d: "M9 9h10v10H9V9Z", stroke: "currentColor", strokeWidth: "1.8", strokeLinejoin: "round" }),
-        /* @__PURE__ */ jsx(
-          "path",
-          {
-            d: "M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1",
-            stroke: "currentColor",
-            strokeWidth: "1.8",
-            strokeLinecap: "round"
-          }
-        )
-      ] });
-    case "chev":
-      return /* @__PURE__ */ jsx("svg", { className: common, viewBox: "0 0 24 24", fill: "none", "aria-hidden": "true", children: /* @__PURE__ */ jsx("path", { d: "m8.5 10 3.5 3.5L15.5 10", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) });
-  }
-}
-function toDomId(id) {
-  return `faq-${id}`;
-}
-function buildFaqJsonLd(items) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: items.map((x) => ({
-      "@type": "Question",
-      name: x.q,
-      acceptedAnswer: { "@type": "Answer", text: x.a }
-    }))
-  };
-}
-function FAQSection() {
-  const { lang } = useLang();
-  const isRu = lang === "ru";
-  const l = isRu ? "ru" : "en";
-  const [query, setQuery] = useState("");
-  const [openId, setOpenId] = useState(null);
-  const [copied, setCopied] = useState(null);
-  const [catFilter, setCatFilter] = useState("all");
-  const [page, setPage] = useState(1);
-  const [showAllCats, setShowAllCats] = useState(false);
-  const rootRef = useRef(null);
-  const [bgInView, setBgInView] = useState(false);
-  const localizedItems = useMemo(() => {
-    return FAQ_ITEMS.map((item) => ({
-      id: item.id,
-      cat: item.cat,
-      q: item.q[l],
-      a: item.a[l],
-      catLabel: CAT_LABELS[item.cat][l]
-    }));
-  }, [l]);
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    let list = localizedItems;
-    if (catFilter !== "all") list = list.filter((x) => x.cat === catFilter);
-    if (!q) return list;
-    return list.filter((x) => `${x.q} ${x.a} ${x.catLabel}`.toLowerCase().includes(q));
-  }, [query, catFilter, localizedItems]);
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const items = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE;
-    return filtered.slice(start, start + PAGE_SIZE);
-  }, [filtered, page]);
+function Reveal({ children, className, delay = 0 }) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
   useEffect(() => {
-    setPage(1);
-    setOpenId(null);
-  }, [query, catFilter, l]);
-  useEffect(() => {
-    setPage((p) => Math.min(Math.max(1, p), totalPages));
-  }, [totalPages]);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const el = rootRef.current;
+    const el = ref.current;
     if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setVisible(true);
+      return;
+    }
+    if (!("IntersectionObserver" in window)) {
+      setVisible(true);
+      return;
+    }
     const io = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          setBgInView(true);
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setVisible(true);
           io.disconnect();
         }
       },
-      { root: null, rootMargin: "300px 0px 300px 0px", threshold: 0.01 }
+      { threshold: 0.1, rootMargin: "0px 0px -5% 0px" }
     );
     io.observe(el);
     return () => io.disconnect();
   }, []);
-  const resetDisabled = query.trim() === "" && catFilter === "all" && page === 1;
-  async function copy(text, id) {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(id);
-      window.setTimeout(() => setCopied((v) => v === id ? null : v), 900);
-    } catch {
+  const style = { transitionDelay: `${delay}ms` };
+  return /* @__PURE__ */ jsx(
+    "div",
+    {
+      ref,
+      className: [
+        className,
+        visible ? "translate-y-0 opacity-100 motion-safe:transition-[opacity,transform] motion-safe:duration-[0.55s] motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]" : "translate-y-5 opacity-0"
+      ].filter(Boolean).join(" "),
+      style,
+      children
     }
+  );
+}
+const OFFER_MOSAIC_BG = `/images/${encodeURI("как рабоает/пп/блоки/ffon.png")}`;
+const TOP_ENTER_STAGGER_MS = 130;
+const TOP_ENTER_DURATION_MS = 820;
+const REVEAL_DELAY_MS = 200;
+const REVEAL_DURATION_MS = 2800;
+function clamp$1(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+function easeOutCubic(t) {
+  return 1 - (1 - t) ** 3;
+}
+function getAccumulatedScroll(el, root) {
+  let x = 0;
+  let y = 0;
+  let node = el.parentElement;
+  while (node && node !== root) {
+    x += node.scrollLeft;
+    y += node.scrollTop;
+    node = node.parentElement;
   }
-  const title = isRu ? "FAQ — всё про сайт и работу" : "FAQ — about the site and workflow";
-  const subtitle = isRu ? "Стоимость, сроки, процесс, контент, SEO и техчасть — коротко и по делу." : "Pricing, timelines, process, content, SEO, and tech — short and to the point.";
-  const placeholder = isRu ? "Поиск по вопросам…" : "Search questions…";
-  const resetLabel = isRu ? "Сбросить" : "Reset";
-  const allLabel = isRu ? "Все" : "All";
-  const moreCatsLabel = isRu ? "Ещё" : "More";
-  const lessCatsLabel = isRu ? "Свернуть" : "Less";
-  const btnShow = isRu ? "Показать ответ" : "Show answer";
-  const btnHide = isRu ? "Скрыть ответ" : "Hide answer";
-  const btnCopy = isRu ? "Скопировать ответ" : "Copy answer";
-  const btnCopied = isRu ? "Скопировано" : "Copied";
-  const popularLabel = isRu ? "Частый вопрос" : "Popular";
-  const prevLabel = isRu ? "Назад" : "Prev";
-  const nextLabel = isRu ? "Дальше" : "Next";
-  const pageLabel = isRu ? "Страница" : "Page";
-  const jsonLd = useMemo(() => buildFaqJsonLd(localizedItems), [localizedItems]);
-  return /* @__PURE__ */ jsxs(Section, { id: "faq", className: "relative overflow-hidden pt-16 sm:pt-20 pb-16 sm:pb-20 bg-black", children: [
-    /* @__PURE__ */ jsx("style", { children: `
-        @keyframes faqAnswerIn {
-          from { opacity: 0; transform: translateY(6px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .faq-answer-open { animation: faqAnswerIn .20s ease-out; }
-        /* Свёрнутый ответ: в DOM для SEO, визуально скрыт через max-height/opacity */
-        .faq-answer-collapsed {
-          max-height: 0;
-          opacity: 0;
-          overflow: hidden;
-          pointer-events: none;
-          transition: max-height 0.25s ease, opacity 0.2s ease;
-        }
-        .faq-answer-expanded {
-          max-height: 420px;
-          opacity: 1;
-          overflow: visible;
-          transition: max-height 0.3s ease, opacity 0.2s ease;
-        }
-
-        /* mobile perf: меньше blur/тяжёлых эффектов */
-        @media (max-width: 640px){
-          .faq-card-bg{ backdrop-filter: blur(8px) !important; }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .faq-answer-open{ animation: none; }
-          .faq-answer-collapsed, .faq-answer-expanded{ transition: none; }
-        }
-      ` }),
-    /* @__PURE__ */ jsx("script", { type: "application/ld+json", dangerouslySetInnerHTML: { __html: JSON.stringify(jsonLd) } }),
-    /* @__PURE__ */ jsxs("div", { "aria-hidden": "true", className: "pointer-events-none absolute inset-0", children: [
-      bgInView ? /* @__PURE__ */ jsx(
-        "img",
-        {
-          src: BG_IMG,
-          alt: "",
-          loading: "lazy",
-          decoding: "async",
-          fetchPriority: "low",
-          className: "absolute inset-0 h-full w-full object-cover object-top opacity-95",
-          draggable: false
-        }
-      ) : null,
-      /* @__PURE__ */ jsx(
-        "div",
-        {
-          className: "absolute inset-0",
-          style: s$3({
-            background: bgInView ? "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.92) 100%)" : "linear-gradient(180deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.42) 50%, rgba(0,0,0,0.94) 100%)"
-          })
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsxs(Container, { children: [
-      /* @__PURE__ */ jsxs("div", { ref: rootRef, className: "relative mx-auto max-w-2xl text-center", children: [
-        /* @__PURE__ */ jsx("h2", { className: "mt-5 font-display text-[30px] leading-[34px] sm:text-[40px] sm:leading-[44px] font-extrabold tracking-tight", children: title }),
-        /* @__PURE__ */ jsx("p", { className: "mt-2 text-sm sm:text-[15px] text-white/60", children: subtitle }),
-        /* @__PURE__ */ jsx("div", { className: "mt-6", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[720px]", children: [
-          /* @__PURE__ */ jsxs("div", { className: "grid gap-3 sm:grid-cols-[1fr_auto] items-center", children: [
-            /* @__PURE__ */ jsxs("div", { className: "relative", children: [
-              /* @__PURE__ */ jsx("label", { className: "sr-only", htmlFor: "faq-search", children: placeholder }),
-              /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2", children: /* @__PURE__ */ jsx("span", { style: s$3({ color: ORANGE$1 }), children: /* @__PURE__ */ jsx(Icon, { name: "search" }) }) }),
-              /* @__PURE__ */ jsx(
-                "input",
-                {
-                  id: "faq-search",
-                  value: query,
-                  onChange: (e) => setQuery(e.target.value),
-                  placeholder,
-                  inputMode: "search",
-                  className: cx$4(
-                    "w-full h-11 sm:h-12 rounded-[14px]",
-                    "bg-white/[0.06] border-0",
-                    "pl-10 pr-4 text-sm text-white/90 placeholder:text-white/40",
-                    "outline-none",
-                    "focus:ring-2 focus:ring-white/12"
-                  )
-                }
-              )
-            ] }),
-            /* @__PURE__ */ jsx(
-              "button",
-              {
-                type: "button",
-                disabled: resetDisabled,
-                onClick: () => {
-                  setQuery("");
-                  setOpenId(null);
-                  setCatFilter("all");
-                  setPage(1);
-                  setShowAllCats(false);
-                },
-                "aria-disabled": resetDisabled,
-                className: cx$4(
-                  "h-11 sm:h-12 px-4 rounded-[14px]",
-                  "border-0 bg-white/[0.06]",
-                  resetDisabled ? "text-white/35 cursor-not-allowed opacity-70" : "text-white/75 hover:text-white/92 hover:bg-white/[0.07] transition",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                ),
-                children: resetLabel
-              }
-            )
-          ] }),
-          /* @__PURE__ */ jsx("div", { className: "mt-3", children: /* @__PURE__ */ jsxs(
-            "div",
+  return { x, y };
+}
+function useOfferMosaicBackground(mosaicRef) {
+  useLayoutEffect(() => {
+    const mosaic = mosaicRef.current;
+    if (!mosaic) return;
+    const update = () => {
+      const mosaicRect = mosaic.getBoundingClientRect();
+      if (mosaicRect.width <= 0 || mosaicRect.height <= 0) return;
+      const rowBottom = mosaic.querySelector(".offer-mosaic__row-bottom");
+      const isMobile = window.innerWidth < 1024;
+      const gridW = isMobile && rowBottom ? Math.max(mosaicRect.width, rowBottom.scrollWidth) : mosaicRect.width;
+      const gridH = mosaicRect.height;
+      mosaic.style.setProperty("--offer-grid-w", `${gridW}px`);
+      mosaic.style.setProperty("--offer-grid-h", `${gridH}px`);
+      mosaic.querySelectorAll("[data-offer-slice]").forEach((card) => {
+        const cardRect = card.getBoundingClientRect();
+        const scroll = getAccumulatedScroll(card, mosaic);
+        const posX = cardRect.left - mosaicRect.left + scroll.x;
+        const posY = cardRect.top - mosaicRect.top + scroll.y;
+        card.style.setProperty("--offer-bg-w", `${gridW}px`);
+        card.style.setProperty("--offer-bg-h", `${gridH}px`);
+        card.style.setProperty("--offer-bg-pos-x", `${-posX}px`);
+        card.style.setProperty("--offer-bg-pos-y", `${-posY}px`);
+      });
+    };
+    let frame = 0;
+    const scheduleUpdate = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(update);
+    };
+    scheduleUpdate();
+    const ro = new ResizeObserver(scheduleUpdate);
+    ro.observe(mosaic);
+    window.addEventListener("resize", scheduleUpdate);
+    document.fonts?.ready.then(scheduleUpdate).catch(() => void 0);
+    return () => {
+      cancelAnimationFrame(frame);
+      ro.disconnect();
+      window.removeEventListener("resize", scheduleUpdate);
+    };
+  }, [mosaicRef]);
+}
+function useOfferSectionAnimation(mosaicRef, bottomCardRefs) {
+  const [topVisible, setTopVisible] = useState([false, false]);
+  const [cardReveals, setCardReveals] = useState([
+    { bg: 0, text: 0 },
+    { bg: 0, text: 0 },
+    { bg: 0, text: 0 },
+    { bg: 0, text: 0 }
+  ]);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const startedRef = useRef(false);
+  const finishInstant = useCallback(() => {
+    setTopVisible([true, true]);
+    setCardReveals([
+      { bg: 1, text: 1 },
+      { bg: 1, text: 1 },
+      { bg: 1, text: 1 },
+      { bg: 1, text: 1 }
+    ]);
+  }, []);
+  const measureBottomRow = useCallback(() => {
+    const mosaic = mosaicRef.current;
+    const cards = bottomCardRefs.current.filter(Boolean);
+    if (!mosaic || cards.length === 0) return null;
+    const mosaicRect = mosaic.getBoundingClientRect();
+    const first = cards[0].getBoundingClientRect();
+    const last = cards[cards.length - 1].getBoundingClientRect();
+    const startX = first.left - mosaicRect.left;
+    const endX = last.right - mosaicRect.left;
+    return { startX, endX, mosaicRect, cards };
+  }, [bottomCardRefs, mosaicRef]);
+  const updateCardReveals = useCallback((progress) => {
+    const measured = measureBottomRow();
+    if (!measured) return;
+    const { cards } = measured;
+    const staggerSpan = 0.72;
+    const next = cards.map((_, index) => {
+      const start = index / cards.length * staggerSpan;
+      const local = clamp$1((progress - start) / (1 - start + 0.18), 0, 1);
+      const bgRaw = clamp$1(local / 0.58, 0, 1);
+      const textRaw = clamp$1((local - 0.32) / 0.52, 0, 1);
+      return {
+        bg: easeOutCubic(bgRaw),
+        text: easeOutCubic(textRaw)
+      };
+    });
+    setCardReveals(next);
+  }, [measureBottomRow]);
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setReducedMotion(reduced);
+    const mosaic = mosaicRef.current;
+    if (!mosaic) return;
+    if (reduced) {
+      finishInstant();
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting || startedRef.current) return;
+        startedRef.current = true;
+        window.setTimeout(() => setTopVisible([true, false]), 0);
+        window.setTimeout(() => setTopVisible([true, true]), TOP_ENTER_STAGGER_MS);
+        window.setTimeout(() => {
+          const measured = measureBottomRow();
+          if (!measured) {
+            finishInstant();
+            return;
+          }
+          updateCardReveals(0);
+          const revealStart = performance.now();
+          const tick = (now) => {
+            const raw = clamp$1((now - revealStart) / REVEAL_DURATION_MS, 0, 1);
+            updateCardReveals(easeOutCubic(raw));
+            if (raw < 1) {
+              requestAnimationFrame(tick);
+            }
+          };
+          requestAnimationFrame(tick);
+        }, TOP_ENTER_DURATION_MS + REVEAL_DELAY_MS);
+      },
+      { threshold: 0.14, rootMargin: "0px 0px -6% 0px" }
+    );
+    io.observe(mosaic);
+    return () => io.disconnect();
+  }, [finishInstant, measureBottomRow, mosaicRef, updateCardReveals]);
+  useEffect(() => {
+    if (!topVisible[0]) return;
+    const onResize = () => {
+      const progress = cardReveals.every((c) => c.bg >= 1 && c.text >= 1) ? 1 : clamp$1(cardReveals.reduce((max, c) => Math.max(max, c.bg), 0), 0, 1);
+      updateCardReveals(progress);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [cardReveals, measureBottomRow, topVisible, updateCardReveals]);
+  return {
+    topVisible,
+    cardReveals,
+    reducedMotion
+  };
+}
+function OfferBlockCard({
+  slice,
+  children,
+  className,
+  bgReveal = 1,
+  textReveal: textReveal2 = 1
+}) {
+  return /* @__PURE__ */ jsxs(
+    "article",
+    {
+      "data-offer-slice": slice,
+      className: [
+        "offer-block-card relative flex min-w-0 flex-col justify-between overflow-hidden rounded-xl",
+        className ?? ""
+      ].join(" "),
+      style: {
+        ["--offer-bg-reveal"]: bgReveal,
+        ["--offer-text-reveal"]: textReveal2
+      },
+      children: [
+        /* @__PURE__ */ jsx("div", { className: "offer-block-card__bg pointer-events-none absolute inset-0", "aria-hidden": true }),
+        /* @__PURE__ */ jsx(
+          "div",
+          {
+            className: "offer-block-card__shade pointer-events-none absolute inset-0 bg-black",
+            "aria-hidden": true
+          }
+        ),
+        /* @__PURE__ */ jsx("div", { className: "offer-block-card__content relative z-10 flex min-h-0 flex-1 flex-col justify-between p-6 sm:p-7", children })
+      ]
+    }
+  );
+}
+function MetricCard({
+  slice,
+  badge,
+  metric,
+  label,
+  className,
+  bgReveal,
+  textReveal: textReveal2
+}) {
+  return /* @__PURE__ */ jsxs(
+    OfferBlockCard,
+    {
+      slice,
+      bgReveal,
+      textReveal: textReveal2,
+      className: ["min-h-[200px] sm:min-h-[220px] lg:min-h-0", className].filter(Boolean).join(" "),
+      children: [
+        /* @__PURE__ */ jsx("div", { className: "text-[15px] font-semibold tracking-[-0.01em] text-white/90 sm:text-[16px]", children: badge }),
+        /* @__PURE__ */ jsxs("div", { className: "ml-auto text-right", children: [
+          /* @__PURE__ */ jsx("p", { className: "font-hero text-[2rem] font-semibold leading-none tracking-[-0.04em] text-white sm:text-[2.5rem] lg:text-[2.75rem]", children: metric }),
+          /* @__PURE__ */ jsx("p", { className: "mt-2 text-[14px] leading-snug text-white/48 sm:text-[15px]", children: label })
+        ] })
+      ]
+    }
+  );
+}
+function FeaturedCard({
+  badge,
+  metric,
+  metricLabel,
+  quote,
+  linkText,
+  onLinkClick,
+  className,
+  visible
+}) {
+  return /* @__PURE__ */ jsx(
+    "div",
+    {
+      className: [
+        "offer-top-enter h-full w-full min-w-0",
+        visible ? "offer-top-enter--visible" : "",
+        className ?? ""
+      ].filter(Boolean).join(" "),
+      children: /* @__PURE__ */ jsxs(OfferBlockCard, { slice: 1, className: "h-full lg:min-h-0", children: [
+        /* @__PURE__ */ jsx("div", { className: "text-[15px] font-semibold tracking-[-0.01em] text-white/90 sm:text-[16px]", children: badge }),
+        /* @__PURE__ */ jsxs("div", { className: "my-4 max-w-[52ch] flex-1 sm:my-5 lg:my-3", children: [
+          /* @__PURE__ */ jsx("p", { className: "text-[15px] leading-[1.7] text-white/58 sm:text-[16px]", children: quote }),
+          /* @__PURE__ */ jsxs(
+            "button",
             {
-              className: cx$4(
-                "flex items-center justify-start sm:justify-center gap-2",
-                "overflow-x-auto sm:overflow-visible",
-                "no-scrollbar py-1"
-              ),
-              role: "tablist",
-              "aria-label": isRu ? "Категории вопросов" : "FAQ categories",
+              type: "button",
+              onClick: onLinkClick,
+              className: "group mt-5 inline-flex items-center gap-1.5 text-[14px] font-medium text-white/80 transition hover:text-[#FFAE66]",
               children: [
+                linkText,
                 /* @__PURE__ */ jsx(
-                  "button",
+                  ArrowUpRight,
                   {
-                    type: "button",
-                    role: "tab",
-                    "aria-selected": catFilter === "all",
-                    "aria-pressed": catFilter === "all",
-                    onClick: () => setCatFilter("all"),
-                    className: cx$4(
-                      "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium",
-                      "border-0",
-                      catFilter === "all" ? "bg-white/[0.16] text-white" : "bg-white/[0.07] text-white/75 hover:text-white/92 hover:bg-white/[0.10]",
-                      "transition",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                    ),
-                    children: allLabel
-                  }
-                ),
-                (showAllCats ? [...PRIMARY_CATS, ...SECONDARY_CATS] : PRIMARY_CATS).map((c) => {
-                  const active = c === catFilter;
-                  const label = CAT_LABELS[c][l];
-                  return /* @__PURE__ */ jsx(
-                    "button",
-                    {
-                      type: "button",
-                      role: "tab",
-                      "aria-selected": active,
-                      "aria-pressed": active,
-                      onClick: () => setCatFilter(c),
-                      className: cx$4(
-                        "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium",
-                        "border-0",
-                        active ? "bg-white/[0.16] text-white" : "bg-white/[0.07] text-white/75 hover:text-white/92 hover:bg-white/[0.10]",
-                        "transition",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                      ),
-                      children: label
-                    },
-                    c
-                  );
-                }),
-                /* @__PURE__ */ jsx(
-                  "button",
-                  {
-                    type: "button",
-                    onClick: () => setShowAllCats((v) => !v),
-                    className: cx$4(
-                      "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold",
-                      "border-0",
-                      "bg-white/[0.07] text-white/80 hover:text-white hover:bg-white/[0.10] transition",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                    ),
-                    "aria-expanded": showAllCats,
-                    "aria-label": showAllCats ? lessCatsLabel : moreCatsLabel,
-                    children: /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5", children: [
-                      showAllCats ? lessCatsLabel : moreCatsLabel,
-                      /* @__PURE__ */ jsx("span", { className: cx$4("transition", showAllCats ? "rotate-180" : ""), children: /* @__PURE__ */ jsx(Icon, { name: "chev" }) })
-                    ] })
+                    size: 15,
+                    className: "transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5",
+                    "aria-hidden": true
                   }
                 )
               ]
             }
-          ) }),
-          /* @__PURE__ */ jsx("div", { className: "mt-2 text-[12px] text-white/55", children: filtered.length === 0 ? isRu ? "Ничего не найдено — попробуйте другой запрос." : "No results — try a different query." : isRu ? `Найдено: ${filtered.length}` : `Found: ${filtered.length}` })
-        ] }) })
-      ] }),
-      /* @__PURE__ */ jsx("div", { className: "mt-7 grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3", children: items.map((f) => {
-        const isOpen = openId === f.id;
-        const domId = toDomId(f.id);
-        const teaser = TEASER_TEXTS[f.cat][l];
-        return /* @__PURE__ */ jsx(
-          "article",
-          {
-            className: cx$4(
-              "group relative overflow-hidden rounded-[20px]",
-              "border-0",
-              "bg-[#1c1c1f] faq-card-bg backdrop-blur-[10px]",
-              "shadow-[0_8px_24px_rgba(0,0,0,0.28)]"
-            ),
-            style: { contentVisibility: "auto", containIntrinsicSize: "360px 320px", contain: "layout paint style" },
-            children: /* @__PURE__ */ jsxs("div", { className: "relative z-[2] p-5 flex flex-col", children: [
-              /* @__PURE__ */ jsx("header", { className: "flex items-start justify-between gap-3", children: /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-                /* @__PURE__ */ jsx("h3", { className: "text-[14px] font-semibold text-white/92 leading-snug", children: f.q }),
-                /* @__PURE__ */ jsx("div", { className: "mt-1 text-[12px] text-white/55", children: f.catLabel })
-              ] }) }),
-              /* @__PURE__ */ jsx("div", { className: "mt-4", children: /* @__PURE__ */ jsxs(
-                "button",
-                {
-                  type: "button",
-                  onClick: () => setOpenId((v) => v === f.id ? null : f.id),
-                  "aria-expanded": isOpen,
-                  "aria-controls": domId,
-                  "aria-label": isOpen ? btnHide : `${btnShow}: ${f.q}`,
-                  className: cx$4(
-                    "w-full flex items-center gap-2 rounded-[12px]",
-                    "border-0 bg-white/[0.07] px-3 py-2",
-                    "text-left text-[12px] text-white/80 hover:bg-white/[0.10] transition",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                  ),
-                  children: [
-                    /* @__PURE__ */ jsx(
-                      "img",
-                      {
-                        src: LOGO_ICON,
-                        alt: "",
-                        className: "h-4 w-4 object-contain",
-                        draggable: false,
-                        loading: "lazy",
-                        decoding: "async"
-                      }
-                    ),
-                    isOpen ? btnHide : btnShow
-                  ]
-                }
-              ) }),
-              /* @__PURE__ */ jsxs(
-                "div",
-                {
-                  id: domId,
-                  className: cx$4(
-                    "mt-3 rounded-[14px] border-0 bg-black/45 px-4 py-3",
-                    "text-[13px] leading-relaxed text-white/78",
-                    isOpen ? "faq-answer-expanded faq-answer-open" : "faq-answer-collapsed"
-                  ),
-                  "aria-hidden": !isOpen,
-                  children: [
-                    f.a,
-                    /* @__PURE__ */ jsx("div", { className: "mt-3", children: /* @__PURE__ */ jsxs(
-                      "button",
-                      {
-                        type: "button",
-                        onClick: () => copy(f.a, f.id),
-                        className: cx$4(
-                          "inline-flex items-center gap-2 rounded-[12px]",
-                          "border-0 bg-white/[0.07] px-3 py-2",
-                          "text-[12px] text-white/80 hover:bg-white/[0.10] transition",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                        ),
-                        children: [
-                          /* @__PURE__ */ jsx("span", { style: s$3({ color: ORANGE$1 }), children: /* @__PURE__ */ jsx(Icon, { name: "copy" }) }),
-                          copied === f.id ? btnCopied : btnCopy
-                        ]
-                      }
-                    ) })
-                  ]
-                }
-              ),
-              !isOpen && /* @__PURE__ */ jsxs("div", { className: "mt-4 pt-3", children: [
-                /* @__PURE__ */ jsx("div", { className: "h-px w-full rounded-full bg-gradient-to-r from-white/0 via-white/18 to-white/0" }),
-                /* @__PURE__ */ jsxs("div", { className: "mt-2 flex items-center justify-between gap-2 text-[11.5px] text-white/62", children: [
-                  /* @__PURE__ */ jsx("span", { className: "line-clamp-2", children: teaser }),
-                  /* @__PURE__ */ jsxs("span", { className: "flex items-center gap-1 whitespace-nowrap", style: s$3({ color: ORANGE$1 }), children: [
-                    /* @__PURE__ */ jsx("span", { className: "inline-block h-1.5 w-1.5 rounded-full bg-current" }),
-                    /* @__PURE__ */ jsx("span", { children: popularLabel })
-                  ] })
-                ] })
-              ] })
-            ] })
-          },
-          f.id
-        );
-      }) }),
-      /* @__PURE__ */ jsx("div", { className: "relative mt-10 flex justify-center", children: /* @__PURE__ */ jsxs("div", { className: "w-full max-w-[560px]", children: [
-        /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between gap-3 sm:hidden", children: [
-          /* @__PURE__ */ jsx(
-            "button",
-            {
-              type: "button",
-              onClick: () => setPage((p) => Math.max(1, p - 1)),
-              disabled: page <= 1,
-              className: cx$4(
-                "h-11 px-4 rounded-[14px] border-0 bg-white/[0.06]",
-                page <= 1 ? "text-white/35 cursor-not-allowed" : "text-white/80 hover:bg-white/[0.10]",
-                "transition",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-              ),
-              children: prevLabel
-            }
-          ),
-          /* @__PURE__ */ jsxs("div", { className: "text-[12.5px] text-white/70", children: [
-            pageLabel,
-            " ",
-            page,
-            " / ",
-            totalPages
-          ] }),
-          /* @__PURE__ */ jsx(
-            "button",
-            {
-              type: "button",
-              onClick: () => setPage((p) => Math.min(totalPages, p + 1)),
-              disabled: page >= totalPages,
-              className: cx$4(
-                "h-11 px-4 rounded-[14px] border-0 bg-white/[0.06]",
-                page >= totalPages ? "text-white/35 cursor-not-allowed" : "text-white/80 hover:bg-white/[0.10]",
-                "transition",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-              ),
-              children: nextLabel
-            }
           )
         ] }),
-        /* @__PURE__ */ jsx("div", { className: "hidden sm:flex flex-wrap items-center justify-center gap-6", children: Array.from({ length: totalPages }).map((_, i) => {
-          const n = i + 1;
-          const active = n === page;
-          const label = n < 10 ? `0${n}` : String(n);
-          return /* @__PURE__ */ jsx(
-            "button",
+        /* @__PURE__ */ jsxs("div", { children: [
+          /* @__PURE__ */ jsx("p", { className: "font-hero text-[2.25rem] font-semibold leading-none tracking-[-0.04em] text-white sm:text-[2.75rem] lg:text-[3.25rem]", children: metric }),
+          /* @__PURE__ */ jsx("p", { className: "mt-2 text-[14px] leading-snug text-white/48 sm:text-[15px]", children: metricLabel })
+        ] })
+      ] })
+    }
+  );
+}
+function MainOfferSection() {
+  const copy = landingCopy(useLang().lang);
+  const [modalOpen, setModalOpen] = useState(false);
+  const mosaicRef = useRef(null);
+  const bottomCardRefs = useRef([]);
+  useOfferMosaicBackground(mosaicRef);
+  const { topVisible, cardReveals } = useOfferSectionAnimation(
+    mosaicRef,
+    bottomCardRefs
+  );
+  const [topMetric, ...bottomMetrics] = copy.offer.metrics;
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(
+      Section,
+      {
+        id: "offer",
+        className: "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24",
+        children: /* @__PURE__ */ jsxs(Container, { children: [
+          /* @__PURE__ */ jsx(Reveal, { delay: 0, children: /* @__PURE__ */ jsx("div", { className: "min-w-0 text-center", children: /* @__PURE__ */ jsx("h2", { className: `${LANDING_HEADLINE_CLASS} text-center text-balance`, children: copy.offer.title }) }) }),
+          /* @__PURE__ */ jsxs(
+            "div",
             {
-              type: "button",
-              onClick: () => setPage(n),
-              "aria-current": active ? "page" : void 0,
-              className: cx$4(
-                "border-0 bg-transparent p-0 select-none",
-                "text-[14px] font-semibold tabular-nums tracking-tight",
-                "transition-colors duration-200",
-                active ? "text-[#FF9840]" : "text-white/40 hover:text-white/70",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:rounded-sm"
-              ),
-              children: label
-            },
-            n
-          );
-        }) })
-      ] }) })
+              ref: mosaicRef,
+              className: "offer-mosaic relative mt-10 flex flex-col gap-2.5 sm:mt-12 sm:gap-4",
+              style: { ["--offer-mosaic-image"]: `url("${OFFER_MOSAIC_BG}")` },
+              children: [
+                /* @__PURE__ */ jsxs("div", { className: "offer-mosaic__row-top grid grid-cols-1 gap-2.5 sm:gap-4", children: [
+                  /* @__PURE__ */ jsx("div", { className: "offer-mosaic__cell min-h-[220px] min-w-0 w-full sm:min-h-[240px] lg:col-span-8 lg:min-h-0", children: /* @__PURE__ */ jsx(
+                    FeaturedCard,
+                    {
+                      badge: copy.offer.featured.badge,
+                      metric: copy.offer.featured.metric,
+                      metricLabel: copy.offer.featured.metricLabel,
+                      quote: copy.offer.featured.quote,
+                      linkText: copy.offer.featured.linkText,
+                      onLinkClick: () => setModalOpen(true),
+                      visible: topVisible[0]
+                    }
+                  ) }),
+                  topMetric ? /* @__PURE__ */ jsx(
+                    "div",
+                    {
+                      className: [
+                        "offer-mosaic__cell offer-top-enter min-h-[220px] sm:min-h-[240px] lg:col-span-4 lg:flex lg:min-h-0",
+                        topVisible[1] ? "offer-top-enter--visible" : ""
+                      ].filter(Boolean).join(" "),
+                      style: { transitionDelay: `${TOP_ENTER_STAGGER_MS}ms` },
+                      children: /* @__PURE__ */ jsx(
+                        MetricCard,
+                        {
+                          slice: 2,
+                          ...topMetric,
+                          className: "w-full lg:h-full lg:min-h-0"
+                        }
+                      )
+                    }
+                  ) : null
+                ] }),
+                /* @__PURE__ */ jsx("div", { className: "offer-mosaic__row-bottom grid grid-cols-4 gap-2 sm:gap-3 lg:gap-4", children: bottomMetrics.map((item, i) => /* @__PURE__ */ jsx(
+                  "div",
+                  {
+                    ref: (el) => {
+                      bottomCardRefs.current[i] = el;
+                    },
+                    className: "offer-mosaic__cell min-w-0 lg:col-span-3",
+                    children: /* @__PURE__ */ jsx(
+                      MetricCard,
+                      {
+                        slice: i + 3,
+                        ...item,
+                        bgReveal: cardReveals[i]?.bg ?? 0,
+                        textReveal: cardReveals[i]?.text ?? 0,
+                        className: "h-full lg:min-h-0"
+                      }
+                    )
+                  },
+                  item.badge
+                )) })
+              ]
+            }
+          )
+        ] })
+      }
+    ),
+    /* @__PURE__ */ jsx(StartModal, { open: modalOpen, onClose: () => setModalOpen(false) })
+  ] });
+}
+const ORBIT_RX = 33;
+const ORBIT_RY = 31;
+const ORBIT_RX_MOBILE = 37;
+const ORBIT_RY_MOBILE = 32;
+const ROW_Y = 84;
+const ROW_BLOCK_REF = 136;
+const ROW_BLOCK_REF_MOBILE_ROW = 76;
+const ROW_COLS_MOBILE = 4;
+const ROW_Y_MOBILE_ROWS = [66, 78, 90];
+const ROW_OVERLAP = 10;
+const ROW_OVERLAP_MOBILE = 0;
+function orbitPosition(index, total, rx = ORBIT_RX, ry = ORBIT_RY) {
+  const angle = index / total * Math.PI * 2 - Math.PI / 2;
+  return {
+    x: 50 + rx * Math.cos(angle),
+    y: 50 + ry * Math.sin(angle)
+  };
+}
+function rowPosition(index, total, blockRef = ROW_BLOCK_REF, overlap = ROW_OVERLAP) {
+  const step = blockRef - overlap;
+  const layoutW = blockRef + (total - 1) * step;
+  const centerPx = blockRef / 2 + index * step;
+  const rowX = centerPx / layoutW * 100;
+  return { rowX, rowY: ROW_Y };
+}
+function rowPositionMultiRow(index, total, colsPerRow, blockRef, rowYs, overlap = ROW_OVERLAP_MOBILE) {
+  const rowIndex = Math.floor(index / colsPerRow);
+  const colIndex = index % colsPerRow;
+  const itemsInRow = Math.min(colsPerRow, total - rowIndex * colsPerRow);
+  const step = blockRef - overlap;
+  const layoutW = blockRef + Math.max(0, itemsInRow - 1) * step;
+  const centerPx = blockRef / 2 + colIndex * step;
+  const rowX = itemsInRow === 1 ? 50 : centerPx / layoutW * 100;
+  const rowY = rowYs[Math.min(rowIndex, rowYs.length - 1)] ?? rowYs[rowYs.length - 1];
+  return { rowX, rowY };
+}
+function orbitPositionLegacy(index, total) {
+  return orbitPosition(index, total, ORBIT_RX, ORBIT_RY);
+}
+function rowPositionLegacy(index, total) {
+  return rowPosition(index, total, ROW_BLOCK_REF, ROW_OVERLAP);
+}
+const MODEL_DEFS = [
+  { id: "openai", name: "OpenAI", file: "openai.png", scale: 1.88 },
+  { id: "claude", name: "Claude", file: "claude.png", scale: 1.08, colorful: true },
+  { id: "gemini", name: "Gemini", file: "gemini.png", scale: 2.12 },
+  { id: "grok", name: "Grok", file: "grok.png", scale: 2.38 },
+  { id: "deepseek", name: "DeepSeek", file: "deepseek.png", scale: 1.72, brighten: true },
+  { id: "copilot", name: "Copilot", file: "copilot.png", scale: 1.06 },
+  { id: "meta", name: "Meta AI", file: "meta.png", scale: 1.45 },
+  { id: "mistral", name: "Mistral", file: "mistral.png", scale: 1.16 },
+  { id: "ollama", name: "Ollama", file: "ollama.png", scale: 1.02 },
+  { id: "perplexity", name: "Perplexity", file: "perplexity.png", scale: 1.28 }
+];
+const AI_MODELS = MODEL_DEFS.map((model, index) => {
+  const { x, y } = orbitPositionLegacy(index, MODEL_DEFS.length);
+  const { rowX, rowY } = rowPositionLegacy(index, MODEL_DEFS.length);
+  return {
+    id: model.id,
+    name: model.name,
+    src: `/images/ai-logos/${model.file}`,
+    x,
+    y,
+    rowX,
+    rowY,
+    scale: model.scale,
+    brighten: "brighten" in model ? model.brighten : void 0,
+    colorful: "colorful" in model ? model.colorful : void 0
+  };
+});
+const AI_MODEL_COUNT = AI_MODELS.length;
+function cx$8(...a) {
+  return a.filter(Boolean).join(" ");
+}
+function TivonixGlowBorder({ className, children }) {
+  return /* @__PURE__ */ jsx("div", { className: cx$8("tivonix-glow-border", className), children: /* @__PURE__ */ jsx("div", { className: "tivonix-glow-border__content relative min-h-0 flex-1", children }) });
+}
+const ANIM_PIN_VH = 235;
+const DRIFT_RUNWAY_VH = 32;
+const TIVONIX_LOGO = "/images/logo-black.png";
+const AI_SECTION_BG = "/images/foooa.png";
+const DROP_START = 0.68;
+const DROP_END = 0.88;
+const ORBIT_START = 0.14;
+const ORBIT_REVEAL_END = 0.46;
+const HUB_START = 0.36;
+const TYPE_START = 0.895;
+const TYPE_END = 1;
+const AI_MARK_PHASE_END = 0.18;
+function clamp01$4(v) {
+  return Math.min(1, Math.max(0, v));
+}
+function smoothstep$2(t) {
+  const x = clamp01$4(t);
+  return x * x * (3 - 2 * x);
+}
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+function logoReveal(progress, index) {
+  const orbitSpan = ORBIT_REVEAL_END - ORBIT_START;
+  const segment = orbitSpan / AI_MODEL_COUNT;
+  const start = ORBIT_START + index * segment;
+  return smoothstep$2((progress - start) / (segment * 0.72));
+}
+function aiMarkOpacity(progress, approach) {
+  if (progress >= ORBIT_START - 0.02) return 0;
+  const fadeIn = Math.max(smoothstep$2(progress / 0.04), approach);
+  const fadeOut = 1 - smoothstep$2((progress - 0.1) / (AI_MARK_PHASE_END - 0.1));
+  return fadeIn * fadeOut;
+}
+function sectionApproach$1(rectTop, viewport, headerSpacer) {
+  return smoothstep$2((viewport * 0.88 - rectTop) / (viewport * 0.88 - headerSpacer));
+}
+function aiShellExpand(rectTop, scrollInTrack, viewport, headerSpacer, scrollable, tailPx) {
+  let expand = 0;
+  if (rectTop < viewport * 0.92) {
+    expand = sectionApproach$1(rectTop, viewport, headerSpacer);
+  } else if (scrollInTrack > 0) {
+    expand = 1;
+  }
+  const tailStart = scrollable - tailPx * 0.9;
+  if (scrollInTrack > tailStart) {
+    expand *= 1 - smoothstep$2((scrollInTrack - tailStart) / Math.max(1, tailPx * 0.9));
+  }
+  return expand;
+}
+function hubReveal(progress) {
+  return smoothstep$2((progress - HUB_START) / 0.1);
+}
+function rowReady(drop) {
+  return smoothstep$2(clamp01$4((drop - 0.94) / 0.06));
+}
+function typewriterLength$1(progress, length, drop) {
+  const ready = rowReady(drop);
+  if (ready <= 0) return 0;
+  const t = smoothstep$2((progress - TYPE_START) / (TYPE_END - TYPE_START)) * ready;
+  return Math.floor(t * length);
+}
+function textReveal(progress, drop) {
+  const ready = rowReady(drop);
+  if (ready <= 0) return 0;
+  return smoothstep$2((progress - (TYPE_START - 0.01)) / 0.04) * ready;
+}
+function hubContentFade(drift) {
+  return smoothstep$2((drift - 0.32) / 0.52);
+}
+function dropToBlocks(progress) {
+  if (progress < DROP_START) return 0;
+  return smoothstep$2((progress - DROP_START) / (DROP_END - DROP_START));
+}
+function rowExitScroll(drift) {
+  return smoothstep$2(drift);
+}
+function backgroundFade(drift, drop, exitScroll) {
+  if (exitScroll > 0.08 && exitScroll < 0.96) return 0;
+  if (drift > 0.02) return smoothstep$2(clamp01$4(drift / 0.72)) * 0.4;
+  if (drop < 0.9) return 0;
+  return smoothstep$2((drop - 0.9) / 0.1) * 0.25;
+}
+function AiPremiumSection() {
+  const copy = landingCopy(useLang().lang);
+  const pinWrapRef = useRef(null);
+  const animPinRef = useRef(null);
+  const sectionRef = useRef(null);
+  const shellRef = useRef(null);
+  const frameRef = useRef(null);
+  const hubRef = useRef(null);
+  const textWrapRef = useRef(null);
+  const headlineRef = useRef(null);
+  const cursorRef = useRef(null);
+  const aiMarkRef = useRef(null);
+  const rowItemRefs = useRef([]);
+  const blockSlotRefs = useRef([]);
+  const logoImgRefs = useRef([]);
+  const reducedMotion = usePrefersReducedMotion$1();
+  const headline = copy.ai.headline;
+  useEffect(() => {
+    const track = pinWrapRef.current;
+    const animPin = animPinRef.current;
+    if (!track || !animPin || typeof window === "undefined") return;
+    let raf = 0;
+    let trackTop = 0;
+    let animPinHeight = 0;
+    let trackHeight = 0;
+    let animScrollable = 1;
+    let driftScrollable = 1;
+    let headerSpacer = 92;
+    let tailPx = 1;
+    let lastScrollY = -1;
+    let lastTypedChars = -1;
+    let lastExpand = -1;
+    let lastAuroraStrength = -1;
+    let lastAiMarkOpacity = -1;
+    let smoothExitScroll = 0;
+    const logoFrame = AI_MODELS.map(() => ({
+      left: "",
+      top: "",
+      opacity: "",
+      transform: "",
+      zIndex: "",
+      blockOpacity: "",
+      inOrbit: true,
+      logoScale: "",
+      imgOpacity: "",
+      rowMode: false
+    }));
+    const measure = () => {
+      const rect = track.getBoundingClientRect();
+      trackTop = window.scrollY + rect.top;
+      animPinHeight = animPin.offsetHeight;
+      trackHeight = track.offsetHeight;
+      animScrollable = Math.max(1, animPinHeight - window.innerHeight);
+      driftScrollable = Math.max(1, trackHeight - animPinHeight);
+      tailPx = DRIFT_RUNWAY_VH / 100 * window.innerHeight;
+      headerSpacer = Number.parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--tivonix-header-spacer")
+      ) || 92;
+    };
+    const applyFrame = () => {
+      const scrollY = window.scrollY;
+      const viewport = window.innerHeight;
+      const scrollInTrack = scrollY - trackTop;
+      if (scrollInTrack < -viewport || scrollInTrack > trackHeight + viewport) return false;
+      const rectTop = sectionRef.current?.getBoundingClientRect().top ?? trackTop - scrollY;
+      const scrollable = Math.max(1, trackHeight - viewport);
+      const pinProgress = reducedMotion ? scrollInTrack > animScrollable * 0.2 ? 1 : 0 : clamp01$4(scrollInTrack / animScrollable);
+      const drift = reducedMotion ? 0 : clamp01$4((scrollInTrack - animScrollable) / driftScrollable);
+      const isEntered = rectTop < viewport * 0.85;
+      const approach = rectTop < viewport * 0.92 ? sectionApproach$1(rectTop, viewport, headerSpacer) : scrollInTrack > 0 ? 1 : 0;
+      const progress = pinProgress;
+      const expand = reducedMotion ? 1 : aiShellExpand(rectTop, scrollInTrack, viewport, headerSpacer, scrollable, tailPx);
+      const hub = hubReveal(progress);
+      const drop = dropToBlocks(progress);
+      const typedChars = typewriterLength$1(progress, headline.length, drop);
+      const aiMarkIn = aiMarkOpacity(progress, approach);
+      const hubFade = hubContentFade(drift);
+      const textOpacity = textReveal(progress, drop) * (1 - hubFade);
+      const hubOpacity = hub * (1 - hubFade);
+      const targetExitScroll = rowExitScroll(drift);
+      const smoothRate = reducedMotion ? 1 : scrollY === lastScrollY ? 0.1 : 0.18;
+      smoothExitScroll += (targetExitScroll - smoothExitScroll) * smoothRate;
+      const exitScroll = smoothExitScroll;
+      const bgReveal = Math.max(approach, smoothstep$2(progress / 0.05), expand);
+      const auroraStrength = clamp01$4(bgReveal) * (1 - backgroundFade(drift, drop, exitScroll));
+      const inAnimPin = scrollInTrack >= 0 && scrollInTrack < animScrollable;
+      const isPinned = inAnimPin && rectTop <= 0;
+      lastScrollY = scrollY;
+      if (expand !== lastExpand) {
+        lastExpand = expand;
+        pinWrapRef.current?.style.setProperty("--ai-expand", String(expand));
+      }
+      if (auroraStrength !== lastAuroraStrength) {
+        lastAuroraStrength = auroraStrength;
+        frameRef.current?.style.setProperty("--ai-aurora-fade", String(auroraStrength));
+      }
+      const frameEl = frameRef.current;
+      if (frameEl) {
+        frameEl.classList.toggle("ai-premium-frame--live", isEntered);
+        frameEl.classList.toggle("ai-premium-frame--orbit", inAnimPin && progress > ORBIT_START - 0.06 && drop < 0.35);
+      }
+      pinWrapRef.current?.classList.toggle("ai-premium-pin--active", inAnimPin && progress > 0.02);
+      const sectionEl = sectionRef.current;
+      if (sectionEl) {
+        sectionEl.classList.toggle("ai-premium-section--pinned", isPinned);
+        sectionEl.classList.toggle("ai-premium-section--drift", drift > 0.01);
+      }
+      const hubEl = hubRef.current;
+      if (hubEl) {
+        const hubTop = mobileLayout ? lerp(46, 38, drop) : lerp(50, 42, drop);
+        hubEl.style.top = `${hubTop}%`;
+        hubEl.style.opacity = String(hubOpacity);
+        hubEl.style.transform = `translate3d(-50%, -50%, 0) scale(${0.84 + hub * 0.16 - drop * 0.08})`;
+      }
+      if (lastAiMarkOpacity !== aiMarkIn) {
+        lastAiMarkOpacity = aiMarkIn;
+        const aiMark = aiMarkRef.current;
+        if (aiMark) {
+          aiMark.style.opacity = String(aiMarkIn);
+          aiMark.style.transform = `translate3d(-50%, -50%, 0) scale(${0.92 + aiMarkIn * 0.08})`;
+          aiMark.style.pointerEvents = aiMarkIn > 0.04 ? "auto" : "none";
+        }
+      }
+      const textWrap = textWrapRef.current;
+      if (textWrap) {
+        textWrap.style.opacity = String(textOpacity);
+        textWrap.style.transform = `translate3d(0, ${(1 - textOpacity) * 10}px, 0)`;
+      }
+      if (typedChars !== lastTypedChars && headlineRef.current) {
+        lastTypedChars = typedChars;
+        headlineRef.current.textContent = headline.slice(0, typedChars);
+      }
+      if (cursorRef.current) {
+        const showCursor = typedChars < headline.length && textOpacity > 0.15 && drop > 0.93;
+        cursorRef.current.style.display = showCursor ? "inline-block" : "none";
+      }
+      const driftPx = exitScroll * Math.max(viewport * 0.72, 480);
+      const orbitBlend = 1 - smoothstep$2(drop / 0.24);
+      const inOrbitPhase = orbitBlend > 0.04;
+      const orbitBlocksIn = progress < ORBIT_START ? 0 : smoothstep$2((progress - ORBIT_START) / 0.07);
+      const logoExitFade = smoothstep$2((exitScroll - 0.28) / 0.72);
+      const mobileLayout = viewport < 1024;
+      const orbitRx = mobileLayout ? ORBIT_RX_MOBILE : 33;
+      const orbitRy = mobileLayout ? ORBIT_RY_MOBILE : 31;
+      AI_MODELS.forEach((model, index) => {
+        const el = rowItemRefs.current[index];
+        if (!el) return;
+        const { x: orbitX, y: orbitY } = orbitPosition(index, AI_MODEL_COUNT, orbitRx, orbitRy);
+        const rowPos = mobileLayout ? rowPositionMultiRow(
+          index,
+          AI_MODEL_COUNT,
+          ROW_COLS_MOBILE,
+          ROW_BLOCK_REF_MOBILE_ROW,
+          ROW_Y_MOBILE_ROWS,
+          ROW_OVERLAP_MOBILE
+        ) : rowPosition(index, AI_MODEL_COUNT, ROW_BLOCK_REF, 10);
+        const reveal = logoReveal(progress, index);
+        const x = lerp(orbitX, rowPos.rowX, drop);
+        const y = lerp(orbitY, rowPos.rowY, drop);
+        const orbitScale = 0.94 + reveal * 0.06;
+        const itemScale = lerp(orbitScale, 1, drop);
+        const rowOpacity = smoothstep$2(drop);
+        const baseOpacity = drop < 0.02 ? Math.max(reveal, orbitBlocksIn) : Math.max(reveal * (1 - drop * 0.35), rowOpacity);
+        const itemOpacity = String(baseOpacity * (1 - logoExitFade));
+        const mobileScaleTarget = Math.min(model.scale, 1.55);
+        const logoScale = mobileLayout ? lerp(mobileScaleTarget * 0.94, mobileScaleTarget, 1 - orbitBlend) : lerp(model.scale * 0.96, model.scale, 1 - orbitBlend);
+        const imgOpacity = inOrbitPhase ? String(reveal * orbitBlend + (1 - orbitBlend)) : "1";
+        const inRowLayout = drop > 0.68;
+        const left = `${x}%`;
+        const top = `${y}%`;
+        const opacity = itemOpacity;
+        const zIndex = inRowLayout ? String(12 + index) : inOrbitPhase ? "15" : "10";
+        const transform = `translate3d(calc(-50% + ${driftPx}px), -50%, 0) scale(${itemScale})`;
+        const blockOpacity = inOrbitPhase ? "1" : String(rowOpacity);
+        const scaleStr = String(logoScale);
+        const state = logoFrame[index];
+        if (state.left !== left) {
+          state.left = left;
+          el.style.left = left;
+        }
+        if (state.top !== top) {
+          state.top = top;
+          el.style.top = top;
+        }
+        if (state.opacity !== opacity) {
+          state.opacity = opacity;
+          el.style.opacity = opacity;
+        }
+        if (state.zIndex !== zIndex) {
+          state.zIndex = zIndex;
+          el.style.zIndex = zIndex;
+        }
+        if (state.transform !== transform) {
+          state.transform = transform;
+          el.style.transform = transform;
+        }
+        if (state.rowMode !== inRowLayout) {
+          state.rowMode = inRowLayout;
+          el.classList.toggle("ai-logo-row-item--row", inRowLayout);
+        }
+        const blockSlot = blockSlotRefs.current[index];
+        if (blockSlot && state.blockOpacity !== blockOpacity) {
+          state.blockOpacity = blockOpacity;
+          blockSlot.style.opacity = blockOpacity;
+        }
+        const img = logoImgRefs.current[index];
+        if (img && state.logoScale !== scaleStr) {
+          state.logoScale = scaleStr;
+          img.style.setProperty("--ai-logo-scale", scaleStr);
+        }
+        if (img && state.imgOpacity !== imgOpacity) {
+          state.imgOpacity = imgOpacity;
+          img.style.opacity = imgOpacity;
+        }
+      });
+      return Math.abs(smoothExitScroll - targetExitScroll) > 15e-4;
+    };
+    const update = () => {
+      const continueSmoothing = applyFrame();
+      raf = continueSmoothing ? requestAnimationFrame(update) : 0;
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    const onResize = () => {
+      lastScrollY = -1;
+      smoothExitScroll = 0;
+      measure();
+      update();
+    };
+    measure();
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [reducedMotion, headline]);
+  return /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsx(
+    "div",
+    {
+      ref: pinWrapRef,
+      className: "ai-premium-pin relative",
+      style: {
+        height: `calc(${ANIM_PIN_VH}vh + ${DRIFT_RUNWAY_VH}vh)`,
+        ["--ai-expand"]: "0"
+      },
+      children: /* @__PURE__ */ jsx(
+        "div",
+        {
+          ref: animPinRef,
+          className: "ai-premium-anim-pin relative",
+          style: { height: `${ANIM_PIN_VH}vh` },
+          children: /* @__PURE__ */ jsx(
+            "section",
+            {
+              ref: sectionRef,
+              id: "ai",
+              className: "ai-premium-section sticky top-0 z-40 flex h-[100svh] flex-col",
+              "aria-label": copy.ai.ariaLabel,
+              children: /* @__PURE__ */ jsx(
+                "div",
+                {
+                  ref: shellRef,
+                  className: "ai-premium-section-shell mx-auto flex min-h-0 w-full flex-1 flex-col",
+                  children: /* @__PURE__ */ jsx(TivonixGlowBorder, { className: "ai-premium-border-stage flex min-h-0 w-full flex-1 flex-col", children: /* @__PURE__ */ jsxs(
+                    "div",
+                    {
+                      ref: frameRef,
+                      className: "ai-premium-frame relative flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-[inherit]",
+                      style: { ["--ai-aurora-fade"]: "0" },
+                      children: [
+                        /* @__PURE__ */ jsx("div", { className: "ai-premium-bg", "aria-hidden": true, children: /* @__PURE__ */ jsx(
+                          "div",
+                          {
+                            className: "ai-premium-bg-image",
+                            style: { backgroundImage: `url("${AI_SECTION_BG}")` }
+                          }
+                        ) }),
+                        /* @__PURE__ */ jsx("div", { className: "ai-premium-frame__body relative z-10 flex flex-1 flex-col px-1 py-4 sm:py-6", children: /* @__PURE__ */ jsx("div", { className: "relative mx-auto w-full flex-1", children: /* @__PURE__ */ jsxs("div", { className: "ai-premium-orbit-stage relative mx-auto w-full max-w-full px-2 sm:px-4", children: [
+                          /* @__PURE__ */ jsx(
+                            "div",
+                            {
+                              ref: aiMarkRef,
+                              className: "ai-premium-ai-mark pointer-events-none absolute left-1/2 top-1/2 z-30",
+                              style: { opacity: 0 },
+                              "aria-hidden": true,
+                              children: /* @__PURE__ */ jsx(
+                                "span",
+                                {
+                                  className: [
+                                    "ai-premium-ai-mark__text text-[clamp(4.5rem,20vw,10rem)] leading-none",
+                                    reducedMotion ? "" : "ai-premium-ai-mark__text--animated"
+                                  ].filter(Boolean).join(" "),
+                                  children: "AI"
+                                }
+                              )
+                            }
+                          ),
+                          /* @__PURE__ */ jsxs(
+                            "div",
+                            {
+                              ref: hubRef,
+                              className: "ai-hub absolute left-1/2 z-20 flex flex-col items-center",
+                              style: {
+                                top: "50%",
+                                opacity: 0,
+                                transform: "translate3d(-50%, -50%, 0) scale(0.84)"
+                              },
+                              children: [
+                                /* @__PURE__ */ jsx(
+                                  "img",
+                                  {
+                                    src: TIVONIX_LOGO,
+                                    alt: "TIVONIX",
+                                    className: "block h-12 w-auto sm:h-16 lg:h-[5.5rem]",
+                                    draggable: false
+                                  }
+                                ),
+                                /* @__PURE__ */ jsx(
+                                  "div",
+                                  {
+                                    ref: textWrapRef,
+                                    className: "mx-auto mt-4 max-w-[22ch] text-center sm:mt-5 sm:max-w-[26ch]",
+                                    style: { opacity: 0 },
+                                    children: /* @__PURE__ */ jsxs(
+                                      "p",
+                                      {
+                                        className: "font-hero text-[clamp(1.35rem,5.2vw,1.95rem)] font-semibold leading-[1.14] tracking-[-0.03em] text-white sm:text-[clamp(1.2rem,2.9vw,1.85rem)]",
+                                        "aria-label": copy.ai.headline,
+                                        children: [
+                                          /* @__PURE__ */ jsx("span", { ref: headlineRef, "aria-hidden": true }),
+                                          /* @__PURE__ */ jsx(
+                                            "span",
+                                            {
+                                              ref: cursorRef,
+                                              className: "ai-type-cursor ml-0.5 inline-block text-[#FF9A3D]",
+                                              style: { display: "none" },
+                                              "aria-hidden": true,
+                                              children: "|"
+                                            }
+                                          )
+                                        ]
+                                      }
+                                    )
+                                  }
+                                )
+                              ]
+                            }
+                          ),
+                          AI_MODELS.map((model, index) => /* @__PURE__ */ jsx(
+                            "div",
+                            {
+                              ref: (el) => {
+                                rowItemRefs.current[index] = el;
+                              },
+                              className: "ai-logo-row-item absolute z-10",
+                              style: { opacity: 0 },
+                              children: /* @__PURE__ */ jsx(
+                                "div",
+                                {
+                                  ref: (el) => {
+                                    blockSlotRefs.current[index] = el;
+                                  },
+                                  className: "ai-logo-block-slot flex items-center justify-center",
+                                  children: /* @__PURE__ */ jsx(
+                                    "img",
+                                    {
+                                      ref: (el) => {
+                                        logoImgRefs.current[index] = el;
+                                      },
+                                      src: model.src,
+                                      alt: model.name,
+                                      className: [
+                                        "ai-logo-img max-h-[54px] max-w-[100px] object-contain sm:max-h-[60px] sm:max-w-[112px] lg:max-h-[64px] lg:max-w-[120px]",
+                                        model.brighten ? "ai-logo-img--bright" : "",
+                                        model.colorful ? "ai-logo-img--colorful" : ""
+                                      ].join(" "),
+                                      style: { transform: "scale(var(--ai-logo-scale, 1))" },
+                                      draggable: false,
+                                      loading: "eager"
+                                    }
+                                  )
+                                }
+                              )
+                            },
+                            model.id
+                          ))
+                        ] }) }) })
+                      ]
+                    }
+                  ) })
+                }
+              )
+            }
+          )
+        }
+      )
+    }
+  ) });
+}
+function usePrefersReducedMotion$1() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const apply = () => setReduced(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+  return reduced;
+}
+const PLAN_IDS = ["start", "growth", "product", "custom"];
+const COMPARISON_GROUPS = [
+  {
+    id: "core",
+    rows: [
+      { id: "landing", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "responsive", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "form", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "contactButtons", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "telegramNotify", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "emailNotify", values: { start: { kind: "option" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
+    ]
+  },
+  {
+    id: "crm",
+    rows: [
+      { id: "leadStorage", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "leadTable", values: { start: { kind: "option" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "miniCrm", values: { start: { kind: "no" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "statuses", values: { start: { kind: "no" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "history", values: { start: { kind: "no" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "roles", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
+    ]
+  },
+  {
+    id: "product",
+    rows: [
+      { id: "cabinet", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "admin", values: { start: { kind: "no" }, growth: { kind: "basic" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "auth", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "database", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "booking", values: { start: { kind: "option" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "payments", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
+    ]
+  },
+  {
+    id: "automation",
+    rows: [
+      { id: "autoNotify", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "integrations", values: { start: { kind: "no" }, growth: { kind: "basic" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "aiBot", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "option" }, custom: { kind: "yes" } } },
+      { id: "aiLeads", values: { start: { kind: "no" }, growth: { kind: "no" }, product: { kind: "option" }, custom: { kind: "yes" } } },
+      { id: "documents", values: { start: { kind: "no" }, growth: { kind: "no" }, product: { kind: "option" }, custom: { kind: "yes" } } },
+      { id: "customFlows", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
+    ]
+  },
+  {
+    id: "launch",
+    rows: [
+      { id: "domain", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "deploy", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "guide", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "testing", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      {
+        id: "support",
+        values: {
+          start: { kind: "text", textKey: "support7" },
+          growth: { kind: "text", textKey: "support14" },
+          product: { kind: "text", textKey: "support30" },
+          custom: { kind: "text", textKey: "supportCustom" }
+        }
+      }
+    ]
+  }
+];
+const PLAN_TELEGRAM_START = {
+  start: "plan_start",
+  custom: "plan_custom"
+};
+const PLANS = [
+  { id: "start", ctaAction: "telegram" },
+  { id: "growth", badgeKey: "popular", highlight: true, ctaAction: "modal" },
+  { id: "product", badgeKey: "product", ctaAction: "modal" },
+  { id: "custom", ctaAction: "telegram" }
+];
+const COMPARE_GLOBE = "/images/pain-bg-4.png";
+function clamp01$3(v) {
+  return Math.min(1, Math.max(0, v));
+}
+function useCompareGlobeScale(panelRef) {
+  const [scale, setScale] = useState(1.04);
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el || typeof window === "undefined") return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      setScale(1.1);
+      return;
+    }
+    let raf = 0;
+    const update = () => {
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const total = Math.max(1, rect.height + vh * 0.5);
+      const scrolled = vh * 0.8 - rect.top;
+      const progress = clamp01$3(scrolled / total);
+      setScale(1.04 + progress * 0.3);
+    };
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(update);
+    };
+    schedule();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
+  }, [panelRef]);
+  return scale;
+}
+function chaosChannelIcon(channel) {
+  const key = channel.toLowerCase();
+  if (key.includes("instagram")) return { Icon: SiInstagram, color: "#E4405F" };
+  if (key.includes("telegram")) return { Icon: SiTelegram, color: "#2AABEE" };
+  if (key.includes("whatsapp")) return { Icon: SiWhatsapp, color: "#25D366" };
+  if (key.includes("звонок") || key.includes("call")) return { Icon: Phone, color: "#FF9A3D" };
+  if (key.includes("email") || key.includes("почт")) return { Icon: Mail, color: "#93C5FD" };
+  return { Icon: Globe, color: "#FFAE66" };
+}
+function CompareCrmHover({
+  title,
+  sidebar,
+  leadsTitle,
+  leads
+}) {
+  return /* @__PURE__ */ jsxs("div", { className: "compare-mini-crm", children: [
+    /* @__PURE__ */ jsxs("div", { className: "compare-mini-crm__topbar", children: [
+      /* @__PURE__ */ jsx("span", { className: "compare-mini-crm__logo", children: title }),
+      /* @__PURE__ */ jsx("span", { className: "compare-mini-crm__live", "aria-hidden": true })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "compare-mini-crm__layout", children: [
+      /* @__PURE__ */ jsx("nav", { className: "compare-mini-crm__sidebar", "aria-label": title, children: sidebar.map((item) => /* @__PURE__ */ jsxs(
+        "div",
+        {
+          className: `compare-mini-crm__nav${item.active ? " compare-mini-crm__nav--active" : ""}`,
+          children: [
+            /* @__PURE__ */ jsx("span", { children: item.label }),
+            item.count ? /* @__PURE__ */ jsx("span", { className: "compare-mini-crm__nav-count", children: item.count }) : null
+          ]
+        },
+        item.label
+      )) }),
+      /* @__PURE__ */ jsxs("div", { className: "compare-mini-crm__main", children: [
+        /* @__PURE__ */ jsxs("div", { className: "compare-mini-crm__main-head", children: [
+          /* @__PURE__ */ jsx("span", { children: leadsTitle }),
+          /* @__PURE__ */ jsx("span", { className: "compare-mini-crm__main-count", children: leads.length })
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "compare-mini-crm__leads", children: leads.map((lead) => /* @__PURE__ */ jsxs("article", { className: "compare-mini-crm__lead", children: [
+          /* @__PURE__ */ jsxs("div", { className: "compare-mini-crm__lead-top", children: [
+            /* @__PURE__ */ jsx("span", { className: "compare-mini-crm__lead-name", children: lead.name }),
+            /* @__PURE__ */ jsx("span", { className: "compare-mini-crm__lead-time", children: lead.time })
+          ] }),
+          /* @__PURE__ */ jsx("p", { className: "compare-mini-crm__lead-preview", children: lead.preview }),
+          /* @__PURE__ */ jsxs("div", { className: "compare-mini-crm__lead-meta", children: [
+            /* @__PURE__ */ jsx("span", { className: "compare-mini-crm__lead-source", children: lead.source }),
+            /* @__PURE__ */ jsx("span", { className: `compare-mini-crm__status compare-mini-crm__status--${lead.tone}`, children: lead.status })
+          ] })
+        ] }, `${lead.name}-${lead.preview}`)) })
+      ] })
     ] })
   ] });
+}
+function ComparePlansHover({
+  title,
+  plans,
+  badges,
+  moreLabel
+}) {
+  const highlightId = "growth";
+  return /* @__PURE__ */ jsxs("div", { className: "compare-mini-plans", children: [
+    /* @__PURE__ */ jsx("p", { className: "compare-mini-plans__title", children: title }),
+    /* @__PURE__ */ jsx("div", { className: "compare-mini-plans__list", children: PLAN_IDS.map((id) => {
+      const plan = plans[id];
+      const isHighlight = id === highlightId;
+      const badge = id === "growth" ? badges.popular : id === "product" ? badges.product : null;
+      return /* @__PURE__ */ jsxs(
+        "article",
+        {
+          className: `compare-mini-plans__item${isHighlight ? " compare-mini-plans__item--highlight" : ""}`,
+          children: [
+            /* @__PURE__ */ jsxs("div", { className: "compare-mini-plans__item-head", children: [
+              /* @__PURE__ */ jsxs("div", { className: "compare-mini-plans__item-names", children: [
+                /* @__PURE__ */ jsx("span", { className: "compare-mini-plans__name", children: plan.name }),
+                badge ? /* @__PURE__ */ jsx("span", { className: "compare-mini-plans__badge", children: badge }) : null
+              ] }),
+              /* @__PURE__ */ jsx("span", { className: "compare-mini-plans__price", children: plan.price })
+            ] }),
+            /* @__PURE__ */ jsx("p", { className: "compare-mini-plans__tagline", children: plan.tagline })
+          ]
+        },
+        id
+      );
+    }) }),
+    /* @__PURE__ */ jsxs(Link, { to: "/plans", className: "compare-mini-plans__more group", children: [
+      moreLabel,
+      /* @__PURE__ */ jsx(
+        ArrowUpRight,
+        {
+          size: 14,
+          className: "transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5",
+          "aria-hidden": true
+        }
+      )
+    ] })
+  ] });
+}
+function CompareChaosMessage({ msg }) {
+  const { Icon: Icon2, color } = chaosChannelIcon(msg.channel);
+  return /* @__PURE__ */ jsxs("div", { className: "compare-chaos-msg", children: [
+    /* @__PURE__ */ jsx("span", { className: "compare-chaos-msg__icon", style: { color }, children: /* @__PURE__ */ jsx(Icon2, { size: 13, "aria-hidden": true }) }),
+    /* @__PURE__ */ jsxs("div", { className: "compare-chaos-msg__body", children: [
+      /* @__PURE__ */ jsxs("div", { className: "compare-chaos-msg__head", children: [
+        /* @__PURE__ */ jsx("span", { className: "compare-chaos-msg__channel", children: msg.channel }),
+        /* @__PURE__ */ jsx("span", { className: "compare-chaos-msg__time", children: msg.time })
+      ] }),
+      /* @__PURE__ */ jsx("p", { className: "compare-chaos-msg__text", children: msg.text })
+    ] })
+  ] });
+}
+function CompareChaosHover({ messages, active }) {
+  const renderGroup = (suffix) => messages.map((msg) => /* @__PURE__ */ jsx(CompareChaosMessage, { msg }, `${suffix}-${msg.channel}-${msg.text}`));
+  return /* @__PURE__ */ jsx(
+    "div",
+    {
+      className: `compare-chaos-stream${active ? " compare-chaos-stream--live" : ""}`,
+      "aria-hidden": true,
+      children: /* @__PURE__ */ jsxs("div", { className: "compare-chaos-stream__track", children: [
+        /* @__PURE__ */ jsx("div", { className: "compare-chaos-stream__group", children: renderGroup("a") }),
+        /* @__PURE__ */ jsx("div", { className: "compare-chaos-stream__group", children: renderGroup("b") })
+      ] })
+    }
+  );
+}
+function ComparisonSection() {
+  const { lang } = useLang();
+  const copy = landingCopy(lang);
+  const pricing = pricingCopy(lang);
+  const crm = copy.compare.hover.crm;
+  const [leftHover, setLeftHover] = useState(false);
+  const [rightHover, setRightHover] = useState(false);
+  const [pricingHover, setPricingHover] = useState(false);
+  const centerPanelRef = useRef(null);
+  const globeScale = useCompareGlobeScale(centerPanelRef);
+  return /* @__PURE__ */ jsx(
+    Section,
+    {
+      id: "compare",
+      className: "compare-section-lift scroll-mt-[var(--tivonix-header-spacer)] bg-black !pb-8 !pt-6 sm:!pb-10 sm:!pt-8 lg:!pb-12 lg:!pt-10",
+      children: /* @__PURE__ */ jsxs(Container, { children: [
+        /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[46rem] text-center", children: [
+          /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.65rem,4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white text-balance", children: copy.compare.title }),
+          copy.compare.subtitle ? /* @__PURE__ */ jsx("p", { className: "mx-auto mt-3 max-w-[40rem] text-[15px] leading-[1.6] text-white/42 sm:text-[16px]", children: copy.compare.subtitle }) : null
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "compare-split mt-5 sm:mt-6", children: [
+          /* @__PURE__ */ jsxs(
+            "div",
+            {
+              className: `compare-split__left compare-split__panel${leftHover ? " compare-split__panel--hovered" : ""}`,
+              onMouseEnter: () => setLeftHover(true),
+              onMouseLeave: () => setLeftHover(false),
+              role: "group",
+              "aria-label": copy.compare.regular.title,
+              children: [
+                /* @__PURE__ */ jsxs("div", { className: "compare-split__default compare-split__left-inner", children: [
+                  /* @__PURE__ */ jsx("p", { className: "compare-split__headline font-hero text-[clamp(1.5rem,3.2vw,2.35rem)] font-semibold leading-[1.1] tracking-[-0.03em] text-white", children: copy.compare.regular.headline }),
+                  /* @__PURE__ */ jsx("p", { className: "mt-2 text-[12px] font-semibold uppercase tracking-[0.16em] text-white/35", children: copy.compare.regular.title }),
+                  /* @__PURE__ */ jsx("div", { className: "compare-blocks-grid mt-6", children: copy.compare.regular.items.map((item) => /* @__PURE__ */ jsx("div", { className: "compare-block compare-block--muted", children: item }, item)) }),
+                  /* @__PURE__ */ jsx("div", { className: "compare-blocks-grid mt-3", children: copy.compare.chaosTags.map((tag) => /* @__PURE__ */ jsx("div", { className: "compare-block compare-block--warn", children: tag }, tag)) })
+                ] }),
+                /* @__PURE__ */ jsx("div", { className: "compare-split__hover compare-split__hover--chaos", children: /* @__PURE__ */ jsx(CompareChaosHover, { messages: copy.compare.hover.chaosMessages, active: leftHover }) })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxs(
+            "div",
+            {
+              ref: centerPanelRef,
+              className: `compare-split__right compare-split__panel${rightHover ? " compare-split__panel--hovered" : ""}${globeScale > 1.12 ? " compare-split__right--zoomed" : ""}`,
+              onMouseEnter: () => setRightHover(true),
+              onMouseLeave: () => setRightHover(false),
+              role: "group",
+              "aria-label": copy.compare.tivonix.title,
+              children: [
+                /* @__PURE__ */ jsxs(
+                  "div",
+                  {
+                    className: "compare-split__right-media",
+                    style: { transform: `scale(${globeScale})` },
+                    "aria-hidden": true,
+                    children: [
+                      /* @__PURE__ */ jsx(
+                        "img",
+                        {
+                          src: COMPARE_GLOBE,
+                          alt: "",
+                          className: "compare-split__globe",
+                          loading: "lazy",
+                          decoding: "async"
+                        }
+                      ),
+                      /* @__PURE__ */ jsx("div", { className: "compare-split__right-overlay" })
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsxs("div", { className: "compare-split__default compare-split__right-inner", children: [
+                  /* @__PURE__ */ jsx("p", { className: "compare-split__headline font-hero text-[clamp(1.5rem,3.2vw,2.35rem)] font-semibold leading-[1.1] tracking-[-0.03em] text-white", children: copy.compare.tivonix.headline }),
+                  /* @__PURE__ */ jsx("p", { className: "mt-2 text-[12px] font-semibold uppercase tracking-[0.16em] text-white/72", children: copy.compare.tivonix.title }),
+                  /* @__PURE__ */ jsx("ul", { className: "mt-6 hidden space-y-2.5 text-left sm:block", children: copy.compare.tivonix.items.map((item) => /* @__PURE__ */ jsxs("li", { className: "flex items-start gap-2.5 text-[14px] text-white/92 sm:text-[15px]", children: [
+                    /* @__PURE__ */ jsx(Check, { size: 14, className: "mt-0.5 shrink-0 text-white", strokeWidth: 2.5, "aria-hidden": true }),
+                    /* @__PURE__ */ jsx("span", { children: item })
+                  ] }, item)) }),
+                  /* @__PURE__ */ jsxs("div", { className: "compare-split__badge mt-6", children: [
+                    /* @__PURE__ */ jsx(Check, { size: 14, strokeWidth: 2.5, "aria-hidden": true }),
+                    /* @__PURE__ */ jsx("span", { children: copy.compare.tivonix.badge })
+                  ] }),
+                  /* @__PURE__ */ jsx("ul", { className: "mt-5 space-y-2.5 text-left sm:hidden", children: copy.compare.tivonix.items.slice(0, 4).map((item) => /* @__PURE__ */ jsxs("li", { className: "flex items-start gap-2 text-[13px] text-white/90", children: [
+                    /* @__PURE__ */ jsx(Check, { size: 13, className: "mt-0.5 shrink-0", strokeWidth: 2.5, "aria-hidden": true }),
+                    /* @__PURE__ */ jsx("span", { children: item })
+                  ] }, item)) })
+                ] }),
+                /* @__PURE__ */ jsx("div", { className: "compare-split__hover compare-split__hover--crm", children: /* @__PURE__ */ jsx(
+                  CompareCrmHover,
+                  {
+                    title: crm.title,
+                    sidebar: crm.sidebar,
+                    leadsTitle: crm.leadsTitle,
+                    leads: crm.leads
+                  }
+                ) })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxs(
+            "div",
+            {
+              id: "services",
+              className: `compare-split__pricing compare-split__panel scroll-mt-[var(--tivonix-header-spacer)]${pricingHover ? " compare-split__panel--hovered" : ""}`,
+              onMouseEnter: () => setPricingHover(true),
+              onMouseLeave: () => setPricingHover(false),
+              role: "group",
+              "aria-label": copy.pricingTeaser.title,
+              children: [
+                /* @__PURE__ */ jsxs("div", { className: "compare-split__default compare-split__pricing-inner", children: [
+                  /* @__PURE__ */ jsx("p", { className: "compare-split__eyebrow", children: copy.pricingTeaser.eyebrow }),
+                  /* @__PURE__ */ jsx("h3", { className: "compare-split__headline mt-3 font-hero text-[clamp(1.35rem,2.6vw,2rem)] font-semibold leading-[1.1] tracking-[-0.03em] text-white", children: copy.pricingTeaser.title }),
+                  /* @__PURE__ */ jsx("ul", { className: "compare-pricing-teaser mt-5", children: PLAN_IDS.map((id) => /* @__PURE__ */ jsxs("li", { className: "compare-pricing-teaser__row", children: [
+                    /* @__PURE__ */ jsx("span", { className: "compare-pricing-teaser__name", children: pricing.plans[id].name }),
+                    /* @__PURE__ */ jsx("span", { className: "compare-pricing-teaser__price", children: pricing.plans[id].price })
+                  ] }, id)) }),
+                  /* @__PURE__ */ jsxs("p", { className: "compare-pricing-teaser__more mt-5", children: [
+                    copy.pricingTeaser.more,
+                    /* @__PURE__ */ jsx(ArrowUpRight, { size: 15, className: "inline-block", "aria-hidden": true })
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsx("div", { className: "compare-split__hover compare-split__hover--plans", children: /* @__PURE__ */ jsx(
+                  ComparePlansHover,
+                  {
+                    title: pricing.title,
+                    plans: pricing.plans,
+                    badges: pricing.badges,
+                    moreLabel: copy.pricingTeaser.more
+                  }
+                ) })
+              ]
+            }
+          )
+        ] })
+      ] })
+    }
+  );
+}
+function cx$7(...a) {
+  return a.filter(Boolean).join(" ");
+}
+function pillItemClass(active, compact) {
+  return cx$7(
+    "relative flex items-center rounded-full border-0 font-bold uppercase tracking-[0.12em] outline-none select-none transition duration-[260ms]",
+    "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
+    compact ? "px-3 h-9 text-[9.5px] tracking-[0.1em]" : "px-4 h-10 text-[10px]",
+    active ? "bg-[#2c2c2c] text-white" : "bg-transparent text-white/55 hover:bg-white/[0.04] hover:text-white/85"
+  );
+}
+function PillActionItemView({
+  item,
+  active,
+  compact,
+  onSelect
+}) {
+  const className = pillItemClass(active, compact);
+  if (item.to) {
+    return /* @__PURE__ */ jsx(
+      Link,
+      {
+        to: item.to,
+        onClick: () => onSelect(item.id),
+        className,
+        "aria-current": active ? "page" : void 0,
+        "data-active": active ? "" : void 0,
+        children: /* @__PURE__ */ jsx("span", { className: "leading-none", children: item.label })
+      }
+    );
+  }
+  if (item.href) {
+    return /* @__PURE__ */ jsx(
+      "a",
+      {
+        href: item.href,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        onClick: () => onSelect(item.id),
+        className,
+        "data-active": active ? "" : void 0,
+        children: /* @__PURE__ */ jsx("span", { className: "leading-none", children: item.label })
+      }
+    );
+  }
+  return /* @__PURE__ */ jsx("button", { type: "button", onClick: () => onSelect(item.id), className, "data-active": active ? "" : void 0, children: /* @__PURE__ */ jsx("span", { className: "leading-none", children: item.label }) });
+}
+function PillActionBar({
+  items,
+  activeId,
+  onActiveChange,
+  compact = true,
+  className,
+  ariaLabel
+}) {
+  const handleSelect = (id) => {
+    onActiveChange(id);
+    items.find((item) => item.id === id)?.onClick?.();
+  };
+  return /* @__PURE__ */ jsx(
+    "nav",
+    {
+      className: cx$7(
+        "relative inline-flex max-w-full items-center gap-0.5 overflow-x-auto rounded-full border-0 bg-[#141414] p-1",
+        className
+      ),
+      "aria-label": ariaLabel,
+      children: items.map((item) => /* @__PURE__ */ jsx(
+        PillActionItemView,
+        {
+          item,
+          active: item.id === activeId,
+          compact,
+          onSelect: handleSelect
+        },
+        item.id
+      ))
+    }
+  );
 }
 const UPC_DOMAIN = "https://upc.watch/";
 const PAYCLIP_DOMAIN = "https://usepayclip.com/";
@@ -4172,55 +5924,1397 @@ function findProjectBySlug(slug, isRu) {
   if (!slug) return void 0;
   return buildProjects(isRu).find((p) => p.id === slug);
 }
-const HeroWebGLBg$3 = lazy(() => import("./assets/HeroWebGLBg-CnY8eKt4.js"));
-function cx$3(...a) {
+function clamp01$2(v) {
+  return Math.min(1, Math.max(0, v));
+}
+function useCaseCoverPan(blockRef) {
+  const [coverX, setCoverX] = useState(36);
+  useEffect(() => {
+    const el = blockRef.current;
+    if (!el || typeof window === "undefined") return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const update = () => {
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const total = Math.max(1, rect.height + vh * 0.35);
+      const scrolled = vh * 0.82 - rect.top;
+      const progress = clamp01$2(scrolled / total);
+      const wide = window.innerWidth >= 1024;
+      const start = wide ? 38 : 30;
+      const end = wide ? 74 : 58;
+      const target = reduced ? wide ? 58 : 46 : start + (end - start) * progress;
+      setCoverX(target);
+    };
+    let raf = 0;
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(update);
+    };
+    schedule();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
+  }, [blockRef]);
+  return coverX;
+}
+function CasesSection() {
+  const { lang } = useLang();
+  const copy = landingCopy(lang);
+  const isRu = lang === "ru";
+  const [modalOpen, setModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("view");
+  const caseBlockRef = useRef(null);
+  const coverX = useCaseCoverPan(caseBlockRef);
+  const spliton = buildProjects(isRu).find((p) => p.id === "spliton");
+  if (!spliton) return null;
+  const subtitle = isRu ? spliton.subtitleRu : spliton.subtitleEn;
+  const caseTabs = useMemo(() => {
+    const tabs = [
+      {
+        id: "view",
+        label: copy.cases.viewCase,
+        to: `/projects/${spliton.id}`
+      }
+    ];
+    if (spliton.domain) {
+      tabs.push({
+        id: "product",
+        label: copy.cases.openProduct,
+        href: spliton.domain
+      });
+    }
+    tabs.push({
+      id: "cta",
+      label: copy.cases.cta,
+      onClick: () => setModalOpen(true)
+    });
+    return tabs;
+  }, [copy.cases.cta, copy.cases.openProduct, copy.cases.viewCase, spliton.domain, spliton.id]);
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(Section, { id: "cases", className: "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs(Reveal, { className: "case-split", children: [
+      /* @__PURE__ */ jsxs("div", { className: "case-split__visual", children: [
+        /* @__PURE__ */ jsx(
+          "img",
+          {
+            src: spliton.cover ?? "/images/project-priew/spliton.png",
+            alt: spliton.title,
+            loading: "lazy",
+            decoding: "async",
+            className: "case-split__img",
+            style: { objectPosition: `${coverX}% 58%` }
+          }
+        ),
+        /* @__PURE__ */ jsx("div", { className: "case-split__visual-overlay", "aria-hidden": true })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { ref: caseBlockRef, className: "case-split__grid", children: [
+        /* @__PURE__ */ jsx("div", { className: "case-split__visual-gap", "aria-hidden": true }),
+        /* @__PURE__ */ jsxs("div", { className: "case-split__content", children: [
+          /* @__PURE__ */ jsx("span", { className: "case-split__badge", children: copy.cases.badge }),
+          /* @__PURE__ */ jsx("h2", { className: "mt-4 font-hero text-[clamp(1.75rem,4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white", children: spliton.title }),
+          /* @__PURE__ */ jsx("p", { className: "mt-3 text-[14px] leading-relaxed text-white/48 sm:text-[15px]", children: subtitle }),
+          /* @__PURE__ */ jsxs("div", { className: "mt-6 space-y-3 text-[13.5px] leading-relaxed text-white/62", children: [
+            /* @__PURE__ */ jsxs("p", { children: [
+              /* @__PURE__ */ jsx("span", { className: "font-medium text-white/78", children: isRu ? "Задача:" : "Need:" }),
+              " ",
+              copy.cases.spliton.need
+            ] }),
+            /* @__PURE__ */ jsxs("p", { children: [
+              /* @__PURE__ */ jsx("span", { className: "font-medium text-white/78", children: isRu ? "Сделали:" : "Built:" }),
+              " ",
+              copy.cases.spliton.done
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "case-split__chips mt-5 flex flex-wrap gap-2", children: copy.cases.spliton.modules.map((m) => /* @__PURE__ */ jsx("span", { className: "case-split__chip", children: m }, m)) })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "case-split__tabs", children: /* @__PURE__ */ jsx(
+        PillActionBar,
+        {
+          items: caseTabs,
+          activeId: activeTab,
+          onActiveChange: setActiveTab,
+          className: "case-split__tab-bar",
+          ariaLabel: isRu ? "Действия с кейсом" : "Case actions"
+        }
+      ) })
+    ] }) }) }),
+    /* @__PURE__ */ jsx(StartModal, { open: modalOpen, onClose: () => setModalOpen(false) })
+  ] });
+}
+const ORANGE_DIM = [0.12, 0.04, 0.01];
+const ORANGE_BASE = [0.2, 0.07, 0.01];
+const ORANGE_ARC = [1, 0.52, 0.18];
+const THETA = 0.18;
+const PHI_SPEED = 85e-5;
+const MARKER_ELEVATION = 0.06;
+const MAX_RENDER_SIDE = 720;
+const PIN_COLORS = {
+  masters: [1, 0.52, 0.18],
+  studios: [1, 0.38, 0.22],
+  autoservice: [1, 0.68, 0.12],
+  schools: [1, 0.45, 0.55],
+  startups: [1, 0.32, 0.08],
+  agencies: [1, 0.58, 0.32]
+};
+const ARCS = [
+  { from: [55.75, 37.62], to: [51.5, -0.12] },
+  { from: [40.71, -74.01], to: [25.2, 55.27] },
+  { from: [1.35, 103.82], to: [48.85, 2.35] }
+];
+function GlobeFallback() {
+  return /* @__PURE__ */ jsx("div", { className: "tivonix-globe-fallback", "aria-hidden": true, children: /* @__PURE__ */ jsxs("svg", { viewBox: "0 0 400 400", className: "tivonix-globe-fallback__svg", children: [
+    /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("pattern", { id: "tivonix-globe-dots", width: "10", height: "10", patternUnits: "userSpaceOnUse", children: /* @__PURE__ */ jsx("circle", { cx: "5", cy: "5", r: "1.1", fill: "rgba(255,122,26,0.72)" }) }) }),
+    /* @__PURE__ */ jsx("circle", { cx: "200", cy: "200", r: "132", fill: "rgba(8,4,0,0.94)" }),
+    /* @__PURE__ */ jsx("circle", { cx: "200", cy: "200", r: "132", fill: "url(#tivonix-globe-dots)", opacity: "0.9" })
+  ] }) });
+}
+function prefersGlobeFallback() {
+  if (typeof window === "undefined") return true;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return true;
+  const probe = document.createElement("canvas");
+  const gl = probe.getContext("webgl") ?? probe.getContext("webgl2");
+  return !gl;
+}
+function renderSize(rect) {
+  const layoutW = Math.max(1, rect.width);
+  const layoutH = Math.max(1, rect.height);
+  const scale = Math.min(1, MAX_RENDER_SIDE / Math.max(layoutW, layoutH));
+  return {
+    width: Math.max(1, Math.round(layoutW * scale)),
+    height: Math.max(1, Math.round(layoutH * scale))
+  };
+}
+function TivonixGlobeCanvas({ pins }) {
+  const wrapRef = useRef(null);
+  const hostRef = useRef(null);
+  const pinsRef = useRef(pins);
+  const [fallback] = useState(prefersGlobeFallback);
+  const pinsKey = useMemo(
+    () => pins.map((pin) => `${pin.id}:${pin.lat}:${pin.lng}`).join("|"),
+    [pins]
+  );
+  pinsRef.current = pins;
+  useLayoutEffect(() => {
+    if (fallback || typeof window === "undefined") return;
+    const wrap = wrapRef.current;
+    const host = hostRef.current;
+    if (!wrap || !host) return;
+    const canvas = document.createElement("canvas");
+    canvas.className = "tivonix-globe-canvas";
+    canvas.setAttribute("aria-hidden", "true");
+    host.replaceChildren(canvas);
+    let width = 0;
+    let height = 0;
+    let phi = 0.9;
+    let frame = 0;
+    let visible = true;
+    let globe = null;
+    const dpr = Math.min(window.devicePixelRatio ?? 1, 1.5);
+    const buildMarkers = () => pinsRef.current.map((pin) => ({
+      location: [pin.lat, pin.lng],
+      size: 0.05,
+      color: PIN_COLORS[pin.id] ?? ORANGE_ARC
+    }));
+    const buildOptions = (w, h) => ({
+      devicePixelRatio: dpr,
+      width: w,
+      height: h,
+      phi,
+      theta: THETA,
+      dark: 1,
+      diffuse: 1.22,
+      mapSamples: 1e4,
+      mapBrightness: window.innerWidth < 640 ? 13.5 : 11,
+      mapBaseBrightness: 0.015,
+      baseColor: ORANGE_BASE,
+      markerColor: ORANGE_ARC,
+      glowColor: ORANGE_DIM,
+      markers: buildMarkers(),
+      arcs: ARCS,
+      arcColor: ORANGE_ARC,
+      arcWidth: 0.4,
+      arcHeight: 0.18,
+      markerElevation: MARKER_ELEVATION,
+      scale: 1,
+      offset: [0, 0]
+    });
+    const resize = () => {
+      const { width: nextW, height: nextH } = renderSize(wrap.getBoundingClientRect());
+      if (nextW === width && nextH === height) return;
+      width = nextW;
+      height = nextH;
+      if (globe) {
+        globe.update(buildOptions(width, height));
+        return;
+      }
+      globe = createGlobe(canvas, buildOptions(width, height));
+    };
+    const render2 = () => {
+      if (visible) {
+        phi += PHI_SPEED;
+        globe?.update({ phi });
+      }
+      frame = requestAnimationFrame(render2);
+    };
+    let resizeTimer = 0;
+    const ro = new ResizeObserver(() => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(resize, 120);
+    });
+    ro.observe(wrap);
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        visible = Boolean(entry?.isIntersecting);
+      },
+      { threshold: 0.01, rootMargin: "64px" }
+    );
+    io.observe(wrap);
+    resize();
+    frame = requestAnimationFrame(render2);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(resizeTimer);
+      ro.disconnect();
+      io.disconnect();
+      globe?.destroy();
+      host.replaceChildren();
+    };
+  }, [fallback, pinsKey]);
+  if (fallback) {
+    return /* @__PURE__ */ jsx(GlobeFallback, {});
+  }
+  return /* @__PURE__ */ jsx("div", { ref: wrapRef, className: "tivonix-globe-canvas-wrap", children: /* @__PURE__ */ jsx("div", { ref: hostRef, className: "tivonix-globe-cobe-host", "aria-hidden": true }) });
+}
+const COPIES = 4;
+function AudienceMarquee({ items }) {
+  if (!items.length) return null;
+  const sequence = Array.from(
+    { length: COPIES },
+    (_, copyIndex) => items.map((item, itemIndex) => ({
+      id: `${copyIndex}-${itemIndex}`,
+      label: item
+    }))
+  ).flat();
+  return /* @__PURE__ */ jsx("div", { className: "tivonix-audience__marquee", "aria-hidden": true, children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__marquee-track", children: sequence.map(({ id, label }) => /* @__PURE__ */ jsxs("span", { className: "tivonix-audience__marquee-item", children: [
+    /* @__PURE__ */ jsx("span", { className: "tivonix-audience__marquee-text", children: label }),
+    /* @__PURE__ */ jsx("span", { className: "tivonix-audience__marquee-sep", children: "·" })
+  ] }, id)) }) });
+}
+const PILLAR_ICONS = [Globe2, MapPin, Maximize2];
+function TivonixAudienceSection() {
+  const { lang } = useLang();
+  const copy = landingCopy(lang);
+  return /* @__PURE__ */ jsx(
+    Section,
+    {
+      id: "audience",
+      className: "tivonix-audience scroll-mt-[var(--tivonix-header-spacer)] bg-black !py-0",
+      children: /* @__PURE__ */ jsxs("div", { className: "tivonix-audience__frame", children: [
+        /* @__PURE__ */ jsxs(Container, { className: "relative z-[1] pt-14 sm:pt-16 lg:pt-20", children: [
+          /* @__PURE__ */ jsx(Reveal, { children: /* @__PURE__ */ jsxs("header", { className: "tivonix-audience__head", children: [
+            /* @__PURE__ */ jsx("h2", { className: "tivonix-audience__title", children: copy.audience.title }),
+            /* @__PURE__ */ jsx("p", { className: "tivonix-audience__subtitle", children: copy.audience.subtitle })
+          ] }) }),
+          /* @__PURE__ */ jsx(Reveal, { delay: 80, children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__hero", children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__globe-clip", children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__globe-inner", children: /* @__PURE__ */ jsx(TivonixGlobeCanvas, { pins: copy.audience.pins }) }) }) }) })
+        ] }),
+        /* @__PURE__ */ jsx(Reveal, { delay: 100, children: /* @__PURE__ */ jsx(AudienceMarquee, { items: copy.audience.marquee }) }),
+        /* @__PURE__ */ jsx(Reveal, { delay: 120, children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__pillars-wrap", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__pillars", children: copy.audience.pillars.map((pillar, index) => {
+          const Icon2 = PILLAR_ICONS[index] ?? Globe2;
+          return /* @__PURE__ */ jsxs("article", { className: "tivonix-audience__pillar", children: [
+            /* @__PURE__ */ jsx(Icon2, { className: "tivonix-audience__pillar-icon", strokeWidth: 1.5, "aria-hidden": true }),
+            /* @__PURE__ */ jsx("h3", { className: "tivonix-audience__pillar-title", children: pillar.title }),
+            /* @__PURE__ */ jsx("p", { className: "tivonix-audience__pillar-text", children: pillar.text })
+          ] }, pillar.title);
+        }) }) }) }) })
+      ] })
+    }
+  );
+}
+function smoothstep$1(t) {
+  const x = Math.min(1, Math.max(0, t));
+  return x * x * (3 - 2 * x);
+}
+function typewriterLength(progress, length) {
+  return Math.floor(smoothstep$1(progress) * length);
+}
+function ProcessBulletRow({
+  label,
+  state
+}) {
+  return /* @__PURE__ */ jsxs(
+    "li",
+    {
+      className: [
+        "flex items-center justify-between gap-3 rounded-lg bg-white/[0.05] px-3 py-2.5 transition-colors duration-300 ease-out",
+        state === "hidden" ? "invisible" : "visible",
+        state === "active" ? "bg-white/[0.08]" : ""
+      ].join(" "),
+      "aria-hidden": state === "hidden",
+      children: [
+        /* @__PURE__ */ jsx("span", { className: "text-[12px] font-medium text-white/90", children: label }),
+        /* @__PURE__ */ jsx("span", { className: "flex shrink-0 items-center gap-1.5 text-[11px] text-[#FF5722]/90", children: state === "active" ? /* @__PURE__ */ jsx(Loader2, { size: 11, className: "animate-spin text-[#FF5722]/90", "aria-hidden": true }) : /* @__PURE__ */ jsx(
+          Check,
+          {
+            size: 11,
+            className: state === "done" ? "text-[#FF5722]/75" : "text-white/35",
+            "aria-hidden": true
+          }
+        ) })
+      ]
+    }
+  );
+}
+function ProcessStepStage({
+  step,
+  stepProgress,
+  fade,
+  reducedMotion
+}) {
+  const stageStyle = useMemo(() => {
+    if (reducedMotion || fade <= 0 || fade >= 1) return void 0;
+    return {
+      opacity: 0.35 + fade * 0.65,
+      transform: `translate3d(0, ${(1 - fade) * 12}px, 0)`
+    };
+  }, [fade, reducedMotion]);
+  const typedQuery = useMemo(() => {
+    if (step.kind !== "search") return "";
+    if (reducedMotion) return step.query;
+    return step.query.slice(0, typewriterLength(stepProgress, step.query.length));
+  }, [reducedMotion, step, stepProgress]);
+  const bulletStates = useMemo(() => {
+    if (step.kind !== "bullets") return [];
+    if (reducedMotion) {
+      return step.items.map(
+        (_, index) => index === step.items.length - 1 ? "active" : "done"
+      );
+    }
+    const visibleBullets = Math.max(1, Math.ceil(smoothstep$1(stepProgress) * step.items.length));
+    return step.items.map((_, index) => {
+      if (index >= visibleBullets) return "hidden";
+      if (index < visibleBullets - 1) return "done";
+      return "active";
+    });
+  }, [reducedMotion, step, stepProgress]);
+  return /* @__PURE__ */ jsxs("div", { className: "process-section__stage-inner", style: stageStyle, "aria-live": "polite", children: [
+    step.kind === "bullets" ? /* @__PURE__ */ jsxs("article", { className: "w-full min-w-0 max-w-md overflow-hidden rounded-2xl bg-[#141414] p-5 text-left sm:p-6", children: [
+      /* @__PURE__ */ jsx("ul", { className: "space-y-1.5", children: step.items.map((item, index) => /* @__PURE__ */ jsx(ProcessBulletRow, { label: item, state: bulletStates[index] ?? "hidden" }, item)) }),
+      /* @__PURE__ */ jsx("h3", { className: "mt-5 font-hero text-[17px] font-semibold leading-snug tracking-[-0.02em] text-white sm:text-[18px]", children: step.title })
+    ] }) : null,
+    step.kind === "search" ? /* @__PURE__ */ jsxs("article", { className: "w-full min-w-0 max-w-md overflow-hidden rounded-2xl bg-[#141414] p-5 text-left sm:p-6", children: [
+      /* @__PURE__ */ jsx("div", { className: "rounded-xl bg-[#262626] p-3 sm:p-3.5", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2.5 rounded-full bg-black/25 px-3 py-2.5 sm:px-3.5", children: [
+        /* @__PURE__ */ jsx(
+          Search,
+          {
+            className: "h-4 w-4 shrink-0 text-white/55",
+            strokeWidth: 2.25,
+            "aria-hidden": true
+          }
+        ),
+        /* @__PURE__ */ jsxs(
+          "span",
+          {
+            className: "min-w-0 flex-1 truncate text-left text-[12px] leading-snug text-white/88 sm:text-[13px]",
+            "aria-hidden": true,
+            children: [
+              typedQuery,
+              !reducedMotion && typedQuery.length < step.query.length ? /* @__PURE__ */ jsx("span", { className: "pain-cursor ml-0.5 inline-block text-[#FF9A3D]", children: "|" }) : null
+            ]
+          }
+        )
+      ] }) }),
+      /* @__PURE__ */ jsx("h3", { className: "mt-5 font-hero text-[17px] font-semibold leading-snug tracking-[-0.02em] text-white sm:text-[18px]", children: step.title }),
+      step.hint ? /* @__PURE__ */ jsx("p", { className: "mt-2 text-[13px] leading-[1.6] text-white/48 sm:text-[14px]", children: step.hint }) : null
+    ] }) : null
+  ] });
+}
+const PROCESS_BG_MUTED = `/images/${encodeURI("как рабоает")}/${encodeURI("чер.png")}`;
+const PROCESS_BG_WARM = `/images/${encodeURI("как рабоает")}/${encodeURI("яр.png")}`;
+const STEP_SCROLL_VH = 80;
+const APPROACH_RUNWAY_VH = 32;
+function sectionApproach(rectTop, viewport, headerSpacer) {
+  return smoothstep((viewport * 0.88 - rectTop) / (viewport * 0.88 - headerSpacer));
+}
+function processShellExpand(rectTop, scrollInTrack, viewport, headerSpacer, scrollable, approachPx) {
+  let expand = 0;
+  if (rectTop < viewport * 0.92) {
+    expand = sectionApproach(rectTop, viewport, headerSpacer);
+  } else if (scrollInTrack > 0) {
+    expand = 1;
+  }
+  const tailStart = scrollable - approachPx * 0.9;
+  if (scrollInTrack > tailStart) {
+    expand *= 1 - smoothstep((scrollInTrack - tailStart) / Math.max(1, approachPx * 0.9));
+  }
+  return expand;
+}
+function clamp01$1(v) {
+  return Math.min(1, Math.max(0, v));
+}
+function stepSegmentPhase(segment) {
+  const introEnd = 0.1;
+  const animEnd = 0.72;
+  const holdEnd = 0.9;
+  if (segment < introEnd) {
+    return {
+      fade: smoothstep(segment / introEnd),
+      localProgress: 0
+    };
+  }
+  if (segment < animEnd) {
+    return {
+      fade: 1,
+      localProgress: smoothstep((segment - introEnd) / (animEnd - introEnd))
+    };
+  }
+  if (segment < holdEnd) {
+    return {
+      fade: 1,
+      localProgress: 1
+    };
+  }
+  return {
+    fade: 1,
+    localProgress: 1
+  };
+}
+function smoothstep(t) {
+  const x = clamp01$1(t);
+  return x * x * (3 - 2 * x);
+}
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const apply = () => setReduced(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+  return reduced;
+}
+function ProcessTimelineSection() {
+  const { lang } = useLang();
+  const copy = landingCopy(lang);
+  const steps = copy.process.steps;
+  const stepCount = steps.length;
+  const pinWrapRef = useRef(null);
+  const sectionRef = useRef(null);
+  const warmBgRef = useRef(null);
+  const [activeStep, setActiveStep] = useState(0);
+  const [stepProgress, setStepProgress] = useState(0);
+  const [stepFade, setStepFade] = useState(1);
+  const reducedMotion = usePrefersReducedMotion();
+  const pinHeightVh = 100 + Math.max(0, stepCount - 1) * STEP_SCROLL_VH;
+  const totalHeightVh = APPROACH_RUNWAY_VH + pinHeightVh;
+  const tabs = useMemo(
+    () => steps.map((_, index) => ({
+      id: `step-${index}`,
+      label: String(index + 1)
+    })),
+    [steps]
+  );
+  const scrollToStep = useCallback(
+    (index) => {
+      const track = pinWrapRef.current;
+      if (!track || typeof window === "undefined") return;
+      const trackTop = window.scrollY + track.getBoundingClientRect().top;
+      const approachPx = APPROACH_RUNWAY_VH / 100 * window.innerHeight;
+      const scrollable = Math.max(1, track.offsetHeight - window.innerHeight);
+      const pinScrollable = Math.max(1, scrollable - approachPx);
+      const targetProgress = (index + 0.78) / stepCount;
+      window.scrollTo({
+        top: trackTop + approachPx + targetProgress * pinScrollable,
+        behavior: reducedMotion ? "auto" : "smooth"
+      });
+    },
+    [reducedMotion, stepCount]
+  );
+  useEffect(() => {
+    const track = pinWrapRef.current;
+    if (!track || typeof window === "undefined") return;
+    let raf = 0;
+    let trackTop = 0;
+    let scrollable = 1;
+    let approachPx = 1;
+    let pinScrollable = 1;
+    let headerSpacer = 92;
+    let lastStep = -1;
+    let lastExpand = -1;
+    const measure = () => {
+      trackTop = window.scrollY + track.getBoundingClientRect().top;
+      scrollable = Math.max(1, track.offsetHeight - window.innerHeight);
+      approachPx = APPROACH_RUNWAY_VH / 100 * window.innerHeight;
+      pinScrollable = Math.max(1, scrollable - approachPx);
+      headerSpacer = Number.parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--tivonix-header-spacer")
+      ) || 92;
+    };
+    const apply = () => {
+      const scrollY = window.scrollY;
+      const viewport = window.innerHeight;
+      const scrollInTrack = scrollY - trackTop;
+      const rectTop = sectionRef.current?.getBoundingClientRect().top ?? trackTop - scrollY;
+      const expand = reducedMotion ? 1 : processShellExpand(
+        rectTop,
+        scrollInTrack,
+        viewport,
+        headerSpacer,
+        scrollable,
+        approachPx
+      );
+      const pinScroll = Math.max(0, scrollInTrack - approachPx);
+      const progress = reducedMotion ? 1 : clamp01$1(pinScroll / pinScrollable);
+      const stepIndex = Math.min(stepCount - 1, Math.floor(progress * stepCount));
+      const segment = progress * stepCount - stepIndex;
+      const isMobile = window.innerWidth < 1024;
+      if (expand !== lastExpand) {
+        lastExpand = expand;
+        track.style.setProperty("--process-expand", String(expand));
+      }
+      const warmOpacity = isMobile ? smoothstep((stepIndex + 0.55) / stepCount) : smoothstep(progress);
+      const { fade, localProgress } = reducedMotion ? { fade: 1, localProgress: 1 } : stepSegmentPhase(segment);
+      if (stepIndex !== lastStep) {
+        lastStep = stepIndex;
+        setActiveStep(stepIndex);
+      }
+      setStepProgress(localProgress);
+      setStepFade(fade);
+      if (warmBgRef.current) {
+        warmBgRef.current.style.opacity = String(warmOpacity);
+      }
+    };
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(apply);
+    };
+    const onResize = () => {
+      measure();
+      onScroll();
+    };
+    measure();
+    apply();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+      cancelAnimationFrame(raf);
+    };
+  }, [reducedMotion, stepCount]);
+  const currentStep = steps[activeStep];
+  return /* @__PURE__ */ jsx(
+    "div",
+    {
+      ref: pinWrapRef,
+      className: "process-pin scroll-mt-[var(--tivonix-header-spacer)]",
+      style: {
+        height: `${totalHeightVh}vh`,
+        ["--process-expand"]: "0"
+      },
+      children: /* @__PURE__ */ jsx(
+        "section",
+        {
+          ref: sectionRef,
+          id: "process",
+          className: "process-section sticky top-0 z-30 flex h-[100svh] flex-col",
+          "aria-label": copy.process.title,
+          children: /* @__PURE__ */ jsx("div", { className: "process-section-shell flex min-h-0 flex-1 flex-col", children: /* @__PURE__ */ jsxs("div", { className: "process-section__frame flex min-h-0 flex-1 flex-col overflow-hidden", children: [
+            /* @__PURE__ */ jsx(
+              "div",
+              {
+                className: "process-section__bg process-section__bg--muted",
+                style: { backgroundImage: `url("${PROCESS_BG_MUTED}")` },
+                "aria-hidden": true
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "div",
+              {
+                ref: warmBgRef,
+                className: "process-section__bg process-section__bg--warm",
+                style: { backgroundImage: `url("${PROCESS_BG_WARM}")`, opacity: 0 },
+                "aria-hidden": true
+              }
+            ),
+            /* @__PURE__ */ jsx("div", { className: "process-section__bg-fade", "aria-hidden": true }),
+            /* @__PURE__ */ jsxs(Container, { className: "process-section__container relative z-10 flex min-h-0 flex-1 flex-col", children: [
+              /* @__PURE__ */ jsx("header", { className: "process-section__head", children: /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.85rem,4.2vw,2.85rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white", children: copy.process.title }) }),
+              /* @__PURE__ */ jsx("div", { className: "process-section__stage", children: currentStep ? /* @__PURE__ */ jsx(
+                ProcessStepStage,
+                {
+                  step: currentStep,
+                  stepProgress,
+                  fade: stepFade,
+                  reducedMotion
+                },
+                activeStep
+              ) : null }),
+              /* @__PURE__ */ jsx("div", { className: "process-section__tabs-wrap", children: /* @__PURE__ */ jsx(
+                PillActionBar,
+                {
+                  items: tabs,
+                  activeId: `step-${activeStep}`,
+                  onActiveChange: (id) => {
+                    const index = Number(id.replace("step-", ""));
+                    if (!Number.isNaN(index)) scrollToStep(index);
+                  },
+                  ariaLabel: copy.process.title,
+                  className: "process-section__tabs"
+                }
+              ) })
+            ] })
+          ] }) })
+        }
+      )
+    }
+  );
+}
+const LOGO_ICON = "/images/tivonix-logo-icon.png";
+const PAGE_SIZE = 6;
+const ORANGE$1 = "#FF9A3D";
+const PRIMARY_CATS = ["start", "price", "process", "dev", "support"];
+const SECONDARY_CATS = [];
+const s$2 = (v) => v;
+const CAT_LABELS = {
+  start: { ru: "Старт", en: "Start" },
+  price: { ru: "Стоимость", en: "Pricing" },
+  time: { ru: "Сроки", en: "Timeline" },
+  process: { ru: "Процесс", en: "Process" },
+  design: { ru: "Дизайн", en: "Design" },
+  dev: { ru: "Разработка", en: "Development" },
+  content: { ru: "Контент", en: "Content" },
+  seo: { ru: "SEO", en: "SEO" },
+  tech: { ru: "Тех.часть", en: "Tech" },
+  support: { ru: "Поддержка", en: "Support" },
+  fix: { ru: "Правки", en: "Edits" }
+};
+const TEASER_TEXTS = {
+  start: {
+    ru: "Можно начать без ТЗ — просто опишите задачу своими словами.",
+    en: "You can start without a brief — just describe the task in your own words."
+  },
+  price: {
+    ru: "Стоимость зависит от задачи — после разбора предложим вариант.",
+    en: "Cost depends on the task — after a review we'll suggest an option."
+  },
+  time: {
+    ru: "Сроки зависят от объёма и согласований.",
+    en: "Timeline depends on scope and approvals."
+  },
+  process: {
+    ru: "Делаем не только сайты — боты, CRM, кабинеты, автоматизацию.",
+    en: "We don't only build websites — bots, CRM, client areas, automation."
+  },
+  design: {
+    ru: "Дизайн под ваш бренд и задачу.",
+    en: "Design aligned with your brand and task."
+  },
+  dev: {
+    ru: "Telegram, email, CRM, таблицы — подключаем под ваш процесс.",
+    en: "Telegram, email, CRM, sheets — wired to your workflow."
+  },
+  content: {
+    ru: "Поможем собрать тексты и структуру, если нужно.",
+    en: "We can help with copy and structure if needed."
+  },
+  seo: {
+    ru: "Базовая SEO-разметка на уровне лендинга.",
+    en: "Basic SEO markup at the landing level."
+  },
+  tech: {
+    ru: "Адаптив, скорость и техчасть проекта.",
+    en: "Responsive layout, speed and the tech side."
+  },
+  support: {
+    ru: "После запуска можно проверить работу и дорастить продукт.",
+    en: "After launch we can verify everything and grow the product."
+  },
+  fix: {
+    ru: "Мелкие правки после запуска — обсуждаем отдельно.",
+    en: "Small edits after launch — we discuss them separately."
+  }
+};
+const FAQ_ITEMS = [
+  {
+    id: "start-unclear",
+    cat: "start",
+    q: {
+      ru: "С чего начать, если я не понимаю, что именно мне нужно?",
+      en: "Where do I start if I'm not sure what I need?"
+    },
+    a: {
+      ru: "Можно просто описать задачу своими словами. Мы разберёмся, что лучше подойдёт: сайт, бот, CRM, личный кабинет или простая автоматизация.",
+      en: "Just describe the task in your own words. We'll figure out what fits best: a website, bot, CRM, client area or simple automation."
+    }
+  },
+  {
+    id: "process-not-only-sites",
+    cat: "process",
+    q: { ru: "Вы делаете только сайты?", en: "Do you only build websites?" },
+    a: {
+      ru: "Нет. Мы делаем сайты, Telegram-ботов, CRM, админ-панели, личные кабинеты, интеграции и веб-сервисы под конкретную задачу бизнеса.",
+      en: "No. We build websites, Telegram bots, CRMs, admin panels, client areas, integrations and web services for a specific business task."
+    }
+  },
+  {
+    id: "start-mvp",
+    cat: "start",
+    q: { ru: "Можно сделать небольшой проект, а не большую систему?", en: "Can we start small instead of a big system?" },
+    a: {
+      ru: "Да. Часто лучше начать с простой версии: форма заявки, бот, таблица, мини-CRM или лендинг. Потом это можно развивать.",
+      en: "Yes. Often it's better to start simple: a lead form, bot, sheet, mini-CRM or landing page. You can grow it later."
+    }
+  },
+  {
+    id: "price-cost",
+    cat: "price",
+    q: { ru: "Сколько стоит проект?", en: "How much does a project cost?" },
+    a: {
+      ru: "Стоимость зависит от задачи, количества экранов, логики, интеграций и сроков. После короткого разбора мы предложим понятный вариант запуска.",
+      en: "Cost depends on the task, number of screens, logic, integrations and timeline. After a short review we'll suggest a clear launch option."
+    }
+  },
+  {
+    id: "start-no-brief",
+    cat: "start",
+    q: { ru: "Нужно ли мне готовое техническое задание?", en: "Do I need a ready technical brief?" },
+    a: {
+      ru: "Нет. Если ТЗ нет, мы поможем собрать требования и объясним, что нужно сделать на первом этапе.",
+      en: "No. If you don't have a brief, we'll help gather requirements and explain what to do at the first stage."
+    }
+  },
+  {
+    id: "dev-integrations",
+    cat: "dev",
+    q: {
+      ru: "Можно подключить Telegram, email, CRM или таблицы?",
+      en: "Can you connect Telegram, email, CRM or spreadsheets?"
+    },
+    a: {
+      ru: "Да. Мы можем сделать так, чтобы заявки приходили в Telegram, email, CRM, Google Sheets, Supabase или другую систему, с которой работает команда.",
+      en: "Yes. We can route leads to Telegram, email, CRM, Google Sheets, Supabase or another system your team already uses."
+    }
+  },
+  {
+    id: "support-after",
+    cat: "support",
+    q: { ru: "Вы помогаете после запуска?", en: "Do you help after launch?" },
+    a: {
+      ru: "Да. После запуска можно проверить работу, исправить мелкие моменты и дальше развивать продукт.",
+      en: "Yes. After launch we can verify everything, fix small issues and keep growing the product."
+    }
+  },
+  {
+    id: "start-for-whom",
+    cat: "start",
+    q: { ru: "Для кого TIVONIX?", en: "Who is TIVONIX for?" },
+    a: {
+      ru: "Для бизнеса, которому нужен не просто красивый сайт, а рабочая система: заявки, записи, статусы, клиенты, оплата, кабинет или автоматизация.",
+      en: "For businesses that need more than a pretty website — a working system: leads, bookings, statuses, clients, payments, client area or automation."
+    }
+  },
+  {
+    id: "time-launch",
+    cat: "time",
+    q: { ru: "Сколько занимает запуск?", en: "How long does launch take?" },
+    a: {
+      ru: "Простой лендинг или бот — обычно от нескольких дней до 2–4 недель. Полноценный сервис — дольше. Срок зависит от объёма, интеграций и скорости согласований.",
+      en: "A simple landing or bot is usually a few days to 2–4 weeks. A full service takes longer. Timeline depends on scope, integrations and approval speed."
+    }
+  },
+  {
+    id: "start-domain",
+    cat: "start",
+    q: { ru: "Помогаете с доменом и запуском?", en: "Do you help with domain and launch?" },
+    a: {
+      ru: "Да. Поможем с доменом, хостингом, деплоем и базовой настройкой — чтобы продукт реально заработал.",
+      en: "Yes. We help with domain, hosting, deploy and basic setup — so the product actually goes live."
+    }
+  }
+];
+function cx$6(...a) {
   return a.filter(Boolean).join(" ");
 }
-const s$2 = (v) => v;
+function Icon({ name }) {
+  const common = "h-4 w-4 shrink-0";
+  switch (name) {
+    case "search":
+      return /* @__PURE__ */ jsxs("svg", { className: common, viewBox: "0 0 24 24", fill: "none", "aria-hidden": "true", children: [
+        /* @__PURE__ */ jsx("path", { d: "M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z", stroke: "currentColor", strokeWidth: "1.8" }),
+        /* @__PURE__ */ jsx("path", { d: "M16.2 16.2 21 21", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round" })
+      ] });
+    case "copy":
+      return /* @__PURE__ */ jsxs("svg", { className: common, viewBox: "0 0 24 24", fill: "none", "aria-hidden": "true", children: [
+        /* @__PURE__ */ jsx("path", { d: "M9 9h10v10H9V9Z", stroke: "currentColor", strokeWidth: "1.8", strokeLinejoin: "round" }),
+        /* @__PURE__ */ jsx(
+          "path",
+          {
+            d: "M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1",
+            stroke: "currentColor",
+            strokeWidth: "1.8",
+            strokeLinecap: "round"
+          }
+        )
+      ] });
+    case "chev":
+      return /* @__PURE__ */ jsx("svg", { className: common, viewBox: "0 0 24 24", fill: "none", "aria-hidden": "true", children: /* @__PURE__ */ jsx("path", { d: "m8.5 10 3.5 3.5L15.5 10", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) });
+  }
+}
+function toDomId(id) {
+  return `faq-${id}`;
+}
+function buildFaqJsonLd(items) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((x) => ({
+      "@type": "Question",
+      name: x.q,
+      acceptedAnswer: { "@type": "Answer", text: x.a }
+    }))
+  };
+}
+function FAQSection() {
+  const { lang } = useLang();
+  const isRu = lang === "ru";
+  const l = isRu ? "ru" : "en";
+  const [query, setQuery] = useState("");
+  const [openId, setOpenId] = useState(null);
+  const [copied, setCopied] = useState(null);
+  const [catFilter, setCatFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [showAllCats, setShowAllCats] = useState(false);
+  const rootRef = useRef(null);
+  const localizedItems = useMemo(() => {
+    return FAQ_ITEMS.map((item) => ({
+      id: item.id,
+      cat: item.cat,
+      q: item.q[l],
+      a: item.a[l],
+      catLabel: CAT_LABELS[item.cat][l]
+    }));
+  }, [l]);
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    let list = localizedItems;
+    if (catFilter !== "all") list = list.filter((x) => x.cat === catFilter);
+    if (!q) return list;
+    return list.filter((x) => `${x.q} ${x.a} ${x.catLabel}`.toLowerCase().includes(q));
+  }, [query, catFilter, localizedItems]);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const showPagination = filtered.length > 0 && totalPages > 1;
+  const compactResults = filtered.length <= 1;
+  const items = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, page]);
+  useEffect(() => {
+    setPage(1);
+    setOpenId(null);
+  }, [query, catFilter, l]);
+  useEffect(() => {
+    setPage((p) => Math.min(Math.max(1, p), totalPages));
+  }, [totalPages]);
+  const resetDisabled = query.trim() === "" && catFilter === "all" && page === 1;
+  async function copy(text, id) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(id);
+      window.setTimeout(() => setCopied((v) => v === id ? null : v), 900);
+    } catch {
+    }
+  }
+  const title = isRu ? "Частые вопросы" : "FAQ";
+  const placeholder = isRu ? "Поиск по вопросам…" : "Search questions…";
+  const resetLabel = isRu ? "Сбросить" : "Reset";
+  const allLabel = isRu ? "Все" : "All";
+  const moreCatsLabel = isRu ? "Ещё" : "More";
+  const lessCatsLabel = isRu ? "Свернуть" : "Less";
+  const btnShow = isRu ? "Показать ответ" : "Show answer";
+  const btnHide = isRu ? "Скрыть ответ" : "Hide answer";
+  const btnCopy = isRu ? "Скопировать ответ" : "Copy answer";
+  const btnCopied = isRu ? "Скопировано" : "Copied";
+  const popularLabel = isRu ? "Частый вопрос" : "Popular";
+  const prevLabel = isRu ? "Назад" : "Prev";
+  const nextLabel = isRu ? "Дальше" : "Next";
+  const pageLabel = isRu ? "Страница" : "Page";
+  const jsonLd = useMemo(() => buildFaqJsonLd(localizedItems), [localizedItems]);
+  return /* @__PURE__ */ jsxs(Section, { id: "faq", className: "faq-section relative isolate !py-0 bg-black", children: [
+    /* @__PURE__ */ jsx("style", { children: `
+        @keyframes faqAnswerIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .faq-answer-open { animation: faqAnswerIn .20s ease-out; }
+        /* Свёрнутый ответ: в DOM для SEO, визуально скрыт через max-height/opacity */
+        .faq-answer-collapsed {
+          max-height: 0;
+          opacity: 0;
+          overflow: hidden;
+          pointer-events: none;
+          transition: max-height 0.25s ease, opacity 0.2s ease;
+        }
+        .faq-answer-expanded {
+          max-height: 420px;
+          opacity: 1;
+          overflow: visible;
+          transition: max-height 0.3s ease, opacity 0.2s ease;
+        }
+
+        /* mobile perf: меньше blur/тяжёлых эффектов */
+        @media (max-width: 640px){
+          .faq-card-bg{ backdrop-filter: blur(8px) !important; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .faq-answer-open{ animation: none; }
+          .faq-answer-collapsed, .faq-answer-expanded{ transition: none; }
+        }
+      ` }),
+    /* @__PURE__ */ jsx("script", { type: "application/ld+json", dangerouslySetInnerHTML: { __html: JSON.stringify(jsonLd) } }),
+    /* @__PURE__ */ jsxs(Container, { className: "faq-section__content relative z-[1] pt-16 sm:pt-20 pb-16 sm:pb-20", children: [
+      /* @__PURE__ */ jsxs("div", { ref: rootRef, className: "relative mx-auto max-w-2xl text-center", children: [
+        /* @__PURE__ */ jsx("h2", { className: "mt-5 font-display text-[30px] leading-[34px] sm:text-[40px] sm:leading-[44px] font-extrabold tracking-tight text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)]", children: title }),
+        /* @__PURE__ */ jsx("div", { className: "mt-6", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[720px]", children: [
+          /* @__PURE__ */ jsxs("div", { className: "grid gap-3 sm:grid-cols-[1fr_auto] items-center", children: [
+            /* @__PURE__ */ jsxs("div", { className: "faq-search-wrap relative", children: [
+              /* @__PURE__ */ jsx("label", { className: "sr-only", htmlFor: "faq-search", children: placeholder }),
+              /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute left-3 top-1/2 z-[2] -translate-y-1/2", children: /* @__PURE__ */ jsx("span", { style: s$2({ color: ORANGE$1 }), children: /* @__PURE__ */ jsx(Icon, { name: "search" }) }) }),
+              /* @__PURE__ */ jsx(
+                "input",
+                {
+                  id: "faq-search",
+                  value: query,
+                  onChange: (e) => setQuery(e.target.value),
+                  placeholder,
+                  inputMode: "search",
+                  className: "faq-search-input"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                disabled: resetDisabled,
+                onClick: () => {
+                  setQuery("");
+                  setOpenId(null);
+                  setCatFilter("all");
+                  setPage(1);
+                  setShowAllCats(false);
+                },
+                "aria-disabled": resetDisabled,
+                className: cx$6(
+                  "h-11 sm:h-12 px-4 rounded-full border-0",
+                  "bg-[#1c1c1f]",
+                  resetDisabled ? "text-white/35 cursor-not-allowed opacity-70" : "text-white/80 hover:text-white hover:bg-[#262626] transition",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/15"
+                ),
+                children: resetLabel
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "mt-3", children: /* @__PURE__ */ jsxs(
+            "div",
+            {
+              className: cx$6(
+                "flex items-center justify-start sm:justify-center gap-2",
+                "overflow-x-auto sm:overflow-visible",
+                "no-scrollbar py-1"
+              ),
+              role: "tablist",
+              "aria-label": isRu ? "Категории вопросов" : "FAQ categories",
+              children: [
+                /* @__PURE__ */ jsx(
+                  "button",
+                  {
+                    type: "button",
+                    role: "tab",
+                    "aria-selected": catFilter === "all",
+                    "aria-pressed": catFilter === "all",
+                    onClick: () => setCatFilter("all"),
+                    className: cx$6(
+                      "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-xs font-medium transition",
+                      catFilter === "all" ? "bg-[#3a3a3d] text-white" : "bg-[#1c1c1f] text-white/78 hover:bg-[#262626] hover:text-white/92",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/15"
+                    ),
+                    children: allLabel
+                  }
+                ),
+                (showAllCats ? [...PRIMARY_CATS, ...SECONDARY_CATS] : PRIMARY_CATS).map((c) => {
+                  const active = c === catFilter;
+                  const label = CAT_LABELS[c][l];
+                  return /* @__PURE__ */ jsx(
+                    "button",
+                    {
+                      type: "button",
+                      role: "tab",
+                      "aria-selected": active,
+                      "aria-pressed": active,
+                      onClick: () => setCatFilter(c),
+                      className: cx$6(
+                        "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-xs font-medium transition",
+                        active ? "bg-[#3a3a3d] text-white" : "bg-[#1c1c1f] text-white/78 hover:bg-[#262626] hover:text-white/92",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/15"
+                      ),
+                      children: label
+                    },
+                    c
+                  );
+                }),
+                /* @__PURE__ */ jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: () => setShowAllCats((v) => !v),
+                    className: cx$6(
+                      "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-xs font-semibold transition",
+                      "bg-[#1c1c1f] text-white/80 hover:bg-[#262626] hover:text-white",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/15"
+                    ),
+                    "aria-expanded": showAllCats,
+                    "aria-label": showAllCats ? lessCatsLabel : moreCatsLabel,
+                    children: /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5", children: [
+                      showAllCats ? lessCatsLabel : moreCatsLabel,
+                      /* @__PURE__ */ jsx("span", { className: cx$6("transition", showAllCats ? "rotate-180" : ""), children: /* @__PURE__ */ jsx(Icon, { name: "chev" }) })
+                    ] })
+                  }
+                )
+              ]
+            }
+          ) }),
+          /* @__PURE__ */ jsx("div", { className: "mt-2 text-[12px] text-white/68", children: filtered.length === 0 ? isRu ? "Ничего не найдено — попробуйте другой запрос." : "No results — try a different query." : isRu ? `Найдено: ${filtered.length}` : `Found: ${filtered.length}` })
+        ] }) })
+      ] }),
+      /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: cx$6(
+            "mt-7 grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+            compactResults && "min-h-[18rem] sm:min-h-[20rem]"
+          ),
+          children: items.map((f) => {
+            const isOpen = openId === f.id;
+            const domId = toDomId(f.id);
+            const teaser = TEASER_TEXTS[f.cat][l];
+            return /* @__PURE__ */ jsx(
+              "article",
+              {
+                className: cx$6(
+                  "group relative overflow-hidden rounded-[20px]",
+                  "border-0",
+                  "bg-[#1c1c1f] faq-card-bg backdrop-blur-[10px]",
+                  "shadow-[0_8px_24px_rgba(0,0,0,0.28)]"
+                ),
+                style: { contentVisibility: "auto", containIntrinsicSize: "360px 320px", contain: "layout paint style" },
+                children: /* @__PURE__ */ jsxs("div", { className: "relative z-[2] p-5 flex flex-col", children: [
+                  /* @__PURE__ */ jsx("header", { className: "flex items-start justify-between gap-3", children: /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+                    /* @__PURE__ */ jsx("h3", { className: "text-[14px] font-semibold text-white/92 leading-snug", children: f.q }),
+                    /* @__PURE__ */ jsx("div", { className: "mt-1 text-[12px] text-white/55", children: f.catLabel })
+                  ] }) }),
+                  /* @__PURE__ */ jsx("div", { className: "mt-4", children: /* @__PURE__ */ jsxs(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: () => setOpenId((v) => v === f.id ? null : f.id),
+                      "aria-expanded": isOpen,
+                      "aria-controls": domId,
+                      "aria-label": isOpen ? btnHide : `${btnShow}: ${f.q}`,
+                      className: cx$6(
+                        "w-full flex items-center gap-2 rounded-[12px]",
+                        "border-0 bg-white/[0.07] px-3 py-2",
+                        "text-left text-[12px] text-white/80 hover:bg-white/[0.10] transition",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                      ),
+                      children: [
+                        /* @__PURE__ */ jsx(
+                          "img",
+                          {
+                            src: LOGO_ICON,
+                            alt: "",
+                            className: "h-4 w-4 object-contain",
+                            draggable: false,
+                            loading: "lazy",
+                            decoding: "async"
+                          }
+                        ),
+                        isOpen ? btnHide : btnShow
+                      ]
+                    }
+                  ) }),
+                  /* @__PURE__ */ jsxs(
+                    "div",
+                    {
+                      id: domId,
+                      className: cx$6(
+                        "mt-3 rounded-[14px] border-0 bg-black/45 px-4 py-3",
+                        "text-[13px] leading-relaxed text-white/78",
+                        isOpen ? "faq-answer-expanded faq-answer-open" : "faq-answer-collapsed"
+                      ),
+                      "aria-hidden": !isOpen,
+                      children: [
+                        f.a,
+                        /* @__PURE__ */ jsx("div", { className: "mt-3", children: /* @__PURE__ */ jsxs(
+                          "button",
+                          {
+                            type: "button",
+                            onClick: () => copy(f.a, f.id),
+                            className: cx$6(
+                              "inline-flex items-center gap-2 rounded-[12px]",
+                              "border-0 bg-white/[0.07] px-3 py-2",
+                              "text-[12px] text-white/80 hover:bg-white/[0.10] transition",
+                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                            ),
+                            children: [
+                              /* @__PURE__ */ jsx("span", { style: s$2({ color: ORANGE$1 }), children: /* @__PURE__ */ jsx(Icon, { name: "copy" }) }),
+                              copied === f.id ? btnCopied : btnCopy
+                            ]
+                          }
+                        ) })
+                      ]
+                    }
+                  ),
+                  !isOpen && /* @__PURE__ */ jsxs("div", { className: "mt-4 pt-3", children: [
+                    /* @__PURE__ */ jsx("div", { className: "h-px w-full rounded-full bg-gradient-to-r from-white/0 via-white/18 to-white/0" }),
+                    /* @__PURE__ */ jsxs("div", { className: "mt-2 flex items-center justify-between gap-2 text-[11.5px] text-white/62", children: [
+                      /* @__PURE__ */ jsx("span", { className: "line-clamp-2", children: teaser }),
+                      /* @__PURE__ */ jsxs("span", { className: "flex items-center gap-1 whitespace-nowrap", style: s$2({ color: ORANGE$1 }), children: [
+                        /* @__PURE__ */ jsx("span", { className: "inline-block h-1.5 w-1.5 rounded-full bg-current" }),
+                        /* @__PURE__ */ jsx("span", { children: popularLabel })
+                      ] })
+                    ] })
+                  ] })
+                ] })
+              },
+              f.id
+            );
+          })
+        }
+      ),
+      showPagination ? /* @__PURE__ */ jsx("div", { className: "relative mt-10 flex justify-center", children: /* @__PURE__ */ jsxs("div", { className: "w-full max-w-[560px]", children: [
+        /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between gap-3 sm:hidden", children: [
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              onClick: () => setPage((p) => Math.max(1, p - 1)),
+              disabled: page <= 1,
+              className: cx$6(
+                "h-11 px-4 rounded-[14px] border-0 bg-white/[0.06]",
+                page <= 1 ? "text-white/35 cursor-not-allowed" : "text-white/80 hover:bg-white/[0.10]",
+                "transition",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+              ),
+              children: prevLabel
+            }
+          ),
+          /* @__PURE__ */ jsxs("div", { className: "text-[12.5px] text-white/70", children: [
+            pageLabel,
+            " ",
+            page,
+            " / ",
+            totalPages
+          ] }),
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              onClick: () => setPage((p) => Math.min(totalPages, p + 1)),
+              disabled: page >= totalPages,
+              className: cx$6(
+                "h-11 px-4 rounded-[14px] border-0 bg-white/[0.06]",
+                page >= totalPages ? "text-white/35 cursor-not-allowed" : "text-white/80 hover:bg-white/[0.10]",
+                "transition",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+              ),
+              children: nextLabel
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "hidden sm:flex flex-wrap items-center justify-center gap-6", children: Array.from({ length: totalPages }).map((_, i) => {
+          const n = i + 1;
+          const active = n === page;
+          const label = n < 10 ? `0${n}` : String(n);
+          return /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              onClick: () => setPage(n),
+              "aria-current": active ? "page" : void 0,
+              className: cx$6(
+                "border-0 bg-transparent p-0 select-none",
+                "text-[14px] font-semibold tabular-nums tracking-tight",
+                "transition-colors duration-200",
+                active ? "text-[#FF9840]" : "text-white/40 hover:text-white/70",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:rounded-sm"
+              ),
+              children: label
+            },
+            n
+          );
+        }) })
+      ] }) }) : /* @__PURE__ */ jsx("div", { className: "mt-10 sm:mt-12", "aria-hidden": "true" })
+    ] })
+  ] });
+}
+const FINAL_CTA_BG = `/images/${encodeURI("как рабоает")}/future.png`;
+function clamp01(v) {
+  return Math.min(1, Math.max(0, v));
+}
+function useSectionScrollScale(sectionRef) {
+  const [scale, setScale] = useState(1.05);
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || typeof window === "undefined") return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      setScale(1.08);
+      return;
+    }
+    let raf = 0;
+    const update = () => {
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const total = rect.height + vh;
+      const scrolled = vh - rect.top;
+      const progress = clamp01(scrolled / total);
+      setScale(1.08 + progress * 0.44);
+    };
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(update);
+    };
+    schedule();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
+  }, [sectionRef]);
+  return scale;
+}
+function FinalCTASection() {
+  const { lang } = useLang();
+  const copy = landingCopy(lang);
+  const [modalOpen, setModalOpen] = useState(false);
+  const cardRef = useRef(null);
+  const bgScale = useSectionScrollScale(cardRef);
+  const bgStyle = {
+    transform: `translate3d(-50%, -50%, 0) scale(${bgScale})`
+  };
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(
+      Section,
+      {
+        id: "contact",
+        className: "final-cta-section scroll-mt-[var(--tivonix-header-spacer)] py-14 sm:py-16 lg:py-20",
+        children: /* @__PURE__ */ jsx(Container, { className: "pb-2 sm:pb-4 lg:pb-6", children: /* @__PURE__ */ jsxs(
+          "div",
+          {
+            ref: cardRef,
+            className: "final-cta-card relative overflow-hidden rounded-[28px] px-6 py-12 text-center sm:rounded-[32px] sm:px-10 sm:py-14 lg:px-16 lg:py-16",
+            children: [
+              /* @__PURE__ */ jsxs("div", { className: "final-cta-card__bg", "aria-hidden": true, children: [
+                /* @__PURE__ */ jsx(
+                  "img",
+                  {
+                    src: FINAL_CTA_BG,
+                    alt: "",
+                    className: "final-cta-card__bg-img",
+                    style: bgStyle,
+                    loading: "lazy",
+                    decoding: "async",
+                    draggable: false
+                  }
+                ),
+                /* @__PURE__ */ jsx("div", { className: "final-cta-card__bg-overlay" })
+              ] }),
+              /* @__PURE__ */ jsx("h2", { className: "relative z-[1] mx-auto max-w-[20ch] font-hero text-[clamp(1.75rem,4.5vw,2.85rem)] font-semibold leading-[1.06] tracking-[-0.03em] text-white text-balance", children: copy.finalCta.title }),
+              /* @__PURE__ */ jsxs("div", { className: "final-cta-card__actions relative z-[1] mt-6 flex flex-col items-center justify-center gap-3 sm:mt-7 sm:flex-row sm:gap-4", children: [
+                /* @__PURE__ */ jsx("div", { className: "projects-cta-glow final-cta-glow w-full max-w-[280px] sm:w-auto sm:min-w-[220px]", children: /* @__PURE__ */ jsx(
+                  TelegramLink,
+                  {
+                    variant: "white",
+                    size: "lg",
+                    className: "projects-cta-glow__btn final-cta-glow__btn w-full",
+                    children: copy.finalCta.ctaPrimary
+                  }
+                ) }),
+                /* @__PURE__ */ jsx(
+                  CalcButton,
+                  {
+                    variant: "white",
+                    size: "lg",
+                    onClick: () => setModalOpen(true),
+                    className: "final-cta-btn final-cta-btn--secondary w-full max-w-[280px] sm:w-auto sm:min-w-[220px]",
+                    children: copy.finalCta.ctaSecondary
+                  }
+                )
+              ] })
+            ]
+          }
+        ) })
+      }
+    ),
+    /* @__PURE__ */ jsx(StartModal, { open: modalOpen, onClose: () => setModalOpen(false) })
+  ] });
+}
+function cx$5(...a) {
+  return a.filter(Boolean).join(" ");
+}
 const LOGO_LOCKUP_PNG = "/images/tivonix-logo-lockup.png";
-const WATERMARK_LOGO = "/favicon.svg";
-const ACCENT$1 = "#FF6B2C";
-const LANDING = {
-  top: "/#top",
-  services: "/#services",
-  faq: "/#faq"
-};
-const MENU = [
-  { to: LANDING.top, label: { ru: "Главная", en: "Home" } },
+const FOOTER_BG = `/images/${encodeURI("как рабоает")}/${encodeURI("футер.png")}`;
+const ACCENT = "#FF6B2C";
+const FOOTER_PAGES = [
+  { to: "/", label: { ru: "Главная", en: "Home" } },
+  { to: "/plans", label: { ru: "Тарифы", en: "Pricing" } },
+  { to: "/avtomatizaciya-biznesa", label: { ru: "Автоматизация", en: "Automation" } },
   { to: "/sozdanie-sajtov", label: { ru: "Создание сайтов", en: "Website development" } },
-  { to: LANDING.services, label: { ru: "Услуги", en: "Services" } },
-  { to: LANDING.faq, label: { ru: "FAQ", en: "FAQ" } },
   { to: "/contacts", label: { ru: "Контакты", en: "Contacts" } }
 ];
-const SECTION_LINKS = [
-  { to: "/#stack", label: { ru: "Технологии", en: "Tech stack" } },
-  { to: "/#benefits", label: { ru: "Преимущества", en: "Benefits" } },
-  { to: "/#admin", label: { ru: "Админ-панели", en: "Admin panels" } },
-  { to: "/#services", label: { ru: "Тарифы", en: "Pricing" } }
+const FOOTER_HOME = [
+  { to: "/#pain", label: { ru: "Почему теряются заявки", en: "Why leads get lost" } },
+  { to: "/#offer", label: { ru: "Что мы делаем", en: "What we build" } },
+  { to: "/#ai", label: { ru: "AI в продуктах", en: "AI in products" } },
+  { to: "/#compare", label: { ru: "Как работает система", en: "How the system works" } },
+  { to: "/#cases", label: { ru: "Проекты", en: "Projects" } },
+  { to: "/#audience", label: { ru: "Кому помогаем", en: "Who we help" } },
+  { to: "/#process", label: { ru: "Как проходит работа", en: "How we work" } },
+  { to: "/#faq", label: { ru: "Частые вопросы", en: "FAQ" } }
 ];
-const GMAIL_EMAIL_URL = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent("tivoonix@gmail.com")}&su=${encodeURIComponent("Проект (SaaS/MVP)")}`;
-const CONTACTS = {
-  telegram: { href: "https://t.me/TIVONIX", label: "Telegram" },
-  instagram: { href: "https://www.instagram.com/tivonix.tech/", label: "Instagram" },
-  email: { href: GMAIL_EMAIL_URL, label: "Email" }
-};
+const FOOTER_CONNECT = [
+  { href: "https://t.me/TIVONIX", label: "Telegram" },
+  { href: "https://www.instagram.com/tivonix.tech/", label: "Instagram" },
+  {
+    href: `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent("tivoonix@gmail.com")}&su=${encodeURIComponent("Проект (SaaS/MVP)")}`,
+    label: "Email"
+  }
+];
 const DOCS = {
   ru: [
     {
       href: "/doc/Политика_обработки_ПД_Tivonix_RU.pdf",
-      label: "Политика ПД",
+      label: "Политика",
       aria: "Политика обработки и защиты персональных данных (PDF)"
     },
     {
       href: "/doc/Согласие_на_обработку_ПД_Tivonix_RU.pdf",
-      label: "Согласие ПД",
+      label: "Согласие",
       aria: "Согласие на обработку персональных данных (PDF)"
     }
   ],
   en: [
     {
       href: "/doc/Privacy_Policy_Tivonix_EN.pdf",
-      label: "Privacy Policy",
+      label: "Privacy",
       aria: "Privacy Policy (PDF)"
     },
     {
@@ -4230,8 +7324,6 @@ const DOCS = {
     }
   ]
 };
-const footerLinkText = "font-sans text-[14px] font-normal leading-[1.6] text-[#A3A3A3] antialiased transition-colors duration-200 hover:text-white focus:outline-none focus-visible:text-white focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:rounded-sm";
-const colTitleClass = "font-sans text-[15px] sm:text-[16px] font-bold tracking-tight text-white antialiased leading-snug";
 function imgFallback(fallbackSrc) {
   return (e) => {
     const img = e.currentTarget;
@@ -4241,7 +7333,7 @@ function imgFallback(fallbackSrc) {
   };
 }
 function FooterLink({ to, children }) {
-  return /* @__PURE__ */ jsx(Link, { to, className: cx$3("block w-fit", footerLinkText), children });
+  return /* @__PURE__ */ jsx(Link, { to, className: "site-footer__link", children });
 }
 function ExternalLink({
   href,
@@ -4258,7 +7350,7 @@ function ExternalLink({
       target: openInNewTab ? "_blank" : void 0,
       rel: openInNewTab ? "noopener noreferrer" : void 0,
       "aria-label": ariaLabel,
-      className: cx$3("block w-fit max-w-full", footerLinkText),
+      className: "site-footer__link",
       children
     }
   );
@@ -4268,124 +7360,16 @@ function ColNav({
   title,
   children
 }) {
-  return /* @__PURE__ */ jsxs("nav", { "aria-labelledby": id, className: "min-w-0", children: [
-    /* @__PURE__ */ jsx("h2", { id, className: colTitleClass, children: title }),
-    /* @__PURE__ */ jsx("ul", { className: "mt-3 space-y-2", children })
-  ] });
-}
-function SocialIconLink({
-  href,
-  label,
-  children
-}) {
-  return /* @__PURE__ */ jsx(
-    "a",
-    {
-      href,
-      target: "_blank",
-      rel: "noopener noreferrer",
-      "aria-label": label,
-      className: cx$3(
-        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
-        "border border-white/[0.12] bg-white/[0.03] text-white/58",
-        "transition-[color,background-color,border-color] duration-200",
-        "hover:border-white/22 hover:bg-white/[0.08] hover:text-white",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-      ),
-      children
-    }
-  );
-}
-function FooterSmokeBg({
-  mounted,
-  webglInView,
-  reducedMotion
-}) {
-  return /* @__PURE__ */ jsxs("div", { "aria-hidden": true, className: "pointer-events-none absolute inset-0 -z-10 isolate overflow-hidden", children: [
-    /* @__PURE__ */ jsx(
-      "div",
-      {
-        className: "absolute inset-0",
-        style: s$2({
-          background: "radial-gradient(120% 90% at 85% 100%, rgba(255,154,61,0.24) 0%, rgba(255,106,26,0.14) 30%, rgba(0,0,0,0) 62%), linear-gradient(180deg, #000000 0%, #020202 100%)"
-        })
-      }
-    ),
-    /* @__PURE__ */ jsx("div", { className: "absolute inset-0", children: /* @__PURE__ */ jsx(
-      "div",
-      {
-        className: cx$3(
-          "absolute min-h-[760px]",
-          "bottom-[-42%] left-[-95%] right-[-90%] top-[-8%]",
-          "sm:bottom-[-48%] sm:left-[-50%] sm:right-[-55%] sm:top-[-4%]",
-          "lg:bottom-[-48%] lg:left-[-8%] lg:right-[-28%] lg:top-[0%] lg:min-h-[min(100vh,920px)]"
-        ),
-        style: s$2({
-          opacity: 1,
-          WebkitMaskImage: "radial-gradient(ellipse 160% 120% at 82% 100%, #000 0%, #000 38%, rgba(0,0,0,0.94) 52%, rgba(0,0,0,0.62) 68%, rgba(0,0,0,0.22) 84%, rgba(0,0,0,0.06) 94%, transparent 100%)",
-          maskImage: "radial-gradient(ellipse 160% 120% at 82% 100%, #000 0%, #000 38%, rgba(0,0,0,0.94) 52%, rgba(0,0,0,0.62) 68%, rgba(0,0,0,0.22) 84%, rgba(0,0,0,0.06) 94%, transparent 100%)",
-          WebkitMaskRepeat: "no-repeat",
-          maskRepeat: "no-repeat",
-          WebkitMaskSize: "100% 100%",
-          maskSize: "100% 100%"
-        }),
-        children: mounted && webglInView && !reducedMotion ? /* @__PURE__ */ jsx(Suspense, { fallback: null, children: /* @__PURE__ */ jsx(HeroWebGLBg$3, { interactive: false, quality: "low" }) }) : null
-      }
-    ) }),
-    /* @__PURE__ */ jsx(
-      "div",
-      {
-        className: "absolute inset-0",
-        style: s$2({
-          background: [
-            "linear-gradient(90deg, rgba(0,0,0,0.86) 0%, rgba(0,0,0,0.48) 30%, rgba(0,0,0,0.12) 54%, rgba(0,0,0,0.04) 72%, rgba(0,0,0,0.06) 100%)",
-            "radial-gradient(120% 120% at 50% 92%, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.44) 62%, rgba(0,0,0,0.82) 100%)"
-          ].join(",")
-        })
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      "img",
-      {
-        src: WATERMARK_LOGO,
-        alt: "",
-        draggable: false,
-        loading: "lazy",
-        decoding: "async",
-        className: cx$3(
-          "absolute z-[1] select-none",
-          "-right-[18vw] -bottom-[18vw]",
-          "w-[min(760px,76vw)] max-w-none",
-          "opacity-[0.12] sm:-right-[12vw] sm:-bottom-[14vw] sm:w-[min(760px,62vw)] sm:opacity-[0.16]"
-        )
-      }
-    )
+  return /* @__PURE__ */ jsxs("nav", { "aria-labelledby": id, className: "site-footer__col min-w-0", children: [
+    /* @__PURE__ */ jsx("h2", { id, className: "site-footer__col-title", children: title }),
+    /* @__PURE__ */ jsx("ul", { className: "site-footer__col-list", children })
   ] });
 }
 function Footer() {
   const { lang } = useLang();
   const isRu = lang === "ru";
-  const [mounted, setMounted] = useState(false);
-  const footerRef = useRef(null);
-  const [webglInView, setWebglInView] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const t = (v) => isRu ? v.ru : v.en;
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const el = footerRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        setWebglInView(!!entries[0]?.isIntersecting);
-      },
-      { root: null, rootMargin: "260px 0px 260px 0px", threshold: 0.01 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
   useEffect(() => {
     if (typeof window === "undefined") return;
     const motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -4400,135 +7384,78 @@ function Footer() {
   }, []);
   const docs = isRu ? DOCS.ru : DOCS.en;
   const projects = buildProjects(isRu);
-  const rights = isRu ? "Все права защищены." : "All rights reserved.";
+  const tagline = isRu ? "Сайты, боты и CRM — чтобы заявки не терялись" : "Websites, bots and CRM — so leads don't get lost";
   return /* @__PURE__ */ jsxs(
     "footer",
     {
-      ref: footerRef,
-      className: cx$3(
-        "relative isolate overflow-hidden font-sans text-white antialiased",
-        "selection:bg-[color:var(--accent)]/25"
-      ),
-      style: s$2({ ["--accent"]: ACCENT$1, backgroundColor: "#000000" }),
+      id: "site-footer",
+      className: "site-footer font-sans text-white antialiased selection:bg-[color:var(--accent)]/25",
+      style: { ["--accent"]: ACCENT },
       children: [
-        /* @__PURE__ */ jsx(FooterSmokeBg, { mounted, webglInView, reducedMotion }),
-        /* @__PURE__ */ jsx("div", { className: "relative z-10", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsx("div", { className: "relative px-3 sm:px-5", children: /* @__PURE__ */ jsxs("div", { className: "relative pb-14 pt-16 sm:pb-16 sm:pt-20 lg:pb-20 lg:pt-24", children: [
-          /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-14 lg:flex-row lg:items-start lg:gap-10 xl:gap-14", children: [
-            /* @__PURE__ */ jsx("aside", { className: "shrink-0 lg:w-[min(280px,32%)] lg:max-w-[300px]", children: /* @__PURE__ */ jsx(
-              Link,
-              {
-                to: LANDING.top,
-                className: cx$3(
-                  "inline-block rounded-lg",
-                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                ),
-                "aria-label": isRu ? "Наверх" : "Back to top",
-                children: /* @__PURE__ */ jsx(
-                  "img",
-                  {
-                    src: LOGO_LOCKUP_PNG,
-                    onError: imgFallback(LOGO_LOCKUP_PNG),
-                    alt: "Tivonix",
-                    className: "block h-9 w-auto sm:h-10",
-                    draggable: false,
-                    loading: "lazy",
-                    decoding: "async"
-                  }
-                )
-              }
-            ) }),
-            /* @__PURE__ */ jsx("div", { className: "min-w-0 flex-1", children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-x-5 gap-y-10 sm:gap-x-7 md:grid-cols-3 md:gap-y-11 lg:grid-cols-4 xl:grid-cols-5 xl:gap-x-6", children: [
-              /* @__PURE__ */ jsx(ColNav, { id: "footer-site", title: isRu ? "Сайт" : "Site", children: MENU.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: i.to, children: t(i.label) }) }, i.to)) }),
-              /* @__PURE__ */ jsx(ColNav, { id: "footer-sections", title: isRu ? "Секции" : "Sections", children: SECTION_LINKS.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: i.to, children: t(i.label) }) }, i.to)) }),
-              /* @__PURE__ */ jsxs(ColNav, { id: "footer-work", title: isRu ? "Кейсы" : "Work", children: [
-                /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: "/projects", children: isRu ? "Все проекты" : "All projects" }) }),
-                projects.map((p) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: `/projects/${p.id}`, children: p.title }) }, p.id))
-              ] }),
-              /* @__PURE__ */ jsxs(ColNav, { id: "footer-contact", title: isRu ? "Связь" : "Connect", children: [
-                /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(ExternalLink, { href: CONTACTS.telegram.href, children: CONTACTS.telegram.label }) }),
-                /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(ExternalLink, { href: CONTACTS.instagram.href, children: CONTACTS.instagram.label }) }),
-                /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(ExternalLink, { href: CONTACTS.email.href, children: CONTACTS.email.label }) })
-              ] }),
-              /* @__PURE__ */ jsx(ColNav, { id: "footer-legal", title: isRu ? "Документы" : "Legal", children: docs.map((d) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(ExternalLink, { href: d.href, newTab: true, "aria-label": d.aria, children: d.label }) }, d.href)) })
-            ] }) })
-          ] }),
-          /* @__PURE__ */ jsxs(
-            "div",
+        /* @__PURE__ */ jsxs("div", { className: "site-footer__bg", "aria-hidden": true, children: [
+          /* @__PURE__ */ jsx(
+            "img",
             {
-              className: cx$3(
-                "mt-14 border-t border-white/[0.09] pt-8 sm:mt-16 sm:pt-9",
-                "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
-              ),
-              children: [
-                /* @__PURE__ */ jsxs("p", { className: "text-[13px] leading-relaxed text-[#737373] sm:text-[14px]", children: [
-                  "© ",
-                  (/* @__PURE__ */ new Date()).getFullYear(),
-                  " TIVONIX. ",
-                  rights
-                ] }),
-                /* @__PURE__ */ jsxs(
-                  "nav",
-                  {
-                    className: "flex flex-wrap items-center gap-1.5 sm:justify-end",
-                    "aria-label": isRu ? "Соцсети и почта" : "Social and email",
-                    children: [
-                      /* @__PURE__ */ jsx(SocialIconLink, { href: CONTACTS.telegram.href, label: CONTACTS.telegram.label, children: /* @__PURE__ */ jsx(IconTelegram, { className: "h-4 w-4" }) }),
-                      /* @__PURE__ */ jsx(SocialIconLink, { href: CONTACTS.instagram.href, label: CONTACTS.instagram.label, children: /* @__PURE__ */ jsx(IconInstagram$1, { className: "h-4 w-4" }) }),
-                      /* @__PURE__ */ jsx(SocialIconLink, { href: CONTACTS.email.href, label: CONTACTS.email.label, children: /* @__PURE__ */ jsx(IconMail$1, { className: "h-4 w-4" }) })
-                    ]
-                  }
-                )
-              ]
+              src: FOOTER_BG,
+              alt: "",
+              className: "site-footer__bg-img",
+              loading: "lazy",
+              decoding: "async",
+              draggable: false
             }
-          )
-        ] }) }) }) })
+          ),
+          /* @__PURE__ */ jsx("div", { className: "site-footer__bg-fade" })
+        ] }),
+        /* @__PURE__ */ jsx(Container, { className: "site-footer__shell", children: /* @__PURE__ */ jsxs("div", { className: "site-footer__panel", children: [
+          /* @__PURE__ */ jsx("div", { className: "site-footer__bar", children: /* @__PURE__ */ jsx(
+            Link,
+            {
+              to: "/",
+              className: "site-footer__logo focus:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-[#121212] rounded-lg",
+              "aria-label": isRu ? "Наверх" : "Back to top",
+              children: /* @__PURE__ */ jsx(
+                "img",
+                {
+                  src: LOGO_LOCKUP_PNG,
+                  onError: imgFallback(LOGO_LOCKUP_PNG),
+                  alt: "Tivonix",
+                  className: "block h-9 w-auto sm:h-10",
+                  draggable: false,
+                  loading: "lazy",
+                  decoding: "async"
+                }
+              )
+            }
+          ) }),
+          /* @__PURE__ */ jsxs("div", { className: "site-footer__grid", children: [
+            /* @__PURE__ */ jsx(ColNav, { id: "footer-pages", title: isRu ? "Страницы" : "Pages", children: FOOTER_PAGES.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: i.to, children: t(i.label) }) }, i.to)) }),
+            /* @__PURE__ */ jsx(ColNav, { id: "footer-home", title: isRu ? "На главной" : "Homepage", children: FOOTER_HOME.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: i.to, children: t(i.label) }) }, i.to)) }),
+            /* @__PURE__ */ jsx(ColNav, { id: "footer-connect", title: isRu ? "Связь" : "Connect", children: FOOTER_CONNECT.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(ExternalLink, { href: i.href, children: i.label }) }, i.href)) }),
+            /* @__PURE__ */ jsxs(ColNav, { id: "footer-work", title: isRu ? "Кейсы" : "Cases", children: [
+              /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: "/projects", children: isRu ? "Все проекты" : "All projects" }) }),
+              projects.map((p) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: `/projects/${p.id}`, children: p.title }) }, p.id))
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "site-footer__legal", children: [
+            /* @__PURE__ */ jsxs("div", { className: "site-footer__brand", children: [
+              /* @__PURE__ */ jsx(
+                "p",
+                {
+                  className: cx$5(
+                    "ai-premium-ai-mark__text site-footer__rainbow",
+                    !reducedMotion && "ai-premium-ai-mark__text--animated"
+                  ),
+                  children: "tivonix & AI"
+                }
+              ),
+              /* @__PURE__ */ jsx("p", { className: "site-footer__tagline", children: tagline })
+            ] }),
+            /* @__PURE__ */ jsx("nav", { className: "site-footer__legal-nav", "aria-label": isRu ? "Документы" : "Legal", children: docs.map((d) => /* @__PURE__ */ jsx(ExternalLink, { href: d.href, newTab: true, "aria-label": d.aria, children: d.label }, d.href)) })
+          ] })
+        ] }) })
       ]
     }
   );
-}
-function IconTelegram({ className }) {
-  return /* @__PURE__ */ jsxs("svg", { className, viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: [
-    /* @__PURE__ */ jsx(
-      "path",
-      {
-        d: "M21.8 4.6c.2-.8-.6-1.5-1.4-1.2L3.4 10c-1 .4-1 1.8 0 2.2l4.5 1.7 1.7 4.9c.3.9 1.5 1 2 .2l2.6-4.2 4.7 3.6c.7.5 1.7.1 1.9-.8L21.8 4.6Z",
-        stroke: "currentColor",
-        strokeWidth: "1.6",
-        strokeLinejoin: "round"
-      }
-    ),
-    /* @__PURE__ */ jsx("path", { d: "M8 13.8 19.6 6.4", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round" })
-  ] });
-}
-function IconInstagram$1({ className }) {
-  return /* @__PURE__ */ jsxs("svg", { className, viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: [
-    /* @__PURE__ */ jsx("rect", { x: "2.5", y: "2.5", width: "19", height: "19", rx: "5", stroke: "currentColor", strokeWidth: "1.55" }),
-    /* @__PURE__ */ jsx("circle", { cx: "12", cy: "12", r: "4.25", stroke: "currentColor", strokeWidth: "1.55" }),
-    /* @__PURE__ */ jsx("circle", { cx: "17.5", cy: "6.5", r: "1.35", fill: "currentColor" })
-  ] });
-}
-function IconMail$1({ className }) {
-  return /* @__PURE__ */ jsxs("svg", { className, viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: [
-    /* @__PURE__ */ jsx(
-      "path",
-      {
-        d: "M4.5 7.5v9a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-11a2 2 0 0 0-2 2Z",
-        stroke: "currentColor",
-        strokeWidth: "1.65",
-        opacity: "0.95"
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      "path",
-      {
-        d: "M6 8.5 12 12.5l6-4",
-        stroke: "currentColor",
-        strokeWidth: "1.65",
-        strokeLinecap: "round",
-        strokeLinejoin: "round"
-      }
-    )
-  ] });
 }
 const CANONICAL_ORIGIN = "https://www.tivonix.tech";
 const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN}/og.jpg`;
@@ -4565,435 +7492,6 @@ function SEO({
     /* @__PURE__ */ jsx("meta", { name: "twitter:image:alt", content: "TIVONIX" }),
     schemaJsonLd != null && /* @__PURE__ */ jsx("script", { type: "application/ld+json", children: JSON.stringify(schemaJsonLd) })
   ] });
-}
-function cx$2(...a) {
-  return a.filter(Boolean).join(" ");
-}
-const ACCENT = "#FF6B2C";
-const VIDEOS = ["/video/1.mp4", "/video/2.mp4", "/video/3.mp4", "/video/4.mp4"];
-const VIDEO_OFFSET_PX = 14;
-const TG_USERNAME = "TIVONIX";
-const TG_URL = `https://t.me/${TG_USERNAME}`;
-const TG_TEXT_RU = "Привет! Хочу рассчитать стоимость. Пакет: ";
-const TG_TEXT_EN = "Hi! I want a quote. Package: ";
-function CheckIcon() {
-  return /* @__PURE__ */ jsx("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", "aria-hidden": "true", children: /* @__PURE__ */ jsx(
-    "path",
-    {
-      d: "M20 6 9 17l-5-5",
-      stroke: "currentColor",
-      strokeWidth: "2",
-      strokeLinecap: "round",
-      strokeLinejoin: "round"
-    }
-  ) });
-}
-function useVideoBlock(ref, src) {
-  const [canLoad, setCanLoad] = useState(false);
-  const [reduceMotion, setReduceMotion] = useState(false);
-  const [inView, setInView] = useState(false);
-  useEffect(() => {
-    const mql = window.matchMedia?.("(prefers-reduced-motion: reduce)");
-    if (!mql) return;
-    const apply = () => setReduceMotion(!!mql.matches);
-    apply();
-    if ("addEventListener" in mql) {
-      mql.addEventListener("change", apply);
-      return () => mql.removeEventListener("change", apply);
-    }
-    mql.addListener(apply);
-    return () => mql.removeListener(apply);
-  }, []);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (!("IntersectionObserver" in window)) {
-      setCanLoad(true);
-      setInView(true);
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        const e = entries[0];
-        const visible = !!e?.isIntersecting;
-        setInView(visible);
-        if (visible) {
-          setCanLoad(true);
-        }
-      },
-      { root: null, rootMargin: "220px", threshold: 0.15 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [ref]);
-  const safeReset = useCallback(() => {
-    const v = ref.current;
-    if (!v) return;
-    try {
-      v.pause();
-      v.currentTime = 0;
-    } catch {
-    }
-  }, [ref]);
-  useEffect(() => {
-    const v = ref.current;
-    if (!v) return;
-    v.muted = true;
-    v.playsInline = true;
-    v.loop = true;
-    v.preload = "none";
-    const onLoadedData = () => safeReset();
-    v.addEventListener("loadeddata", onLoadedData);
-    safeReset();
-    return () => v.removeEventListener("loadeddata", onLoadedData);
-  }, [ref, safeReset]);
-  useEffect(() => {
-    const v = ref.current;
-    if (!v || !src || !canLoad) return;
-    if (v.getAttribute("data-src-attached") === "1") return;
-    v.setAttribute("data-src-attached", "1");
-    try {
-      v.src = src;
-      v.preload = "metadata";
-      v.load?.();
-    } catch {
-    }
-  }, [ref, src, canLoad]);
-  const play = useCallback(async () => {
-    const v = ref.current;
-    if (!v || reduceMotion) return;
-    try {
-      if (v.preload !== "auto") v.preload = "auto";
-      await v.play();
-    } catch {
-    }
-  }, [ref, reduceMotion]);
-  const stop = useCallback(() => {
-    const v = ref.current;
-    if (!v) return;
-    try {
-      v.pause();
-    } catch {
-    }
-  }, [ref]);
-  useEffect(() => {
-    if (!canLoad) return;
-    if (inView) {
-      void play();
-      return;
-    }
-    stop();
-  }, [inView, canLoad, play, stop]);
-  return { play, stop, inView };
-}
-function openTelegram(planName, isRu) {
-  const text = isRu ? `${TG_TEXT_RU}${planName}` : `${TG_TEXT_EN}${planName}`;
-  const url = `${TG_URL}?text=${encodeURIComponent(text)}`;
-  window.open(url, "_blank", "noopener,noreferrer");
-}
-function PlanCard({ p, isRu }) {
-  const ref = useRef(null);
-  const { play, stop, inView } = useVideoBlock(ref, p.videoSrc);
-  const [videoFailed, setVideoFailed] = useState(false);
-  const label = isRu ? p.labelRu : p.labelEn;
-  const title = isRu ? p.titleRu : p.titleEn;
-  const subtitle = isRu ? p.subtitleRu : p.subtitleEn;
-  const cta = isRu ? p.ctaRu : p.ctaEn;
-  const note = isRu ? p.noteRu : p.noteEn;
-  const desc = isRu ? p.descRu : p.descEn;
-  const bullets = isRu ? p.bulletsRu : p.bulletsEn;
-  const badge = isRu ? p.badgeRu : p.badgeEn;
-  const chip = p.chip ? isRu ? p.chip.ru : p.chip.en : null;
-  const planName = isRu ? p.labelRu : p.labelEn;
-  return /* @__PURE__ */ jsxs(
-    "article",
-    {
-      onMouseEnter: play,
-      onMouseLeave: stop,
-      onFocus: play,
-      onBlur: stop,
-      onPointerEnter: play,
-      onPointerLeave: stop,
-      className: cx$2(
-        "group relative overflow-hidden rounded-[22px]",
-        "bg-black",
-        "shadow-[0_30px_120px_rgba(0,0,0,0.65)]",
-        "transition-transform duration-200",
-        "hover:-translate-y-0.5",
-        p.featured ? "md:-translate-y-1" : ""
-      ),
-      style: {
-        ["--accent"]: ACCENT,
-        isolation: "isolate",
-        transform: "translateZ(0)"
-      },
-      children: [
-        /* @__PURE__ */ jsx(
-          "div",
-          {
-            "aria-hidden": true,
-            className: "pointer-events-none absolute inset-0 rounded-[22px]",
-            style: {
-              zIndex: 999,
-              boxShadow: p.featured ? "inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, rgba(255,255,255,0.10))" : "inset 0 0 0 1px rgba(255,255,255,0.10)"
-            }
-          }
-        ),
-        /* @__PURE__ */ jsxs(
-          "div",
-          {
-            className: "relative overflow-hidden bg-black",
-            style: {
-              height: 160,
-              clipPath: "inset(0 round 22px 22px 0 0)",
-              transform: "translateZ(0)"
-            },
-            children: [
-              !videoFailed ? /* @__PURE__ */ jsx(
-                "video",
-                {
-                  ref,
-                  poster: p.poster,
-                  muted: true,
-                  playsInline: true,
-                  loop: true,
-                  preload: "none",
-                  controls: false,
-                  onError: () => setVideoFailed(true),
-                  disablePictureInPicture: true,
-                  className: cx$2(
-                    "absolute left-0 top-0 h-full w-full object-cover",
-                    "opacity-[0.72] transition-opacity duration-200",
-                    inView ? "opacity-[0.86]" : "opacity-[0.72]",
-                    "group-hover:opacity-[0.90]"
-                  ),
-                  style: {
-                    zIndex: 1,
-                    filter: "contrast(1.08) saturate(1.05)",
-                    // ✅ смещение фокуса вниз без чёрных полос
-                    objectPosition: `center calc(50% + ${VIDEO_OFFSET_PX}px)`,
-                    backfaceVisibility: "hidden",
-                    willChange: "opacity"
-                  }
-                }
-              ) : /* @__PURE__ */ jsx(
-                "div",
-                {
-                  className: "absolute inset-0",
-                  style: {
-                    zIndex: 1,
-                    background: "radial-gradient(100% 120% at 70% 20%, rgba(255,154,61,0.35), transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.08), rgba(0,0,0,0.55))"
-                  }
-                }
-              ),
-              /* @__PURE__ */ jsx(
-                "div",
-                {
-                  className: "absolute inset-0 pointer-events-none",
-                  style: {
-                    zIndex: 2,
-                    background: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 62%, rgba(0,0,0,0.92) 100%)"
-                  }
-                }
-              ),
-              /* @__PURE__ */ jsxs("div", { className: "absolute left-5 top-5 z-[10] flex items-center gap-2", children: [
-                /* @__PURE__ */ jsx(
-                  "span",
-                  {
-                    className: cx$2(
-                      "inline-flex items-center rounded-full px-3 py-1",
-                      "text-[11px] font-[900] tracking-[0.14em] uppercase",
-                      "border border-white/10 bg-black/70 text-white/80",
-                      "backdrop-blur"
-                    ),
-                    children: label
-                  }
-                ),
-                chip ? /* @__PURE__ */ jsx(
-                  "span",
-                  {
-                    className: cx$2(
-                      "inline-flex items-center rounded-full px-2.5 py-1",
-                      "text-[10px] font-[900] tracking-[0.14em] uppercase",
-                      "border border-white/10 bg-white/[0.05] text-white/70"
-                    ),
-                    children: chip
-                  }
-                ) : null
-              ] })
-            ]
-          }
-        ),
-        /* @__PURE__ */ jsxs("div", { className: "px-6 pt-5 relative z-[5]", children: [
-          /* @__PURE__ */ jsx(
-            "div",
-            {
-              className: cx$2(
-                "text-[34px] leading-[0.95] font-[950] tracking-[-0.035em] text-white",
-                "whitespace-nowrap text-left"
-              ),
-              style: { letterSpacing: "-0.03em" },
-              children: title
-            }
-          ),
-          /* @__PURE__ */ jsx("div", { className: "mt-3 text-[12.5px] text-white/55", children: subtitle }),
-          /* @__PURE__ */ jsxs("div", { className: "mt-5", children: [
-            /* @__PURE__ */ jsx(
-              "button",
-              {
-                type: "button",
-                onClick: () => openTelegram(planName, isRu),
-                className: cx$2(
-                  "inline-flex h-11 w-full items-center justify-center rounded-full px-6",
-                  "text-[12px] font-[950] tracking-[0.18em] uppercase",
-                  "text-black bg-[color:var(--accent)]",
-                  "shadow-[0_18px_55px_rgba(255,107,44,0.18)]",
-                  "transition hover:brightness-105",
-                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent)]/40"
-                ),
-                children: cta
-              }
-            ),
-            /* @__PURE__ */ jsx("div", { className: "mt-2 text-center text-[12px] text-white/45", children: note })
-          ] }),
-          /* @__PURE__ */ jsx("div", { className: "mt-5 -mx-6 relative z-[5]", children: /* @__PURE__ */ jsxs("div", { className: "rounded-t-[18px] border-t border-x border-white/10 bg-white/[0.04] px-6 py-5", children: [
-            /* @__PURE__ */ jsx("div", { className: "text-[13px] leading-relaxed text-white/80", children: desc }),
-            /* @__PURE__ */ jsx("ul", { className: "mt-4 space-y-2.5 text-[13px] text-white/62", children: bullets.map((b) => /* @__PURE__ */ jsxs("li", { className: "flex gap-3", children: [
-              /* @__PURE__ */ jsx("span", { className: "mt-[2px] text-white/45", children: /* @__PURE__ */ jsx(CheckIcon, {}) }),
-              /* @__PURE__ */ jsx("span", { children: b })
-            ] }, b)) }),
-            /* @__PURE__ */ jsxs("div", { className: "mt-5 flex items-center gap-2", children: [
-              /* @__PURE__ */ jsxs(
-                "span",
-                {
-                  className: cx$2(
-                    "inline-flex items-center gap-2 rounded-full px-3 py-1",
-                    "border border-white/10 bg-black/35",
-                    "text-[11px] font-[950] tracking-[0.14em] uppercase text-white/70"
-                  ),
-                  children: [
-                    /* @__PURE__ */ jsx(
-                      "span",
-                      {
-                        className: "h-2 w-2 rounded-full",
-                        style: { backgroundColor: "color-mix(in srgb, var(--accent) 70%, transparent)" }
-                      }
-                    ),
-                    badge
-                  ]
-                }
-              ),
-              /* @__PURE__ */ jsx("span", { className: "text-[11px] text-white/40", children: isRu ? "Поддержка и консультация" : "Support & consultation" })
-            ] })
-          ] }) })
-        ] }),
-        p.featured ? /* @__PURE__ */ jsx(
-          "div",
-          {
-            "aria-hidden": true,
-            className: "pointer-events-none absolute inset-0 rounded-[22px]",
-            style: {
-              zIndex: 998,
-              boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent)"
-            }
-          }
-        ) : null
-      ]
-    }
-  );
-}
-function ServicesPlans({ className }) {
-  const { lang } = useLang();
-  const isRu = lang === "ru";
-  const plans = useMemo(
-    () => [
-      {
-        key: "launch",
-        labelRu: "Лендинги + боты",
-        labelEn: "Landing + Bots",
-        titleRu: "БЫСТРЫЙ ЗАПУСК",
-        titleEn: "LAUNCH",
-        subtitleRu: "Лендинг + заявки + Telegram",
-        subtitleEn: "Fast start: landing + Telegram bot",
-        ctaRu: "Рассчитать стоимость",
-        ctaEn: "Get a quote",
-        noteRu: "Ответим в течение дня",
-        noteEn: "Reply within 24h",
-        descRu: "Сделаем страницу для рекламы и подключим приём заявок, чтобы вы быстро начали получать обращения от клиентов.",
-        descEn: "Launch package: conversion landing + bot for leads and support.",
-        bulletsRu: [
-          "Страница под рекламу и продажи",
-          "Форма заявки и кнопки связи",
-          "Уведомления о заявках в Telegram",
-          "Адаптация под телефон и базовая аналитика"
-        ],
-        bulletsEn: [
-          "Conversion landing for ads",
-          "Bot flows, menus, commands",
-          "Integrations: CRM / Google / Notion",
-          "Responsive, SEO basics, fast load"
-        ],
-        badgeRu: "Подходит для быстрого старта",
-        badgeEn: "INCLUDED",
-        chip: { ru: "ПАКЕТ", en: "BUNDLE" },
-        videoSrc: VIDEOS[0]
-      },
-      {
-        key: "product",
-        labelRu: "Продукт",
-        labelEn: "Product",
-        titleRu: "ОНЛАЙН-СЕРВИС",
-        titleEn: "PRODUCT",
-        subtitleRu: "Личный кабинет, админка, оплата",
-        subtitleEn: "MVP / dashboard / admin panel",
-        ctaRu: "Рассчитать стоимость",
-        ctaEn: "Get a quote",
-        noteRu: "Предварительная оценка за 24 часа",
-        noteEn: "Estimate in 24h",
-        descRu: "Разработаем полноценный веб-сервис: пользователи смогут регистрироваться, пользоваться продуктом, оплачивать и получать нужный результат.",
-        descEn: "Bigger builds: MVPs, dashboards, admin panels, roles, databases and integrations.",
-        bulletsRu: [
-          "Личный кабинет для клиентов",
-          "Админ-панель для управления",
-          "Роли пользователей и доступы",
-          "Оплата, уведомления и интеграции"
-        ],
-        bulletsEn: ["Architecture, FE/BE, deploy", "Auth, roles, payments", "Admin, tables, filters", "Post-launch support"],
-        badgeRu: "Рекомендуем для продукта",
-        badgeEn: "RECOMMENDED",
-        chip: { ru: "ЛУЧШИЙ ВЫБОР", en: "BEST VALUE" },
-        videoSrc: VIDEOS[1],
-        featured: true
-      },
-      {
-        key: "automation",
-        labelRu: "Автоматизация",
-        labelEn: "Automation",
-        titleRu: "АВТОМАТИЗАЦИЯ",
-        titleEn: "AUTOMATION",
-        subtitleRu: "Меньше ручной работы",
-        subtitleEn: "Integrations / scripts / routine",
-        ctaRu: "Рассчитать стоимость",
-        ctaEn: "Get a quote",
-        noteRu: "Поможем упростить процессы",
-        noteEn: "No fluff",
-        descRu: "Настроим процессы, которые сейчас отнимают время: заявки, таблицы, отчёты, уведомления и работу с клиентами.",
-        descEn: "Automate routine: leads, sheets, reports, messaging and integrations.",
-        bulletsRu: [
-          "Автоматизация заявок и задач",
-          "Связка таблиц и сервисов",
-          "Уведомления в Telegram или email",
-          "Отчёты, статусы и контроль процессов"
-        ],
-        bulletsEn: ["Make / Zapier / API integrations", "Google Sheets / Notion / CRM", "Telegram notifications", "Logs and stability"],
-        badgeRu: "Подходит для бизнеса и команды",
-        badgeEn: "INCLUDED",
-        videoSrc: VIDEOS[3]
-      }
-    ],
-    []
-  );
-  return /* @__PURE__ */ jsx("section", { className: cx$2("relative", className), style: { ["--accent"]: ACCENT }, children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsx("div", { className: "grid gap-6 lg:grid-cols-3 lg:items-start", children: plans.map((p) => /* @__PURE__ */ jsx(PlanCard, { p, isRu }, p.key)) }) }) });
 }
 function buildHomePageSchema({ pageTitle, pageDescription }) {
   return {
@@ -5041,6 +7539,60 @@ function buildHomePageSchema({ pageTitle, pageDescription }) {
     ]
   };
 }
+function buildPricingPageSchema({ pageTitle, pageDescription, lang }) {
+  const copy = pricingCopy(lang);
+  const offers = PLAN_IDS.map((id) => {
+    const plan = copy.plans[id];
+    const usd = PLAN_PRICE_USD[id];
+    const hasPrice = typeof usd === "number";
+    const discounted = hasPrice ? Math.round(usd * (1 - LAUNCH_DISCOUNT_PERCENT / 100)) : void 0;
+    return {
+      "@type": "Offer",
+      name: plan.name,
+      description: plan.desc,
+      ...hasPrice ? {
+        price: discounted,
+        priceCurrency: "USD",
+        priceSpecification: {
+          "@type": "PriceSpecification",
+          minPrice: discounted,
+          priceCurrency: "USD"
+        }
+      } : {},
+      url: "https://www.tivonix.tech/plans#pricing",
+      seller: { "@id": "https://www.tivonix.tech/#org" }
+    };
+  });
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://www.tivonix.tech/#org",
+        name: "TIVONIX",
+        url: "https://www.tivonix.tech/"
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://www.tivonix.tech/plans#webpage",
+        url: "https://www.tivonix.tech/plans",
+        name: pageTitle,
+        description: pageDescription,
+        isPartOf: { "@id": "https://www.tivonix.tech/#website" },
+        inLanguage: lang === "ru" ? "ru" : "en"
+      },
+      {
+        "@type": "Service",
+        "@id": "https://www.tivonix.tech/plans#service",
+        name: pageTitle,
+        description: pageDescription,
+        provider: { "@id": "https://www.tivonix.tech/#org" },
+        areaServed: "Worldwide",
+        offers
+      }
+    ]
+  };
+}
 function LandingPage() {
   const { dict, lang } = useLang();
   const seo = homePageSeoFromDict(dict);
@@ -5048,7 +7600,7 @@ function LandingPage() {
     pageTitle: seo.title,
     pageDescription: seo.description
   });
-  return /* @__PURE__ */ jsxs("div", { className: "min-h-screen bg-[var(--bg)]", children: [
+  return /* @__PURE__ */ jsxs("div", { className: "min-h-screen overflow-x-clip bg-black", children: [
     /* @__PURE__ */ jsx(
       SEO,
       {
@@ -5063,18 +7615,21 @@ function LandingPage() {
     /* @__PURE__ */ jsx(Header, {}),
     /* @__PURE__ */ jsxs("main", { children: [
       /* @__PURE__ */ jsx("div", { id: "hero", children: /* @__PURE__ */ jsx(Hero, {}) }),
-      /* @__PURE__ */ jsx("div", { id: "stack", children: /* @__PURE__ */ jsx(WhyUs, {}) }),
-      /* @__PURE__ */ jsx("div", { id: "benefits", children: /* @__PURE__ */ jsx(Benefits, {}) }),
-      /* @__PURE__ */ jsx("div", { id: "admin", children: /* @__PURE__ */ jsx(AppsOrbitBlock, {}) }),
-      /* @__PURE__ */ jsx("div", { id: "services", children: /* @__PURE__ */ jsx(ServicesPlans, { className: "py-14 sm:py-16" }) }),
-      /* @__PURE__ */ jsx(FAQSection, {}),
-      /* @__PURE__ */ jsx("div", { id: "contact" })
+      /* @__PURE__ */ jsx(LandingPainSection, {}),
+      /* @__PURE__ */ jsx(MainOfferSection, {}),
+      /* @__PURE__ */ jsx(AiPremiumSection, {}),
+      /* @__PURE__ */ jsx(ComparisonSection, {}),
+      /* @__PURE__ */ jsx("div", { id: "new-case", children: /* @__PURE__ */ jsx(CasesSection, {}) }),
+      /* @__PURE__ */ jsx(TivonixAudienceSection, {}),
+      /* @__PURE__ */ jsx(ProcessTimelineSection, {}),
+      /* @__PURE__ */ jsx(FAQSection, {})
     ] }),
+    /* @__PURE__ */ jsx(FinalCTASection, {}),
     /* @__PURE__ */ jsx(Footer, {})
   ] });
 }
 const HERO_IMG = "/images/hero.png";
-function cx$1(...a) {
+function cx$4(...a) {
   return a.filter(Boolean).join(" ");
 }
 const s$1 = (v) => v;
@@ -5095,10 +7650,10 @@ function ProjectPreviewFrame({
   return /* @__PURE__ */ jsx(
     "div",
     {
-      className: cx$1(
+      className: cx$4(
         "relative overflow-hidden",
         fullWidth ? "w-full rounded-xl" : "mx-auto w-full rounded-2xl",
-        "border-0 bg-[#0c0c0f]"
+        "border-0 bg-[#141416]"
       ),
       style: {
         aspectRatio: aspect,
@@ -5132,7 +7687,7 @@ function ProjectGalleryStrip({
     /* @__PURE__ */ jsx(
       "div",
       {
-        className: cx$1(
+        className: cx$4(
           "flex gap-3 overflow-x-auto pb-1",
           "snap-x snap-mandatory scroll-smooth",
           "no-scrollbar"
@@ -5144,8 +7699,6 @@ function ProjectGalleryStrip({
     )
   ] });
 }
-const HeroWebGLBg$2 = lazy(() => import("./assets/HeroWebGLBg-CnY8eKt4.js"));
-const HEADER_H$1 = 72;
 const ALL_FILTER = "all";
 function collectTags(projects) {
   const set = /* @__PURE__ */ new Set();
@@ -5176,6 +7729,10 @@ function ExternalIcon$1({ className }) {
     }
   );
 }
+const filterPillClass = (active) => cx$4(
+  "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-[13px] font-medium transition",
+  active ? "bg-[#3a3a3d] text-white" : "bg-[#1c1c1f] text-white/78 hover:bg-[#262626] hover:text-white/92"
+);
 function ProjectGridCard({ p, isRu }) {
   const wip = p.status === "wip";
   const domainClean = p.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "");
@@ -5184,18 +7741,9 @@ function ProjectGridCard({ p, isRu }) {
       Link,
       {
         to: `/projects/${p.id}`,
-        className: "block min-w-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/50 rounded-xl",
+        className: "block min-w-0 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
         "aria-label": isRu ? `Кейс ${p.title}` : `Case study ${p.title}`,
-        children: /* @__PURE__ */ jsx(
-          "div",
-          {
-            className: cx$1(
-              "overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.03]",
-              "transition duration-300 group-hover:border-white/[0.14] group-hover:bg-white/[0.05]"
-            ),
-            children: /* @__PURE__ */ jsx(ProjectPreviewFrame, { src: projectPreviewSrc(p), variant: "grid" })
-          }
-        )
+        children: /* @__PURE__ */ jsx("div", { className: "overflow-hidden rounded-xl bg-[#1c1c1f] transition duration-300 group-hover:bg-[#262626]", children: /* @__PURE__ */ jsx(ProjectPreviewFrame, { src: projectPreviewSrc(p), variant: "grid" }) })
       }
     ),
     /* @__PURE__ */ jsxs("div", { className: "mt-3 flex items-start justify-between gap-3", children: [
@@ -5204,22 +7752,22 @@ function ProjectGridCard({ p, isRu }) {
           Link,
           {
             to: `/projects/${p.id}`,
-            className: "block min-w-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/50 rounded",
+            className: "block min-w-0 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45",
             children: /* @__PURE__ */ jsx("h2", { className: "truncate text-[15px] font-[700] tracking-[-0.02em] text-white/[0.92] transition group-hover:text-white", children: p.title })
           }
         ),
-        domainClean && !wip ? /* @__PURE__ */ jsx("p", { className: "mt-0.5 truncate text-[12px] text-white/42", children: domainClean }) : /* @__PURE__ */ jsx("p", { className: "mt-0.5 text-[12px] text-white/38", children: isRu ? "В разработке" : "In progress" })
+        domainClean && !wip ? /* @__PURE__ */ jsx("p", { className: "mt-0.5 truncate text-[12px] text-white/45", children: domainClean }) : /* @__PURE__ */ jsx("p", { className: "mt-0.5 text-[12px] text-white/40", children: isRu ? "В разработке" : "In progress" })
       ] }),
-      wip ? /* @__PURE__ */ jsx("span", { className: "shrink-0 rounded-md border border-white/[0.08] bg-white/[0.05] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-white/45", children: "WIP" }) : p.domain ? /* @__PURE__ */ jsx(
+      wip ? /* @__PURE__ */ jsx("span", { className: "shrink-0 rounded-full bg-[#1c1c1f] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-white/48", children: "WIP" }) : p.domain ? /* @__PURE__ */ jsx(
         "a",
         {
           href: p.domain,
           target: "_blank",
           rel: "noopener noreferrer",
-          className: cx$1(
-            "shrink-0 inline-flex items-center gap-1 rounded-md border border-white/[0.08]",
-            "bg-white/[0.04] px-2 py-1 text-[11px] font-[600] text-white/55",
-            "transition hover:border-white/[0.14] hover:text-white/80"
+          className: cx$4(
+            "shrink-0 inline-flex items-center gap-1 rounded-full",
+            "bg-[#1c1c1f] px-2.5 py-1 text-[11px] font-[600] text-white/58",
+            "transition hover:bg-[#262626] hover:text-white/85"
           ),
           "aria-label": isRu ? `Открыть ${p.title}` : `Open ${p.title}`,
           children: /* @__PURE__ */ jsx(ExternalIcon$1, { className: "opacity-70" })
@@ -5231,11 +7779,7 @@ function ProjectGridCard({ p, isRu }) {
 function ProjectsPage() {
   const { lang } = useLang();
   const isRu = lang === "ru";
-  const [mounted, setMounted] = useState(false);
   const [activeFilter, setActiveFilter] = useState(ALL_FILTER);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
   const projects = useMemo(() => buildProjects(isRu), [isRu]);
   const tags = useMemo(() => collectTags(projects), [projects]);
   const filtered = useMemo(() => {
@@ -5245,11 +7789,10 @@ function ProjectsPage() {
   const seoTitle = isRu ? "Проекты и кейсы TIVONIX — сайты, веб-сервисы и MVP" : "TIVONIX projects and case studies — websites, web services and MVP";
   const seoDescription = isRu ? "Посмотрите проекты TIVONIX: лендинги, веб-сервисы, личные кабинеты, админки, MVP и Telegram-интеграции для бизнеса." : "Explore TIVONIX projects: landings, web services, client areas, admin panels, MVPs and Telegram integrations for business.";
   const heroTitle = isRu ? "Проекты и кейсы" : "Projects and case studies";
-  const heroSubtitle = isRu ? `Подборка из ${projects.length} продуктов TIVONIX: живые домены, MVP, веб-сервисы и Telegram-боты — с разбором задач, стека и результата.` : `A curated set of ${projects.length} TIVONIX products: live domains, MVPs, web services and Telegram bots — with tasks, stack and outcomes.`;
   const allLabel = isRu ? "Все" : "All";
   const ctaLabel = isRu ? "Обсудить проект" : "Discuss a project";
   const emptyLabel = isRu ? "Пока нет проектов в этой категории." : "No projects in this category yet.";
-  return /* @__PURE__ */ jsxs("div", { className: "relative min-h-screen", style: s$1({ "--headerH": `${HEADER_H$1}px` }), children: [
+  return /* @__PURE__ */ jsxs("div", { className: "min-h-screen overflow-x-clip bg-black", children: [
     /* @__PURE__ */ jsx(
       SEO,
       {
@@ -5260,34 +7803,24 @@ function ProjectsPage() {
       }
     ),
     /* @__PURE__ */ jsx(Header, {}),
-    /* @__PURE__ */ jsxs("div", { className: "pointer-events-none fixed inset-0 -z-10", "aria-hidden": true, children: [
-      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 overflow-hidden bg-black", children: /* @__PURE__ */ jsx("div", { className: "absolute inset-0 h-full w-full scale-[1.03] will-change-transform", children: mounted ? /* @__PURE__ */ jsx(Suspense, { fallback: null, children: /* @__PURE__ */ jsx(HeroWebGLBg$2, {}) }) : null }) }),
-      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.62),rgba(0,0,0,0.94))]" })
-    ] }),
-    /* @__PURE__ */ jsx(Section, { className: "pt-[calc(var(--headerH)+28px)] sm:pt-[calc(var(--headerH)+36px)] pb-20", children: /* @__PURE__ */ jsxs(Container, { className: "max-w-[1180px]", children: [
+    /* @__PURE__ */ jsx("main", { children: /* @__PURE__ */ jsx(Section, { className: "projects-page scroll-mt-[var(--tivonix-header-spacer)] !pb-20 !pt-[calc(var(--tivonix-header-spacer)+1.75rem)] sm:!pt-[calc(var(--tivonix-header-spacer)+2.25rem)]", children: /* @__PURE__ */ jsxs(Container, { className: "max-w-[1180px]", children: [
       /* @__PURE__ */ jsxs("header", { className: "mx-auto max-w-[720px] text-center", children: [
-        /* @__PURE__ */ jsx("h1", { className: "text-[clamp(2rem,5vw,3.25rem)] font-[800] tracking-[-0.04em] text-white leading-[1.05]", children: heroTitle }),
-        /* @__PURE__ */ jsx("p", { className: "mx-auto mt-4 max-w-[58ch] text-[15px] sm:text-[16px] leading-[1.65] text-white/52", children: heroSubtitle }),
-        /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx("h1", { className: "font-display text-[clamp(2rem,5vw,3.25rem)] font-extrabold leading-[1.05] tracking-[-0.04em] text-white", children: heroTitle }),
+        /* @__PURE__ */ jsx("div", { className: "projects-cta-glow mt-6 sm:mt-7", children: /* @__PURE__ */ jsx(
           "a",
           {
             href: "https://t.me/TIVONIX",
             target: "_blank",
             rel: "noopener noreferrer",
-            className: cx$1(
-              "mt-7 inline-flex h-11 items-center justify-center rounded-full px-6",
-              "text-[14px] font-[750] text-black",
-              "bg-[linear-gradient(180deg,#FFD7B0_0%,#FF9A3D_52%,#FF6A1A_100%)]",
-              "hover:brightness-105 transition"
-            ),
+            className: "projects-cta-glow__btn",
             children: ctaLabel
           }
-        )
+        ) })
       ] }),
       /* @__PURE__ */ jsx("div", { className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs(
         "div",
         {
-          className: cx$1(
+          className: cx$4(
             "flex gap-2 overflow-x-auto pb-1 no-scrollbar",
             "justify-start sm:flex-wrap sm:justify-center"
           ),
@@ -5301,10 +7834,7 @@ function ProjectsPage() {
                 role: "tab",
                 "aria-selected": activeFilter === ALL_FILTER,
                 onClick: () => setActiveFilter(ALL_FILTER),
-                className: cx$1(
-                  "shrink-0 rounded-full border px-4 py-2 text-[13px] font-[600] transition",
-                  activeFilter === ALL_FILTER ? "border-white/[0.22] bg-white/[0.1] text-white" : "border-white/[0.1] bg-transparent text-white/55 hover:border-white/[0.16] hover:text-white/78"
-                ),
+                className: filterPillClass(activeFilter === ALL_FILTER),
                 children: allLabel
               }
             ),
@@ -5315,10 +7845,7 @@ function ProjectsPage() {
                 role: "tab",
                 "aria-selected": activeFilter === tag,
                 onClick: () => setActiveFilter(tag),
-                className: cx$1(
-                  "shrink-0 rounded-full border px-4 py-2 text-[13px] font-[600] transition",
-                  activeFilter === tag ? "border-white/[0.22] bg-white/[0.1] text-white" : "border-white/[0.1] bg-transparent text-white/55 hover:border-white/[0.16] hover:text-white/78"
-                ),
+                className: filterPillClass(activeFilter === tag),
                 children: tag
               },
               tag
@@ -5328,7 +7855,8 @@ function ProjectsPage() {
       ) }),
       filtered.length ? /* @__PURE__ */ jsx("div", { className: "mt-10 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3", children: filtered.map((p) => /* @__PURE__ */ jsx(ProjectGridCard, { p, isRu }, p.id)) }) : /* @__PURE__ */ jsx("p", { className: "mt-12 text-center text-[15px] text-white/45", children: emptyLabel }),
       /* @__PURE__ */ jsx("p", { className: "mt-14 text-center text-[13px] text-white/35", children: isRu ? "Новые кейсы добавляем по мере запуска продуктов." : "We add new case studies as products go live." })
-    ] }) })
+    ] }) }) }),
+    /* @__PURE__ */ jsx(Footer, {})
   ] });
 }
 const HEADER_H = 72;
@@ -5411,7 +7939,7 @@ function ProjectDetailBody({ text }) {
         /* @__PURE__ */ jsx(
           "h3",
           {
-            className: cx$1(
+            className: cx$4(
               "mb-3 text-[12px] font-semibold uppercase tracking-[0.2em] text-white/40",
               firstHeading ? "mt-0" : "mt-10"
             ),
@@ -5552,7 +8080,7 @@ function ProjectDetailPage() {
                 /* @__PURE__ */ jsx(
                   "span",
                   {
-                    className: cx$1(
+                    className: cx$4(
                       "h-2 w-2 shrink-0 rounded-full",
                       wip ? "bg-amber-400/90" : "bg-emerald-400/90"
                     )
@@ -5577,7 +8105,7 @@ function ProjectDetailPage() {
                   href: project.domain,
                   target: "_blank",
                   rel: "noopener noreferrer",
-                  className: cx$1(
+                  className: cx$4(
                     "inline-flex h-11 w-full items-center justify-center rounded-lg px-5",
                     "bg-white text-[14px] font-[700] text-neutral-900 hover:bg-white/90 transition"
                   ),
@@ -5586,7 +8114,7 @@ function ProjectDetailPage() {
               ) : /* @__PURE__ */ jsx(
                 "div",
                 {
-                  className: cx$1(
+                  className: cx$4(
                     "inline-flex h-11 w-full items-center justify-center rounded-lg px-5",
                     "border border-white/[0.1] bg-white/[0.05] text-[14px] font-[700] text-white/45"
                   ),
@@ -5599,7 +8127,7 @@ function ProjectDetailPage() {
                   href: "https://t.me/TIVONIX",
                   target: "_blank",
                   rel: "noopener noreferrer",
-                  className: cx$1(
+                  className: cx$4(
                     "inline-flex h-11 w-full items-center justify-center rounded-lg px-5",
                     "text-[14px] font-[800] text-black",
                     "bg-[linear-gradient(180deg,#FFD7B0_0%,#FF9A3D_52%,#FF6A1A_100%)]",
@@ -5658,7 +8186,7 @@ function ProjectDetailPage() {
 }
 const ORANGE = "#FF9A3D";
 const ORANGE2 = "#FF6A1A";
-function cx(...a) {
+function cx$3(...a) {
   return a.filter(Boolean).join(" ");
 }
 function clamp(n, a, b) {
@@ -5740,7 +8268,7 @@ function LangChip({ item }) {
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx(
+      className: cx$3(
         "select-none",
         "inline-flex max-w-[11rem] items-center gap-2 sm:gap-2.5",
         "rounded-full px-3 py-1.5 sm:px-3.5 sm:py-2",
@@ -5768,7 +8296,7 @@ function OrbitRing(props) {
     marginLeft: -radius,
     marginTop: -radius
   });
-  const animStyle = s({ animationDuration: `${duration}s` });
+  const animStyle2 = s({ animationDuration: `${duration}s` });
   return /* @__PURE__ */ jsxs(
     "div",
     {
@@ -5778,12 +8306,12 @@ function OrbitRing(props) {
       children: [
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-full border border-white/8 opacity-60" }),
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-full border border-[#FF9A3D]/10 opacity-80 [mask-image:radial-gradient(transparent_52%,black_64%)] [-webkit-mask-image:radial-gradient(transparent_52%,black_64%)]" }),
-        /* @__PURE__ */ jsx("div", { className: cx("absolute inset-0 will-change-transform", reverse ? "orbit-rev" : "orbit"), style: animStyle, children: items.map((it, i) => {
+        /* @__PURE__ */ jsx("div", { className: cx$3("absolute inset-0 will-change-transform", reverse ? "orbit-rev" : "orbit"), style: animStyle2, children: items.map((it, i) => {
           const ang = offsetDeg + i * step + (i % 2 ? 8 : -5);
           const posStyle = s({
             transform: `translate(-50%,-50%) rotate(${ang}deg) translateX(${radius}px) rotate(${-ang}deg)`
           });
-          return /* @__PURE__ */ jsx("div", { className: "absolute left-1/2 top-1/2", style: posStyle, children: /* @__PURE__ */ jsx("div", { className: cx(reverse ? "counter-rev" : "counter"), style: animStyle, children: /* @__PURE__ */ jsx(LangChip, { item: it }) }) }, `${it.label}-${i}`);
+          return /* @__PURE__ */ jsx("div", { className: "absolute left-1/2 top-1/2", style: posStyle, children: /* @__PURE__ */ jsx("div", { className: cx$3(reverse ? "counter-rev" : "counter"), style: animStyle2, children: /* @__PURE__ */ jsx(LangChip, { item: it }) }) }, `${it.label}-${i}`);
         }) })
       ]
     }
@@ -5829,7 +8357,7 @@ function SunContacts({ size }) {
   });
   const title = isRu ? "Контакты" : "Contacts";
   const botCta = isRu ? "Написать в ТГ-бота" : "Message the Telegram bot";
-  const contactRowClass = cx(
+  const contactRowClass = cx$3(
     "group inline-flex w-full items-center gap-3.5 rounded-xl px-4 py-2.5",
     "bg-white/[0.055] hover:bg-white/[0.085] transition duration-200",
     "shadow-[0_10px_40px_rgba(0,0,0,0.28)]",
@@ -5853,7 +8381,7 @@ function SunContacts({ size }) {
               rel: "noopener noreferrer",
               className: contactRowClass,
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconTG, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$3(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconTG, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Telegram" })
               ]
             }
@@ -5864,9 +8392,9 @@ function SunContacts({ size }) {
               href: "https://mail.google.com/mail/?view=cm&fs=1&to=tivoonix@gmail.com&su=%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82%20(SaaS%2FMVP)",
               target: "_blank",
               rel: "noopener noreferrer",
-              className: cx(contactRowClass, "hidden sm:inline-flex"),
+              className: cx$3(contactRowClass, "hidden sm:inline-flex"),
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconMail, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$3(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconMail, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Email" })
               ]
             }
@@ -5879,7 +8407,7 @@ function SunContacts({ size }) {
               rel: "noopener noreferrer",
               className: contactRowClass,
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconInstagram, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$3(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconInstagram, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Instagram" })
               ]
             }
@@ -5891,7 +8419,7 @@ function SunContacts({ size }) {
             href: TG_BOT_URL,
             target: "_blank",
             rel: "noopener noreferrer",
-            className: cx(
+            className: cx$3(
               "inline-flex h-10 w-full items-center justify-center rounded-xl px-5",
               "text-[13.5px] font-[800] text-black whitespace-nowrap",
               "bg-[linear-gradient(180deg,#FFD7B0_0%,#FF9A3D_52%,#FF6A1A_100%)]",
@@ -7972,6 +10500,673 @@ function AutomationBusinessPage() {
     /* @__PURE__ */ jsx(Footer, {})
   ] }) });
 }
+function cx$2(...parts) {
+  return parts.filter(Boolean).join(" ");
+}
+function PricingFAQSection() {
+  const { lang } = useLang();
+  const copy = pricingCopy(lang);
+  const [openId, setOpenId] = useState(copy.faq.items[0]?.id ?? null);
+  return /* @__PURE__ */ jsx(Reveal, { delay: 160, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs("div", { className: "pricing-faq border border-white/[0.1] bg-black", children: [
+    /* @__PURE__ */ jsx("div", { className: "border-b border-white/[0.08] px-4 py-4 sm:px-5", children: /* @__PURE__ */ jsx("h3", { className: "font-hero text-[1.15rem] font-semibold tracking-[-0.02em] text-white sm:text-[1.25rem]", children: copy.faq.title }) }),
+    /* @__PURE__ */ jsx("div", { children: copy.faq.items.map((item) => {
+      const open = openId === item.id;
+      return /* @__PURE__ */ jsxs(
+        "div",
+        {
+          className: cx$2(
+            "border-b border-white/[0.08] last:border-b-0",
+            open && "bg-white/[0.035]"
+          ),
+          children: [
+            /* @__PURE__ */ jsxs(
+              "button",
+              {
+                type: "button",
+                onClick: () => setOpenId((prev) => prev === item.id ? null : item.id),
+                className: cx$2(
+                  "flex w-full items-center justify-between gap-4 px-4 text-left sm:px-5",
+                  open ? "pb-3 pt-4" : "py-4"
+                ),
+                "aria-expanded": open,
+                children: [
+                  /* @__PURE__ */ jsx(
+                    "span",
+                    {
+                      className: cx$2(
+                        "text-[14px] font-semibold",
+                        open ? "text-white" : "text-white/92"
+                      ),
+                      children: item.q
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    ChevronDown,
+                    {
+                      size: 16,
+                      className: cx$2(
+                        "shrink-0 transition",
+                        open ? "rotate-180 text-[#FF9A3D]" : "text-white/45"
+                      ),
+                      "aria-hidden": true
+                    }
+                  )
+                ]
+              }
+            ),
+            open ? /* @__PURE__ */ jsx("div", { className: "px-4 pb-5 sm:px-5", children: /* @__PURE__ */ jsx("p", { className: "max-w-[62ch] border-l-2 border-[#FF9A3D]/55 pl-3.5 text-[14px] leading-[1.7] text-white/82", children: item.a }) }) : null
+          ]
+        },
+        item.id
+      );
+    }) })
+  ] }) });
+}
+const SCOPE_LEVEL = {
+  start: 2,
+  growth: 4,
+  product: 6,
+  custom: 8
+};
+const SEGMENTS = 8;
+function cx$1(...parts) {
+  return parts.filter(Boolean).join(" ");
+}
+function PricingPlanScopeGrid({ onPlanAction }) {
+  const { lang } = useLang();
+  const copy = pricingCopy(lang);
+  return /* @__PURE__ */ jsxs("div", { className: "pricing-plan-scope", children: [
+    /* @__PURE__ */ jsx("p", { className: "pricing-plan-scope__caption", children: copy.footer.planScopeCaption }),
+    /* @__PURE__ */ jsx("div", { className: "pricing-plan-scope__grid", children: PLAN_IDS.map((planId) => {
+      const plan = PLANS.find((p) => p.id === planId);
+      const planCopy = copy.plans[planId];
+      const filled = SCOPE_LEVEL[planId];
+      const isGrowth = plan.highlight;
+      return /* @__PURE__ */ jsxs(
+        "button",
+        {
+          type: "button",
+          onClick: () => onPlanAction(planId),
+          className: cx$1(
+            "pricing-plan-scope__col",
+            isGrowth && "pricing-plan-scope__col--growth"
+          ),
+          children: [
+            /* @__PURE__ */ jsxs("div", { className: "pricing-plan-scope__head", children: [
+              /* @__PURE__ */ jsx(
+                "span",
+                {
+                  className: cx$1(
+                    "pricing-plan-scope__name font-hero font-semibold tracking-[-0.02em]",
+                    isGrowth ? "text-[#FF9A3D]" : "text-white"
+                  ),
+                  children: planCopy.name
+                }
+              ),
+              /* @__PURE__ */ jsx(
+                "span",
+                {
+                  className: cx$1(
+                    "pricing-plan-scope__price-old text-[10px] font-medium line-through",
+                    planCopy.priceOriginal ? "text-white/35" : "text-transparent"
+                  ),
+                  "aria-hidden": !planCopy.priceOriginal,
+                  children: planCopy.priceOriginal ?? " "
+                }
+              ),
+              /* @__PURE__ */ jsx(
+                "span",
+                {
+                  className: cx$1(
+                    "pricing-plan-scope__price font-hero text-[13px] font-semibold text-[#FF9A3D]"
+                  ),
+                  children: planCopy.price
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsx("div", { className: "pricing-plan-scope__bars", "aria-hidden": true, children: Array.from({ length: SEGMENTS }).map((_, index) => {
+              const on = index < filled;
+              return /* @__PURE__ */ jsx(
+                "span",
+                {
+                  className: cx$1("pricing-plan-scope__bar", on && "pricing-plan-scope__bar--on")
+                },
+                index
+              );
+            }) })
+          ]
+        },
+        planId
+      );
+    }) })
+  ] });
+}
+const COMPARE_LOGO = "/images/tivonix-logo-white.png";
+function cx(...parts) {
+  return parts.filter(Boolean).join(" ");
+}
+function PlanCtaButton({
+  featured,
+  compact,
+  onClick,
+  children,
+  className
+}) {
+  return /* @__PURE__ */ jsx(
+    "button",
+    {
+      type: "button",
+      onClick,
+      className: cx(
+        "inline-flex w-full items-center justify-center rounded-full border-0 font-bold tracking-[-0.015em] transition duration-200",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+        "active:scale-[0.98]",
+        compact ? "h-9 text-[12px] sm:h-10 sm:text-[13px]" : "h-11 px-7 text-[14px]",
+        featured ? "bg-[#FF9A3D] text-black hover:bg-[#FFB05C]" : "bg-white text-black hover:bg-white/92",
+        className
+      ),
+      children
+    }
+  );
+}
+function openPlanTelegram(planId) {
+  const payload = PLAN_TELEGRAM_START[planId] ?? "calc";
+  window.open(buildTelegramBotUrl(payload), "_blank", "noopener,noreferrer");
+}
+function ComparisonValue({
+  cell,
+  labels,
+  textLabels
+}) {
+  if (cell.kind === "yes") {
+    return /* @__PURE__ */ jsx("span", { className: "inline-flex items-center justify-center text-[#FF9A3D]", "aria-label": labels.yes, children: /* @__PURE__ */ jsx(Check, { size: 15, strokeWidth: 2.25, "aria-hidden": true }) });
+  }
+  if (cell.kind === "no") {
+    return /* @__PURE__ */ jsx("span", { className: "text-white/28", "aria-label": labels.no, children: /* @__PURE__ */ jsx(Minus, { size: 15, strokeWidth: 1.75, "aria-hidden": true }) });
+  }
+  const label = cell.kind === "text" && cell.textKey ? textLabels[cell.textKey] : labels[cell.kind];
+  return /* @__PURE__ */ jsx("span", { className: "text-[11px] font-medium text-white/50 sm:text-[12px]", children: label });
+}
+function ComparePlanHead({
+  planId,
+  name,
+  price,
+  priceOriginal,
+  cta,
+  featured,
+  onAction,
+  layout
+}) {
+  const isCustom = planId === "custom";
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: cx(
+        layout === "column" ? "pricing-compare__plan-head" : "pricing-compare__mobile-plan",
+        featured && "pricing-compare__plan-head--featured"
+      ),
+      children: [
+        /* @__PURE__ */ jsx(
+          "span",
+          {
+            className: cx(
+              "pricing-compare__plan-name font-hero font-semibold tracking-[-0.02em]",
+              layout === "column" ? "text-[15px] sm:text-[16px]" : "text-[14px]",
+              featured ? "text-[#FF9A3D]" : "text-white"
+            ),
+            children: name
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "span",
+          {
+            className: cx(
+              "pricing-compare__plan-original text-[11px] font-medium",
+              priceOriginal ? "text-white/35 line-through" : "text-transparent"
+            ),
+            "aria-hidden": !priceOriginal,
+            children: priceOriginal ?? " "
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "span",
+          {
+            className: cx(
+              "pricing-compare__plan-price font-hero font-semibold leading-none tracking-[-0.02em]",
+              layout === "column" ? "text-[14px] sm:text-[15px]" : "text-[13px]",
+              isCustom ? "text-white" : "text-[#FF9A3D]"
+            ),
+            children: price
+          }
+        ),
+        /* @__PURE__ */ jsx("div", { className: "pricing-compare__plan-cta", children: /* @__PURE__ */ jsx(PlanCtaButton, { compact: true, featured, onClick: onAction, className: "max-w-[148px]", children: cta }) })
+      ]
+    }
+  );
+}
+function PlanPrice({ price, priceOriginal }) {
+  const hasOriginal = Boolean(priceOriginal);
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(
+      "p",
+      {
+        className: cx(
+          "pricing-plan-card__price-original text-[13px] font-medium leading-[1.125]",
+          hasOriginal ? "text-white/38 line-through" : "text-transparent"
+        ),
+        "aria-hidden": !hasOriginal,
+        children: priceOriginal ?? " "
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      "p",
+      {
+        className: cx(
+          "pricing-plan-card__price-value mt-1 font-hero text-[clamp(1.65rem,2.2vw,2rem)] font-semibold leading-[1.05] tracking-[-0.03em]",
+          hasOriginal ? "text-[#FF9A3D]" : "text-white"
+        ),
+        children: price
+      }
+    )
+  ] });
+}
+function CompactPlanPrice({ price, priceOriginal }) {
+  if (!priceOriginal) {
+    return /* @__PURE__ */ jsx("p", { className: "mt-4 font-hero text-[1.45rem] font-semibold tracking-[-0.03em] text-white", children: price });
+  }
+  return /* @__PURE__ */ jsxs("div", { className: "mt-4", children: [
+    /* @__PURE__ */ jsx("p", { className: "text-[12px] font-medium text-white/38 line-through", children: priceOriginal }),
+    /* @__PURE__ */ jsx("p", { className: "mt-0.5 font-hero text-[1.45rem] font-semibold tracking-[-0.03em] text-[#FF9A3D]", children: price })
+  ] });
+}
+function PlanCard({
+  planId,
+  highlight,
+  badge,
+  name,
+  tagline,
+  price,
+  priceOriginal,
+  desc,
+  includes,
+  cta,
+  ctaAction,
+  onModal
+}) {
+  return /* @__PURE__ */ jsxs(
+    "article",
+    {
+      className: cx(
+        "pricing-plan-card flex h-full flex-col",
+        highlight && "pricing-plan-card--highlight",
+        planId === "growth" && "pricing-plan-card--growth",
+        planId === "product" && "pricing-plan-card--product"
+      ),
+      children: [
+        /* @__PURE__ */ jsxs("div", { className: "pricing-plan-card__body flex flex-col p-5 sm:p-6", children: [
+          /* @__PURE__ */ jsxs("div", { className: "pricing-plan-card__head", children: [
+            /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__badge-slot", children: badge ? /* @__PURE__ */ jsx("span", { className: "inline-flex w-fit whitespace-nowrap rounded-full bg-[#FF9A3D]/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#FF9A3D]", children: badge }) : null }),
+            /* @__PURE__ */ jsx(
+              "h3",
+              {
+                className: cx(
+                  "pricing-plan-card__name font-hero text-[1.35rem] font-semibold leading-[1.15] tracking-[-0.03em]",
+                  planId === "growth" ? "text-[#FF9A3D]" : "text-white"
+                ),
+                children: name
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "p",
+              {
+                className: cx(
+                  "pricing-plan-card__tagline mt-1 text-[13px] leading-[1.35]",
+                  planId === "growth" ? "text-[#FF9A3D]/80" : "text-white/48"
+                ),
+                children: tagline
+              }
+            ),
+            /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__price-slot", children: /* @__PURE__ */ jsx(PlanPrice, { price, priceOriginal }) }),
+            /* @__PURE__ */ jsx("p", { className: "pricing-plan-card__desc mt-4 text-[13px] leading-[1.6] text-white/52", children: desc })
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__includes", children: /* @__PURE__ */ jsx("ul", { className: "pricing-plan-card__includes-list space-y-2", children: includes.map((item) => /* @__PURE__ */ jsxs("li", { className: "pricing-plan-card__includes-item flex items-start gap-2.5 text-[12.5px] leading-[1.5] text-white/68", children: [
+            /* @__PURE__ */ jsx(Check, { size: 13, className: "mt-0.5 shrink-0 text-[#FF9A3D]", strokeWidth: 2.25, "aria-hidden": true }),
+            /* @__PURE__ */ jsx("span", { children: item })
+          ] }, item)) }) }),
+          /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__spacer flex-1", "aria-hidden": true })
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__footer border-t border-white/[0.08] p-5 sm:p-6", children: /* @__PURE__ */ jsx(
+          PlanCtaButton,
+          {
+            featured: planId === "growth",
+            onClick: ctaAction === "modal" ? onModal : () => openPlanTelegram(planId),
+            children: cta
+          }
+        ) })
+      ]
+    }
+  );
+}
+function CompactPlanCard({
+  planId,
+  name,
+  shortDesc,
+  price,
+  priceOriginal,
+  chips,
+  ctaAction,
+  compactCta,
+  highlight,
+  onModal
+}) {
+  const onCta = () => {
+    if (ctaAction === "modal") onModal();
+    else openPlanTelegram(planId);
+  };
+  return /* @__PURE__ */ jsxs(
+    "article",
+    {
+      className: cx(
+        "pricing-footer-card flex h-full flex-col",
+        highlight && "pricing-footer-card--highlight",
+        planId === "growth" && "pricing-footer-card--growth"
+      ),
+      children: [
+        /* @__PURE__ */ jsxs("div", { className: "pricing-footer-card__body flex flex-col p-5 sm:p-6", children: [
+          /* @__PURE__ */ jsxs("div", { className: "pricing-footer-card__head", children: [
+            /* @__PURE__ */ jsx("h4", { className: "font-hero text-[1.1rem] font-semibold tracking-[-0.02em] text-white", children: name }),
+            /* @__PURE__ */ jsx("p", { className: "mt-1.5 text-[12.5px] leading-relaxed text-white/48", children: shortDesc }),
+            /* @__PURE__ */ jsx("div", { className: "pricing-footer-card__price-slot", children: /* @__PURE__ */ jsx(CompactPlanPrice, { price, priceOriginal }) })
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "pricing-footer-card__chips mt-auto pt-4", children: /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-2", children: chips.map((chip) => /* @__PURE__ */ jsx(
+            "span",
+            {
+              className: "rounded-full border border-white/[0.12] bg-white/[0.03] px-2.5 py-1 text-[10px] font-medium text-white/58",
+              children: chip
+            },
+            chip
+          )) }) })
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "pricing-footer-card__footer border-t border-white/[0.08] p-5 sm:p-6", children: /* @__PURE__ */ jsx(PlanCtaButton, { featured: planId === "growth", compact: true, onClick: onCta, children: compactCta }) })
+      ]
+    }
+  );
+}
+function PricingPlansSection({ className }) {
+  const { lang } = useLang();
+  const copy = pricingCopy(lang);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedPlanId, setSelectedPlanId] = useState(null);
+  const [openGroups, setOpenGroups] = useState(
+    () => Object.fromEntries(COMPARISON_GROUPS.map((g) => [g.id, true]))
+  );
+  const openPlanModal = (planId) => {
+    setSelectedPlanId(planId);
+    setModalOpen(true);
+  };
+  const closePlanModal = () => {
+    setModalOpen(false);
+    setSelectedPlanId(null);
+  };
+  const allExpanded = useMemo(
+    () => COMPARISON_GROUPS.every((g) => openGroups[g.id]),
+    [openGroups]
+  );
+  const toggleAll = () => {
+    const next = !allExpanded;
+    setOpenGroups(Object.fromEntries(COMPARISON_GROUPS.map((g) => [g.id, next])));
+  };
+  const toggleGroup = (id) => {
+    setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+  const handlePlanCta = (planId) => {
+    const plan = PLANS.find((p) => p.id === planId);
+    if (plan?.ctaAction === "modal") openPlanModal(planId);
+    else openPlanTelegram(planId);
+  };
+  return /* @__PURE__ */ jsxs(
+    Section,
+    {
+      id: "pricing",
+      className: cx(
+        "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-10 sm:py-20 lg:py-24",
+        className
+      ),
+      children: [
+        /* @__PURE__ */ jsxs(Container, { children: [
+          /* @__PURE__ */ jsxs(Reveal, { className: "mx-auto max-w-[48rem] text-center", children: [
+            /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.85rem,4.2vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white", children: copy.title }),
+            /* @__PURE__ */ jsxs("div", { className: "mx-auto mt-3 flex flex-wrap items-baseline justify-center gap-x-2.5 gap-y-1 sm:mt-4", children: [
+              /* @__PURE__ */ jsx("span", { className: "font-hero shrink-0 text-[clamp(1.85rem,3.8vw,2.5rem)] font-bold leading-none tracking-[-0.03em] text-[#FF9A3D]", children: copy.launchDiscount.percent }),
+              /* @__PURE__ */ jsx("span", { className: "max-w-[42ch] text-center text-[11px] leading-snug text-[#FF9A3D]/72 sm:text-left sm:text-[12px]", children: copy.launchDiscount.note })
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx(Reveal, { delay: 80, className: "pricing-plans-grid mt-10 sm:mt-12", children: PLANS.map((plan) => {
+            const planCopy = copy.plans[plan.id];
+            return /* @__PURE__ */ jsx(
+              PlanCard,
+              {
+                planId: plan.id,
+                highlight: plan.highlight,
+                badge: plan.badgeKey ? copy.badges[plan.badgeKey] : void 0,
+                name: planCopy.name,
+                tagline: planCopy.tagline,
+                price: planCopy.price,
+                priceOriginal: planCopy.priceOriginal,
+                desc: planCopy.desc,
+                includes: planCopy.includes,
+                cta: planCopy.cta,
+                ctaAction: plan.ctaAction,
+                onModal: () => openPlanModal(plan.id)
+              },
+              plan.id
+            );
+          }) }),
+          /* @__PURE__ */ jsx(Reveal, { delay: 120, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs("div", { className: "pricing-compare", children: [
+            /* @__PURE__ */ jsxs("div", { className: "pricing-compare__intro", children: [
+              /* @__PURE__ */ jsx("h3", { className: "font-hero text-[clamp(1.35rem,2.8vw,1.85rem)] font-semibold tracking-[-0.03em] text-white", children: copy.compareTitle }),
+              /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: toggleAll,
+                  className: "pricing-compare__toggle lg:hidden",
+                  children: allExpanded ? copy.collapseAll : copy.expandAll
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile-plans lg:hidden", children: /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile-plans-scroll", children: PLAN_IDS.map((id) => {
+              const planCopy = copy.plans[id];
+              const plan = PLANS.find((p) => p.id === id);
+              return /* @__PURE__ */ jsx(
+                ComparePlanHead,
+                {
+                  planId: id,
+                  name: planCopy.name,
+                  price: planCopy.price,
+                  priceOriginal: planCopy.priceOriginal,
+                  cta: planCopy.compactCta,
+                  featured: plan.highlight,
+                  onAction: () => handlePlanCta(id),
+                  layout: "card"
+                },
+                `mobile-head-${id}`
+              );
+            }) }) }),
+            /* @__PURE__ */ jsxs("div", { className: "pricing-compare__desktop hidden lg:block", children: [
+              /* @__PURE__ */ jsxs("div", { className: "pricing-compare__head", children: [
+                /* @__PURE__ */ jsx("div", { className: "pricing-compare__feature-col pricing-compare__feature-col--head", children: /* @__PURE__ */ jsx(
+                  "img",
+                  {
+                    src: COMPARE_LOGO,
+                    alt: "TIVONIX",
+                    className: "pricing-compare__logo",
+                    width: 176,
+                    height: 40,
+                    loading: "lazy",
+                    decoding: "async"
+                  }
+                ) }),
+                PLAN_IDS.map((id) => {
+                  const planCopy = copy.plans[id];
+                  const plan = PLANS.find((p) => p.id === id);
+                  return /* @__PURE__ */ jsx(
+                    ComparePlanHead,
+                    {
+                      planId: id,
+                      name: planCopy.name,
+                      price: planCopy.price,
+                      priceOriginal: planCopy.priceOriginal,
+                      cta: planCopy.compactCta,
+                      featured: plan.highlight,
+                      onAction: () => handlePlanCta(id),
+                      layout: "column"
+                    },
+                    `head-${id}`
+                  );
+                })
+              ] }),
+              COMPARISON_GROUPS.map((group) => /* @__PURE__ */ jsxs("div", { className: "pricing-compare__group", children: [
+                /* @__PURE__ */ jsx("div", { className: "pricing-compare__group-title", children: copy.groups[group.id] }),
+                group.rows.map((row) => /* @__PURE__ */ jsxs("div", { className: "pricing-compare__row", children: [
+                  /* @__PURE__ */ jsx("div", { className: "pricing-compare__feature-col", children: copy.features[row.id] }),
+                  PLAN_IDS.map((planId) => /* @__PURE__ */ jsx(
+                    "div",
+                    {
+                      className: cx(
+                        "pricing-compare__plan-col",
+                        planId === "growth" && "pricing-compare__plan-col--growth"
+                      ),
+                      children: /* @__PURE__ */ jsx(
+                        ComparisonValue,
+                        {
+                          cell: row.values[planId],
+                          labels: copy.cell,
+                          textLabels: copy.cellText
+                        }
+                      )
+                    },
+                    planId
+                  ))
+                ] }, row.id))
+              ] }, group.id))
+            ] }),
+            /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile lg:hidden", children: COMPARISON_GROUPS.map((group) => {
+              const open = openGroups[group.id];
+              return /* @__PURE__ */ jsxs("div", { className: "pricing-compare__mobile-group", children: [
+                /* @__PURE__ */ jsxs(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: () => toggleGroup(group.id),
+                    className: "pricing-compare__mobile-group-btn",
+                    children: [
+                      /* @__PURE__ */ jsx("span", { children: copy.groups[group.id] }),
+                      /* @__PURE__ */ jsx(
+                        ChevronDown,
+                        {
+                          size: 16,
+                          className: cx("text-white/45 transition", open && "rotate-180"),
+                          "aria-hidden": true
+                        }
+                      )
+                    ]
+                  }
+                ),
+                open ? /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile-rows", children: group.rows.map((row) => /* @__PURE__ */ jsxs("div", { className: "pricing-compare__mobile-row", children: [
+                  /* @__PURE__ */ jsx("p", { className: "pricing-compare__mobile-feature", children: copy.features[row.id] }),
+                  /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile-values", children: PLAN_IDS.map((planId) => /* @__PURE__ */ jsxs("div", { className: "pricing-compare__mobile-value", children: [
+                    /* @__PURE__ */ jsx("p", { className: "pricing-compare__mobile-plan-label", children: copy.plans[planId].name }),
+                    /* @__PURE__ */ jsx(
+                      ComparisonValue,
+                      {
+                        cell: row.values[planId],
+                        labels: copy.cell,
+                        textLabels: copy.cellText
+                      }
+                    )
+                  ] }, planId)) })
+                ] }, row.id)) }) : null
+              ] }, group.id);
+            }) })
+          ] }) }),
+          /* @__PURE__ */ jsx(Reveal, { delay: 150, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs("div", { className: "pricing-value-band", children: [
+            /* @__PURE__ */ jsxs("div", { className: "pricing-value-band__copy", children: [
+              /* @__PURE__ */ jsxs("h3", { className: "font-hero text-[clamp(1.35rem,2.8vw,2rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-white", children: [
+                copy.footer.valueTitle,
+                " ",
+                /* @__PURE__ */ jsx("span", { className: "pricing-value-band__highlight", children: copy.footer.valueTitleHighlight })
+              ] }),
+              /* @__PURE__ */ jsx("p", { className: "mt-2 text-[12px] text-white/38", children: copy.footer.valueAside }),
+              /* @__PURE__ */ jsx("p", { className: "mt-5 max-w-[38ch] text-[14px] leading-[1.65] text-white/50", children: copy.footer.valueLead })
+            ] }),
+            /* @__PURE__ */ jsx(PricingPlanScopeGrid, { onPlanAction: handlePlanCta })
+          ] }) }),
+          /* @__PURE__ */ jsx(PricingFAQSection, {}),
+          /* @__PURE__ */ jsx(Reveal, { delay: 170, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsx("div", { className: "pricing-help-band", children: /* @__PURE__ */ jsx(
+            "a",
+            {
+              href: buildTelegramBotUrl("plan_help"),
+              target: "_blank",
+              rel: "noopener noreferrer",
+              className: "pricing-help-band__link",
+              children: copy.footer.helpCta
+            }
+          ) }) }),
+          /* @__PURE__ */ jsx(Reveal, { delay: 180, className: "pricing-footer-grid mt-0 hidden md:grid", children: PLANS.map((plan) => {
+            const planCopy = copy.plans[plan.id];
+            return /* @__PURE__ */ jsx(
+              CompactPlanCard,
+              {
+                planId: plan.id,
+                name: planCopy.name,
+                shortDesc: copy.footer.shortDesc[plan.id],
+                price: planCopy.price,
+                priceOriginal: planCopy.priceOriginal,
+                chips: copy.footer.chips[plan.id],
+                ctaAction: plan.ctaAction,
+                compactCta: planCopy.compactCta,
+                highlight: plan.highlight,
+                onModal: () => openPlanModal(plan.id)
+              },
+              `footer-${plan.id}`
+            );
+          }) })
+        ] }),
+        /* @__PURE__ */ jsx(
+          StartModal,
+          {
+            open: modalOpen,
+            onClose: closePlanModal,
+            selectedPlanId
+          }
+        )
+      ]
+    }
+  );
+}
+function PricingPage() {
+  const { lang } = useLang();
+  const title = lang === "ru" ? "Планы запуска — TIVONIX" : "Launch plans — TIVONIX";
+  const description = lang === "ru" ? "Тарифы TIVONIX: Start, Growth, Product и Custom — от лендинга с заявками до веб-сервиса с CRM, оплатой и автоматизацией." : "TIVONIX plans: Start, Growth, Product and Custom — from a lead page to a full web service with CRM, payments and automation.";
+  const schemaJsonLd = buildPricingPageSchema({ pageTitle: title, pageDescription: description, lang });
+  return /* @__PURE__ */ jsxs("div", { className: "min-h-screen overflow-x-clip bg-[var(--bg)]", children: [
+    /* @__PURE__ */ jsx(
+      SEO,
+      {
+        title,
+        description,
+        canonicalPath: "/plans",
+        ogLocalePrimary: lang === "en" ? "en_US" : "ru_RU",
+        schemaJsonLd
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { id: "top" }),
+    /* @__PURE__ */ jsx(Header, {}),
+    /* @__PURE__ */ jsx("main", { children: /* @__PURE__ */ jsx(PricingPlansSection, { className: "!pt-[calc(var(--tivonix-header-spacer)+1rem)] sm:!pt-[calc(var(--tivonix-header-spacer)+1.5rem)]" }) }),
+    /* @__PURE__ */ jsx(Footer, {})
+  ] });
+}
 const HEADER_OFFSET = 84;
 function ScrollToHash() {
   const { pathname, hash } = useLocation();
@@ -7997,6 +11192,7 @@ function AppRoutes() {
       /* @__PURE__ */ jsx(Route, { path: "/", element: /* @__PURE__ */ jsx(LandingPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/projects", element: /* @__PURE__ */ jsx(ProjectsPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/projects/:slug", element: /* @__PURE__ */ jsx(ProjectDetailPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/plans", element: /* @__PURE__ */ jsx(PricingPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/contacts", element: /* @__PURE__ */ jsx(ContactsPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/sozdanie-sajtov", element: /* @__PURE__ */ jsx(WebsiteCreationPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/avtomatizaciya-biznesa", element: /* @__PURE__ */ jsx(AutomationBusinessPage, {}) })

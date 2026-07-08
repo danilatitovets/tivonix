@@ -2,10 +2,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Container from "../ui/Container";
-import { Button } from "../ui/Button";
-import { useLang, type Lang } from "../../i18n/LangProvider";
+import { CalcButton } from "./LandingCTA";
+import { useLang } from "../../i18n/LangProvider";
 import StartModal from "./StartModal";
-import { TG_BOT_URL } from "../../constants/links";
 
 // Десктоп-режим (бургер скрыт, показывается полоса навигации) с xl (>=1280).
 
@@ -13,24 +12,21 @@ function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
 
-type NavKey = "home" | "automation" | "contacts" | "projects";
+type NavKey = "home" | "automation" | "plans" | "projects";
 type NavItem = { to: string; key: NavKey };
 
 const NAV_MAIN: NavItem[] = [
   { to: "/", key: "home" },
   { to: "/avtomatizaciya-biznesa", key: "automation" },
-  { to: "/contacts", key: "contacts" },
+  { to: "/plans", key: "plans" },
   { to: "/projects", key: "projects" },
 ];
 
-const BRAND_CTA =
-  "linear-gradient(90deg, #FFD7B0 0%, #FF9A3D 45%, #FF6A1A 100%)";
-
-const ORANGE_LINE =
-  "linear-gradient(90deg, rgba(255,160,70,0) 0%, rgba(255,120,40,0.95) 18%, rgba(255,198,120,1) 50%, rgba(255,120,40,0.95) 82%, rgba(255,160,70,0) 100%)";
-
 // Важно: десктоп-режим теперь только с xl (>=1280).
 const DESKTOP_MIN_WIDTH = 1280;
+
+const LOGO_DEFAULT = "/images/tivonix-logo-lockup.png";
+const LOGO_WHITE = "/images/tivonix-logo-white.png";
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -49,101 +45,92 @@ function usePrefersReducedMotion() {
   return reduced;
 }
 
-function useScrolled(threshold = 22) {
-  const [scrolled, setScrolled] = useState(false);
+function useHomeHeroInView(pathname: string) {
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    if (pathname !== "/") {
+      setInView(false);
+      return;
+    }
+
+    const hero = document.getElementById("hero");
+    if (!hero) {
+      setInView(true);
+      return;
+    }
+
+    if (typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+
+    const io = new IntersectionObserver(
+      ([entry]) => setInView(!!entry?.isIntersecting),
+      { threshold: 0.06, rootMargin: "-80px 0px -30% 0px" }
+    );
+
+    io.observe(hero);
+    return () => io.disconnect();
+  }, [pathname]);
+
+  return inView;
+}
+
+function useFooterInView(pathname: string) {
+  const [inView, setInView] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    let raf = 0;
-    const on = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        setScrolled(window.scrollY > threshold);
-      });
+    let io: IntersectionObserver | null = null;
+
+    const attach = () => {
+      const footer = document.getElementById("site-footer");
+      if (!footer) {
+        setInView(false);
+        return;
+      }
+
+      io?.disconnect();
+      io = new IntersectionObserver(
+        ([entry]) => setInView(!!entry?.isIntersecting),
+        { threshold: 0, rootMargin: "-72px 0px 0px 0px" }
+      );
+      io.observe(footer);
     };
 
-    on();
-    window.addEventListener("scroll", on, { passive: true });
+    attach();
+    const t = window.setTimeout(attach, 0);
+
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", on);
+      window.clearTimeout(t);
+      io?.disconnect();
     };
-  }, [threshold]);
+  }, [pathname]);
 
-  return scrolled;
+  return inView;
 }
 
-function LangToggle({
-  compact,
-  reducedMotion,
-}: {
-  compact?: boolean;
-  reducedMotion?: boolean;
-}) {
-  const { lang, setLang } = useLang();
-
-  const label = lang === "ru" ? "Выбор языка" : "Language";
-  const h = compact ? "h-9 w-[5.25rem]" : "h-10 w-[5.75rem]";
-  const text = compact ? "text-[11px]" : "text-xs";
-
-  return (
-    <div
-      className={cx(
-        "relative shrink-0 select-none rounded-full bg-white/[0.07] p-1 backdrop-blur-xl",
-        "shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_6px_22px_rgba(0,0,0,0.22)]",
-        h
-      )}
-      role="radiogroup"
-      aria-label={label}
-      aria-orientation="horizontal"
-    >
-      <span
-        aria-hidden
-        className={cx(
-          "pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-8px)/2)] rounded-full",
-          !reducedMotion && "transition-transform duration-200 ease-[cubic-bezier(0.33,1,0.68,1)]"
-        )}
-        style={
-          {
-            background: BRAND_CTA,
-            boxShadow: "0 4px 16px rgba(255,106,26,0.38)",
-            transform: lang === "en" ? "translateX(100%)" : "translateX(0)",
-          } as React.CSSProperties
-        }
-      />
-      <div className="relative z-10 grid h-full grid-cols-2">
-        <button
-          type="button"
-          role="radio"
-          aria-checked={lang === "ru"}
-          onClick={() => setLang("ru" as Lang)}
-          className={cx(
-            "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
-            "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
-            text,
-            lang === "ru" ? "text-black" : "text-white/60 hover:text-white/88"
-          )}
-        >
-          RU
-        </button>
-        <button
-          type="button"
-          role="radio"
-          aria-checked={lang === "en"}
-          onClick={() => setLang("en" as Lang)}
-          className={cx(
-            "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
-            "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
-            text,
-            lang === "en" ? "text-black" : "text-white/60 hover:text-white/88"
-          )}
-        >
-          EN
-        </button>
-      </div>
-    </div>
+function useIsMobile(maxWidth = 899) {
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth <= maxWidth
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia(`(max-width: ${maxWidth}px)`);
+    const on = () => setIsMobile(mq.matches);
+    on();
+    if (mq.addEventListener) mq.addEventListener("change", on);
+    else mq.addListener(on);
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener("change", on);
+      else mq.removeListener(on);
+    };
+  }, [maxWidth]);
+
+  return isMobile;
 }
 
 function PillNav({
@@ -164,24 +151,14 @@ function PillNav({
   return (
     <nav
       className={cx(
-        "relative inline-flex items-center gap-1 rounded-full",
-        "border-0 bg-white/[0.07] backdrop-blur-xl p-1",
-        compact ? "shadow-[0_12px_44px_rgba(0,0,0,0.38)]" : "shadow-[0_18px_64px_rgba(0,0,0,0.42)]"
+        "relative inline-flex items-center gap-0.5 rounded-full border-0 bg-[#141414] p-1"
       )}
       aria-label="Header navigation"
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-full"
-        style={{
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.09)",
-        } as React.CSSProperties}
-      />
-
       {items.map((it) => {
         const isActive = it.key === activeKey;
-        const pad = compact ? "px-3 h-9" : "px-4 h-10";
-        const text = compact ? "text-[11px]" : "text-xs";
+        const pad = compact ? "px-3.5 h-9" : "px-5 h-10";
+        const text = compact ? "text-[10.5px]" : "text-[11px]";
 
         return (
           <Link
@@ -190,27 +167,19 @@ function PillNav({
             onClick={onItemClick(it.to)}
             aria-current={isActive ? "page" : undefined}
             className={cx(
-              "relative rounded-full font-semibold transition flex items-center gap-2 select-none uppercase tracking-wide outline-none border-0",
+              "relative flex items-center gap-2 rounded-full border-0 font-bold uppercase tracking-[0.14em] outline-none select-none transition",
               "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
               pad,
               text,
               isActive
-                ? "text-white bg-white/14 shadow-[0_10px_28px_rgba(0,0,0,0.32)]"
-                : "text-white/75 hover:text-white hover:bg-white/[0.07]"
+                ? "bg-[#2c2c2c] text-white"
+                : "bg-transparent text-white/55 hover:bg-white/[0.04] hover:text-white/85"
             )}
             style={
               reducedMotion ? undefined : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)
             }
           >
             <span className="leading-none">{it.label}</span>
-
-            {isActive && (
-              <span
-                aria-hidden
-                className="pointer-events-none absolute left-3 right-3 -bottom-[6px] h-[2px] rounded-full opacity-95"
-                style={{ background: ORANGE_LINE } as React.CSSProperties}
-              />
-            )}
           </Link>
         );
       })}
@@ -218,111 +187,105 @@ function PillNav({
   );
 }
 
+
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [startOpen, setStartOpen] = useState(false);
 
-  const reducedMotion = usePrefersReducedMotion();
-  const scrolled = useScrolled(26);
-
   const navigate = useNavigate();
   const location = useLocation();
+  const reducedMotion = usePrefersReducedMotion();
+  const isMobile = useIsMobile();
+  const heroInView = useHomeHeroInView(location.pathname);
+  const footerInView = useFooterInView(location.pathname);
+  const hideHeader = footerInView && !open;
+  const logoSrc = heroInView ? LOGO_WHITE : LOGO_DEFAULT;
+  const isHome = location.pathname === "/";
+  const needsSpacer = isMobile && !isHome;
   const { lang } = useLang();
   const isRu = lang === "ru";
 
   const burgerRef = useRef<HTMLButtonElement | null>(null);
-  const barRef = useRef<HTMLDivElement | null>(null);
-
-  // высота верхней полосы (чтобы корректно посчитать maxHeight меню)
-  const [barH, setBarH] = useState<number>(92);
-
-  const measureBar = () => {
-    const h = barRef.current?.getBoundingClientRect().height;
-    if (h && Number.isFinite(h)) setBarH(Math.round(h));
-  };
+  const scrollLockYRef = useRef(0);
 
   // Закрывать меню при уходе на xl+ (>=1280)
   useEffect(() => {
     const onResize = () => {
-      measureBar();
       if (window.innerWidth >= DESKTOP_MIN_WIDTH) setOpen(false);
     };
-    measureBar();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Esc закрывает меню и возвращает фокус на бургер
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setOpen(false);
-        requestAnimationFrame(() => burgerRef.current?.focus());
-      }
+      if (e.key === "Escape") closeMenu();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // ✅ iOS-safe блокировка фонового скролла (без прыжков вверх),
-  // но само меню будет скроллиться внутри (overflow-y-auto).
+  // Блокировка скролла: фиксируем body и восстанавливаем позицию при закрытии.
   useEffect(() => {
     if (!open) return;
 
-    const y = window.scrollY;
+    const html = document.documentElement;
     const body = document.body;
+    const scrollY = window.scrollY;
+    scrollLockYRef.current = scrollY;
 
-    const prevPosition = body.style.position;
-    const prevTop = body.style.top;
-    const prevLeft = body.style.left;
-    const prevRight = body.style.right;
-    const prevWidth = body.style.width;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    const prevBodyPosition = body.style.position;
+    const prevBodyTop = body.style.top;
+    const prevBodyLeft = body.style.left;
+    const prevBodyRight = body.style.right;
+    const prevBodyWidth = body.style.width;
+    const prevBodyPaddingRight = body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - html.clientWidth;
 
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
     body.style.position = "fixed";
-    body.style.top = `-${y}px`;
+    body.style.top = `-${scrollY}px`;
     body.style.left = "0";
     body.style.right = "0";
     body.style.width = "100%";
+    if (scrollbarWidth > 0) {
+      body.style.paddingRight = `${scrollbarWidth}px`;
+    }
 
     return () => {
-      body.style.position = prevPosition;
-      body.style.top = prevTop;
-      body.style.left = prevLeft;
-      body.style.right = prevRight;
-      body.style.width = prevWidth;
-      window.scrollTo(0, y);
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+      body.style.position = prevBodyPosition;
+      body.style.top = prevBodyTop;
+      body.style.left = prevBodyLeft;
+      body.style.right = prevBodyRight;
+      body.style.width = prevBodyWidth;
+      body.style.paddingRight = prevBodyPaddingRight;
+      window.scrollTo(0, scrollLockYRef.current);
     };
   }, [open]);
-
-  // когда открыли меню — пересчитать высоту полосы (на случай изменения scrolled/контента)
-  useEffect(() => {
-    if (!open) return;
-    measureBar();
-
-    // на iOS при смене адресной строки меняется viewport — слушаем resize
-    const onResize = () => measureBar();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [open, scrolled]);
 
   const navLabel = (key: NavKey) => {
     if (isRu) {
       if (key === "home") return "главная";
       if (key === "automation") return "автоматизация";
-      if (key === "contacts") return "контакты";
+      if (key === "plans") return "планы";
       if (key === "projects") return "проекты";
     } else {
       if (key === "home") return "home";
       if (key === "automation") return "automation";
-      if (key === "contacts") return "contacts";
+      if (key === "plans") return "plans";
       if (key === "projects") return "projects";
     }
     return key;
   };
 
   const activeKey: NavKey = useMemo(() => {
-    if (location.pathname === "/contacts") return "contacts";
+    if (location.pathname === "/plans") return "plans";
     if (location.pathname === "/projects") return "projects";
     if (location.pathname === "/avtomatizaciya-biznesa") return "automation";
     return "home";
@@ -356,71 +319,46 @@ export default function Header() {
 
   const openStartModal = () => {
     setOpen(false);
-    // Везде открываем бота в Telegram (главная, контакты, проекты)
-    window.open(TG_BOT_URL, "_blank", "noopener,noreferrer");
+    setStartOpen(true);
   };
 
   const ariaHome = isRu ? "На главную" : "Go to home";
   const ariaMenu = isRu ? "Меню" : "Menu";
 
-  const ctaTop = isRu ? "Рассчитать стоимость" : "Get an estimate";
-  const ctaScrolled = isRu ? "Заказать сайт" : "Order a website";
+  const ctaTop = isRu ? "Обсудить проект" : "Discuss the project";
 
   const dur = reducedMotion ? 0 : 280;
 
-  const menuMaxH = `calc(100dvh - ${barH}px - 16px)`;
+  const closeMenu = () => {
+    setOpen(false);
+    requestAnimationFrame(() => burgerRef.current?.focus({ preventScroll: true }));
+  };
 
   return (
     <>
-      {/* spacer под фикс-хедер */}
-      <div aria-hidden className="h-[92px] sm:h-[100px] xl:h-[104px]" />
+      {/* spacer только на мобильных — на десктопе хедер поверх контента без сдвига */}
+      <div
+        aria-hidden
+        className={cx(
+          needsSpacer ? "h-[78px] sm:h-[82px]" : "h-0"
+        )}
+      />
 
-      <header className="fixed inset-x-0 top-0 z-50">
-        <div className="pt-3" ref={barRef}>
-          <Container>
+      <header
+        className={cx(
+          "fixed inset-x-0 z-[120] transition-[top,transform,opacity]",
+          heroInView && !isMobile ? "top-3 sm:top-4" : "top-0",
+          hideHeader ? "pointer-events-none -translate-y-full opacity-0" : "translate-y-0 opacity-100"
+        )}
+        style={reducedMotion ? undefined : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)}
+      >
+        <div className="h-[78px] w-full bg-transparent sm:h-[82px]">
+          <Container className="h-full">
             <div
               className={cx(
-                "relative transition-all",
-                scrolled
-                  ? "rounded-[999px] bg-black/58 backdrop-blur-2xl border-0 shadow-[0_22px_72px_rgba(0,0,0,0.52),inset_0_1px_0_rgba(255,255,255,0.06)]"
-                  : "rounded-[999px]"
+                "relative flex h-full w-full min-w-0 items-center xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:items-center xl:gap-x-4"
               )}
-              style={reducedMotion ? undefined : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)}
             >
-              {/* glow + top orange strip */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 rounded-[999px] opacity-0 transition-opacity"
-                style={
-                  {
-                    opacity: scrolled ? 1 : 0,
-                    transitionDuration: `${dur}ms`,
-                    background:
-                      "radial-gradient(900px 120px at 50% 0%, rgba(255,122,32,0.28), transparent 60%)",
-                  } as React.CSSProperties
-                }
-              />
-              <div
-                aria-hidden
-                className="pointer-events-none absolute left-10 right-10 top-0 h-[3px] rounded-full opacity-0 transition-opacity"
-                style={
-                  {
-                    opacity: scrolled ? 0.95 : 0,
-                    transitionDuration: `${dur}ms`,
-                    background: ORANGE_LINE,
-                  } as React.CSSProperties
-                }
-              />
-
-              {/* основная полоса хедера */}
-              <div
-                className={cx(
-                  "relative flex w-full min-w-0 items-center xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:items-center xl:gap-x-4",
-                  scrolled ? "px-4 sm:px-5" : "px-3 sm:px-4",
-                  scrolled ? "h-[70px] sm:h-[74px]" : "h-[78px] sm:h-[82px]"
-                )}
-                style={reducedMotion ? undefined : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)}
-              >
                 {/* LEFT: логотип */}
                 <div className="flex min-w-0 items-center gap-3 shrink-0 xl:justify-self-start">
                   <Link
@@ -436,9 +374,12 @@ export default function Header() {
                     aria-label={ariaHome}
                   >
                     <img
-                      src="/images/tivonix-logo-lockup.png"
+                      src={logoSrc}
                       alt="TIVONIX"
-                      className="h-8 sm:h-9 w-auto object-contain opacity-95 transition-opacity hover:opacity-100"
+                      className={cx(
+                        "w-auto object-contain opacity-95 transition-all hover:opacity-100",
+                        heroInView ? "h-10 sm:h-11 lg:h-12" : "h-8 sm:h-9"
+                      )}
                       draggable={false}
                       loading="eager"
                       decoding="async"
@@ -453,65 +394,31 @@ export default function Header() {
                     reducedMotion={reducedMotion}
                     items={tabsItems}
                     onItemClick={onNav}
-                    compact={scrolled}
+                    compact={false}
                   />
                 </div>
 
-                {/* RIGHT: язык + CTA (desktop xl+) */}
-                <div className="ml-auto hidden min-w-0 shrink-0 items-center gap-3 xl:ml-0 xl:flex xl:justify-self-end">
-                  <LangToggle reducedMotion={reducedMotion} />
-                  <Button
-                    type="button"
+                {/* RIGHT: CTA (desktop xl+) */}
+                <div className="ml-auto hidden min-w-0 shrink-0 items-center xl:ml-0 xl:flex xl:justify-self-end">
+                  <CalcButton
+                    variant="white"
                     onClick={openStartModal}
-                    className={cx(
-                      "rounded-full font-semibold !text-black outline-none !py-0",
-                      "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
-                      "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
-                      "hover:brightness-[1.04] active:brightness-[0.96]",
-                      scrolled ? "h-10 px-5" : "h-11 px-6"
-                    )}
-                    style={{ background: BRAND_CTA } as React.CSSProperties}
+                    className="h-11 px-7 text-[14px]"
                   >
-                    <span className="relative grid grid-cols-1 grid-rows-1 place-items-center leading-none">
-                      <span
-                        className={cx(
-                          "col-start-1 row-start-1 transition-all",
-                          scrolled ? "opacity-0 -translate-y-1" : "opacity-100 translate-y-0"
-                        )}
-                        style={reducedMotion ? undefined : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)}
-                      >
-                        {ctaTop}
-                      </span>
-                      <span
-                        className={cx(
-                          "col-start-1 row-start-1 transition-all",
-                          scrolled ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
-                        )}
-                        style={reducedMotion ? undefined : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)}
-                      >
-                        {ctaScrolled}
-                      </span>
-                    </span>
-                  </Button>
+                    {ctaTop}
+                  </CalcButton>
                 </div>
 
                 {/* RIGHT: tablet/mobile (до xl) — CTA + бургер */}
                 <div className="ml-auto xl:hidden flex items-center gap-2">
                   <div className="hidden md:block">
-                    <Button
-                      type="button"
+                    <CalcButton
+                      variant="white"
                       onClick={openStartModal}
-                      className={cx(
-                        "rounded-2xl font-semibold !text-black outline-none !py-0",
-                        "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
-                        "shadow-[0_18px_70px_rgba(255,120,40,0.30)]",
-                        "hover:brightness-[1.04] active:brightness-[0.96]",
-                        scrolled ? "h-10 px-4 text-sm" : "h-11 px-5 text-sm"
-                      )}
-                      style={{ background: BRAND_CTA } as React.CSSProperties}
+                      className="h-11 px-6 text-[13px]"
                     >
-                      {scrolled ? ctaScrolled : ctaTop}
-                    </Button>
+                      {ctaTop}
+                    </CalcButton>
                   </div>
 
                   <button
@@ -520,12 +427,12 @@ export default function Header() {
                     className={cx(
                       "grid place-items-center outline-none border-0",
                       "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
-                      scrolled ? "h-10 w-10 rounded-2xl" : "h-11 w-11 rounded-2xl",
-                      "bg-white/[0.08] backdrop-blur-xl shadow-[0_10px_36px_rgba(0,0,0,0.45)]",
-                      "transition-[transform,background-color,box-shadow] duration-200 ease-out",
-                      "hover:bg-white/[0.12] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)]",
+                      "h-11 w-11 rounded-2xl",
+                      "bg-[#1a1a1a]",
+                      "transition-[transform,background-color] duration-200 ease-out",
+                      "hover:bg-[#242424]",
                       "active:scale-95",
-                      open && "bg-white/[0.14] shadow-[0_14px_44px_rgba(0,0,0,0.5)]"
+                      open && "bg-[#242424]"
                     )}
                     aria-label={open ? (isRu ? "Закрыть меню" : "Close menu") : ariaMenu}
                     aria-expanded={open}
@@ -578,168 +485,151 @@ export default function Header() {
                     </svg>
                   </button>
                 </div>
-              </div>
             </div>
           </Container>
         </div>
+      </header>
 
-        {/* MOBILE MENU — на весь экран, стиль как у хедера (блюр, тёмный фон, оранжевая полоска) */}
+      <div
+        id="mobile-header-menu"
+        className={cx(
+          "xl:hidden fixed inset-0 z-[200]",
+          open ? "pointer-events-auto" : "pointer-events-none"
+        )}
+        aria-hidden={!open}
+      >
         <div
-          id="mobile-header-menu"
-          className={cx("xl:hidden fixed inset-0 z-50", open ? "pointer-events-auto" : "pointer-events-none")}
-          aria-hidden={!open}
+          className={cx(
+            "mobile-menu-panel absolute inset-0 flex min-h-[100dvh] flex-col overflow-hidden bg-[#161313]",
+            "transition-[opacity,transform,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+            open ? "visible translate-y-0 opacity-100" : "invisible -translate-y-4 opacity-0"
+          )}
+          role="dialog"
+          aria-modal="true"
+          aria-label={isRu ? "Меню" : "Menu"}
         >
-          {/* подложка: тёмный блюр в стиле хедера */}
-          <div
-            className={cx("absolute inset-0 transition-opacity duration-300", open ? "opacity-100" : "opacity-0")}
-            style={{
-              background: "rgba(0,0,0,0.72)",
-              backdropFilter: "blur(32px)",
-              WebkitBackdropFilter: "blur(32px)",
-            } as React.CSSProperties}
-            onClick={() => {
-              setOpen(false);
-              requestAnimationFrame(() => burgerRef.current?.focus());
-            }}
-          />
-          {/* панель на весь экран, выезд справа */}
-          <div
-            className={cx(
-              "absolute inset-0 flex flex-col bg-[#0a0a0c]",
-              "transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
-            )}
-            style={{ transform: open ? "translateX(0)" : "translateX(100%)" } as React.CSSProperties}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* оранжевое свечение сверху + полоска — как в хедере */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-0 top-0 h-32 rounded-b-2xl opacity-90"
-              style={{
-                background: "radial-gradient(600px 80px at 50% 0%, rgba(255,154,61,0.22), transparent 65%)",
-              } as React.CSSProperties}
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute left-6 right-6 top-0 h-[3px] rounded-full"
-              style={{ background: ORANGE_LINE } as React.CSSProperties}
-            />
+          <div className="relative flex items-center justify-between px-4 pb-4 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5">
+            <Link
+              to="/"
+              onClick={(e) => {
+                e.preventDefault();
+                goHome();
+              }}
+              className="flex items-center outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70 rounded-xl"
+              aria-label={ariaHome}
+            >
+              <img
+                src={heroInView ? LOGO_WHITE : LOGO_DEFAULT}
+                alt="TIVONIX"
+                className="h-7 w-auto object-contain opacity-95"
+                draggable={false}
+                decoding="async"
+              />
+            </Link>
+            <button
+              type="button"
+              onClick={closeMenu}
+              className={cx(
+                "grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-xl border-0",
+                "bg-white/[0.04] text-white/72 transition hover:bg-white/[0.08] active:scale-95",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
+              )}
+              aria-label={isRu ? "Закрыть меню" : "Close menu"}
+            >
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="transition-transform duration-200 ease-out"
+                aria-hidden
+              >
+                <path
+                  d="M4 7H20"
+                  stroke="#FF9A3D"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  style={{
+                    transformOrigin: "12px 7px",
+                    transform: "translateY(5px) rotate(45deg)",
+                    transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)",
+                  } as React.CSSProperties}
+                />
+                <path
+                  d="M4 12H20"
+                  stroke="#FF9A3D"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  style={{
+                    opacity: 0,
+                    transition: reducedMotion ? "none" : "opacity 0.18s ease-out",
+                  } as React.CSSProperties}
+                />
+                <path
+                  d="M4 17H20"
+                  stroke="#FF9A3D"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  style={{
+                    transformOrigin: "12px 17px",
+                    transform: "translateY(-5px) rotate(-45deg)",
+                    transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)",
+                  } as React.CSSProperties}
+                />
+              </svg>
+            </button>
+          </div>
 
-            <div className="relative flex-1 flex flex-col min-h-0 pt-2">
-                  {/* кнопка закрытия — сверху справа */}
-                  <div className="flex justify-end pt-5 pr-5 sm:pt-6 sm:pr-6 mb-5">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setOpen(false);
-                        requestAnimationFrame(() => burgerRef.current?.focus());
-                      }}
-                      className={cx(
-                        "group grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-2xl shrink-0 border-0",
-                        "bg-white/[0.08] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]",
-                        "transition-all duration-200 ease-out cursor-pointer",
-                        "hover:scale-110 hover:bg-white/[0.13] active:scale-95",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
-                      )}
-                      aria-label={isRu ? "Закрыть меню" : "Close menu"}
-                    >
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        className="transition-transform duration-200 ease-out"
-                      >
-                        <path
-                          d="M6 6L18 18"
-                          stroke="#FF9A3D"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                        />
-                        <path
-                          d="M18 6L6 18"
-                          stroke="#FF9A3D"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    </button>
-                  </div>
+          <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2 pb-5 sm:px-3">
+            <nav className="mt-1 flex flex-col" aria-label={isRu ? "Навигация" : "Navigation"}>
+              {tabsItems.map((item) => (
+                <Link
+                  key={item.key}
+                  to={item.to}
+                  className={cx(
+                    "flex items-center justify-between border-b border-white/[0.08] px-3 py-4 text-[15px] font-medium text-white/92",
+                    "transition-colors hover:bg-white/[0.03] active:bg-white/[0.02]",
+                    activeKey === item.key && "text-[#FFAE66]"
+                  )}
+                  onClick={(e) => {
+                    onNav(item.to)(e);
+                    closeMenu();
+                  }}
+                >
+                  <span className="capitalize">{item.label}</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0 text-white/32" aria-hidden>
+                    <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Link>
+              ))}
+            </nav>
 
-                  {/* scroll area */}
-                  <div className="px-6 pb-6 pt-0 overflow-y-auto overscroll-contain" style={{ maxHeight: menuMaxH } as React.CSSProperties} onClick={(e) => e.stopPropagation()}>
-                    <div className="flex flex-col gap-3">
-                      <a
-                        href={TG_BOT_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={cx(
-                          "h-12 rounded-2xl font-semibold flex items-center justify-center",
-                          "bg-[#FF9A3D] text-black hover:brightness-105 active:brightness-95",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0c]"
-                        )}
-                        onClick={() => setOpen(false)}
-                      >
-                        {ctaScrolled}
-                      </a>
-                      <Link
-                        to="/contacts"
-                        className={cx(
-                          "h-12 rounded-2xl font-medium flex items-center justify-center border-0 bg-white/[0.07] text-white",
-                          "shadow-[0_8px_28px_rgba(0,0,0,0.35)] hover:bg-white/[0.11] active:bg-white/[0.08]",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0c]"
-                        )}
-                        onClick={() => setOpen(false)}
-                      >
-                        {isRu ? "Контакты" : "Contact"}
-                      </Link>
-                    </div>
-
-                    <nav className="mt-6 flex flex-col gap-1" aria-label={isRu ? "Навигация" : "Navigation"}>
-                      {tabsItems.map((item) => (
-                        <Link
-                          key={item.key}
-                          to={item.to}
-                          className={cx(
-                            "flex items-center justify-between rounded-xl px-3 py-3.5 text-white/90 hover:text-white",
-                            "hover:bg-white/[0.05] active:bg-white/[0.03] transition-colors"
-                          )}
-                          onClick={() => {
-                            setOpen(false);
-                            requestAnimationFrame(() => burgerRef.current?.focus());
-                          }}
-                        >
-                          <span>{item.label}</span>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0 text-white/50">
-                            <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </Link>
-                      ))}
-                    </nav>
-
-                    <div
-                      className="my-5 h-px w-full opacity-80"
-                      style={{
-                        background:
-                          "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)",
-                      }}
-                      aria-hidden
-                    />
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-white/70">{isRu ? "Язык" : "Language"}</span>
-                      <LangToggle compact reducedMotion={reducedMotion} />
-                    </div>
-
-                    {/* небольшой нижний отступ */}
-                    <div className="h-4" />
-                  </div>
+            <div className="mt-auto flex flex-col gap-2 px-2 pt-6 pb-[max(1rem,env(safe-area-inset-bottom))]">
+              <CalcButton
+                variant="white"
+                onClick={() => {
+                  closeMenu();
+                  openStartModal();
+                }}
+                className="h-12 w-full rounded-xl bg-transparent !text-white/88 text-[14px] border border-white/[0.08] hover:!bg-white/[0.03]"
+              >
+                {isRu ? "Обсудить проект" : "Contact sales"}
+              </CalcButton>
+              <Link
+                to="/plans"
+                className={cx(
+                  "inline-flex h-12 items-center justify-center rounded-xl px-6 text-[14px] font-semibold text-black",
+                  "bg-[#ff6a21] transition hover:brightness-105",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40"
+                )}
+                onClick={() => setOpen(false)}
+              >
+                {isRu ? "Планы" : "Plans"}
+              </Link>
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       <StartModal open={startOpen} onClose={() => setStartOpen(false)} />
     </>

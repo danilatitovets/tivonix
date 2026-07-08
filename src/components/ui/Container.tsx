@@ -1,9 +1,12 @@
 import React from "react";
+import { LANDING_SHELL_CLASS } from "../../lib/landingLayout";
 
-export default function Container({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-      {children}
-    </div>
-  );
+export default function Container({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <div className={[LANDING_SHELL_CLASS, className].filter(Boolean).join(" ")}>{children}</div>;
 }

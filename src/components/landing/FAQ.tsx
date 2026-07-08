@@ -36,14 +36,13 @@ type LocalFaqItem = {
 type CatFilter = "all" | Cat;
 
 const LOGO_ICON = "/images/tivonix-logo-icon.png";
-const BG_IMG = "/images/sunset.webp";
 
 const PAGE_SIZE = 6;
 const ORANGE = "#FF9A3D";
 
 // UX: показываем только топ-категории сразу, остальные — через "Ещё"
-const PRIMARY_CATS: Cat[] = ["start", "price", "time", "process", "design", "dev"];
-const SECONDARY_CATS: Cat[] = ["content", "seo", "tech", "support", "fix"];
+const PRIMARY_CATS: Cat[] = ["start", "price", "process", "dev", "support"];
+const SECONDARY_CATS: Cat[] = [];
 
 type Style = CSSProperties & Record<string, unknown>;
 const s = (v: Record<string, unknown>) => v as Style;
@@ -64,251 +63,146 @@ const CAT_LABELS: Record<Cat, { ru: string; en: string }> = {
 
 const TEASER_TEXTS: Record<Cat, { ru: string; en: string }> = {
   start: {
-    ru: "Как мы заходим в проект и что нужно от вас на старте.",
-    en: "How we get into the project and what we need from you at the start.",
+    ru: "Можно начать без ТЗ — просто опишите задачу своими словами.",
+    en: "You can start without a brief — just describe the task in your own words.",
   },
   price: {
-    ru: "Ориентиры по бюджету и что реально входит в стоимость.",
-    en: "Budget guidelines and what is actually included in the price.",
+    ru: "Стоимость зависит от задачи — после разбора предложим вариант.",
+    en: "Cost depends on the task — after a review we'll suggest an option.",
   },
   time: {
-    ru: "Типичные сроки и когда можно ускориться до 1–2 дней.",
-    en: "Typical timelines and when we can speed up to 1–2 days.",
+    ru: "Сроки зависят от объёма и согласований.",
+    en: "Timeline depends on scope and approvals.",
   },
   process: {
-    ru: "Пошаговый процесс от брифа до запуска без хаоса.",
-    en: "Step-by-step process from brief to launch without chaos.",
+    ru: "Делаем не только сайты — боты, CRM, кабинеты, автоматизацию.",
+    en: "We don't only build websites — bots, CRM, client areas, automation.",
   },
   design: {
-    ru: "Как собираем премиум-визуал и попадаем в ваш бренд.",
-    en: "How we build premium visuals that match your brand.",
+    ru: "Дизайн под ваш бренд и задачу.",
+    en: "Design aligned with your brand and task.",
   },
   dev: {
-    ru: "На чём всё собрано и какие интеграции возможны.",
-    en: "What we build on and which integrations are possible.",
+    ru: "Telegram, email, CRM, таблицы — подключаем под ваш процесс.",
+    en: "Telegram, email, CRM, sheets — wired to your workflow.",
   },
   content: {
-    ru: "Как помогаем с текстами, оффером и структурой блоков.",
-    en: "How we help with copy, offer, and block structure.",
+    ru: "Поможем собрать тексты и структуру, если нужно.",
+    en: "We can help with copy and structure if needed.",
   },
   seo: {
-    ru: "Что делаем по SEO уже на уровне лендинга.",
-    en: "What we do for SEO already on the landing level.",
+    ru: "Базовая SEO-разметка на уровне лендинга.",
+    en: "Basic SEO markup at the landing level.",
   },
   tech: {
-    ru: "Про скорость загрузки, адаптив и тех.часть проекта.",
-    en: "About load speed, responsiveness, and the tech side.",
+    ru: "Адаптив, скорость и техчасть проекта.",
+    en: "Responsive layout, speed and the tech side.",
   },
   support: {
-    ru: "Как сопровождаем проект после запуска и что входит.",
-    en: "How we support the project after launch and what is included.",
+    ru: "После запуска можно проверить работу и дорастить продукт.",
+    en: "After launch we can verify everything and grow the product.",
   },
   fix: {
-    ru: "Как работаем с правками, отступами и мелкими доработками.",
-    en: "How we handle edits, spacing, and small improvements.",
+    ru: "Мелкие правки после запуска — обсуждаем отдельно.",
+    en: "Small edits after launch — we discuss them separately.",
   },
 };
 
 const FAQ_ITEMS: FaqItem[] = [
-  // Старт
   {
-    id: "start-brief",
+    id: "start-unclear",
     cat: "start",
-    q: { ru: "С чего начинается работа?", en: "Where does the work start?" },
+    q: {
+      ru: "С чего начать, если я не понимаю, что именно мне нужно?",
+      en: "Where do I start if I'm not sure what I need?",
+    },
     a: {
-      ru: "С короткого брифа: чем занимаетесь, кому продаёте, какие услуги/продукты, примеры сайтов которые нравятся, и цель (заявки/продажи/презентация). Затем фиксируем структуру страницы и план работ.",
-      en: "With a short brief: what you do, who your customers are, what services or products you sell, examples of sites you like, and the main goal (leads, sales, presentation). Then we lock the page structure and the work plan.",
+      ru: "Можно просто описать задачу своими словами. Мы разберёмся, что лучше подойдёт: сайт, бот, CRM, личный кабинет или простая автоматизация.",
+      en: "Just describe the task in your own words. We'll figure out what fits best: a website, bot, CRM, client area or simple automation.",
     },
   },
   {
-    id: "start-need",
-    cat: "start",
-    q: { ru: "Что нужно от нас, чтобы начать?", en: "What do you need from us to get started?" },
-    a: {
-      ru: "Логотип (если есть), контакты/соцсети, черновые тексты (можно без идеала), фото/кейсы (если есть). Если чего-то нет — подскажем, чем заменить и как быстро собрать.",
-      en: "Logo (if you have one), contacts/social links, rough texts (they do not have to be perfect), photos/case studies (if available). If something is missing, we suggest how to replace it and how to collect it quickly.",
-    },
-  },
-  {
-    id: "start-domain",
-    cat: "start",
-    q: { ru: "Вы помогаете с доменом и хостингом?", en: "Do you help with domain and hosting?" },
-    a: {
-      ru: "Да. Поможем купить домен, настроить DNS и развернуть сайт на хостинге/сервере (или Vercel/Netlify).",
-      en: "Yes. We help you buy a domain, configure DNS and deploy the site to hosting/server (or Vercel / Netlify).",
-    },
-  },
-
-  // Стоимость
-  {
-    id: "price-from",
-    cat: "price",
-    q: { ru: "Сколько стоит сайт-визитка / лендинг?", en: "How much does a promo site / landing page cost?" },
-    a: {
-      ru: "Цена зависит от количества блоков, сложности анимаций и интеграций. Обычно есть 3 уровня: мини (до 6 блоков), стандарт (8–12 блоков), премиум (сложные блоки/анимации/интеграции).",
-      en: "The price depends on the number of sections, animation complexity, and integrations. Usually there are 3 tiers: mini (up to 6 sections), standard (8–12 sections), and premium (complex sections/animations/integrations).",
-    },
-  },
-  {
-    id: "price-included",
-    cat: "price",
-    q: { ru: "Что входит в стоимость?", en: "What is included in the price?" },
-    a: {
-      ru: "Премиум-дизайн, адаптив, сборка на React+Tailwind, оптимизация изображений, базовое SEO, подключение форм/уведомлений (по запросу), деплой и мини-инструкция как менять контент.",
-      en: "Premium design, responsive layout, React + Tailwind build, image optimization, basic SEO, forms/notifications integration (on request), deployment, and a short guide on how to edit the content.",
-    },
-  },
-  {
-    id: "price-payments",
-    cat: "price",
-    q: { ru: "Как происходит оплата?", en: "How does payment work?" },
-    a: {
-      ru: "Обычно по этапам: 50% старт — 50% по готовности (или 3 этапа: дизайн/сборка/деплой).",
-      en: "Usually in stages: 50% upfront and 50% on completion (or 3 stages: design / build / deploy).",
-    },
-  },
-
-  // Сроки
-  {
-    id: "time-howlong",
-    cat: "time",
-    q: { ru: "Сколько по времени делается сайт?", en: "How long does it take to build the site?" },
-    a: {
-      ru: "Чаще всего 3–10 дней. Зависит от готовности контента и скорости согласований.",
-      en: "Most often 3–10 days. It depends on how ready the content is and how fast approvals go.",
-    },
-  },
-  {
-    id: "time-urgent",
-    cat: "time",
-    q: { ru: "Можно срочно за 1–2 дня?", en: "Is it possible to do it urgently in 1–2 days?" },
-    a: {
-      ru: "Можно, если структура простая и контент готов. Тогда делаем 1–2 итерации правок и быстро выкатываем на домен.",
-      en: "Yes, if the structure is simple and the content is ready. Then we do 1–2 rounds of edits and quickly launch it on the domain.",
-    },
-  },
-
-  // Процесс
-  {
-    id: "process-steps",
+    id: "process-not-only-sites",
     cat: "process",
-    q: { ru: "Какие этапы работы?", en: "What are the main steps of the process?" },
+    q: { ru: "Вы делаете только сайты?", en: "Do you only build websites?" },
     a: {
-      ru: "1) Бриф и структура 2) Дизайн ключевых блоков 3) Сборка и адаптив 4) Правки 5) Оптимизация 6) Деплой 7) Передача + инструкция.",
-      en: "1) Brief and structure 2) Design of key sections 3) Build and responsive layout 4) Edits 5) Optimization 6) Deploy 7) Handover and a short guide.",
+      ru: "Нет. Мы делаем сайты, Telegram-ботов, CRM, админ-панели, личные кабинеты, интеграции и веб-сервисы под конкретную задачу бизнеса.",
+      en: "No. We build websites, Telegram bots, CRMs, admin panels, client areas, integrations and web services for a specific business task.",
     },
   },
   {
-    id: "process-revisions",
-    cat: "process",
-    q: { ru: "Сколько правок включено?", en: "How many revisions are included?" },
+    id: "start-mvp",
+    cat: "start",
+    q: { ru: "Можно сделать небольшой проект, а не большую систему?", en: "Can we start small instead of a big system?" },
     a: {
-      ru: "Обычно 2 круга по дизайну и 2 круга по текстам/мелочам. Если нужно больше — согласуем объём.",
-      en: "Usually 2 rounds for design and 2 rounds for texts/small details. If you need more, we discuss the extra scope.",
-    },
-  },
-
-  // Дизайн
-  {
-    id: "design-saas",
-    cat: "design",
-    q: { ru: "Сделаете как у топ-SaaS?", en: "Can you make it look like a top-tier SaaS?" },
-    a: {
-      ru: "Да. Делаем премиум-стиль: стекло, мягкие свечения, градиенты, аккуратная типографика, точки/шум, правильная сетка.",
-      en: "Yes. We build a premium style: glassmorphism, soft glows, gradients, tidy typography, noise/dots, and a proper layout grid.",
+      ru: "Да. Часто лучше начать с простой версии: форма заявки, бот, таблица, мини-CRM или лендинг. Потом это можно развивать.",
+      en: "Yes. Often it's better to start simple: a lead form, bot, sheet, mini-CRM or landing page. You can grow it later.",
     },
   },
   {
-    id: "design-brand",
-    cat: "design",
-    q: { ru: "Можно в фирменных цветах?", en: "Can you use our brand colors?" },
+    id: "price-cost",
+    cat: "price",
+    q: { ru: "Сколько стоит проект?", en: "How much does a project cost?" },
     a: {
-      ru: "Да. Подстроим палитру/градиенты под бренд, чтобы всё было едино и «дорого».",
-      en: "Yes. We adapt the palette and gradients to your brand so everything feels consistent and premium.",
+      ru: "Стоимость зависит от задачи, количества экранов, логики, интеграций и сроков. После короткого разбора мы предложим понятный вариант запуска.",
+      en: "Cost depends on the task, number of screens, logic, integrations and timeline. After a short review we'll suggest a clear launch option.",
     },
   },
-
-  // Разработка
   {
-    id: "dev-tech",
-    cat: "dev",
-    q: { ru: "На чём сделан сайт? Это WordPress?", en: "What is the tech stack? Is it WordPress?" },
+    id: "start-no-brief",
+    cat: "start",
+    q: { ru: "Нужно ли мне готовое техническое задание?", en: "Do I need a ready technical brief?" },
     a: {
-      ru: "Нет. Сайт на React + TypeScript + Tailwind: быстрее, гибче, чище и легче масштабируется.",
-      en: "No. It is built with React + TypeScript + Tailwind: faster, more flexible, cleaner, and easier to scale.",
+      ru: "Нет. Если ТЗ нет, мы поможем собрать требования и объясним, что нужно сделать на первом этапе.",
+      en: "No. If you don't have a brief, we'll help gather requirements and explain what to do at the first stage.",
     },
   },
   {
     id: "dev-integrations",
     cat: "dev",
-    q: { ru: "Можно подключить формы, Telegram, CRM?", en: "Can you connect forms, Telegram, or CRM?" },
+    q: {
+      ru: "Можно подключить Telegram, email, CRM или таблицы?",
+      en: "Can you connect Telegram, email, CRM or spreadsheets?",
+    },
     a: {
-      ru: "Да. Подключим форму (email/Telegram), Google Sheets, CRM (amo/Bitrix) и события аналитики.",
-      en: "Yes. We can connect a form (email/Telegram), Google Sheets, CRM (amo/Bitrix), and analytics events.",
+      ru: "Да. Мы можем сделать так, чтобы заявки приходили в Telegram, email, CRM, Google Sheets, Supabase или другую систему, с которой работает команда.",
+      en: "Yes. We can route leads to Telegram, email, CRM, Google Sheets, Supabase or another system your team already uses.",
     },
   },
-
-  // Контент
-  {
-    id: "content-text",
-    cat: "content",
-    q: { ru: "Помогаете с текстами, если у нас их нет?", en: "Do you help with copy if we do not have it yet?" },
-    a: {
-      ru: "Да. Поможем оформить оффер, преимущества, блоки, CTA и FAQ — даже из черновиков.",
-      en: "Yes. We help shape the offer, benefits, sections, CTAs, and FAQ — even from rough drafts.",
-    },
-  },
-
-  // SEO
-  {
-    id: "seo-basic",
-    cat: "seo",
-    q: { ru: "Будет ли сайт находиться в Google?", en: "Will the site be discoverable in Google?" },
-    a: {
-      ru: "Сделаем базовую SEO-основу: заголовки, мета, alt, скорость. Для полноценного продвижения нужен отдельный план и контент-стратегия.",
-      en: "We set up basic SEO: titles, meta tags, alts, and performance. For full-scale promotion you will need a separate SEO and content strategy.",
-    },
-  },
-
-  // Тех.часть
-  {
-    id: "tech-speed",
-    cat: "tech",
-    q: { ru: "Сайт будет быстро грузиться?", en: "Will the site load fast?" },
-    a: {
-      ru: "Да. Оптимизация изображений, кеширование, аккуратные шрифты и лёгкая сборка дают быструю загрузку.",
-      en: "Yes. Image optimization, caching, lean fonts and a light build make the site load quickly.",
-    },
-  },
-  {
-    id: "tech-mobile",
-    cat: "tech",
-    q: { ru: "Будет адаптив под телефон?", en: "Will it be responsive on mobile?" },
-    a: {
-      ru: "Да. Адаптив — стандарт: телефон, планшет, ноутбук, большой экран.",
-      en: "Yes. Responsive layout is standard: phone, tablet, laptop, and large screens.",
-    },
-  },
-
-  // Поддержка
   {
     id: "support-after",
     cat: "support",
-    q: { ru: "Вы помогаете после запуска?", en: "Do you help after the launch?" },
+    q: { ru: "Вы помогаете после запуска?", en: "Do you help after launch?" },
     a: {
-      ru: "Да. Можем сопровождать: правки, новые блоки/страницы, интеграции, улучшения конверсии.",
-      en: "Yes. We can support you after launch: edits, new blocks/pages, integrations, and conversion improvements.",
+      ru: "Да. После запуска можно проверить работу, исправить мелкие моменты и дальше развивать продукт.",
+      en: "Yes. After launch we can verify everything, fix small issues and keep growing the product.",
     },
   },
-
-  // Правки
   {
-    id: "fix-after",
-    cat: "fix",
-    q: { ru: "Если после запуска найдём косяк/отступ?", en: "What if we find a bug or spacing issue after launch?" },
+    id: "start-for-whom",
+    cat: "start",
+    q: { ru: "Для кого TIVONIX?", en: "Who is TIVONIX for?" },
     a: {
-      ru: "Исправим. Доводим визуал до аккуратного состояния.",
-      en: "We fix it. We bring the visuals to a clean and tidy state.",
+      ru: "Для бизнеса, которому нужен не просто красивый сайт, а рабочая система: заявки, записи, статусы, клиенты, оплата, кабинет или автоматизация.",
+      en: "For businesses that need more than a pretty website — a working system: leads, bookings, statuses, clients, payments, client area or automation.",
+    },
+  },
+  {
+    id: "time-launch",
+    cat: "time",
+    q: { ru: "Сколько занимает запуск?", en: "How long does launch take?" },
+    a: {
+      ru: "Простой лендинг или бот — обычно от нескольких дней до 2–4 недель. Полноценный сервис — дольше. Срок зависит от объёма, интеграций и скорости согласований.",
+      en: "A simple landing or bot is usually a few days to 2–4 weeks. A full service takes longer. Timeline depends on scope, integrations and approval speed.",
+    },
+  },
+  {
+    id: "start-domain",
+    cat: "start",
+    q: { ru: "Помогаете с доменом и запуском?", en: "Do you help with domain and launch?" },
+    a: {
+      ru: "Да. Поможем с доменом, хостингом, деплоем и базовой настройкой — чтобы продукт реально заработал.",
+      en: "Yes. We help with domain, hosting, deploy and basic setup — so the product actually goes live.",
     },
   },
 ];
@@ -377,7 +271,6 @@ export default function FAQSection() {
   const [page, setPage] = useState(1);
   const [showAllCats, setShowAllCats] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const [bgInView, setBgInView] = useState(false);
 
   const localizedItems = useMemo<LocalFaqItem[]>(() => {
     return FAQ_ITEMS.map((item) => ({
@@ -400,6 +293,8 @@ export default function FAQSection() {
   }, [query, catFilter, localizedItems]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const showPagination = filtered.length > 0 && totalPages > 1;
+  const compactResults = filtered.length <= 1;
   const items = useMemo(() => {
     const start = (page - 1) * PAGE_SIZE;
     return filtered.slice(start, start + PAGE_SIZE);
@@ -415,23 +310,6 @@ export default function FAQSection() {
     setPage((p) => Math.min(Math.max(1, p), totalPages));
   }, [totalPages]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const el = rootRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          setBgInView(true);
-          io.disconnect();
-        }
-      },
-      { root: null, rootMargin: "300px 0px 300px 0px", threshold: 0.01 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
   const resetDisabled = query.trim() === "" && catFilter === "all" && page === 1;
 
   async function copy(text: string, id: string) {
@@ -445,10 +323,7 @@ export default function FAQSection() {
   }
 
   // microcopy
-  const title = isRu ? "FAQ — всё про сайт и работу" : "FAQ — about the site and workflow";
-  const subtitle = isRu
-    ? "Стоимость, сроки, процесс, контент, SEO и техчасть — коротко и по делу."
-    : "Pricing, timelines, process, content, SEO, and tech — short and to the point.";
+  const title = isRu ? "Частые вопросы" : "FAQ";
 
   const placeholder = isRu ? "Поиск по вопросам…" : "Search questions…";
   const resetLabel = isRu ? "Сбросить" : "Reset";
@@ -468,7 +343,7 @@ export default function FAQSection() {
   const jsonLd = useMemo(() => buildFaqJsonLd(localizedItems), [localizedItems]);
 
   return (
-    <Section id="faq" className="relative overflow-hidden pt-16 sm:pt-20 pb-16 sm:pb-20 bg-black">
+    <Section id="faq" className="faq-section relative isolate !py-0 bg-black">
       <style>{`
         @keyframes faqAnswerIn {
           from { opacity: 0; transform: translateY(6px); }
@@ -504,47 +379,23 @@ export default function FAQSection() {
       {/* JSON-LD FAQ schema */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      {/* background image as img (lazy-friendly) */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        {bgInView ? (
-          <img
-            src={BG_IMG}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            fetchPriority="low"
-            className="absolute inset-0 h-full w-full object-cover object-top opacity-95"
-            draggable={false}
-          />
-        ) : null}
-        <div
-          className="absolute inset-0"
-          style={s({
-            background: bgInView
-              ? "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.92) 100%)"
-              : "linear-gradient(180deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.42) 50%, rgba(0,0,0,0.94) 100%)",
-          })}
-        />
-      </div>
-
-      <Container>
+      <Container className="faq-section__content relative z-[1] pt-16 sm:pt-20 pb-16 sm:pb-20">
         {/* header */}
         <div ref={rootRef} className="relative mx-auto max-w-2xl text-center">
-          <h2 className="mt-5 font-display text-[30px] leading-[34px] sm:text-[40px] sm:leading-[44px] font-extrabold tracking-tight">
+          <h2 className="mt-5 font-display text-[30px] leading-[34px] sm:text-[40px] sm:leading-[44px] font-extrabold tracking-tight text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)]">
             {title}
           </h2>
-          <p className="mt-2 text-sm sm:text-[15px] text-white/60">{subtitle}</p>
 
           {/* search + reset */}
           <div className="mt-6">
             <div className="mx-auto max-w-[720px]">
-              <div className="grid gap-3 sm:grid-cols-[1fr_auto] items-center">
-                <div className="relative">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 sm:gap-3">
+                <div className="faq-search-wrap relative">
                   <label className="sr-only" htmlFor="faq-search">
                     {placeholder}
                   </label>
 
-                  <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
+                  <div className="pointer-events-none absolute left-3 top-1/2 z-[2] -translate-y-1/2">
                     <span style={s({ color: ORANGE })}>
                       <Icon name="search" />
                     </span>
@@ -556,13 +407,7 @@ export default function FAQSection() {
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder={placeholder}
                     inputMode="search"
-                    className={cx(
-                      "w-full h-11 sm:h-12 rounded-[14px]",
-                      "bg-white/[0.06] border-0",
-                      "pl-10 pr-4 text-sm text-white/90 placeholder:text-white/40",
-                      "outline-none",
-                      "focus:ring-2 focus:ring-white/12"
-                    )}
+                    className="faq-search-input"
                   />
                 </div>
 
@@ -578,12 +423,12 @@ export default function FAQSection() {
                   }}
                   aria-disabled={resetDisabled}
                   className={cx(
-                    "h-11 sm:h-12 px-4 rounded-[14px]",
-                    "border-0 bg-white/[0.06]",
+                    "h-11 shrink-0 whitespace-nowrap px-3.5 sm:h-12 sm:px-4 rounded-full border-0",
+                    "bg-[#1c1c1f]",
                     resetDisabled
                       ? "text-white/35 cursor-not-allowed opacity-70"
-                      : "text-white/75 hover:text-white/92 hover:bg-white/[0.07] transition",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                      : "text-white/80 hover:text-white hover:bg-[#262626] transition",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/15"
                   )}
                 >
                   {resetLabel}
@@ -609,13 +454,11 @@ export default function FAQSection() {
                     aria-pressed={catFilter === "all"}
                     onClick={() => setCatFilter("all")}
                     className={cx(
-                      "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium",
-                      "border-0",
+                      "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-xs font-medium transition",
                       catFilter === "all"
-                        ? "bg-white/[0.16] text-white"
-                        : "bg-white/[0.07] text-white/75 hover:text-white/92 hover:bg-white/[0.10]",
-                      "transition",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                        ? "bg-[#3a3a3d] text-white"
+                        : "bg-[#1c1c1f] text-white/78 hover:bg-[#262626] hover:text-white/92",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/15"
                     )}
                   >
                     {allLabel}
@@ -634,13 +477,11 @@ export default function FAQSection() {
                         aria-pressed={active}
                         onClick={() => setCatFilter(c)}
                         className={cx(
-                          "shrink-0 rounded-full px-3 py-1.5 text-xs font-medium",
-                          "border-0",
+                          "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-xs font-medium transition",
                           active
-                            ? "bg-white/[0.16] text-white"
-                            : "bg-white/[0.07] text-white/75 hover:text-white/92 hover:bg-white/[0.10]",
-                          "transition",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                            ? "bg-[#3a3a3d] text-white"
+                            : "bg-[#1c1c1f] text-white/78 hover:bg-[#262626] hover:text-white/92",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/15"
                         )}
                       >
                         {label}
@@ -653,10 +494,9 @@ export default function FAQSection() {
                     type="button"
                     onClick={() => setShowAllCats((v) => !v)}
                     className={cx(
-                      "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold",
-                      "border-0",
-                      "bg-white/[0.07] text-white/80 hover:text-white hover:bg-white/[0.10] transition",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                      "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-xs font-semibold transition",
+                      "bg-[#1c1c1f] text-white/80 hover:bg-[#262626] hover:text-white",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/15"
                     )}
                     aria-expanded={showAllCats}
                     aria-label={showAllCats ? lessCatsLabel : moreCatsLabel}
@@ -672,7 +512,7 @@ export default function FAQSection() {
               </div>
 
               {/* results hint */}
-              <div className="mt-2 text-[12px] text-white/55">
+              <div className="mt-2 text-[12px] text-white/68">
                 {filtered.length === 0
                   ? isRu
                     ? "Ничего не найдено — попробуйте другой запрос."
@@ -686,7 +526,12 @@ export default function FAQSection() {
         </div>
 
         {/* cards */}
-        <div className="mt-7 grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          className={cx(
+            "mt-7 grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+            compactResults && "min-h-[18rem] sm:min-h-[20rem]"
+          )}
+        >
           {items.map((f) => {
             const isOpen = openId === f.id;
             const domId = toDomId(f.id);
@@ -794,6 +639,7 @@ export default function FAQSection() {
         </div>
 
         {/* pagination: mobile prev/next, desktop dots */}
+        {showPagination ? (
         <div className="relative mt-10 flex justify-center">
           <div className="w-full max-w-[560px]">
             {/* Mobile: prev/next */}
@@ -859,6 +705,9 @@ export default function FAQSection() {
             </div>
           </div>
         </div>
+        ) : (
+          <div className="mt-10 sm:mt-12" aria-hidden="true" />
+        )}
       </Container>
     </Section>
   );

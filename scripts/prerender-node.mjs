@@ -13,6 +13,7 @@ const routes = [
   "/sozdanie-sajtov",
   "/avtomatizaciya-biznesa",
   "/projects",
+  "/plans",
   "/contacts",
   "/projects/headmind",
   "/projects/logovo",

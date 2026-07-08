@@ -4,6 +4,7 @@ import path from "node:path";
 const requiredHtmlFiles = [
   "dist/index.html",
   "dist/projects/index.html",
+  "dist/plans/index.html",
   "dist/contacts/index.html",
   "dist/sozdanie-sajtov/index.html",
   "dist/avtomatizaciya-biznesa/index.html",
@@ -18,14 +19,15 @@ const checks = [
   {
     file: "dist/index.html",
     phrases: [
-      "Создание сайтов и веб-сервисов под ключ — TIVONIX",
-      "Создание сайтов",
-      "Сайты, боты и веб-сервисы",
-      "которые приводят заявки",
-      "FAQ",
-      "FAQ — всё про сайт и работу",
-      "С чем мы работаем",
-      "Разберём вашу задачу, предложим решение и запустим продукт под ключ",
+      "Сайты, боты и CRM для бизнеса — TIVONIX",
+      "Сайты, боты и веб-сервисы, которые помогают получать заявки",
+      "TIVONIX делает сайты",
+      "Кому помогаем",
+      "Что мы делаем",
+      "Новый кейс",
+      "Spliton",
+      "Частые вопросы",
+      "Расскажите, что хотите запустить или автоматизировать",
       "https://www.tivonix.tech/",
     ],
   },
@@ -68,6 +70,10 @@ const checks = [
       "https://www.tivonix.tech/projects/giftsniper",
       "https://t.me/GiftSniperTonBot",
     ],
+  },
+  {
+    file: "dist/plans/index.html",
+    phrases: ["Планы запуска", "Start", "Growth", "Product", "https://www.tivonix.tech/plans"],
   },
   {
     file: "dist/contacts/index.html",
@@ -190,7 +196,7 @@ try {
     console.log(`OK ${automationFile}: exactly 1 link rel="canonical"`);
   }
 
-  const homeTitleWrong = "<title>Создание сайтов и веб-сервисов под ключ — TIVONIX</title>";
+  const homeTitleWrong = "<title>Сайты, боты и CRM для бизнеса — TIVONIX</title>";
   if (autoHtml.includes(homeTitleWrong)) {
     console.error(`${automationFile}: must not contain home page <title>`);
     hasErrors = true;
