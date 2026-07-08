@@ -3206,19 +3206,14 @@
   }
 
   .ai-logo-row-item--row .ai-logo-block-slot {
-    width: auto !important;
-    height: auto !important;
-    min-width: 0;
-    background: transparent !important;
-    border: none;
-    box-shadow: none;
-    border-radius: 0;
-    overflow: visible;
+    width: 4.25rem;
+    height: 2.5rem;
+    overflow: hidden;
   }
 
   .ai-logo-row-item--row .ai-logo-img {
-    max-height: 48px !important;
-    max-width: 92px !important;
+    max-height: 36px !important;
+    max-width: 72px !important;
   }
 
   .ai-premium-bg-image::after {
@@ -3248,6 +3243,22 @@
 
   .ai-hub .mx-auto {
     margin-top: 0.65rem;
+  }
+
+  .ai-logo-row-item--row .ai-logo-block-slot {
+    width: auto !important;
+    height: auto !important;
+    min-width: 0;
+    background: transparent !important;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    overflow: visible;
+  }
+
+  .ai-logo-row-item--row .ai-logo-img {
+    max-height: 48px !important;
+    max-width: 92px !important;
   }
 }
 

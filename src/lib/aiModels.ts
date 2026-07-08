@@ -36,7 +36,7 @@ export const ROW_BLOCK_REF_TABLET = 80;
 export const ROW_OVERLAP_TABLET = 6;
 /** Шаг между логотипами в горизонтальной ленте (мобилка, шире экрана → drift-скролл) */
 export const ROW_STEP_PHONE = 118;
-export const ROW_STEP_TABLET = 108;
+export const ROW_STEP_TABLET = 92;
 export const ROW_Y_PHONE = 80;
 export const ROW_STRIP_LEADING_PHONE = 24;
 export const ROW_STRIP_LEADING_TABLET = 32;

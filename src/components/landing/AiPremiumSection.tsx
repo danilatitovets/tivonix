@@ -9,11 +9,11 @@ import {
   ORBIT_RX_PHONE,
   ORBIT_RY_PHONE,
   ROW_BLOCK_REF,
+  ROW_BLOCK_REF_TABLET,
   ROW_OVERLAP,
+  ROW_OVERLAP_TABLET,
   ROW_STEP_PHONE,
-  ROW_STEP_TABLET,
   ROW_STRIP_LEADING_PHONE,
-  ROW_STRIP_LEADING_TABLET,
   ROW_Y_PHONE,
   ROW_Y_MOBILE,
   orbitPosition,
@@ -277,32 +277,30 @@ export default function AiPremiumSection() {
         sectionEl.classList.toggle("ai-premium-section--drift", drift > 0.01);
       }
 
-      const mobileLayout = viewport < 1024;
       const phoneLayout = viewport < 640;
       const tabletLayout = viewport >= 640 && viewport < 1024;
       const orbitRx = phoneLayout ? ORBIT_RX_PHONE : tabletLayout ? ORBIT_RX_MOBILE : 33;
       const orbitRy = phoneLayout ? ORBIT_RY_PHONE : tabletLayout ? ORBIT_RY_MOBILE : 31;
       const stageEl = rowItemRefs.current[0]?.closest(".ai-premium-orbit-stage");
       const stageW = stageEl?.clientWidth ?? viewport;
-      const stripStep = phoneLayout ? ROW_STEP_PHONE : ROW_STEP_TABLET;
-      const stripLeading = phoneLayout ? ROW_STRIP_LEADING_PHONE : ROW_STRIP_LEADING_TABLET;
-      const stripRowY = phoneLayout ? ROW_Y_PHONE : ROW_Y_MOBILE;
-      const mobileStripWidth = stripLeading + stripStep * AI_MODEL_COUNT;
+      const mobileStripStep = ROW_STEP_PHONE;
+      const mobileStripLeading = ROW_STRIP_LEADING_PHONE;
+      const mobileStripWidth = mobileStripLeading + mobileStripStep * AI_MODEL_COUNT;
       const mobileDriftMax = Math.max(
-        mobileStripWidth - stageW + stripStep * 0.6,
-        stripStep * 2
+        mobileStripWidth - stageW + mobileStripStep * 0.6,
+        mobileStripStep * 2
       );
       const mobileStripReveal =
-        mobileLayout && drop > 0.68 ? smoothstep((drop - 0.68) / 0.25) : 0;
+        phoneLayout && drop > 0.68 ? smoothstep((drop - 0.68) / 0.25) : 0;
       const mobileStripProgress = mobileStripReveal * (1 - exitScroll);
       const driftPxBase = exitScroll * Math.max(viewport * 0.72, 480);
-      const driftPx = mobileLayout ? -mobileStripProgress * mobileDriftMax : driftPxBase;
+      const driftPx = phoneLayout ? -mobileStripProgress * mobileDriftMax : driftPxBase;
 
       const orbitBlend = 1 - smoothstep(drop / 0.24);
       const inOrbitPhase = orbitBlend > 0.04;
       const orbitBlocksIn =
         progress < ORBIT_START ? 0 : smoothstep((progress - ORBIT_START) / 0.07);
-      const logoExitFade = mobileLayout
+      const logoExitFade = phoneLayout
         ? smoothstep((exitScroll - 0.9) / 0.1)
         : smoothstep((exitScroll - 0.28) / 0.72);
 
@@ -350,15 +348,23 @@ export default function AiPremiumSection() {
         if (!el) return;
 
         const { x: orbitX, y: orbitY } = orbitPosition(index, AI_MODEL_COUNT, orbitRx, orbitRy);
-        const rowPos = mobileLayout
+        const rowPos = phoneLayout
           ? rowPositionScrollStrip(
               index,
-              stripStep,
+              mobileStripStep,
               stageW,
-              stripRowY,
-              stripLeading
+              ROW_Y_PHONE,
+              mobileStripLeading
             )
-          : rowPosition(index, AI_MODEL_COUNT, ROW_BLOCK_REF, ROW_OVERLAP);
+          : tabletLayout
+            ? rowPosition(
+                index,
+                AI_MODEL_COUNT,
+                ROW_BLOCK_REF_TABLET,
+                ROW_OVERLAP_TABLET,
+                ROW_Y_MOBILE
+              )
+            : rowPosition(index, AI_MODEL_COUNT, ROW_BLOCK_REF, ROW_OVERLAP);
 
         const reveal = logoReveal(progress, index);
         const x = lerp(orbitX, rowPos.rowX, drop);
