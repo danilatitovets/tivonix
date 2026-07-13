@@ -26,11 +26,6 @@
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://www.tivonix.tech/projects/logovo</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
     <loc>https://www.tivonix.tech/projects/giftsniper</loc>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>

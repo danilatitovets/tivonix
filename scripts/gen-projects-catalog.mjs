@@ -31,7 +31,6 @@ const UPC_DOMAIN = "https://upc.watch/";
 const PAYCLIP_DOMAIN = "https://usepayclip.com/";
 const LABELOS_DOMAIN = "https://labelos.digital/";
 const HEADMIND_DOMAIN = "https://headmind.ru/";
-const LOGOVO_DOMAIN = "https://logovo24.by/";
 
 export function buildProjects(isRu: boolean): Project[] {
   return [

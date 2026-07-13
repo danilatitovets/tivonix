@@ -4930,7 +4930,6 @@ const UPC_DOMAIN = "https://upc.watch/";
 const PAYCLIP_DOMAIN = "https://usepayclip.com/";
 const LABELOS_DOMAIN = "https://labelos.digital/";
 const HEADMIND_DOMAIN = "https://headmind.ru/";
-const LOGOVO_DOMAIN = "https://logovo24.by/";
 const GIFTSNIPER_DOMAIN = "https://t.me/GiftSniperTonBot";
 const SLOTTY_DOMAIN = "https://slotty.of.by/book";
 const SPLITON_DOMAIN = "https://spliton.io/app";
@@ -5037,38 +5036,7 @@ function buildAllProjects(isRu) {
         text: isRu ? "Собрали структуру и подачу так, что сайт стал понятнее для клиентов и лучше ведёт к заявке." : "The structure and messaging became clearer, and the site now drives leads more effectively."
       }
     },
-    // 5) LOGOVO — сеть шиномонтажа (Минск), визуал в духе «космос» под бренд
-    {
-      id: "logovo",
-      title: "LOGOVO",
-      subtitleRu: "Сеть шиномонтажа в Минске: услуги, адреса, прайс, кейсы и запись — в премиальной «космической» подаче бренда.",
-      subtitleEn: "Minsk tire-service network: services, locations, pricing, cases and booking — premium “cosmic” brand look.",
-      detailsRu: "Формат: многостраничный промо-сайт сети\nСрок: 12 дней\n\nЗаказчик\n• LOGOVO — шиномонтаж и сопутствующие услуги, несколько точек в Минске\n• Соцсети: Instagram @Logovo_mnsk\n\nЦель\n• Показать сервис «уровня студии»: скорость, точность, честность — и довести до записи без лишнего шума.\n• Визуально попасть в фирменный стиль: тёмная премиум-подача с «космической» эстетикой (как просили), без дешёвого китча.\n\nЧто сделали\n• Собрали структуру: услуги и акценты → прейскурант → адреса → кейсы → команда → отзывы → FAQ → контакты\n• Проработали типографику, сетку и анимации: глубина, ритм, плавные переходы — ощущение дорогого сервиса\n• Сделали сильный mobile-first: запись и цены читаются с телефона за секунды\n• Усилили доверие: реальные сценарии (кейсы), люди, отзывы, понятные ответы в FAQ\n\nРезультат\n• Сайт работает как витрина сети и подводит к действию: выбрать услугу, понять цену, записаться или связаться\n",
-      detailsEn: "Format: multi-page promo site for a service network\nTimeline: 12 days\n\nClient\n• LOGOVO — tire service and related work, multiple locations in Minsk\n• Social: Instagram @Logovo_mnsk\n\nGoals\n• Communicate a premium, studio-like experience: speed, precision, honesty — and drive bookings without noise.\n• Match the brand direction: dark premium look with a “cosmic” aesthetic (as requested), avoiding cheap clichés.\n\nWhat we delivered\n• IA: services → pricing → locations → cases → team → reviews → FAQ → contacts\n• Typography, grid and motion: depth, rhythm, smooth transitions — premium service feel\n• Strong mobile-first: pricing and booking paths readable in seconds on a phone\n• Trust: real-world scenarios (cases), people, reviews, clear FAQ answers\n\nOutcome\n• The site acts as a storefront for the network and pushes action: pick a service, understand pricing, book or contact\n",
-      domain: LOGOVO_DOMAIN,
-      status: "live",
-      tags: [
-        "Landing",
-        "React",
-        "TypeScript",
-        "Framer Motion",
-        "Automotive"
-      ],
-      cover: "/images/project-priew/logovo.webp",
-      outcomes: [
-        isRu ? "Сделано за 12 дней" : "Delivered in 12 days",
-        isRu ? "Структура под услуги, прайс и запись" : "Structure for services, pricing and booking",
-        isRu ? "«Космический» премиум-визуал под бренд" : "“Cosmic” premium visuals aligned with the brand",
-        isRu ? "Кейсы, команда и отзывы для доверия" : "Cases, team and reviews for trust"
-      ],
-      stack: ["React", "TypeScript", "Tailwind", "Framer Motion"],
-      testimonial: {
-        name: isRu ? "Команда LOGOVO" : "LOGOVO team",
-        role: isRu ? "Сеть шиномонтажа · Минск" : "Tire service network · Minsk",
-        text: isRu ? "Нужен был сайт, который ощущается как мы: не «ещё один шиномонтаж», а сервис с характером. Космическая тема ожила без дешёвого блеска — глубина, тёмная палитра, сочная типографика. С телефона всё предельно ясно: цена, что входит, куда приехать. В сезон это прямо деньги — люди не теряются, а доходят до записи." : "We needed a site that feels like us — not “just another tire shop”, but a brand with character. The cosmic theme landed without cheap glitter: depth, a dark palette, strong typography. On mobile everything is obvious — pricing, what’s included, where to go. In peak season that’s revenue: people don’t get lost, they get to booking."
-      }
-    },
-    // 6) GIFTSNIPER — Telegram-бот для оценки NFT и Telegram Gifts в TON
+    // 5) GIFTSNIPER — Telegram-бот для оценки NFT и Telegram Gifts в TON
     {
       id: "giftsniper",
       title: "GiftSniper",

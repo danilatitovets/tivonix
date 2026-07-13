@@ -18,7 +18,6 @@ const ROUTES = [
   "/projects/upc",
   "/projects/payclip",
   "/projects/headmind",
-  "/projects/logovo",
 ];
 
 function outputFileForRoute(route) {

@@ -9,7 +9,6 @@ const requiredHtmlFiles = [
   "dist/sozdanie-sajtov/index.html",
   "dist/avtomatizaciya-biznesa/index.html",
   "dist/projects/headmind/index.html",
-  "dist/projects/logovo/index.html",
   "dist/projects/giftsniper/index.html",
   "dist/projects/slotty/index.html",
   "dist/projects/spliton/index.html",
@@ -42,7 +41,7 @@ const checks = [
   },
   {
     file: "dist/projects/index.html",
-    phrases: ["Проекты", "Headmind", "LOGOVO", "GiftSniper", "Slotty", "Spliton"],
+    phrases: ["Проекты", "Headmind", "GiftSniper", "Slotty", "Spliton"],
   },
   {
     file: "dist/projects/spliton/index.html",
