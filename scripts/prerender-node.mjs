@@ -15,7 +15,6 @@ const routes = [
   "/projects",
   "/plans",
   "/contacts",
-  "/projects/headmind",
   "/projects/giftsniper",
   "/projects/slotty",
   "/projects/spliton",
