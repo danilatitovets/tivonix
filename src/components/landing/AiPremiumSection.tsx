@@ -21,6 +21,7 @@ import {
   rowPositionScrollStrip,
 } from "../../lib/aiModels";
 import TivonixGlowBorder from "../ui/TivonixGlowBorder";
+import ScrollFingerHint from "../ui/ScrollFingerHint";
 
 const ANIM_PIN_VH = 235;
 const DRIFT_RUNWAY_VH = 32;
@@ -138,7 +139,9 @@ function mobileLogoScale(modelId: string, scale: number, phone: boolean) {
 }
 
 export default function AiPremiumSection() {
-  const copy = landingCopy(useLang().lang);
+  const { lang } = useLang();
+  const copy = landingCopy(lang);
+  const isRu = lang === "ru";
   const pinWrapRef = useRef<HTMLDivElement>(null);
   const animPinRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
@@ -156,6 +159,8 @@ export default function AiPremiumSection() {
 
   const reducedMotion = usePrefersReducedMotion();
   const headline = copy.ai.headline;
+  const [showScrollHint, setShowScrollHint] = useState(false);
+  const showHintRef = useRef(false);
 
   useEffect(() => {
     const track = pinWrapRef.current;
@@ -207,7 +212,13 @@ export default function AiPremiumSection() {
       const scrollY = window.scrollY;
       const viewport = window.innerHeight;
       const scrollInTrack = scrollY - trackTop;
-      if (scrollInTrack < -viewport || scrollInTrack > trackHeight + viewport) return false;
+      if (scrollInTrack < -viewport || scrollInTrack > trackHeight + viewport) {
+        if (showHintRef.current) {
+          showHintRef.current = false;
+          setShowScrollHint(false);
+        }
+        return false;
+      }
 
       const rectTop = sectionRef.current?.getBoundingClientRect().top ?? trackTop - scrollY;
       const scrollable = Math.max(1, trackHeight - viewport);
@@ -245,6 +256,14 @@ export default function AiPremiumSection() {
       const auroraStrength = 1;
       const inAnimPin = scrollInTrack >= 0 && scrollInTrack < animScrollable;
       const isPinned = inAnimPin && rectTop <= 0;
+
+      // Finger cue while the AI story is pinned and animation hasn't taken over yet
+      const nextHint =
+        !reducedMotion && inAnimPin && rectTop <= 48 && progress < 0.28;
+      if (nextHint !== showHintRef.current) {
+        showHintRef.current = nextHint;
+        setShowScrollHint(nextHint);
+      }
 
       lastScrollY = scrollY;
 
@@ -532,12 +551,12 @@ export default function AiPremiumSection() {
           <section
             ref={sectionRef}
             id="ai"
-            className="ai-premium-section sticky top-0 z-40 flex h-[100svh] flex-col"
+            className="ai-premium-section relative sticky top-0 z-40 flex h-[100svh] flex-col"
             aria-label={copy.ai.ariaLabel}
           >
             <div
               ref={shellRef}
-              className="ai-premium-section-shell mx-auto flex min-h-0 w-full flex-1 flex-col"
+              className="ai-premium-section-shell relative mx-auto flex min-h-0 w-full flex-1 flex-col"
             >
               <TivonixGlowBorder className="ai-premium-border-stage flex min-h-0 w-full flex-1 flex-col">
                 <div
@@ -684,6 +703,22 @@ export default function AiPremiumSection() {
                   </div>
                 </div>
               </TivonixGlowBorder>
+            </div>
+
+            <div className="pointer-events-none absolute inset-x-0 bottom-[max(1.25rem,env(safe-area-inset-bottom))] z-[60] flex justify-center pb-1 sm:bottom-8">
+              <ScrollFingerHint
+                bare
+                visible={showScrollHint}
+                variant="light"
+                label={isRu ? "Листайте — появится анимация" : "Scroll — the animation plays"}
+                onActivate={() => {
+                  window.scrollBy({
+                    top: Math.round(window.innerHeight * 0.32),
+                    behavior: "smooth",
+                  });
+                }}
+                className="pointer-events-auto"
+              />
             </div>
           </section>
         </div>

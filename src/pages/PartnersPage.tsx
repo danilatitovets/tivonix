@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Header from "../components/landing/Header";
 import { SEO } from "../components/SEO";
+import ScrollFingerHint from "../components/ui/ScrollFingerHint";
 import { PARTNER_AGENCY_TELEGRAM_URL, TG_CHANNEL_URL } from "../constants/links";
 import { useLang } from "../i18n/LangProvider";
 import { getPartnersCopy, PARTNERS_DOCS, type PartnersCopy } from "../i18n/partnersPageCopy";
@@ -464,6 +465,7 @@ const CAPS_EXPAND_SHARE = 0.14;
 function CapabilitiesBanner() {
   const { lang } = useLang();
   const copy = getPartnersCopy(lang);
+  const isRu = lang === "ru";
   const capabilities = CAPABILITY_IDS.map((id, index) => ({ id, title: copy.capabilities.titles[index] }));
   const pinRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -471,6 +473,8 @@ function CapabilitiesBanner() {
   const [index, setIndex] = useState(0);
   const [cycle, setCycle] = useState(0);
   const [reduced, setReduced] = useState(false);
+  const [showScrollHint, setShowScrollHint] = useState(true);
+  const showHintRef = useRef(true);
   const total = capabilities.length;
   const active = capabilities[index];
   const indexRef = useRef(0);
@@ -486,6 +490,7 @@ function CapabilitiesBanner() {
   useEffect(() => {
     if (reduced) {
       document.documentElement.dataset.partnersCaps = "0";
+      setShowScrollHint(false);
       return;
     }
 
@@ -527,6 +532,11 @@ function CapabilitiesBanner() {
 
       const locking = rect.top <= 4 && rect.bottom > vh * 0.65;
       document.documentElement.dataset.partnersCaps = locking ? "1" : "0";
+      const nextHint = locking && slideP < 0.08;
+      if (nextHint !== showHintRef.current) {
+        showHintRef.current = nextHint;
+        setShowScrollHint(nextHint);
+      }
     };
 
     const onScroll = () => {
@@ -604,6 +614,15 @@ function CapabilitiesBanner() {
             );
           })}
         </nav>
+
+        <div className="partners-caps__scroll-hint">
+          <ScrollFingerHint
+            bare
+            visible={showScrollHint && !reduced}
+            variant="dark"
+            label={isRu ? "Листайте — появятся сцены" : "Scroll — scenes play"}
+          />
+        </div>
       </div>
 
       <div className="partners-caps__track" aria-hidden>
@@ -2948,6 +2967,19 @@ export default function PartnersPage() {
             overflow: visible;
             pointer-events: none;
           }
+          .partners-caps__scroll-hint {
+            position: relative;
+            z-index: 4;
+            display: flex;
+            justify-content: center;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            min-height: 5.25rem;
+            pointer-events: none;
+          }
+          .partners-caps__scroll-hint .scroll-finger-hint {
+            pointer-events: auto;
+          }
           .partners-caps__track-walker {
             position: absolute;
             left: 0;
@@ -4681,12 +4713,13 @@ export default function PartnersPage() {
               <div className="partners-final__media">
                 <div ref={finalZoomRef} className="partners-final__zoom" aria-hidden>
                   <img
-                    src="/images/partners/foo.png"
+                    src="/images/partners/foo.webp"
                     alt=""
                     width={1680}
-                    height={720}
+                    height={606}
                     decoding="async"
                     loading="lazy"
+                    fetchPriority="low"
                   />
                 </div>
                 <div className="partners-final__copy">

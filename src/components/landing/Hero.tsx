@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { ChevronDown } from "lucide-react";
 import Section from "../ui/Section";
+import ScrollFingerHint from "../ui/ScrollFingerHint";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
 import { HERO_SCROLL_HEADLINE_CLASS, HERO_SCROLL_LEAD_CLASS } from "../../lib/landingLayout";
@@ -190,20 +190,16 @@ function HeroCard({
           </div>
         </div>
 
-        <div className="pointer-events-auto flex shrink-0 flex-col items-center gap-3 pb-5 sm:pb-7 lg:pb-8">
+        <div className="pointer-events-auto relative z-20 flex shrink-0 flex-col items-center gap-3 pb-4 sm:gap-3.5 sm:pb-6 lg:pb-7">
           <LangToggle variant="hero" />
-          <button
-            type="button"
-            onClick={scrollDown}
-            className={cx(
-              "hero-scroll-hint grid h-10 w-10 place-items-center rounded-full border-0 sm:hidden",
-              "bg-white/[0.08] text-white/75 transition hover:bg-white/[0.12] hover:text-white",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
-            )}
-            aria-label={isRu ? "Прокрутить вниз" : "Scroll down"}
-          >
-            <ChevronDown size={22} strokeWidth={2.25} aria-hidden />
-          </button>
+          <ScrollFingerHint
+            bare
+            visible={progress < 0.35}
+            variant="light"
+            label={isRu ? "Листайте вниз" : "Scroll down"}
+            onActivate={scrollDown}
+            className="mt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
+          />
         </div>
       </div>
     </div>
