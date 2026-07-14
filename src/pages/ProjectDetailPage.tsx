@@ -13,6 +13,7 @@ import { cx, projectPreviewSrc, ProjectPreviewFrame, ProjectGalleryStrip, s } fr
 const HEADER_H = 72;
 
 const BULLET_RE = /^[•\-]\s*/;
+const LEAD_META_RE = /^(Формат|Срок|Format|Timeline)\s*:/i;
 
 function clipMetaDescription(text: string, max = 158): string {
   const t = text.replace(/\s+/g, " ").trim();
@@ -20,6 +21,16 @@ function clipMetaDescription(text: string, max = 158): string {
   const slice = t.slice(0, max - 1);
   const i = slice.lastIndexOf(" ");
   return `${(i > 70 ? slice.slice(0, i) : slice).trimEnd()}…`;
+}
+
+function isSectionHeading(line: string) {
+  const t = line.trim();
+  if (!t || BULLET_RE.test(t) || LEAD_META_RE.test(t)) return false;
+  if (t.length > 72) return false;
+  if (/[.!?…]$/.test(t)) return false;
+  // Одно предложение / заголовок секции, а не абзац с запятыми-развёрнутым текстом
+  if ((t.match(/[,;:—]/g) || []).length >= 2) return false;
+  return true;
 }
 
 function MetaRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -52,13 +63,29 @@ function ExternalIcon({ className }: { className?: string }) {
   );
 }
 
+function DetailBulletList({ items }: { items: string[] }) {
+  return (
+    <ul className="mt-4 list-none space-y-3 rounded-2xl border border-white/[0.07] bg-white/[0.035] px-4 py-4 sm:px-5 sm:py-5">
+      {items.map((item, idx) => (
+        <li
+          key={`${idx}-${item.slice(0, 48)}`}
+          className="flex gap-3 text-[15px] leading-[1.65] text-white/[0.76]"
+        >
+          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-white/55" />
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /** Заголовки секций + абзацы + списки (как в каталоге). */
 function ProjectDetailBody({ text }: { text: string }) {
   const lines = text.split("\n").map((l) => l.trim());
   const nodes: ReactNode[] = [];
   let i = 0;
   let k = 0;
-  let firstHeading = true;
+  let sectionIndex = 0;
 
   const nextNonEmpty = (from: number) => {
     for (let j = from; j < lines.length; j++) {
@@ -69,9 +96,22 @@ function ProjectDetailBody({ text }: { text: string }) {
   };
 
   while (i < lines.length) {
-    const raw = lines[i];
-    const line = raw.trim();
+    const line = lines[i].trim();
     if (!line) {
+      i++;
+      continue;
+    }
+
+    // Intro meta: "Формат: …", "Срок: …"
+    if (LEAD_META_RE.test(line)) {
+      nodes.push(
+        <p
+          key={k++}
+          className="mb-8 inline-flex max-w-full rounded-full border border-white/[0.1] bg-white/[0.05] px-4 py-2 text-[13px] font-medium leading-snug text-white/78"
+        >
+          {line}
+        </p>
+      );
       i++;
       continue;
     }
@@ -86,33 +126,67 @@ function ProjectDetailBody({ text }: { text: string }) {
         i++;
       }
       nodes.push(
-        <ul key={k++} className="mb-8 list-none space-y-2.5 pl-0">
-          {items.map((item, idx) => (
-            <li key={`${idx}-${item.slice(0, 48)}`} className="flex gap-3 text-[15px] leading-[1.65] text-white/[0.72]">
-              <span className="mt-[0.52em] h-1 w-1 shrink-0 rounded-full bg-white/32" />
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
+        <div key={k++} className="mb-8">
+          <DetailBulletList items={items} />
+        </div>
       );
       continue;
     }
 
     const nxt = nextNonEmpty(i + 1);
-    if (nxt && BULLET_RE.test(nxt.t)) {
-      nodes.push(
-        <h3
-          key={k++}
-          className={cx(
-            "mb-3 text-[12px] font-semibold uppercase tracking-[0.2em] text-white/40",
-            firstHeading ? "mt-0" : "mt-10"
-          )}
-        >
-          {line}
-        </h3>
-      );
-      firstHeading = false;
+    const heading =
+      isSectionHeading(line) &&
+      nxt &&
+      (BULLET_RE.test(nxt.t) || !isSectionHeading(nxt.t));
+
+    if (heading) {
+      const title = line;
       i++;
+      while (i < lines.length && !lines[i].trim()) i++;
+
+      let body: ReactNode = null;
+      if (i < lines.length && BULLET_RE.test(lines[i].trim())) {
+        const items: string[] = [];
+        while (i < lines.length) {
+          const L = lines[i].trim();
+          if (!L) break;
+          if (!BULLET_RE.test(L)) break;
+          items.push(L.replace(BULLET_RE, ""));
+          i++;
+        }
+        body = <DetailBulletList items={items} />;
+      } else {
+        const para: string[] = [];
+        while (i < lines.length) {
+          const L = lines[i].trim();
+          if (!L) break;
+          if (BULLET_RE.test(L)) break;
+          if (isSectionHeading(L) && nextNonEmpty(i + 1)) break;
+          para.push(L);
+          i++;
+        }
+        if (para.length) {
+          body = (
+            <p className="mt-4 text-[15px] leading-[1.7] text-white/[0.72] whitespace-pre-line sm:text-[16px]">
+              {para.join("\n")}
+            </p>
+          );
+        }
+      }
+
+      const first = sectionIndex === 0;
+      sectionIndex++;
+      nodes.push(
+        <section
+          key={k++}
+          className={cx("mb-9 sm:mb-11", !first && "border-t border-white/[0.08] pt-8 sm:pt-10")}
+        >
+          <h2 className="text-[clamp(1.35rem,2.6vw,1.85rem)] font-[750] tracking-[-0.03em] leading-[1.15] text-white">
+            {title}
+          </h2>
+          {body}
+        </section>
+      );
       continue;
     }
 
@@ -121,6 +195,7 @@ function ProjectDetailBody({ text }: { text: string }) {
       const L = lines[i].trim();
       if (!L) break;
       if (BULLET_RE.test(L)) break;
+      if (isSectionHeading(L) && nextNonEmpty(i + 1)) break;
       para.push(L);
       i++;
     }
@@ -128,7 +203,7 @@ function ProjectDetailBody({ text }: { text: string }) {
       nodes.push(
         <p
           key={k++}
-          className="mb-5 text-[15px] leading-[1.65] text-white/[0.72] whitespace-pre-line last:mb-0"
+          className="mb-7 text-[15px] leading-[1.7] text-white/[0.72] whitespace-pre-line last:mb-0 sm:text-[16px]"
         >
           {para.join("\n")}
         </p>
@@ -353,16 +428,11 @@ export default function ProjectDetailPage() {
               <ProjectDetailBody text={details} />
 
               {project.outcomes?.length ? (
-                <div className="mt-12 border-t border-white/[0.08] pt-10">
-                  <h2 className="text-[12px] font-semibold uppercase tracking-[0.2em] text-white/40">{resultsLabel}</h2>
-                  <ul className="mt-4 space-y-2.5">
-                    {project.outcomes.map((x) => (
-                      <li key={x} className="flex gap-3 text-[15px] leading-[1.6] text-white/[0.72]">
-                        <span className="mt-[0.52em] h-1 w-1 shrink-0 rounded-full bg-white/32" />
-                        <span>{x}</span>
-                      </li>
-                    ))}
-                  </ul>
+                <div className="mt-4 border-t border-white/[0.08] pt-8 sm:pt-10">
+                  <h2 className="text-[clamp(1.35rem,2.6vw,1.85rem)] font-[750] tracking-[-0.03em] leading-[1.15] text-white">
+                    {resultsLabel}
+                  </h2>
+                  <DetailBulletList items={project.outcomes} />
                 </div>
               ) : null}
 

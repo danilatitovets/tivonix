@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useLocation } from "react-router-dom";
 
 export type Lang = "ru" | "en";
 
@@ -497,8 +498,15 @@ function syncHtmlLang(lang: Lang) {
   (document.documentElement as HTMLElement).dataset.lang = lang;
 }
 
-export function LangProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(() => detectLang());
+export function LangProvider({
+  children,
+  initialLang,
+}: {
+  children: ReactNode;
+  /** SSR / forced start language (e.g. from `/en/...` URL). */
+  initialLang?: Lang;
+}) {
+  const [lang, setLangState] = useState<Lang>(() => initialLang ?? detectLang());
 
   const setLang = (l: Lang) => {
     setLangState(l);
@@ -525,6 +533,23 @@ export function LangProvider({ children }: { children: ReactNode }) {
   );
 
   return <LangContext.Provider value={value}>{children}</LangContext.Provider>;
+}
+
+/** Syncs `lang` from `/en` or `/ru` URL prefixes (and partners paths). */
+export function LangPathSync() {
+  const { pathname } = useLocation();
+  const { lang, setLang } = useLang();
+
+  useEffect(() => {
+    let next: Lang | null = null;
+    const clean = pathname.replace(/\/+$/, "") || "/";
+    if (clean === "/en" || clean.startsWith("/en/")) next = "en";
+    else if (clean === "/ru" || clean.startsWith("/ru/")) next = "ru";
+    else if (clean === "/partners") next = "ru";
+    if (next && next !== lang) setLang(next);
+  }, [pathname, lang, setLang]);
+
+  return null;
 }
 
 export function useLang() {

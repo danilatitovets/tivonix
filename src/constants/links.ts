@@ -1,6 +1,7 @@
 import {
   getPlanTelegramPayload,
   HELP_TELEGRAM_PAYLOAD,
+  PARTNER_AGENCY_TELEGRAM_PAYLOAD,
   type PlanLeadId,
 } from "../lib/planCatalog";
 import type { PlanId } from "../lib/pricingData";
@@ -41,4 +42,11 @@ export function buildPricingPlanTelegramUrl(planId: PlanId): string {
 
 export function buildHelpPlanTelegramUrl(): string {
   return buildTelegramBotUrl(HELP_TELEGRAM_PAYLOAD);
+}
+
+/** Deep link для партнёрской / white-label заявки со страницы /partners */
+export const PARTNER_AGENCY_TELEGRAM_URL = buildTelegramBotUrl(PARTNER_AGENCY_TELEGRAM_PAYLOAD);
+
+export function buildPartnerAgencyTelegramUrl(): string {
+  return PARTNER_AGENCY_TELEGRAM_URL;
 }

@@ -8,9 +8,6 @@ import { LANDING_HEADLINE_CLASS } from "../../lib/landingLayout";
 
 const CARD_DARK = "#141414";
 const CARD_SOFT = "#262626";
-const ACCENT = "#FF5722";
-const PAIN_BG_DIR = "/images";
-
 const PAIN_CARD_BACKGROUNDS = [
   "/images/hero-stage-1.webp",
   "/images/pain-bg-4.webp",
@@ -460,6 +457,7 @@ function PainBentoCard({
   bgAlways = false,
   bgPosition = "center center",
   className,
+  href = "#offer",
 }: {
   title: string;
   text: string;
@@ -472,7 +470,10 @@ function PainBentoCard({
   bgAlways?: boolean;
   bgPosition?: string;
   className?: string;
+  href?: string;
 }) {
+  const hoverBg = bgImage ?? "/images/hero-stage-1.webp";
+
   return (
     <article
       className={[
@@ -501,7 +502,7 @@ function PainBentoCard({
               "pointer-events-none absolute inset-0 z-0 transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
               bgAlways ? "opacity-100" : "opacity-0 motion-safe:group-hover:opacity-100",
               accent
-                ? "bg-gradient-to-b from-[#FF5722]/55 via-[#FF5722]/35 to-[#FF5722]/72"
+                ? "bg-gradient-to-b from-black/40 via-black/35 to-black/55"
                 : bgAlways
                   ? "bg-gradient-to-b from-black/55 via-black/42 to-black/68"
                   : "bg-gradient-to-b from-black/72 via-black/58 to-black/82",
@@ -546,29 +547,51 @@ function PainBentoCard({
         )}
       </div>
 
-      <div
+      <a
+        href={href}
         className={[
-          "absolute inset-0 z-[2] flex flex-col opacity-0 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "absolute inset-0 z-[2] flex flex-col no-underline opacity-0 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
           "translate-y-2 motion-safe:group-hover:translate-y-0 motion-safe:group-hover:opacity-100",
           "max-md:pointer-events-none max-md:opacity-0",
+          "focus-visible:opacity-100 focus-visible:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF9A3D]/50",
         ].join(" ")}
+        aria-label={`${hoverCta}: ${title}`}
       >
-        <div className="flex flex-1 flex-col justify-end p-6 pb-5 sm:p-8 sm:pb-6" style={{ backgroundColor: ACCENT }}>
-          <p className="max-w-[42ch] text-[14px] leading-[1.65] text-white sm:text-[15px] sm:leading-[1.7]">
+        <div className="relative flex flex-1 flex-col justify-end overflow-hidden p-6 pb-5 sm:p-8 sm:pb-6">
+          <img
+            src={hoverBg}
+            alt=""
+            aria-hidden
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+            className="pointer-events-none absolute inset-0 h-full w-full scale-125 object-cover blur-[28px]"
+            style={{ objectPosition: bgPosition }}
+          />
+          <div
+            className="pointer-events-none absolute inset-0 bg-black/45"
+            aria-hidden
+          />
+          <p className="relative z-[1] max-w-[42ch] text-[14px] leading-[1.65] text-white sm:text-[15px] sm:leading-[1.7]">
             {solution}
           </p>
         </div>
 
-        <div className="flex items-center justify-between gap-3 bg-[#141414] px-6 py-4 sm:px-8 sm:py-5">
+        <div className="relative z-[1] flex items-center justify-between gap-3 bg-[#141414] px-6 py-4 sm:px-8 sm:py-5">
           <span className="text-[13px] font-medium text-white sm:text-[14px]">{hoverCta}</span>
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white motion-safe:group-hover:animate-pulse">
             <ArrowRight size={14} strokeWidth={2} aria-hidden />
           </span>
         </div>
-      </div>
+      </a>
 
       <div className="bg-white/[0.04] px-6 py-4 md:hidden">
-        <p className="text-[13px] leading-[1.6] text-white/55">{solution}</p>
+        <a
+          href={href}
+          className="block text-[13px] leading-[1.6] text-white/55 no-underline transition hover:text-white/80"
+        >
+          {solution}
+        </a>
       </div>
     </article>
   );

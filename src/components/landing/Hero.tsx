@@ -143,7 +143,10 @@ function HeroCard({
           key={src}
           src={src}
           alt=""
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[center_92%] sm:object-[center_94%]"
+          className={cx(
+            "pointer-events-none absolute inset-0 h-full w-full object-cover object-[center_92%] sm:object-[center_94%]",
+            i === 0 && "brightness-[0.92]"
+          )}
           style={{ opacity: imageOpacity[i] } as CSSProperties}
           decoding="async"
           fetchPriority={i === 0 ? "high" : "low"}

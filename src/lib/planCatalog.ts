@@ -88,6 +88,9 @@ export const PLAN_TELEGRAM_PAYLOADS: Record<PlanId, string> = {
 
 export const HELP_TELEGRAM_PAYLOAD = PLAN_CATALOG.help.telegramPayload;
 
+/** Payload для /partners white-label / referral */
+export const PARTNER_AGENCY_TELEGRAM_PAYLOAD = "partner_agency";
+
 export function getPlanCtaAction(planId: PlanId): PlanCtaAction {
   return PLAN_CATALOG[planId].ctaAction;
 }
@@ -101,6 +104,9 @@ export function getPlanAdminSource(planId: PlanLeadId): string {
 }
 
 /** Payload → подпись для админ-уведомлений (синхронизировано с api/_bot.ts) */
-export const TELEGRAM_PAYLOAD_ADMIN_SOURCE: Record<string, string> = Object.fromEntries(
-  Object.values(PLAN_CATALOG).map((entry) => [entry.telegramPayload, entry.adminSource])
-);
+export const TELEGRAM_PAYLOAD_ADMIN_SOURCE: Record<string, string> = {
+  ...Object.fromEntries(
+    Object.values(PLAN_CATALOG).map((entry) => [entry.telegramPayload, entry.adminSource])
+  ),
+  [PARTNER_AGENCY_TELEGRAM_PAYLOAD]: "Partners (/partners)",
+};

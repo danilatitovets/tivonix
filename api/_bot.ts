@@ -97,6 +97,7 @@ function formatBotSource(source: string) {
     plan_product: "Product (/plans)",
     plan_custom: "Custom (/plans)",
     plan_help: "Help (/plans)",
+    partner_agency: "Partners (/partners)",
   };
   return map[source] ?? source;
 }
@@ -138,6 +139,13 @@ const PLAN_WELCOME_ENTRIES: Record<string, PlanWelcomeEntry> = {
   plan_help: {
     intro: "Привет! Поможем выбрать подходящий план.",
     cta: "📝 Напишите, что хотите запустить: сайт, бот, CRM, кабинет, автоматизацию или просто идею.",
+    useHtml: true,
+  },
+  partner_agency: {
+    intro:
+      "Привет! Это заявка в <b>TIVONIX Partners</b> — white-label и referral для агентств.",
+    cta:
+      "📝 Напишите: название агентства, нишу и формат (referral или white-label). Коротко опишите первого клиента или задачу.",
     useHtml: true,
   },
 };

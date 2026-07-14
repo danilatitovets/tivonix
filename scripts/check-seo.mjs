@@ -8,6 +8,9 @@ const requiredHtmlFiles = [
   "dist/contacts/index.html",
   "dist/sozdanie-sajtov/index.html",
   "dist/avtomatizaciya-biznesa/index.html",
+  "dist/partners/index.html",
+  "dist/ru/partners/index.html",
+  "dist/en/partners/index.html",
   "dist/projects/giftsniper/index.html",
   "dist/projects/slotty/index.html",
   "dist/projects/spliton/index.html",
@@ -78,6 +81,40 @@ const checks = [
     phrases: ["Контакты", "Telegram", "Email"],
   },
   {
+    file: "dist/partners/index.html",
+    phrases: [
+      "Партнёрская программа TIVONIX — Referral и White-label",
+      "https://tivonix.tech/partners",
+      "partner-formats",
+      "type=referral",
+      "type=white_label",
+    ],
+  },
+  {
+    file: "dist/ru/partners/index.html",
+    phrases: [
+      "Партнёрская программа TIVONIX — Referral и White-label",
+      "Передавайте клиентов или продавайте разработку под своим брендом",
+      "https://tivonix.tech/ru/partners",
+      "partner-formats",
+      "Referral-партнёр",
+      "White-label",
+      "type=referral",
+      "type=white_label",
+    ],
+  },
+  {
+    file: "dist/en/partners/index.html",
+    phrases: [
+      "TIVONIX Partner Program — Referral and White-label",
+      "https://tivonix.tech/en/partners",
+      "partner-formats",
+      "White-label",
+      "type=referral",
+      "type=white_label",
+    ],
+  },
+  {
     file: "dist/avtomatizaciya-biznesa/index.html",
     phrases: [
       "Автоматизация бизнеса — TIVONIX",
@@ -146,6 +183,15 @@ for (const requiredFile of requiredHtmlFiles) {
   }
 
   for (const forbidden of forbiddenPhrases) {
+    // /partners and localized partners use www canonical
+    if (
+      (requiredFile === "dist/partners/index.html" ||
+        requiredFile === "dist/ru/partners/index.html" ||
+        requiredFile === "dist/en/partners/index.html") &&
+      forbidden === "https://www.tivonix.tech/"
+    ) {
+      continue;
+    }
     if (content.includes(forbidden)) {
       console.error(`Forbidden phrase in ${requiredFile}: "${forbidden}"`);
       hasErrors = true;

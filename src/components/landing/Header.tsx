@@ -4,7 +4,10 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import Container from "../ui/Container";
 import { TelegramLink } from "./LandingCTA";
 import { useLang } from "../../i18n/LangProvider";
+import { isPartnersPath, partnersPath } from "../../i18n/partnersPaths";
 import { TG_BOT_URL } from "../../constants/links";
+import { partnerPanelLoginUrl } from "../../lib/partnerPanel";
+import { trackPartnersEvent } from "../../lib/ads";
 
 // Десктоп-режим (бургер скрыт, показывается полоса навигации) с xl (>=1280).
 
@@ -12,7 +15,7 @@ function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
 
-type NavKey = "home" | "automation" | "plans" | "projects";
+type NavKey = "home" | "automation" | "plans" | "projects" | "partners";
 type NavItem = { to: string; key: NavKey };
 
 const NAV_MAIN: NavItem[] = [
@@ -20,6 +23,7 @@ const NAV_MAIN: NavItem[] = [
   { to: "/avtomatizaciya-biznesa", key: "automation" },
   { to: "/plans", key: "plans" },
   { to: "/projects", key: "projects" },
+  { to: "/partners", key: "partners" },
 ];
 
 // Важно: десктоп-режим теперь только с xl (>=1280).
@@ -27,6 +31,7 @@ const DESKTOP_MIN_WIDTH = 1280;
 
 const LOGO_DEFAULT = "/images/tivonix-logo-lockup.webp";
 const LOGO_WHITE = "/images/tivonix-logo-white.webp";
+const LOGO_BLACK = "/images/logo-black.png";
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -197,8 +202,22 @@ export default function Header() {
   const isMobile = useIsMobile();
   const heroInView = useHomeHeroInView(location.pathname);
   const footerInView = useFooterInView(location.pathname);
-  const hideHeader = footerInView && !open;
-  const logoSrc = heroInView ? LOGO_WHITE : LOGO_DEFAULT;
+  const [partnersCapsLock, setPartnersCapsLock] = useState(false);
+  useEffect(() => {
+    if (!isPartnersPath(location.pathname)) {
+      setPartnersCapsLock(false);
+      return;
+    }
+    const el = document.documentElement;
+    const sync = () => setPartnersCapsLock(el.dataset.partnersCaps === "1");
+    sync();
+    const mo = new MutationObserver(sync);
+    mo.observe(el, { attributes: true, attributeFilter: ["data-partners-caps"] });
+    return () => mo.disconnect();
+  }, [location.pathname]);
+  const hideHeader = (footerInView || partnersCapsLock) && !open;
+  const isPartners = isPartnersPath(location.pathname);
+  const logoSrc = isPartners ? LOGO_BLACK : heroInView ? LOGO_WHITE : LOGO_DEFAULT;
   const isHome = location.pathname === "/";
   const needsSpacer = isMobile && !isHome;
   const { lang } = useLang();
@@ -274,11 +293,13 @@ export default function Header() {
       if (key === "automation") return "автоматизация";
       if (key === "plans") return "планы";
       if (key === "projects") return "проекты";
+      if (key === "partners") return "партнёры";
     } else {
       if (key === "home") return "home";
       if (key === "automation") return "automation";
       if (key === "plans") return "plans";
       if (key === "projects") return "projects";
+      if (key === "partners") return "partners";
     }
     return key;
   };
@@ -287,6 +308,7 @@ export default function Header() {
     if (location.pathname === "/plans") return "plans";
     if (location.pathname === "/projects") return "projects";
     if (location.pathname === "/avtomatizaciya-biznesa") return "automation";
+    if (isPartnersPath(location.pathname)) return "partners";
     return "home";
   }, [location.pathname]);
 
@@ -294,7 +316,7 @@ export default function Header() {
     () =>
       NAV_MAIN.map((it) => ({
         key: it.key,
-        to: it.to,
+        to: it.key === "partners" ? partnersPath(lang) : it.to,
         label: navLabel(it.key),
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -319,7 +341,18 @@ export default function Header() {
   const ariaHome = isRu ? "На главную" : "Go to home";
   const ariaMenu = isRu ? "Меню" : "Menu";
 
-  const ctaTop = isRu ? "Обсудить проект" : "Discuss the project";
+  const onPartners = isPartnersPath(location.pathname);
+  const ctaTop = onPartners
+    ? isRu
+      ? "Войти в панель"
+      : "Log in to panel"
+    : isRu
+      ? "Обсудить проект"
+      : "Discuss the project";
+  const ctaHref = onPartners ? partnerPanelLoginUrl() : TG_BOT_URL;
+  const onPartnersCtaClick = onPartners
+    ? () => trackPartnersEvent("partners_login_click", { source: "header" })
+    : undefined;
 
   const dur = reducedMotion ? 0 : 280;
 
@@ -394,25 +427,37 @@ export default function Header() {
 
                 {/* RIGHT: CTA (desktop xl+) */}
                 <div className="ml-auto hidden min-w-0 shrink-0 items-center xl:ml-0 xl:flex xl:justify-self-end">
-                  <TelegramLink
-                    href={TG_BOT_URL}
-                    variant="white"
-                    className="h-11 px-7 text-[14px]"
-                  >
-                    {ctaTop}
-                  </TelegramLink>
+                  {onPartners ? (
+                    <a
+                      href={ctaHref}
+                      onClick={onPartnersCtaClick}
+                      className="inline-flex h-11 items-center justify-center rounded-full bg-white px-7 text-[14px] font-bold tracking-[-0.015em] text-black no-underline transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
+                    >
+                      {ctaTop}
+                    </a>
+                  ) : (
+                    <TelegramLink href={TG_BOT_URL} variant="white" className="h-11 px-7 text-[14px]">
+                      {ctaTop}
+                    </TelegramLink>
+                  )}
                 </div>
 
                 {/* RIGHT: tablet/mobile (до xl) — CTA + бургер */}
                 <div className="ml-auto xl:hidden flex items-center gap-2">
                   <div className="hidden md:block">
-                    <TelegramLink
-                      href={TG_BOT_URL}
-                      variant="white"
-                      className="h-11 px-6 text-[13px]"
-                    >
-                      {ctaTop}
-                    </TelegramLink>
+                    {onPartners ? (
+                      <a
+                        href={ctaHref}
+                        onClick={onPartnersCtaClick}
+                        className="inline-flex h-11 items-center justify-center rounded-full bg-white px-6 text-[13px] font-bold tracking-[-0.015em] text-black no-underline transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45"
+                      >
+                        {ctaTop}
+                      </a>
+                    ) : (
+                      <TelegramLink href={TG_BOT_URL} variant="white" className="h-11 px-6 text-[13px]">
+                        {ctaTop}
+                      </TelegramLink>
+                    )}
                   </div>
 
                   <button
@@ -599,15 +644,28 @@ export default function Header() {
             </nav>
 
             <div className="mt-auto flex flex-col gap-2 px-2 pt-6 pb-[max(1rem,env(safe-area-inset-bottom))]">
-              <TelegramLink
-                href={TG_BOT_URL}
-                variant="plain"
-                className="h-12 w-full rounded-xl border border-white/[0.08] text-[14px]"
-              >
-                {isRu ? "Обсудить проект" : "Contact sales"}
-              </TelegramLink>
+              {onPartners ? (
+                <a
+                  href={ctaHref}
+                  onClick={() => {
+                    onPartnersCtaClick?.();
+                    setOpen(false);
+                  }}
+                  className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-white/[0.08] px-6 text-[14px] font-bold text-white no-underline transition hover:bg-white/[0.03]"
+                >
+                  {ctaTop}
+                </a>
+              ) : (
+                <TelegramLink
+                  href={TG_BOT_URL}
+                  variant="plain"
+                  className="h-12 w-full rounded-xl border border-white/[0.08] text-[14px]"
+                >
+                  {isRu ? "Обсудить проект" : "Contact sales"}
+                </TelegramLink>
+              )}
               <Link
-                to="/plans"
+                to={onPartners ? `${partnersPath(lang)}#partner-formats` : "/plans"}
                 className={cx(
                   "inline-flex h-12 items-center justify-center rounded-xl px-6 text-[14px] font-semibold text-black",
                   "bg-[#ff6a21] transition hover:brightness-105",
@@ -615,7 +673,7 @@ export default function Header() {
                 )}
                 onClick={() => setOpen(false)}
               >
-                {isRu ? "Планы" : "Plans"}
+                {onPartners ? (isRu ? "Форматы" : "Formats") : isRu ? "Планы" : "Plans"}
               </Link>
             </div>
           </div>

@@ -7,6 +7,9 @@ import ContactsPage from "./pages/ContactsPage";
 import WebsiteCreationPage from "./pages/WebsiteCreationPage";
 import AutomationBusinessPage from "./pages/AutomationBusinessPage";
 import PricingPage from "./pages/PricingPage";
+import PartnersPage from "./pages/PartnersPage";
+import { LangPathSync } from "./i18n/LangProvider";
+import { PARTNERS_PATH_EN, PARTNERS_PATH_RU } from "./i18n/partnersPaths";
 
 const HEADER_OFFSET = 84;
 
@@ -35,6 +38,7 @@ function ScrollToHash() {
 export function AppRoutes() {
   return (
     <>
+      <LangPathSync />
       <ScrollToHash />
       <Routes>
         <Route path="/" element={<LandingPage />} />
@@ -44,6 +48,9 @@ export function AppRoutes() {
         <Route path="/contacts" element={<ContactsPage />} />
         <Route path="/sozdanie-sajtov" element={<WebsiteCreationPage />} />
         <Route path="/avtomatizaciya-biznesa" element={<AutomationBusinessPage />} />
+        <Route path="/partners" element={<PartnersPage />} />
+        <Route path={PARTNERS_PATH_RU} element={<PartnersPage />} />
+        <Route path={PARTNERS_PATH_EN} element={<PartnersPage />} />
       </Routes>
     </>
   );

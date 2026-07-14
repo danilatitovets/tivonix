@@ -57,3 +57,13 @@ export function trackAdsConversion(eventLabel?: string, eventCallback?: () => vo
   }
   window.gtag("event", "conversion", payload);
 }
+
+/**
+ * Custom GA/Ads event when gtag is available.
+ * No-op if analytics is not configured — does not add a new analytics vendor.
+ */
+export function trackPartnersEvent(eventName: string, params?: Record<string, unknown>): void {
+  if (typeof window === "undefined" || typeof window.gtag !== "function") return;
+  if (!eventName) return;
+  window.gtag("event", eventName, params ?? {});
+}

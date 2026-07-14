@@ -1,5 +1,6 @@
 // src/pages/projectBlocks.tsx — общие блоки для /projects и /projects/:slug
-import type { CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import type { Project, ProjectStatus } from "../data/projectsCatalog";
 
 export const HERO_IMG = "/images/hero.webp";
@@ -23,6 +24,8 @@ const PREVIEW_SPECS: Record<PreviewVariant, { maxH: number; aspect: number; full
   thumb: { maxH: 180, aspect: 3 / 2 },
   grid: { maxH: 9999, aspect: 16 / 9, fullWidth: true },
 };
+
+const ZOOM_STEPS = [1, 1.5, 2.25] as const;
 
 /** Превью: целиком в кадре, без обрезки и без полос по бокам внутри рамки. */
 export function ProjectPreviewFrame({
@@ -54,12 +57,197 @@ export function ProjectPreviewFrame({
       <img
         src={src}
         alt=""
-        className="block h-full w-full object-contain"
+        className={cx(
+          "block h-full w-full",
+          variant === "grid"
+            ? "scale-110 object-cover object-top blur-[22px]"
+            : "object-contain"
+        )}
         draggable={false}
         loading="lazy"
         decoding="async"
       />
     </div>
+  );
+}
+
+function GalleryLightbox({
+  images,
+  index,
+  isRu,
+  onClose,
+  onIndexChange,
+}: {
+  images: string[];
+  index: number;
+  isRu: boolean;
+  onClose: () => void;
+  onIndexChange: (next: number) => void;
+}) {
+  const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [zoomIdx, setZoomIdx] = useState(0);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const closeLabel = isRu ? "Закрыть" : "Close";
+  const prevLabel = isRu ? "Предыдущий" : "Previous";
+  const nextLabel = isRu ? "Следующий" : "Next";
+  const zoom = ZOOM_STEPS[zoomIdx] ?? 1;
+  const src = images[index];
+  const multi = images.length > 1;
+
+  useEffect(() => {
+    setMounted(true);
+    const id = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  useEffect(() => {
+    const prevHtml = document.documentElement.style.overflow;
+    const prevBody = document.body.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.documentElement.style.overflow = prevHtml;
+      document.body.style.overflow = prevBody;
+    };
+  }, []);
+
+  useEffect(() => {
+    setZoomIdx(0);
+    stageRef.current?.scrollTo({ left: 0, top: 0 });
+  }, [index]);
+
+  const requestClose = useCallback(() => {
+    setVisible(false);
+    window.setTimeout(onClose, 180);
+  }, [onClose]);
+
+  const go = useCallback(
+    (delta: number) => {
+      if (!multi) return;
+      const next = (index + delta + images.length) % images.length;
+      onIndexChange(next);
+    },
+    [images.length, index, multi, onIndexChange]
+  );
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") requestClose();
+      if (e.key === "ArrowLeft") go(-1);
+      if (e.key === "ArrowRight") go(1);
+      if (e.key === "+" || e.key === "=") setZoomIdx((z) => Math.min(z + 1, ZOOM_STEPS.length - 1));
+      if (e.key === "-" || e.key === "_") setZoomIdx((z) => Math.max(z - 1, 0));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [go, requestClose]);
+
+  if (!mounted || typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      className={cx(
+        "fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-6",
+        "transition-opacity duration-200",
+        visible ? "opacity-100" : "opacity-0"
+      )}
+      role="dialog"
+      aria-modal="true"
+      aria-label={isRu ? "Просмотр скриншота" : "Screenshot viewer"}
+    >
+      <button
+        type="button"
+        className="absolute inset-0 bg-black"
+        aria-label={closeLabel}
+        onClick={requestClose}
+      />
+
+      <div
+        className={cx(
+          "relative z-[1] flex max-h-[min(92dvh,920px)] w-full max-w-[min(96vw,1120px)] flex-col",
+          "transition-transform duration-200",
+          visible ? "scale-100" : "scale-[0.97]"
+        )}
+      >
+        <div className="mb-2 flex items-center justify-between gap-3 px-0.5">
+          <p className="text-[12px] font-medium tabular-nums text-white/40">
+            {index + 1} / {images.length}
+          </p>
+          <button
+            type="button"
+            className="grid h-9 w-9 place-items-center rounded-full text-white/45 transition hover:bg-white/[0.06] hover:text-white/75"
+            aria-label={closeLabel}
+            onClick={requestClose}
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="relative min-h-0 flex-1">
+          {multi ? (
+            <>
+              <button
+                type="button"
+                className="absolute left-0 top-1/2 z-[2] hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full text-white/35 transition hover:bg-white/[0.06] hover:text-white/70 sm:grid"
+                aria-label={prevLabel}
+                onClick={() => go(-1)}
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                className="absolute right-0 top-1/2 z-[2] hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full text-white/35 transition hover:bg-white/[0.06] hover:text-white/70 sm:grid"
+                aria-label={nextLabel}
+                onClick={() => go(1)}
+              >
+                ›
+              </button>
+            </>
+          ) : null}
+
+          <div
+            ref={stageRef}
+            className={cx(
+              "max-h-[min(84dvh,860px)] overflow-auto rounded-2xl bg-black",
+              "overscroll-contain",
+              zoom > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in"
+            )}
+            onDoubleClick={() =>
+              setZoomIdx((z) => (z >= ZOOM_STEPS.length - 1 ? 0 : Math.min(z + 1, ZOOM_STEPS.length - 1)))
+            }
+          >
+            <div
+              className="grid place-items-center p-0 sm:p-1"
+              style={{
+                width: `${zoom * 100}%`,
+                minHeight: zoom > 1 ? undefined : "min(84dvh, 860px)",
+                minWidth: "100%",
+              }}
+            >
+              <img
+                src={src}
+                alt=""
+                className="block h-auto max-w-full select-none rounded-xl object-contain"
+                style={{
+                  maxHeight: zoom === 1 ? "min(80dvh, 820px)" : "none",
+                  width: zoom === 1 ? "auto" : `${100 / zoom}%`,
+                }}
+                draggable={false}
+                decoding="async"
+              />
+            </div>
+          </div>
+        </div>
+
+        <p className="mt-2 text-center text-[11px] text-white/25">
+          {isRu
+            ? "Двойной клик — увеличить · Esc — закрыть · ← → листать"
+            : "Double-click to zoom · Esc to close · ← → to browse"}
+        </p>
+      </div>
+    </div>,
+    document.body
   );
 }
 
@@ -71,9 +259,12 @@ export function ProjectGalleryStrip({
   images: string[];
   isRu: boolean;
 }) {
+  const [active, setActive] = useState<number | null>(null);
+
   if (!images.length) return null;
 
   const label = isRu ? "Скриншоты проекта" : "Project screenshots";
+  const openLabel = isRu ? "Открыть скриншот" : "Open screenshot";
 
   return (
     <div className="mt-5">
@@ -87,12 +278,29 @@ export function ProjectGalleryStrip({
         role="list"
         aria-label={label}
       >
-        {images.map((src) => (
+        {images.map((src, i) => (
           <div key={src} role="listitem" className="shrink-0 snap-center">
-            <ProjectPreviewFrame src={src} variant="thumb" />
+            <button
+              type="button"
+              className="group block cursor-zoom-in rounded-2xl outline-none transition hover:opacity-95 focus-visible:ring-2 focus-visible:ring-white/35"
+              aria-label={`${openLabel} ${i + 1}`}
+              onClick={() => setActive(i)}
+            >
+              <ProjectPreviewFrame src={src} variant="thumb" />
+            </button>
           </div>
         ))}
       </div>
+
+      {active !== null ? (
+        <GalleryLightbox
+          images={images}
+          index={active}
+          isRu={isRu}
+          onClose={() => setActive(null)}
+          onIndexChange={setActive}
+        />
+      ) : null}
     </div>
   );
 }

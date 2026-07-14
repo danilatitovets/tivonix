@@ -1,11 +1,12 @@
 import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import React, { createContext, useState, useEffect, useMemo, useContext, useRef, useLayoutEffect, useCallback, lazy, Suspense } from "react";
 import { renderToString } from "react-dom/server";
-import { useNavigate, useLocation, Link, useParams, Navigate, Routes, Route, MemoryRouter } from "react-router-dom";
+import { useLocation, useNavigate, Link, useParams, Navigate, Routes, Route, MemoryRouter } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { ChevronDown, ArrowRight, Loader2, Check, Shield, ArrowUpRight, Phone, Mail, Globe, Globe2, MapPin, Maximize2, Search, Bot, Zap, LayoutDashboard, Users, TrendingUp, ShieldCheck, ChevronLeft, ChevronRight, FolderOpen, Plus, Minus } from "lucide-react";
 import { SiTelegram, SiInstagram, SiWhatsapp, SiGmail, SiHubspot, SiGooglesheets, SiNotion, SiGooglecalendar, SiClickup, SiStripe, SiGoogledocs, SiGoogleanalytics, SiZapier } from "react-icons/si";
 import createGlobe from "cobe";
+import { createPortal } from "react-dom";
 import { FiBell } from "react-icons/fi";
 const LANG_STORAGE_KEY = "tivonix_lang";
 const DICT = {
@@ -326,8 +327,11 @@ function syncHtmlLang(lang) {
   document.documentElement.lang = lang;
   document.documentElement.dataset.lang = lang;
 }
-function LangProvider({ children }) {
-  const [lang, setLangState] = useState(() => detectLang());
+function LangProvider({
+  children,
+  initialLang
+}) {
+  const [lang, setLangState] = useState(() => initialLang ?? detectLang());
   const setLang = (l) => {
     setLangState(l);
     try {
@@ -352,6 +356,19 @@ function LangProvider({ children }) {
     [lang]
   );
   return /* @__PURE__ */ jsx(LangContext.Provider, { value, children });
+}
+function LangPathSync() {
+  const { pathname } = useLocation();
+  const { lang, setLang } = useLang();
+  useEffect(() => {
+    let next = null;
+    const clean = pathname.replace(/\/+$/, "") || "/";
+    if (clean === "/en" || clean.startsWith("/en/")) next = "en";
+    else if (clean === "/ru" || clean.startsWith("/ru/")) next = "ru";
+    else if (clean === "/partners") next = "ru";
+    if (next && next !== lang) setLang(next);
+  }, [pathname, lang, setLang]);
+  return null;
 }
 function useLang() {
   const ctx = useContext(LangContext);
@@ -447,15 +464,18 @@ const PLAN_CATALOG = {
   custom: PLAN_CATALOG.custom.telegramPayload
 });
 const HELP_TELEGRAM_PAYLOAD = PLAN_CATALOG.help.telegramPayload;
+const PARTNER_AGENCY_TELEGRAM_PAYLOAD = "partner_agency";
 function getPlanCtaAction(planId) {
   return PLAN_CATALOG[planId].ctaAction;
 }
 function getPlanTelegramPayload(planId) {
   return PLAN_CATALOG[planId].telegramPayload;
 }
-Object.fromEntries(
-  Object.values(PLAN_CATALOG).map((entry) => [entry.telegramPayload, entry.adminSource])
-);
+({
+  ...Object.fromEntries(
+    Object.values(PLAN_CATALOG).map((entry) => [entry.telegramPayload, entry.adminSource])
+  )
+});
 const TG_BOT_BASE_URL = "https://t.me/tivonixtech_leads_bot";
 const TG_CHANNEL_URL = "https://t.me/TIVONIX";
 const TG_BOT_URL = buildTelegramBotUrl("calc");
@@ -472,7 +492,8 @@ function buildPricingPlanTelegramUrl(planId) {
 function buildHelpPlanTelegramUrl() {
   return buildTelegramBotUrl(HELP_TELEGRAM_PAYLOAD);
 }
-function cx$c(...a) {
+const PARTNER_AGENCY_TELEGRAM_URL = buildTelegramBotUrl(PARTNER_AGENCY_TELEGRAM_PAYLOAD);
+function cx$d(...a) {
   return a.filter(Boolean).join(" ");
 }
 function TelegramLink({
@@ -495,7 +516,7 @@ function TelegramLink({
 }
 function ctaClass(variant, size, className) {
   const isSquare = variant === "plain";
-  return cx$c(
+  return cx$d(
     "inline-flex items-center justify-center font-bold tracking-[-0.015em] transition duration-200",
     isSquare ? "rounded-none shadow-none" : "rounded-full",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
@@ -509,18 +530,61 @@ function ctaClass(variant, size, className) {
     className
   );
 }
-function cx$b(...a) {
+const PARTNERS_PATH_RU = "/ru/partners";
+const PARTNERS_PATH_EN = "/en/partners";
+const PARTNERS_PATH_LEGACY = "/partners";
+function partnersPath(lang) {
+  return lang === "en" ? PARTNERS_PATH_EN : PARTNERS_PATH_RU;
+}
+function isPartnersPath(pathname) {
+  const p = pathname.replace(/\/+$/, "") || "/";
+  return p === PARTNERS_PATH_LEGACY || p === PARTNERS_PATH_RU || p === PARTNERS_PATH_EN;
+}
+const PARTNERS_ORIGIN = "https://tivonix.tech";
+function partnersCanonicalUrl(lang, pathname) {
+  const p = (pathname ?? "").replace(/\/+$/, "") || "";
+  if (p === PARTNERS_PATH_LEGACY) {
+    return `${PARTNERS_ORIGIN}${PARTNERS_PATH_LEGACY}`;
+  }
+  if (p === PARTNERS_PATH_RU || p === PARTNERS_PATH_EN) {
+    return `${PARTNERS_ORIGIN}${p}`;
+  }
+  return `${PARTNERS_ORIGIN}${partnersPath(lang)}`;
+}
+function partnersHreflangUrl(path) {
+  return `${PARTNERS_ORIGIN}${path}`;
+}
+const DEFAULT_PANEL_ORIGIN = "https://tivonixpanel-production.up.railway.app";
+function partnerPanelOrigin() {
+  return DEFAULT_PANEL_ORIGIN;
+}
+function partnerPanelLoginUrl() {
+  return `${partnerPanelOrigin()}/login`;
+}
+function partnerPanelRegisterUrl(type) {
+  const url = new URL(`${partnerPanelOrigin()}/register`);
+  url.searchParams.set("type", type);
+  return url.toString();
+}
+function trackPartnersEvent(eventName, params) {
+  if (typeof window === "undefined" || typeof window.gtag !== "function") return;
+  if (!eventName) return;
+  window.gtag("event", eventName, params ?? {});
+}
+function cx$c(...a) {
   return a.filter(Boolean).join(" ");
 }
 const NAV_MAIN = [
   { to: "/", key: "home" },
   { to: "/avtomatizaciya-biznesa", key: "automation" },
   { to: "/plans", key: "plans" },
-  { to: "/projects", key: "projects" }
+  { to: "/projects", key: "projects" },
+  { to: "/partners", key: "partners" }
 ];
 const DESKTOP_MIN_WIDTH = 1280;
 const LOGO_DEFAULT = "/images/tivonix-logo-lockup.webp";
 const LOGO_WHITE = "/images/tivonix-logo-white.webp";
+const LOGO_BLACK = "/images/logo-black.png";
 function usePrefersReducedMotion$2() {
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
@@ -618,7 +682,7 @@ function PillNav({
   return /* @__PURE__ */ jsx(
     "nav",
     {
-      className: cx$b(
+      className: cx$c(
         "relative inline-flex items-center gap-0.5 rounded-full border-0 bg-[#141414] p-1"
       ),
       "aria-label": "Header navigation",
@@ -632,7 +696,7 @@ function PillNav({
             to: it.to,
             onClick: onItemClick(it.to),
             "aria-current": isActive ? "page" : void 0,
-            className: cx$b(
+            className: cx$c(
               "relative flex items-center gap-2 rounded-full border-0 font-bold uppercase tracking-[0.14em] outline-none select-none transition",
               "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
               pad,
@@ -656,8 +720,22 @@ function Header() {
   const isMobile = useIsMobile();
   const heroInView = useHomeHeroInView(location.pathname);
   const footerInView = useFooterInView(location.pathname);
-  const hideHeader = footerInView && !open;
-  const logoSrc = heroInView ? LOGO_WHITE : LOGO_DEFAULT;
+  const [partnersCapsLock, setPartnersCapsLock] = useState(false);
+  useEffect(() => {
+    if (!isPartnersPath(location.pathname)) {
+      setPartnersCapsLock(false);
+      return;
+    }
+    const el = document.documentElement;
+    const sync = () => setPartnersCapsLock(el.dataset.partnersCaps === "1");
+    sync();
+    const mo = new MutationObserver(sync);
+    mo.observe(el, { attributes: true, attributeFilter: ["data-partners-caps"] });
+    return () => mo.disconnect();
+  }, [location.pathname]);
+  const hideHeader = (footerInView || partnersCapsLock) && !open;
+  const isPartners = isPartnersPath(location.pathname);
+  const logoSrc = isPartners ? LOGO_BLACK : heroInView ? LOGO_WHITE : LOGO_DEFAULT;
   const isHome = location.pathname === "/";
   const needsSpacer = isMobile && !isHome;
   const { lang } = useLang();
@@ -721,11 +799,13 @@ function Header() {
       if (key === "automation") return "автоматизация";
       if (key === "plans") return "планы";
       if (key === "projects") return "проекты";
+      if (key === "partners") return "партнёры";
     } else {
       if (key === "home") return "home";
       if (key === "automation") return "automation";
       if (key === "plans") return "plans";
       if (key === "projects") return "projects";
+      if (key === "partners") return "partners";
     }
     return key;
   };
@@ -733,12 +813,13 @@ function Header() {
     if (location.pathname === "/plans") return "plans";
     if (location.pathname === "/projects") return "projects";
     if (location.pathname === "/avtomatizaciya-biznesa") return "automation";
+    if (isPartnersPath(location.pathname)) return "partners";
     return "home";
   }, [location.pathname]);
   const tabsItems = useMemo(
     () => NAV_MAIN.map((it) => ({
       key: it.key,
-      to: it.to,
+      to: it.key === "partners" ? partnersPath(lang) : it.to,
       label: navLabel(it.key)
     })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -759,7 +840,10 @@ function Header() {
   };
   const ariaHome = isRu ? "На главную" : "Go to home";
   const ariaMenu = isRu ? "Меню" : "Menu";
-  const ctaTop = isRu ? "Обсудить проект" : "Discuss the project";
+  const onPartners = isPartnersPath(location.pathname);
+  const ctaTop = onPartners ? isRu ? "Войти в панель" : "Log in to panel" : isRu ? "Обсудить проект" : "Discuss the project";
+  const ctaHref = onPartners ? partnerPanelLoginUrl() : TG_BOT_URL;
+  const onPartnersCtaClick = onPartners ? () => trackPartnersEvent("partners_login_click", { source: "header" }) : void 0;
   const dur = reducedMotion ? 0 : 280;
   const closeMenu = () => {
     setOpen(false);
@@ -770,7 +854,7 @@ function Header() {
       "div",
       {
         "aria-hidden": true,
-        className: cx$b(
+        className: cx$c(
           needsSpacer ? "h-[78px] sm:h-[82px]" : "h-0"
         )
       }
@@ -778,7 +862,7 @@ function Header() {
     /* @__PURE__ */ jsx(
       "header",
       {
-        className: cx$b(
+        className: cx$c(
           "fixed inset-x-0 z-[120] transition-[top,transform,opacity]",
           heroInView && !isMobile ? "top-3 sm:top-4" : "top-0",
           hideHeader ? "pointer-events-none -translate-y-full opacity-0" : "translate-y-0 opacity-100"
@@ -787,7 +871,7 @@ function Header() {
         children: /* @__PURE__ */ jsx("div", { className: "h-[78px] w-full bg-transparent sm:h-[82px]", children: /* @__PURE__ */ jsx(Container, { className: "h-full", children: /* @__PURE__ */ jsxs(
           "div",
           {
-            className: cx$b(
+            className: cx$c(
               "relative flex h-full w-full min-w-0 items-center xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:items-center xl:gap-x-4"
             ),
             children: [
@@ -799,7 +883,7 @@ function Header() {
                     e.preventDefault();
                     goHome();
                   },
-                  className: cx$b(
+                  className: cx$c(
                     "flex items-center outline-none",
                     "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 rounded-xl"
                   ),
@@ -809,7 +893,7 @@ function Header() {
                     {
                       src: logoSrc,
                       alt: "TIVONIX",
-                      className: cx$b(
+                      className: cx$c(
                         "w-auto object-contain opacity-95 transition-all hover:opacity-100",
                         heroInView ? "h-10 sm:h-11 lg:h-12" : "h-8 sm:h-9"
                       ),
@@ -830,31 +914,31 @@ function Header() {
                   compact: false
                 }
               ) }),
-              /* @__PURE__ */ jsx("div", { className: "ml-auto hidden min-w-0 shrink-0 items-center xl:ml-0 xl:flex xl:justify-self-end", children: /* @__PURE__ */ jsx(
-                TelegramLink,
+              /* @__PURE__ */ jsx("div", { className: "ml-auto hidden min-w-0 shrink-0 items-center xl:ml-0 xl:flex xl:justify-self-end", children: onPartners ? /* @__PURE__ */ jsx(
+                "a",
                 {
-                  href: TG_BOT_URL,
-                  variant: "white",
-                  className: "h-11 px-7 text-[14px]",
+                  href: ctaHref,
+                  onClick: onPartnersCtaClick,
+                  className: "inline-flex h-11 items-center justify-center rounded-full bg-white px-7 text-[14px] font-bold tracking-[-0.015em] text-black no-underline transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
                   children: ctaTop
                 }
-              ) }),
+              ) : /* @__PURE__ */ jsx(TelegramLink, { href: TG_BOT_URL, variant: "white", className: "h-11 px-7 text-[14px]", children: ctaTop }) }),
               /* @__PURE__ */ jsxs("div", { className: "ml-auto xl:hidden flex items-center gap-2", children: [
-                /* @__PURE__ */ jsx("div", { className: "hidden md:block", children: /* @__PURE__ */ jsx(
-                  TelegramLink,
+                /* @__PURE__ */ jsx("div", { className: "hidden md:block", children: onPartners ? /* @__PURE__ */ jsx(
+                  "a",
                   {
-                    href: TG_BOT_URL,
-                    variant: "white",
-                    className: "h-11 px-6 text-[13px]",
+                    href: ctaHref,
+                    onClick: onPartnersCtaClick,
+                    className: "inline-flex h-11 items-center justify-center rounded-full bg-white px-6 text-[13px] font-bold tracking-[-0.015em] text-black no-underline transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45",
                     children: ctaTop
                   }
-                ) }),
+                ) : /* @__PURE__ */ jsx(TelegramLink, { href: TG_BOT_URL, variant: "white", className: "h-11 px-6 text-[13px]", children: ctaTop }) }),
                 /* @__PURE__ */ jsx(
                   "button",
                   {
                     ref: burgerRef,
                     type: "button",
-                    className: cx$b(
+                    className: cx$c(
                       "grid place-items-center outline-none border-0",
                       "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
                       "h-11 w-11 rounded-2xl",
@@ -937,7 +1021,7 @@ function Header() {
       "div",
       {
         id: "mobile-header-menu",
-        className: cx$b(
+        className: cx$c(
           "xl:hidden fixed inset-0 z-[200]",
           open ? "pointer-events-auto" : "pointer-events-none"
         ),
@@ -945,7 +1029,7 @@ function Header() {
         children: /* @__PURE__ */ jsxs(
           "div",
           {
-            className: cx$b(
+            className: cx$c(
               "mobile-menu-panel absolute inset-0 flex min-h-[100dvh] flex-col overflow-hidden bg-[#161313]",
               "transition-[opacity,transform,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
               open ? "visible translate-y-0 opacity-100" : "invisible -translate-y-4 opacity-0"
@@ -982,7 +1066,7 @@ function Header() {
                   {
                     type: "button",
                     onClick: closeMenu,
-                    className: cx$b(
+                    className: cx$c(
                       "grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-xl border-0",
                       "bg-white/[0.04] text-white/72 transition hover:bg-white/[0.08] active:scale-95",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
@@ -1050,7 +1134,7 @@ function Header() {
                   Link,
                   {
                     to: item.to,
-                    className: cx$b(
+                    className: cx$c(
                       "flex items-center justify-between border-b border-white/[0.08] px-3 py-4 text-[15px] font-medium text-white/92",
                       "transition-colors hover:bg-white/[0.03] active:bg-white/[0.02]",
                       activeKey === item.key && "text-[#FFAE66]"
@@ -1067,7 +1151,18 @@ function Header() {
                   item.key
                 )) }),
                 /* @__PURE__ */ jsxs("div", { className: "mt-auto flex flex-col gap-2 px-2 pt-6 pb-[max(1rem,env(safe-area-inset-bottom))]", children: [
-                  /* @__PURE__ */ jsx(
+                  onPartners ? /* @__PURE__ */ jsx(
+                    "a",
+                    {
+                      href: ctaHref,
+                      onClick: () => {
+                        onPartnersCtaClick?.();
+                        setOpen(false);
+                      },
+                      className: "inline-flex h-12 w-full items-center justify-center rounded-xl border border-white/[0.08] px-6 text-[14px] font-bold text-white no-underline transition hover:bg-white/[0.03]",
+                      children: ctaTop
+                    }
+                  ) : /* @__PURE__ */ jsx(
                     TelegramLink,
                     {
                       href: TG_BOT_URL,
@@ -1079,14 +1174,14 @@ function Header() {
                   /* @__PURE__ */ jsx(
                     Link,
                     {
-                      to: "/plans",
-                      className: cx$b(
+                      to: onPartners ? `${partnersPath(lang)}#partner-formats` : "/plans",
+                      className: cx$c(
                         "inline-flex h-12 items-center justify-center rounded-xl px-6 text-[14px] font-semibold text-black",
                         "bg-[#ff6a21] transition hover:brightness-105",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40"
                       ),
                       onClick: () => setOpen(false),
-                      children: isRu ? "Планы" : "Plans"
+                      children: onPartners ? isRu ? "Форматы" : "Formats" : isRu ? "Планы" : "Plans"
                     }
                   )
                 ] })
@@ -2100,7 +2195,7 @@ const COPY_EN$1 = {
   }
 };
 const ORANGE_PILL = "bg-gradient-to-r from-[#FFD7B0] via-[#FF9A3D] to-[#FF6A1A] shadow-[0_6px_20px_rgba(255,107,44,0.2)]";
-function cx$a(...a) {
+function cx$b(...a) {
   return a.filter(Boolean).join(" ");
 }
 function LangToggle({
@@ -2116,7 +2211,7 @@ function LangToggle({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$a(
+      className: cx$b(
         "relative shrink-0 select-none rounded-full p-1",
         isHero ? "border border-white/35 bg-white/[0.10] backdrop-blur-md" : "border border-white/[0.08] bg-[#121212]",
         h
@@ -2129,7 +2224,7 @@ function LangToggle({
           "span",
           {
             "aria-hidden": true,
-            className: cx$a(
+            className: cx$b(
               "pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-8px)/2)] rounded-full",
               isHero ? "bg-[#FFFCF5] shadow-[0_4px_14px_rgba(0,0,0,0.18)]" : ORANGE_PILL,
               !reducedMotion && "transition-transform duration-200 ease-[cubic-bezier(0.33,1,0.68,1)]"
@@ -2147,7 +2242,7 @@ function LangToggle({
               role: "radio",
               "aria-checked": lang === "ru",
               onClick: () => setLang("ru"),
-              className: cx$a(
+              className: cx$b(
                 "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
                 "focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
                 text,
@@ -2163,7 +2258,7 @@ function LangToggle({
               role: "radio",
               "aria-checked": lang === "en",
               onClick: () => setLang("en"),
-              className: cx$a(
+              className: cx$b(
                 "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
                 "focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
                 text,
@@ -2183,7 +2278,7 @@ const HERO_IMAGES = [
   "/images/hero-stage-3.webp"
 ];
 const SCROLL_TRACK_VH = 240;
-function cx$9(...a) {
+function cx$a(...a) {
   return a.filter(Boolean).join(" ");
 }
 function clamp01$5(v) {
@@ -2275,7 +2370,7 @@ function HeroCard({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$9(
+      className: cx$a(
         "relative isolate h-full min-h-0 flex-1 overflow-hidden rounded-[28px] lg:rounded-[32px]"
       ),
       children: [
@@ -2312,8 +2407,8 @@ function HeroCard({
                 },
                 "aria-hidden": i !== activeStage,
                 children: [
-                  /* @__PURE__ */ jsx("h1", { className: cx$9(HERO_SCROLL_HEADLINE_CLASS, "mx-auto w-full text-center"), children: stage.headline }),
-                  /* @__PURE__ */ jsx("p", { className: cx$9(HERO_SCROLL_LEAD_CLASS, "mx-auto w-full max-w-[34rem] text-center"), children: stage.lead })
+                  /* @__PURE__ */ jsx("h1", { className: cx$a(HERO_SCROLL_HEADLINE_CLASS, "mx-auto w-full text-center"), children: stage.headline }),
+                  /* @__PURE__ */ jsx("p", { className: cx$a(HERO_SCROLL_LEAD_CLASS, "mx-auto w-full max-w-[34rem] text-center"), children: stage.lead })
                 ]
               },
               stage.headline
@@ -2326,7 +2421,7 @@ function HeroCard({
               {
                 type: "button",
                 onClick: scrollDown,
-                className: cx$9(
+                className: cx$a(
                   "hero-scroll-hint grid h-10 w-10 place-items-center rounded-full border-0 sm:hidden",
                   "bg-white/[0.08] text-white/75 transition hover:bg-white/[0.12] hover:text-white",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
@@ -2357,14 +2452,14 @@ function Hero() {
       children: /* @__PURE__ */ jsx(
         Section,
         {
-          className: cx$9(
+          className: cx$a(
             "sticky top-0 z-[1] isolate overflow-hidden bg-transparent !py-0",
             "min-h-[100dvh] pb-0"
           ),
           children: /* @__PURE__ */ jsx(
             "div",
             {
-              className: cx$9(
+              className: cx$a(
                 "mx-auto flex h-[calc(100dvh-1.25rem)] min-h-0 w-full max-w-none flex-col",
                 "px-3 pt-2.5 pb-2.5",
                 "sm:max-w-[min(98vw,1840px)] sm:px-3",
@@ -2948,7 +3043,7 @@ function LandingPainSection() {
     }
   );
 }
-function Reveal({ children, className, delay = 0 }) {
+function Reveal$1({ children, className, delay = 0 }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -3290,7 +3385,7 @@ function MainOfferSection() {
       id: "offer",
       className: "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24",
       children: /* @__PURE__ */ jsxs(Container, { children: [
-        /* @__PURE__ */ jsx(Reveal, { delay: 0, children: /* @__PURE__ */ jsx("div", { className: "min-w-0 text-center", children: /* @__PURE__ */ jsx("h2", { className: `${LANDING_HEADLINE_CLASS} text-center text-balance`, children: copy.offer.title }) }) }),
+        /* @__PURE__ */ jsx(Reveal$1, { delay: 0, children: /* @__PURE__ */ jsx("div", { className: "min-w-0 text-center", children: /* @__PURE__ */ jsx("h2", { className: `${LANDING_HEADLINE_CLASS} text-center text-balance`, children: copy.offer.title }) }) }),
         /* @__PURE__ */ jsxs(
           "div",
           {
@@ -3428,11 +3523,11 @@ const AI_MODELS = MODEL_DEFS.map((model, index) => {
   };
 });
 const AI_MODEL_COUNT = AI_MODELS.length;
-function cx$8(...a) {
+function cx$9(...a) {
   return a.filter(Boolean).join(" ");
 }
 function TivonixGlowBorder({ className, children }) {
-  return /* @__PURE__ */ jsx("div", { className: cx$8("tivonix-glow-border", className), children: /* @__PURE__ */ jsx("div", { className: "tivonix-glow-border__content relative min-h-0 flex-1", children }) });
+  return /* @__PURE__ */ jsx("div", { className: cx$9("tivonix-glow-border", className), children: /* @__PURE__ */ jsx("div", { className: "tivonix-glow-border__content relative min-h-0 flex-1", children }) });
 }
 const ANIM_PIN_VH = 235;
 const DRIFT_RUNWAY_VH = 32;
@@ -4846,11 +4941,11 @@ function ComparisonSection() {
     }
   );
 }
-function cx$7(...a) {
+function cx$8(...a) {
   return a.filter(Boolean).join(" ");
 }
 function pillItemClass(active, compact) {
-  return cx$7(
+  return cx$8(
     "relative flex items-center rounded-full border-0 font-bold uppercase tracking-[0.12em] outline-none select-none transition duration-[260ms]",
     "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
     compact ? "px-3 h-9 text-[9.5px] tracking-[0.1em]" : "px-4 h-10 text-[10px]",
@@ -4908,7 +5003,7 @@ function PillActionBar({
   return /* @__PURE__ */ jsx(
     "nav",
     {
-      className: cx$7(
+      className: cx$8(
         "relative inline-flex max-w-full items-center gap-0.5 overflow-x-auto rounded-full border-0 bg-[#141414] p-1",
         className
       ),
@@ -5213,7 +5308,7 @@ function CasesSection() {
     });
     return tabs;
   }, [copy.cases.cta, copy.cases.openProduct, copy.cases.viewCase, spliton.domain, spliton.id]);
-  return /* @__PURE__ */ jsx(Section, { id: "cases", className: "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs(Reveal, { className: "case-split", children: [
+  return /* @__PURE__ */ jsx(Section, { id: "cases", className: "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs(Reveal$1, { className: "case-split", children: [
     /* @__PURE__ */ jsxs("div", { className: "case-split__visual", children: [
       /* @__PURE__ */ jsx(
         "img",
@@ -5431,14 +5526,14 @@ function TivonixAudienceSection() {
       className: "tivonix-audience scroll-mt-[var(--tivonix-header-spacer)] bg-black !py-0",
       children: /* @__PURE__ */ jsxs("div", { className: "tivonix-audience__frame", children: [
         /* @__PURE__ */ jsxs(Container, { className: "relative z-[1] pt-14 sm:pt-16 lg:pt-20", children: [
-          /* @__PURE__ */ jsx(Reveal, { children: /* @__PURE__ */ jsxs("header", { className: "tivonix-audience__head", children: [
+          /* @__PURE__ */ jsx(Reveal$1, { children: /* @__PURE__ */ jsxs("header", { className: "tivonix-audience__head", children: [
             /* @__PURE__ */ jsx("h2", { className: "tivonix-audience__title", children: copy.audience.title }),
             /* @__PURE__ */ jsx("p", { className: "tivonix-audience__subtitle", children: copy.audience.subtitle })
           ] }) }),
-          /* @__PURE__ */ jsx(Reveal, { delay: 80, children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__hero", children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__globe-clip", children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__globe-inner", children: /* @__PURE__ */ jsx(TivonixGlobeCanvas, { pins: copy.audience.pins }) }) }) }) })
+          /* @__PURE__ */ jsx(Reveal$1, { delay: 80, children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__hero", children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__globe-clip", children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__globe-inner", children: /* @__PURE__ */ jsx(TivonixGlobeCanvas, { pins: copy.audience.pins }) }) }) }) })
         ] }),
-        /* @__PURE__ */ jsx(Reveal, { delay: 100, children: /* @__PURE__ */ jsx(AudienceMarquee, { items: copy.audience.marquee }) }),
-        /* @__PURE__ */ jsx(Reveal, { delay: 120, children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__pillars-wrap", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__pillars", children: copy.audience.pillars.map((pillar, index) => {
+        /* @__PURE__ */ jsx(Reveal$1, { delay: 100, children: /* @__PURE__ */ jsx(AudienceMarquee, { items: copy.audience.marquee }) }),
+        /* @__PURE__ */ jsx(Reveal$1, { delay: 120, children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__pillars-wrap", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__pillars", children: copy.audience.pillars.map((pillar, index) => {
           const Icon2 = PILLAR_ICONS[index] ?? Globe2;
           return /* @__PURE__ */ jsxs("article", { className: "tivonix-audience__pillar", children: [
             /* @__PURE__ */ jsx(Icon2, { className: "tivonix-audience__pillar-icon", strokeWidth: 1.5, "aria-hidden": true }),
@@ -5953,7 +6048,7 @@ const FAQ_ITEMS = [
     }
   }
 ];
-function cx$6(...a) {
+function cx$7(...a) {
   return a.filter(Boolean).join(" ");
 }
 function Icon({ name }) {
@@ -6126,7 +6221,7 @@ function FAQSection() {
                   setShowAllCats(false);
                 },
                 "aria-disabled": resetDisabled,
-                className: cx$6(
+                className: cx$7(
                   "h-11 shrink-0 whitespace-nowrap px-3.5 sm:h-12 sm:px-4 rounded-full border-0",
                   "bg-[#1c1c1f]",
                   resetDisabled ? "text-white/35 cursor-not-allowed opacity-70" : "text-white/80 hover:text-white hover:bg-[#262626] transition",
@@ -6139,7 +6234,7 @@ function FAQSection() {
           /* @__PURE__ */ jsx("div", { className: "mt-3", children: /* @__PURE__ */ jsxs(
             "div",
             {
-              className: cx$6(
+              className: cx$7(
                 "flex items-center justify-start sm:justify-center gap-2",
                 "overflow-x-auto sm:overflow-visible",
                 "no-scrollbar py-1"
@@ -6155,7 +6250,7 @@ function FAQSection() {
                     "aria-selected": catFilter === "all",
                     "aria-pressed": catFilter === "all",
                     onClick: () => setCatFilter("all"),
-                    className: cx$6(
+                    className: cx$7(
                       "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-xs font-medium transition",
                       catFilter === "all" ? "bg-[#3a3a3d] text-white" : "bg-[#1c1c1f] text-white/78 hover:bg-[#262626] hover:text-white/92",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/15"
@@ -6174,7 +6269,7 @@ function FAQSection() {
                       "aria-selected": active,
                       "aria-pressed": active,
                       onClick: () => setCatFilter(c),
-                      className: cx$6(
+                      className: cx$7(
                         "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-xs font-medium transition",
                         active ? "bg-[#3a3a3d] text-white" : "bg-[#1c1c1f] text-white/78 hover:bg-[#262626] hover:text-white/92",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/15"
@@ -6189,7 +6284,7 @@ function FAQSection() {
                   {
                     type: "button",
                     onClick: () => setShowAllCats((v) => !v),
-                    className: cx$6(
+                    className: cx$7(
                       "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-xs font-semibold transition",
                       "bg-[#1c1c1f] text-white/80 hover:bg-[#262626] hover:text-white",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/15"
@@ -6198,7 +6293,7 @@ function FAQSection() {
                     "aria-label": showAllCats ? lessCatsLabel : moreCatsLabel,
                     children: /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5", children: [
                       showAllCats ? lessCatsLabel : moreCatsLabel,
-                      /* @__PURE__ */ jsx("span", { className: cx$6("transition", showAllCats ? "rotate-180" : ""), children: /* @__PURE__ */ jsx(Icon, { name: "chev" }) })
+                      /* @__PURE__ */ jsx("span", { className: cx$7("transition", showAllCats ? "rotate-180" : ""), children: /* @__PURE__ */ jsx(Icon, { name: "chev" }) })
                     ] })
                   }
                 )
@@ -6211,7 +6306,7 @@ function FAQSection() {
       /* @__PURE__ */ jsx(
         "div",
         {
-          className: cx$6(
+          className: cx$7(
             "mt-7 grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
             compactResults && "min-h-[18rem] sm:min-h-[20rem]"
           ),
@@ -6222,7 +6317,7 @@ function FAQSection() {
             return /* @__PURE__ */ jsx(
               "article",
               {
-                className: cx$6(
+                className: cx$7(
                   "group relative overflow-hidden rounded-[20px]",
                   "border-0",
                   "bg-[#1c1c1f] faq-card-bg backdrop-blur-[10px]",
@@ -6242,7 +6337,7 @@ function FAQSection() {
                       "aria-expanded": isOpen,
                       "aria-controls": domId,
                       "aria-label": isOpen ? btnHide : `${btnShow}: ${f.q}`,
-                      className: cx$6(
+                      className: cx$7(
                         "w-full flex items-center gap-2 rounded-[12px]",
                         "border-0 bg-white/[0.07] px-3 py-2",
                         "text-left text-[12px] text-white/80 hover:bg-white/[0.10] transition",
@@ -6268,7 +6363,7 @@ function FAQSection() {
                     "div",
                     {
                       id: domId,
-                      className: cx$6(
+                      className: cx$7(
                         "mt-3 rounded-[14px] border-0 bg-black/45 px-4 py-3",
                         "text-[13px] leading-relaxed text-white/78",
                         isOpen ? "faq-answer-expanded faq-answer-open" : "faq-answer-collapsed"
@@ -6281,7 +6376,7 @@ function FAQSection() {
                           {
                             type: "button",
                             onClick: () => copy(f.a, f.id),
-                            className: cx$6(
+                            className: cx$7(
                               "inline-flex items-center gap-2 rounded-[12px]",
                               "border-0 bg-white/[0.07] px-3 py-2",
                               "text-[12px] text-white/80 hover:bg-white/[0.10] transition",
@@ -6321,7 +6416,7 @@ function FAQSection() {
               type: "button",
               onClick: () => setPage((p) => Math.max(1, p - 1)),
               disabled: page <= 1,
-              className: cx$6(
+              className: cx$7(
                 "h-11 px-4 rounded-[14px] border-0 bg-white/[0.06]",
                 page <= 1 ? "text-white/35 cursor-not-allowed" : "text-white/80 hover:bg-white/[0.10]",
                 "transition",
@@ -6343,7 +6438,7 @@ function FAQSection() {
               type: "button",
               onClick: () => setPage((p) => Math.min(totalPages, p + 1)),
               disabled: page >= totalPages,
-              className: cx$6(
+              className: cx$7(
                 "h-11 px-4 rounded-[14px] border-0 bg-white/[0.06]",
                 page >= totalPages ? "text-white/35 cursor-not-allowed" : "text-white/80 hover:bg-white/[0.10]",
                 "transition",
@@ -6363,7 +6458,7 @@ function FAQSection() {
               type: "button",
               onClick: () => setPage(n),
               "aria-current": active ? "page" : void 0,
-              className: cx$6(
+              className: cx$7(
                 "border-0 bg-transparent p-0 select-none",
                 "text-[14px] font-semibold tabular-nums tracking-tight",
                 "transition-colors duration-200",
@@ -6480,7 +6575,7 @@ function FinalCTASection() {
     }
   ) });
 }
-function cx$5(...a) {
+function cx$6(...a) {
   return a.filter(Boolean).join(" ");
 }
 const LOGO_LOCKUP_PNG = "/images/tivonix-logo-lockup.webp";
@@ -6713,7 +6808,7 @@ function Footer() {
               /* @__PURE__ */ jsx(
                 "p",
                 {
-                  className: cx$5(
+                  className: cx$6(
                     "ai-premium-ai-mark__text site-footer__rainbow",
                     !reducedMotion && "ai-premium-ai-mark__text--animated"
                   ),
@@ -6919,7 +7014,7 @@ function LandingPage() {
   ] });
 }
 const HERO_IMG = "/images/hero.webp";
-function cx$4(...a) {
+function cx$5(...a) {
   return a.filter(Boolean).join(" ");
 }
 const s$1 = (v) => v;
@@ -6932,6 +7027,7 @@ const PREVIEW_SPECS = {
   thumb: { maxH: 180, aspect: 3 / 2 },
   grid: { maxH: 9999, aspect: 16 / 9, fullWidth: true }
 };
+const ZOOM_STEPS = [1, 1.5, 2.25];
 function ProjectPreviewFrame({
   src,
   variant = "card"
@@ -6940,7 +7036,7 @@ function ProjectPreviewFrame({
   return /* @__PURE__ */ jsx(
     "div",
     {
-      className: cx$4(
+      className: cx$5(
         "relative overflow-hidden",
         fullWidth ? "w-full rounded-xl" : "mx-auto w-full rounded-2xl",
         "border-0 bg-[#141416]"
@@ -6966,27 +7062,253 @@ function ProjectPreviewFrame({
     }
   );
 }
+function GalleryLightbox({
+  images,
+  index,
+  isRu,
+  onClose,
+  onIndexChange
+}) {
+  const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [zoomIdx, setZoomIdx] = useState(0);
+  const stageRef = useRef(null);
+  const closeLabel = isRu ? "Закрыть" : "Close";
+  const prevLabel = isRu ? "Предыдущий" : "Previous";
+  const nextLabel = isRu ? "Следующий" : "Next";
+  const zoomInLabel = isRu ? "Увеличить" : "Zoom in";
+  const zoomOutLabel = isRu ? "Уменьшить" : "Zoom out";
+  const zoom = ZOOM_STEPS[zoomIdx] ?? 1;
+  const src = images[index];
+  const multi = images.length > 1;
+  useEffect(() => {
+    setMounted(true);
+    const id = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  useEffect(() => {
+    const prevHtml = document.documentElement.style.overflow;
+    const prevBody = document.body.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.documentElement.style.overflow = prevHtml;
+      document.body.style.overflow = prevBody;
+    };
+  }, []);
+  useEffect(() => {
+    setZoomIdx(0);
+    stageRef.current?.scrollTo({ left: 0, top: 0 });
+  }, [index]);
+  const requestClose = useCallback(() => {
+    setVisible(false);
+    window.setTimeout(onClose, 180);
+  }, [onClose]);
+  const go = useCallback(
+    (delta) => {
+      if (!multi) return;
+      const next = (index + delta + images.length) % images.length;
+      onIndexChange(next);
+    },
+    [images.length, index, multi, onIndexChange]
+  );
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") requestClose();
+      if (e.key === "ArrowLeft") go(-1);
+      if (e.key === "ArrowRight") go(1);
+      if (e.key === "+" || e.key === "=") setZoomIdx((z) => Math.min(z + 1, ZOOM_STEPS.length - 1));
+      if (e.key === "-" || e.key === "_") setZoomIdx((z) => Math.max(z - 1, 0));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [go, requestClose]);
+  if (!mounted || typeof document === "undefined") return null;
+  return createPortal(
+    /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: cx$5(
+          "fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-6",
+          "transition-opacity duration-200",
+          visible ? "opacity-100" : "opacity-0"
+        ),
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-label": isRu ? "Просмотр скриншота" : "Screenshot viewer",
+        children: [
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              className: "absolute inset-0 bg-black/82 backdrop-blur-[2px]",
+              "aria-label": closeLabel,
+              onClick: requestClose
+            }
+          ),
+          /* @__PURE__ */ jsxs(
+            "div",
+            {
+              className: cx$5(
+                "relative z-[1] flex max-h-[min(92dvh,920px)] w-full max-w-[min(96vw,1120px)] flex-col",
+                "transition-transform duration-200",
+                visible ? "scale-100" : "scale-[0.97]"
+              ),
+              children: [
+                /* @__PURE__ */ jsxs("div", { className: "mb-2 flex items-center justify-between gap-3 px-0.5", children: [
+                  /* @__PURE__ */ jsxs("p", { className: "text-[12px] font-medium tabular-nums text-white/55", children: [
+                    index + 1,
+                    " / ",
+                    images.length
+                  ] }),
+                  /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5", children: [
+                    /* @__PURE__ */ jsx(
+                      "button",
+                      {
+                        type: "button",
+                        className: "grid h-9 w-9 place-items-center rounded-full border border-white/12 bg-white/[0.06] text-white/80 transition hover:bg-white/[0.12] disabled:opacity-35",
+                        "aria-label": zoomOutLabel,
+                        disabled: zoomIdx === 0,
+                        onClick: () => setZoomIdx((z) => Math.max(z - 1, 0)),
+                        children: "−"
+                      }
+                    ),
+                    /* @__PURE__ */ jsx(
+                      "button",
+                      {
+                        type: "button",
+                        className: "grid h-9 w-9 place-items-center rounded-full border border-white/12 bg-white/[0.06] text-white/80 transition hover:bg-white/[0.12] disabled:opacity-35",
+                        "aria-label": zoomInLabel,
+                        disabled: zoomIdx >= ZOOM_STEPS.length - 1,
+                        onClick: () => setZoomIdx((z) => Math.min(z + 1, ZOOM_STEPS.length - 1)),
+                        children: "+"
+                      }
+                    ),
+                    /* @__PURE__ */ jsx(
+                      "button",
+                      {
+                        type: "button",
+                        className: "grid h-9 w-9 place-items-center rounded-full border border-white/12 bg-white/[0.06] text-white/80 transition hover:bg-white/[0.12]",
+                        "aria-label": closeLabel,
+                        onClick: requestClose,
+                        children: "✕"
+                      }
+                    )
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "relative min-h-0 flex-1", children: [
+                  multi ? /* @__PURE__ */ jsxs(Fragment, { children: [
+                    /* @__PURE__ */ jsx(
+                      "button",
+                      {
+                        type: "button",
+                        className: "absolute left-1 top-1/2 z-[2] hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/12 bg-black/55 text-white/85 backdrop-blur-sm transition hover:bg-black/75 sm:grid",
+                        "aria-label": prevLabel,
+                        onClick: () => go(-1),
+                        children: "‹"
+                      }
+                    ),
+                    /* @__PURE__ */ jsx(
+                      "button",
+                      {
+                        type: "button",
+                        className: "absolute right-1 top-1/2 z-[2] hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/12 bg-black/55 text-white/85 backdrop-blur-sm transition hover:bg-black/75 sm:grid",
+                        "aria-label": nextLabel,
+                        onClick: () => go(1),
+                        children: "›"
+                      }
+                    )
+                  ] }) : null,
+                  /* @__PURE__ */ jsx(
+                    "div",
+                    {
+                      ref: stageRef,
+                      className: cx$5(
+                        "max-h-[min(84dvh,860px)] overflow-auto rounded-2xl border border-white/[0.08] bg-[#0c0c0e]",
+                        "overscroll-contain",
+                        zoom > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in"
+                      ),
+                      onDoubleClick: () => setZoomIdx((z) => z >= ZOOM_STEPS.length - 1 ? 0 : Math.min(z + 1, ZOOM_STEPS.length - 1)),
+                      children: /* @__PURE__ */ jsx(
+                        "div",
+                        {
+                          className: "grid place-items-center p-2 sm:p-4",
+                          style: {
+                            width: `${zoom * 100}%`,
+                            minHeight: zoom > 1 ? void 0 : "min(84dvh, 860px)",
+                            minWidth: "100%"
+                          },
+                          children: /* @__PURE__ */ jsx(
+                            "img",
+                            {
+                              src,
+                              alt: "",
+                              className: "block h-auto max-w-full select-none object-contain",
+                              style: {
+                                maxHeight: zoom === 1 ? "min(80dvh, 820px)" : "none",
+                                width: zoom === 1 ? "auto" : `${100 / zoom}%`
+                              },
+                              draggable: false,
+                              decoding: "async"
+                            }
+                          )
+                        }
+                      )
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsx("p", { className: "mt-2 text-center text-[11px] text-white/35", children: isRu ? "Двойной клик или +/− для увеличения · Esc — закрыть" : "Double-click or +/− to zoom · Esc to close" })
+              ]
+            }
+          )
+        ]
+      }
+    ),
+    document.body
+  );
+}
 function ProjectGalleryStrip({
   images,
   isRu
 }) {
+  const [active, setActive] = useState(null);
   if (!images.length) return null;
   const label = isRu ? "Скриншоты проекта" : "Project screenshots";
+  const openLabel = isRu ? "Открыть скриншот" : "Open screenshot";
   return /* @__PURE__ */ jsxs("div", { className: "mt-5", children: [
     /* @__PURE__ */ jsx("p", { className: "mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/38", children: label }),
     /* @__PURE__ */ jsx(
       "div",
       {
-        className: cx$4(
+        className: cx$5(
           "flex gap-3 overflow-x-auto pb-1",
           "snap-x snap-mandatory scroll-smooth",
           "no-scrollbar"
         ),
         role: "list",
         "aria-label": label,
-        children: images.map((src) => /* @__PURE__ */ jsx("div", { role: "listitem", className: "shrink-0 snap-center", children: /* @__PURE__ */ jsx(ProjectPreviewFrame, { src, variant: "thumb" }) }, src))
+        children: images.map((src, i) => /* @__PURE__ */ jsx("div", { role: "listitem", className: "shrink-0 snap-center", children: /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            className: "group block cursor-zoom-in rounded-2xl outline-none transition hover:opacity-95 focus-visible:ring-2 focus-visible:ring-white/35",
+            "aria-label": `${openLabel} ${i + 1}`,
+            onClick: () => setActive(i),
+            children: /* @__PURE__ */ jsx(ProjectPreviewFrame, { src, variant: "thumb" })
+          }
+        ) }, src))
       }
-    )
+    ),
+    active !== null ? /* @__PURE__ */ jsx(
+      GalleryLightbox,
+      {
+        images,
+        index: active,
+        isRu,
+        onClose: () => setActive(null),
+        onIndexChange: setActive
+      }
+    ) : null
   ] });
 }
 const ALL_FILTER = "all";
@@ -7019,7 +7341,7 @@ function ExternalIcon$1({ className }) {
     }
   );
 }
-const filterPillClass = (active) => cx$4(
+const filterPillClass = (active) => cx$5(
   "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-[13px] font-medium transition",
   active ? "bg-[#3a3a3d] text-white" : "bg-[#1c1c1f] text-white/78 hover:bg-[#262626] hover:text-white/92"
 );
@@ -7054,7 +7376,7 @@ function ProjectGridCard({ p, isRu }) {
           href: p.domain,
           target: "_blank",
           rel: "noopener noreferrer",
-          className: cx$4(
+          className: cx$5(
             "shrink-0 inline-flex items-center gap-1 rounded-full",
             "bg-[#1c1c1f] px-2.5 py-1 text-[11px] font-[600] text-white/58",
             "transition hover:bg-[#262626] hover:text-white/85"
@@ -7097,7 +7419,7 @@ function ProjectsPage() {
       /* @__PURE__ */ jsx("div", { className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs(
         "div",
         {
-          className: cx$4(
+          className: cx$5(
             "flex gap-2 overflow-x-auto pb-1 no-scrollbar",
             "justify-start sm:flex-wrap sm:justify-center"
           ),
@@ -7138,12 +7460,21 @@ function ProjectsPage() {
 }
 const HEADER_H = 72;
 const BULLET_RE = /^[•\-]\s*/;
+const LEAD_META_RE = /^(Формат|Срок|Format|Timeline)\s*:/i;
 function clipMetaDescription(text, max = 158) {
   const t = text.replace(/\s+/g, " ").trim();
   if (t.length <= max) return t;
   const slice = t.slice(0, max - 1);
   const i = slice.lastIndexOf(" ");
   return `${(i > 70 ? slice.slice(0, i) : slice).trimEnd()}…`;
+}
+function isSectionHeading(line) {
+  const t = line.trim();
+  if (!t || BULLET_RE.test(t) || LEAD_META_RE.test(t)) return false;
+  if (t.length > 72) return false;
+  if (/[.!?…]$/.test(t)) return false;
+  if ((t.match(/[,;:—]/g) || []).length >= 2) return false;
+  return true;
 }
 function MetaRow({ label, children }) {
   return /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
@@ -7173,12 +7504,25 @@ function ExternalIcon({ className }) {
     }
   );
 }
+function DetailBulletList({ items }) {
+  return /* @__PURE__ */ jsx("ul", { className: "mt-4 list-none space-y-3 rounded-2xl border border-white/[0.07] bg-white/[0.035] px-4 py-4 sm:px-5 sm:py-5", children: items.map((item, idx) => /* @__PURE__ */ jsxs(
+    "li",
+    {
+      className: "flex gap-3 text-[15px] leading-[1.65] text-white/[0.76]",
+      children: [
+        /* @__PURE__ */ jsx("span", { className: "mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-white/55" }),
+        /* @__PURE__ */ jsx("span", { children: item })
+      ]
+    },
+    `${idx}-${item.slice(0, 48)}`
+  )) });
+}
 function ProjectDetailBody({ text }) {
   const lines = text.split("\n").map((l) => l.trim());
   const nodes = [];
   let i = 0;
   let k = 0;
-  let firstHeading = true;
+  let sectionIndex = 0;
   const nextNonEmpty = (from) => {
     for (let j = from; j < lines.length; j++) {
       const t = lines[j].trim();
@@ -7187,9 +7531,22 @@ function ProjectDetailBody({ text }) {
     return null;
   };
   while (i < lines.length) {
-    const raw = lines[i];
-    const line = raw.trim();
+    const line = lines[i].trim();
     if (!line) {
+      i++;
+      continue;
+    }
+    if (LEAD_META_RE.test(line)) {
+      nodes.push(
+        /* @__PURE__ */ jsx(
+          "p",
+          {
+            className: "mb-8 inline-flex max-w-full rounded-full border border-white/[0.1] bg-white/[0.05] px-4 py-2 text-[13px] font-medium leading-snug text-white/78",
+            children: line
+          },
+          k++
+        )
+      );
       i++;
       continue;
     }
@@ -7203,30 +7560,56 @@ function ProjectDetailBody({ text }) {
         i++;
       }
       nodes.push(
-        /* @__PURE__ */ jsx("ul", { className: "mb-8 list-none space-y-2.5 pl-0", children: items.map((item, idx) => /* @__PURE__ */ jsxs("li", { className: "flex gap-3 text-[15px] leading-[1.65] text-white/[0.72]", children: [
-          /* @__PURE__ */ jsx("span", { className: "mt-[0.52em] h-1 w-1 shrink-0 rounded-full bg-white/32" }),
-          /* @__PURE__ */ jsx("span", { children: item })
-        ] }, `${idx}-${item.slice(0, 48)}`)) }, k++)
+        /* @__PURE__ */ jsx("div", { className: "mb-8", children: /* @__PURE__ */ jsx(DetailBulletList, { items }) }, k++)
       );
       continue;
     }
     const nxt = nextNonEmpty(i + 1);
-    if (nxt && BULLET_RE.test(nxt.t)) {
+    const heading = isSectionHeading(line) && nxt && (BULLET_RE.test(nxt.t) || !isSectionHeading(nxt.t));
+    if (heading) {
+      const title = line;
+      i++;
+      while (i < lines.length && !lines[i].trim()) i++;
+      let body = null;
+      if (i < lines.length && BULLET_RE.test(lines[i].trim())) {
+        const items = [];
+        while (i < lines.length) {
+          const L = lines[i].trim();
+          if (!L) break;
+          if (!BULLET_RE.test(L)) break;
+          items.push(L.replace(BULLET_RE, ""));
+          i++;
+        }
+        body = /* @__PURE__ */ jsx(DetailBulletList, { items });
+      } else {
+        const para2 = [];
+        while (i < lines.length) {
+          const L = lines[i].trim();
+          if (!L) break;
+          if (BULLET_RE.test(L)) break;
+          if (isSectionHeading(L) && nextNonEmpty(i + 1)) break;
+          para2.push(L);
+          i++;
+        }
+        if (para2.length) {
+          body = /* @__PURE__ */ jsx("p", { className: "mt-4 text-[15px] leading-[1.7] text-white/[0.72] whitespace-pre-line sm:text-[16px]", children: para2.join("\n") });
+        }
+      }
+      const first = sectionIndex === 0;
+      sectionIndex++;
       nodes.push(
-        /* @__PURE__ */ jsx(
-          "h3",
+        /* @__PURE__ */ jsxs(
+          "section",
           {
-            className: cx$4(
-              "mb-3 text-[12px] font-semibold uppercase tracking-[0.2em] text-white/40",
-              firstHeading ? "mt-0" : "mt-10"
-            ),
-            children: line
+            className: cx$5("mb-9 sm:mb-11", !first && "border-t border-white/[0.08] pt-8 sm:pt-10"),
+            children: [
+              /* @__PURE__ */ jsx("h2", { className: "text-[clamp(1.35rem,2.6vw,1.85rem)] font-[750] tracking-[-0.03em] leading-[1.15] text-white", children: title }),
+              body
+            ]
           },
           k++
         )
       );
-      firstHeading = false;
-      i++;
       continue;
     }
     const para = [];
@@ -7234,6 +7617,7 @@ function ProjectDetailBody({ text }) {
       const L = lines[i].trim();
       if (!L) break;
       if (BULLET_RE.test(L)) break;
+      if (isSectionHeading(L) && nextNonEmpty(i + 1)) break;
       para.push(L);
       i++;
     }
@@ -7242,7 +7626,7 @@ function ProjectDetailBody({ text }) {
         /* @__PURE__ */ jsx(
           "p",
           {
-            className: "mb-5 text-[15px] leading-[1.65] text-white/[0.72] whitespace-pre-line last:mb-0",
+            className: "mb-7 text-[15px] leading-[1.7] text-white/[0.72] whitespace-pre-line last:mb-0 sm:text-[16px]",
             children: para.join("\n")
           },
           k++
@@ -7357,7 +7741,7 @@ function ProjectDetailPage() {
                 /* @__PURE__ */ jsx(
                   "span",
                   {
-                    className: cx$4(
+                    className: cx$5(
                       "h-2 w-2 shrink-0 rounded-full",
                       wip ? "bg-amber-400/90" : "bg-emerald-400/90"
                     )
@@ -7382,7 +7766,7 @@ function ProjectDetailPage() {
                   href: project.domain,
                   target: "_blank",
                   rel: "noopener noreferrer",
-                  className: cx$4(
+                  className: cx$5(
                     "inline-flex h-11 w-full items-center justify-center rounded-lg px-5",
                     "bg-white text-[14px] font-[700] text-neutral-900 hover:bg-white/90 transition"
                   ),
@@ -7391,7 +7775,7 @@ function ProjectDetailPage() {
               ) : /* @__PURE__ */ jsx(
                 "div",
                 {
-                  className: cx$4(
+                  className: cx$5(
                     "inline-flex h-11 w-full items-center justify-center rounded-lg px-5",
                     "border border-white/[0.1] bg-white/[0.05] text-[14px] font-[700] text-white/45"
                   ),
@@ -7404,7 +7788,7 @@ function ProjectDetailPage() {
                   href: "https://t.me/TIVONIX",
                   target: "_blank",
                   rel: "noopener noreferrer",
-                  className: cx$4(
+                  className: cx$5(
                     "inline-flex h-11 w-full items-center justify-center rounded-lg px-5",
                     "text-[14px] font-[800] text-black",
                     "bg-[linear-gradient(180deg,#FFD7B0_0%,#FF9A3D_52%,#FF6A1A_100%)]",
@@ -7437,12 +7821,9 @@ function ProjectDetailPage() {
         ] }),
         /* @__PURE__ */ jsxs("article", { className: "mt-14 border-t border-white/[0.08] pt-12 lg:mt-16 lg:pt-14", children: [
           /* @__PURE__ */ jsx(ProjectDetailBody, { text: details }),
-          project.outcomes?.length ? /* @__PURE__ */ jsxs("div", { className: "mt-12 border-t border-white/[0.08] pt-10", children: [
-            /* @__PURE__ */ jsx("h2", { className: "text-[12px] font-semibold uppercase tracking-[0.2em] text-white/40", children: resultsLabel }),
-            /* @__PURE__ */ jsx("ul", { className: "mt-4 space-y-2.5", children: project.outcomes.map((x) => /* @__PURE__ */ jsxs("li", { className: "flex gap-3 text-[15px] leading-[1.6] text-white/[0.72]", children: [
-              /* @__PURE__ */ jsx("span", { className: "mt-[0.52em] h-1 w-1 shrink-0 rounded-full bg-white/32" }),
-              /* @__PURE__ */ jsx("span", { children: x })
-            ] }, x)) })
+          project.outcomes?.length ? /* @__PURE__ */ jsxs("div", { className: "mt-4 border-t border-white/[0.08] pt-8 sm:pt-10", children: [
+            /* @__PURE__ */ jsx("h2", { className: "text-[clamp(1.35rem,2.6vw,1.85rem)] font-[750] tracking-[-0.03em] leading-[1.15] text-white", children: resultsLabel }),
+            /* @__PURE__ */ jsx(DetailBulletList, { items: project.outcomes })
           ] }) : null,
           project.testimonial ? /* @__PURE__ */ jsxs("figure", { className: "mt-12 border-l-2 border-white/[0.12] pl-5", children: [
             /* @__PURE__ */ jsxs("blockquote", { className: "text-[15px] leading-[1.65] text-white/[0.74]", children: [
@@ -7463,7 +7844,7 @@ function ProjectDetailPage() {
 }
 const ORANGE = "#FF9A3D";
 const ORANGE2 = "#FF6A1A";
-function cx$3(...a) {
+function cx$4(...a) {
   return a.filter(Boolean).join(" ");
 }
 function clamp(n, a, b) {
@@ -7545,7 +7926,7 @@ function LangChip({ item }) {
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$3(
+      className: cx$4(
         "select-none",
         "inline-flex max-w-[11rem] items-center gap-2 sm:gap-2.5",
         "rounded-full px-3 py-1.5 sm:px-3.5 sm:py-2",
@@ -7583,12 +7964,12 @@ function OrbitRing(props) {
       children: [
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-full border border-white/8 opacity-60" }),
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-full border border-[#FF9A3D]/10 opacity-80 [mask-image:radial-gradient(transparent_52%,black_64%)] [-webkit-mask-image:radial-gradient(transparent_52%,black_64%)]" }),
-        /* @__PURE__ */ jsx("div", { className: cx$3("absolute inset-0 will-change-transform", reverse ? "orbit-rev" : "orbit"), style: animStyle2, children: items.map((it, i) => {
+        /* @__PURE__ */ jsx("div", { className: cx$4("absolute inset-0 will-change-transform", reverse ? "orbit-rev" : "orbit"), style: animStyle2, children: items.map((it, i) => {
           const ang = offsetDeg + i * step + (i % 2 ? 8 : -5);
           const posStyle = s({
             transform: `translate(-50%,-50%) rotate(${ang}deg) translateX(${radius}px) rotate(${-ang}deg)`
           });
-          return /* @__PURE__ */ jsx("div", { className: "absolute left-1/2 top-1/2", style: posStyle, children: /* @__PURE__ */ jsx("div", { className: cx$3(reverse ? "counter-rev" : "counter"), style: animStyle2, children: /* @__PURE__ */ jsx(LangChip, { item: it }) }) }, `${it.label}-${i}`);
+          return /* @__PURE__ */ jsx("div", { className: "absolute left-1/2 top-1/2", style: posStyle, children: /* @__PURE__ */ jsx("div", { className: cx$4(reverse ? "counter-rev" : "counter"), style: animStyle2, children: /* @__PURE__ */ jsx(LangChip, { item: it }) }) }, `${it.label}-${i}`);
         }) })
       ]
     }
@@ -7634,7 +8015,7 @@ function SunContacts({ size }) {
   });
   const title = isRu ? "Контакты" : "Contacts";
   const botCta = isRu ? "Написать в ТГ-бота" : "Message the Telegram bot";
-  const contactRowClass = cx$3(
+  const contactRowClass = cx$4(
     "group inline-flex w-full items-center gap-3.5 rounded-xl px-4 py-2.5",
     "bg-white/[0.055] hover:bg-white/[0.085] transition duration-200",
     "shadow-[0_10px_40px_rgba(0,0,0,0.28)]",
@@ -7658,7 +8039,7 @@ function SunContacts({ size }) {
               rel: "noopener noreferrer",
               className: contactRowClass,
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx$3(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconTG, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$4(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconTG, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Telegram" })
               ]
             }
@@ -7669,9 +8050,9 @@ function SunContacts({ size }) {
               href: "https://mail.google.com/mail/?view=cm&fs=1&to=tivoonix@gmail.com&su=%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82%20(SaaS%2FMVP)",
               target: "_blank",
               rel: "noopener noreferrer",
-              className: cx$3(contactRowClass, "hidden sm:inline-flex"),
+              className: cx$4(contactRowClass, "hidden sm:inline-flex"),
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx$3(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconMail, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$4(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconMail, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Email" })
               ]
             }
@@ -7684,7 +8065,7 @@ function SunContacts({ size }) {
               rel: "noopener noreferrer",
               className: contactRowClass,
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx$3(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconInstagram, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$4(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconInstagram, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Instagram" })
               ]
             }
@@ -7696,7 +8077,7 @@ function SunContacts({ size }) {
             href: TG_BOT_URL,
             target: "_blank",
             rel: "noopener noreferrer",
-            className: cx$3(
+            className: cx$4(
               "inline-flex h-10 w-full items-center justify-center rounded-xl px-5",
               "text-[13.5px] font-[800] text-black whitespace-nowrap",
               "bg-[linear-gradient(180deg,#FFD7B0_0%,#FF9A3D_52%,#FF6A1A_100%)]",
@@ -9777,21 +10158,21 @@ function AutomationBusinessPage() {
     /* @__PURE__ */ jsx(Footer, {})
   ] }) });
 }
-function cx$2(...parts) {
+function cx$3(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function PricingFAQSection() {
   const { lang } = useLang();
   const copy = pricingCopy(lang);
   const [openId, setOpenId] = useState(copy.faq.items[0]?.id ?? null);
-  return /* @__PURE__ */ jsx(Reveal, { delay: 160, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs("div", { className: "pricing-faq border border-white/[0.1] bg-black", children: [
+  return /* @__PURE__ */ jsx(Reveal$1, { delay: 160, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs("div", { className: "pricing-faq border border-white/[0.1] bg-black", children: [
     /* @__PURE__ */ jsx("div", { className: "border-b border-white/[0.08] px-4 py-4 sm:px-5", children: /* @__PURE__ */ jsx("h3", { className: "font-hero text-[1.15rem] font-semibold tracking-[-0.02em] text-white sm:text-[1.25rem]", children: copy.faq.title }) }),
     /* @__PURE__ */ jsx("div", { children: copy.faq.items.map((item) => {
       const open = openId === item.id;
       return /* @__PURE__ */ jsxs(
         "div",
         {
-          className: cx$2(
+          className: cx$3(
             "border-b border-white/[0.08] last:border-b-0",
             open && "bg-white/[0.035]"
           ),
@@ -9801,7 +10182,7 @@ function PricingFAQSection() {
               {
                 type: "button",
                 onClick: () => setOpenId((prev) => prev === item.id ? null : item.id),
-                className: cx$2(
+                className: cx$3(
                   "flex w-full items-center justify-between gap-4 px-4 text-left sm:px-5",
                   open ? "pb-3 pt-4" : "py-4"
                 ),
@@ -9810,7 +10191,7 @@ function PricingFAQSection() {
                   /* @__PURE__ */ jsx(
                     "span",
                     {
-                      className: cx$2(
+                      className: cx$3(
                         "text-[14px] font-semibold",
                         open ? "text-white" : "text-white/92"
                       ),
@@ -9821,7 +10202,7 @@ function PricingFAQSection() {
                     ChevronDown,
                     {
                       size: 16,
-                      className: cx$2(
+                      className: cx$3(
                         "shrink-0 transition",
                         open ? "rotate-180 text-[#FF9A3D]" : "text-white/45"
                       ),
@@ -9846,7 +10227,7 @@ const SCOPE_LEVEL = {
   custom: 8
 };
 const SEGMENTS = 8;
-function cx$1(...parts) {
+function cx$2(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function PricingPlanScopeGrid({ onPlanAction }) {
@@ -9864,7 +10245,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
         {
           type: "button",
           onClick: () => onPlanAction(planId),
-          className: cx$1(
+          className: cx$2(
             "pricing-plan-scope__col",
             isGrowth && "pricing-plan-scope__col--growth"
           ),
@@ -9873,7 +10254,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
               /* @__PURE__ */ jsx(
                 "span",
                 {
-                  className: cx$1(
+                  className: cx$2(
                     "pricing-plan-scope__name font-hero font-semibold tracking-[-0.02em]",
                     isGrowth ? "text-[#FF9A3D]" : "text-white"
                   ),
@@ -9883,7 +10264,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
               /* @__PURE__ */ jsx(
                 "span",
                 {
-                  className: cx$1(
+                  className: cx$2(
                     "pricing-plan-scope__price-old text-[10px] font-medium line-through",
                     planCopy.priceOriginal ? "text-white/35" : "text-transparent"
                   ),
@@ -9894,7 +10275,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
               /* @__PURE__ */ jsx(
                 "span",
                 {
-                  className: cx$1(
+                  className: cx$2(
                     "pricing-plan-scope__price font-hero text-[13px] font-semibold text-[#FF9A3D]"
                   ),
                   children: planCopy.price
@@ -9906,7 +10287,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
               return /* @__PURE__ */ jsx(
                 "span",
                 {
-                  className: cx$1("pricing-plan-scope__bar", on && "pricing-plan-scope__bar--on")
+                  className: cx$2("pricing-plan-scope__bar", on && "pricing-plan-scope__bar--on")
                 },
                 index
               );
@@ -9919,7 +10300,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
   ] });
 }
 const COMPARE_LOGO = "/images/tivonix-logo-white.webp";
-function cx(...parts) {
+function cx$1(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function PlanCtaButton({
@@ -9934,7 +10315,7 @@ function PlanCtaButton({
     {
       type: "button",
       onClick,
-      className: cx(
+      className: cx$1(
         "inline-flex w-full items-center justify-center rounded-full border-0 font-bold tracking-[-0.015em] transition duration-200",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
         "active:scale-[0.98]",
@@ -9977,7 +10358,7 @@ function ComparePlanHead({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx(
+      className: cx$1(
         layout === "column" ? "pricing-compare__plan-head" : "pricing-compare__mobile-plan",
         featured && "pricing-compare__plan-head--featured"
       ),
@@ -9985,7 +10366,7 @@ function ComparePlanHead({
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: cx(
+            className: cx$1(
               "pricing-compare__plan-name font-hero font-semibold tracking-[-0.02em]",
               layout === "column" ? "text-[15px] sm:text-[16px]" : "text-[14px]",
               featured ? "text-[#FF9A3D]" : "text-white"
@@ -9996,7 +10377,7 @@ function ComparePlanHead({
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: cx(
+            className: cx$1(
               "pricing-compare__plan-original text-[11px] font-medium",
               priceOriginal ? "text-white/35 line-through" : "text-transparent"
             ),
@@ -10007,7 +10388,7 @@ function ComparePlanHead({
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: cx(
+            className: cx$1(
               "pricing-compare__plan-price font-hero font-semibold leading-none tracking-[-0.02em]",
               layout === "column" ? "text-[14px] sm:text-[15px]" : "text-[13px]",
               isCustom ? "text-white" : "text-[#FF9A3D]"
@@ -10026,7 +10407,7 @@ function PlanPrice({ price, priceOriginal }) {
     /* @__PURE__ */ jsx(
       "p",
       {
-        className: cx(
+        className: cx$1(
           "pricing-plan-card__price-original text-[13px] font-medium leading-[1.125]",
           hasOriginal ? "text-white/38 line-through" : "text-transparent"
         ),
@@ -10037,7 +10418,7 @@ function PlanPrice({ price, priceOriginal }) {
     /* @__PURE__ */ jsx(
       "p",
       {
-        className: cx(
+        className: cx$1(
           "pricing-plan-card__price-value mt-1 font-hero text-[clamp(1.65rem,2.2vw,2rem)] font-semibold leading-[1.05] tracking-[-0.03em]",
           hasOriginal ? "text-[#FF9A3D]" : "text-white"
         ),
@@ -10071,7 +10452,7 @@ function PlanCard({
   return /* @__PURE__ */ jsxs(
     "article",
     {
-      className: cx(
+      className: cx$1(
         "pricing-plan-card flex h-full flex-col",
         highlight && "pricing-plan-card--highlight",
         planId === "growth" && "pricing-plan-card--growth",
@@ -10084,7 +10465,7 @@ function PlanCard({
             /* @__PURE__ */ jsx(
               "h3",
               {
-                className: cx(
+                className: cx$1(
                   "pricing-plan-card__name font-hero text-[1.35rem] font-semibold leading-[1.15] tracking-[-0.03em]",
                   planId === "growth" ? "text-[#FF9A3D]" : "text-white"
                 ),
@@ -10094,7 +10475,7 @@ function PlanCard({
             /* @__PURE__ */ jsx(
               "p",
               {
-                className: cx(
+                className: cx$1(
                   "pricing-plan-card__tagline mt-1 text-[13px] leading-[1.35]",
                   planId === "growth" ? "text-[#FF9A3D]/80" : "text-white/48"
                 ),
@@ -10129,7 +10510,7 @@ function CompactPlanCard({
   return /* @__PURE__ */ jsxs(
     "article",
     {
-      className: cx(
+      className: cx$1(
         "pricing-footer-card flex h-full flex-col",
         highlight && "pricing-footer-card--highlight",
         planId === "growth" && "pricing-footer-card--growth"
@@ -10179,19 +10560,19 @@ function PricingPlansSection({ className }) {
     Section,
     {
       id: "pricing",
-      className: cx(
+      className: cx$1(
         "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-10 sm:py-20 lg:py-24",
         className
       ),
       children: /* @__PURE__ */ jsxs(Container, { children: [
-        /* @__PURE__ */ jsxs(Reveal, { className: "mx-auto max-w-[48rem] text-center", children: [
+        /* @__PURE__ */ jsxs(Reveal$1, { className: "mx-auto max-w-[48rem] text-center", children: [
           /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.85rem,4.2vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white", children: copy.title }),
           /* @__PURE__ */ jsxs("div", { className: "mx-auto mt-3 flex flex-wrap items-baseline justify-center gap-x-2.5 gap-y-1 sm:mt-4", children: [
             /* @__PURE__ */ jsx("span", { className: "font-hero shrink-0 text-[clamp(1.85rem,3.8vw,2.5rem)] font-bold leading-none tracking-[-0.03em] text-[#FF9A3D]", children: copy.launchDiscount.percent }),
             /* @__PURE__ */ jsx("span", { className: "max-w-[42ch] text-center text-[11px] leading-snug text-[#FF9A3D]/72 sm:text-left sm:text-[12px]", children: copy.launchDiscount.note })
           ] })
         ] }),
-        /* @__PURE__ */ jsx(Reveal, { delay: 80, className: "pricing-plans-grid mt-10 sm:mt-12", children: PLANS.map((plan) => {
+        /* @__PURE__ */ jsx(Reveal$1, { delay: 80, className: "pricing-plans-grid mt-10 sm:mt-12", children: PLANS.map((plan) => {
           const planCopy = copy.plans[plan.id];
           return /* @__PURE__ */ jsx(
             PlanCard,
@@ -10211,7 +10592,7 @@ function PricingPlansSection({ className }) {
             plan.id
           );
         }) }),
-        /* @__PURE__ */ jsx(Reveal, { delay: 120, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs("div", { className: "pricing-compare", children: [
+        /* @__PURE__ */ jsx(Reveal$1, { delay: 120, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs("div", { className: "pricing-compare", children: [
           /* @__PURE__ */ jsxs("div", { className: "pricing-compare__intro", children: [
             /* @__PURE__ */ jsx("h3", { className: "font-hero text-[clamp(1.35rem,2.8vw,1.85rem)] font-semibold tracking-[-0.03em] text-white", children: copy.compareTitle }),
             /* @__PURE__ */ jsx(
@@ -10282,7 +10663,7 @@ function PricingPlansSection({ className }) {
                 PLAN_IDS.map((planId) => /* @__PURE__ */ jsx(
                   "div",
                   {
-                    className: cx(
+                    className: cx$1(
                       "pricing-compare__plan-col",
                       planId === "growth" && "pricing-compare__plan-col--growth"
                     ),
@@ -10315,7 +10696,7 @@ function PricingPlansSection({ className }) {
                       ChevronDown,
                       {
                         size: 16,
-                        className: cx("text-white/45 transition", open && "rotate-180"),
+                        className: cx$1("text-white/45 transition", open && "rotate-180"),
                         "aria-hidden": true
                       }
                     )
@@ -10339,7 +10720,7 @@ function PricingPlansSection({ className }) {
             ] }, group.id);
           }) })
         ] }) }),
-        /* @__PURE__ */ jsx(Reveal, { delay: 150, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs("div", { className: "pricing-value-band", children: [
+        /* @__PURE__ */ jsx(Reveal$1, { delay: 150, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs("div", { className: "pricing-value-band", children: [
           /* @__PURE__ */ jsxs("div", { className: "pricing-value-band__copy", children: [
             /* @__PURE__ */ jsxs("h3", { className: "font-hero text-[clamp(1.35rem,2.8vw,2rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-white", children: [
               copy.footer.valueTitle,
@@ -10352,7 +10733,7 @@ function PricingPlansSection({ className }) {
           /* @__PURE__ */ jsx(PricingPlanScopeGrid, { onPlanAction: handlePlanCta })
         ] }) }),
         /* @__PURE__ */ jsx(PricingFAQSection, {}),
-        /* @__PURE__ */ jsx(Reveal, { delay: 170, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsx("div", { className: "pricing-help-band", children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(Reveal$1, { delay: 170, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsx("div", { className: "pricing-help-band", children: /* @__PURE__ */ jsx(
           "a",
           {
             href: buildHelpPlanTelegramUrl(),
@@ -10362,7 +10743,7 @@ function PricingPlansSection({ className }) {
             children: copy.footer.helpCta
           }
         ) }) }),
-        /* @__PURE__ */ jsx(Reveal, { delay: 180, className: "pricing-footer-grid mt-0 hidden md:grid", children: PLANS.map((plan) => {
+        /* @__PURE__ */ jsx(Reveal$1, { delay: 180, className: "pricing-footer-grid mt-0 hidden md:grid", children: PLANS.map((plan) => {
           const planCopy = copy.plans[plan.id];
           return /* @__PURE__ */ jsx(
             CompactPlanCard,
@@ -10406,6 +10787,4948 @@ function PricingPage() {
     /* @__PURE__ */ jsx(Footer, {})
   ] });
 }
+const RU = {
+  seo: {
+    title: "Партнёрская программа TIVONIX — Referral и White-label",
+    description: "Передавайте клиентов или продавайте разработку под своим брендом. TIVONIX оценивает, разрабатывает и запускает сайты, CRM, кабинеты, ботов и веб-сервисы.",
+    serviceName: "TIVONIX Partners — Referral и White-label",
+    emailSubject: "TIVONIX Partners — обсуждение сотрудничества"
+  },
+  hero: {
+    h1: "Берите больше заказов на разработку — без найма своей IT-команды",
+    subtitle: "Для агентств, фрилансеров и студий: вы находите клиента, TIVONIX оценивает, разрабатывает и запускает. Клиент остаётся вашим — выберите Referral или White-label и зарегистрируйтесь в панели.",
+    cta: "Стать партнёром",
+    loginCta: "Войти в панель",
+    trust: "Можно начать с одного проекта • Клиент остаётся вашим • NDA"
+  },
+  problem: {
+    title: "Не отказывайтесь от заказа, если клиенту понадобилась разработка",
+    body: [
+      { text: "Допустим, вы занимаетесь " },
+      { text: "рекламой", pill: true },
+      { text: ", " },
+      { text: "дизайном", pill: true },
+      { text: " или " },
+      { text: "продвижением", pill: true },
+      { text: ". Клиент доверяет вам, но теперь ему нужен " },
+      { text: "сайт, CRM, онлайн-запись или личный кабинет", em: true },
+      { text: ". Вам не придётся " },
+      { text: "нанимать разработчиков", em: true },
+      { text: " или искать исполнителей. Вы передаёте задачу TIVONIX, " },
+      { text: "добавляете свою наценку", em: true },
+      { text: " и продолжаете вести клиента. Мы оцениваем, разрабатываем, тестируем и " },
+      { text: "запускаем продукт", em: true },
+      { text: "." }
+    ],
+    rolesHeading: "Кто за что отвечает",
+    roles: [
+      {
+        title: "Вы",
+        items: [
+          "находите клиента",
+          "обсуждаете с ним бизнес-задачу",
+          "называете итоговую цену",
+          "остаётесь главным контактом",
+          "контролируете отношения с клиентом"
+        ]
+      },
+      {
+        title: "TIVONIX",
+        items: [
+          "разбирается в технической части",
+          "рассчитывает партнёрскую стоимость",
+          "делает дизайн и разработку",
+          "тестирует и запускает проект",
+          "показывает каждый этап работы"
+        ]
+      },
+      {
+        title: "Ваша выгода",
+        items: [
+          "не нужно содержать разработчиков в штате",
+          "можно принимать более дорогие заказы",
+          "клиент остаётся с вами",
+          "разница между партнёрской и конечной ценой остаётся вам",
+          "вы расширяете услуги своего агентства"
+        ]
+      }
+    ]
+  },
+  money: {
+    label: "Простой пример",
+    body: "TIVONIX оценил разработку в $1500. Вы продаёте проект клиенту за $2200. Мы выполняем техническую часть, вы ведёте клиента, а разница $700 остаётся вашему агентству.",
+    caption: "Клиент платит вам → вы оставляете наценку → TIVONIX получает партнёрскую стоимость",
+    flow: ["У вас есть клиент", "TIVONIX выполняет разработку", "вы зарабатываете на своей наценке"],
+    disclaimer: "Суммы приведены для примера. Деньги появляются только от реального оплаченного проекта. Стоимость каждого проекта рассчитывается отдельно."
+  },
+  models: {
+    heading: {
+      before: "Передайте клиента или",
+      sell: "продайте",
+      middle: "проект под своим",
+      brand: "брендом"
+    },
+    menu: [
+      { title: "Оценка за 24 часа", description: "Объём, сроки, формат" },
+      { title: "White-label", description: "Работа под вашим брендом" },
+      { title: "Referral", description: "Вознаграждение после оплаты" },
+      { title: "Кабинет партнёра", description: "Статусы и выплаты" }
+    ],
+    allInOne: {
+      title: "Всё под рукой",
+      text: "Оценка, модели сотрудничества, комиссия и кабинет сделок — в одном месте."
+    },
+    quickStart: {
+      pill: "Оценка за 24 часа",
+      title: "Быстрый старт",
+      text: "Присылаете задачу — получаете объём, сроки и партнёрскую стоимость."
+    },
+    status: {
+      title: "Прозрачный статус",
+      text: "В кабинете видно, на каком этапе сделка и когда будет выплата.",
+      steps: [
+        { t: "Заявка", d: "контакт получен" },
+        { t: "В работе", d: "разработка идёт" },
+        { t: "Оплачено", d: "комиссия начислена" }
+      ]
+    },
+    referral: {
+      title: "Referral-партнёр",
+      text: "Передаёте контакт или добавляете TIVONIX в чат. Мы оцениваем проект, заключаем сделку и выполняем работу. Клиент закрепляется за вами. Партнёрское вознаграждение начисляется после оплаты заказа клиентом.",
+      cta: "Стать Referral-партнёром",
+      note: "Вознаграждение — только после оплаты клиентом."
+    },
+    whiteLabel: {
+      title: "White-label",
+      text: "Продаёте разработку как услугу агентства. TIVONIX сообщает стоимость разработки. Партнёр самостоятельно назначает конечную цену для своего клиента. Мы не выходим к клиенту без согласия.",
+      cta: "Работать по White-label",
+      note: "Стоимость, сроки и условия проекта согласовываются после проверки заявки."
+    },
+    panelHint: "Регистрация откроется в партнёрской панели TIVONIX",
+    footnote: "Регистрация бесплатная. Вознаграждение — только за оплаченные проекты."
+  },
+  video: {
+    title: "Как работает партнёрство — за 60 секунд",
+    subtitle: "От выбора формата до первого проекта в панели TIVONIX."
+  },
+  afterReg: {
+    title: "Что будет после регистрации",
+    lead: "Короткий путь от заявки до доступа в панель.",
+    steps: [
+      { t: "Вы выбираете формат", d: "Referral или White-label." },
+      { t: "Создаёте аккаунт", d: "Указываете свои контакты и отправляете заявку." },
+      { t: "Мы проверяем заявку", d: "После одобрения вы принимаете условия сотрудничества." },
+      { t: "Получаете доступ к панели", d: "Передаёте клиента или создаёте первый проект и следите за статусами." }
+    ],
+    disclaimer: "Регистрация не означает автоматическое одобрение. Сначала мы проверяем заявку и связываемся с партнёром."
+  },
+  capabilities: {
+    heading: "Возможности",
+    titles: [
+      "Сайт или квиз",
+      "Бот и автоматизация",
+      "CRM или админ-панель",
+      "Личный кабинет / сервис",
+      "Интеграции",
+      "Поддержка и развитие"
+    ],
+    h2Before: "От страницы под рекламу до",
+    h2Pill: "полноценного",
+    h2After: "веб-продукта"
+  },
+  process: {
+    title: "Вы контролируете клиента. Мы контролируем разработку",
+    lead: "Шесть понятных шагов от заявки до запуска — без размытых сроков и скрытых ролей.",
+    steps: ["Заявка", "Разбор", "Оценка", "Согласование", "Разработка", "Запуск"]
+  },
+  cases: {
+    title: "Не концепты, а работающие продукты",
+    view: "Смотреть проект",
+    all: "Все проекты",
+    texts: {
+      spliton: "Финтех-платформа для музыкальных активов: каталог релизов, покупка долей, кошелёк, вторичный рынок, выплаты и административная система.",
+      slotty: "Система онлайн-записи: услуги, расписание, бронирование, напоминания, портфолио, подписки и личный кабинет.",
+      giftsniper: "Telegram-продукт для анализа NFT и Gifts: ссылки, рыночные данные, характеристики и ориентировочная оценка."
+    }
+  },
+  examples: {
+    sr: "Примеры моделей Referral и White-label",
+    referral: {
+      pill: "Referral",
+      title: "Пример Referral",
+      text: "Клиент оплатил заказ. Партнёрское вознаграждение начисляется после подтверждённой оплаты — не за привлечение других партнёров."
+    },
+    whiteLabel: {
+      pill: "White-label",
+      title: "Пример White-label",
+      text: "TIVONIX сообщает стоимость разработки агентству. Агентство само назначает цену клиенту и оставляет разницу себе."
+    }
+  },
+  faq: {
+    title: "Частые вопросы",
+    more: "Подробнее",
+    items: [
+      {
+        q: "Кто может стать партнёром?",
+        a: "Агентства, студии, фрилансеры и специалисты, у которых уже есть или появляются клиенты на разработку."
+      },
+      {
+        q: "Чем Referral отличается от White-label?",
+        a: "Referral — вы передаёте клиента, TIVONIX ведёт сделку и платит вознаграждение после оплаты. White-label — вы продаёте разработку под своим брендом и сами назначаете цену клиенту."
+      },
+      {
+        q: "Кто общается с клиентом?",
+        a: "В White-label основную коммуникацию ведёте вы. В Referral мы можем общаться напрямую в согласованном формате."
+      },
+      {
+        q: "Остаётся ли клиент за агентством?",
+        a: "Да. Клиент закрепляется за вами — TIVONIX не «забирает» отношения."
+      },
+      {
+        q: "Когда выплачивается Referral-вознаграждение?",
+        a: "После того как клиент оплатил заказ и платёж подтверждён. Деньги только от реального оплаченного проекта."
+      },
+      {
+        q: "Как агентство зарабатывает на White-label?",
+        a: "TIVONIX сообщает стоимость разработки. Вы сами назначаете конечную цену клиенту и оставляете разницу."
+      },
+      {
+        q: "Может ли TIVONIX выйти к клиенту напрямую?",
+        a: "В White-label — только с вашего согласия. В Referral формат общения согласуем заранее."
+      },
+      {
+        q: "Можно ли начать с одного проекта?",
+        a: "Да. Один пилотный проект — нормальный старт."
+      },
+      {
+        q: "Что будет после регистрации?",
+        a: "Заявка уходит на проверку (pending). После одобрения — условия сотрудничества и доступ к панели."
+      },
+      {
+        q: "Где отслеживать клиентов, сделки и выплаты?",
+        a: "В партнёрской панели TIVONIX: статусы сделок, проекты и выплаты в одном кабинете."
+      }
+    ]
+  },
+  final: {
+    badge: "Готовы начать",
+    title: "Начните с одного проекта",
+    body: "Выберите формат, зарегистрируйтесь и отправьте первую задачу через партнёрскую панель.",
+    referralCta: "Выбрать Referral",
+    whiteLabelCta: "Выбрать White-label",
+    loginLink: "Уже есть аккаунт? Войти в панель",
+    footnote: "Можно начать с одного проекта • Клиент остаётся вашим • NDA"
+  },
+  footer: {
+    marquee: "WHITE-LABEL · REFERRAL · ПАРТНЁРСКАЯ РАЗРАБОТКА · ПОД ВАШИМ БРЕНДОМ",
+    homeAria: "TIVONIX — на главную",
+    navAria: "Навигация в подвале",
+    formats: "Форматы",
+    login: "Войти в панель",
+    askTelegram: "Задать вопрос",
+    projects: "Проекты",
+    contacts: "Контакты",
+    channel: "Канал",
+    privacy: "Политика",
+    privacyAria: "Политика обработки и защиты персональных данных (PDF)",
+    consent: "Согласие",
+    consentAria: "Согласие на обработку персональных данных (PDF)",
+    note: "Разработка для агентств: сайты, CRM, кабинеты и боты под вашим брендом."
+  },
+  discuss: {
+    label: "Задать вопрос",
+    ask: "Telegram — только вопрос, регистрация в панели"
+  },
+  ui: {
+    client: "Клиент",
+    you: "Вы",
+    youPct: "Вы",
+    estimate: "Оценка TIVONIX",
+    markup: "Ваша наценка",
+    clientPrice: "Цена клиенту"
+  }
+};
+const EN = {
+  seo: {
+    title: "TIVONIX Partner Program — Referral and White-label",
+    description: "Refer clients or sell development under your brand. TIVONIX scopes, builds, and ships websites, CRMs, portals, bots, and web products.",
+    serviceName: "TIVONIX Partners — Referral and White-label",
+    emailSubject: "TIVONIX Partners — partnership discussion"
+  },
+  hero: {
+    h1: "Take on more development work — without hiring your own IT team",
+    subtitle: "For agencies, freelancers, and studios: you find the client; TIVONIX scopes, builds, and launches. The client stays yours — pick Referral or White-label and register in the panel.",
+    cta: "Become a partner",
+    loginCta: "Log in to the panel",
+    trust: "Start with one project • The client stays yours • NDA"
+  },
+  problem: {
+    title: "Don’t turn down a deal just because the client needs development",
+    body: [
+      { text: "Say you run " },
+      { text: "ads", pill: true },
+      { text: ", " },
+      { text: "design", pill: true },
+      { text: ", or " },
+      { text: "growth", pill: true },
+      { text: ". Your client trusts you — and now they need " },
+      { text: "a website, CRM, online booking, or client portal", em: true },
+      { text: ". You don’t have to " },
+      { text: "hire developers", em: true },
+      { text: " or hunt freelancers. Hand the work to TIVONIX, " },
+      { text: "add your markup", em: true },
+      { text: ", and keep owning the relationship. We scope, build, test, and " },
+      { text: "launch the product", em: true },
+      { text: "." }
+    ],
+    rolesHeading: "Who owns what",
+    roles: [
+      {
+        title: "You",
+        items: [
+          "find the client",
+          "align on the business goal",
+          "quote the final price",
+          "remain the primary contact",
+          "own the client relationship"
+        ]
+      },
+      {
+        title: "TIVONIX",
+        items: [
+          "owns the technical scope",
+          "calculates the partner price",
+          "handles design and development",
+          "tests and ships the project",
+          "keeps every stage visible"
+        ]
+      },
+      {
+        title: "What’s in it for you",
+        items: [
+          "no in-house developers required",
+          "you can take on higher-value deals",
+          "the client stays with you",
+          "the gap between partner price and client price is yours",
+          "you expand your agency’s service lineup"
+        ]
+      }
+    ]
+  },
+  money: {
+    label: "Simple example",
+    body: "TIVONIX prices development at $1,500. You sell the project to the client for $2,200. We deliver the build, you manage the client, and the $700 difference stays with your agency.",
+    caption: "Client pays you → you keep the markup → TIVONIX receives the partner price",
+    flow: ["You have a client", "TIVONIX builds it", "you earn on your markup"],
+    disclaimer: "Figures are illustrative. Earnings come only from a real paid project. Every project is priced individually."
+  },
+  models: {
+    heading: {
+      before: "Refer the client — or",
+      sell: "sell",
+      middle: "the project under your",
+      brand: "brand"
+    },
+    menu: [
+      { title: "Estimate in 24 hours", description: "Scope, timeline, format" },
+      { title: "White-label", description: "Delivery under your brand" },
+      { title: "Referral", description: "Payout after client payment" },
+      { title: "Partner panel", description: "Statuses and payouts" }
+    ],
+    allInOne: {
+      title: "Everything in one place",
+      text: "Estimates, partnership models, commission, and deal tracking — all in one place."
+    },
+    quickStart: {
+      pill: "Estimate in 24 hours",
+      title: "Fast start",
+      text: "Send the brief — get scope, timeline, and partner pricing."
+    },
+    status: {
+      title: "Transparent status",
+      text: "See where each deal stands and when payout is due.",
+      steps: [
+        { t: "Lead in", d: "contact received" },
+        { t: "In progress", d: "build underway" },
+        { t: "Paid", d: "commission accrued" }
+      ]
+    },
+    referral: {
+      title: "Referral partner",
+      text: "Share the contact or add TIVONIX to the chat. We estimate, close, and deliver. The client is attributed to you. Partner reward is accrued after the client pays for the order.",
+      cta: "Become a Referral partner",
+      note: "Reward only after the client pays."
+    },
+    whiteLabel: {
+      title: "White-label",
+      text: "Sell development as your agency’s service. TIVONIX quotes the build cost. You set the final price for your client. We never contact the client without your approval.",
+      cta: "Work White-label",
+      note: "Price, timeline, and terms are agreed after we review your application."
+    },
+    panelHint: "Registration opens in the TIVONIX partner panel",
+    footnote: "Registration is free. Rewards only on paid projects."
+  },
+  video: {
+    title: "How partnership works — in 60 seconds",
+    subtitle: "From choosing a format to your first project in the TIVONIX panel."
+  },
+  afterReg: {
+    title: "What happens after registration",
+    lead: "A short path from application to panel access.",
+    steps: [
+      { t: "You choose a format", d: "Referral or White-label." },
+      { t: "Create an account", d: "Share your contacts and submit the application." },
+      { t: "We review the application", d: "After approval, you accept the partnership terms." },
+      { t: "You get panel access", d: "Refer a client or create the first project and track statuses." }
+    ],
+    disclaimer: "Registration does not mean automatic approval. We review the application and contact the partner first."
+  },
+  capabilities: {
+    heading: "Capabilities",
+    titles: [
+      "Website or quiz",
+      "Bot and automation",
+      "CRM or admin panel",
+      "Client portal / product",
+      "Integrations",
+      "Support and growth"
+    ],
+    h2Before: "From an ad landing page to",
+    h2Pill: "a full",
+    h2After: "web product"
+  },
+  process: {
+    title: "You own the client. We own the build",
+    lead: "Six clear steps from request to launch — no fuzzy timelines or hidden roles.",
+    steps: ["Request", "Discovery", "Estimate", "Alignment", "Development", "Launch"]
+  },
+  cases: {
+    title: "Not concepts — working products",
+    view: "View project",
+    all: "All projects",
+    texts: {
+      spliton: "Fintech platform for music assets: release catalog, fractional purchases, wallet, secondary market, payouts, and admin system.",
+      slotty: "Online booking system: services, schedule, reservations, reminders, portfolio, subscriptions, and client portal.",
+      giftsniper: "Telegram product for NFT and Gifts analysis: links, market data, attributes, and estimated valuation."
+    }
+  },
+  examples: {
+    sr: "Referral and White-label model examples",
+    referral: {
+      pill: "Referral",
+      title: "Referral example",
+      text: "The client paid for the order. Partner reward is accrued after confirmed payment — not for recruiting other partners."
+    },
+    whiteLabel: {
+      pill: "White-label",
+      title: "White-label example",
+      text: "TIVONIX quotes the build cost to the agency. The agency sets the client price and keeps the difference."
+    }
+  },
+  faq: {
+    title: "FAQ",
+    more: "Details",
+    items: [
+      {
+        q: "Who can become a partner?",
+        a: "Agencies, studios, freelancers, and specialists who already have — or will have — clients needing development."
+      },
+      {
+        q: "How is Referral different from White-label?",
+        a: "Referral — you hand over the client; TIVONIX runs the deal and pays a reward after payment. White-label — you sell development under your brand and set the client price yourself."
+      },
+      {
+        q: "Who talks to the client?",
+        a: "In White-label, you own client communication. In Referral, we may speak directly in an agreed format."
+      },
+      {
+        q: "Does the client stay with the agency?",
+        a: "Yes. The client is attributed to you — TIVONIX does not take the relationship."
+      },
+      {
+        q: "When is the Referral reward paid?",
+        a: "After the client pays for the order and payment is confirmed. Money only from a real paid project."
+      },
+      {
+        q: "How does an agency earn on White-label?",
+        a: "TIVONIX quotes the build cost. You set the final client price and keep the difference."
+      },
+      {
+        q: "Can TIVONIX contact the client directly?",
+        a: "In White-label — only with your approval. In Referral, contact format is agreed upfront."
+      },
+      {
+        q: "Can we start with one project?",
+        a: "Yes. One pilot project is a normal start."
+      },
+      {
+        q: "What happens after registration?",
+        a: "Your application goes to review (pending). After approval — partnership terms and panel access."
+      },
+      {
+        q: "Where do I track clients, deals, and payouts?",
+        a: "In the TIVONIX partner panel: deal statuses, projects, and payouts in one place."
+      }
+    ]
+  },
+  final: {
+    badge: "Ready to start",
+    title: "Start with one project",
+    body: "Choose a format, register, and submit the first task through the partner panel.",
+    referralCta: "Choose Referral",
+    whiteLabelCta: "Choose White-label",
+    loginLink: "Already have an account? Log in to the panel",
+    footnote: "Start with one project • The client stays yours • NDA"
+  },
+  footer: {
+    marquee: "WHITE-LABEL · REFERRAL · PARTNERSHIP DEVELOPMENT · UNDER YOUR BRAND",
+    homeAria: "TIVONIX — home",
+    navAria: "Footer navigation",
+    formats: "Formats",
+    login: "Log in to the panel",
+    askTelegram: "Ask a question",
+    projects: "Projects",
+    contacts: "Contacts",
+    channel: "Channel",
+    privacy: "Privacy",
+    privacyAria: "Privacy Policy (PDF)",
+    consent: "Consent",
+    consentAria: "Consent to personal data processing (PDF)",
+    note: "Development for agencies: websites, CRMs, portals, and bots under your brand."
+  },
+  discuss: {
+    label: "Ask a question",
+    ask: "Telegram for questions — registration is in the panel"
+  },
+  ui: {
+    client: "Client",
+    you: "You",
+    youPct: "You",
+    estimate: "TIVONIX estimate",
+    markup: "Your markup",
+    clientPrice: "Client price"
+  }
+};
+function getPartnersCopy(lang) {
+  return lang === "en" ? EN : RU;
+}
+const PARTNERS_DOCS = {
+  ru: {
+    privacy: "/doc/Политика_обработки_ПД_Tivonix_RU.pdf",
+    consent: "/doc/Согласие_на_обработку_ПД_Tivonix_RU.pdf"
+  },
+  en: {
+    privacy: "/doc/Privacy_Policy_Tivonix_EN.pdf",
+    consent: "/doc/Consent_Tivonix_EN.pdf"
+  }
+};
+const PARTNERS_GMAIL_URL = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent("tivoonix@gmail.com")}&su=${encodeURIComponent("TIVONIX Partners — обсуждение сотрудничества")}`;
+const TIVONIX_MARK = "/images/tivonix-logo-icon.webp";
+const PARTNERS_EASY_BG = `/images/${encodeURI("как рабоает/пп/4.webp")}`;
+const PARTNERS_REF_BG = `/images/partners/${encodeURIComponent("зеленая.png")}`;
+const PARTNERS_WL_BG = `/images/partners/${encodeURIComponent("оранж.png")}`;
+const CASES = [
+  {
+    id: "spliton",
+    title: "Spliton",
+    tags: ["Fintech", "Marketplace", "Payments"],
+    cover: "/images/project-priew/spliton.webp"
+  },
+  {
+    id: "slotty",
+    title: "Slotty",
+    tags: ["Booking", "SaaS", "Telegram"],
+    cover: "/images/project-priew/slotty.webp"
+  },
+  {
+    id: "giftsniper",
+    title: "GiftSniper",
+    tags: ["Telegram Bot", "TON", "Analytics"],
+    cover: "/images/project-priew/giftsniper.webp"
+  }
+];
+const CAPABILITY_IDS = ["landing", "bot", "crm", "cabinet", "integrations", "support"];
+function buildPartnersSchema(copy, lang, pathname) {
+  const url = partnersCanonicalUrl(lang, pathname);
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": `${url}#webpage`,
+        url,
+        name: copy.seo.title,
+        description: copy.seo.description,
+        isPartOf: { "@id": "https://tivonix.tech/#website" },
+        inLanguage: lang
+      },
+      {
+        "@type": "Service",
+        "@id": `${url}#service`,
+        name: copy.seo.serviceName,
+        description: copy.seo.description,
+        provider: {
+          "@type": "Organization",
+          name: "TIVONIX",
+          url: "https://tivonix.tech/"
+        },
+        areaServed: "Worldwide",
+        serviceType: "Partner software development — Referral and White-label",
+        url
+      }
+    ]
+  };
+}
+function cx(...parts) {
+  return parts.filter(Boolean).join(" ");
+}
+function Shell({ children, className }) {
+  return /* @__PURE__ */ jsx("div", { className: cx(LANDING_SHELL_CLASS, className), children });
+}
+function Reveal({ children, className }) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof window === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) {
+      setVisible(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setVisible(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -5% 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return /* @__PURE__ */ jsx(
+    "div",
+    {
+      ref,
+      className: cx(
+        className,
+        visible ? "translate-y-0 opacity-100 motion-safe:transition-[opacity,transform] motion-safe:duration-500 motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]" : "translate-y-3 opacity-0"
+      ),
+      children
+    }
+  );
+}
+function DarkPill({
+  children,
+  href = PARTNER_AGENCY_TELEGRAM_URL,
+  sameTab = false,
+  onClick
+}) {
+  return /* @__PURE__ */ jsx(
+    "a",
+    {
+      href,
+      ...sameTab ? {} : { target: "_blank", rel: "noopener noreferrer" },
+      onClick,
+      className: "inline-flex min-h-[2.75rem] items-center justify-center rounded-partners-btn bg-partners-ink px-5 py-2.5 font-partners text-[15px] font-semibold tracking-[-0.009em] text-partners-cream no-underline transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-partners-ink",
+      children
+    }
+  );
+}
+const pillClass = "inline-flex min-h-[2.75rem] items-center justify-center rounded-partners-btn bg-partners-sand px-5 py-2.5 font-partners text-[15px] font-semibold tracking-[-0.009em] text-partners-ink no-underline transition hover:bg-partners-stone focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-partners-ink";
+function SandPill({
+  children,
+  href,
+  sameTab = false,
+  onClick
+}) {
+  const external = href.startsWith("http") || href.startsWith("tg:");
+  if (external) {
+    return /* @__PURE__ */ jsx(
+      "a",
+      {
+        href,
+        ...sameTab ? {} : { target: "_blank", rel: "noopener noreferrer" },
+        onClick,
+        className: pillClass,
+        children
+      }
+    );
+  }
+  if (href.startsWith("#")) {
+    return /* @__PURE__ */ jsx("a", { href, onClick, className: pillClass, children });
+  }
+  return /* @__PURE__ */ jsx(Link, { to: href, className: pillClass, children });
+}
+function CapsMiniVisual({ id }) {
+  if (id === "landing") {
+    return /* @__PURE__ */ jsx("div", { className: "partners-caps__viz partners-caps__viz--landing", "aria-hidden": true, children: /* @__PURE__ */ jsxs("div", { className: "partners-caps__browser", children: [
+      /* @__PURE__ */ jsxs("div", { className: "partners-caps__chrome", children: [
+        /* @__PURE__ */ jsx("span", {}),
+        /* @__PURE__ */ jsx("span", {}),
+        /* @__PURE__ */ jsx("span", {}),
+        /* @__PURE__ */ jsx("span", { className: "partners-caps__url", children: "tivonix.tech/lead" })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "partners-caps__page", children: [
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__nav", children: [
+          /* @__PURE__ */ jsx("i", {}),
+          /* @__PURE__ */ jsx("i", {}),
+          /* @__PURE__ */ jsx("i", {})
+        ] }),
+        /* @__PURE__ */ jsx("span", { className: "partners-caps__hero-bar" }),
+        /* @__PURE__ */ jsx("span", { className: "partners-caps__hero-bar partners-caps__hero-bar--s" }),
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__cta-row", children: [
+          /* @__PURE__ */ jsx("span", { className: "partners-caps__cta", children: "Старт" }),
+          /* @__PURE__ */ jsx("span", { className: "partners-caps__cta partners-caps__cta--ghost", children: "Ещё" })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "partners-caps__form", children: [
+          /* @__PURE__ */ jsx("span", { className: "partners-caps__field-label", children: "Имя" }),
+          /* @__PURE__ */ jsxs("span", { className: "partners-caps__input", children: [
+            /* @__PURE__ */ jsx("span", { className: "partners-caps__typed", children: "Анна" }),
+            /* @__PURE__ */ jsx("span", { className: "partners-caps__caret" })
+          ] }),
+          /* @__PURE__ */ jsx("span", { className: "partners-caps__field-label", children: "Телефон" }),
+          /* @__PURE__ */ jsx("span", { className: "partners-caps__input partners-caps__input--phone", children: "+7 ···" })
+        ] }),
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__tg-chip", children: [
+          /* @__PURE__ */ jsx("svg", { width: "11", height: "11", viewBox: "0 0 24 24", fill: "currentColor", "aria-hidden": true, children: /* @__PURE__ */ jsx("path", { d: "M21.5 3.6 2.9 11.1c-1.3.5-1.3 1.3-.2 1.6l4.7 1.5 1.8 5.5c.2.7.1.9.8.9.5 0 .7-.2 1-.5l2.4-2.3 5 3.7c.9.5 1.6.2 1.8-.9L22.9 5c.3-1.2-.4-1.8-1.4-1.4ZM9.2 14.5l-.3 3.3 1.3-1.7 8-7.6-9 5.9Z" }) }),
+          "В Telegram"
+        ] })
+      ] })
+    ] }) });
+  }
+  if (id === "bot") {
+    return /* @__PURE__ */ jsx("div", { className: "partners-caps__viz partners-caps__viz--bot", "aria-hidden": true, children: /* @__PURE__ */ jsxs("div", { className: "partners-caps__phone", children: [
+      /* @__PURE__ */ jsxs("div", { className: "partners-caps__phone-head", children: [
+        /* @__PURE__ */ jsx("span", { className: "partners-caps__phone-avatar" }),
+        /* @__PURE__ */ jsxs("div", { className: "partners-caps__phone-meta", children: [
+          /* @__PURE__ */ jsx("span", { className: "partners-caps__phone-name", children: "TIVONIX Bot" }),
+          /* @__PURE__ */ jsx("span", { className: "partners-caps__phone-status", children: "online" })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "partners-caps__chat", children: [
+        /* @__PURE__ */ jsx("span", { className: "partners-caps__msg partners-caps__msg--in partners-caps__msg--a", children: "Привет! Опишите задачу" }),
+        /* @__PURE__ */ jsx("span", { className: "partners-caps__msg partners-caps__msg--out partners-caps__msg--b", children: "Нужен сайт + CRM" }),
+        /* @__PURE__ */ jsx("span", { className: "partners-caps__msg partners-caps__msg--in partners-caps__msg--c", children: "Ок. Срок и бюджет?" }),
+        /* @__PURE__ */ jsx("span", { className: "partners-caps__msg partners-caps__msg--out partners-caps__msg--d", children: "2 недели" }),
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__msg partners-caps__msg--in partners-caps__msg--typing", children: [
+          /* @__PURE__ */ jsx("i", {}),
+          /* @__PURE__ */ jsx("i", {}),
+          /* @__PURE__ */ jsx("i", {})
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "partners-caps__compose", children: [
+        /* @__PURE__ */ jsx("span", { children: "Сообщение…" }),
+        /* @__PURE__ */ jsx("span", { className: "partners-caps__send" })
+      ] })
+    ] }) });
+  }
+  if (id === "crm") {
+    return /* @__PURE__ */ jsx("div", { className: "partners-caps__viz partners-caps__viz--crm", "aria-hidden": true, children: /* @__PURE__ */ jsxs("div", { className: "partners-caps__board", children: [
+      /* @__PURE__ */ jsxs("div", { className: "partners-caps__col", children: [
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__col-h", children: [
+          /* @__PURE__ */ jsx("i", { className: "is-orange" }),
+          " Новые"
+        ] }),
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__ticket partners-caps__ticket--1", children: [
+          /* @__PURE__ */ jsx("b", { children: "Лендинг" }),
+          /* @__PURE__ */ jsx("em", { children: "сегодня" })
+        ] }),
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__ticket partners-caps__ticket--move", children: [
+          /* @__PURE__ */ jsx("b", { children: "Квиз" }),
+          /* @__PURE__ */ jsx("em", { children: "сейчас" })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "partners-caps__col", children: [
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__col-h", children: [
+          /* @__PURE__ */ jsx("i", { className: "is-blue" }),
+          " В работе"
+        ] }),
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__ticket partners-caps__ticket--2", children: [
+          /* @__PURE__ */ jsx("b", { children: "CRM" }),
+          /* @__PURE__ */ jsx("em", { children: "Аня" })
+        ] }),
+        /* @__PURE__ */ jsx("span", { className: "partners-caps__progress", children: /* @__PURE__ */ jsx("i", {}) })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "partners-caps__col", children: [
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__col-h", children: [
+          /* @__PURE__ */ jsx("i", { className: "is-green" }),
+          " Готово"
+        ] }),
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__ticket partners-caps__ticket--3", children: [
+          /* @__PURE__ */ jsx("b", { children: "Кабинет" }),
+          /* @__PURE__ */ jsx("em", { children: "оплачен" })
+        ] })
+      ] })
+    ] }) });
+  }
+  if (id === "cabinet") {
+    return /* @__PURE__ */ jsx("div", { className: "partners-caps__viz partners-caps__viz--cabinet", "aria-hidden": true, children: /* @__PURE__ */ jsxs("div", { className: "partners-caps__app", children: [
+      /* @__PURE__ */ jsxs("aside", { className: "partners-caps__side", children: [
+        /* @__PURE__ */ jsx("span", {}),
+        /* @__PURE__ */ jsx("span", { className: "is-active" }),
+        /* @__PURE__ */ jsx("span", {}),
+        /* @__PURE__ */ jsx("span", {})
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "partners-caps__main", children: [
+        /* @__PURE__ */ jsxs("div", { className: "partners-caps__toolbar", children: [
+          /* @__PURE__ */ jsx("span", { className: "partners-caps__search", children: "поиск…" }),
+          /* @__PURE__ */ jsx("span", { className: "partners-caps__user-chip" })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "partners-caps__cards", children: [
+          /* @__PURE__ */ jsxs("span", { className: "partners-caps__dash", children: [
+            /* @__PURE__ */ jsx("b", { children: "12" }),
+            /* @__PURE__ */ jsx("em", { children: "лида" })
+          ] }),
+          /* @__PURE__ */ jsxs("span", { className: "partners-caps__dash partners-caps__dash--b", children: [
+            /* @__PURE__ */ jsx("b", { children: "$4.2k" }),
+            /* @__PURE__ */ jsx("em", { children: "оплаты" })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "partners-caps__rows", children: [
+          /* @__PURE__ */ jsxs("span", { className: "partners-caps__row is-live", children: [
+            /* @__PURE__ */ jsx("i", {}),
+            " Spliton · в работе"
+          ] }),
+          /* @__PURE__ */ jsxs("span", { className: "partners-caps__row", children: [
+            /* @__PURE__ */ jsx("i", {}),
+            " Slotty · оценка"
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx("span", { className: "partners-caps__pay", children: "Подписка · активна" })
+      ] })
+    ] }) });
+  }
+  if (id === "integrations") {
+    return /* @__PURE__ */ jsx("div", { className: "partners-caps__viz partners-caps__viz--integrations", "aria-hidden": true, children: /* @__PURE__ */ jsxs("div", { className: "partners-caps__net", children: [
+      /* @__PURE__ */ jsxs("svg", { className: "partners-caps__net-svg", viewBox: "0 0 300 220", width: "300", height: "220", fill: "none", children: [
+        /* @__PURE__ */ jsx("line", { className: "partners-caps__link", x1: "150", y1: "110", x2: "150", y2: "42" }),
+        /* @__PURE__ */ jsx("line", { className: "partners-caps__link", x1: "150", y1: "110", x2: "248", y2: "110" }),
+        /* @__PURE__ */ jsx("line", { className: "partners-caps__link", x1: "150", y1: "110", x2: "150", y2: "178" }),
+        /* @__PURE__ */ jsx("line", { className: "partners-caps__link", x1: "150", y1: "110", x2: "52", y2: "110" }),
+        /* @__PURE__ */ jsx("circle", { className: "partners-caps__packet partners-caps__packet--1", r: "3.5", cx: "150", cy: "110" }),
+        /* @__PURE__ */ jsx("circle", { className: "partners-caps__packet partners-caps__packet--2", r: "3.5", cx: "150", cy: "110" }),
+        /* @__PURE__ */ jsx("circle", { className: "partners-caps__packet partners-caps__packet--3", r: "3.5", cx: "150", cy: "110" }),
+        /* @__PURE__ */ jsx("circle", { className: "partners-caps__packet partners-caps__packet--4", r: "3.5", cx: "150", cy: "110" })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "partners-caps__inode partners-caps__inode--crm", children: [
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__inode-h", children: [
+          /* @__PURE__ */ jsx("i", { className: "is-crm" }),
+          " CRM"
+        ] }),
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__inode-row", children: [
+          /* @__PURE__ */ jsx("b", { children: "Анна · лендинг" }),
+          /* @__PURE__ */ jsx("em", { className: "is-new", children: "новый" })
+        ] }),
+        /* @__PURE__ */ jsx("span", { className: "partners-caps__inode-meta", children: "сделка · сегодня" })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "partners-caps__inode partners-caps__inode--pay", children: [
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__inode-h", children: [
+          /* @__PURE__ */ jsx("i", { className: "is-pay" }),
+          " Оплата"
+        ] }),
+        /* @__PURE__ */ jsx("span", { className: "partners-caps__inode-sum", children: "₽ 4 900" }),
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__inode-card", children: [
+          /* @__PURE__ */ jsx("span", { className: "partners-caps__inode-chip" }),
+          "···· 4242"
+        ] }),
+        /* @__PURE__ */ jsx("span", { className: "partners-caps__inode-ok", children: "✓ Оплачено" })
+      ] }),
+      /* @__PURE__ */ jsx("span", { className: "partners-caps__hub-core", children: "TX" }),
+      /* @__PURE__ */ jsxs("div", { className: "partners-caps__inode partners-caps__inode--tg", children: [
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__inode-h", children: [
+          /* @__PURE__ */ jsx("i", { className: "is-tg" }),
+          " Telegram"
+        ] }),
+        /* @__PURE__ */ jsx("span", { className: "partners-caps__inode-bubble", children: "Новая оплата + лид" }),
+        /* @__PURE__ */ jsx("span", { className: "partners-caps__inode-meta", children: "сейчас · бот" })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "partners-caps__inode partners-caps__inode--tbl", children: [
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__inode-h", children: [
+          /* @__PURE__ */ jsx("i", { className: "is-tbl" }),
+          " Таблица"
+        ] }),
+        /* @__PURE__ */ jsxs("span", { className: "partners-caps__inode-sheet", children: [
+          /* @__PURE__ */ jsxs("span", { children: [
+            /* @__PURE__ */ jsx("b", { children: "row" }),
+            /* @__PURE__ */ jsx("b", { children: "status" })
+          ] }),
+          /* @__PURE__ */ jsxs("span", { children: [
+            /* @__PURE__ */ jsx("em", { children: "A12" }),
+            /* @__PURE__ */ jsx("em", { className: "is-ok", children: "ok" })
+          ] }),
+          /* @__PURE__ */ jsxs("span", { children: [
+            /* @__PURE__ */ jsx("em", { children: "A13" }),
+            /* @__PURE__ */ jsx("em", { className: "is-sync", children: "sync" })
+          ] })
+        ] })
+      ] })
+    ] }) });
+  }
+  return /* @__PURE__ */ jsx("div", { className: "partners-caps__viz partners-caps__viz--support", "aria-hidden": true, children: /* @__PURE__ */ jsxs("div", { className: "partners-caps__support", children: [
+    /* @__PURE__ */ jsxs("div", { className: "partners-caps__check-list", children: [
+      /* @__PURE__ */ jsxs("span", { className: "partners-caps__check is-on", children: [
+        /* @__PURE__ */ jsx("i", { children: "✓" }),
+        " Фикс бага"
+      ] }),
+      /* @__PURE__ */ jsxs("span", { className: "partners-caps__check is-on partners-caps__check--2", children: [
+        /* @__PURE__ */ jsx("i", { children: "✓" }),
+        " Новый модуль"
+      ] }),
+      /* @__PURE__ */ jsxs("span", { className: "partners-caps__check partners-caps__check--3", children: [
+        /* @__PURE__ */ jsx("i", { children: "○" }),
+        " Сопровождение"
+      ] }),
+      /* @__PURE__ */ jsxs("span", { className: "partners-caps__check partners-caps__check--4", children: [
+        /* @__PURE__ */ jsx("i", { children: "○" }),
+        " Релиз v1.2"
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "partners-caps__support-side", children: [
+      /* @__PURE__ */ jsx("span", { className: "partners-caps__support-ring" }),
+      /* @__PURE__ */ jsx("span", { className: "partners-caps__support-label", children: "24/7" })
+    ] })
+  ] }) });
+}
+const CAPS_EXPAND_SHARE = 0.14;
+function CapabilitiesBanner() {
+  const { lang } = useLang();
+  const copy = getPartnersCopy(lang);
+  const capabilities = CAPABILITY_IDS.map((id, index2) => ({ id, title: copy.capabilities.titles[index2] }));
+  const pinRef = useRef(null);
+  const stageRef = useRef(null);
+  const walkerRef = useRef(null);
+  const [index, setIndex] = useState(0);
+  const [cycle, setCycle] = useState(0);
+  const [reduced, setReduced] = useState(false);
+  const total = capabilities.length;
+  const active = capabilities[index];
+  const indexRef = useRef(0);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const applyReduce = () => setReduced(mq.matches);
+    applyReduce();
+    mq.addEventListener?.("change", applyReduce);
+    return () => mq.removeEventListener?.("change", applyReduce);
+  }, []);
+  useEffect(() => {
+    if (reduced) {
+      document.documentElement.dataset.partnersCaps = "0";
+      return;
+    }
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const pin = pinRef.current;
+      const stage = stageRef.current;
+      if (!pin || !stage) return;
+      const rect = pin.getBoundingClientRect();
+      const vh = window.innerHeight || 1;
+      const travel = Math.max(1, pin.offsetHeight - vh);
+      const scrolled = Math.min(travel, Math.max(0, -rect.top));
+      const p = scrolled / travel;
+      let expand = 1;
+      if (p <= CAPS_EXPAND_SHARE) {
+        expand = p / CAPS_EXPAND_SHARE;
+      } else if (p >= 1 - CAPS_EXPAND_SHARE) {
+        expand = (1 - p) / CAPS_EXPAND_SHARE;
+      }
+      stage.style.setProperty("--caps-expand", String(Math.min(1, Math.max(0, expand))));
+      const midStart = CAPS_EXPAND_SHARE;
+      const midEnd = 1 - CAPS_EXPAND_SHARE;
+      const slideP = Math.max(0, Math.min(1, (p - midStart) / (midEnd - midStart)));
+      const next = Math.min(total - 1, Math.floor(slideP * total + 1e-6));
+      if (next !== indexRef.current) {
+        indexRef.current = next;
+        setIndex(next);
+        setCycle((c) => c + 1);
+      }
+      if (walkerRef.current) {
+        walkerRef.current.style.left = `calc(${slideP * 100}% - ${slideP * 56}px)`;
+      }
+      const locking = rect.top <= 4 && rect.bottom > vh * 0.65;
+      document.documentElement.dataset.partnersCaps = locking ? "1" : "0";
+    };
+    const onScroll = () => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) window.cancelAnimationFrame(raf);
+      document.documentElement.dataset.partnersCaps = "0";
+    };
+  }, [reduced, total]);
+  const scrollToSlide = (i) => {
+    const pin = pinRef.current;
+    if (!pin || reduced) {
+      setIndex(i);
+      setCycle((c) => c + 1);
+      return;
+    }
+    const vh = window.innerHeight || 1;
+    const travel = Math.max(1, pin.offsetHeight - vh);
+    const midStart = CAPS_EXPAND_SHARE;
+    const midEnd = 1 - CAPS_EXPAND_SHARE;
+    const slideMid = midStart + (i + 0.5) / total * (midEnd - midStart);
+    const top = pin.getBoundingClientRect().top + window.scrollY + travel * slideMid;
+    window.scrollTo({ top, behavior: "smooth" });
+  };
+  const card = /* @__PURE__ */ jsxs("div", { className: "partners-caps relative overflow-visible rounded-[22px] bg-partners-white px-5 pb-24 pt-6 sm:px-8 sm:pb-28 sm:pt-8", children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center text-center", children: [
+      /* @__PURE__ */ jsx("div", { className: "mx-auto flex w-full max-w-[440px] justify-center", children: /* @__PURE__ */ jsx(CapsMiniVisual, { id: active.id }) }, `viz-${active.id}-${cycle}`),
+      /* @__PURE__ */ jsx(
+        "h3",
+        {
+          className: "mt-5 font-partners-display text-[clamp(1.35rem,2.4vw,1.85rem)] font-medium leading-tight tracking-[-0.025em] text-partners-charcoal",
+          children: active.title
+        },
+        `title-${active.id}-${cycle}`
+      ),
+      /* @__PURE__ */ jsx(
+        "nav",
+        {
+          className: "mt-4 inline-flex items-center gap-0.5 rounded-full bg-[#141414] p-1",
+          role: "tablist",
+          "aria-label": copy.capabilities.heading,
+          children: capabilities.map((item, i) => {
+            const on = i === index;
+            return /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                role: "tab",
+                "aria-selected": on,
+                "aria-label": item.title,
+                onClick: () => scrollToSlide(i),
+                className: cx(
+                  "relative flex h-8 min-w-[2.4rem] items-center justify-center rounded-full border-0 px-2.5",
+                  "font-partners text-[11px] font-bold tabular-nums tracking-[0.08em] outline-none select-none transition duration-200",
+                  "focus-visible:ring-2 focus-visible:ring-[#ff6b2c]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+                  on ? "bg-[#2c2c2c] text-white" : "bg-transparent text-white/50 hover:bg-white/[0.04] hover:text-white/85"
+                ),
+                children: String(i + 1).padStart(2, "0")
+              },
+              item.id
+            );
+          })
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: "partners-caps__track", "aria-hidden": true, children: /* @__PURE__ */ jsx("span", { ref: walkerRef, className: "partners-caps__track-walker", children: /* @__PURE__ */ jsxs("svg", { viewBox: "0 0 64 76", width: "52", height: "62", fill: "none", children: [
+      /* @__PURE__ */ jsx("g", { className: "partners-caps__arm partners-caps__arm--back", children: /* @__PURE__ */ jsx(
+        "path",
+        {
+          d: "M18 24c-7 2.5-11 10-10.5 17",
+          stroke: "#1a1a1a",
+          strokeWidth: "3",
+          strokeLinecap: "round"
+        }
+      ) }),
+      /* @__PURE__ */ jsxs("g", { className: "partners-caps__walker-body", children: [
+        /* @__PURE__ */ jsx("rect", { x: "14", y: "8", width: "36", height: "36", rx: "10", fill: "#1a1a1a" }),
+        /* @__PURE__ */ jsx("circle", { cx: "36", cy: "20", r: "2.6", fill: "#ff6b2c" }),
+        /* @__PURE__ */ jsx("circle", { cx: "44", cy: "20", r: "2.6", fill: "#ff6b2c" }),
+        /* @__PURE__ */ jsx(
+          "path",
+          {
+            d: "M35.5 28c2.2 2.6 6.4 2.6 8.6 0",
+            stroke: "#ff6b2c",
+            strokeWidth: "2.2",
+            strokeLinecap: "round"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsx("g", { className: "partners-caps__arm partners-caps__arm--front", children: /* @__PURE__ */ jsx(
+        "path",
+        {
+          d: "M50 24c7 2.5 11 10 10.5 17",
+          stroke: "#1a1a1a",
+          strokeWidth: "3",
+          strokeLinecap: "round"
+        }
+      ) }),
+      /* @__PURE__ */ jsxs("g", { className: "partners-caps__leg partners-caps__leg--l", children: [
+        /* @__PURE__ */ jsx("path", { d: "M26 44v16", stroke: "#1a1a1a", strokeWidth: "2.8", strokeLinecap: "round" }),
+        /* @__PURE__ */ jsx("ellipse", { cx: "29", cy: "63", rx: "6.2", ry: "3.8", fill: "#ff6b2c" })
+      ] }),
+      /* @__PURE__ */ jsxs("g", { className: "partners-caps__leg partners-caps__leg--r", children: [
+        /* @__PURE__ */ jsx("path", { d: "M38 44v16", stroke: "#1a1a1a", strokeWidth: "2.8", strokeLinecap: "round" }),
+        /* @__PURE__ */ jsx("ellipse", { cx: "41", cy: "63", rx: "6.2", ry: "3.8", fill: "#ff6b2c" })
+      ] })
+    ] }) }) })
+  ] });
+  if (reduced) {
+    return /* @__PURE__ */ jsxs("div", { className: "partners-caps-scene partners-caps-scene--static", children: [
+      /* @__PURE__ */ jsx("div", { className: "mx-auto mb-10 max-w-[36rem] text-center", children: /* @__PURE__ */ jsxs(
+        "h2",
+        {
+          id: "partners-caps",
+          className: "font-partners-display text-[clamp(1.75rem,4vw,2.75rem)] font-medium leading-[1.25] tracking-[-0.02em] text-partners-ink text-balance",
+          children: [
+            copy.capabilities.h2Before,
+            " ",
+            /* @__PURE__ */ jsx("span", { className: "mx-0.5 inline-flex translate-y-[-0.08em] items-center rounded-partners-pill bg-[#ff6b2c] px-3 py-1 text-[0.72em] font-medium tracking-[-0.01em] text-white align-middle", children: copy.capabilities.h2Pill }),
+            " ",
+            copy.capabilities.h2After
+          ]
+        }
+      ) }),
+      card
+    ] });
+  }
+  return /* @__PURE__ */ jsx(
+    "div",
+    {
+      ref: pinRef,
+      className: "partners-caps-pin",
+      style: { height: `${100 + total * 72}vh` },
+      children: /* @__PURE__ */ jsx("div", { className: "partners-caps-sticky", children: /* @__PURE__ */ jsxs("div", { ref: stageRef, className: "partners-caps-stage", style: { ["--caps-expand"]: 0 }, children: [
+        /* @__PURE__ */ jsx("div", { className: "mx-auto mb-3 max-w-[34rem] px-5 text-center sm:mb-4 sm:px-8", children: /* @__PURE__ */ jsxs(
+          "h2",
+          {
+            id: "partners-caps",
+            className: "font-partners-display text-[clamp(1.35rem,3vw,2.1rem)] font-medium leading-[1.2] tracking-[-0.02em] text-partners-ink text-balance",
+            children: [
+              copy.capabilities.h2Before,
+              " ",
+              /* @__PURE__ */ jsx("span", { className: "mx-0.5 inline-flex translate-y-[-0.08em] items-center rounded-partners-pill bg-[#ff6b2c] px-2.5 py-0.5 text-[0.72em] font-medium tracking-[-0.01em] text-white align-middle", children: copy.capabilities.h2Pill }),
+              " ",
+              copy.capabilities.h2After
+            ]
+          }
+        ) }),
+        card
+      ] }) })
+    }
+  );
+}
+function DiscussPanel() {
+  const { lang } = useLang();
+  const copy = getPartnersCopy(lang);
+  return /* @__PURE__ */ jsxs("div", { className: "partners-bento__discuss", children: [
+    /* @__PURE__ */ jsx("p", { className: "partners-bento__discuss-label", children: copy.discuss.label }),
+    /* @__PURE__ */ jsxs("div", { className: "partners-bento__discuss-btns", children: [
+      /* @__PURE__ */ jsxs(
+        "a",
+        {
+          href: PARTNER_AGENCY_TELEGRAM_URL,
+          target: "_blank",
+          rel: "noopener noreferrer",
+          className: "partners-bento__discuss-btn partners-bento__discuss-btn--tg",
+          "aria-label": copy.discuss.ask,
+          children: [
+            /* @__PURE__ */ jsx("svg", { width: "15", height: "15", viewBox: "0 0 24 24", fill: "currentColor", "aria-hidden": true, children: /* @__PURE__ */ jsx("path", { d: "M21.5 3.6 2.9 11.1c-1.3.5-1.3 1.3-.2 1.6l4.7 1.5 1.8 5.5c.2.7.1.9.8.9.5 0 .7-.2 1-.5l2.4-2.3 5 3.7c.9.5 1.6.2 1.8-.9L22.9 5c.3-1.2-.4-1.8-1.4-1.4ZM9.2 14.5l-.3 3.3 1.3-1.7 8-7.6-9 5.9Z" }) }),
+            "Telegram"
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsxs(
+        "a",
+        {
+          href: PARTNERS_GMAIL_URL,
+          target: "_blank",
+          rel: "noopener noreferrer",
+          className: "partners-bento__discuss-btn partners-bento__discuss-btn--mail",
+          children: [
+            /* @__PURE__ */ jsxs("svg", { width: "15", height: "15", viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: [
+              /* @__PURE__ */ jsx("rect", { x: "3.5", y: "5.5", width: "17", height: "13", rx: "2.2", stroke: "currentColor", strokeWidth: "1.8" }),
+              /* @__PURE__ */ jsx(
+                "path",
+                {
+                  d: "m4.5 7.5 7.5 5.2L19.5 7.5",
+                  stroke: "currentColor",
+                  strokeWidth: "1.8",
+                  strokeLinecap: "round",
+                  strokeLinejoin: "round"
+                }
+              )
+            ] }),
+            "Gmail"
+          ]
+        }
+      )
+    ] })
+  ] });
+}
+function BentoEstimateUi({ pill }) {
+  return /* @__PURE__ */ jsx("div", { className: "partners-bento__secure", "aria-hidden": true, children: /* @__PURE__ */ jsxs("div", { className: "partners-bento__secure-pill", children: [
+    /* @__PURE__ */ jsx("span", { className: "partners-bento__secure-check", children: "✓" }),
+    /* @__PURE__ */ jsx("span", { children: pill })
+  ] }) });
+}
+function BentoReferralUi() {
+  const { lang } = useLang();
+  const chip = lang === "ru" ? "после оплаты" : "after payment";
+  return /* @__PURE__ */ jsxs("div", { className: "partners-bento__fun", "aria-hidden": true, children: [
+    /* @__PURE__ */ jsxs("div", { className: "partners-bento__fun-row", children: [
+      /* @__PURE__ */ jsx("span", { className: "partners-bento__orb partners-bento__orb--o", style: { background: "#ff8a4c" }, children: "✉" }),
+      /* @__PURE__ */ jsx("span", { className: "partners-bento__orb partners-bento__orb--mid", style: { background: "#0086fc" }, children: "🤝" }),
+      /* @__PURE__ */ jsx("span", { className: "partners-bento__orb", style: { background: "#00ca48" }, children: "$" }),
+      /* @__PURE__ */ jsx("span", { className: "partners-bento__orb", style: { background: "#ff58ae" }, children: "◎" })
+    ] }),
+    /* @__PURE__ */ jsx("span", { className: "partners-bento__fun-chip", children: chip })
+  ] });
+}
+function BentoWhiteLabelUi() {
+  const { lang } = useLang();
+  const label = lang === "ru" ? "Ваш бренд" : "Your brand";
+  const sub = lang === "ru" ? "~ наценка ваша" : "~ your markup";
+  return /* @__PURE__ */ jsx("div", { className: "partners-bento__power", "aria-hidden": true, children: /* @__PURE__ */ jsxs("div", { className: "partners-bento__power-card", children: [
+    /* @__PURE__ */ jsx("span", { className: "partners-bento__power-i", children: "i" }),
+    /* @__PURE__ */ jsxs("div", { className: "partners-bento__power-copy", children: [
+      /* @__PURE__ */ jsx("strong", { children: label }),
+      /* @__PURE__ */ jsx("em", { children: sub })
+    ] }),
+    /* @__PURE__ */ jsxs("span", { className: "partners-bento__power-meter", "aria-hidden": true, children: [
+      /* @__PURE__ */ jsx("i", { className: "is-blue" }),
+      /* @__PURE__ */ jsx("i", { className: "is-amber" }),
+      /* @__PURE__ */ jsx("i", { className: "is-fire", children: "🔥" })
+    ] })
+  ] }) });
+}
+function ExampleMoneyFlow() {
+  const { lang } = useLang();
+  const ui = getPartnersCopy(lang).ui;
+  return /* @__PURE__ */ jsx("div", { className: "partners-money", "aria-hidden": true, children: /* @__PURE__ */ jsx("div", { className: "partners-money__zoom", children: /* @__PURE__ */ jsxs("div", { className: "partners-money__track", children: [
+    /* @__PURE__ */ jsxs("div", { className: "partners-money__node partners-money__node--client", "data-step": "1", children: [
+      /* @__PURE__ */ jsx("span", { className: "partners-money__label", children: ui.client }),
+      /* @__PURE__ */ jsx("span", { className: "partners-money__sum", children: "−$2200" })
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: "partners-money__rail partners-money__rail--1", children: /* @__PURE__ */ jsx("span", { className: "partners-money__dot partners-money__dot--1", children: "$" }) }),
+    /* @__PURE__ */ jsxs("div", { className: "partners-money__node partners-money__node--you", "data-step": "2", children: [
+      /* @__PURE__ */ jsx("span", { className: "partners-money__label", children: ui.you }),
+      /* @__PURE__ */ jsx("span", { className: "partners-money__sum partners-money__sum--keep", children: "+$700" })
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: "partners-money__rail partners-money__rail--2", children: /* @__PURE__ */ jsx("span", { className: "partners-money__dot partners-money__dot--2", children: "$" }) }),
+    /* @__PURE__ */ jsxs("div", { className: "partners-money__node partners-money__node--tvx", "data-step": "3", children: [
+      /* @__PURE__ */ jsx("span", { className: "partners-money__label", children: "TIVONIX" }),
+      /* @__PURE__ */ jsx("span", { className: "partners-money__sum partners-money__sum--tvx", children: "$1500" })
+    ] })
+  ] }) }) });
+}
+function ModelExampleReferral() {
+  const { lang } = useLang();
+  const ui = getPartnersCopy(lang).ui;
+  return /* @__PURE__ */ jsxs("div", { className: "partners-ex partners-ex--ref", "aria-hidden": true, children: [
+    /* @__PURE__ */ jsxs("div", { className: "partners-ex__flow", children: [
+      /* @__PURE__ */ jsxs("div", { className: "partners-ex__step partners-ex__step--1", children: [
+        /* @__PURE__ */ jsx("span", { className: "partners-ex__who", children: ui.client }),
+        /* @__PURE__ */ jsx("strong", { className: "partners-ex__sum", children: "$2500" })
+      ] }),
+      /* @__PURE__ */ jsx("span", { className: "partners-ex__arrow partners-ex__arrow--a" }),
+      /* @__PURE__ */ jsxs("div", { className: "partners-ex__step partners-ex__step--2", children: [
+        /* @__PURE__ */ jsx("span", { className: "partners-ex__who", children: ui.youPct }),
+        /* @__PURE__ */ jsx("strong", { className: "partners-ex__sum partners-ex__sum--you", children: "+$375" })
+      ] }),
+      /* @__PURE__ */ jsx("span", { className: "partners-ex__arrow partners-ex__arrow--b" }),
+      /* @__PURE__ */ jsxs("div", { className: "partners-ex__step partners-ex__step--3", children: [
+        /* @__PURE__ */ jsx("span", { className: "partners-ex__who", children: "TIVONIX" }),
+        /* @__PURE__ */ jsx("strong", { className: "partners-ex__sum", children: "$2125" })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: "partners-ex__bar", children: /* @__PURE__ */ jsx("i", { className: "partners-ex__fill" }) })
+  ] });
+}
+function ModelExampleWhiteLabel() {
+  const { lang } = useLang();
+  const ui = getPartnersCopy(lang).ui;
+  return /* @__PURE__ */ jsx("div", { className: "partners-ex partners-ex--wl", "aria-hidden": true, children: /* @__PURE__ */ jsxs("div", { className: "partners-ex__stack", children: [
+    /* @__PURE__ */ jsxs("div", { className: "partners-ex__card partners-ex__card--tvx", children: [
+      /* @__PURE__ */ jsx("span", { children: ui.estimate }),
+      /* @__PURE__ */ jsx("strong", { children: "$1500" })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "partners-ex__card partners-ex__card--you", children: [
+      /* @__PURE__ */ jsx("span", { children: ui.markup }),
+      /* @__PURE__ */ jsx("strong", { children: "+$700" })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "partners-ex__card partners-ex__card--client", children: [
+      /* @__PURE__ */ jsx("span", { children: ui.clientPrice }),
+      /* @__PURE__ */ jsx("strong", { children: "$2200" })
+    ] })
+  ] }) });
+}
+function PartnersFooterRunner() {
+  return /* @__PURE__ */ jsxs("svg", { viewBox: "0 0 64 76", width: "48", height: "58", fill: "none", "aria-hidden": true, children: [
+    /* @__PURE__ */ jsxs("g", { className: "partners-footer__arm partners-footer__arm--back", children: [
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          d: "M18 28H2",
+          stroke: "#1a1a1a",
+          strokeWidth: "3",
+          strokeLinecap: "round"
+        }
+      ),
+      /* @__PURE__ */ jsx("circle", { cx: "2", cy: "28", r: "3.2", fill: "#ff6b2c" })
+    ] }),
+    /* @__PURE__ */ jsxs("g", { className: "partners-footer__body", children: [
+      /* @__PURE__ */ jsx("rect", { x: "14", y: "8", width: "36", height: "36", rx: "10", fill: "#1a1a1a" }),
+      /* @__PURE__ */ jsx("circle", { cx: "36", cy: "20", r: "2.6", fill: "#ff6b2c" }),
+      /* @__PURE__ */ jsx("circle", { cx: "44", cy: "20", r: "2.6", fill: "#ff6b2c" }),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          d: "M35.5 28c2.2 2.6 6.4 2.6 8.6 0",
+          stroke: "#ff6b2c",
+          strokeWidth: "2.2",
+          strokeLinecap: "round"
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsx("g", { className: "partners-footer__arm partners-footer__arm--front", children: /* @__PURE__ */ jsx(
+      "path",
+      {
+        d: "M50 24c7 2.5 11 10 10.5 17",
+        stroke: "#1a1a1a",
+        strokeWidth: "3",
+        strokeLinecap: "round"
+      }
+    ) }),
+    /* @__PURE__ */ jsxs("g", { className: "partners-footer__leg partners-footer__leg--l", children: [
+      /* @__PURE__ */ jsx("path", { d: "M26 44v16", stroke: "#1a1a1a", strokeWidth: "2.8", strokeLinecap: "round" }),
+      /* @__PURE__ */ jsx("ellipse", { cx: "29", cy: "63", rx: "6.2", ry: "3.8", fill: "#ff6b2c" })
+    ] }),
+    /* @__PURE__ */ jsxs("g", { className: "partners-footer__leg partners-footer__leg--r", children: [
+      /* @__PURE__ */ jsx("path", { d: "M38 44v16", stroke: "#1a1a1a", strokeWidth: "2.8", strokeLinecap: "round" }),
+      /* @__PURE__ */ jsx("ellipse", { cx: "41", cy: "63", rx: "6.2", ry: "3.8", fill: "#ff6b2c" })
+    ] })
+  ] });
+}
+function PartnersFooter() {
+  const { lang } = useLang();
+  const copy = getPartnersCopy(lang);
+  const line = copy.footer.marquee;
+  const docs = PARTNERS_DOCS[lang];
+  const loginUrl = partnerPanelLoginUrl();
+  return /* @__PURE__ */ jsxs("footer", { id: "site-footer", className: "partners-footer", children: [
+    /* @__PURE__ */ jsx("div", { className: "partners-footer__scene", "aria-hidden": true, children: /* @__PURE__ */ jsxs("div", { className: "partners-footer__tow", children: [
+      /* @__PURE__ */ jsx("div", { className: "partners-footer__pill", children: /* @__PURE__ */ jsx("span", { className: "partners-footer__phrase", children: line }) }),
+      /* @__PURE__ */ jsx("span", { className: "partners-footer__rope" }),
+      /* @__PURE__ */ jsx("div", { className: "partners-footer__runner", children: /* @__PURE__ */ jsx(PartnersFooterRunner, {}) })
+    ] }) }),
+    /* @__PURE__ */ jsxs(Shell, { className: "partners-footer__shell", children: [
+      /* @__PURE__ */ jsxs("div", { className: "partners-footer__bar", children: [
+        /* @__PURE__ */ jsxs(Link, { to: "/", className: "partners-footer__logo", "aria-label": copy.footer.homeAria, children: [
+          /* @__PURE__ */ jsx("img", { src: TIVONIX_MARK, alt: "", width: 28, height: 28, decoding: "async" }),
+          /* @__PURE__ */ jsx("span", { children: "TIVONIX Partners" })
+        ] }),
+        /* @__PURE__ */ jsxs("nav", { className: "partners-footer__nav", "aria-label": copy.footer.navAria, children: [
+          /* @__PURE__ */ jsx("a", { href: "#partner-formats", children: copy.footer.formats }),
+          /* @__PURE__ */ jsx(
+            "a",
+            {
+              href: loginUrl,
+              onClick: () => trackPartnersEvent("partners_login_click", { source: "footer" }),
+              children: copy.footer.login
+            }
+          ),
+          /* @__PURE__ */ jsx(Link, { to: "/projects", children: copy.footer.projects }),
+          /* @__PURE__ */ jsx(Link, { to: "/contacts", children: copy.footer.contacts }),
+          /* @__PURE__ */ jsx(
+            "a",
+            {
+              href: PARTNER_AGENCY_TELEGRAM_URL,
+              target: "_blank",
+              rel: "noopener noreferrer",
+              children: copy.footer.askTelegram
+            }
+          ),
+          /* @__PURE__ */ jsx("a", { href: TG_CHANNEL_URL, target: "_blank", rel: "noopener noreferrer", children: copy.footer.channel }),
+          /* @__PURE__ */ jsx("a", { href: docs.privacy, target: "_blank", rel: "noopener noreferrer", "aria-label": copy.footer.privacyAria, children: copy.footer.privacy }),
+          /* @__PURE__ */ jsx("a", { href: docs.consent, target: "_blank", rel: "noopener noreferrer", "aria-label": copy.footer.consentAria, children: copy.footer.consent })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsx("p", { className: "partners-footer__note", children: copy.footer.note })
+    ] })
+  ] });
+}
+function PartnersProcessVisual() {
+  return /* @__PURE__ */ jsxs(
+    "svg",
+    {
+      className: "partners-process__svg",
+      viewBox: "0 0 440 380",
+      width: "440",
+      height: "380",
+      fill: "none",
+      "aria-hidden": true,
+      children: [
+        /* @__PURE__ */ jsx("circle", { cx: "148", cy: "206", r: "92", fill: "#ffe8dc" }),
+        /* @__PURE__ */ jsx("circle", { cx: "302", cy: "214", r: "86", fill: "#ece9e5" }),
+        /* @__PURE__ */ jsxs("g", { className: "partners-process__you", children: [
+          /* @__PURE__ */ jsx(
+            "path",
+            {
+              d: "M74 150c16-26 58-34 84-18 14 9 20 26 17 42-4 26-22 54-50 62-32 8-60-8-68-34-6-18 2-34 17-52Z",
+              fill: "#ff6b2c"
+            }
+          ),
+          /* @__PURE__ */ jsx("circle", { cx: "116", cy: "168", r: "3.4", fill: "#1a1a1a" }),
+          /* @__PURE__ */ jsx("circle", { cx: "136", cy: "166", r: "3.4", fill: "#1a1a1a" }),
+          /* @__PURE__ */ jsx("circle", { cx: "117.2", cy: "166.8", r: "1", fill: "#fff" }),
+          /* @__PURE__ */ jsx("circle", { cx: "137.2", cy: "164.8", r: "1", fill: "#fff" }),
+          /* @__PURE__ */ jsx("path", { d: "M120 178c4.5 5.5 13 5.5 17.5 0", stroke: "#1a1a1a", strokeWidth: "2.5", strokeLinecap: "round" }),
+          /* @__PURE__ */ jsx("path", { d: "M108 248v40", stroke: "#1a1a1a", strokeWidth: "5.5", strokeLinecap: "round" }),
+          /* @__PURE__ */ jsx("path", { d: "M132 250v38", stroke: "#1a1a1a", strokeWidth: "5.5", strokeLinecap: "round" }),
+          /* @__PURE__ */ jsx("rect", { x: "95", y: "284", width: "26", height: "13", rx: "6.5", fill: "#1a1a1a" }),
+          /* @__PURE__ */ jsx("rect", { x: "95", y: "293", width: "26", height: "5", rx: "2.5", fill: "#ff6b2c" }),
+          /* @__PURE__ */ jsx("rect", { x: "121", y: "284", width: "26", height: "13", rx: "6.5", fill: "#1a1a1a" }),
+          /* @__PURE__ */ jsx("rect", { x: "121", y: "293", width: "26", height: "5", rx: "2.5", fill: "#ff6b2c" }),
+          /* @__PURE__ */ jsxs("g", { className: "partners-process__wave", children: [
+            /* @__PURE__ */ jsx("path", { d: "M86 208 C62 198 52 172 64 154", stroke: "#1a1a1a", strokeWidth: "5.5", strokeLinecap: "round" }),
+            /* @__PURE__ */ jsx("ellipse", { cx: "66", cy: "152", rx: "9", ry: "7.5", fill: "#1a1a1a" })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs("g", { className: "partners-process__tiv", children: [
+          /* @__PURE__ */ jsx("rect", { x: "270", y: "146", width: "98", height: "98", rx: "26", fill: "#2a2a2a" }),
+          /* @__PURE__ */ jsx("rect", { x: "282", y: "158", width: "18", height: "6", rx: "3", fill: "#3d3d3d" }),
+          /* @__PURE__ */ jsx("circle", { cx: "302", cy: "184", r: "3.4", fill: "#ff6b2c" }),
+          /* @__PURE__ */ jsx("circle", { cx: "326", cy: "184", r: "3.4", fill: "#ff6b2c" }),
+          /* @__PURE__ */ jsx("circle", { cx: "303.2", cy: "182.8", r: "1", fill: "#fff", opacity: "0.7" }),
+          /* @__PURE__ */ jsx("circle", { cx: "327.2", cy: "182.8", r: "1", fill: "#fff", opacity: "0.7" }),
+          /* @__PURE__ */ jsx("path", { d: "M306 198c5 6 14 6 20 0", stroke: "#ff6b2c", strokeWidth: "2.6", strokeLinecap: "round" }),
+          /* @__PURE__ */ jsx("path", { d: "M296 244v40", stroke: "#1a1a1a", strokeWidth: "5.5", strokeLinecap: "round" }),
+          /* @__PURE__ */ jsx("path", { d: "M332 244v40", stroke: "#1a1a1a", strokeWidth: "5.5", strokeLinecap: "round" }),
+          /* @__PURE__ */ jsx("rect", { x: "283", y: "280", width: "26", height: "13", rx: "6.5", fill: "#1a1a1a" }),
+          /* @__PURE__ */ jsx("rect", { x: "283", y: "289", width: "26", height: "5", rx: "2.5", fill: "#ff6b2c" }),
+          /* @__PURE__ */ jsx("rect", { x: "321", y: "280", width: "26", height: "13", rx: "6.5", fill: "#1a1a1a" }),
+          /* @__PURE__ */ jsx("rect", { x: "321", y: "289", width: "26", height: "5", rx: "2.5", fill: "#ff6b2c" }),
+          /* @__PURE__ */ jsx("path", { d: "M360 196 C382 208 390 232 378 254", stroke: "#1a1a1a", strokeWidth: "5.5", strokeLinecap: "round" }),
+          /* @__PURE__ */ jsx("ellipse", { cx: "376", cy: "256", rx: "9", ry: "7.5", fill: "#1a1a1a" })
+        ] }),
+        /* @__PURE__ */ jsxs("g", { className: "partners-process__shake", children: [
+          /* @__PURE__ */ jsx("circle", { className: "partners-process__burst", cx: "220", cy: "232", r: "34", fill: "#ff6b2c", opacity: "0.12" }),
+          /* @__PURE__ */ jsx("circle", { className: "partners-process__burst partners-process__burst--2", cx: "220", cy: "232", r: "22", fill: "#ff6b2c", opacity: "0.16" }),
+          /* @__PURE__ */ jsx("path", { d: "M148 206 C168 214 186 222 200 230", stroke: "#1a1a1a", strokeWidth: "6", strokeLinecap: "round" }),
+          /* @__PURE__ */ jsx("path", { d: "M290 206 C270 214 252 222 238 230", stroke: "#1a1a1a", strokeWidth: "6", strokeLinecap: "round" }),
+          /* @__PURE__ */ jsxs("g", { className: "partners-process__clasp", children: [
+            /* @__PURE__ */ jsx("ellipse", { cx: "214", cy: "234", rx: "16", ry: "12", fill: "#1a1a1a", transform: "rotate(-18 214 234)" }),
+            /* @__PURE__ */ jsx("ellipse", { cx: "226", cy: "234", rx: "16", ry: "12", fill: "#2a2a2a", transform: "rotate(18 226 234)" }),
+            /* @__PURE__ */ jsx("ellipse", { cx: "220", cy: "232", rx: "10", ry: "8", fill: "#1a1a1a" }),
+            /* @__PURE__ */ jsx("path", { d: "M208 228c4-3 10-3 14 0", stroke: "#ff6b2c", strokeWidth: "2.2", strokeLinecap: "round" })
+          ] })
+        ] })
+      ]
+    }
+  );
+}
+function PartnersPage() {
+  const { lang, setLang } = useLang();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const copy = getPartnersCopy(lang);
+  const canonicalUrl = partnersCanonicalUrl(lang, location.pathname);
+  const loginUrl = partnerPanelLoginUrl();
+  const referralRegisterUrl = partnerPanelRegisterUrl("referral");
+  const whiteLabelRegisterUrl = partnerPanelRegisterUrl("white_label");
+  const heroRef = useRef(null);
+  const bgRef = useRef(null);
+  const rolesRef = useRef(null);
+  const easyCardRef = useRef(null);
+  const easyBgRef = useRef(null);
+  const bentoRef = useRef(null);
+  const moneyRef = useRef(null);
+  const finalRef = useRef(null);
+  const finalZoomRef = useRef(null);
+  const modelsExamplesRef = useRef(null);
+  useRef(null);
+  const reducedMotion = useRef(false);
+  const scrollToFormats = (e) => {
+    e.preventDefault();
+    trackPartnersEvent("partners_hero_cta_click");
+    const el = document.getElementById("partner-formats");
+    if (!el) return;
+    el.scrollIntoView({
+      behavior: reducedMotion.current ? "auto" : "smooth",
+      block: "start"
+    });
+  };
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    reducedMotion.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      if (reducedMotion.current) return;
+      const hero = heroRef.current;
+      const bg = bgRef.current;
+      if (hero && bg) {
+        const rect = hero.getBoundingClientRect();
+        const travel = Math.max(hero.offsetHeight * 0.9, 1);
+        const progress = Math.min(1, Math.max(0, -rect.top / travel));
+        bg.style.transform = `scale(${1 + progress * 0.22})`;
+      }
+      const roles = rolesRef.current;
+      if (roles) {
+        const rect = roles.getBoundingClientRect();
+        const vh = window.innerHeight || 1;
+        const start = vh * 0.9;
+        const end = vh * 0.15;
+        const progress = Math.min(1, Math.max(0, (start - rect.top) / (start - end)));
+        const scale = 1 + progress * 0.14;
+        roles.querySelectorAll(".partners-role-zoom").forEach((img) => {
+          img.style.transform = `scale(${scale})`;
+        });
+      }
+      const easy = easyCardRef.current;
+      const easyBg = easyBgRef.current;
+      if (easy && easyBg) {
+        const rect = easy.getBoundingClientRect();
+        const vh = window.innerHeight || 1;
+        const start = vh * 0.95;
+        const end = vh * 0.2;
+        const progress = Math.min(1, Math.max(0, (start - rect.top) / (start - end)));
+        easyBg.style.transform = `scale(${1 + progress * 0.28})`;
+        easy.querySelectorAll(".partners-bento__menu-row").forEach((row, i) => {
+          const local = Math.min(1, Math.max(0, (progress - i * 0.14) / 0.42));
+          row.style.transform = `translateY(${(1 - local) * 18}px)`;
+          row.style.opacity = String(0.28 + local * 0.72);
+        });
+      }
+      const bento = bentoRef.current;
+      if (bento) {
+        const vh = window.innerHeight || 1;
+        bento.querySelectorAll("[data-bento-zoom]").forEach((el) => {
+          const card = el.closest(".partners-bento__card");
+          const target = card ?? el;
+          const rect = target.getBoundingClientRect();
+          const start = vh * 0.92;
+          const end = vh * 0.22;
+          const progress = Math.min(1, Math.max(0, (start - rect.top) / (start - end)));
+          const amount = Number(el.dataset.bentoZoom) || 0.16;
+          el.style.transform = `scale(${1 + progress * amount})`;
+        });
+        const timeline = bento.querySelector(".partners-bento__timeline");
+        if (timeline) {
+          const card = timeline.closest(".partners-bento__card");
+          const rect = (card ?? timeline).getBoundingClientRect();
+          const start = vh * 0.88;
+          const end = vh * 0.28;
+          const progress = Math.min(1, Math.max(0, (start - rect.top) / (start - end)));
+          const stage = Math.min(2, Math.floor(progress * 3.25));
+          timeline.querySelectorAll(".partners-bento__step").forEach((step, i) => {
+            step.classList.toggle("is-lit", i <= stage);
+            step.classList.toggle("is-now", i === stage);
+          });
+        }
+      }
+      const money = moneyRef.current;
+      if (money) {
+        const rect = money.getBoundingClientRect();
+        const vh = window.innerHeight || 1;
+        const start = vh * 0.92;
+        const end = vh * 0.25;
+        const progress = Math.min(1, Math.max(0, (start - rect.top) / (start - end)));
+        const zoom = money.querySelector(".partners-money__zoom");
+        if (zoom) zoom.style.transform = `scale(${1 + progress * 0.18})`;
+      }
+      const modelsEx = modelsExamplesRef.current;
+      if (modelsEx) {
+        const vh = window.innerHeight || 1;
+        modelsEx.querySelectorAll(".partners-models-split__zoom").forEach((el) => {
+          const card = el.closest(".partners-models-split__card");
+          const rect = (card ?? el).getBoundingClientRect();
+          const start = vh * 0.95;
+          const end = vh * 0.2;
+          const progress = Math.min(1, Math.max(0, (start - rect.top) / (start - end)));
+          el.style.transform = `scale(${1 + progress * 0.28})`;
+        });
+      }
+      const finalSec = finalRef.current;
+      const finalZoom = finalZoomRef.current;
+      if (finalSec && finalZoom) {
+        const rect = finalSec.getBoundingClientRect();
+        const vh = window.innerHeight || 1;
+        const start = vh * 0.95;
+        const end = vh * 0.12;
+        const progress = Math.min(1, Math.max(0, (start - rect.top) / (start - end)));
+        const mobile = window.innerWidth < 768;
+        const from = mobile ? 1.12 : 1.38;
+        const delta = mobile ? 0.2 : 0.46;
+        finalZoom.style.transform = `scale(${from - progress * delta})`;
+      }
+    };
+    const onScroll = () => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) window.cancelAnimationFrame(raf);
+    };
+  }, []);
+  return /* @__PURE__ */ jsxs("div", { className: "min-h-screen overflow-x-clip bg-partners-cream font-partners text-partners-charcoal antialiased", children: [
+    /* @__PURE__ */ jsxs(Helmet, { children: [
+      /* @__PURE__ */ jsx(
+        "link",
+        {
+          href: "https://fonts.googleapis.com/css2?family=Archivo:wght@500;600&family=Inter:wght@400;500;600&display=swap",
+          rel: "stylesheet"
+        }
+      ),
+      /* @__PURE__ */ jsx("style", { children: `
+          .partners-tivonix-frame {
+            border: 3.5px solid transparent;
+            border-radius: 22px;
+            padding: 8px;
+            background:
+              linear-gradient(#fbfaf9, #fbfaf9) padding-box,
+              conic-gradient(
+                from 210deg,
+                #ff6b2c 0deg,
+                #ff8b4a 70deg,
+                #e0e0e0 140deg,
+                #b0b0b0 200deg,
+                #c8c8c8 260deg,
+                #ff8b4a 320deg,
+                #ff6b2c 360deg
+              ) border-box;
+          }
+          .partners-role-media {
+            overflow: hidden;
+            margin-top: 0.75rem;
+            margin-left: -0.25rem;
+            margin-right: -0.25rem;
+          }
+          .partners-role-zoom {
+            display: block;
+            width: 100%;
+            max-width: 340px;
+            height: auto;
+            margin-left: auto;
+            margin-right: auto;
+            transform-origin: center center;
+            will-change: transform;
+          }
+
+          .partners-money {
+            margin-top: 1.25rem;
+            border-radius: 16px;
+            background: #ffffff;
+            padding: 1.1rem 1rem 0.9rem;
+            overflow: hidden;
+          }
+          .partners-money__zoom {
+            transform: scale(1);
+            transform-origin: center center;
+            will-change: transform;
+            transition: none;
+          }
+          .partners-final__media {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 18px;
+            background: #e8e4df;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            min-height: 0;
+            aspect-ratio: auto;
+            padding: 1rem 0.75rem;
+            text-align: center;
+          }
+          .partners-hero__img {
+            object-position: center;
+            transform: scale(1.05);
+            transform-origin: center center;
+          }
+          .partners-hero__mobile {
+            width: 148%;
+            max-width: none;
+            margin-left: -24%;
+            height: auto;
+          }
+          .partners-hero__mobile-wrap {
+            margin-top: -4.5rem;
+            padding-bottom: 0.5rem;
+          }
+          @media (max-width: 639px) {
+            .partners-hero__mobile-wrap {
+              margin-top: -5.5rem;
+            }
+          }
+          @media (min-width: 640px) {
+            .partners-final__media {
+              border-radius: 22px;
+              padding: 1.75rem 1.25rem;
+            }
+          }
+          @media (min-width: 768px) {
+            .partners-final__media {
+              min-height: 480px;
+              aspect-ratio: 16 / 10;
+              padding: 2.5rem 2rem;
+            }
+          }
+          .partners-final__zoom {
+            position: absolute;
+            inset: 0;
+            transform: scale(1.12);
+            transform-origin: center center;
+            will-change: transform;
+          }
+          @media (min-width: 768px) {
+            .partners-final__zoom {
+              inset: -22%;
+              transform: scale(1.38);
+            }
+          }
+          .partners-final__zoom img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            max-width: none;
+            object-fit: cover;
+            object-position: center;
+          }
+          .partners-final__copy {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            margin: 0 auto;
+            padding: 1.15rem 1rem;
+            border-radius: 16px;
+            background: rgba(8, 10, 12, 0.52);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            color: #fff;
+            overflow-wrap: anywhere;
+          }
+          @media (min-width: 640px) {
+            .partners-final__copy {
+              max-width: 34rem;
+              padding: 1.75rem 1.5rem;
+              border-radius: 18px;
+            }
+          }
+          .partners-final__copy h2 {
+            color: #fff;
+          }
+          .partners-final__copy p {
+            color: rgba(255, 255, 255, 0.92);
+          }
+          .partners-final__copy .partners-final__footnote {
+            color: rgba(255, 255, 255, 0.72);
+          }
+          .partners-final__copy .partners-final__secondary {
+            color: #fff;
+          }
+          .partners-final__actions {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.75rem;
+          }
+          @media (min-width: 480px) {
+            .partners-final__actions {
+              flex-direction: row;
+              flex-wrap: wrap;
+              align-items: center;
+              justify-content: center;
+              gap: 0.75rem 1.25rem;
+            }
+          }
+          .partners-process__svg {
+            display: block;
+            width: min(100%, 300px);
+            height: auto;
+            margin: 0 auto;
+            overflow: visible;
+          }
+          @media (min-width: 640px) {
+            .partners-process__svg {
+              width: min(100%, 380px);
+            }
+          }
+          @media (min-width: 1024px) {
+            .partners-process__svg {
+              width: min(100%, 440px);
+            }
+          }
+
+          /* Partners cream footer + running mascot */
+          .partners-footer {
+            position: relative;
+            background: #ffffff;
+            color: #1a1a1a;
+            overflow: hidden;
+            border: 0;
+            box-shadow: none;
+          }
+          .partners-footer__scene {
+            position: relative;
+            display: flex;
+            align-items: center;
+            height: 150px;
+            overflow: hidden;
+            background: #ffffff;
+            border: 0;
+            box-shadow: none;
+          }
+          @media (min-width: 768px) {
+            .partners-footer__scene {
+              height: 180px;
+            }
+          }
+          .partners-footer__tow {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            width: max-content;
+            white-space: nowrap;
+            transform: translateY(-50%);
+            animation: partners-footer-tow 16s linear infinite;
+            will-change: transform;
+          }
+          .partners-footer__pill {
+            display: inline-flex;
+            align-items: center;
+            flex: 0 0 auto;
+            padding: 0.7rem 1.25rem 0.75rem;
+            border-radius: 999px;
+            background: #ff6b2c;
+            border: 0;
+            box-shadow: none;
+          }
+          .partners-footer__phrase {
+            white-space: nowrap;
+            font-family: "Inter Tight", Inter, ui-sans-serif, system-ui, sans-serif;
+            font-size: clamp(0.95rem, 2.4vw, 1.35rem);
+            font-weight: 650;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            color: #ffffff;
+            user-select: none;
+          }
+          .partners-footer__rope {
+            position: relative;
+            flex: 0 0 44px;
+            align-self: center;
+            height: 2.5px;
+            margin-top: -10px;
+            margin-right: -14px;
+            border-radius: 999px;
+            background: #1a1a1a;
+          }
+          .partners-footer__runner {
+            position: relative;
+            flex: 0 0 auto;
+            width: 52px;
+            height: 62px;
+            margin-left: -2px;
+          }
+          .partners-footer__runner svg {
+            display: block;
+            overflow: visible;
+          }
+          .partners-footer__body {
+            transform-origin: 32px 36px;
+            animation: partners-caps-walk-bob 0.38s ease-in-out infinite;
+          }
+          /* Rear arm stays locked on the rope while he walks */
+          .partners-footer__arm--back {
+            transform-box: fill-box;
+            transform-origin: right center;
+          }
+          .partners-footer__arm--front {
+            transform-box: fill-box;
+            transform-origin: left top;
+            animation: partners-caps-arm-front 0.38s ease-in-out infinite;
+          }
+          .partners-footer__leg--l {
+            transform-box: fill-box;
+            transform-origin: center top;
+            animation: partners-caps-leg-l 0.38s ease-in-out infinite;
+          }
+          .partners-footer__leg--r {
+            transform-box: fill-box;
+            transform-origin: center top;
+            animation: partners-caps-leg-r 0.38s ease-in-out infinite;
+          }
+          .partners-footer__shell {
+            padding-top: 1.75rem;
+            padding-bottom: 2.25rem;
+            background: #ffffff;
+            border: 0;
+            box-shadow: none;
+          }
+          .partners-footer__bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem 1.5rem;
+          }
+          .partners-footer__logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            color: #1a1a1a;
+            text-decoration: none;
+            font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+          }
+          .partners-footer__logo img {
+            display: block;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+          }
+          .partners-footer__nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem 1.15rem;
+          }
+          .partners-footer__nav a {
+            color: #1a1a1a;
+            font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            text-decoration: none;
+            transition: color 0.2s ease;
+          }
+          .partners-footer__nav a:hover {
+            color: #ff6b2c;
+          }
+          .partners-footer__note {
+            margin: 1rem 0 0;
+            max-width: 36rem;
+            color: #ff6b2c;
+            font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+            font-size: 13px;
+            line-height: 1.45;
+            letter-spacing: -0.01em;
+          }
+          @keyframes partners-footer-tow {
+            0% { transform: translate3d(-100%, -50%, 0); }
+            100% { transform: translate3d(100vw, -50%, 0); }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .partners-footer__tow,
+            .partners-footer__body,
+            .partners-footer__arm--front,
+            .partners-footer__leg--l,
+            .partners-footer__leg--r {
+              animation: none !important;
+            }
+            .partners-footer__tow {
+              left: 50%;
+              transform: translate(-50%, -50%);
+            }
+          }
+
+          .partners-models-split {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+          }
+          @media (min-width: 768px) {
+            .partners-models-split {
+              flex-direction: row;
+              align-items: stretch;
+              gap: 16px;
+            }
+            .partners-models-split__card {
+              flex: 1 1 0;
+              min-width: 0;
+              transition:
+                flex 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+            }
+            .partners-models-split:hover .partners-models-split__card {
+              flex: 0.78 1 0;
+            }
+            .partners-models-split:hover .partners-models-split__card:hover {
+              flex: 1.35 1 0;
+              transform: translateY(-5px);
+            }
+          }
+          .partners-models-split__card {
+            position: relative;
+            border: 0;
+            border-radius: 24px;
+            padding: 1.6rem 1.4rem 1.45rem;
+            box-shadow: none;
+            outline: none;
+            overflow: hidden;
+            color: #fff;
+            isolation: isolate;
+          }
+          .partners-models-split__media {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            border-radius: inherit;
+            pointer-events: none;
+          }
+          .partners-models-split__zoom {
+            position: absolute;
+            inset: -12%;
+            transform: scale(1);
+            transform-origin: center center;
+            will-change: transform;
+          }
+          .partners-models-split__zoom img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+          }
+          .partners-models-split__shade {
+            position: absolute;
+            inset: 0;
+            background:
+              linear-gradient(180deg, rgba(12, 18, 14, 0.28) 0%, rgba(12, 18, 14, 0.5) 100%);
+          }
+          .partners-models-split__card--wl .partners-models-split__shade {
+            background:
+              linear-gradient(180deg, rgba(28, 14, 8, 0.28) 0%, rgba(28, 14, 8, 0.52) 100%);
+          }
+          .partners-models-split__body {
+            position: relative;
+            z-index: 1;
+          }
+          .partners-models-split__card--ref {
+            background: #049a5c;
+          }
+          .partners-models-split__card--wl {
+            background: #e85516;
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .partners-models-split__zoom {
+              transform: none !important;
+            }
+          }
+          .partners-models-split__pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.35rem 0.85rem;
+            font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: #fff;
+          }
+          .partners-models-split__title {
+            margin: 0.85rem 0 0;
+            font-family: "Inter Tight", Inter, ui-sans-serif, system-ui, sans-serif;
+            font-size: clamp(1.55rem, 3vw, 2rem);
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            color: #fff;
+          }
+          .partners-models-split__text {
+            margin: 0.85rem 0 0;
+            max-width: 28rem;
+            font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+            font-size: clamp(1.05rem, 1.8vw, 1.2rem);
+            font-weight: 500;
+            line-height: 1.45;
+            letter-spacing: -0.015em;
+            color: rgba(255, 255, 255, 0.92);
+          }
+          @media (min-width: 640px) {
+            .partners-models-split__card {
+              padding: 1.9rem 1.7rem 1.7rem;
+            }
+          }
+
+          .partners-ex {
+            margin-top: 1.35rem;
+            border-radius: 16px;
+            background: rgba(8, 10, 12, 0.52);
+            padding: 1rem 0.9rem 0.85rem;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+          }
+          .partners-ex__flow {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr) 18px minmax(0, 1fr);
+            align-items: center;
+            gap: 0.2rem;
+          }
+          .partners-ex__step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            min-height: 3.6rem;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.38);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+            padding: 0.55rem 0.3rem;
+            text-align: center;
+            opacity: 0.88;
+            transform: scale(0.98);
+          }
+          .partners-ex__step--1 {
+            animation: partners-ex-step 3.6s ease-in-out infinite;
+          }
+          .partners-ex__step--2 {
+            animation: partners-ex-step 3.6s ease-in-out infinite 0.7s;
+          }
+          .partners-ex__step--3 {
+            animation: partners-ex-step 3.6s ease-in-out infinite 1.4s;
+          }
+          .partners-ex__who {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+          }
+          .partners-ex__sum {
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: #fff;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+          }
+          .partners-ex__sum--you {
+            color: #b8ffd4;
+          }
+          .partners-ex__arrow {
+            display: block;
+            height: 2px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.45);
+            position: relative;
+            overflow: hidden;
+          }
+          .partners-ex__arrow::after {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 40%;
+            background: #fff;
+            border-radius: inherit;
+            animation: partners-ex-pulse 3.6s ease-in-out infinite;
+          }
+          .partners-ex__arrow--b::after {
+            animation-delay: 0.7s;
+          }
+          .partners-ex__bar {
+            margin-top: 0.75rem;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.28);
+            overflow: hidden;
+          }
+          .partners-ex__fill {
+            display: block;
+            height: 100%;
+            width: 15%;
+            border-radius: inherit;
+            background: #fff;
+            animation: partners-ex-fill 3.6s ease-in-out infinite;
+          }
+          .partners-ex__stack {
+            display: grid;
+            gap: 0.45rem;
+          }
+          .partners-ex__card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+            padding: 0.7rem 0.85rem;
+            opacity: 0.9;
+            transform: translateY(4px);
+          }
+          .partners-ex__card span {
+            font-size: 12px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+          }
+          .partners-ex__card strong {
+            font-size: clamp(1.05rem, 2vw, 1.25rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: #fff;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+          }
+          .partners-ex__card--tvx {
+            animation: partners-ex-stack 3.8s ease-in-out infinite;
+          }
+          .partners-ex__card--you {
+            animation: partners-ex-stack 3.8s ease-in-out infinite 0.55s;
+          }
+          .partners-ex__card--client {
+            animation: partners-ex-stack 3.8s ease-in-out infinite 1.1s;
+          }
+          @keyframes partners-ex-step {
+            0%, 12% { opacity: 0.88; transform: scale(0.98); }
+            18%, 34% { opacity: 1; transform: scale(1.03); background: rgba(0, 0, 0, 0.55); }
+            48%, 100% { opacity: 0.94; transform: scale(1); }
+          }
+          @keyframes partners-ex-pulse {
+            0%, 15% { transform: translateX(-120%); opacity: 0; }
+            25%, 45% { opacity: 1; }
+            70% { transform: translateX(220%); opacity: 0; }
+            100% { transform: translateX(220%); opacity: 0; }
+          }
+          @keyframes partners-ex-fill {
+            0%, 10% { width: 8%; }
+            35% { width: 15%; }
+            55% { width: 100%; }
+            85%, 100% { width: 15%; }
+          }
+          @keyframes partners-ex-stack {
+            0%, 10% { opacity: 0.9; transform: translateY(4px); }
+            22%, 40% { opacity: 1; transform: translateY(0); background: rgba(0, 0, 0, 0.55); }
+            58%, 100% { opacity: 0.96; transform: translateY(0); }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .partners-models-split__card {
+              transition: none !important;
+              transform: none !important;
+            }
+            .partners-models-split:hover .partners-models-split__card,
+            .partners-models-split:hover .partners-models-split__card:hover {
+              flex: 1 1 0 !important;
+            }
+            .partners-ex__step,
+            .partners-ex__card,
+            .partners-ex__fill,
+            .partners-ex__arrow::after {
+              animation: none !important;
+              opacity: 1 !important;
+              transform: none !important;
+              width: auto;
+            }
+            .partners-ex__fill { width: 15%; }
+          }
+          .partners-process__you {
+            transform-origin: 120px 220px;
+            animation: partners-process-float 3.8s ease-in-out infinite;
+          }
+          .partners-process__tiv {
+            transform-origin: 320px 220px;
+            animation: partners-process-float 3.8s ease-in-out infinite 0.25s;
+          }
+          .partners-process__shake {
+            transform-origin: 220px 232px;
+            animation: partners-process-handshake 2.4s ease-in-out infinite;
+          }
+          .partners-process__clasp {
+            transform-origin: 220px 232px;
+            animation: partners-process-clasp 2.4s ease-in-out infinite;
+          }
+          .partners-process__burst {
+            transform-origin: 220px 232px;
+            transform-box: fill-box;
+            animation: partners-process-burst 2.4s ease-out infinite;
+          }
+          .partners-process__burst--2 {
+            animation-delay: 0.12s;
+          }
+          .partners-process__wave {
+            transform-origin: 318px 198px;
+            animation: partners-process-wave 2.8s ease-in-out infinite;
+          }
+          @keyframes partners-process-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-7px); }
+          }
+          @keyframes partners-process-handshake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(1.5px, -2px) rotate(-2.5deg); }
+            50% { transform: translate(-1px, 1.5px) rotate(2deg); }
+            75% { transform: translate(1px, -1px) rotate(-1.5deg); }
+          }
+          @keyframes partners-process-clasp {
+            0%, 100% { transform: scale(1); }
+            40% { transform: scale(1.04); }
+            70% { transform: scale(0.98); }
+          }
+          @keyframes partners-process-burst {
+            0%, 100% { transform: scale(0.85); opacity: 0.1; }
+            45% { transform: scale(1.15); opacity: 0.22; }
+            70% { transform: scale(1); opacity: 0.12; }
+          }
+          @keyframes partners-process-wave {
+            0%, 100% { transform: rotate(0deg); }
+            30% { transform: rotate(-14deg); }
+            55% { transform: rotate(8deg); }
+            75% { transform: rotate(-6deg); }
+          }
+          .partners-money__track {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr) 40px minmax(0, 1fr);
+            align-items: center;
+            gap: 0;
+            width: 100%;
+            max-width: 520px;
+            margin: 0 auto;
+          }
+          .partners-money__node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+            min-height: 4.5rem;
+            border-radius: 14px;
+            border: 1.5px solid transparent;
+            background: #fbfaf9;
+            padding: 0.55rem 0.4rem;
+            transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+          }
+          .partners-money__label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #7e7e7d;
+          }
+          .partners-money__sum {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #343433;
+            line-height: 1.1;
+            transform-origin: center;
+            display: inline-block;
+          }
+          .partners-money__sum--keep { color: #00c978; }
+          .partners-money__sum--tvx { color: #ff6b2c; }
+
+          .partners-money__rail {
+            position: relative;
+            height: 2px;
+            width: 100%;
+            border-radius: 999px;
+            background: #e8e4df;
+            justify-self: stretch;
+          }
+          .partners-money__dot {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            z-index: 2;
+            display: grid;
+            place-items: center;
+            width: 1.1rem;
+            height: 1.1rem;
+            border-radius: 999px;
+            font-size: 9px;
+            font-weight: 700;
+            color: #fff;
+            opacity: 0;
+            transform: translateY(-50%);
+            will-change: left, opacity;
+          }
+          .partners-money__dot--1 {
+            background: #00c978;
+            animation: partners-dot-1 5.5s ease-in-out infinite;
+          }
+          .partners-money__dot--2 {
+            background: #ff6b2c;
+            animation: partners-dot-2 5.5s ease-in-out infinite;
+          }
+
+          .partners-money__node--client {
+            animation: partners-lit-client 5.5s ease-in-out infinite;
+          }
+          .partners-money__node--you {
+            animation: partners-lit-you 5.5s ease-in-out infinite;
+          }
+          .partners-money__node--tvx {
+            animation: partners-lit-tvx 5.5s ease-in-out infinite;
+          }
+          .partners-money__node--client .partners-money__sum {
+            animation: partners-sum-pop-client 5.5s ease-in-out infinite;
+          }
+          .partners-money__node--you .partners-money__sum {
+            animation: partners-sum-pop-you 5.5s ease-in-out infinite;
+          }
+          .partners-money__node--tvx .partners-money__sum {
+            animation: partners-sum-pop-tvx 5.5s ease-in-out infinite;
+          }
+
+          .partners-money__caption {
+            margin: 0.9rem 0 0;
+            text-align: center;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #7e7e7d;
+          }
+
+          /* Timeline 5.5s */
+          @keyframes partners-dot-1 {
+            0%, 12% { opacity: 0; left: 0; transform: translateY(-50%) scale(0.65); }
+            15% { opacity: 1; left: 0; transform: translateY(-50%) scale(1.15); }
+            33% { opacity: 1; left: calc(100% - 1.1rem); transform: translateY(-50%) scale(1.15); }
+            37%, 100% { opacity: 0; left: calc(100% - 1.1rem); transform: translateY(-50%) scale(0.7); }
+          }
+          @keyframes partners-dot-2 {
+            0%, 54% { opacity: 0; left: 0; transform: translateY(-50%) scale(0.65); }
+            57% { opacity: 1; left: 0; transform: translateY(-50%) scale(1.15); }
+            75% { opacity: 1; left: calc(100% - 1.1rem); transform: translateY(-50%) scale(1.15); }
+            79%, 100% { opacity: 0; left: calc(100% - 1.1rem); transform: translateY(-50%) scale(0.7); }
+          }
+          @keyframes partners-lit-client {
+            0%, 8% { border-color: transparent; background: #fbfaf9; box-shadow: none; transform: scale(1); }
+            10%, 18% { border-color: #00c978; background: #f0fff7; box-shadow: 0 0 0 4px rgba(0, 201, 120, 0.18); transform: scale(1.06); }
+            26%, 100% { border-color: transparent; background: #fbfaf9; box-shadow: none; transform: scale(1); }
+          }
+          @keyframes partners-lit-you {
+            0%, 34% { border-color: transparent; background: #fbfaf9; box-shadow: none; transform: scale(1); }
+            36%, 52% { border-color: #00c978; background: #f0fff7; box-shadow: 0 0 0 4px rgba(0, 201, 120, 0.2); transform: scale(1.08); }
+            58%, 100% { border-color: transparent; background: #fbfaf9; box-shadow: none; transform: scale(1); }
+          }
+          @keyframes partners-lit-tvx {
+            0%, 76% { border-color: transparent; background: #fbfaf9; box-shadow: none; transform: scale(1); }
+            78%, 90% { border-color: #ff6b2c; background: #fff7f2; box-shadow: 0 0 0 4px rgba(255, 107, 44, 0.18); transform: scale(1.08); }
+            96%, 100% { border-color: transparent; background: #fbfaf9; box-shadow: none; transform: scale(1); }
+          }
+          @keyframes partners-sum-pop-client {
+            0%, 8% { transform: scale(1); }
+            10%, 18% { transform: scale(1.35); }
+            26%, 100% { transform: scale(1); }
+          }
+          @keyframes partners-sum-pop-you {
+            0%, 34% { transform: scale(1); }
+            36%, 52% { transform: scale(1.4); }
+            58%, 100% { transform: scale(1); }
+          }
+          @keyframes partners-sum-pop-tvx {
+            0%, 76% { transform: scale(1); }
+            78%, 90% { transform: scale(1.4); }
+            96%, 100% { transform: scale(1); }
+          }
+
+          @media (max-width: 639px) {
+            .partners-money__track {
+              grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr);
+              max-width: 100%;
+            }
+            .partners-money__sum { font-size: 14px; }
+            .partners-money__node { min-height: 3.9rem; padding: 0.45rem 0.25rem; }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .partners-money__dot,
+            .partners-money__node--client,
+            .partners-money__node--you,
+            .partners-money__node--tvx,
+            .partners-money__node--client .partners-money__sum,
+            .partners-money__node--you .partners-money__sum,
+            .partners-money__node--tvx .partners-money__sum {
+              animation: none !important;
+            }
+            .partners-money__dot { opacity: 0 !important; }
+            .partners-money__node--you {
+              border-color: #00c978;
+              background: #f0fff7;
+            }
+            .partners-money__zoom { transform: none !important; }
+            .partners-final__zoom { transform: none !important; }
+            .partners-process__you,
+            .partners-process__tiv,
+            .partners-process__shake,
+            .partners-process__clasp,
+            .partners-process__burst,
+            .partners-process__wave {
+              animation: none !important;
+            }
+          }
+
+          /* Video + after-registration */
+          .partners-video {
+            margin: 0 auto;
+            width: 100%;
+            max-width: 920px;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            border-radius: 18px;
+            border: 1.5px solid rgba(26, 26, 26, 0.08);
+            background: #e8e4df;
+          }
+          .partners-video__el {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #1a1a1a;
+          }
+          .partners-after-reg__grid {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: 1fr;
+          }
+          @media (min-width: 700px) {
+            .partners-after-reg__grid {
+              grid-template-columns: 1fr 1fr;
+            }
+          }
+          @media (min-width: 1100px) {
+            .partners-after-reg__grid {
+              grid-template-columns: repeat(4, 1fr);
+            }
+          }
+          .partners-after-reg__card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            border-radius: 20px;
+            background: #ffffff;
+            padding: 1.15rem 1.2rem 1.25rem;
+          }
+          .partners-after-reg__num {
+            display: grid;
+            place-items: center;
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 999px;
+            background: #ff6b2c;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+          }
+          .partners-after-reg__t {
+            margin: 0;
+            font-size: clamp(1.05rem, 2vw, 1.2rem);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: #1a1a1a;
+            line-height: 1.2;
+          }
+          .partners-after-reg__d {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.45;
+            color: #5c564e;
+          }
+
+          /* ——— Models bento (Family-like) ——— */
+          .partners-bento {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: 1fr;
+          }
+          @media (min-width: 900px) {
+            .partners-bento {
+              grid-template-columns: 1.1fr 1fr 1fr;
+              grid-template-rows: auto auto;
+            }
+            .partners-bento__easy {
+              grid-row: 1 / span 2;
+            }
+          }
+          .partners-bento__card {
+            display: flex;
+            flex-direction: column;
+            border-radius: 24px;
+            background: #ffffff;
+            padding: 1.25rem 1.2rem 1.35rem;
+            overflow: hidden;
+          }
+          .partners-bento__viz {
+            display: flex;
+            flex: 1;
+            align-items: center;
+            justify-content: center;
+            min-height: 176px;
+            margin-bottom: 1.1rem;
+            overflow: hidden;
+            border-radius: 18px;
+            background: #f4f2ef;
+            padding: 0.85rem 0.7rem;
+          }
+          .partners-bento__zoom {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            transform: scale(1);
+            transform-origin: center center;
+            will-change: transform;
+          }
+          .partners-bento__title {
+            font-size: clamp(1.2rem, 2.4vw, 1.45rem);
+            font-weight: 600;
+            letter-spacing: -0.025em;
+            color: #1a1a1a;
+            line-height: 1.15;
+          }
+          .partners-bento__text {
+            margin-top: 0.5rem;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #5c564e;
+          }
+          /* Family-style light viz pieces (no dark grey slabs) */
+          .partners-bento__secure {
+            display: grid;
+            place-items: center;
+            width: 100%;
+            min-height: 7rem;
+          }
+          .partners-bento__secure-pill {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            border-radius: 999px;
+            background: #00ca48;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            padding: 0.75rem 1.15rem 0.75rem 0.75rem;
+            box-shadow: 0 0 0 4px rgba(0, 202, 72, 0.18);
+          }
+          .partners-bento__secure-check {
+            display: grid;
+            place-items: center;
+            width: 1.55rem;
+            height: 1.55rem;
+            border-radius: 999px;
+            background: #fff;
+            color: #00ca48;
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1;
+          }
+          .partners-bento__fast {
+            width: 100%;
+            max-width: 240px;
+            margin: 0 auto;
+            border-radius: 16px;
+            background: #fff;
+            padding: 1rem 1rem 0.95rem;
+            box-shadow: 0 10px 28px rgba(26, 26, 26, 0.08);
+          }
+          .partners-bento__fast .partners-bento__timeline {
+            max-width: none;
+            gap: 0.7rem;
+          }
+          .partners-bento__fast .partners-bento__step {
+            opacity: 0.4;
+          }
+          .partners-bento__fast .partners-bento__step.is-lit {
+            opacity: 1;
+          }
+          .partners-bento__fast .partners-bento__step-t {
+            color: #0086fc;
+            font-weight: 700;
+          }
+          .partners-bento__fast .partners-bento__step-d {
+            color: #8a8278;
+          }
+          .partners-bento__fast .partners-bento__step-dot {
+            border-color: #b8d9ff;
+            background: #fff;
+          }
+          .partners-bento__fast .partners-bento__step.is-lit .partners-bento__step-dot {
+            border-color: #0086fc;
+            background: #0086fc;
+            box-shadow: none;
+            position: relative;
+          }
+          .partners-bento__fast .partners-bento__step.is-lit .partners-bento__step-dot::after {
+            content: "✓";
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-size: 8px;
+            font-weight: 800;
+            line-height: 1;
+          }
+          .partners-bento__fun {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.85rem;
+            width: 100%;
+          }
+          .partners-bento__fun-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+          }
+          .partners-bento__orb {
+            display: grid;
+            place-items: center;
+            width: 2.6rem;
+            height: 2.6rem;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 800;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+            transform: scale(0.92);
+          }
+          .partners-bento__orb--mid {
+            width: 3.15rem;
+            height: 3.15rem;
+            font-size: 1.25rem;
+            transform: scale(1);
+            z-index: 1;
+          }
+          .partners-bento__orb--o {
+            background: #ff6b2c !important;
+          }
+          .partners-bento__fun-chip {
+            display: inline-flex;
+            border-radius: 999px;
+            background: #ff6b2c;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 0.4rem 0.75rem;
+          }
+          .partners-bento__power {
+            width: 100%;
+            display: grid;
+            place-items: center;
+          }
+          .partners-bento__power-card {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+            max-width: 250px;
+            border-radius: 16px;
+            background: #fff;
+            padding: 0.85rem 0.9rem;
+            box-shadow: 0 10px 28px rgba(26, 26, 26, 0.08);
+          }
+          .partners-bento__power-i {
+            display: grid;
+            place-items: center;
+            width: 1.4rem;
+            height: 1.4rem;
+            border-radius: 999px;
+            background: #eeeae4;
+            color: #8a8278;
+            font-size: 11px;
+            font-weight: 800;
+            font-style: italic;
+          }
+          .partners-bento__power-copy {
+            display: flex;
+            min-width: 0;
+            flex-direction: column;
+            gap: 0.15rem;
+          }
+          .partners-bento__power-copy strong {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a1a1a;
+            letter-spacing: -0.02em;
+          }
+          .partners-bento__power-copy em {
+            font-style: normal;
+            font-size: 12px;
+            color: #8a8278;
+          }
+          .partners-bento__power-meter {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            border-radius: 999px;
+            background: #f4f2ef;
+            padding: 0.45rem 0.35rem;
+          }
+          .partners-bento__power-meter i {
+            display: block;
+            width: 0.45rem;
+            height: 0.45rem;
+            border-radius: 999px;
+            background: #cfc8c0;
+            font-style: normal;
+          }
+          .partners-bento__power-meter i.is-blue { background: #0086fc; }
+          .partners-bento__power-meter i.is-amber { background: #ffb020; }
+          .partners-bento__power-meter i.is-fire {
+            width: auto;
+            height: auto;
+            background: transparent;
+            font-size: 11px;
+            line-height: 1;
+          }
+
+          /* Tall card with stage image bg + scroll zoom */
+          .partners-bento__easy {
+            position: relative;
+            color: #fff;
+            padding: 1rem;
+            background: #121212;
+            min-height: 100%;
+            overflow: hidden;
+          }
+          .partners-bento__easy-bg {
+            position: absolute;
+            inset: -12%;
+            z-index: 0;
+            background: url("${PARTNERS_EASY_BG}") center / cover no-repeat;
+            transform: scale(1);
+            transform-origin: center center;
+            will-change: transform;
+            pointer-events: none;
+          }
+          .partners-bento__easy-bg::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(10, 10, 10, 0.35) 0%, rgba(10, 10, 10, 0.72) 100%);
+          }
+          .partners-bento__easy-body {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            height: 100%;
+            min-height: 280px;
+          }
+          .partners-bento__menu {
+            display: grid;
+            gap: 8px;
+            width: 100%;
+          }
+          .partners-bento__menu-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-radius: 14px;
+            background: #3a3a3a;
+            padding: 0.7rem 0.8rem;
+            opacity: 1;
+            transform: translateY(0);
+            will-change: transform, opacity;
+            animation: partners-menu-pulse 5.2s ease-in-out infinite;
+          }
+          .partners-bento__menu-row:nth-child(1) { animation-delay: 0s; }
+          .partners-bento__menu-row:nth-child(2) { animation-delay: 1.3s; }
+          .partners-bento__menu-row:nth-child(3) { animation-delay: 2.6s; }
+          .partners-bento__menu-row:nth-child(4) { animation-delay: 3.9s; }
+          .partners-bento__menu-ico {
+            display: grid;
+            place-items: center;
+            width: 2.35rem;
+            height: 2.35rem;
+            border-radius: 999px;
+            color: #fff;
+            flex-shrink: 0;
+          }
+          .partners-bento__menu-ico svg {
+            display: block;
+          }
+          .partners-bento__menu-copy {
+            display: flex;
+            min-width: 0;
+            flex-direction: column;
+            gap: 2px;
+          }
+          .partners-bento__menu-t {
+            display: block;
+            font-size: 15px;
+            font-weight: 600;
+            color: #fbfaf9;
+            line-height: 1.2;
+          }
+          .partners-bento__menu-d {
+            display: block;
+            font-size: 12px;
+            color: rgba(255,255,255,0.62);
+            line-height: 1.3;
+          }
+          .partners-bento__easy-foot {
+            margin-top: auto;
+            padding-top: 1.35rem;
+          }
+          .partners-bento__easy .partners-bento__title {
+            color: #fbfaf9;
+            margin: 0;
+          }
+          .partners-bento__easy .partners-bento__text {
+            color: rgba(255,255,255,0.72);
+          }
+
+          @keyframes partners-menu-pulse {
+            0%, 14%, 100% { background: #3a3a3a; }
+            18%, 32% { background: #4a4a4a; }
+            40% { background: #3a3a3a; }
+          }
+
+          /* Green estimating pill */
+          .partners-bento__pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border-radius: 999px;
+            background: #00ca48;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 0.45rem 0.7rem;
+            box-shadow: 0 0 0 0 rgba(0, 202, 72, 0.35);
+            animation: partners-pill-glow 2.4s ease-in-out infinite;
+          }
+          .partners-bento__spin {
+            width: 0.85rem;
+            height: 0.85rem;
+            border-radius: 999px;
+            border: 2px solid rgba(255,255,255,0.35);
+            border-top-color: #fff;
+            animation: partners-spin 0.85s linear infinite;
+          }
+          @keyframes partners-spin { to { transform: rotate(360deg); } }
+          @keyframes partners-pill-glow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 202, 72, 0.2); }
+            50% { box-shadow: 0 0 0 8px rgba(0, 202, 72, 0); }
+          }
+
+          /* Status timeline — scroll-scrubbed */
+          .partners-bento__timeline {
+            display: grid;
+            gap: 0.85rem;
+            width: 100%;
+            max-width: 200px;
+          }
+          .partners-bento__step {
+            display: grid;
+            grid-template-columns: 1rem minmax(0, 1fr);
+            gap: 0.65rem;
+            align-items: start;
+            opacity: 0.34;
+            transition: opacity 0.35s ease;
+          }
+          .partners-bento__step.is-lit {
+            opacity: 1;
+          }
+          .partners-bento__step-dot {
+            width: 0.7rem;
+            height: 0.7rem;
+            margin-top: 0.28rem;
+            border-radius: 999px;
+            border: 2px solid rgba(255,255,255,0.35);
+            background: transparent;
+            transition: border-color 0.35s ease, background 0.35s ease, box-shadow 0.35s ease;
+          }
+          .partners-bento__step.is-lit:nth-child(1) .partners-bento__step-dot,
+          .partners-bento__step.is-lit:nth-child(3) .partners-bento__step-dot {
+            border-color: #00c978;
+            background: #00c978;
+          }
+          .partners-bento__step.is-lit:nth-child(2) .partners-bento__step-dot,
+          .partners-bento__step.is-now:nth-child(2) .partners-bento__step-dot {
+            border-color: #0086fc;
+            background: #0086fc;
+          }
+          .partners-bento__step.is-now .partners-bento__step-dot {
+            box-shadow: 0 0 0 4px rgba(255, 107, 44, 0.18);
+          }
+          .partners-bento__step.is-now:nth-child(2) .partners-bento__step-dot {
+            box-shadow: 0 0 0 4px rgba(0, 134, 252, 0.22);
+          }
+          .partners-bento__step-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+          }
+          .partners-bento__step-t {
+            font-size: 14px;
+            font-weight: 600;
+            color: #343433;
+            line-height: 1.2;
+          }
+          .partners-bento__step-d {
+            font-size: 12px;
+            color: #7a7672;
+            line-height: 1.3;
+          }
+
+          /* Model icons (Referral / White-label) — animated */
+          .partners-ico {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            height: 88px;
+          }
+          .partners-ico--referral {
+            gap: 0.7rem;
+            min-width: 180px;
+          }
+          .partners-ico__person {
+            display: grid;
+            place-items: center;
+            width: 46px;
+            height: 46px;
+            border-radius: 999px;
+            background: #e8e4df;
+            flex-shrink: 0;
+          }
+          .partners-ico__rail {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 22px;
+            flex-shrink: 0;
+            overflow: visible;
+          }
+          .partners-ico--referral .partners-ico__arrow-svg {
+            display: block;
+            animation: partners-ico-arrow 1.6s ease-in-out infinite;
+          }
+          .partners-ico__mark {
+            display: block;
+            width: 44px;
+            height: 44px;
+            border-radius: 11px;
+            object-fit: cover;
+            flex-shrink: 0;
+          }
+          @keyframes partners-ico-arrow {
+            0%, 100% { transform: translateX(-6px); opacity: 0.35; }
+            45%, 55% { transform: translateX(6px); opacity: 1; }
+          }
+
+          .partners-ico--wl {
+            position: relative;
+            width: 132px;
+            height: 92px;
+            isolation: isolate;
+          }
+          .partners-ico__card {
+            position: absolute;
+            width: 76px;
+            height: 58px;
+            border-radius: 14px;
+          }
+          .partners-ico__card--back {
+            left: 10px;
+            top: 12px;
+            display: grid;
+            place-items: center;
+            background: #121212;
+            transform: rotate(-8deg);
+            z-index: 1;
+            overflow: hidden;
+          }
+          .partners-ico__mark--wl {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            object-fit: cover;
+          }
+          .partners-ico__card--front {
+            left: 46px;
+            top: 24px;
+            z-index: 2;
+            background: #ffffff;
+            box-shadow: inset 0 0 0 1.5px #d4d0cb;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 12px;
+            animation: partners-ico-cover 2.8s ease-in-out infinite;
+            will-change: transform;
+          }
+          .partners-ico__shield {
+            display: grid;
+            place-items: center;
+            line-height: 0;
+          }
+          @keyframes partners-ico-cover {
+            0%, 14% { transform: translate(22px, 6px); }
+            38%, 62% { transform: translate(-14px, -4px); }
+            100% { transform: translate(22px, 6px); }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .partners-ico--referral .partners-ico__arrow-svg,
+            .partners-ico__card--front {
+              animation: none !important;
+            }
+            .partners-ico--referral .partners-ico__arrow-svg {
+              opacity: 1;
+              transform: none;
+            }
+            .partners-ico__card--front {
+              transform: translate(-6px, 0);
+            }
+          }
+
+          .partners-bento__cta {
+            margin-top: 0.9rem;
+          }
+
+          /* Hover discuss panel + darken card behind */
+          .partners-bento__hover {
+            position: relative;
+            isolation: isolate;
+          }
+          .partners-bento__hover::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            border-radius: inherit;
+            background: rgba(18, 18, 18, 0);
+            transition: background 0.28s ease;
+            pointer-events: none;
+          }
+          .partners-bento__hover:hover::before,
+          .partners-bento__hover:focus-within::before {
+            background: rgba(18, 18, 18, 0.42);
+          }
+          .partners-bento__discuss {
+            position: absolute;
+            left: 0.75rem;
+            right: 0.75rem;
+            bottom: 0.75rem;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+            border-radius: 14px;
+            background: #ffffff;
+            padding: 0.85rem;
+            transform: translateY(calc(100% + 1rem));
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
+          }
+          .partners-bento__hover:hover .partners-bento__discuss,
+          .partners-bento__hover:focus-within .partners-bento__discuss {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+          }
+          .partners-bento__discuss-label {
+            margin: 0;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #7e7e7d;
+          }
+          .partners-bento__discuss-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.45rem;
+          }
+          .partners-bento__discuss-btn {
+            position: relative;
+            z-index: 1;
+            display: inline-flex;
+            min-height: 2.5rem;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            border-radius: 999px;
+            padding: 0.45rem 0.65rem;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            text-decoration: none;
+            pointer-events: auto;
+            transition: filter 0.2s ease, background 0.2s ease;
+          }
+          .partners-bento__discuss-btn--tg {
+            background: #121212;
+            color: #fbfaf9;
+          }
+          .partners-bento__discuss-btn--tg:hover {
+            filter: brightness(1.12);
+          }
+          .partners-bento__discuss-btn--mail {
+            background: #f2f0ed;
+            color: #121212;
+          }
+          .partners-bento__discuss-btn--mail:hover {
+            background: #e8e4df;
+          }
+          .partners-bento__discuss-btn svg {
+            flex-shrink: 0;
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .partners-bento__menu-row,
+            .partners-bento__pill,
+            .partners-bento__spin {
+              animation: none !important;
+            }
+            .partners-bento__menu-row {
+              opacity: 1 !important;
+              transform: none !important;
+            }
+            .partners-bento__zoom {
+              transform: none !important;
+            }
+            .partners-bento__step {
+              opacity: 1;
+            }
+            .partners-bento__step:nth-child(1) .partners-bento__step-dot,
+            .partners-bento__step:nth-child(3) .partners-bento__step-dot {
+              border-color: #00c978;
+              background: #00c978;
+            }
+            .partners-bento__step:nth-child(2) .partners-bento__step-dot {
+              border-color: #0086fc;
+              background: #0086fc;
+            }
+          }
+
+          /* Capabilities banner — scroll scrub scene + walker */
+          .partners-caps-pin {
+            position: relative;
+            width: 100%;
+          }
+          .partners-caps-sticky {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            display: flex;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            padding: 0.75rem 0 2.5rem;
+            background: #f5f2ee;
+            overflow: visible;
+          }
+          .partners-caps-stage {
+            --caps-expand: 0;
+            --caps-base: min(72rem, calc(100vw - 2.5rem));
+            width: calc(var(--caps-base) + (100vw - var(--caps-base) - 1rem) * var(--caps-expand));
+            max-width: 100vw;
+            margin: 0 auto;
+            will-change: width;
+            overflow: visible;
+          }
+          .partners-caps-stage .partners-caps {
+            border-radius: calc(22px - 10px * var(--caps-expand));
+            box-shadow: none;
+            overflow: visible;
+          }
+          .partners-caps-scene--static {
+            max-width: 72rem;
+            margin: 0 auto;
+            padding: 0 1.25rem 3rem;
+          }
+          @media (min-width: 640px) {
+            .partners-caps-scene--static {
+              padding-left: 2rem;
+              padding-right: 2rem;
+            }
+          }
+          @keyframes partners-caps-walk-bob {
+            0%, 100% { transform: translateY(0) rotate(-2.5deg); }
+            50% { transform: translateY(-3px) rotate(2.5deg); }
+          }
+          @keyframes partners-caps-leg-l {
+            0%, 100% { transform: rotate(20deg); }
+            50% { transform: rotate(-20deg); }
+          }
+          @keyframes partners-caps-leg-r {
+            0%, 100% { transform: rotate(-20deg); }
+            50% { transform: rotate(20deg); }
+          }
+          @keyframes partners-caps-arm-back {
+            0%, 100% { transform: rotate(-24deg); }
+            50% { transform: rotate(24deg); }
+          }
+          @keyframes partners-caps-arm-front {
+            0%, 100% { transform: rotate(24deg); }
+            50% { transform: rotate(-24deg); }
+          }
+
+          .partners-caps__track {
+            position: absolute;
+            left: 1rem;
+            right: 1rem;
+            bottom: 0.85rem;
+            height: 72px;
+            margin: 0;
+            overflow: visible;
+            pointer-events: none;
+          }
+          .partners-caps__track-walker {
+            position: absolute;
+            left: 0;
+            bottom: 4px;
+            z-index: 2;
+            display: block;
+            width: 56px;
+            height: 66px;
+            pointer-events: none;
+            will-change: left;
+          }
+          .partners-caps__track-walker svg {
+            display: block;
+            width: 56px;
+            height: 66px;
+            overflow: visible;
+          }
+          .partners-caps__walker-body {
+            transform-origin: 32px 36px;
+            animation: partners-caps-walk-bob 0.42s ease-in-out infinite;
+          }
+          .partners-caps__arm--back {
+            transform-box: fill-box;
+            transform-origin: right top;
+            animation: partners-caps-arm-back 0.42s ease-in-out infinite;
+          }
+          .partners-caps__arm--front {
+            transform-box: fill-box;
+            transform-origin: left top;
+            animation: partners-caps-arm-front 0.42s ease-in-out infinite;
+          }
+          .partners-caps__leg--l {
+            transform-box: fill-box;
+            transform-origin: center top;
+            animation: partners-caps-leg-l 0.42s ease-in-out infinite;
+          }
+          .partners-caps__leg--r {
+            transform-box: fill-box;
+            transform-origin: center top;
+            animation: partners-caps-leg-r 0.42s ease-in-out infinite;
+          }
+
+          .partners-caps__viz {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 300px;
+            border-radius: 16px;
+            background: #f3f1ee;
+            overflow: hidden;
+            box-shadow: none;
+          }
+          @media (min-width: 768px) {
+            .partners-caps__viz {
+              height: 340px;
+            }
+          }
+
+          /* Landing — browser + form + TG */
+          .partners-caps__browser {
+            width: 94%;
+            max-width: 360px;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: none;
+            overflow: hidden;
+          }
+          .partners-caps__chrome {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 10px;
+            background: #eceae7;
+          }
+          .partners-caps__chrome > span:not(.partners-caps__url) {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: #cfcbc6;
+            flex-shrink: 0;
+          }
+          .partners-caps__chrome > span:first-child { background: #ff6b2c; }
+          .partners-caps__chrome > span:nth-child(2) { background: #f0b429; }
+          .partners-caps__chrome > span:nth-child(3) { background: #00c978; }
+          .partners-caps__url {
+            flex: 1;
+            margin-left: 6px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: #fff;
+            color: #9a9a98;
+            font-size: 8px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .partners-caps__page {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 10px 12px 12px;
+          }
+          .partners-caps__nav {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 2px;
+          }
+          .partners-caps__nav i {
+            display: block;
+            width: 18px;
+            height: 4px;
+            border-radius: 999px;
+            background: #e8e4df;
+            font-style: normal;
+          }
+          .partners-caps__nav i:first-child {
+            width: 28px;
+            background: #121212;
+          }
+          .partners-caps__hero-bar {
+            display: block;
+            height: 9px;
+            width: 78%;
+            border-radius: 999px;
+            background: #e8e4df;
+            animation: partners-caps-pulse 2s ease-in-out infinite;
+          }
+          .partners-caps__hero-bar--s {
+            width: 52%;
+            height: 6px;
+            animation-delay: 0.15s;
+          }
+          .partners-caps__cta-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 2px;
+          }
+          .partners-caps__cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            height: 20px;
+            padding: 0 10px;
+            border-radius: 999px;
+            background: #121212;
+            color: #fff;
+            font-size: 8px;
+            font-weight: 700;
+            animation: partners-caps-pulse 2s ease-in-out infinite 0.25s;
+          }
+          .partners-caps__cta--ghost {
+            background: #e8e4df;
+            color: #6b6560;
+          }
+          .partners-caps__form {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 4px;
+            padding: 8px;
+            border-radius: 10px;
+            background: #f7f5f2;
+          }
+          .partners-caps__field-label {
+            font-size: 7.5px;
+            font-weight: 700;
+            color: #9a9a98;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+          }
+          .partners-caps__input {
+            position: relative;
+            display: flex;
+            align-items: center;
+            height: 24px;
+            padding: 0 8px;
+            border-radius: 7px;
+            border: 1.5px solid #ddd8d2;
+            background: #fff;
+            font-size: 9px;
+            font-weight: 600;
+            color: #121212;
+          }
+          .partners-caps__input--phone {
+            color: #9a9a98;
+            animation: partners-caps-phone-fill 3.2s ease-in-out infinite;
+          }
+          .partners-caps__typed {
+            overflow: hidden;
+            white-space: nowrap;
+            max-width: 0;
+            animation: partners-caps-type 3.2s steps(4, end) infinite;
+          }
+          .partners-caps__caret {
+            width: 1.5px;
+            height: 12px;
+            margin-left: 1px;
+            background: #ff6b2c;
+            flex-shrink: 0;
+            animation: partners-caps-blink 1s step-end infinite;
+          }
+          .partners-caps__tg-chip {
+            align-self: flex-end;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #ff6b2c;
+            color: #fff;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            animation: partners-caps-fly 2.4s ease-in-out infinite;
+          }
+
+          /* Bot — chat phone */
+          .partners-caps__phone {
+            width: 78%;
+            max-width: 260px;
+            border-radius: 20px;
+            background: #fff;
+            box-shadow: none;
+            overflow: hidden;
+          }
+          .partners-caps__phone-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 11px;
+            background: #121212;
+            color: #fff;
+          }
+          .partners-caps__phone-avatar {
+            width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            background: #ff6b2c;
+            box-shadow: 0 0 0 2px rgba(255, 107, 44, 0.35);
+            animation: partners-caps-pulse 1.8s ease-in-out infinite;
+          }
+          .partners-caps__phone-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+          }
+          .partners-caps__phone-name {
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+          }
+          .partners-caps__phone-status {
+            font-size: 7.5px;
+            font-weight: 600;
+            color: #00c978;
+          }
+          .partners-caps__chat {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 10px;
+            min-height: 158px;
+            background: #f7f5f2;
+          }
+          .partners-caps__msg {
+            max-width: 90%;
+            padding: 6px 8px;
+            border-radius: 10px;
+            font-size: 8.5px;
+            line-height: 1.3;
+            font-weight: 500;
+            opacity: 0;
+            animation: partners-caps-msg-in 4.8s ease-in-out infinite;
+          }
+          .partners-caps__msg--in {
+            align-self: flex-start;
+            background: #fff;
+            color: #343433;
+            border-bottom-left-radius: 3px;
+          }
+          .partners-caps__msg--out {
+            align-self: flex-end;
+            background: #121212;
+            color: #fff;
+            border-bottom-right-radius: 3px;
+          }
+          .partners-caps__msg--a { animation-delay: 0s; }
+          .partners-caps__msg--b { animation-delay: 0.55s; }
+          .partners-caps__msg--c { animation-delay: 1.1s; }
+          .partners-caps__msg--d { animation-delay: 1.65s; }
+          .partners-caps__msg--typing {
+            display: inline-flex;
+            gap: 3px;
+            align-items: center;
+            min-width: 36px;
+            animation-delay: 2.2s;
+            animation-name: partners-caps-msg-in;
+          }
+          .partners-caps__msg--typing i {
+            width: 4px;
+            height: 4px;
+            border-radius: 999px;
+            background: #9a9a98;
+            animation: partners-caps-dot 1.1s ease-in-out infinite;
+          }
+          .partners-caps__msg--typing i:nth-child(2) { animation-delay: 0.15s; }
+          .partners-caps__msg--typing i:nth-child(3) { animation-delay: 0.3s; }
+          .partners-caps__compose {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 8px 10px;
+            background: #fff;
+            border-top: 1px solid #eceae7;
+            color: #9a9a98;
+            font-size: 8px;
+            font-weight: 500;
+          }
+          .partners-caps__send {
+            width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            background: #ff6b2c;
+            box-shadow: 0 0 0 0 rgba(255, 107, 44, 0.4);
+            animation: partners-caps-send-pulse 2s ease-in-out infinite;
+          }
+
+          /* CRM — board */
+          .partners-caps__board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 96%;
+            max-width: 400px;
+          }
+          .partners-caps__col {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px 10px;
+            border-radius: 14px;
+            background: #fff;
+            min-height: 220px;
+            box-shadow: none;
+          }
+          .partners-caps__ticket {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 3px;
+            min-height: 56px;
+            padding: 12px;
+            border-radius: 11px;
+            background: #f3f1ee;
+            animation: partners-caps-ticket 2.8s ease-in-out infinite;
+          }
+          .partners-caps__ticket b {
+            font-size: 13px;
+            font-weight: 700;
+            color: #121212;
+            letter-spacing: -0.02em;
+          }
+          .partners-caps__ticket em {
+            font-style: normal;
+            font-size: 10px;
+            font-weight: 600;
+            color: #9a9a98;
+          }
+          .partners-caps__ticket--1 { animation-delay: 0s; }
+          .partners-caps__ticket--2 { animation-delay: 0.4s; }
+          .partners-caps__ticket--3 { animation-delay: 0.8s; }
+          .partners-caps__ticket--quiz { animation-delay: 0.2s; opacity: 0.92; }
+          .partners-caps__progress {
+            height: 5px;
+            margin-top: auto;
+            border-radius: 999px;
+            background: #eceae7;
+            overflow: hidden;
+          }
+          .partners-caps__progress i {
+            display: block;
+            height: 100%;
+            width: 0%;
+            border-radius: 999px;
+            background: #0086fc;
+            animation: partners-caps-progress 3.4s ease-in-out infinite;
+          }
+
+          /* Cabinet — app shell */
+          .partners-caps__app {
+            display: flex;
+            width: 96%;
+            max-width: 360px;
+            height: 250px;
+            border-radius: 16px;
+            background: #fff;
+            overflow: hidden;
+            box-shadow: none;
+          }
+          .partners-caps__side {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            width: 36px;
+            padding: 12px 9px;
+            background: #121212;
+          }
+          .partners-caps__side span {
+            display: block;
+            height: 7px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.22);
+          }
+          .partners-caps__side span.is-active {
+            background: #ff6b2c;
+            animation: partners-caps-pulse 1.8s ease-in-out infinite;
+          }
+          .partners-caps__main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            padding: 10px;
+            background: #fbfaf9;
+            min-width: 0;
+          }
+          .partners-caps__toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+          }
+          .partners-caps__search {
+            flex: 1;
+            height: 18px;
+            padding: 0 8px;
+            border-radius: 999px;
+            background: #e8e4df;
+            color: #9a9a98;
+            font-size: 8px;
+            font-weight: 600;
+            line-height: 18px;
+          }
+          .partners-caps__user-chip {
+            width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            background: #121212;
+            flex-shrink: 0;
+          }
+          .partners-caps__cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+          }
+          .partners-caps__dash {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 2px;
+            min-height: 44px;
+            padding: 8px;
+            border-radius: 9px;
+            background: #fff;
+            border: 1px solid #eceae7;
+            animation: partners-caps-pulse 2s ease-in-out infinite;
+          }
+          .partners-caps__dash b {
+            font-size: 13px;
+            font-weight: 800;
+            color: #121212;
+            letter-spacing: -0.03em;
+            line-height: 1;
+          }
+          .partners-caps__dash em {
+            font-style: normal;
+            font-size: 8px;
+            font-weight: 600;
+            color: #9a9a98;
+          }
+          .partners-caps__dash--b { animation-delay: 0.25s; }
+          .partners-caps__dash--b b { color: #049a5c; }
+          .partners-caps__rows {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+          }
+          .partners-caps__row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 7px;
+            border-radius: 7px;
+            background: #fff;
+            border: 1px solid #eceae7;
+            font-size: 8px;
+            font-weight: 600;
+            color: #6b6560;
+          }
+          .partners-caps__row i {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: #cfcbc6;
+            flex-shrink: 0;
+            font-style: normal;
+          }
+          .partners-caps__row.is-live {
+            color: #121212;
+            animation: partners-caps-row-live 2.2s ease-in-out infinite;
+          }
+          .partners-caps__row.is-live i {
+            background: #00c978;
+            box-shadow: 0 0 0 0 rgba(0, 201, 120, 0.45);
+            animation: partners-caps-live-dot 1.6s ease-out infinite;
+          }
+          .partners-caps__pay {
+            display: inline-flex;
+            align-self: flex-start;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(0, 201, 120, 0.14);
+            color: #049a5c;
+            font-size: 8px;
+            font-weight: 700;
+            animation: partners-caps-pulse 2s ease-in-out infinite 0.4s;
+          }
+
+          /* Integrations — detailed service cards + packets */
+          .partners-caps__net {
+            position: relative;
+            width: min(100%, 310px);
+            height: 220px;
+          }
+          .partners-caps__net-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+          }
+          .partners-caps__link {
+            stroke: #d5cfc8;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-dasharray: 6 5;
+            animation: partners-caps-dash 1.4s linear infinite;
+          }
+          .partners-caps__packet {
+            fill: #ff6b2c;
+            opacity: 0;
+          }
+          .partners-caps__packet--1 {
+            animation: partners-caps-pkt-n 2.6s ease-in-out infinite;
+          }
+          .partners-caps__packet--2 {
+            animation: partners-caps-pkt-e 2.6s ease-in-out infinite 0.35s;
+          }
+          .partners-caps__packet--3 {
+            animation: partners-caps-pkt-s 2.6s ease-in-out infinite 0.7s;
+          }
+          .partners-caps__packet--4 {
+            animation: partners-caps-pkt-w 2.6s ease-in-out infinite 1.05s;
+          }
+          .partners-caps__hub-core {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            z-index: 3;
+            display: grid;
+            place-items: center;
+            width: 42px;
+            height: 42px;
+            margin: -21px 0 0 -21px;
+            border-radius: 13px;
+            background: #ff6b2c;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            box-shadow: 0 8px 18px rgba(255, 107, 44, 0.28);
+            animation: partners-caps-hub 2s ease-in-out infinite;
+          }
+          .partners-caps__inode {
+            position: absolute;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            width: 108px;
+            padding: 7px 8px;
+            border-radius: 12px;
+            background: #fff;
+            color: #121212;
+            box-shadow: 0 6px 16px rgba(20, 16, 12, 0.06);
+            animation: partners-caps-node-glow 2.6s ease-in-out infinite;
+          }
+          .partners-caps__inode-h {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            color: #6b645c;
+          }
+          .partners-caps__inode-h i {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 2.5px;
+          }
+          .partners-caps__inode-h i.is-crm { background: #0086fc; }
+          .partners-caps__inode-h i.is-pay { background: #00ca48; }
+          .partners-caps__inode-h i.is-tg { background: #2aabee; }
+          .partners-caps__inode-h i.is-tbl { background: #ff6b2c; }
+          .partners-caps__inode-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4px;
+          }
+          .partners-caps__inode-row b {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+          }
+          .partners-caps__inode-row em.is-new {
+            border-radius: 999px;
+            background: #fff1ea;
+            color: #ff6b2c;
+            font-size: 7px;
+            font-style: normal;
+            font-weight: 800;
+            padding: 1px 5px;
+          }
+          .partners-caps__inode-meta {
+            font-size: 7.5px;
+            color: #8a8278;
+            letter-spacing: -0.01em;
+          }
+          .partners-caps__inode-sum {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: #121212;
+            line-height: 1.1;
+          }
+          .partners-caps__inode-card {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 8px;
+            font-weight: 600;
+            color: #5c564e;
+            font-variant-numeric: tabular-nums;
+          }
+          .partners-caps__inode-chip {
+            width: 14px;
+            height: 10px;
+            border-radius: 2px;
+            background: linear-gradient(135deg, #ffb347, #ff6b2c);
+          }
+          .partners-caps__inode-ok {
+            margin-top: 1px;
+            font-size: 8px;
+            font-weight: 800;
+            color: #049a5c;
+            animation: partners-caps-pay-ok 2.6s ease-in-out infinite 0.35s;
+          }
+          .partners-caps__inode-bubble {
+            border-radius: 8px 8px 8px 3px;
+            background: #eaf6fd;
+            color: #0f3d57;
+            font-size: 8.5px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            padding: 5px 7px;
+            line-height: 1.2;
+          }
+          .partners-caps__inode-sheet {
+            display: grid;
+            gap: 2px;
+          }
+          .partners-caps__inode-sheet > span {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px;
+          }
+          .partners-caps__inode-sheet b {
+            font-size: 7px;
+            font-weight: 800;
+            color: #8a8278;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+          }
+          .partners-caps__inode-sheet em {
+            border-radius: 4px;
+            background: #f5f2ee;
+            color: #2a2622;
+            font-size: 8px;
+            font-style: normal;
+            font-weight: 700;
+            padding: 2px 4px;
+            text-align: center;
+          }
+          .partners-caps__inode-sheet em.is-ok {
+            background: #e8f8ef;
+            color: #049a5c;
+          }
+          .partners-caps__inode-sheet em.is-sync {
+            background: #fff1ea;
+            color: #ff6b2c;
+            animation: partners-caps-sheet-sync 1.6s ease-in-out infinite;
+          }
+          .partners-caps__inode--crm {
+            top: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+          }
+          .partners-caps__inode--pay {
+            top: 50%;
+            right: 2px;
+            transform: translateY(-50%);
+            animation-delay: 0.35s;
+          }
+          .partners-caps__inode--tg {
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation-delay: 0.7s;
+          }
+          .partners-caps__inode--tbl {
+            top: 50%;
+            left: 2px;
+            transform: translateY(-50%);
+            animation-delay: 1.05s;
+          }
+
+          /* Support */
+          .partners-caps__support {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            width: 94%;
+            max-width: 360px;
+          }
+          .partners-caps__check-list {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+          }
+          .partners-caps__check {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 9px;
+            border-radius: 10px;
+            background: #fff;
+            font-size: 9.5px;
+            font-weight: 600;
+            color: #6b6560;
+            box-shadow: none;
+            opacity: 0.55;
+          }
+          .partners-caps__check i {
+            display: grid;
+            place-items: center;
+            width: 15px;
+            height: 15px;
+            border-radius: 999px;
+            font-style: normal;
+            font-size: 8px;
+            background: #e8e4df;
+            color: #9a9a98;
+            flex-shrink: 0;
+          }
+          .partners-caps__check.is-on {
+            color: #121212;
+            opacity: 1;
+            animation: partners-caps-check-on 3.2s ease-in-out infinite;
+          }
+          .partners-caps__check.is-on i {
+            background: #00c978;
+            color: #fff;
+          }
+          .partners-caps__check--2 { animation-delay: 0.35s; }
+          .partners-caps__check--3 {
+            animation: partners-caps-pending 2.4s ease-in-out infinite 0.7s;
+          }
+          .partners-caps__check--4 {
+            animation: partners-caps-pending 2.4s ease-in-out infinite 1.1s;
+          }
+          .partners-caps__support-side {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+          }
+          .partners-caps__support-ring {
+            width: 48px;
+            height: 48px;
+            border-radius: 999px;
+            border: 3px solid #e8e4df;
+            border-top-color: #ff6b2c;
+            animation: partners-caps-spin 1.4s linear infinite;
+          }
+          .partners-caps__support-label {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            color: #121212;
+          }
+
+          @keyframes partners-caps-pulse {
+            0%, 100% { opacity: 0.75; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.03); }
+          }
+          @keyframes partners-caps-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+          }
+          @keyframes partners-caps-type {
+            0%, 12% { max-width: 0; }
+            35%, 78% { max-width: 48px; }
+            92%, 100% { max-width: 0; }
+          }
+          @keyframes partners-caps-phone-fill {
+            0%, 40% { color: #9a9a98; border-color: #ddd8d2; }
+            55%, 80% { color: #121212; border-color: #ff6b2c; }
+            100% { color: #9a9a98; border-color: #ddd8d2; }
+          }
+          @keyframes partners-caps-fly {
+            0%, 100% { transform: translateY(0); opacity: 0.9; }
+            50% { transform: translateY(-5px); opacity: 1; }
+          }
+          @keyframes partners-caps-msg-in {
+            0%, 8% { opacity: 0; transform: translateY(6px); }
+            16%, 88% { opacity: 1; transform: translateY(0); }
+            96%, 100% { opacity: 0.35; transform: translateY(0); }
+          }
+          @keyframes partners-caps-dot {
+            0%, 100% { opacity: 0.35; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-2px); }
+          }
+          @keyframes partners-caps-send-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 44, 0.35); }
+            50% { box-shadow: 0 0 0 5px rgba(255, 107, 44, 0); }
+          }
+          @keyframes partners-caps-ticket {
+            0%, 100% { opacity: 0.65; transform: translateY(0); }
+            40%, 60% { opacity: 1; transform: translateY(-2px); background: #fff7f2; }
+          }
+          @keyframes partners-caps-progress {
+            0%, 12% { width: 18%; }
+            55%, 78% { width: 86%; }
+            100% { width: 18%; }
+          }
+          @keyframes partners-caps-row-live {
+            0%, 100% { background: #fff; }
+            50% { background: #f0faf5; }
+          }
+          @keyframes partners-caps-live-dot {
+            0% { box-shadow: 0 0 0 0 rgba(0, 201, 120, 0.45); }
+            70%, 100% { box-shadow: 0 0 0 6px rgba(0, 201, 120, 0); }
+          }
+          @keyframes partners-caps-hub {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+          }
+          @keyframes partners-caps-node-glow {
+            0%, 100% { opacity: 0.85; }
+            50% { opacity: 1; }
+          }
+          @keyframes partners-caps-dash {
+            to { stroke-dashoffset: -22; }
+          }
+          @keyframes partners-caps-pay-ok {
+            0%, 40% { opacity: 0.45; }
+            55%, 85% { opacity: 1; }
+            100% { opacity: 0.45; }
+          }
+          @keyframes partners-caps-sheet-sync {
+            0%, 100% { opacity: 0.65; }
+            50% { opacity: 1; }
+          }
+          @keyframes partners-caps-pkt-n {
+            0% { opacity: 0; cx: 150; cy: 110; }
+            12% { opacity: 1; }
+            48% { opacity: 1; cx: 150; cy: 42; }
+            58%, 100% { opacity: 0; cx: 150; cy: 42; }
+          }
+          @keyframes partners-caps-pkt-e {
+            0% { opacity: 0; cx: 150; cy: 110; }
+            12% { opacity: 1; }
+            48% { opacity: 1; cx: 248; cy: 110; }
+            58%, 100% { opacity: 0; cx: 248; cy: 110; }
+          }
+          @keyframes partners-caps-pkt-s {
+            0% { opacity: 0; cx: 150; cy: 110; }
+            12% { opacity: 1; }
+            48% { opacity: 1; cx: 150; cy: 178; }
+            58%, 100% { opacity: 0; cx: 150; cy: 178; }
+          }
+          @keyframes partners-caps-pkt-w {
+            0% { opacity: 0; cx: 150; cy: 110; }
+            12% { opacity: 1; }
+            48% { opacity: 1; cx: 52; cy: 110; }
+            58%, 100% { opacity: 0; cx: 52; cy: 110; }
+          }
+          @keyframes partners-caps-spin {
+            to { transform: rotate(360deg); }
+          }
+          @keyframes partners-caps-pending {
+            0%, 100% { opacity: 0.45; }
+            50% { opacity: 1; box-shadow: 0 0 0 2px rgba(255, 107, 44, 0.18); }
+          }
+          @keyframes partners-caps-check-on {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.02); }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .partners-caps__hero-bar,
+            .partners-caps__cta,
+            .partners-caps__typed,
+            .partners-caps__caret,
+            .partners-caps__input--phone,
+            .partners-caps__tg-chip,
+            .partners-caps__phone-avatar,
+            .partners-caps__msg,
+            .partners-caps__msg--typing i,
+            .partners-caps__send,
+            .partners-caps__ticket,
+            .partners-caps__progress i,
+            .partners-caps__track-walker,
+            .partners-caps__walker-body,
+            .partners-caps__arm--back,
+            .partners-caps__arm--front,
+            .partners-caps__leg--l,
+            .partners-caps__leg--r,
+            .partners-caps__side span.is-active,
+            .partners-caps__dash,
+            .partners-caps__row.is-live,
+            .partners-caps__row.is-live i,
+            .partners-caps__pay,
+            .partners-caps__link,
+            .partners-caps__packet,
+            .partners-caps__hub-core,
+            .partners-caps__inode,
+            .partners-caps__inode-ok,
+            .partners-caps__inode-sheet em.is-sync,
+            .partners-caps__check,
+            .partners-caps__check.is-on,
+            .partners-caps__support-ring {
+              animation: none !important;
+            }
+            .partners-caps__msg,
+            .partners-caps__check {
+              opacity: 1;
+            }
+          }
+        ` })
+    ] }),
+    /* @__PURE__ */ jsx(
+      SEO,
+      {
+        title: copy.seo.title,
+        description: copy.seo.description,
+        canonicalPath: canonicalUrl,
+        ogLocalePrimary: lang === "ru" ? "ru_RU" : "en_US",
+        schemaJsonLd: buildPartnersSchema(copy, lang, location.pathname)
+      }
+    ),
+    /* @__PURE__ */ jsxs(Helmet, { children: [
+      /* @__PURE__ */ jsx("link", { rel: "alternate", hrefLang: "ru", href: partnersHreflangUrl(PARTNERS_PATH_RU) }),
+      /* @__PURE__ */ jsx("link", { rel: "alternate", hrefLang: "en", href: partnersHreflangUrl(PARTNERS_PATH_EN) }),
+      /* @__PURE__ */ jsx("link", { rel: "alternate", hrefLang: "x-default", href: partnersHreflangUrl("/partners") })
+    ] }),
+    /* @__PURE__ */ jsx(Header, {}),
+    /* @__PURE__ */ jsxs("main", { children: [
+      /* @__PURE__ */ jsxs(
+        "section",
+        {
+          ref: heroRef,
+          className: "relative flex flex-col overflow-hidden bg-partners-cream pb-4 pt-[calc(var(--tivonix-header-spacer)+1.25rem)] sm:min-h-[min(82vh,780px)] sm:pb-28 sm:pt-[calc(var(--tivonix-header-spacer)+2rem)]",
+          "aria-labelledby": "partners-hero-title",
+          children: [
+            /* @__PURE__ */ jsx(
+              "div",
+              {
+                ref: bgRef,
+                className: "pointer-events-none absolute inset-0 hidden origin-center will-change-transform sm:block",
+                "aria-hidden": true,
+                children: /* @__PURE__ */ jsx(
+                  "img",
+                  {
+                    src: "/images/partners/fon-hero.png",
+                    alt: "",
+                    className: "partners-hero__img !h-full !max-w-none h-full w-full scale-105 object-cover object-center",
+                    decoding: "async",
+                    fetchPriority: "high"
+                  }
+                )
+              }
+            ),
+            /* @__PURE__ */ jsx(Shell, { className: "relative z-[2] flex flex-1 flex-col justify-center", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[40rem] text-center", children: [
+              /* @__PURE__ */ jsx("div", { className: "mb-5 flex justify-center", children: /* @__PURE__ */ jsx("div", { className: "inline-flex rounded-full bg-[#ff6b2c] p-1 text-[12px] font-semibold tracking-[0.08em] text-white shadow-sm", children: ["ru", "en"].map((value) => /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => {
+                    setLang(value);
+                    navigate(partnersPath(value), { replace: true });
+                  },
+                  className: cx(
+                    "rounded-full px-3 py-1.5 transition",
+                    lang === value ? "bg-white text-[#ff6b2c]" : "text-white hover:bg-white/15"
+                  ),
+                  "aria-pressed": lang === value,
+                  children: value.toUpperCase()
+                },
+                value
+              )) }) }),
+              /* @__PURE__ */ jsx(
+                "h1",
+                {
+                  id: "partners-hero-title",
+                  className: "font-partners-display text-[1.5rem] font-medium leading-[1.15] tracking-[-0.025em] text-partners-ink text-balance sm:text-[clamp(1.85rem,4.2vw,2.75rem)] sm:leading-[1.12]",
+                  children: copy.hero.h1
+                }
+              ),
+              /* @__PURE__ */ jsx("p", { className: "mx-auto mt-4 max-w-[34rem] font-partners text-[15px] leading-[1.5] text-partners-brown sm:mt-5 sm:text-partners-body", children: copy.hero.subtitle }),
+              /* @__PURE__ */ jsxs("div", { className: "relative z-[3] mt-6 flex flex-col items-stretch justify-center gap-3 sm:mt-7 sm:flex-row sm:flex-wrap sm:items-center", children: [
+                /* @__PURE__ */ jsx(
+                  "a",
+                  {
+                    href: "#partner-formats",
+                    onClick: scrollToFormats,
+                    className: "inline-flex min-h-[2.75rem] items-center justify-center rounded-partners-btn bg-partners-ink px-5 py-2.5 font-partners text-[15px] font-semibold tracking-[-0.009em] text-partners-cream no-underline transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-partners-ink",
+                    children: copy.hero.cta
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  SandPill,
+                  {
+                    href: loginUrl,
+                    sameTab: true,
+                    onClick: () => trackPartnersEvent("partners_login_click", { source: "hero" }),
+                    children: copy.hero.loginCta
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsx("p", { className: "relative z-[3] mx-auto mt-4 max-w-[36rem] font-partners text-[13px] leading-snug tracking-[-0.01em] text-partners-muted sm:text-[14px]", children: copy.hero.trust })
+            ] }) }),
+            /* @__PURE__ */ jsx(
+              "div",
+              {
+                className: "partners-hero__mobile-wrap relative z-[1] -mt-14 w-full overflow-hidden sm:hidden",
+                "aria-hidden": true,
+                children: /* @__PURE__ */ jsx(
+                  "img",
+                  {
+                    src: "/images/partners/fon-hero.png",
+                    alt: "",
+                    className: "partners-hero__mobile mx-auto block h-auto w-full max-w-none object-contain object-center",
+                    decoding: "async",
+                    fetchPriority: "high"
+                  }
+                )
+              }
+            )
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsx("section", { className: "bg-partners-cream py-partners-section", "aria-labelledby": "partners-problem", children: /* @__PURE__ */ jsxs(Shell, { children: [
+        /* @__PURE__ */ jsxs(Reveal, { className: "mx-auto max-w-[36rem] text-left sm:max-w-[42rem] sm:text-center", children: [
+          /* @__PURE__ */ jsx(
+            "h2",
+            {
+              id: "partners-problem",
+              className: "font-partners-display text-[1.375rem] font-medium leading-[1.2] tracking-[-0.02em] text-partners-ink text-balance sm:text-[clamp(1.75rem,4vw,2.75rem)] sm:leading-[1.1]",
+              children: copy.problem.title
+            }
+          ),
+          /* @__PURE__ */ jsx("p", { className: "mt-3 font-partners text-[15px] leading-[1.55] tracking-[-0.01em] text-partners-brown sm:mt-4 sm:text-partners-body", children: copy.problem.body.map(
+            (part, i) => part.pill ? /* @__PURE__ */ jsx(
+              "span",
+              {
+                className: "mx-0.5 inline-flex translate-y-[-1px] items-center rounded-full bg-[#ff6b2c] px-2.5 py-0.5 text-[13px] font-semibold leading-none tracking-[-0.01em] text-white sm:mx-1 sm:px-3 sm:py-1 sm:text-[14px]",
+                children: part.text
+              },
+              i
+            ) : part.em ? /* @__PURE__ */ jsx("span", { className: "font-medium text-partners-ink sm:font-semibold", children: part.text }, i) : /* @__PURE__ */ jsx("span", { children: part.text }, i)
+          ) })
+        ] }),
+        /* @__PURE__ */ jsxs(Reveal, { className: "mt-10 sm:mt-12", children: [
+          /* @__PURE__ */ jsx("h3", { className: "mb-4 text-left font-partners text-[1.125rem] font-medium leading-snug tracking-[-0.02em] text-partners-charcoal sm:mb-5 sm:text-center sm:text-partners-heading", children: copy.problem.rolesHeading }),
+          /* @__PURE__ */ jsxs("div", { ref: rolesRef, className: "grid gap-5 lg:grid-cols-3 lg:gap-5", children: [
+            /* @__PURE__ */ jsxs("article", { className: "flex flex-col rounded-[20px] bg-partners-white p-5 sm:p-6", children: [
+              /* @__PURE__ */ jsx("h4", { className: "font-partners text-[1.25rem] font-semibold tracking-[-0.02em] text-partners-ink", children: copy.problem.roles[0].title }),
+              /* @__PURE__ */ jsx("div", { className: "partners-role-media", children: /* @__PURE__ */ jsx(
+                "img",
+                {
+                  src: "/images/partners/bez-tivonix.png",
+                  alt: "",
+                  width: 640,
+                  height: 400,
+                  className: "partners-role-zoom",
+                  loading: "lazy",
+                  decoding: "async"
+                }
+              ) }),
+              /* @__PURE__ */ jsx("ul", { className: "mt-3 grid gap-2", children: copy.problem.roles[0].items.map((item) => /* @__PURE__ */ jsxs(
+                "li",
+                {
+                  className: "flex items-center gap-3 rounded-[12px] bg-partners-cream px-3.5 py-2.5 font-partners text-[15px] leading-snug text-partners-brown",
+                  children: [
+                    /* @__PURE__ */ jsx(
+                      "span",
+                      {
+                        className: "grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#d4d4d4] text-[13px] font-bold leading-none text-white",
+                        "aria-hidden": true,
+                        children: "·"
+                      }
+                    ),
+                    /* @__PURE__ */ jsx("span", { children: item })
+                  ]
+                },
+                item
+              )) })
+            ] }),
+            /* @__PURE__ */ jsx("article", { className: "partners-tivonix-frame", children: /* @__PURE__ */ jsxs("div", { className: "flex h-full flex-col rounded-[16px] bg-partners-white p-5 sm:p-6", children: [
+              /* @__PURE__ */ jsx("h4", { className: "font-partners text-[1.25rem] font-semibold tracking-[-0.02em] text-[#ff6b2c]", children: "TIVONIX" }),
+              /* @__PURE__ */ jsx("div", { className: "partners-role-media", children: /* @__PURE__ */ jsx(
+                "img",
+                {
+                  src: "/images/partners/s-tivonix.png",
+                  alt: "",
+                  width: 640,
+                  height: 400,
+                  className: "partners-role-zoom",
+                  loading: "lazy",
+                  decoding: "async"
+                }
+              ) }),
+              /* @__PURE__ */ jsx("ul", { className: "mt-3 grid gap-2", children: copy.problem.roles[1].items.map((item) => /* @__PURE__ */ jsxs(
+                "li",
+                {
+                  className: "flex items-center gap-3 rounded-[12px] bg-partners-cream px-3.5 py-2.5 font-partners text-[15px] leading-snug text-partners-brown",
+                  children: [
+                    /* @__PURE__ */ jsx(
+                      "span",
+                      {
+                        className: "grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#ff6b2c] text-[12px] font-bold leading-none text-white",
+                        "aria-hidden": true,
+                        children: "✓"
+                      }
+                    ),
+                    /* @__PURE__ */ jsx("span", { children: item })
+                  ]
+                },
+                item
+              )) })
+            ] }) }),
+            /* @__PURE__ */ jsxs("article", { className: "flex flex-col rounded-[20px] bg-partners-white p-5 sm:p-6", children: [
+              /* @__PURE__ */ jsx("h4", { className: "font-partners text-[1.25rem] font-semibold tracking-[-0.02em] text-partners-ink", children: copy.problem.roles[2].title }),
+              /* @__PURE__ */ jsx("div", { className: "partners-role-media", children: /* @__PURE__ */ jsx(
+                "img",
+                {
+                  src: "/images/partners/vasha-vygoda.png",
+                  alt: "",
+                  width: 640,
+                  height: 400,
+                  className: "partners-role-zoom",
+                  loading: "lazy",
+                  decoding: "async"
+                }
+              ) }),
+              /* @__PURE__ */ jsx("ul", { className: "mt-3 grid flex-1 gap-2 content-start", children: copy.problem.roles[2].items.map((item) => /* @__PURE__ */ jsxs(
+                "li",
+                {
+                  className: "flex items-center gap-3 rounded-[12px] bg-partners-cream px-3.5 py-2.5 font-partners text-[15px] leading-snug text-partners-brown",
+                  children: [
+                    /* @__PURE__ */ jsx(
+                      "span",
+                      {
+                        className: "grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#ff6b2c] text-[12px] font-bold leading-none text-white",
+                        "aria-hidden": true,
+                        children: "✓"
+                      }
+                    ),
+                    /* @__PURE__ */ jsx("span", { children: item })
+                  ]
+                },
+                item
+              )) })
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs(Reveal, { className: "mt-8 rounded-[16px] bg-partners-white px-5 py-6 sm:px-8 sm:py-7", children: [
+          /* @__PURE__ */ jsx("p", { className: "inline-flex rounded-partners-pill bg-[#ff6b2c] px-3.5 py-1.5 font-partners text-[13px] font-medium tracking-[-0.01em] text-white", children: copy.money.label }),
+          /* @__PURE__ */ jsx("p", { className: "mt-3 max-w-[44rem] font-partners text-partners-body text-partners-charcoal", children: copy.money.body }),
+          /* @__PURE__ */ jsx(ExampleMoneyFlow, {})
+        ] })
+      ] }) }),
+      /* @__PURE__ */ jsx(
+        "section",
+        {
+          id: "partner-formats",
+          className: "scroll-mt-[var(--tivonix-header-spacer)] bg-partners-cream pb-6 sm:pb-8",
+          "aria-labelledby": "partners-models",
+          children: /* @__PURE__ */ jsxs(Shell, { children: [
+            /* @__PURE__ */ jsx(Reveal, { className: "mx-auto mb-10 max-w-[36rem] text-center", children: /* @__PURE__ */ jsxs(
+              "h2",
+              {
+                id: "partners-models",
+                className: "font-partners-display text-[clamp(1.75rem,4vw,2.75rem)] font-medium leading-[1.25] tracking-[-0.02em] text-partners-ink text-balance",
+                children: [
+                  copy.models.heading.before,
+                  " ",
+                  /* @__PURE__ */ jsx("span", { className: "mx-0.5 inline-flex translate-y-[-0.08em] items-center rounded-partners-pill bg-[#00ca48] px-3 py-1 text-[0.72em] font-medium tracking-[-0.01em] text-white align-middle", children: copy.models.heading.sell }),
+                  " ",
+                  copy.models.heading.middle,
+                  " ",
+                  /* @__PURE__ */ jsx("span", { className: "mx-0.5 inline-flex translate-y-[-0.08em] items-center rounded-partners-pill bg-[#ff6b2c] px-3 py-1 text-[0.72em] font-medium tracking-[-0.01em] text-white align-middle", children: copy.models.heading.brand })
+                ]
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Reveal, { children: /* @__PURE__ */ jsxs("div", { ref: bentoRef, className: "partners-bento", children: [
+              /* @__PURE__ */ jsxs("article", { ref: easyCardRef, className: "partners-bento__card partners-bento__easy", children: [
+                /* @__PURE__ */ jsx("div", { ref: easyBgRef, className: "partners-bento__easy-bg", "aria-hidden": true }),
+                /* @__PURE__ */ jsxs("div", { className: "partners-bento__easy-body", children: [
+                  /* @__PURE__ */ jsx("div", { className: "partners-bento__menu", "aria-hidden": true, children: copy.models.menu.map((copyItem, index) => [
+                    {
+                      c: "#0086fc",
+                      t: copyItem.title,
+                      d: copyItem.description,
+                      icon: /* @__PURE__ */ jsxs("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: [
+                        /* @__PURE__ */ jsx("circle", { cx: "12", cy: "12", r: "8", stroke: "currentColor", strokeWidth: "1.8" }),
+                        /* @__PURE__ */ jsx("path", { d: "M12 8v4.2l2.6 1.6", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round" })
+                      ] })
+                    },
+                    {
+                      c: "#9f4fff",
+                      t: copy.models.menu[1].title,
+                      d: copy.models.menu[1].description,
+                      icon: /* @__PURE__ */ jsxs("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: [
+                        /* @__PURE__ */ jsx(
+                          "path",
+                          {
+                            d: "M7 8.5h10M7 12h7M7 15.5h5",
+                            stroke: "currentColor",
+                            strokeWidth: "1.8",
+                            strokeLinecap: "round"
+                          }
+                        ),
+                        /* @__PURE__ */ jsx("rect", { x: "4.5", y: "4.5", width: "15", height: "15", rx: "3.5", stroke: "currentColor", strokeWidth: "1.8" })
+                      ] })
+                    },
+                    {
+                      c: "#00ca48",
+                      t: copy.models.menu[2].title,
+                      d: copy.models.menu[2].description,
+                      icon: /* @__PURE__ */ jsxs("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: [
+                        /* @__PURE__ */ jsx(
+                          "path",
+                          {
+                            d: "M8.5 16.5 15.5 7.5M9.2 8.2h.01M14.8 15.8h.01",
+                            stroke: "currentColor",
+                            strokeWidth: "1.9",
+                            strokeLinecap: "round"
+                          }
+                        ),
+                        /* @__PURE__ */ jsx("circle", { cx: "9.2", cy: "8.2", r: "1.35", fill: "currentColor" }),
+                        /* @__PURE__ */ jsx("circle", { cx: "14.8", cy: "15.8", r: "1.35", fill: "currentColor" })
+                      ] })
+                    },
+                    {
+                      c: "#ff58ae",
+                      t: copy.models.menu[3].title,
+                      d: copy.models.menu[3].description,
+                      icon: /* @__PURE__ */ jsxs("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: [
+                        /* @__PURE__ */ jsx("rect", { x: "4.5", y: "5", width: "15", height: "14", rx: "2.5", stroke: "currentColor", strokeWidth: "1.8" }),
+                        /* @__PURE__ */ jsx("path", { d: "M8 9.5h8M8 12.5h8M8 15.5h5", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round" })
+                      ] })
+                    }
+                  ][index]).map((row) => /* @__PURE__ */ jsxs("div", { className: "partners-bento__menu-row", children: [
+                    /* @__PURE__ */ jsx("span", { className: "partners-bento__menu-ico", style: { backgroundColor: row.c }, children: row.icon }),
+                    /* @__PURE__ */ jsxs("span", { className: "partners-bento__menu-copy", children: [
+                      /* @__PURE__ */ jsx("span", { className: "partners-bento__menu-t", children: row.t }),
+                      /* @__PURE__ */ jsx("span", { className: "partners-bento__menu-d", children: row.d })
+                    ] })
+                  ] }, row.t)) }),
+                  /* @__PURE__ */ jsxs("div", { className: "partners-bento__easy-foot", children: [
+                    /* @__PURE__ */ jsx("h3", { className: "partners-bento__title", children: copy.models.allInOne.title }),
+                    /* @__PURE__ */ jsx("p", { className: "partners-bento__text", children: copy.models.allInOne.text })
+                  ] })
+                ] })
+              ] }),
+              /* @__PURE__ */ jsxs("article", { className: "partners-bento__card partners-bento__hover", tabIndex: 0, children: [
+                /* @__PURE__ */ jsx("div", { className: "partners-bento__viz", children: /* @__PURE__ */ jsx("div", { className: "partners-bento__zoom", "data-bento-zoom": "0.12", children: /* @__PURE__ */ jsx(BentoEstimateUi, { pill: copy.models.quickStart.pill }) }) }),
+                /* @__PURE__ */ jsx("h3", { className: "partners-bento__title", children: copy.models.quickStart.title }),
+                /* @__PURE__ */ jsx("p", { className: "partners-bento__text", children: copy.models.quickStart.text }),
+                /* @__PURE__ */ jsx(DiscussPanel, {})
+              ] }),
+              /* @__PURE__ */ jsxs("article", { className: "partners-bento__card partners-bento__hover", tabIndex: 0, children: [
+                /* @__PURE__ */ jsx("div", { className: "partners-bento__viz", children: /* @__PURE__ */ jsx("div", { className: "partners-bento__zoom", "data-bento-zoom": "0.1", children: /* @__PURE__ */ jsx("div", { className: "partners-bento__fast", "aria-hidden": true, children: /* @__PURE__ */ jsxs("div", { className: "partners-bento__timeline", children: [
+                  /* @__PURE__ */ jsxs("div", { className: "partners-bento__step", children: [
+                    /* @__PURE__ */ jsx("span", { className: "partners-bento__step-dot" }),
+                    /* @__PURE__ */ jsxs("span", { className: "partners-bento__step-copy", children: [
+                      /* @__PURE__ */ jsx("span", { className: "partners-bento__step-t", children: copy.models.status.steps[0].t }),
+                      /* @__PURE__ */ jsx("span", { className: "partners-bento__step-d", children: copy.models.status.steps[0].d })
+                    ] })
+                  ] }),
+                  /* @__PURE__ */ jsxs("div", { className: "partners-bento__step", children: [
+                    /* @__PURE__ */ jsx("span", { className: "partners-bento__step-dot" }),
+                    /* @__PURE__ */ jsxs("span", { className: "partners-bento__step-copy", children: [
+                      /* @__PURE__ */ jsx("span", { className: "partners-bento__step-t", children: copy.models.status.steps[1].t }),
+                      /* @__PURE__ */ jsx("span", { className: "partners-bento__step-d", children: copy.models.status.steps[1].d })
+                    ] })
+                  ] }),
+                  /* @__PURE__ */ jsxs("div", { className: "partners-bento__step", children: [
+                    /* @__PURE__ */ jsx("span", { className: "partners-bento__step-dot" }),
+                    /* @__PURE__ */ jsxs("span", { className: "partners-bento__step-copy", children: [
+                      /* @__PURE__ */ jsx("span", { className: "partners-bento__step-t", children: copy.models.status.steps[2].t }),
+                      /* @__PURE__ */ jsx("span", { className: "partners-bento__step-d", children: copy.models.status.steps[2].d })
+                    ] })
+                  ] })
+                ] }) }) }) }),
+                /* @__PURE__ */ jsx("h3", { className: "partners-bento__title", children: copy.models.status.title }),
+                /* @__PURE__ */ jsx("p", { className: "partners-bento__text", children: copy.models.status.text }),
+                /* @__PURE__ */ jsx(DiscussPanel, {})
+              ] }),
+              /* @__PURE__ */ jsxs("article", { className: "partners-bento__card", children: [
+                /* @__PURE__ */ jsx("div", { className: "partners-bento__viz", children: /* @__PURE__ */ jsx("div", { className: "partners-bento__zoom", "data-bento-zoom": "0.12", children: /* @__PURE__ */ jsx(BentoReferralUi, {}) }) }),
+                /* @__PURE__ */ jsx("h3", { className: "partners-bento__title", children: copy.models.referral.title }),
+                /* @__PURE__ */ jsx("p", { className: "partners-bento__text", children: copy.models.referral.text }),
+                /* @__PURE__ */ jsx("p", { className: "mt-2 font-partners text-[12px] leading-snug text-partners-muted", children: copy.models.referral.note }),
+                /* @__PURE__ */ jsxs("div", { className: "partners-bento__cta", children: [
+                  /* @__PURE__ */ jsx(
+                    DarkPill,
+                    {
+                      href: referralRegisterUrl,
+                      sameTab: true,
+                      onClick: () => trackPartnersEvent("partners_referral_click", { source: "formats" }),
+                      children: copy.models.referral.cta
+                    }
+                  ),
+                  /* @__PURE__ */ jsx("p", { className: "mt-2 font-partners text-[11px] leading-snug text-partners-muted", children: copy.models.panelHint })
+                ] })
+              ] }),
+              /* @__PURE__ */ jsxs("article", { className: "partners-bento__card", children: [
+                /* @__PURE__ */ jsx("div", { className: "partners-bento__viz", children: /* @__PURE__ */ jsx("div", { className: "partners-bento__zoom", "data-bento-zoom": "0.12", children: /* @__PURE__ */ jsx(BentoWhiteLabelUi, {}) }) }),
+                /* @__PURE__ */ jsx("h3", { className: "partners-bento__title", children: copy.models.whiteLabel.title }),
+                /* @__PURE__ */ jsx("p", { className: "partners-bento__text", children: copy.models.whiteLabel.text }),
+                /* @__PURE__ */ jsx("p", { className: "mt-2 font-partners text-[12px] leading-snug text-partners-muted", children: copy.models.whiteLabel.note }),
+                /* @__PURE__ */ jsxs("div", { className: "partners-bento__cta", children: [
+                  /* @__PURE__ */ jsx(
+                    DarkPill,
+                    {
+                      href: whiteLabelRegisterUrl,
+                      sameTab: true,
+                      onClick: () => trackPartnersEvent("partners_white_label_click", { source: "formats" }),
+                      children: copy.models.whiteLabel.cta
+                    }
+                  ),
+                  /* @__PURE__ */ jsx("p", { className: "mt-2 font-partners text-[11px] leading-snug text-partners-muted", children: copy.models.panelHint })
+                ] })
+              ] })
+            ] }) }),
+            /* @__PURE__ */ jsx("p", { className: "mt-5 text-center font-partners text-partners-micro text-partners-muted", children: copy.models.footnote })
+          ] })
+        }
+      ),
+      null,
+      /* @__PURE__ */ jsx(
+        "section",
+        {
+          id: "partners-after-reg",
+          className: "scroll-mt-[var(--tivonix-header-spacer)] bg-partners-cream py-partners-section",
+          "aria-labelledby": "partners-after-reg-title",
+          children: /* @__PURE__ */ jsxs(Shell, { children: [
+            /* @__PURE__ */ jsxs(Reveal, { className: "mx-auto mb-8 max-w-[36rem] text-center", children: [
+              /* @__PURE__ */ jsx(
+                "h2",
+                {
+                  id: "partners-after-reg-title",
+                  className: "font-partners-display text-[clamp(1.5rem,3.6vw,2.35rem)] font-medium leading-[1.15] tracking-[-0.02em] text-partners-ink text-balance",
+                  children: copy.afterReg.title
+                }
+              ),
+              /* @__PURE__ */ jsx("p", { className: "mt-3 font-partners text-[15px] leading-snug text-partners-brown sm:text-[16px]", children: copy.afterReg.lead })
+            ] }),
+            /* @__PURE__ */ jsx(Reveal, { className: "partners-after-reg__grid", children: copy.afterReg.steps.map((step, i) => /* @__PURE__ */ jsxs("article", { className: "partners-after-reg__card", children: [
+              /* @__PURE__ */ jsx("span", { className: "partners-after-reg__num", "aria-hidden": true, children: i + 1 }),
+              /* @__PURE__ */ jsx("h3", { className: "partners-after-reg__t", children: step.t }),
+              /* @__PURE__ */ jsx("p", { className: "partners-after-reg__d", children: step.d })
+            ] }, step.t)) }),
+            /* @__PURE__ */ jsx("p", { className: "mx-auto mt-8 max-w-[40rem] text-center font-partners text-[14px] leading-snug text-partners-muted sm:text-[15px]", children: copy.afterReg.disclaimer })
+          ] })
+        }
+      ),
+      /* @__PURE__ */ jsx("section", { className: "bg-partners-cream pt-partners-section", "aria-labelledby": "partners-caps", children: /* @__PURE__ */ jsx(CapabilitiesBanner, {}) }),
+      /* @__PURE__ */ jsx(
+        "section",
+        {
+          id: "process",
+          className: "scroll-mt-[var(--tivonix-header-spacer)] bg-partners-cream py-partners-section",
+          "aria-labelledby": "partners-process",
+          children: /* @__PURE__ */ jsx(Shell, { children: /* @__PURE__ */ jsxs(Reveal, { className: "grid items-center gap-8 lg:grid-cols-2 lg:gap-14 xl:gap-16", children: [
+            /* @__PURE__ */ jsx("div", { className: "relative order-2 mx-auto flex w-full max-w-[20rem] items-center justify-center sm:max-w-[24rem] lg:order-1 lg:max-w-none", children: /* @__PURE__ */ jsx(PartnersProcessVisual, {}) }),
+            /* @__PURE__ */ jsxs("div", { className: "order-1 min-w-0 lg:order-2", children: [
+              /* @__PURE__ */ jsx(
+                "h2",
+                {
+                  id: "partners-process",
+                  className: "font-partners-display text-[1.375rem] font-medium leading-[1.2] tracking-[-0.02em] text-partners-ink text-balance sm:text-[clamp(1.85rem,3.6vw,2.85rem)] sm:leading-[1.12] sm:tracking-[-0.025em]",
+                  children: copy.process.title
+                }
+              ),
+              /* @__PURE__ */ jsx("p", { className: "mt-3 max-w-[34rem] font-partners text-[15px] leading-[1.55] tracking-[-0.01em] text-partners-brown sm:mt-4 sm:text-[17px] sm:leading-relaxed", children: copy.process.lead }),
+              /* @__PURE__ */ jsx("ul", { className: "mt-6 flex flex-wrap gap-2 sm:mt-8 sm:gap-2.5", children: copy.process.steps.map((t) => /* @__PURE__ */ jsxs(
+                "li",
+                {
+                  className: "inline-flex items-center gap-2 rounded-full bg-partners-white px-3 py-2 sm:px-3.5 sm:py-2.5",
+                  children: [
+                    /* @__PURE__ */ jsx(
+                      "span",
+                      {
+                        className: "grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#ff6b2c] text-[11px] font-bold leading-none text-white",
+                        "aria-hidden": true,
+                        children: "✓"
+                      }
+                    ),
+                    /* @__PURE__ */ jsx("span", { className: "font-partners text-[13px] font-semibold tracking-[-0.015em] text-partners-ink sm:text-[15px]", children: t })
+                  ]
+                },
+                t
+              )) })
+            ] })
+          ] }) })
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "section",
+        {
+          id: "partners-cases",
+          className: "scroll-mt-[var(--tivonix-header-spacer)] bg-partners-cream py-partners-section",
+          "aria-labelledby": "partners-cases-title",
+          children: /* @__PURE__ */ jsxs(Shell, { children: [
+            /* @__PURE__ */ jsx(Reveal, { className: "mx-auto mb-10 max-w-[36rem] text-center", children: /* @__PURE__ */ jsx(
+              "h2",
+              {
+                id: "partners-cases-title",
+                className: "font-partners-display text-[clamp(1.75rem,4vw,2.75rem)] font-medium leading-[1.1] tracking-[-0.02em] text-partners-ink text-balance",
+                children: copy.cases.title
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Reveal, { className: "grid gap-5 lg:grid-cols-3 lg:gap-5", children: CASES.map((c) => /* @__PURE__ */ jsxs(
+              "article",
+              {
+                className: "group flex flex-col overflow-hidden rounded-[20px] bg-partners-white",
+                children: [
+                  /* @__PURE__ */ jsx("div", { className: "aspect-[16/10] overflow-hidden bg-partners-cream", children: /* @__PURE__ */ jsx(
+                    "img",
+                    {
+                      src: c.cover,
+                      alt: "",
+                      width: 640,
+                      height: 400,
+                      className: "!h-full !max-w-none h-full w-full scale-110 object-cover object-top blur-[22px] transition duration-500 ease-out group-hover:scale-[1.16]",
+                      loading: "lazy",
+                      decoding: "async"
+                    }
+                  ) }),
+                  /* @__PURE__ */ jsxs("div", { className: "flex flex-1 flex-col p-5 sm:p-6", children: [
+                    /* @__PURE__ */ jsx("h3", { className: "font-partners text-[1.25rem] font-semibold tracking-[-0.02em] text-partners-ink", children: c.title }),
+                    /* @__PURE__ */ jsx("p", { className: "mt-2 flex-1 font-partners text-[15px] leading-snug text-partners-brown", children: copy.cases.texts[c.id] }),
+                    /* @__PURE__ */ jsx("div", { className: "mt-4 flex flex-wrap gap-2", children: c.tags.map((tag) => /* @__PURE__ */ jsx(
+                      "span",
+                      {
+                        className: "rounded-full bg-partners-cream px-3 py-1.5 font-partners text-[12px] font-semibold tracking-[-0.01em] text-partners-charcoal",
+                        children: tag
+                      },
+                      tag
+                    )) }),
+                    /* @__PURE__ */ jsx("div", { className: "mt-5", children: /* @__PURE__ */ jsx(
+                      Link,
+                      {
+                        to: `/projects/${c.id}`,
+                        className: "inline-flex min-h-[2.5rem] items-center justify-center rounded-partners-btn bg-[#ff6b2c] px-4 py-2 font-partners text-[14px] font-semibold tracking-[-0.01em] text-white no-underline transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff6b2c]",
+                        children: copy.cases.view
+                      }
+                    ) })
+                  ] })
+                ]
+              },
+              c.id
+            )) }),
+            /* @__PURE__ */ jsx("div", { className: "mt-8 text-center", children: /* @__PURE__ */ jsx(SandPill, { href: "/projects", children: copy.cases.all }) })
+          ] })
+        }
+      ),
+      /* @__PURE__ */ jsx("section", { className: "bg-partners-cream py-partners-section", "aria-labelledby": "partners-models-examples", children: /* @__PURE__ */ jsxs(Shell, { children: [
+        /* @__PURE__ */ jsx("h2", { id: "partners-models-examples", className: "sr-only", children: copy.examples.sr }),
+        /* @__PURE__ */ jsx("div", { ref: modelsExamplesRef, children: /* @__PURE__ */ jsxs(Reveal, { className: "partners-models-split", children: [
+          /* @__PURE__ */ jsxs("article", { className: "partners-models-split__card partners-models-split__card--ref", children: [
+            /* @__PURE__ */ jsxs("div", { className: "partners-models-split__media", "aria-hidden": true, children: [
+              /* @__PURE__ */ jsx("div", { className: "partners-models-split__zoom", children: /* @__PURE__ */ jsx("img", { src: PARTNERS_REF_BG, alt: "", width: 900, height: 700, decoding: "async", loading: "lazy" }) }),
+              /* @__PURE__ */ jsx("div", { className: "partners-models-split__shade" })
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "partners-models-split__body", children: [
+              /* @__PURE__ */ jsx("p", { className: "partners-models-split__pill", children: copy.examples.referral.pill }),
+              /* @__PURE__ */ jsx("h3", { className: "partners-models-split__title", children: copy.examples.referral.title }),
+              /* @__PURE__ */ jsx("p", { className: "partners-models-split__text", children: copy.examples.referral.text }),
+              /* @__PURE__ */ jsx(ModelExampleReferral, {})
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxs("article", { className: "partners-models-split__card partners-models-split__card--wl", children: [
+            /* @__PURE__ */ jsxs("div", { className: "partners-models-split__media", "aria-hidden": true, children: [
+              /* @__PURE__ */ jsx("div", { className: "partners-models-split__zoom", children: /* @__PURE__ */ jsx("img", { src: PARTNERS_WL_BG, alt: "", width: 900, height: 700, decoding: "async", loading: "lazy" }) }),
+              /* @__PURE__ */ jsx("div", { className: "partners-models-split__shade" })
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "partners-models-split__body", children: [
+              /* @__PURE__ */ jsx("p", { className: "partners-models-split__pill", children: copy.examples.whiteLabel.pill }),
+              /* @__PURE__ */ jsx("h3", { className: "partners-models-split__title", children: copy.examples.whiteLabel.title }),
+              /* @__PURE__ */ jsx("p", { className: "partners-models-split__text", children: copy.examples.whiteLabel.text }),
+              /* @__PURE__ */ jsx(ModelExampleWhiteLabel, {})
+            ] })
+          ] })
+        ] }) })
+      ] }) }),
+      /* @__PURE__ */ jsx("section", { className: "bg-partners-cream py-partners-section", "aria-labelledby": "partners-faq", children: /* @__PURE__ */ jsxs(Shell, { children: [
+        /* @__PURE__ */ jsx(Reveal, { children: /* @__PURE__ */ jsx(
+          "h2",
+          {
+            id: "partners-faq",
+            className: "font-partners-display text-[clamp(1.75rem,4vw,2.75rem)] font-medium leading-[1.1] tracking-[-0.02em] text-partners-ink",
+            children: copy.faq.title
+          }
+        ) }),
+        /* @__PURE__ */ jsx(Reveal, { className: "mt-8 grid gap-3", children: copy.faq.items.map((item) => /* @__PURE__ */ jsxs(
+          "details",
+          {
+            className: "group rounded-[20px] bg-partners-white p-5 sm:p-6",
+            children: [
+              /* @__PURE__ */ jsxs("summary", { className: "flex cursor-pointer list-none items-start justify-between gap-4 font-partners text-[clamp(1.05rem,2vw,1.4375rem)] font-medium leading-snug tracking-[-0.02em] text-partners-charcoal [&::-webkit-details-marker]:hidden", children: [
+                /* @__PURE__ */ jsx("span", { className: "min-w-0 flex-1", children: item.q }),
+                /* @__PURE__ */ jsx("span", { className: "mt-1 shrink-0 font-partners text-[14px] font-medium text-partners-ember underline-offset-2 group-open:underline", children: copy.faq.more })
+              ] }),
+              /* @__PURE__ */ jsx("p", { className: "mt-3 max-w-[42rem] font-partners text-partners-caption text-partners-body", children: item.a })
+            ]
+          },
+          item.q
+        )) })
+      ] }) }),
+      /* @__PURE__ */ jsx(
+        "section",
+        {
+          ref: finalRef,
+          className: "overflow-x-clip bg-partners-cream py-partners-section text-center",
+          "aria-labelledby": "partners-final",
+          children: /* @__PURE__ */ jsx(Shell, { className: "min-w-0", children: /* @__PURE__ */ jsx(Reveal, { className: "min-w-0", children: /* @__PURE__ */ jsxs("div", { className: "partners-final__media", children: [
+            /* @__PURE__ */ jsx("div", { ref: finalZoomRef, className: "partners-final__zoom", "aria-hidden": true, children: /* @__PURE__ */ jsx(
+              "img",
+              {
+                src: "/images/partners/foo.png",
+                alt: "",
+                width: 1680,
+                height: 720,
+                decoding: "async",
+                loading: "lazy"
+              }
+            ) }),
+            /* @__PURE__ */ jsxs("div", { className: "partners-final__copy", children: [
+              /* @__PURE__ */ jsx("p", { className: "inline-flex max-w-full rounded-partners-pill bg-[#ff6b2c] px-3 py-1.5 font-partners text-[12px] font-medium tracking-[-0.01em] text-white sm:px-3.5 sm:text-[13px]", children: copy.final.badge }),
+              /* @__PURE__ */ jsx(
+                "h2",
+                {
+                  id: "partners-final",
+                  className: "mx-auto mt-3 max-w-[22ch] font-partners-display text-[1.35rem] font-medium leading-[1.2] tracking-[-0.02em] text-balance sm:mt-4 sm:text-[clamp(1.75rem,4vw,2.75rem)] sm:leading-[1.12] sm:tracking-[-0.025em]",
+                  children: copy.final.title
+                }
+              ),
+              /* @__PURE__ */ jsx("p", { className: "mx-auto mt-3 max-w-[32rem] font-partners text-[14px] leading-[1.5] tracking-[-0.01em] sm:mt-4 sm:text-[17px] sm:leading-relaxed", children: copy.final.body }),
+              /* @__PURE__ */ jsxs("div", { className: "partners-final__actions mt-5 sm:mt-7", children: [
+                /* @__PURE__ */ jsx(
+                  "a",
+                  {
+                    href: referralRegisterUrl,
+                    onClick: () => trackPartnersEvent("partners_final_referral_click"),
+                    className: "inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-partners-btn bg-white px-5 py-2.5 font-partners text-[15px] font-semibold tracking-[-0.009em] text-partners-ink no-underline transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white min-[480px]:w-auto",
+                    children: copy.final.referralCta
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  "a",
+                  {
+                    href: whiteLabelRegisterUrl,
+                    onClick: () => trackPartnersEvent("partners_final_white_label_click"),
+                    className: "inline-flex min-h-[2.75rem] w-full items-center justify-center rounded-partners-btn bg-[#ff6b2c] px-5 py-2.5 font-partners text-[15px] font-semibold tracking-[-0.009em] text-white no-underline transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white min-[480px]:w-auto",
+                    children: copy.final.whiteLabelCta
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsx(
+                "a",
+                {
+                  href: loginUrl,
+                  onClick: () => trackPartnersEvent("partners_login_click", { source: "final" }),
+                  className: "partners-final__secondary mt-4 inline-flex min-h-[2.5rem] items-center justify-center font-partners text-[14px] font-semibold tracking-[-0.01em] no-underline underline-offset-[3px] transition hover:underline sm:text-[15px]",
+                  children: copy.final.loginLink
+                }
+              ),
+              /* @__PURE__ */ jsx("p", { className: "partners-final__footnote mt-4 font-partners text-[11px] leading-snug sm:mt-5 sm:text-partners-micro", children: copy.final.footnote })
+            ] })
+          ] }) }) })
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsx(PartnersFooter, {})
+  ] });
+}
 const HEADER_OFFSET = 84;
 function ScrollToHash() {
   const { pathname, hash } = useLocation();
@@ -10426,6 +15749,7 @@ function ScrollToHash() {
 }
 function AppRoutes() {
   return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(LangPathSync, {}),
     /* @__PURE__ */ jsx(ScrollToHash, {}),
     /* @__PURE__ */ jsxs(Routes, { children: [
       /* @__PURE__ */ jsx(Route, { path: "/", element: /* @__PURE__ */ jsx(LandingPage, {}) }),
@@ -10434,14 +15758,27 @@ function AppRoutes() {
       /* @__PURE__ */ jsx(Route, { path: "/plans", element: /* @__PURE__ */ jsx(PricingPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/contacts", element: /* @__PURE__ */ jsx(ContactsPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/sozdanie-sajtov", element: /* @__PURE__ */ jsx(WebsiteCreationPage, {}) }),
-      /* @__PURE__ */ jsx(Route, { path: "/avtomatizaciya-biznesa", element: /* @__PURE__ */ jsx(AutomationBusinessPage, {}) })
+      /* @__PURE__ */ jsx(Route, { path: "/avtomatizaciya-biznesa", element: /* @__PURE__ */ jsx(AutomationBusinessPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/partners", element: /* @__PURE__ */ jsx(PartnersPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: PARTNERS_PATH_RU, element: /* @__PURE__ */ jsx(PartnersPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: PARTNERS_PATH_EN, element: /* @__PURE__ */ jsx(PartnersPage, {}) })
     ] })
   ] });
 }
+function langFromUrl(url) {
+  try {
+    const path = (url.startsWith("http") ? new URL(url).pathname : url.split("?")[0]) || "/";
+    if (path === "/en" || path.startsWith("/en/")) return "en";
+    return "ru";
+  } catch {
+    return "ru";
+  }
+}
 function render(url) {
   const helmetContext = {};
+  const initialLang = langFromUrl(url);
   const appHtml = renderToString(
-    /* @__PURE__ */ jsx(React.StrictMode, { children: /* @__PURE__ */ jsx(HelmetProvider, { context: helmetContext, children: /* @__PURE__ */ jsx(LangProvider, { children: /* @__PURE__ */ jsx(MemoryRouter, { initialEntries: [url], children: /* @__PURE__ */ jsx(AppRoutes, {}) }) }) }) })
+    /* @__PURE__ */ jsx(React.StrictMode, { children: /* @__PURE__ */ jsx(HelmetProvider, { context: helmetContext, children: /* @__PURE__ */ jsx(LangProvider, { initialLang, children: /* @__PURE__ */ jsx(MemoryRouter, { initialEntries: [url], children: /* @__PURE__ */ jsx(AppRoutes, {}) }) }) }) })
   );
   const { helmet } = helmetContext;
   const headTags = [
