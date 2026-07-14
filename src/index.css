@@ -364,13 +364,16 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    max-width: 100%;
     border-radius: 999px;
     border: 1px solid rgba(255, 255, 255, 0.28);
     background: rgba(0, 0, 0, 0.22);
     padding: 0.55rem 0.9rem;
     font-size: 12px;
     font-weight: 600;
+    line-height: 1;
     color: rgba(255, 255, 255, 0.94);
+    white-space: nowrap;
     backdrop-filter: blur(6px);
   }
 
@@ -750,19 +753,21 @@
     }
 
     .compare-split__badge {
-      display: flex;
-      width: 100%;
+      display: inline-flex;
+      width: auto;
       max-width: 100%;
-      align-items: flex-start;
-      border-radius: 1rem;
-      padding: 0.8rem 1rem;
-      font-size: 13px;
-      line-height: 1.45;
+      align-items: center;
+      border-radius: 999px;
+      padding: 0.65rem 0.85rem;
+      font-size: clamp(10px, 2.8vw, 12px);
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
       text-align: left;
     }
 
     .compare-split__badge svg {
-      margin-top: 0.12rem;
+      margin-top: 0;
       flex-shrink: 0;
     }
 

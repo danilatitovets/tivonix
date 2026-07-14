@@ -9,9 +9,8 @@ import { LANDING_HEADLINE_CLASS } from "../../lib/landingLayout";
 import { TG_BOT_URL } from "../../constants/links";
 
 type Metric = {
-  badge: string;
-  metric: string;
-  label: string;
+  title: string;
+  text: string;
 };
 
 type OfferSlice = 1 | 2 | 3 | 4 | 5 | 6;
@@ -293,9 +292,8 @@ function OfferBlockCard({
 
 function MetricCard({
   slice,
-  badge,
-  metric,
-  label,
+  title,
+  text,
   className,
   bgReveal,
   textReveal,
@@ -312,12 +310,13 @@ function MetricCard({
       textReveal={textReveal}
       className={["min-h-[200px] sm:min-h-[220px] lg:min-h-0", className].filter(Boolean).join(" ")}
     >
-      <div className="text-[15px] font-semibold tracking-[-0.01em] text-white/90 sm:text-[16px]">{badge}</div>
-      <div className="ml-auto w-full min-w-0 shrink-0 text-right">
-        <p className="font-hero whitespace-nowrap text-[2rem] font-semibold leading-none tracking-[-0.04em] text-white sm:text-[2.5rem] lg:text-[2.75rem]">
-          {metric}
+      <div className="flex min-h-0 flex-1 flex-col justify-between gap-6">
+        <h3 className="font-hero text-[clamp(1.2rem,2.2vw,1.55rem)] font-semibold leading-[1.2] tracking-[-0.03em] text-white">
+          {title}
+        </h3>
+        <p className="text-pretty text-[14px] leading-[1.55] text-white/55 sm:text-[15px] sm:leading-[1.6]">
+          {text}
         </p>
-        <p className="mt-2 text-pretty text-[14px] leading-snug text-white/48 sm:text-[15px]">{label}</p>
       </div>
     </OfferBlockCard>
   );
@@ -325,18 +324,18 @@ function MetricCard({
 
 function FeaturedCard({
   badge,
-  metric,
-  metricLabel,
-  quote,
+  title,
+  text,
   linkText,
+  footer,
   className,
   visible,
 }: {
   badge: string;
-  metric: string;
-  metricLabel: string;
-  quote: string;
+  title: string;
+  text: string;
   linkText: string;
+  footer: string;
   className?: string;
   visible: boolean;
 }) {
@@ -351,15 +350,22 @@ function FeaturedCard({
         .join(" ")}
     >
       <OfferBlockCard slice={1} className="h-full lg:min-h-0">
-        <div className="text-[15px] font-semibold tracking-[-0.01em] text-white/90 sm:text-[16px]">{badge}</div>
+        <div className="text-[13px] font-semibold tracking-[0.14em] text-white/70 sm:text-[14px]">
+          {badge}
+        </div>
 
-        <div className="my-4 max-w-[52ch] flex-1 sm:my-5 lg:my-3">
-          <p className="text-[15px] leading-[1.7] text-white/58 sm:text-[16px]">{quote}</p>
+        <div className="my-4 max-w-[48ch] flex-1 sm:my-5 lg:my-4">
+          <h3 className="font-hero text-[clamp(1.35rem,2.8vw,1.85rem)] font-semibold leading-[1.2] tracking-[-0.03em] text-white">
+            {title}
+          </h3>
+          <p className="mt-3 text-[15px] leading-[1.65] text-white/62 sm:mt-3.5 sm:text-[16px] sm:leading-[1.7]">
+            {text}
+          </p>
           <a
             href={TG_BOT_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="group mt-5 inline-flex items-center gap-1.5 text-[14px] font-medium text-white/80 transition hover:text-[#FFAE66]"
+            className="group mt-5 inline-flex min-h-[2.5rem] items-center gap-1.5 text-[14px] font-medium text-white/85 transition hover:text-[#FFAE66]"
           >
             {linkText}
             <ArrowUpRight
@@ -370,12 +376,7 @@ function FeaturedCard({
           </a>
         </div>
 
-        <div>
-          <p className="font-hero whitespace-nowrap text-[2.25rem] font-semibold leading-none tracking-[-0.04em] text-white sm:text-[2.75rem] lg:text-[3.25rem]">
-            {metric}
-          </p>
-          <p className="mt-2 text-pretty text-[14px] leading-snug text-white/48 sm:text-[15px]">{metricLabel}</p>
-        </div>
+        <p className="text-[13px] leading-snug text-white/45 sm:text-[14px]">{footer}</p>
       </OfferBlockCard>
     </div>
   );
@@ -420,10 +421,10 @@ export default function MainOfferSection() {
               <div className="offer-mosaic__cell min-h-[220px] min-w-0 w-full sm:min-h-[240px] lg:col-span-8 lg:min-h-0">
                 <FeaturedCard
                   badge={copy.offer.featured.badge}
-                  metric={copy.offer.featured.metric}
-                  metricLabel={copy.offer.featured.metricLabel}
-                  quote={copy.offer.featured.quote}
+                  title={copy.offer.featured.title}
+                  text={copy.offer.featured.text}
                   linkText={copy.offer.featured.linkText}
+                  footer={copy.offer.featured.footer}
                   visible={topVisible[0]}
                 />
               </div>
@@ -450,7 +451,7 @@ export default function MainOfferSection() {
             <div className="offer-mosaic__row-bottom grid grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
               {bottomMetrics.map((item, i) => (
                 <div
-                  key={item.badge}
+                  key={item.title}
                   ref={(el) => {
                     bottomCardRefs.current[i] = el;
                   }}

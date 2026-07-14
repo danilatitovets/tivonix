@@ -338,8 +338,8 @@ export default function ComparisonSection() {
               </ul>
 
               <div className="compare-split__badge mt-5 sm:mt-6">
-                <Check size={14} strokeWidth={2.5} aria-hidden />
-                <span className="text-pretty leading-[1.45]">{copy.compare.tivonix.badge}</span>
+                <Check size={14} strokeWidth={2.5} aria-hidden className="shrink-0" />
+                <span className="whitespace-nowrap leading-none">{copy.compare.tivonix.badge}</span>
               </div>
 
               <ul className="compare-split__mobile-list mt-6 space-y-2.5 text-left sm:mt-5 sm:hidden">

@@ -166,18 +166,32 @@ const COPY_RU = {
     title: "Что мы делаем",
     featured: {
       badge: "TIVONIX",
-      metric: "6",
-      metricLabel: "направлений под задачу",
-      quote:
-        "Сайт под рекламу, Telegram-бот, CRM или мини-панель, личный кабинет, автоматизация и интеграции. Сначала разбираем, где теряются заявки — потом собираем то, что реально нужно.",
-      linkText: "Разобрать задачу",
+      title: "Собираем то, через что приходят заявки",
+      text: "Сайт, бот, CRM или кабинет — под вашу задачу. Сначала смотрим, где клиенты теряются, потом запускаем рабочую связку без лишнего.",
+      linkText: "Рассказать о задаче",
+      footer: "От идеи до запуска — с вами на каждом шаге",
     },
     metrics: [
-      { badge: "Срок", metric: "1–4", label: "недели до первого запуска" },
-      { badge: "Уведомления", metric: "< 1 мин", label: "заявка у команды в Telegram" },
-      { badge: "Статусы", metric: "CRM", label: "или таблица для команды" },
-      { badge: "Код", metric: "100%", label: "остаётся у вас" },
-      { badge: "Старт", metric: "MVP", label: "можно с простой версии" },
+      {
+        title: "Сайт под рекламу",
+        text: "Лендинг и форма: клиент оставляет заявку с рекламы или Instagram.",
+      },
+      {
+        title: "Telegram-бот",
+        text: "Заявка сразу у команды в Telegram — без поиска по чатам.",
+      },
+      {
+        title: "CRM или панель",
+        text: "Видно статусы: новая, в работе, записан, оплачен — и кто отвечает.",
+      },
+      {
+        title: "Личный кабинет",
+        text: "Клиенты и сотрудники работают в одном понятном интерфейсе.",
+      },
+      {
+        title: "Автоматизация",
+        text: "Меньше ручных таблиц и переписок — больше стабильного процесса.",
+      },
     ],
     ctaBar: {
       title: "Соберём систему, где заявки не теряются.",
@@ -665,18 +679,32 @@ const COPY_EN = {
     title: "What we build",
     featured: {
       badge: "TIVONIX",
-      metric: "6",
-      metricLabel: "directions for your task",
-      quote:
-        "Ad landing pages, Telegram bots, CRM or mini-panels, client areas, automation and integrations. First we map where leads get lost — then we build what you actually need.",
-      linkText: "Review your task",
+      title: "We build the tools that capture your leads",
+      text: "A website, bot, CRM, or client portal — matched to your task. First we find where leads get lost, then we ship a working setup without extra fluff.",
+      linkText: "Tell us about your task",
+      footer: "From idea to launch — with you at every step",
     },
     metrics: [
-      { badge: "Timeline", metric: "1–4", label: "weeks to first launch" },
-      { badge: "Alerts", metric: "< 1 min", label: "lead reaches the team in Telegram" },
-      { badge: "Statuses", metric: "CRM", label: "or a sheet for your team" },
-      { badge: "Code", metric: "100%", label: "stays with you" },
-      { badge: "Start", metric: "MVP", label: "you can begin with a simple version" },
+      {
+        title: "Ad landing pages",
+        text: "A landing page and form so leads come in from ads or Instagram.",
+      },
+      {
+        title: "Telegram bots",
+        text: "Leads reach the team in Telegram right away — no digging through chats.",
+      },
+      {
+        title: "CRM or admin panel",
+        text: "Clear statuses: new, in progress, booked, paid — and who owns each lead.",
+      },
+      {
+        title: "Client portals",
+        text: "Clients and your team work in one clear interface.",
+      },
+      {
+        title: "Automation",
+        text: "Fewer manual sheets and message threads — a steadier process.",
+      },
     ],
     ctaBar: {
       title: "We'll build a system where leads don't get lost.",
