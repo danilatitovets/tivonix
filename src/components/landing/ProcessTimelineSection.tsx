@@ -24,11 +24,11 @@ export default function ProcessTimelineSection() {
     >
       <Container>
         <Reveal>
-          <header className="max-w-[40rem]">
-            <h2 id="process-title" className={LANDING_HEADLINE_CLASS}>
+          <header className="mx-auto max-w-[40rem] text-center">
+            <h2 id="process-title" className={`${LANDING_HEADLINE_CLASS} text-center`}>
               {copy.process.title}
             </h2>
-            <p className="mt-4 text-[15px] leading-[1.65] text-white/50 sm:mt-5 sm:text-[16px]">
+            <p className="mx-auto mt-4 max-w-[36rem] text-[15px] leading-[1.65] text-white/50 sm:mt-5 sm:text-[16px]">
               {isRu
                 ? "От первой встречи до запуска — понятный путь без сюрпризов."
                 : "From the first brief to launch — a clear path without surprises."}
