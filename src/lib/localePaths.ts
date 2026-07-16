@@ -58,7 +58,7 @@ export function hreflangPair(canonicalPath: string): {
   en: string;
   xDefault: string;
 } {
-  const origin = "https://www.tivonix.tech";
+  const origin = "https://tivonix.tech";
   const clean = canonicalPath.replace(/\/+$/, "") || "/";
   const base = stripLangPrefix(clean.startsWith("http") ? new URL(clean).pathname : clean);
 
