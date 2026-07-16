@@ -9,6 +9,10 @@ import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
 import { findProjectBySlug } from "../data/projectsCatalog";
 import { cx, projectPreviewSrc, ProjectPreviewFrame, ProjectGalleryStrip, s } from "./projectBlocks";
+import { LeadCTAButton } from "../components/leads/LeadCTAButton";
+import { leadFormCopy } from "../i18n/leadFormCopy";
+import { trackProjectView } from "../lib/analytics";
+import { useEffect } from "react";
 
 const HEADER_H = 72;
 
@@ -63,29 +67,49 @@ function ExternalIcon({ className }: { className?: string }) {
   );
 }
 
+/** Инлайн: **важное** → жирный акцент, остальной текст спокойнее. */
+function RichText({ text }: { text: string }) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
+  return (
+    <>
+      {parts.map((part, idx) => {
+        if (part.startsWith("**") && part.endsWith("**")) {
+          return (
+            <strong key={idx} className="font-[700] text-white/[0.92]">
+              {part.slice(2, -2)}
+            </strong>
+          );
+        }
+        return <span key={idx}>{part}</span>;
+      })}
+    </>
+  );
+}
+
 function DetailBulletList({ items }: { items: string[] }) {
   return (
-    <ul className="mt-4 list-none space-y-3 rounded-2xl border border-white/[0.07] bg-white/[0.035] px-4 py-4 sm:px-5 sm:py-5">
+    <ul className="mt-4 list-none space-y-2.5">
       {items.map((item, idx) => (
         <li
           key={`${idx}-${item.slice(0, 48)}`}
-          className="flex gap-3 text-[15px] leading-[1.65] text-white/[0.76]"
+          className="text-[15px] leading-[1.7] text-white/[0.66] sm:text-[16px]"
         >
-          <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-white/55" />
-          <span>{item}</span>
+          <span className="mr-2.5 text-white/28 select-none" aria-hidden>
+            —
+          </span>
+          <RichText text={item} />
         </li>
       ))}
     </ul>
   );
 }
 
-/** Заголовки секций + абзацы + списки (как в каталоге). */
+/** Заголовки секций + абзацы + списки (как в каталоге). Без карточек и border. */
 function ProjectDetailBody({ text }: { text: string }) {
   const lines = text.split("\n").map((l) => l.trim());
   const nodes: ReactNode[] = [];
   let i = 0;
   let k = 0;
-  let sectionIndex = 0;
 
   const nextNonEmpty = (from: number) => {
     for (let j = from; j < lines.length; j++) {
@@ -104,12 +128,13 @@ function ProjectDetailBody({ text }: { text: string }) {
 
     // Intro meta: "Формат: …", "Срок: …"
     if (LEAD_META_RE.test(line)) {
+      const colon = line.indexOf(":");
+      const label = colon >= 0 ? line.slice(0, colon + 1) : line;
+      const value = colon >= 0 ? line.slice(colon + 1).trim() : "";
       nodes.push(
-        <p
-          key={k++}
-          className="mb-8 inline-flex max-w-full rounded-full border border-white/[0.1] bg-white/[0.05] px-4 py-2 text-[13px] font-medium leading-snug text-white/78"
-        >
-          {line}
+        <p key={k++} className="mb-9 text-[13px] leading-snug text-white/48">
+          <span className="font-[700] uppercase tracking-[0.14em] text-white/55">{label}</span>
+          {value ? <span className="ml-2 font-[500] normal-case tracking-normal text-white/72">{value}</span> : null}
         </p>
       );
       i++;
@@ -126,7 +151,7 @@ function ProjectDetailBody({ text }: { text: string }) {
         i++;
       }
       nodes.push(
-        <div key={k++} className="mb-8">
+        <div key={k++} className="mb-9">
           <DetailBulletList items={items} />
         </div>
       );
@@ -167,21 +192,23 @@ function ProjectDetailBody({ text }: { text: string }) {
         }
         if (para.length) {
           body = (
-            <p className="mt-4 text-[15px] leading-[1.7] text-white/[0.72] whitespace-pre-line sm:text-[16px]">
-              {para.join("\n")}
-            </p>
+            <div className="mt-3 space-y-3">
+              {para.map((p, idx) => (
+                <p
+                  key={idx}
+                  className="text-[15px] leading-[1.75] text-white/[0.66] sm:text-[16px]"
+                >
+                  <RichText text={p} />
+                </p>
+              ))}
+            </div>
           );
         }
       }
 
-      const first = sectionIndex === 0;
-      sectionIndex++;
       nodes.push(
-        <section
-          key={k++}
-          className={cx("mb-9 sm:mb-11", !first && "border-t border-white/[0.08] pt-8 sm:pt-10")}
-        >
-          <h2 className="text-[clamp(1.35rem,2.6vw,1.85rem)] font-[750] tracking-[-0.03em] leading-[1.15] text-white">
+        <section key={k++} className="mb-10 sm:mb-12">
+          <h2 className="text-[clamp(1.2rem,2.2vw,1.55rem)] font-[780] tracking-[-0.03em] leading-[1.15] text-white">
             {title}
           </h2>
           {body}
@@ -201,12 +228,16 @@ function ProjectDetailBody({ text }: { text: string }) {
     }
     if (para.length) {
       nodes.push(
-        <p
-          key={k++}
-          className="mb-7 text-[15px] leading-[1.7] text-white/[0.72] whitespace-pre-line last:mb-0 sm:text-[16px]"
-        >
-          {para.join("\n")}
-        </p>
+        <div key={k++} className="mb-8 space-y-3 last:mb-0">
+          {para.map((p, idx) => (
+            <p
+              key={idx}
+              className="text-[15px] leading-[1.75] text-white/[0.66] sm:text-[16px]"
+            >
+              <RichText text={p} />
+            </p>
+          ))}
+        </div>
       );
     }
   }
@@ -221,6 +252,10 @@ export default function ProjectDetailPage() {
 
   const project = useMemo(() => findProjectBySlug(slug, isRu), [slug, isRu]);
 
+  useEffect(() => {
+    if (project?.id) trackProjectView(project.id);
+  }, [project?.id]);
+
   const backLabel = isRu ? "Все проекты" : "All projects";
   const pageEyebrow = isRu ? "Проект" : "Project";
   const resultsLabel = isRu ? "Результаты" : "Outcomes";
@@ -231,8 +266,11 @@ export default function ProjectDetailPage() {
   const liveLabel = isRu ? "В продакшене" : "Live";
   const wipLabel = isRu ? "В разработке" : "In progress";
   const openSiteLabel = isRu ? "Открыть сайт" : "Open website";
-  const estimateLabel = isRu ? "Оценка за 24 часа" : "Estimate in 24h";
   const websiteSoonLabel = isRu ? "Сайт скоро" : "Website soon";
+  const roleLabel = isRu ? "Роль TIVONIX" : "TIVONIX role";
+  const roleValue = isRu
+    ? "Дизайн и разработка под ключ"
+    : "End-to-end design and development";
 
   if (!slug) return <Navigate to="/projects" replace />;
 
@@ -349,17 +387,19 @@ export default function ProjectDetailPage() {
                     </span>
                   </MetaRow>
 
+                  <MetaRow label={roleLabel}>
+                    <span>{roleValue}</span>
+                  </MetaRow>
+
                   <MetaRow label={tagsLabel}>
-                    <div className="flex flex-wrap gap-2">
-                      {project.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="inline-flex items-center rounded-md border border-white/[0.08] bg-white/[0.05] px-2.5 py-1 text-[12px] font-[500] text-white/70"
-                        >
+                    <span className="text-white/70">
+                      {project.tags.map((tag, i) => (
+                        <span key={tag}>
+                          {i > 0 ? <span className="mx-1.5 text-white/25">·</span> : null}
                           {tag}
                         </span>
                       ))}
-                    </div>
+                    </span>
                   </MetaRow>
 
                   {project.stack?.length ? (
@@ -393,19 +433,13 @@ export default function ProjectDetailPage() {
                     </div>
                   )}
 
-                  <a
-                    href="https://t.me/TIVONIX"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cx(
-                      "inline-flex h-11 w-full items-center justify-center rounded-lg px-5",
-                      "text-[14px] font-[800] text-black",
-                      "bg-[linear-gradient(180deg,#FFD7B0_0%,#FF9A3D_52%,#FF6A1A_100%)]",
-                      "hover:brightness-105 transition"
-                    )}
+                  <LeadCTAButton
+                    source="project_page"
+                    variant="primary"
+                    className="!h-11 w-full !rounded-lg !text-[14px] !font-[800]"
                   >
-                    {estimateLabel}
-                  </a>
+                    {leadFormCopy(lang).ctaDiscuss}
+                  </LeadCTAButton>
 
                   <p className="text-[12px] leading-relaxed text-white/38">
                     {isRu ? (
@@ -424,12 +458,12 @@ export default function ProjectDetailPage() {
               </div>
             </div>
 
-            <article className="mt-14 border-t border-white/[0.08] pt-12 lg:mt-16 lg:pt-14">
+            <article className="mt-14 max-w-[42rem] pt-2 lg:mt-16">
               <ProjectDetailBody text={details} />
 
               {project.outcomes?.length ? (
-                <div className="mt-4 border-t border-white/[0.08] pt-8 sm:pt-10">
-                  <h2 className="text-[clamp(1.35rem,2.6vw,1.85rem)] font-[750] tracking-[-0.03em] leading-[1.15] text-white">
+                <div className="mt-2 max-w-[42rem]">
+                  <h2 className="text-[clamp(1.2rem,2.2vw,1.55rem)] font-[780] tracking-[-0.03em] leading-[1.15] text-white">
                     {resultsLabel}
                   </h2>
                   <DetailBulletList items={project.outcomes} />
@@ -437,13 +471,16 @@ export default function ProjectDetailPage() {
               ) : null}
 
               {project.testimonial ? (
-                <figure className="mt-12 border-l-2 border-white/[0.12] pl-5">
-                  <blockquote className="text-[15px] leading-[1.65] text-white/[0.74]">
+                <figure className="mt-12 max-w-[42rem]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#FF9A3D]/85">
+                    {isRu ? "Отзыв · 5 из 5" : "Review · 5 of 5"}
+                  </p>
+                  <blockquote className="mt-3 text-[16px] leading-[1.7] text-white/[0.78] sm:text-[17px]">
                     “{project.testimonial.text}”
                   </blockquote>
-                  <figcaption className="mt-3 text-[13px] text-white/45">
-                    <span className="font-[650] text-white/70">{project.testimonial.name}</span>
-                    {" — "}
+                  <figcaption className="mt-4 text-[13px] text-white/40">
+                    <span className="font-[700] text-white/72">{project.testimonial.name}</span>
+                    <span className="mx-1.5 text-white/25">·</span>
                     {project.testimonial.role}
                   </figcaption>
                 </figure>

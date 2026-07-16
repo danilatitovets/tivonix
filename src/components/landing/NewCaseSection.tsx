@@ -107,11 +107,12 @@ export default function NewCaseSection() {
   const [smokeOn, setSmokeOn] = useState(false);
   const [coverZoom, setCoverZoom] = useState(1);
 
-  const spliton = buildProjects(isRu).find((p) => p.id === "spliton");
-  const subtitle = spliton ? (isRu ? spliton.subtitleRu : spliton.subtitleEn) : "";
-  const cover = spliton?.cover ?? "/images/project-priew/spliton.webp";
-  const domain = spliton?.domain?.replace(/^https?:\/\//, "") ?? "spliton.io/app";
-  const outcome = spliton?.outcomes?.[0] ?? "";
+  const featured = buildProjects(isRu).find((p) => p.id === "tivonixpanel");
+  const subtitle = featured ? (isRu ? featured.subtitleRu : featured.subtitleEn) : "";
+  const cover = featured?.cover ?? "/images/project-priew/tivonixpanel/prew.png";
+  const domain =
+    featured?.domain?.replace(/^https?:\/\//, "") ?? "tivonixpanel-production.up.railway.app/login";
+  const outcome = featured?.outcomes?.[0] ?? "";
 
   useEffect(() => {
     const el = sectionRef.current;
@@ -184,7 +185,7 @@ export default function NewCaseSection() {
             <h2 className="newCaseTitle mt-3">{copy.title}</h2>
           </div>
 
-          {spliton ? (
+          {featured ? (
             <article className="min-w-0">
               <div className="overflow-hidden rounded-[28px] border border-white/[0.09] bg-black/50 backdrop-blur-[2px]">
                 <div ref={coverWrapRef} className="relative aspect-[16/10] overflow-hidden bg-black">
@@ -211,7 +212,7 @@ export default function NewCaseSection() {
 
                   <img
                     src={cover}
-                    alt={spliton.title}
+                    alt={featured.title}
                     loading="lazy"
                     decoding="async"
                     draggable={false}
@@ -224,7 +225,7 @@ export default function NewCaseSection() {
                 <div className="border-t border-white/[0.07] p-5 sm:p-6">
                   <div className="flex flex-wrap items-center gap-2.5">
                     <h3 className="font-hero text-[22px] font-semibold tracking-[-0.03em] text-white sm:text-[26px]">
-                      {spliton.title}
+                      {featured.title}
                     </h3>
                     <span className="rounded-full bg-[#FF8A1E]/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#FFAE66]">
                       {copy.live}
@@ -243,14 +244,14 @@ export default function NewCaseSection() {
 
                   <div className="mt-6 flex flex-wrap items-center gap-3">
                     <Link
-                      to={`/projects/${spliton.id}`}
+                      to={`/projects/${featured.id}`}
                       className="inline-flex h-11 items-center justify-center rounded-full bg-white px-5 text-[14px] font-semibold text-black transition hover:bg-white/95"
                     >
                       {copy.cta}
                     </Link>
-                    {spliton.domain ? (
+                    {featured.domain ? (
                       <a
-                        href={spliton.domain}
+                        href={featured.domain}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex h-11 items-center justify-center rounded-full border border-white/20 px-5 text-[14px] font-semibold text-white/88 transition hover:border-white/35 hover:text-white"

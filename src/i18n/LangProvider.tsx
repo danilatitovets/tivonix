@@ -230,7 +230,7 @@ const DICT: Record<Lang, Dictionary> = {
       title: "NEW",
       live: "В продакшене",
       cta: "Смотреть кейс",
-      ctaExternal: "Открыть spliton.io",
+      ctaExternal: "Открыть панель",
     },
     orbit: {
       badge: "ADMIN PANEL • SaaS",
@@ -386,7 +386,7 @@ const DICT: Record<Lang, Dictionary> = {
       title: "NEW",
       live: "Live",
       cta: "View case study",
-      ctaExternal: "Open spliton.io",
+      ctaExternal: "Open panel",
     },
     orbit: {
       badge: "ADMIN PANEL • SaaS",

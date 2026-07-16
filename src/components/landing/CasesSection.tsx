@@ -5,8 +5,9 @@ import Reveal from "../ui/Reveal";
 import PillActionBar from "../ui/PillActionBar";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
+import { leadFormCopy } from "../../i18n/leadFormCopy";
 import { buildProjects } from "../../data/projectsCatalog";
-import { TG_BOT_URL } from "../../constants/links";
+import { useLeadForm } from "../leads/useLeadForm";
 
 function clamp01(v: number) {
   return Math.min(1, Math.max(0, v));
@@ -57,38 +58,48 @@ function useCaseCoverPan(blockRef: RefObject<HTMLDivElement | null>) {
 export default function CasesSection() {
   const { lang } = useLang();
   const copy = landingCopy(lang);
+  const leadCopy = leadFormCopy(lang);
+  const { openLeadForm } = useLeadForm();
   const isRu = lang === "ru";
   const [activeTab, setActiveTab] = useState("view");
   const caseBlockRef = useRef<HTMLDivElement>(null);
   const coverX = useCaseCoverPan(caseBlockRef);
 
-  const spliton = buildProjects(isRu).find((p) => p.id === "spliton");
-  if (!spliton) return null;
+  const featured = buildProjects(isRu).find((p) => p.id === "tivonixpanel");
+  if (!featured) return null;
 
-  const subtitle = isRu ? spliton.subtitleRu : spliton.subtitleEn;
+  const subtitle = isRu ? featured.subtitleRu : featured.subtitleEn;
+  const caseCopy = copy.cases.tivonixpanel;
 
   const caseTabs = useMemo(() => {
     const tabs = [
       {
         id: "view",
         label: copy.cases.viewCase,
-        to: `/projects/${spliton.id}`,
+        to: `/projects/${featured.id}`,
       },
     ];
-    if (spliton.domain) {
+    if (featured.domain) {
       tabs.push({
         id: "product",
         label: copy.cases.openProduct,
-        href: spliton.domain,
+        href: featured.domain,
       });
     }
     tabs.push({
       id: "cta",
-      label: copy.cases.cta,
-      href: TG_BOT_URL,
+      label: leadCopy.ctaProjects,
+      onClick: () => openLeadForm("cases"),
     });
     return tabs;
-  }, [copy.cases.cta, copy.cases.openProduct, copy.cases.viewCase, spliton.domain, spliton.id]);
+  }, [
+    copy.cases.openProduct,
+    copy.cases.viewCase,
+    featured.domain,
+    featured.id,
+    leadCopy.ctaProjects,
+    openLeadForm,
+  ]);
 
   return (
     <Section id="cases" className="scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24">
@@ -96,8 +107,8 @@ export default function CasesSection() {
           <Reveal className="case-split">
             <div className="case-split__visual">
               <img
-                src={spliton.cover ?? "/images/project-priew/spliton.webp"}
-                alt={spliton.title}
+                src={featured.cover ?? "/images/project-priew/tivonixpanel/prew.png"}
+                alt={featured.title}
                 loading="lazy"
                 decoding="async"
                 className="case-split__img"
@@ -113,7 +124,7 @@ export default function CasesSection() {
                 <span className="case-split__badge">{copy.cases.badge}</span>
 
                 <h2 className="mt-4 font-hero text-[clamp(1.75rem,4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white">
-                  {spliton.title}
+                  {featured.title}
                 </h2>
 
                 <p className="mt-3 text-[14px] leading-relaxed text-white/48 sm:text-[15px]">{subtitle}</p>
@@ -121,16 +132,16 @@ export default function CasesSection() {
                 <div className="mt-6 space-y-3 text-[13.5px] leading-relaxed text-white/62">
                   <p>
                     <span className="font-medium text-white/78">{isRu ? "Задача:" : "Need:"}</span>{" "}
-                    {copy.cases.spliton.need}
+                    {caseCopy.need}
                   </p>
                   <p>
                     <span className="font-medium text-white/78">{isRu ? "Сделали:" : "Built:"}</span>{" "}
-                    {copy.cases.spliton.done}
+                    {caseCopy.done}
                   </p>
                 </div>
 
                 <div className="case-split__chips mt-5 flex flex-wrap gap-2">
-                  {copy.cases.spliton.modules.map((m) => (
+                  {caseCopy.modules.map((m) => (
                     <span key={m} className="case-split__chip">
                       {m}
                     </span>

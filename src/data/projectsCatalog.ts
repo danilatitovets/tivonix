@@ -31,15 +31,100 @@ const HEADMIND_DOMAIN = "https://headmind.ru/";
 const GIFTSNIPER_DOMAIN = "https://t.me/GiftSniperTonBot";
 const SLOTTY_DOMAIN = "https://slotty.of.by/book";
 const SPLITON_DOMAIN = "https://spliton.io/app";
+const TIVONIXPANEL_DOMAIN = "https://tivonixpanel-production.up.railway.app/login";
 
 /** Публичные кейсы на /projects (остальные скрыты, но остаются в каталоге) */
-export const PUBLIC_PROJECT_IDS = ["spliton", "slotty", "giftsniper"] as const;
+export const PUBLIC_PROJECT_IDS = [
+  "tivonixpanel",
+  "spliton",
+  "slotty",
+  "giftsniper",
+  "headmind",
+] as const;
 
 const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/r${i + 1}.webp`);
 const SPLITON_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/spliton/g${i + 1}.webp`);
+const TIVONIXPANEL_GALLERY = [
+  "/images/project-priew/tivonixpanel/1.png",
+  "/images/project-priew/tivonixpanel/2.png",
+  "/images/project-priew/tivonixpanel/3.png",
+];
 
 function buildAllProjects(isRu: boolean): Project[] {
   return [
+      // 0) TIVONIX PANEL — партнёрская панель
+      {
+        id: "tivonixpanel",
+        title: "Tivonix Panel",
+        subtitleRu:
+          "Партнёрская панель TIVONIX: сделки, статусы, проекты и выплаты — один кабинет вместо хаоса в чатах и таблицах.",
+        subtitleEn:
+          "TIVONIX partner panel: deals, statuses, projects and payouts — one dashboard instead of chaos in chats and spreadsheets.",
+        detailsRu:
+          "Формат: партнёрская панель / SaaS-кабинет\n\n" +
+          "Зачем это\n" +
+          "Партнёрство ломается не на деньгах — на **прозрачности**. Где заявка? На каком этапе сделка? Когда выплата? Без кабинета всё это живёт в Telegram и Excel.\n\n" +
+          "Мы собрали **рабочий кабинет** для агентств, фрилансеров и студий: регистрация, вход, статусы, проекты и выплаты в одном месте.\n\n" +
+          "Как работает\n" +
+          "Партнёр заходит в панель, выбирает модель — **Referral** или **White-label** — и после модерации получает доступ.\n" +
+          "Дальше всё по делу: передал задачу → видит статус → понимает следующий шаг → отслеживает выплату. Без «напомни, пожалуйста» и ночных скринов из чатов.\n\n" +
+          "Что внутри\n" +
+          "• **Логин и онбординг** — быстрый вход, без лишних экранов\n" +
+          "• **Дашборд сделок** — статусы видно сразу\n" +
+          "• **Referral / White-label** — две модели в одном продукте\n" +
+          "• **Проекты и выплаты** — трекинг без таблиц на стороне\n" +
+          "• UI под ежедневную работу, а не под презентацию\n\n" +
+          "Что сделали\n" +
+          "Спроектировали структуру под реальный партнёрский процесс. Собрали сценарии регистрации, логина и работы со сделками. Довели UI: сетка, иерархия, статусы, **пустые состояния**. Запустили в продакшен на Railway.\n\n" +
+          "Итог\n" +
+          "Живая панель, куда партнёры **заходят сами** — ведут сделки и видят выплаты. Не презентация «как будет», а продукт, который уже в работе.\n",
+        detailsEn:
+          "Format: partner panel / SaaS dashboard\n\n" +
+          "Why it matters\n" +
+          "Partnerships break on **transparency**, not money. Where is the request? What stage is the deal? When is the payout? Without a panel, all of that lives in chats and spreadsheets.\n\n" +
+          "We built a **working cabinet** for agencies, freelancers and studios: registration, login, statuses, projects and payouts in one place.\n\n" +
+          "How it works\n" +
+          "A partner opens the panel, picks **Referral** or **White-label**, and gets access after moderation.\n" +
+          "Then the loop is simple: submit a task → see the status → know the next step → track the payout. No “please remind me” and late-night chat screenshots.\n\n" +
+          "What’s inside\n" +
+          "• **Login and onboarding** — fast entry, no fluff screens\n" +
+          "• **Deals dashboard** — statuses visible at a glance\n" +
+          "• **Referral / White-label** — two models in one product\n" +
+          "• **Projects and payouts** — tracking without side spreadsheets\n" +
+          "• UI built for daily work, not for a deck\n\n" +
+          "What we delivered\n" +
+          "Designed the structure around a real partner workflow. Built registration, login and deal flows. Crafted UI hierarchy, statuses and **empty states**. Shipped to production on Railway.\n\n" +
+          "Outcome\n" +
+          "A live panel partners **actually open** — they run deals and see payouts. Not a “how it will look” demo, but a product already in use.\n",
+        domain: TIVONIXPANEL_DOMAIN,
+        status: "live",
+        tags: ["SaaS", "Admin Panel", "Partners", "Dashboard", "UI/UX"],
+        cover: "/images/project-priew/tivonixpanel/prew.png",
+        gallery: TIVONIXPANEL_GALLERY,
+        outcomes: [
+          isRu
+            ? "**Кабинет** с логином и онбордингом"
+            : "**Dashboard** with login and onboarding",
+          isRu
+            ? "Сделки, проекты и **выплаты** в одном месте"
+            : "Deals, projects and **payouts** in one place",
+          isRu
+            ? "Модели **Referral** и **White-label**"
+            : "**Referral** and **White-label** models",
+          isRu
+            ? "Продукт **в продакшене** на Railway"
+            : "Product **live** on Railway",
+        ],
+        stack: ["React", "TypeScript", "Node.js", "PostgreSQL", "Railway"],
+        testimonial: {
+          name: isRu ? "Артём К." : "Artem K.",
+          role: isRu ? "Один из основателей TIVONIX" : "Co-founder, TIVONIX",
+          text: isRu
+            ? "Панель закрыла то, из‑за чего раньше всё сыпалось: статусы жили в чатах, выплаты — в таблицах. Сейчас открыл кабинет — и сразу видно, где сделка и что дальше. Рабочий инструмент, без лишнего."
+            : "The panel fixed what kept breaking: statuses lived in chats, payouts in spreadsheets. Now you open the dashboard and see where the deal is and what’s next. A real tool, no fluff.",
+        },
+      },
+
       // 1) LABEL0S — 3 days
       {
         id: "labelos",
@@ -224,46 +309,36 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Corporate website: services structure, team credibility and B2B lead-gen.",
         detailsRu:
           "Формат: корпоративный сайт / презентация услуг\n\n" +
-          "Цель\n" +
-          "• Упаковать экспертизу и сделать сайт, который объясняет «кто мы», «что делаем» и приводит заявки.\n\n" +
+          "Задача\n" +
+          "B2B-компании часто «знают всё про себя», но сайт не умеет это сказать. Нужно было **упаковать экспертизу**: кто мы, что делаем, почему можно доверить — и довести до заявки.\n\n" +
           "Что сделали\n" +
-          "• Собрали информационную архитектуру: услуги → подход → кейсы → команда → контакт\n" +
-          "• Упростили формулировки и усилили доверие: акценты на опыте, ролях, результатах\n" +
-          "• Собрали верстку: чистая типографика, адаптив, скорость загрузки\n" +
-          "• Настроили CTA и точки захвата (контакты/формы)\n\n" +
-          "Заказчики\n" +
-          "• Евгений Беликов — основатель и генеральный директор ООО «Хэдмайнд»\n" +
-          "• Виталий Петровский — партнёр, соучредитель ООО «Хэдмайнд»\n",
+          "Собрали маршрут: услуги → подход → кейсы → команда → контакт. Упростили формулировки, усилили доверие через роли и опыт. Чистая типографика, адаптив, скорость. **CTA** на местах, где человек уже готов написать.\n\n" +
+          "Итог\n" +
+          "Сайт стал понятнее клиенту и лучше ведёт к заявке — без перегруза и без «обо всём и ни о чём».\n",
         detailsEn:
           "Format: corporate website / services showcase\n\n" +
-          "Goal\n" +
-          "• Package expertise into a clear website that explains who they are, what they do, and generates leads.\n\n" +
+          "The challenge\n" +
+          "B2B teams often know their craft — the site just doesn’t say it. We needed to **package expertise**: who they are, what they do, why trust them — and move to a lead.\n\n" +
           "What we did\n" +
-          "• Built information architecture: services → approach → cases → team → contact\n" +
-          "• Improved clarity + trust: experience, roles, outcomes\n" +
-          "• Clean responsive layout, fast loading\n" +
-          "• CTA and lead capture points (contacts/forms)\n\n" +
-          "Clients\n" +
-          "• Evgeniy Belikov — Founder & CEO\n" +
-          "• Vitaliy Petrovskiy — Partner & Co-founder\n",
+          "Built the path: services → approach → cases → team → contact. Sharpened copy, strengthened trust via roles and experience. Clean type, responsive layout, speed. **CTAs** where people are already ready to write.\n\n" +
+          "Outcome\n" +
+          "The site is clearer for clients and drives leads better — no clutter, no “about everything and nothing”.\n",
         domain: HEADMIND_DOMAIN,
         status: "live",
         tags: ["B2B", "Website", "UI/UX", "Structure", "Conversion"],
         cover: "/images/project-priew/headmind.webp",
         outcomes: [
-          isRu ? "Понятная упаковка услуг и подхода" : "Clear services & approach packaging",
-          isRu ? "Усиление доверия через команду и структуру" : "Stronger trust via team + structure",
-          isRu ? "CTA и точки лид-генерации" : "CTA and lead capture points",
+          isRu ? "**Понятная** упаковка услуг и подхода" : "**Clear** services & approach packaging",
+          isRu ? "Доверие через **команду** и структуру" : "Trust via **team** and structure",
+          isRu ? "**CTA** и точки лид-генерации" : "**CTA** and lead capture points",
         ],
         stack: ["HTML", "CSS", "JavaScript (ES6)"],
         testimonial: {
-          name: isRu
-            ? "Евгений Беликов / Виталий Петровский"
-            : "Evgeniy Belikov / Vitaliy Petrovskiy",
-          role: isRu ? "ООО «Хэдмайнд»" : "Headmind",
+          name: isRu ? "Евгений Беликов" : "Evgeniy Belikov",
+          role: isRu ? "CEO, ООО «Хэдмайнд»" : "CEO, Headmind",
           text: isRu
-            ? "Собрали структуру и подачу так, что сайт стал понятнее для клиентов и лучше ведёт к заявке."
-            : "The structure and messaging became clearer, and the site now drives leads more effectively.",
+            ? "Структуру и подачу собрали так, что клиентам стало понятнее, кто мы и чем занимаемся. Сайт спокойно отправляем на первом касании — заявки пошли ровнее."
+            : "They shaped the structure and messaging so clients finally understand who we are and what we do. We send the site on first contact without hesitation — leads came in more steadily.",
         },
       },
 
@@ -277,70 +352,55 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Telegram bot for TON NFT and Telegram Gifts valuation using market data: traits, listings, comparables, and pricing guidance.",
         detailsRu:
           "Формат: Telegram-бот / аналитический продукт\n\n" +
-          "Цель\n" +
-          "• Помочь пользователю быстро понять, сколько может стоить NFT или Telegram Gift без ручного сравнения десятков объявлений.\n\n" +
-          "Как это работает\n" +
-          "• Пользователь отправляет ссылку на Getgems, Fragment, Tonviewer или NFT address\n" +
-          "• GiftSniper анализирует объект и возвращает данные в понятном формате\n\n" +
-          "Что показывает бот\n" +
-          "• Трейты и характеристики NFT или Telegram Gift\n" +
+          "Зачем\n" +
+          "Оценить NFT или Telegram Gift вручную — это **десятки вкладок** и сравнение «на глаз». GiftSniper даёт ориентир по рынку за один запрос в Telegram.\n\n" +
+          "Как работает\n" +
+          "Кидаешь ссылку (Getgems, Fragment, Tonviewer) или адрес — бот возвращает трейты, листинг, аналоги и **ориентир цены**. Без кошелька и без seed-фразы: это аналитика, не биржа.\n\n" +
+          "Что показывает\n" +
+          "• Трейты и характеристики объекта\n" +
           "• Текущий листинг\n" +
-          "• Похожие объявления на рынке\n" +
-          "• Ориентировочную цену продажи\n" +
-          "• Данные для более быстрого решения по продаже\n\n" +
-          "Безопасность и позиционирование\n" +
-          "• GiftSniper не покупает и не продаёт активы за пользователя\n" +
-          "• Не подключается к кошельку и не запрашивает seed-фразу, private key или доступ к аккаунту\n" +
-          "• Это аналитический инструмент для оценки и сравнения объекта с рынком\n\n" +
-          "Что сделали в проекте\n" +
-          "• Продумали логику работы бота и структуру сценариев\n" +
-          "• Реализовали обработку ссылок и показ ключевых рыночных данных\n" +
-          "• Собрали удобный пользовательский путь внутри Telegram\n\n" +
-          "Результат\n" +
-          "• GiftSniper показывает, как Telegram-бот может быть полноценным продуктом с практической пользой для TON, NFT и Telegram Gifts\n" +
-          "• Твой помощник по первому заработку\n" +
-          "• Проект создан командой TIVONIX\n",
+          "• Похожие объявления\n" +
+          "• Ориентир цены продажи\n" +
+          "• Данные, чтобы быстрее решить — продавать или ждать\n\n" +
+          "Итог\n" +
+          "Полноценный продукт внутри Telegram с понятной пользой для TON, NFT и Gifts. **Помощник по первому заработку** — проект команды TIVONIX.\n",
         detailsEn:
           "Format: Telegram bot / analytics product\n\n" +
-          "Goal\n" +
-          "• Help users quickly estimate NFT or Telegram Gift value without manually comparing dozens of listings.\n\n" +
+          "Why\n" +
+          "Pricing an NFT or Telegram Gift by hand means **dozens of tabs** and gut-feel comparison. GiftSniper returns market guidance in one Telegram request.\n\n" +
           "How it works\n" +
-          "• A user sends a Getgems, Fragment, Tonviewer link, or an NFT address\n" +
-          "• GiftSniper analyzes the asset and returns key data in a clear format\n\n" +
-          "What the bot provides\n" +
-          "• Traits and asset characteristics\n" +
-          "• Current listing data\n" +
-          "• Comparable market offers\n" +
-          "• Estimated selling price range\n" +
-          "• Decision-support data for faster pricing\n\n" +
-          "Safety and positioning\n" +
-          "• GiftSniper does not buy or sell assets on behalf of users\n" +
-          "• No wallet connection and no request for seed phrase, private key, or account access\n" +
-          "• It is an analytics assistant for valuation and market comparison\n\n" +
-          "What we delivered\n" +
-          "• Bot logic and scenario architecture\n" +
-          "• Link parsing and market-data presentation flow\n" +
-          "• A smooth user journey inside Telegram\n\n" +
+          "Send a link (Getgems, Fragment, Tonviewer) or an address — the bot returns traits, listing, comps and a **price range**. No wallet, no seed phrase: analytics, not a marketplace.\n\n" +
+          "What it shows\n" +
+          "• Traits and asset details\n" +
+          "• Current listing\n" +
+          "• Comparable offers\n" +
+          "• Selling price guidance\n" +
+          "• Data to decide faster — sell or wait\n\n" +
           "Outcome\n" +
-          "• GiftSniper demonstrates how a Telegram bot can be a full product with real utility for TON, NFT, and Telegram Gifts users\n" +
-          "• Your first-earnings assistant\n" +
-          "• Project by TIVONIX team\n",
+          "A full product inside Telegram with real utility for TON, NFT and Gifts. Your **first-earnings assistant** — built by the TIVONIX team.\n",
         domain: GIFTSNIPER_DOMAIN,
         status: "live",
         tags: ["Telegram Bot", "TON", "NFT", "Analytics", "Market Data"],
         cover: "/images/project-priew/giftsniper.webp",
         outcomes: [
           isRu
-            ? "Оценка NFT и Gifts по данным рынка в одном окне"
-            : "NFT and Gifts valuation from market data in one flow",
+            ? "Оценка NFT и Gifts по **рынку** в одном запросе"
+            : "NFT and Gifts valuation from the **market** in one request",
           isRu
-            ? "Быстрый анализ: трейты, листинги, аналоги, ориентир цены"
-            : "Fast analysis: traits, listings, comparables, pricing guidance",
+            ? "Трейты, листинги, аналоги, **ориентир цены**"
+            : "Traits, listings, comps, **price guidance**",
           isRu
-            ? "Без подключения кошелька и доступа к аккаунту"
-            : "No wallet connection or account-access risk",
+            ? "Без кошелька и доступа к аккаунту"
+            : "No wallet or account-access risk",
         ],
         stack: ["Telegram Bot API", "TON", "NFT Data", "Parser", "Analytics"],
+        testimonial: {
+          name: isRu ? "Дмитрий Р." : "Dmitry R.",
+          role: isRu ? "Пользователь TON / Telegram Gifts" : "TON / Telegram Gifts user",
+          text: isRu
+            ? "Раньше цену ловил вручную по вкладкам — долго и неточно. Сейчас кидаю ссылку в бота и за минуту вижу ориентир по рынку. Без кошелька и лишних рисков — удобно."
+            : "I used to chase prices across tabs — slow and messy. Now I send a link to the bot and get market guidance in a minute. No wallet, no extra risk — just useful.",
+        },
       },
 
       // 7) SLOTTY — платформа онлайн-записи к мастерам (MVP)
@@ -352,71 +412,39 @@ function buildAllProjects(isRu: boolean): Project[] {
         subtitleEn:
           "Online booking platform for masters, studios and services: pick a specialist, see open slots, book, get reminders and visit history in one app.",
         detailsRu:
-          "Формат: SaaS / marketplace / сервис онлайн-записи\n\n" +
-          "Домен\n" +
-          "• slotty.of.by/book\n\n" +
-          "Статус\n" +
-          "• В продакшене\n\n" +
-          "Цель\n" +
-          "• Помочь пользователю быстро найти подходящего мастера или студию, выбрать услугу, увидеть свободное время и записаться онлайн без звонков, переписок и лишних шагов.\n\n" +
-          "Как это работает\n" +
-          "• Пользователь выбирает категорию услуги: маникюр, парикмахер, косметология, брови, массаж и другие направления.\n" +
-          "• Дальше он видит мастеров, карточки услуг, цены, свободные слоты и может оформить запись прямо в приложении.\n" +
-          "• Мастер получает заявку, управляет расписанием, услугами, профилем и клиентами в личном кабинете.\n\n" +
-          "Что показывает сервис\n" +
+          "Формат: SaaS / marketplace / онлайн-запись\n\n" +
+          "Проблема\n" +
+          "Запись к мастеру до сих пор часто живёт в **Direct и WhatsApp**: «есть на завтра?», «а через час?», «забыл напомнить». Slotty убирает этот хаос.\n\n" +
+          "Как работает\n" +
+          "Клиент выбирает категорию, мастера, услугу и **свободный слот** — и записывается онлайн. Мастер в кабинете ведёт расписание, услуги, клиентов и статусы.\n\n" +
+          "Что внутри\n" +
           "• Каталог услуг и категорий\n" +
           "• Карточки мастеров и студий\n" +
           "• Свободные даты и время\n" +
-          "• Онлайн-запись на услугу\n" +
-          "• Статус записи\n" +
-          "• Напоминания пользователю\n" +
-          "• Историю записей\n" +
-          "• Личный кабинет мастера\n\n" +
-          "Безопасность и позиционирование\n" +
-          "Slotty не заменяет мастера и не вмешивается в услугу. Сервис помогает удобно соединить клиента и специалиста, упростить запись и убрать хаос из переписок. Авторизация может работать через Telegram, Google и другие способы входа, чтобы пользователю было удобно зайти с любого устройства.\n\n" +
-          "Что сделали в проекте\n" +
-          "• Продумали структуру сервиса для клиентов и мастеров\n" +
-          "• Собрали пользовательский путь от выбора услуги до записи\n" +
-          "• Разработали каталог категорий, услуг и мастеров\n" +
-          "• Сделали личный кабинет мастера\n" +
-          "• Реализовали запись на свободное время\n" +
-          "• Добавили основу для напоминаний и управления заявками\n" +
-          "• Подготовили продукт к развитию в полноценный marketplace\n\n" +
-          "Результат\n" +
-          "Slotty показывает, как локальный сервис записи может стать полноценным продуктом для мастеров, студий и клиентов. Пользователь быстро находит услугу и записывается, а мастер получает удобный инструмент для управления своим временем, услугами и клиентами.\n",
+          "• Онлайн-запись и статус\n" +
+          "• Напоминания и история\n" +
+          "• **Кабинет мастера**\n\n" +
+          "Позиционирование\n" +
+          "Slotty не заменяет мастера. Он соединяет клиента и специалиста и убирает переписки. Вход через Telegram, Google и другие способы — с любого устройства.\n\n" +
+          "Итог\n" +
+          "Локальный сервис записи, который ощущается как **полноценный продукт**: быстро для клиента, удобно для мастера, готов расти в marketplace.\n",
         detailsEn:
-          "Format: SaaS / marketplace / online booking service\n\n" +
-          "Domain\n" +
-          "• slotty.of.by/book\n\n" +
-          "Status\n" +
-          "• Live\n\n" +
-          "Goal\n" +
-          "• Help users quickly find the right master or studio, pick a service, see open time slots and book online — without calls, endless chats or extra steps.\n\n" +
+          "Format: SaaS / marketplace / online booking\n\n" +
+          "The problem\n" +
+          "Booking a master still often lives in **DMs and WhatsApp**: “free tomorrow?”, “in an hour?”, “forgot to remind”. Slotty removes that chaos.\n\n" +
           "How it works\n" +
-          "• The user picks a service category: nails, hair, skincare, brows, massage and more.\n" +
-          "• They browse masters, service cards, prices and open slots, then book in the app.\n" +
-          "• The master receives the request and manages schedule, services, profile and clients in a personal dashboard.\n\n" +
-          "What the service shows\n" +
-          "• Service and category catalog\n" +
+          "The client picks a category, master, service and an **open slot** — then books online. The master runs schedule, services, clients and statuses in a dashboard.\n\n" +
+          "What’s inside\n" +
+          "• Services and categories\n" +
           "• Master and studio cards\n" +
-          "• Available dates and times\n" +
-          "• Online booking for a service\n" +
-          "• Booking status\n" +
-          "• User reminders\n" +
-          "• Visit history\n" +
-          "• Master dashboard\n\n" +
-          "Safety and positioning\n" +
-          "Slotty does not replace the master or interfere with the service itself. It connects client and specialist, simplifies booking and removes chaos from messaging. Sign-in can work via Telegram, Google and other methods so users can access the product from any device.\n\n" +
-          "What we delivered\n" +
-          "• Service structure for clients and masters\n" +
-          "• User journey from service pick to confirmed booking\n" +
-          "• Category, service and master catalog\n" +
-          "• Master personal area\n" +
-          "• Booking for open time slots\n" +
-          "• Foundation for reminders and request management\n" +
-          "• Product groundwork to grow into a full marketplace\n\n" +
+          "• Open dates and times\n" +
+          "• Online booking and status\n" +
+          "• Reminders and history\n" +
+          "• **Master dashboard**\n\n" +
+          "Positioning\n" +
+          "Slotty doesn’t replace the master. It connects client and specialist and kills the chat clutter. Sign-in via Telegram, Google and more — from any device.\n\n" +
           "Outcome\n" +
-          "Slotty shows how a local booking service can become a full product for masters, studios and clients. Users find a service and book fast; masters get a practical tool to manage time, services and clients.\n",
+          "A local booking service that feels like a **full product**: fast for clients, useful for masters, ready to grow into a marketplace.\n",
         domain: SLOTTY_DOMAIN,
         status: "live",
         tags: ["Marketplace", "Booking", "Beauty", "SaaS", "Mobile App"],
@@ -424,17 +452,17 @@ function buildAllProjects(isRu: boolean): Project[] {
         gallery: SLOTTY_GALLERY,
         outcomes: [
           isRu
-            ? "Онлайн-запись к мастерам без лишних переписок"
-            : "Online booking for masters without endless messaging",
+            ? "Онлайн-запись **без** переписок"
+            : "Online booking **without** endless messaging",
           isRu
-            ? "Каталог услуг, мастеров и свободного времени в одном месте"
-            : "Services, masters and open slots in one place",
+            ? "Услуги, мастера и **слоты** в одном месте"
+            : "Services, masters and **slots** in one place",
           isRu
-            ? "Удобный кабинет для мастера и клиента"
-            : "Convenient areas for master and client",
+            ? "Кабинеты для мастера и клиента"
+            : "Areas for master and client",
           isRu
-            ? "Быстрый путь от выбора услуги до подтверждённой записи"
-            : "Fast path from service pick to confirmed booking",
+            ? "Путь от выбора до **подтверждённой** записи"
+            : "Path from pick to **confirmed** booking",
         ],
         stack: [
           "React",
@@ -446,6 +474,13 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Calendar",
           "Notifications",
         ],
+        testimonial: {
+          name: isRu ? "Анастасия М." : "Anastasia M.",
+          role: isRu ? "Мастер маникюра, Минск" : "Nail artist, Minsk",
+          text: isRu
+            ? "Клиенты сами выбирают свободное время и записываются — меньше переписок и забытых слотов. Мне удобно вести расписание в кабинете, а не в чатах."
+            : "Clients pick an open slot and book themselves — fewer chats and forgotten appointments. I manage the schedule in the dashboard instead of messaging apps.",
+        },
       },
 
       // 8) SPLITON — финтех-платформа для музыкальных активов
@@ -458,57 +493,40 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Fintech platform for music assets: release catalog, share purchases, secondary market, wallet, payouts, legal consents and admin panel.",
         detailsRu:
           "Срок: 8–12 недель\n\n" +
-          "Домен\n" +
-          "• spliton.io/app\n\n" +
-          "Статус\n" +
-          "• В продакшене\n\n" +
-          "Цель\n" +
-          "• Создать сложную финтех-платформу для инвестирования в музыкальные активы, где пользователь может просматривать каталог релизов, покупать доли, отслеживать баланс, участвовать во вторичном рынке и получать выплаты.\n" +
-          "• Проект требовал не просто интерфейс, а полноценную продуктовую систему: пользовательскую часть, финансовые сценарии, юридические согласия, админку, статусы, роли, безопасность, локализацию и проверку бизнес-логики.\n\n" +
-          "Что сделали\n" +
-          "• Сформировали продуктовую структуру: публичные страницы, авторизация, личный кабинет, каталог активов, покупка, кошелёк, вывод, вторичный рынок, профиль, согласия, новости, поддержка и админ-панель.\n" +
-          "• Разработали каталог релизов с карточками, финансовыми параметрами, доступностью и переходом к покупке.\n" +
-          "• Реализовали сценарий покупки долей: доступно, недоступно, требуется согласие, ошибка, подтверждение, обработка и результат.\n" +
-          "• Собрали кошелёк и финансовые экраны: баланс, история, депозит, вывод и понятные состояния операций.\n" +
-          "• Разработали вторичный рынок: фильтры, сортировка, статусы, поиск, покупка, продажа, ордера и серверные фильтры.\n" +
-          "• Продумали юридические consent-flow для критических финансовых действий.\n" +
-          "• Создали админ-панель: финансы, новости, документы, реквизиты, статусы, проверки и история изменений.\n" +
-          "• Реализовали модуль юридических документов: версии, активные редакции, статусы и фиксация согласий пользователя.\n" +
-          "• Проработали модуль платёжных реквизитов: пул, предпросмотр, история, мультиязычные тексты и API для депозита.\n" +
-          "• Подключили локализацию RU / EN / ES / PT: статусы, ошибки, кнопки и пустые состояния без жёстко прошитых строк.\n" +
-          "• Улучшили UI/UX финансовых сценариев: confirm → processing → result.\n" +
-          "• Оптимизировали производительность: lazy-блоки, словари, маршруты и поведение в dev/prod.\n" +
-          "• Провели аудит бизнес-логики: покупка, продажа, listing, вывод, согласия, роли, статусы и краевые случаи.\n" +
-          "• Провели техническую стабилизацию: e2e, i18n gate, consent-flow, мобильные слои и throttling.\n\n" +
-          "Особенности\n" +
-          "Spliton — один из самых объёмных типов проектов: маркетплейс, финансы, личный кабинет, админ-панель, юридическая логика, локализация, вторичный рынок и множество состояний. Главная сложность — связать дизайн, бизнес-логику, роли, API, базу данных, безопасность и реальные сценарии пользователя в одну стабильную систему.\n\n" +
-          "Пример сценария\n" +
-          "Пользователь заходит на платформу, проходит авторизацию, открывает каталог музыкальных активов, выбирает релиз, смотрит параметры, принимает необходимые юридические условия и покупает доли. После покупки актив появляется в кабинете. Пользователь следит за балансом, историей операций и выплатами, а при необходимости выставляет доли на вторичный рынок. Администратор управляет документами, новостями, реквизитами, статусами и финансовыми разделами через админ-панель.\n",
+          "Масштаб\n" +
+          "Это не лендинг и не «админка на коленке». Spliton — **финтех-платформа** под инвестирование в музыкальные активы: каталог, покупка долей, кошелёк, вторичный рынок, согласия, выплаты и админка.\n\n" +
+          "Сложность\n" +
+          "Нужна была система, где дизайн, роли, API, база, безопасность и реальные сценарии **сходятся в одну логику** — без дыр на confirm → processing → result.\n\n" +
+          "Что собрали\n" +
+          "• Каталог релизов с финансовыми параметрами\n" +
+          "• Покупка долей со всеми критичными состояниями\n" +
+          "• **Кошелёк**: баланс, депозит, вывод, история\n" +
+          "• Вторичный рынок: фильтры, ордера, статусы\n" +
+          "• Юридические **consent-flow**\n" +
+          "• Админ-панель: финансы, документы, реквизиты, аудит\n" +
+          "• i18n **RU / EN / ES / PT**\n\n" +
+          "Сценарий\n" +
+          "Пользователь входит, выбирает релиз, принимает условия, покупает доли. Актив появляется в кабинете. Дальше — баланс, выплаты, вторичный рынок. Админ ведёт документы и финансы.\n\n" +
+          "Итог\n" +
+          "Платформа **в продакшене**: тяжёлый продукт, который держит и UI, и бизнес-логику, и compliance.\n",
         detailsEn:
           "Timeline: 8–12 weeks\n\n" +
-          "Domain\n" +
-          "• spliton.io/app\n\n" +
-          "Status\n" +
-          "• Live\n\n" +
-          "Goal\n" +
-          "• Build a fintech platform for investing in music assets: catalog, share purchases, balance tracking, secondary market and payouts.\n" +
-          "• Deliver a full product system — not just UI: user area, finance flows, legal consents, admin, roles, security, i18n and business-logic validation.\n\n" +
-          "What we delivered\n" +
-          "• Product structure: public pages, auth, user dashboard, asset catalog, purchase, wallet, withdrawals, secondary market, profile, consents, news, support and admin.\n" +
-          "• Release catalog with cards, financial parameters and purchase paths.\n" +
-          "• Share purchase flow with all critical states and consent gates.\n" +
-          "• Wallet and finance screens with clear operation states.\n" +
-          "• Secondary market with server-side filters, orders and statuses.\n" +
-          "• Legal consent flows for critical financial actions.\n" +
-          "• Admin panel for finance, news, documents, requisites and audits.\n" +
-          "• Legal documents module with versions and user acceptance tracking.\n" +
-          "• Payment requisites module for deposit scenarios.\n" +
-          "• Localization RU / EN / ES / PT across UI and errors.\n" +
-          "• Performance and navigation improvements; e2e and business-logic stabilization.\n\n" +
-          "Highlights\n" +
-          "Spliton combines marketplace, finance, user dashboard, admin, legal logic, i18n and secondary market in one high-complexity product.\n\n" +
-          "Example flow\n" +
-          "A user signs in, browses the catalog, reviews a release, accepts required legal terms, buys shares and tracks balance, payouts and secondary listings. Admins manage documents, news, requisites and platform status.\n",
+          "Scale\n" +
+          "Not a landing page and not a “quick admin”. Spliton is a **fintech platform** for music-asset investing: catalog, share purchases, wallet, secondary market, consents, payouts and admin.\n\n" +
+          "Complexity\n" +
+          "We needed a system where design, roles, API, database, security and real flows **lock into one logic** — no holes on confirm → processing → result.\n\n" +
+          "What we built\n" +
+          "• Release catalog with financial parameters\n" +
+          "• Share purchase with all critical states\n" +
+          "• **Wallet**: balance, deposit, withdrawal, history\n" +
+          "• Secondary market: filters, orders, statuses\n" +
+          "• Legal **consent flows**\n" +
+          "• Admin: finance, documents, requisites, audit\n" +
+          "• i18n **RU / EN / ES / PT**\n\n" +
+          "Flow\n" +
+          "A user signs in, picks a release, accepts terms, buys shares. The asset lands in the dashboard. Then balance, payouts, secondary market. Admins run documents and finance.\n\n" +
+          "Outcome\n" +
+          "Platform is **live**: a heavy product that holds UI, business logic and compliance together.\n",
         domain: SPLITON_DOMAIN,
         status: "live",
         tags: [
@@ -528,26 +546,26 @@ function buildAllProjects(isRu: boolean): Project[] {
         gallery: SPLITON_GALLERY,
         outcomes: [
           isRu
-            ? "Полноценная финтех-платформа для музыкальных активов"
-            : "Full fintech platform for music assets",
+            ? "**Финтех-платформа** для музыкальных активов"
+            : "**Fintech platform** for music assets",
           isRu
-            ? "Каталог релизов и сценарий покупки долей"
-            : "Release catalog and share purchase flow",
+            ? "Каталог и покупка **долей**"
+            : "Catalog and **share** purchase flow",
           isRu
-            ? "Вторичный рынок с фильтрами, ордерами и статусами"
-            : "Secondary market with filters, orders and statuses",
+            ? "Вторичный рынок с ордерами и статусами"
+            : "Secondary market with orders and statuses",
           isRu
-            ? "Кошелёк, баланс, депозит и вывод средств"
-            : "Wallet, balance, deposit and withdrawal flows",
+            ? "**Кошелёк**, депозит и вывод"
+            : "**Wallet**, deposit and withdrawal",
           isRu
-            ? "Юридические согласия и админ-панель"
-            : "Legal consents and admin panel",
+            ? "Юр. согласия и **админ-панель**"
+            : "Legal consents and **admin panel**",
           isRu
-            ? "Мультиязычный интерфейс RU / EN / ES / PT"
-            : "Multilingual UI RU / EN / ES / PT",
+            ? "i18n RU / EN / ES / PT"
+            : "i18n RU / EN / ES / PT",
           isRu
-            ? "Платформа запущена и доступна в продакшене"
-            : "Platform is live in production",
+            ? "В **продакшене**"
+            : "**Live** in production",
         ],
         stack: [
           "Next.js",
@@ -561,6 +579,13 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Playwright",
           "i18n",
         ],
+        testimonial: {
+          name: isRu ? "Илья С." : "Ilya S.",
+          role: isRu ? "Product owner" : "Product owner",
+          text: isRu
+            ? "Сложный продукт: финансы, согласия, вторичный рынок, админка. Довели до продакшена без сюрпризов на критичных сценариях. Коммуникация была по делу, правки вносили быстро."
+            : "A complex build: finance, consents, secondary market, admin. Shipped to production without surprises on critical flows. Clear communication, fast iterations.",
+        },
       },
   ];
 }
