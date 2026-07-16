@@ -10,17 +10,27 @@ const SERVER_ENTRY_PATH = path.join(DIST_SERVER_DIR, "entry-server.js");
 
 const routes = [
   "/",
+  "/en",
   "/sozdanie-sajtov",
   "/avtomatizaciya-biznesa",
   "/projects",
+  "/en/projects",
   "/plans",
   "/contacts",
+  "/en/contacts",
   "/partners",
   "/ru/partners",
   "/en/partners",
   "/projects/giftsniper",
   "/projects/slotty",
   "/projects/spliton",
+  "/projects/headmind",
+  "/projects/tivonixpanel",
+  "/en/projects/giftsniper",
+  "/en/projects/slotty",
+  "/en/projects/spliton",
+  "/en/projects/headmind",
+  "/en/projects/tivonixpanel",
 ];
 
 function outputFileForRoute(route) {

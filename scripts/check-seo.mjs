@@ -1,4 +1,4 @@
-import { access, readFile } from "node:fs/promises";
+﻿import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 
 const requiredHtmlFiles = [
@@ -14,6 +14,7 @@ const requiredHtmlFiles = [
   "dist/projects/giftsniper/index.html",
   "dist/projects/slotty/index.html",
   "dist/projects/spliton/index.html",
+  "dist/projects/tivonixpanel/index.html",
 ];
 
 const checks = [
@@ -25,7 +26,7 @@ const checks = [
       "Кому помогаем",
       "Что мы делаем",
       "Новый кейс",
-      "Spliton",
+      "Tivonix Panel",
       "Частые вопросы",
       "Расскажите, что хотите запустить или автоматизировать",
       "https://tivonix.tech/",
@@ -43,7 +44,16 @@ const checks = [
   },
   {
     file: "dist/projects/index.html",
-    phrases: ["Проекты", "GiftSniper", "Slotty", "Spliton"],
+    phrases: ["Проекты", "Tivonix Panel", "GiftSniper", "Slotty", "Spliton"],
+  },
+  {
+    file: "dist/projects/tivonixpanel/index.html",
+    phrases: [
+      "Tivonix Panel",
+      "партнёрская панель",
+      "https://tivonix.tech/projects/tivonixpanel",
+      "tivonixpanel-production.up.railway.app",
+    ],
   },
   {
     file: "dist/projects/spliton/index.html",
