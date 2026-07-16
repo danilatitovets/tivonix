@@ -3,6 +3,8 @@ import Footer from "../components/landing/Footer";
 import Container from "../components/ui/Container";
 import Section from "../components/ui/Section";
 import { SEO } from "../components/SEO";
+import { LeadCTAButton } from "../components/leads/LeadCTAButton";
+import { trackTelegramDirectClick } from "../lib/analytics";
 import { useLang } from "../i18n/LangProvider";
 
 export default function WebsiteCreationPage() {
@@ -36,6 +38,20 @@ export default function WebsiteCreationPage() {
                 ? "Проектируем, дизайним, разрабатываем и запускаем сайты в одном процессе: без хаоса и с понятным результатом для заявок и продаж."
                 : "We design, develop and launch websites in one clear process focused on leads and sales."}
             </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <LeadCTAButton source="service_websites" variant="primary" size="lg">
+                {isRu ? "Оставить заявку" : "Send a brief"}
+              </LeadCTAButton>
+              <a
+                href="https://t.me/TIVONIX"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackTelegramDirectClick()}
+                className="inline-flex h-12 items-center justify-center rounded-full bg-white/[0.08] px-7 text-[14px] font-bold text-white/90 ring-1 ring-white/12 transition hover:bg-white/[0.12]"
+              >
+                Telegram
+              </a>
+            </div>
           </Container>
         </Section>
 
@@ -66,7 +82,7 @@ export default function WebsiteCreationPage() {
             <h2 className="text-[24px] sm:text-[32px] font-[800] tracking-tight text-white">Этапы, сроки и оценка</h2>
             <p className="mt-4 max-w-4xl text-white/74 leading-7">
               Бриф и структура, дизайн ключевых блоков, разработка, правки, деплой и поддержка. Типовой срок: от нескольких
-              дней для лендинга до нескольких недель для MVP. Первичную оценку даём после короткого созвона или сообщения в Telegram.
+              дней для лендинга до нескольких недель для MVP. Первичную оценку даём после короткого брифа или созвона.
             </p>
           </Container>
         </Section>
@@ -75,23 +91,27 @@ export default function WebsiteCreationPage() {
           <Container>
             <h2 className="text-[24px] sm:text-[32px] font-[800] tracking-tight text-white">FAQ и следующий шаг</h2>
             <p className="mt-4 max-w-4xl text-white/74 leading-7">
-              Частые вопросы по процессу и стоимости уже собраны в разделе FAQ на главной. Напишите в Telegram или перейдите
-              в контакты, чтобы получить расчёт по вашему проекту.
+              Частые вопросы по процессу и стоимости уже собраны в разделе FAQ на главной. Оставьте заявку на сайте или
+              перейдите в контакты — ответим с ориентиром по сроку и формату.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <a
-                href="https://t.me/TIVONIX"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-11 items-center justify-center rounded-xl px-6 text-[14px] font-[750] text-black bg-[linear-gradient(180deg,#FFD7B0_0%,#FF9A3D_52%,#FF6A1A_100%)]"
-              >
-                Telegram
-              </a>
+              <LeadCTAButton source="service_websites" variant="primary" size="lg">
+                {isRu ? "Оставить заявку" : "Send a brief"}
+              </LeadCTAButton>
               <a
                 href="/contacts"
                 className="inline-flex h-11 items-center justify-center rounded-xl px-6 text-[14px] font-[650] text-white border border-white/15 bg-white/[0.04]"
               >
-                Контакты
+                {isRu ? "Контакты" : "Contacts"}
+              </a>
+              <a
+                href="https://t.me/TIVONIX"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackTelegramDirectClick()}
+                className="inline-flex h-11 items-center justify-center rounded-xl px-6 text-[14px] font-[650] text-white/80 border border-white/10 bg-transparent"
+              >
+                Telegram
               </a>
             </div>
           </Container>

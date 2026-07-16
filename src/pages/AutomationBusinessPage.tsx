@@ -31,6 +31,8 @@ import Footer from "../components/landing/Footer";
 import Container from "../components/ui/Container";
 import Section from "../components/ui/Section";
 import { SEO } from "../components/SEO";
+import { useLeadForm } from "../components/leads/useLeadForm";
+import { trackTelegramBotClick, trackTelegramDirectClick } from "../lib/analytics";
 import {
   AUTOMATION_SIGNS_IMG_DIR,
   getAutomationPageCopy,
@@ -222,6 +224,7 @@ function DotList({
 
 function AutomationHero({ t }: { t: AutomationPageCopy }) {
   const [b1, b2, b3] = t.hero.badges;
+  const { openLeadForm } = useLeadForm();
 
   return (
     <Section className="relative overflow-x-hidden overflow-y-visible pb-16 pt-0 sm:pb-20">
@@ -239,17 +242,25 @@ function AutomationHero({ t }: { t: AutomationPageCopy }) {
               </p>
 
               <div className="relative z-10 mx-auto mt-5 flex flex-wrap justify-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => openLeadForm("service_automation")}
+                  className="inline-flex h-9 min-w-0 shrink-0 items-center justify-center rounded-full bg-white px-4 text-[13px] font-semibold tracking-tight text-neutral-900 shadow-sm transition hover:bg-white/92 active:translate-y-px sm:px-5 sm:text-[14px]"
+                >
+                  {t.hero.microCtaTelegram}
+                </button>
                 <a
                   href={TG_BOT_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex h-9 min-w-0 shrink-0 items-center justify-center rounded-full bg-white px-4 text-[13px] font-semibold tracking-tight text-neutral-900 shadow-sm transition hover:bg-white/92 active:translate-y-px sm:px-5 sm:text-[14px]"
+                  onClick={() => trackTelegramBotClick()}
+                  className="inline-flex h-9 min-w-0 shrink-0 items-center justify-center rounded-full bg-white/[0.12] px-4 text-[13px] font-semibold tracking-tight text-white/90 ring-1 ring-white/15 transition hover:bg-white/[0.18] active:translate-y-px sm:px-5 sm:text-[14px]"
                 >
-                  {t.hero.microCtaTelegram}
+                  Telegram
                 </a>
                 <a
                   href={`mailto:${AUTOMATION_CONTACT_EMAIL}?subject=${encodeURIComponent(t.hero.microCtaEmailSubject)}`}
-                  className="inline-flex h-9 min-w-0 shrink-0 items-center justify-center rounded-full bg-white px-4 text-[13px] font-semibold tracking-tight text-neutral-900 shadow-sm transition hover:bg-white/92 active:translate-y-px sm:px-5 sm:text-[14px]"
+                  className="inline-flex h-9 min-w-0 shrink-0 items-center justify-center rounded-full bg-white/[0.12] px-4 text-[13px] font-semibold tracking-tight text-white/90 ring-1 ring-white/15 transition hover:bg-white/[0.18] active:translate-y-px sm:px-5 sm:text-[14px]"
                 >
                   {t.hero.microCtaEmail}
                 </a>
@@ -276,14 +287,13 @@ function AutomationHero({ t }: { t: AutomationPageCopy }) {
 
               <div className="mt-5 flex justify-center px-4 sm:absolute sm:inset-x-0 sm:bottom-6 sm:mt-0">
                 <div className="flex flex-wrap justify-center gap-3">
-                  <a
-                    href="https://t.me/TIVONIX"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
+                    onClick={() => openLeadForm("service_automation")}
                     className="inline-flex h-[56px] items-center justify-center rounded-2xl bg-[#FF8A1E] px-7 text-[16px] font-[780] tracking-[-0.01em] text-black shadow-[0_18px_70px_rgba(0,0,0,.55)] transition hover:opacity-95 active:translate-y-px sm:h-[60px] sm:px-9 sm:text-[17px]"
                   >
                     {t.hero.ctaDiscuss}
-                  </a>
+                  </button>
 
                   <Link
                     to="/projects"
@@ -696,6 +706,7 @@ function RealExamples({ t }: { t: AutomationPageCopy }) {
 }
 
 function ResultsSection({ t }: { t: AutomationPageCopy }) {
+  const { openLeadForm } = useLeadForm();
   const items = t.results.items;
   const count = items.length;
 
@@ -734,14 +745,13 @@ function ResultsSection({ t }: { t: AutomationPageCopy }) {
             </div>
 
             <div className="flex justify-center bg-black/35 px-5 py-6 sm:px-8 sm:py-7">
-              <a
-                href="https://t.me/TIVONIX"
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={() => openLeadForm("service_automation")}
                 className="inline-flex h-[50px] w-full max-w-[min(100%,20rem)] items-center justify-center rounded-2xl bg-[#FF8A1E] px-6 text-[15px] font-[780] tracking-[-0.01em] text-black shadow-[0_14px_44px_rgba(255,106,40,0.28)] transition hover:opacity-95 active:translate-y-px sm:h-[54px] sm:max-w-none sm:px-10 sm:text-[16px]"
               >
                 {t.results.cta}
-              </a>
+              </button>
             </div>
           </article>
         </div>
@@ -897,6 +907,7 @@ function AutomationFAQ({ t }: { t: AutomationPageCopy }) {
 }
 
 function AutomationCTA({ t }: { t: AutomationPageCopy }) {
+  const { openLeadForm } = useLeadForm();
   return (
     <Section className="py-16 sm:py-20">
       <Container>
@@ -920,19 +931,19 @@ function AutomationCTA({ t }: { t: AutomationPageCopy }) {
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <a
-                href="https://t.me/TIVONIX"
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={() => openLeadForm("service_automation")}
                 className="inline-flex h-[54px] items-center justify-center rounded-2xl bg-[#FF8A1E] px-6 text-[15px] font-[780] tracking-[-0.01em] text-black shadow-[0_18px_70px_rgba(0,0,0,.55)] transition hover:opacity-95 active:translate-y-px sm:h-[58px] sm:px-8 sm:text-[16px]"
               >
                 {t.ctaBlock.primary}
-              </a>
+              </button>
 
               <a
                 href="https://t.me/TIVONIX"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackTelegramDirectClick()}
                 className="inline-flex h-[54px] items-center justify-center rounded-2xl bg-white/[0.08] px-6 text-[15px] font-[780] text-white/90 transition hover:bg-white/[0.13] active:translate-y-px sm:h-[58px] sm:px-7 sm:text-[16px]"
               >
                 {t.ctaBlock.secondary}

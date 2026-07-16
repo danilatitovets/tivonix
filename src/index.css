@@ -30,6 +30,42 @@
     overscroll-behavior-y: none;
   }
   body { margin: 0; background: #000000; color: rgba(255,255,255,0.92); overscroll-behavior-y: none; }
+
+  /*
+   * Telegram in-app browser: sticky + vh/dvh tracks fight the collapsing chrome
+   * and cause left/up/down scroll jumps. Stabilize layout + overscroll.
+   */
+  html.tg-webview,
+  html.tg-webview body,
+  html.tg-webview #root {
+    height: auto;
+    min-height: 100%;
+    overscroll-behavior-y: auto;
+    overscroll-behavior-x: none;
+    overflow-x: hidden;
+    touch-action: pan-y;
+  }
+  html.tg-webview {
+    /* Prefer stable small viewport units when chrome resizes mid-scroll */
+    --tivonix-tg-stable-vh: 1svh;
+  }
+
+  /* Kill sticky scroll-scrub tracks before React hydrates/adapts */
+  html.tg-webview .hero-scroll-track {
+    height: auto !important;
+  }
+  html.tg-webview .hero-scroll-sticky {
+    position: relative !important;
+  }
+  html.tg-webview .ai-premium-pin,
+  html.tg-webview .ai-premium-anim-pin {
+    height: auto !important;
+  }
+  html.tg-webview .ai-premium-section {
+    position: relative !important;
+    height: auto !important;
+    min-height: 100svh;
+  }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   /* в•¤Р‘в•Ёв•‘в•¤Рђв•¤Р›в•¤Р’в•¤Рњ в•¤Р‘в•Ёв•‘в•¤Рђв•Ёв•›в•Ёв•—в•Ёв•—в•Ёв–’в•Ёв–‘в•¤Рђ, в•Ёв•њв•Ёв•› в•Ёв•›в•¤Р‘в•¤Р’в•Ёв–‘в•Ёв–“в•Ёв••в•¤Р’в•¤Рњ в•Ёв”ђв•¤Рђв•Ёв•›в•Ёв•‘в•¤Рђв•¤Р“в•¤Р’в•Ёв•‘в•¤Р“ */

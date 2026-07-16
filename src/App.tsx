@@ -1,7 +1,15 @@
 import { useEffect } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { initGoogleAds, trackAdsConversion } from "./lib/ads";
+import {
+  trackEmailClick,
+  trackTelegramBotClick,
+  trackTelegramDirectClick,
+} from "./lib/analytics";
 import { AppRoutes } from "./AppRoutes";
+import { LeadFormProvider } from "./components/leads/LeadFormProvider";
+import ConsentBanner from "./components/ConsentBanner";
+import ScrollDepthTracker from "./components/ScrollDepthTracker";
 
 function closestAnchor(el: EventTarget | null): HTMLAnchorElement | null {
   let e = el as HTMLElement | null;
@@ -18,6 +26,20 @@ function isContactLink(href: string): boolean {
   return false;
 }
 
+function trackContactChannel(href: string) {
+  if (href.startsWith("mailto:")) {
+    trackEmailClick();
+    return;
+  }
+  if (/tivonixtech_leads_bot/i.test(href)) {
+    trackTelegramBotClick();
+    return;
+  }
+  if (/t\.me\/TIVONIX|telegram\.me\/TIVONIX/i.test(href)) {
+    trackTelegramDirectClick();
+  }
+}
+
 export default function App() {
   useEffect(() => {
     initGoogleAds();
@@ -29,6 +51,8 @@ export default function App() {
       if (!a) return;
       const href = a.getAttribute("href") ?? "";
       if (!href || !isContactLink(href)) return;
+
+      trackContactChannel(href);
 
       const newTab = (a.getAttribute("target") ?? "").toLowerCase() === "_blank";
       if (newTab) {
@@ -58,14 +82,22 @@ export default function App() {
       fetch("/api/visit", { method: "GET", keepalive: true }).finally(() => {
         try {
           sessionStorage.setItem(key, today);
-        } catch {}
+        } catch {
+          /* ignore */
+        }
       });
-    } catch {}
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   return (
     <BrowserRouter>
-      <AppRoutes />
+      <LeadFormProvider>
+        <AppRoutes />
+        <ConsentBanner />
+        <ScrollDepthTracker />
+      </LeadFormProvider>
     </BrowserRouter>
   );
 }

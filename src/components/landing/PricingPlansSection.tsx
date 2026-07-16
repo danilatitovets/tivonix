@@ -14,7 +14,7 @@ import {
   type ComparisonCell,
   type PlanId,
 } from "../../lib/pricingData";
-import { buildHelpPlanTelegramUrl, buildPricingPlanTelegramUrl } from "../../constants/links";
+import { useLeadForm } from "../leads/useLeadForm";
 
 const COMPARE_LOGO = "/images/tivonix-logo-white.webp";
 
@@ -51,10 +51,6 @@ function PlanCtaButton({
       {children}
     </button>
   );
-}
-
-function openPlanTelegram(planId: PlanId) {
-  window.open(buildPricingPlanTelegramUrl(planId), "_blank", "noopener,noreferrer");
 }
 
 function ComparisonValue({
@@ -345,6 +341,7 @@ function CompactPlanCard({
 export default function PricingPlansSection({ className }: { className?: string }) {
   const { lang } = useLang();
   const copy = pricingCopy(lang);
+  const { openLeadForm } = useLeadForm();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(COMPARISON_GROUPS.map((g) => [g.id, true]))
   );
@@ -363,7 +360,11 @@ export default function PricingPlansSection({ className }: { className?: string 
   };
 
   const handlePlanCta = (planId: PlanId) => {
-    openPlanTelegram(planId);
+    openLeadForm("pricing", { planId });
+  };
+
+  const handleHelpCta = () => {
+    openLeadForm("pricing_help");
   };
 
   return (
@@ -577,14 +578,13 @@ export default function PricingPlansSection({ className }: { className?: string 
 
         <Reveal delay={170} className="mt-10 sm:mt-12">
           <div className="pricing-help-band">
-            <a
-              href={buildHelpPlanTelegramUrl()}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="pricing-help-band__link"
+            <button
+              type="button"
+              onClick={handleHelpCta}
+              className="pricing-help-band__link w-full cursor-pointer border-0 bg-transparent"
             >
               {copy.footer.helpCta}
-            </a>
+            </button>
           </div>
         </Reveal>
 

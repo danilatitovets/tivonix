@@ -1,5 +1,5 @@
 // src/pages/ProjectDetailPage.tsx
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import type { ReactNode } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import Container from "../components/ui/Container";
@@ -9,7 +9,9 @@ import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
 import { findProjectBySlug } from "../data/projectsCatalog";
 import { cx, projectPreviewSrc, ProjectPreviewFrame, ProjectGalleryStrip, s } from "./projectBlocks";
-import { TG_CHANNEL_URL } from "../constants/links";
+import { LeadCTAButton } from "../components/leads/LeadCTAButton";
+import { leadFormCopy } from "../i18n/leadFormCopy";
+import { trackProjectView } from "../lib/analytics";
 
 const HEADER_H = 72;
 
@@ -249,6 +251,10 @@ export default function ProjectDetailPage() {
 
   const project = useMemo(() => findProjectBySlug(slug, isRu), [slug, isRu]);
 
+  useEffect(() => {
+    if (project?.id) trackProjectView(project.id);
+  }, [project?.id]);
+
   const backLabel = isRu ? "Все проекты" : "All projects";
   const pageEyebrow = isRu ? "Проект" : "Project";
   const resultsLabel = isRu ? "Результаты" : "Outcomes";
@@ -260,7 +266,6 @@ export default function ProjectDetailPage() {
   const wipLabel = isRu ? "В разработке" : "In progress";
   const openSiteLabel = isRu ? "Открыть сайт" : "Open website";
   const websiteSoonLabel = isRu ? "Сайт скоро" : "Website soon";
-  const estimateLabel = isRu ? "Обсудить проект" : "Discuss the project";
   const roleLabel = isRu ? "Роль TIVONIX" : "TIVONIX role";
   const roleValue = isRu
     ? "Дизайн и разработка под ключ"
@@ -427,19 +432,13 @@ export default function ProjectDetailPage() {
                     </div>
                   )}
 
-                  <a
-                    href={TG_CHANNEL_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cx(
-                      "inline-flex h-11 w-full items-center justify-center rounded-lg px-5",
-                      "text-[14px] font-[800] text-black",
-                      "bg-[linear-gradient(180deg,#FFD7B0_0%,#FF9A3D_52%,#FF6A1A_100%)]",
-                      "hover:brightness-105 transition"
-                    )}
+                  <LeadCTAButton
+                    source="project_page"
+                    variant="primary"
+                    className="!h-11 w-full !rounded-lg !text-[14px] !font-[800]"
                   >
-                    {estimateLabel}
-                  </a>
+                    {leadFormCopy(lang).ctaDiscuss}
+                  </LeadCTAButton>
 
                   <p className="text-[12px] leading-relaxed text-white/38">
                     {isRu ? (

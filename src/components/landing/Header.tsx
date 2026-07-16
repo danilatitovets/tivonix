@@ -2,12 +2,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Container from "../ui/Container";
-import { TelegramLink } from "./LandingCTA";
 import { useLang } from "../../i18n/LangProvider";
 import { isPartnersPath, partnersPath } from "../../i18n/partnersPaths";
-import { TG_BOT_URL } from "../../constants/links";
 import { partnerPanelLoginUrl } from "../../lib/partnerPanel";
 import { trackPartnersEvent } from "../../lib/ads";
+import { LeadCTAButton } from "../leads/LeadCTAButton";
+import { leadFormCopy } from "../../i18n/leadFormCopy";
 
 // Десктоп-режим (бургер скрыт, показывается полоса навигации) с xl (>=1280).
 
@@ -342,14 +342,13 @@ export default function Header() {
   const ariaMenu = isRu ? "Меню" : "Menu";
 
   const onPartners = isPartnersPath(location.pathname);
+  const leadCopy = leadFormCopy(lang);
   const ctaTop = onPartners
     ? isRu
       ? "Войти в панель"
       : "Log in to panel"
-    : isRu
-      ? "Обсудить проект"
-      : "Discuss the project";
-  const ctaHref = onPartners ? partnerPanelLoginUrl() : TG_BOT_URL;
+    : leadCopy.ctaDiscuss;
+  const ctaHref = onPartners ? partnerPanelLoginUrl() : "#";
   const onPartnersCtaClick = onPartners
     ? () => trackPartnersEvent("partners_login_click", { source: "header" })
     : undefined;
@@ -436,9 +435,9 @@ export default function Header() {
                       {ctaTop}
                     </a>
                   ) : (
-                    <TelegramLink href={TG_BOT_URL} variant="white" className="h-11 px-7 text-[14px]">
+                    <LeadCTAButton source="header" variant="white" className="h-11 px-7 text-[14px]">
                       {ctaTop}
-                    </TelegramLink>
+                    </LeadCTAButton>
                   )}
                 </div>
 
@@ -454,9 +453,9 @@ export default function Header() {
                         {ctaTop}
                       </a>
                     ) : (
-                      <TelegramLink href={TG_BOT_URL} variant="white" className="h-11 px-6 text-[13px]">
+                      <LeadCTAButton source="header" variant="white" className="h-11 px-6 text-[13px]">
                         {ctaTop}
-                      </TelegramLink>
+                      </LeadCTAButton>
                     )}
                   </div>
 
@@ -656,13 +655,15 @@ export default function Header() {
                   {ctaTop}
                 </a>
               ) : (
-                <TelegramLink
-                  href={TG_BOT_URL}
+                <LeadCTAButton
+                  source="header"
                   variant="plain"
                   className="h-12 w-full rounded-xl border border-white/[0.08] text-[14px]"
+                  aria-label={leadCopy.ctaDiscuss}
+                  onClick={() => setOpen(false)}
                 >
-                  {isRu ? "Обсудить проект" : "Contact sales"}
-                </TelegramLink>
+                  {leadCopy.ctaDiscuss}
+                </LeadCTAButton>
               )}
               <Link
                 to={onPartners ? `${partnersPath(lang)}#partner-formats` : "/plans"}

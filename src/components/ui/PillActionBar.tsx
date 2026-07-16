@@ -66,7 +66,15 @@ function PillActionItemView({
   }
 
   return (
-    <button type="button" onClick={() => onSelect(item.id)} className={className} data-active={active ? "" : undefined}>
+    <button
+      type="button"
+      onClick={() => {
+        item.onClick?.();
+        onSelect(item.id);
+      }}
+      className={className}
+      data-active={active ? "" : undefined}
+    >
       <span className="leading-none">{item.label}</span>
     </button>
   );

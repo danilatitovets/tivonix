@@ -3,8 +3,11 @@ import Section from "../ui/Section";
 import ScrollFingerHint from "../ui/ScrollFingerHint";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
+import { leadFormCopy } from "../../i18n/leadFormCopy";
 import { HERO_SCROLL_HEADLINE_CLASS, HERO_SCROLL_LEAD_CLASS } from "../../lib/landingLayout";
+import { isTelegramWebView } from "../../lib/telegramWebView";
 import LangToggle from "./LangToggle";
+import { LeadCTAButton } from "../leads/LeadCTAButton";
 
 const HERO_IMAGES = [
   "/images/hero-stage-1.webp",
@@ -12,6 +15,7 @@ const HERO_IMAGES = [
   "/images/hero-stage-3.webp",
 ] as const;
 
+/** Use svh — dvh resizes mid-scroll in TG / mobile chrome and jumps sticky tracks */
 const SCROLL_TRACK_VH = 240;
 
 type HeroScrollStage = {
@@ -114,10 +118,12 @@ function HeroCard({
   progress,
   stages,
   isRu,
+  ctaLabel,
 }: {
   progress: number;
   stages: ReadonlyArray<HeroScrollStage>;
   isRu: boolean;
+  ctaLabel: string;
 }) {
   const imageOpacity = useMemo(() => imageOpacities(progress), [progress]);
   const textOpacity = useMemo(() => textOpacities(progress), [progress]);
@@ -191,6 +197,14 @@ function HeroCard({
         </div>
 
         <div className="pointer-events-auto relative z-20 flex shrink-0 flex-col items-center gap-3 pb-4 sm:gap-3.5 sm:pb-6 lg:pb-7">
+          <LeadCTAButton
+            source="hero"
+            variant="white"
+            size="lg"
+            className="min-w-[220px] shadow-[0_16px_48px_rgba(0,0,0,0.35)]"
+          >
+            {ctaLabel}
+          </LeadCTAButton>
           <LangToggle variant="hero" />
           <ScrollFingerHint
             bare
@@ -212,29 +226,68 @@ export default function Hero() {
   const { lang } = useLang();
   const isRu = lang === "ru";
   const copy = landingCopy(lang);
+  const leadCopy = leadFormCopy(lang);
   const stages = copy.hero.scrollStages as ReadonlyArray<HeroScrollStage>;
+  const [tgWebView, setTgWebView] = useState(false);
 
-  return (
-    <div
-      ref={trackRef}
-      className="relative"
-      style={{ height: `${SCROLL_TRACK_VH}vh` } as CSSProperties}
-    >
+  useEffect(() => {
+    setTgWebView(isTelegramWebView());
+  }, []);
+
+  // Telegram in-app browser: no sticky multi-screen scrub — chrome resize causes jump loops
+  if (tgWebView) {
+    return (
       <Section
         className={cx(
-          "sticky top-0 z-[1] isolate overflow-hidden bg-transparent !py-0",
-          "min-h-[100dvh] pb-0"
+          "relative z-[1] isolate overflow-hidden bg-transparent !py-0",
+          "min-h-[100svh] pb-0"
         )}
       >
         <div
           className={cx(
-            "mx-auto flex h-[calc(100dvh-1.25rem)] min-h-0 w-full max-w-none flex-col",
+            "mx-auto flex h-[calc(100svh-1.25rem)] min-h-0 w-full max-w-none flex-col",
             "px-3 pt-2.5 pb-2.5",
             "sm:max-w-[min(98vw,1840px)] sm:px-3",
             "lg:px-4 lg:pt-3 lg:pb-3"
           )}
         >
-          <HeroCard progress={progress} stages={stages} isRu={isRu} />
+          <HeroCard
+            progress={1}
+            stages={stages}
+            isRu={isRu}
+            ctaLabel={leadCopy.ctaDiscuss}
+          />
+        </div>
+      </Section>
+    );
+  }
+
+  return (
+    <div
+      ref={trackRef}
+      className="hero-scroll-track relative"
+      style={{ height: `${SCROLL_TRACK_VH}svh` } as CSSProperties}
+    >
+      <Section
+        className={cx(
+          "hero-scroll-sticky sticky top-0 z-[1] isolate overflow-hidden bg-transparent !py-0",
+          "min-h-[100svh] pb-0"
+        )}
+      >
+        <div
+          className={cx(
+            "mx-auto flex h-[calc(100svh-1.25rem)] min-h-0 w-full max-w-none flex-col",
+            "px-3 pt-2.5 pb-2.5",
+            "sm:max-w-[min(98vw,1840px)] sm:px-3",
+            "lg:px-4 lg:pt-3 lg:pb-3"
+          )}
+        >
+          <HeroCard
+            progress={progress}
+            stages={stages}
+            isRu={isRu}
+            ctaLabel={leadCopy.ctaDiscuss}
+          />
         </div>
       </Section>
     </div>

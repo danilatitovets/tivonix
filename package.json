@@ -9,9 +9,13 @@
     "build:client": "vite build",
     "build:server": "vite build --ssr src/entry-server.tsx --outDir dist-server",
     "check:seo": "node scripts/check-seo.mjs",
+    "check:leads": "node scripts/check-leads.mjs",
     "lint": "eslint .",
+    "lint:leads": "eslint \"src/components/leads/**/*.{ts,tsx}\" \"src/lib/leads.ts\" \"src/lib/analytics.ts\" \"src/lib/hotjar.ts\" \"src/lib/consent.ts\" \"src/components/ConsentBanner.tsx\" \"src/components/ScrollDepthTracker.tsx\" \"src/pages/NotFoundPage.tsx\" \"api/leads.ts\" \"api/_leadsDelivery.ts\" \"api/_leadsRateLimit.ts\" \"api/_leadsSubject.ts\"",
+    "typecheck": "tsc --noEmit",
     "prerender": "node scripts/prerender-node.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node scripts/check-leads.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

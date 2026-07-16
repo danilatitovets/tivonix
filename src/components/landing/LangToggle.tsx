@@ -1,5 +1,7 @@
 import type { CSSProperties } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useLang, type Lang } from "../../i18n/LangProvider";
+import { pathForLang } from "../../lib/localePaths";
 
 const ORANGE_PILL =
   "bg-gradient-to-r from-[#FFD7B0] via-[#FF9A3D] to-[#FF6A1A] shadow-[0_6px_20px_rgba(255,107,44,0.2)]";
@@ -18,7 +20,17 @@ export default function LangToggle({
   variant?: "header" | "hero";
 }) {
   const { lang, setLang } = useLang();
+  const navigate = useNavigate();
+  const location = useLocation();
   const isHero = variant === "hero";
+
+  const switchLang = (next: Lang) => {
+    setLang(next);
+    const target = pathForLang(location.pathname, next);
+    if (target !== location.pathname) {
+      navigate(`${target}${location.search}${location.hash}`, { replace: true });
+    }
+  };
 
   const label = lang === "ru" ? "Выбор языка" : "Language";
   const h = compact ? "h-9 w-[5.25rem]" : isHero ? "h-11 w-[6.5rem]" : "h-10 w-[5.75rem]";
@@ -55,7 +67,7 @@ export default function LangToggle({
           type="button"
           role="radio"
           aria-checked={lang === "ru"}
-          onClick={() => setLang("ru" as Lang)}
+          onClick={() => switchLang("ru")}
           className={cx(
             "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
             "focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
@@ -73,7 +85,7 @@ export default function LangToggle({
           type="button"
           role="radio"
           aria-checked={lang === "en"}
-          onClick={() => setLang("en" as Lang)}
+          onClick={() => switchLang("en")}
           className={cx(
             "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
             "focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black",

@@ -8,6 +8,7 @@ import WebsiteCreationPage from "./pages/WebsiteCreationPage";
 import AutomationBusinessPage from "./pages/AutomationBusinessPage";
 import PricingPage from "./pages/PricingPage";
 import PartnersPage from "./pages/PartnersPage";
+import NotFoundPage from "./pages/NotFoundPage";
 import { LangPathSync } from "./i18n/LangProvider";
 import { PARTNERS_PATH_EN, PARTNERS_PATH_RU } from "./i18n/partnersPaths";
 
@@ -42,15 +43,21 @@ export function AppRoutes() {
       <ScrollToHash />
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/en" element={<LandingPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/en/projects" element={<ProjectsPage />} />
         <Route path="/projects/:slug" element={<ProjectDetailPage />} />
+        <Route path="/en/projects/:slug" element={<ProjectDetailPage />} />
         <Route path="/plans" element={<PricingPage />} />
         <Route path="/contacts" element={<ContactsPage />} />
+        <Route path="/en/contacts" element={<ContactsPage />} />
         <Route path="/sozdanie-sajtov" element={<WebsiteCreationPage />} />
         <Route path="/avtomatizaciya-biznesa" element={<AutomationBusinessPage />} />
         <Route path="/partners" element={<PartnersPage />} />
         <Route path={PARTNERS_PATH_RU} element={<PartnersPage />} />
         <Route path={PARTNERS_PATH_EN} element={<PartnersPage />} />
+        <Route path="/en/*" element={<NotFoundPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </>
   );

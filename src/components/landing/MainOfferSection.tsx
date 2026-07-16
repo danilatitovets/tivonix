@@ -6,7 +6,7 @@ import Reveal from "../ui/Reveal";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
 import { LANDING_HEADLINE_CLASS } from "../../lib/landingLayout";
-import { TG_BOT_URL } from "../../constants/links";
+import { useLeadForm } from "../leads/useLeadForm";
 
 type Metric = {
   title: string;
@@ -339,6 +339,8 @@ function FeaturedCard({
   className?: string;
   visible: boolean;
 }) {
+  const { openLeadForm } = useLeadForm();
+
   return (
     <div
       className={[
@@ -361,10 +363,9 @@ function FeaturedCard({
           <p className="mt-3 text-[15px] leading-[1.65] text-white/62 sm:mt-3.5 sm:text-[16px] sm:leading-[1.7]">
             {text}
           </p>
-          <a
-            href={TG_BOT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={() => openLeadForm("main_offer")}
             className="group mt-5 inline-flex min-h-[2.5rem] items-center gap-1.5 text-[14px] font-medium text-white/85 transition hover:text-[#FFAE66]"
           >
             {linkText}
@@ -373,7 +374,7 @@ function FeaturedCard({
               className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
               aria-hidden
             />
-          </a>
+          </button>
         </div>
 
         <p className="text-[13px] leading-snug text-white/45 sm:text-[14px]">{footer}</p>

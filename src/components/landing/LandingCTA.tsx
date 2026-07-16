@@ -21,13 +21,15 @@ export function TelegramLink({
   className,
   children,
   href = TG_BOT_URL,
-}: Omit<Props, "onClick" | "type">) {
+  onClick,
+}: Omit<Props, "type">) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
       className={ctaClass(variant, size, className)}
+      onClick={onClick}
     >
       {children}
     </a>

@@ -14,10 +14,14 @@ import Footer from "../components/landing/Footer";
 import { SEO } from "../components/SEO";
 import { buildHomePageSchema } from "../lib/schema";
 import { homePageSeoFromDict, useLang } from "../i18n/LangProvider";
+import { useLocation } from "react-router-dom";
 
 export default function LandingPage() {
   const { dict, lang } = useLang();
+  const { pathname } = useLocation();
   const seo = homePageSeoFromDict(dict);
+  const isEnPath = pathname === "/en" || pathname.startsWith("/en/");
+  const canonicalPath = isEnPath ? "/en" : "/";
   const schemaJsonLd = buildHomePageSchema({
     pageTitle: seo.title,
     pageDescription: seo.description,
@@ -26,11 +30,20 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen overflow-x-clip bg-black">
       <SEO
-        title={seo.title}
-        description={seo.description}
-        canonicalPath="/"
+        title={
+          isEnPath
+            ? "TIVONIX — websites, bots and web services for business"
+            : seo.title
+        }
+        description={
+          isEnPath
+            ? "We build websites, Telegram bots, CRMs, client portals and lead automation — tailored to your business workflow."
+            : seo.description
+        }
+        canonicalPath={canonicalPath}
         schemaJsonLd={schemaJsonLd}
         ogLocalePrimary={lang === "en" ? "en_US" : "ru_RU"}
+        hreflang
       />
       <div id="top" />
       <Header />

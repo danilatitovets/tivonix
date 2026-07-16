@@ -22,7 +22,7 @@ export function langFromPartnersPath(pathname: string): Lang | null {
   return null;
 }
 
-const PARTNERS_ORIGIN = "https://tivonix.tech";
+const PARTNERS_ORIGIN = "https://www.tivonix.tech";
 
 /** Canonical for the current partners URL (legacy `/partners` keeps short path). */
 export function partnersCanonicalUrl(lang: Lang, pathname?: string): string {

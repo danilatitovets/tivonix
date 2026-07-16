@@ -4,6 +4,7 @@ import { MemoryRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { LangProvider } from "./i18n/LangProvider";
 import { AppRoutes } from "./AppRoutes";
+import { LeadFormProvider } from "./components/leads/LeadFormProvider";
 import type { Lang } from "./i18n/LangProvider";
 
 function langFromUrl(url: string): Lang {
@@ -25,7 +26,9 @@ export function render(url: string) {
       <HelmetProvider context={helmetContext}>
         <LangProvider initialLang={initialLang}>
           <MemoryRouter initialEntries={[url]}>
-            <AppRoutes />
+            <LeadFormProvider>
+              <AppRoutes />
+            </LeadFormProvider>
           </MemoryRouter>
         </LangProvider>
       </HelmetProvider>

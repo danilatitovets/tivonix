@@ -1,12 +1,18 @@
+import { useEffect } from "react";
 import Header from "../components/landing/Header";
 import Footer from "../components/landing/Footer";
 import PricingPlansSection from "../components/landing/PricingPlansSection";
 import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
 import { buildPricingPageSchema } from "../lib/schema";
+import { trackPricingView } from "../lib/analytics";
 
 export default function PricingPage() {
   const { lang } = useLang();
+
+  useEffect(() => {
+    trackPricingView();
+  }, []);
 
   const title =
     lang === "ru"

@@ -5,8 +5,9 @@ import Reveal from "../ui/Reveal";
 import PillActionBar from "../ui/PillActionBar";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
+import { leadFormCopy } from "../../i18n/leadFormCopy";
 import { buildProjects } from "../../data/projectsCatalog";
-import { TG_BOT_URL } from "../../constants/links";
+import { useLeadForm } from "../leads/useLeadForm";
 
 function clamp01(v: number) {
   return Math.min(1, Math.max(0, v));
@@ -57,6 +58,8 @@ function useCaseCoverPan(blockRef: RefObject<HTMLDivElement | null>) {
 export default function CasesSection() {
   const { lang } = useLang();
   const copy = landingCopy(lang);
+  const leadCopy = leadFormCopy(lang);
+  const { openLeadForm } = useLeadForm();
   const isRu = lang === "ru";
   const [activeTab, setActiveTab] = useState("view");
   const caseBlockRef = useRef<HTMLDivElement>(null);
@@ -85,16 +88,17 @@ export default function CasesSection() {
     }
     tabs.push({
       id: "cta",
-      label: copy.cases.cta,
-      href: TG_BOT_URL,
+      label: leadCopy.ctaProjects,
+      onClick: () => openLeadForm("cases"),
     });
     return tabs;
   }, [
-    copy.cases.cta,
     copy.cases.openProduct,
     copy.cases.viewCase,
     featured.domain,
     featured.id,
+    leadCopy.ctaProjects,
+    openLeadForm,
   ]);
 
   return (

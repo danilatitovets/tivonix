@@ -5,6 +5,9 @@ import Header from "../components/landing/Header";
 import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
 import { TG_BOT_URL } from "../constants/links";
+import { LeadCTAButton } from "../components/leads/LeadCTAButton";
+import { leadFormCopy } from "../i18n/leadFormCopy";
+import { useLocation } from "react-router-dom";
 
 const ORANGE = "#FF9A3D";
 const ORANGE2 = "#FF6A1A";
@@ -227,7 +230,8 @@ function SunContacts({ size }: { size: number }) {
   });
 
   const title = isRu ? "Контакты" : "Contacts";
-  const botCta = isRu ? "Написать в ТГ-бота" : "Message the Telegram bot";
+  const leadCopy = leadFormCopy(lang);
+  const botCta = isRu ? "Telegram-бот" : "Telegram bot";
 
   const contactRowClass = cx(
     "group inline-flex w-full items-center gap-3.5 rounded-xl px-4 py-2.5",
@@ -300,16 +304,22 @@ function SunContacts({ size }: { size: number }) {
                   </a>
                 </div>
 
-                <div className="mt-3 relative z-20 pointer-events-auto">
+                <div className="mt-3 relative z-20 pointer-events-auto space-y-2">
+                  <LeadCTAButton
+                    source="contacts"
+                    variant="primary"
+                    className="!h-10 w-full !rounded-xl !text-[13.5px] !font-[800]"
+                  >
+                    {leadCopy.ctaDiscuss}
+                  </LeadCTAButton>
                   <a
                     href={TG_BOT_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cx(
                       "inline-flex h-10 w-full items-center justify-center rounded-xl px-5",
-                      "text-[13.5px] font-[800] text-black whitespace-nowrap",
-                      "bg-[linear-gradient(180deg,#FFD7B0_0%,#FF9A3D_52%,#FF6A1A_100%)]",
-                      "shadow-[0_12px_40px_rgba(255,122,0,0.16)] hover:brightness-[1.04] transition duration-200",
+                      "text-[13px] font-[700] text-white/80 whitespace-nowrap",
+                      "border border-white/15 bg-white/[0.05] hover:bg-white/[0.09] transition duration-200",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/35"
                     )}
                   >
@@ -331,7 +341,9 @@ function SunContacts({ size }: { size: number }) {
 export default function ContactsPage() {
   useLockPageScroll(true);
   const { lang } = useLang();
+  const { pathname } = useLocation();
   const isRu = lang === "ru";
+  const isEnPath = pathname.startsWith("/en");
   const { headerH, side, sun, r1, r2, r3 } = useSolarLayoutNoScroll();
 
   const seoTitle = isRu
@@ -384,8 +396,9 @@ export default function ContactsPage() {
       <SEO
         title={seoTitle}
         description={seoDescription}
-        canonicalPath="/contacts"
+        canonicalPath={isEnPath ? "/en/contacts" : "/contacts"}
         ogLocalePrimary={isRu ? "ru_RU" : "en_US"}
+        hreflang
       />
       <Header />
 

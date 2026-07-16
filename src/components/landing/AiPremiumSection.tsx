@@ -20,6 +20,7 @@ import {
   rowPosition,
   rowPositionScrollStrip,
 } from "../../lib/aiModels";
+import { isTelegramWebView } from "../../lib/telegramWebView";
 import TivonixGlowBorder from "../ui/TivonixGlowBorder";
 import ScrollFingerHint from "../ui/ScrollFingerHint";
 
@@ -157,7 +158,13 @@ export default function AiPremiumSection() {
   const blockSlotRefs = useRef<(HTMLElement | null)[]>([]);
   const logoImgRefs = useRef<(HTMLImageElement | null)[]>([]);
 
-  const reducedMotion = usePrefersReducedMotion();
+  const reducedMotionPref = usePrefersReducedMotion();
+  const [tgWebView, setTgWebView] = useState(false);
+  useEffect(() => {
+    setTgWebView(isTelegramWebView());
+  }, []);
+  // Telegram WebView: same end-state as reduced motion, without multi-vh sticky pin
+  const reducedMotion = reducedMotionPref || tgWebView;
   const headline = copy.ai.headline;
   const [showScrollHint, setShowScrollHint] = useState(false);
   const showHintRef = useRef(false);
@@ -223,7 +230,7 @@ export default function AiPremiumSection() {
       const rectTop = sectionRef.current?.getBoundingClientRect().top ?? trackTop - scrollY;
       const scrollable = Math.max(1, trackHeight - viewport);
       const pinProgress = reducedMotion
-        ? scrollInTrack > animScrollable * 0.2
+        ? tgWebView || scrollInTrack > animScrollable * 0.2
           ? 1
           : 0
         : clamp01(scrollInTrack / animScrollable);
@@ -531,7 +538,7 @@ export default function AiPremiumSection() {
       window.removeEventListener("resize", onResize);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [reducedMotion, headline]);
+  }, [reducedMotion, headline, tgWebView]);
 
   return (
     <>
@@ -539,19 +546,25 @@ export default function AiPremiumSection() {
         ref={pinWrapRef}
         className="ai-premium-pin relative"
         style={{
-          height: `calc(${ANIM_PIN_VH}vh + ${DRIFT_RUNWAY_VH}vh)`,
-          ["--ai-expand" as string]: "0",
+          height: tgWebView
+            ? "auto"
+            : `calc(${ANIM_PIN_VH}svh + ${DRIFT_RUNWAY_VH}svh)`,
+          ["--ai-expand" as string]: tgWebView ? "1" : "0",
         }}
       >
         <div
           ref={animPinRef}
           className="ai-premium-anim-pin relative"
-          style={{ height: `${ANIM_PIN_VH}vh` }}
+          style={{ height: tgWebView ? "auto" : `${ANIM_PIN_VH}svh` }}
         >
           <section
             ref={sectionRef}
             id="ai"
-            className="ai-premium-section relative sticky top-0 z-40 flex h-[100svh] flex-col"
+            className={
+              tgWebView
+                ? "ai-premium-section relative z-40 flex min-h-[100svh] flex-col"
+                : "ai-premium-section relative sticky top-0 z-40 flex h-[100svh] flex-col"
+            }
             aria-label={copy.ai.ariaLabel}
           >
             <div
@@ -708,7 +721,7 @@ export default function AiPremiumSection() {
             <div className="pointer-events-none absolute inset-x-0 bottom-[max(1.25rem,env(safe-area-inset-bottom))] z-[60] flex justify-center pb-1 sm:bottom-8">
               <ScrollFingerHint
                 bare
-                visible={showScrollHint}
+                visible={showScrollHint && !tgWebView}
                 variant="light"
                 label={isRu ? "Листайте — появится анимация" : "Scroll — the animation plays"}
                 onActivate={() => {

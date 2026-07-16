@@ -1,6 +1,6 @@
 // src/pages/ProjectsPage.tsx
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Container from "../components/ui/Container";
 import Section from "../components/ui/Section";
 import Header from "../components/landing/Header";
@@ -9,6 +9,10 @@ import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
 import { buildProjects, type Project } from "../data/projectsCatalog";
 import { cx, projectPreviewSrc, ProjectPreviewFrame } from "./projectBlocks";
+import { LeadCTAButton } from "../components/leads/LeadCTAButton";
+import { leadFormCopy } from "../i18n/leadFormCopy";
+import { trackProjectView } from "../lib/analytics";
+import { useEffect } from "react";
 
 const ALL_FILTER = "all";
 
@@ -52,6 +56,9 @@ const filterPillClass = (active: boolean) =>
 function ProjectGridCard({ p, isRu }: { p: Project; isRu: boolean }) {
   const wip = p.status === "wip";
   const domainClean = p.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const productType = p.tags[0] ?? (isRu ? "Проект" : "Project");
+  const subtitle = isRu ? p.subtitleRu : p.subtitleEn;
+  const role = isRu ? "Роль TIVONIX: дизайн и разработка" : "TIVONIX role: design & development";
 
   return (
     <article className="group min-w-0">
@@ -67,18 +74,28 @@ function ProjectGridCard({ p, isRu }: { p: Project; isRu: boolean }) {
 
       <div className="mt-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/40">
+            {productType}
+          </p>
           <Link
             to={`/projects/${p.id}`}
             className="block min-w-0 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45"
           >
-            <h2 className="truncate text-[15px] font-[700] tracking-[-0.02em] text-white/[0.92] transition group-hover:text-white">
+            <h2 className="mt-1 truncate text-[15px] font-[700] tracking-[-0.02em] text-white/[0.92] transition group-hover:text-white">
               {p.title}
             </h2>
           </Link>
+          <p className="mt-1.5 line-clamp-2 text-[12.5px] leading-snug text-white/52">{subtitle}</p>
+          <p className="mt-1.5 text-[11.5px] text-white/38">{role}</p>
+          {p.stack?.length ? (
+            <p className="mt-1.5 truncate text-[11px] text-white/35">
+              {(p.stack ?? []).slice(0, 4).join(" · ")}
+            </p>
+          ) : null}
           {domainClean && !wip ? (
-            <p className="mt-0.5 truncate text-[12px] text-white/45">{domainClean}</p>
+            <p className="mt-1 truncate text-[12px] text-white/40">{domainClean}</p>
           ) : (
-            <p className="mt-0.5 text-[12px] text-white/40">
+            <p className="mt-1 text-[12px] text-white/40">
               {isRu ? "В разработке" : "In progress"}
             </p>
           )}
@@ -110,8 +127,15 @@ function ProjectGridCard({ p, isRu }: { p: Project; isRu: boolean }) {
 
 export default function ProjectsPage() {
   const { lang } = useLang();
+  const { pathname } = useLocation();
   const isRu = lang === "ru";
+  const isEnPath = pathname.startsWith("/en");
   const [activeFilter, setActiveFilter] = useState(ALL_FILTER);
+  const leadCopy = leadFormCopy(lang);
+
+  useEffect(() => {
+    trackProjectView("list");
+  }, []);
 
   const projects = useMemo(() => buildProjects(isRu), [isRu]);
   const tags = useMemo(() => collectTags(projects), [projects]);
@@ -137,8 +161,9 @@ export default function ProjectsPage() {
       <SEO
         title={seoTitle}
         description={seoDescription}
-        canonicalPath="/projects"
+        canonicalPath={isEnPath ? "/en/projects" : "/projects"}
         ogLocalePrimary={isRu ? "ru_RU" : "en_US"}
+        hreflang
       />
       <Header />
 
@@ -194,11 +219,11 @@ export default function ProjectsPage() {
               <p className="mt-12 text-center text-[15px] text-white/45">{emptyLabel}</p>
             )}
 
-            <p className="mt-14 text-center text-[13px] text-white/35">
-              {isRu
-                ? "Новые кейсы добавляем по мере запуска продуктов."
-                : "We add new case studies as products go live."}
-            </p>
+            <div className="mt-16 flex flex-col items-center gap-3 text-center">
+              <LeadCTAButton source="projects" variant="white" size="lg">
+                {leadCopy.ctaProjects}
+              </LeadCTAButton>
+            </div>
           </Container>
         </Section>
       </main>
