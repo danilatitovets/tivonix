@@ -13,6 +13,8 @@ const requiredHtmlFiles = [
   "dist/en/partners/index.html",
   "dist/projects/slotty/index.html",
   "dist/projects/spliton/index.html",
+  "dist/projects/headmind/index.html",
+  "dist/projects/logovo/index.html",
   "dist/projects/tivonixpanel/index.html",
 ];
 
@@ -43,13 +45,13 @@ const checks = [
   },
   {
     file: "dist/projects/index.html",
-    phrases: ["Проекты", "Tivonix Panel", "Slotty", "Spliton"],
+    phrases: ["Проекты", "Tivonix Panel", "Slotty", "Spliton", "Headmind", "LOGOVO"],
   },
   {
     file: "dist/projects/tivonixpanel/index.html",
     phrases: [
       "Tivonix Panel",
-      "партнёрская панель",
+      "Партнёрская панель",
       "https://tivonix.tech/projects/tivonixpanel",
       "tivonixpanel-production.up.railway.app",
     ],
@@ -58,7 +60,7 @@ const checks = [
     file: "dist/projects/spliton/index.html",
     phrases: [
       "Spliton",
-      "музыкальных активов",
+      "долей в музыке",
       "https://tivonix.tech/projects/spliton",
       "spliton.io",
     ],
@@ -67,9 +69,27 @@ const checks = [
     file: "dist/projects/slotty/index.html",
     phrases: [
       "Slotty",
-      "онлайн-записи к мастерам",
+      "маркетплейс записи к мастерам",
       "https://tivonix.tech/projects/slotty",
       "slotty.of.by",
+    ],
+  },
+  {
+    file: "dist/projects/headmind/index.html",
+    phrases: [
+      "Headmind",
+      "WordPress",
+      "https://tivonix.tech/projects/headmind",
+      "headmind.ru",
+    ],
+  },
+  {
+    file: "dist/projects/logovo/index.html",
+    phrases: [
+      "LOGOVO",
+      "шиномонтажа",
+      "https://tivonix.tech/projects/logovo",
+      "logovo24.by",
     ],
   },
   {

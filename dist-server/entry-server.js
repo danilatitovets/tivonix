@@ -5426,8 +5426,8 @@ function PillActionBar({
 const UPC_DOMAIN = "https://upc.watch/";
 const PAYCLIP_DOMAIN = "https://usepayclip.com/";
 const LABELOS_DOMAIN = "https://labelos.digital/";
+const LOGOVO_DOMAIN = "https://www.logovo24.by/";
 const HEADMIND_DOMAIN = "https://headmind.ru/";
-const GIFTSNIPER_DOMAIN = "https://t.me/GiftSniperTonBot";
 const SLOTTY_DOMAIN = "https://slotty.of.by/book";
 const SPLITON_DOMAIN = "https://spliton.io/app";
 const TIVONIXPANEL_DOMAIN = "https://tivonixpanel-production.up.railway.app/login";
@@ -5435,8 +5435,8 @@ const PUBLIC_PROJECT_IDS = [
   "tivonixpanel",
   "spliton",
   "slotty",
-  "giftsniper",
-  "headmind"
+  "headmind",
+  "logovo"
 ];
 const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/r${i + 1}.webp`);
 const SPLITON_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/spliton/g${i + 1}.webp`);
@@ -5453,8 +5453,8 @@ function buildAllProjects(isRu) {
       title: "Tivonix Panel",
       subtitleRu: "Партнёрская панель TIVONIX: сделки, статусы, проекты и выплаты — один кабинет вместо хаоса в чатах и таблицах.",
       subtitleEn: "TIVONIX partner panel: deals, statuses, projects and payouts — one dashboard instead of chaos in chats and spreadsheets.",
-      detailsRu: "Формат: партнёрская панель / SaaS-кабинет\n\nЗачем это\nПартнёрство ломается не на деньгах — на **прозрачности**. Где заявка? На каком этапе сделка? Когда выплата? Без кабинета всё это живёт в Telegram и Excel.\n\nМы собрали **рабочий кабинет** для агентств, фрилансеров и студий: регистрация, вход, статусы, проекты и выплаты в одном месте.\n\nКак работает\nПартнёр заходит в панель, выбирает модель — **Referral** или **White-label** — и после модерации получает доступ.\nДальше всё по делу: передал задачу → видит статус → понимает следующий шаг → отслеживает выплату. Без «напомни, пожалуйста» и ночных скринов из чатов.\n\nЧто внутри\n• **Логин и онбординг** — быстрый вход, без лишних экранов\n• **Дашборд сделок** — статусы видно сразу\n• **Referral / White-label** — две модели в одном продукте\n• **Проекты и выплаты** — трекинг без таблиц на стороне\n• UI под ежедневную работу, а не под презентацию\n\nЧто сделали\nСпроектировали структуру под реальный партнёрский процесс. Собрали сценарии регистрации, логина и работы со сделками. Довели UI: сетка, иерархия, статусы, **пустые состояния**. Запустили в продакшен на Railway.\n\nИтог\nЖивая панель, куда партнёры **заходят сами** — ведут сделки и видят выплаты. Не презентация «как будет», а продукт, который уже в работе.\n",
-      detailsEn: "Format: partner panel / SaaS dashboard\n\nWhy it matters\nPartnerships break on **transparency**, not money. Where is the request? What stage is the deal? When is the payout? Without a panel, all of that lives in chats and spreadsheets.\n\nWe built a **working cabinet** for agencies, freelancers and studios: registration, login, statuses, projects and payouts in one place.\n\nHow it works\nA partner opens the panel, picks **Referral** or **White-label**, and gets access after moderation.\nThen the loop is simple: submit a task → see the status → know the next step → track the payout. No “please remind me” and late-night chat screenshots.\n\nWhat’s inside\n• **Login and onboarding** — fast entry, no fluff screens\n• **Deals dashboard** — statuses visible at a glance\n• **Referral / White-label** — two models in one product\n• **Projects and payouts** — tracking without side spreadsheets\n• UI built for daily work, not for a deck\n\nWhat we delivered\nDesigned the structure around a real partner workflow. Built registration, login and deal flows. Crafted UI hierarchy, statuses and **empty states**. Shipped to production on Railway.\n\nOutcome\nA live panel partners **actually open** — they run deals and see payouts. Not a “how it will look” demo, but a product already in use.\n",
+      detailsRu: "Формат: партнёрская панель / SaaS-кабинет\n\nЗачем это\nПартнёрство редко разваливается из‑за оффера. Оно сыпется, когда **никто не видит картину**: где заявка, на каком этапе сделка, когда выплата. Пока правда живёт в Telegram и Excel — каждый день начинается с «напомни» и скринов в полночь.\n\nМы собрали **кабинет, в который заходят сами**: регистрация, вход, статусы, проекты и выплаты в одном месте. Не слайд «как будет», а инструмент, который уже ведёт деньги и доверие.\n\nКак работает\nПартнёр регистрируется, выбирает модель — **Referral** или **White-label** — и после модерации получает доступ в кабинет.\nДальше цикл простой: передал задачу → видит статус → понимает следующий шаг → отслеживает выплату. Одна панель вместо чатов, таблиц и «напомни, пожалуйста».\n\nЧто внутри\nЭто полноценный **кабинет партнёрской сети**, не лендинг. Слева тёмный сайдбар: главная, клиенты, партнёры, сделки, выплаты, отчёты, настройки, юр. профили, заявки партнёров и журнал действий.\n\nНа **главной** — живые KPI: клиенты, партнёры, закрытые сделки, сумма продаж, начисленные комиссии и «к выплате», плюс графики по дням и месяцам, воронка по статусам, топ партнёров, источников и услуг. Данные обновляются в реальном времени.\n\nВ **клиентах** — база компаний и контактов, которых партнёры передают в работу: поиск, вкладки статусов (на проверке / одобрено / в работе / закрыт / дубли), фильтры по партнёру, услуге, источнику, бюджету и дате, добавление клиента и выгрузка в Excel.\n\nВ **партнёрах** — сеть целиком: активность, клиенты, сделки, продажи, комиссия и баланс. Отдельно — заявки на вход (Referral / White-label) и модерация. **Выплаты** и комиссии живут в панели, без сторонних таблиц. UI собран под ежедневную работу, а не под презентацию.\n\nЧто сделали\nРазработка TIVONIX — **1 неделя**. Спроектировали структуру под реальный партнёрский процесс, собрали регистрацию, логин и сделки, довели UI (сетка, статусы, **пустые состояния**) и выкатили в продакшен на Railway.\n\nИтог\nЖивая панель, куда партнёры **заходят сами** — ведут сделки и видят выплаты. Не презентация «как будет», а продукт, который уже в работе.\n",
+      detailsEn: "Format: partner panel / SaaS dashboard\n\nWhy it matters\nPartnerships rarely die on the offer. They die when **nobody shares the same picture**: where’s the request, what stage is the deal, when’s the payout. While truth lives in chats and spreadsheets, every day starts with “remind me” and midnight screenshots.\n\nWe built a **cabinet people actually open**: registration, login, statuses, projects and payouts in one place. Not a “how it will look” slide — a tool that already moves money and trust.\n\nHow it works\nA partner signs up, picks **Referral** or **White-label**, and gets access after moderation.\nThen the loop is simple: submit a task → see the status → know the next step → track the payout. One cabinet instead of chats, spreadsheets and “please remind me”.\n\nWhat’s inside\nA full **partner-network cabinet**, not a landing page. Dark sidebar on the left: home, clients, partners, deals, payouts, reports, settings, legal profiles, partner applications and an activity log.\n\n**Home** shows live KPIs: clients, partners, closed deals, sales total, accrued commissions and “to be paid”, plus charts by day and month, a status funnel, top partners, sources and services. Data updates in real time.\n\n**Clients** is the database of companies and contacts partners hand over: search, status tabs (under review / approved / in work / closed / duplicates), filters by partner, service, source, budget and date, add-client and Excel export.\n\n**Partners** is the whole network: activity, clients, deals, sales, commission and balance. Separately — join requests (Referral / White-label) and moderation. **Payouts** and commissions live in the panel, no side spreadsheets. UI built for daily work, not for a deck.\n\nWhat we delivered\nTIVONIX build — **1 week**. Designed the partner workflow, shipped registration, login and deals, polished UI (grid, statuses, **empty states**) and went live on Railway.\n\nOutcome\nA live panel partners **actually open** — they run deals and see payouts. Not a “how it will look” demo, but a product already in use.\n",
       domain: TIVONIXPANEL_DOMAIN,
       status: "live",
       tags: ["SaaS", "Admin Panel", "Partners", "Dashboard", "UI/UX"],
@@ -5464,7 +5464,8 @@ function buildAllProjects(isRu) {
         isRu ? "**Кабинет** с логином и онбордингом" : "**Dashboard** with login and onboarding",
         isRu ? "Сделки, проекты и **выплаты** в одном месте" : "Deals, projects and **payouts** in one place",
         isRu ? "Модели **Referral** и **White-label**" : "**Referral** and **White-label** models",
-        isRu ? "Продукт **в продакшене** на Railway" : "Product **live** on Railway"
+        isRu ? "Продукт **в продакшене** на Railway" : "Product **live** on Railway",
+        isRu ? "Собрали за **1 неделю**" : "Shipped in **1 week**"
       ],
       stack: ["React", "TypeScript", "Node.js", "PostgreSQL", "Railway"],
       testimonial: {
@@ -5491,6 +5492,31 @@ function buildAllProjects(isRu) {
         isRu ? "Адаптив + оптимизация загрузки" : "Responsive + optimized loading"
       ],
       stack: ["React", "Tailwind", "Vite"]
+    },
+    // 1b) LOGOVO — сеть шиномонтажа · https://www.logovo24.by/
+    {
+      id: "logovo",
+      title: "LOGOVO",
+      subtitleRu: "Сайт сети шиномонтажа LOGOVO в Минске: Figma → Next.js, 4 филиала, запись, карта, B2B — под ключ за 1 600 BYN, команда TIVONIX.",
+      subtitleEn: "Website for LOGOVO tire network in Minsk: Figma → Next.js, 4 branches, booking, map, B2B — turnkey for 1,600 BYN by TIVONIX.",
+      detailsRu: "Зачем это\nШиномонтаж выбирают не в кресле — **с дороги, одной рукой, пока мигает индикатор**. Если адрес, часы и «записаться» прячутся на трёх экранах — клиент уедет к тому, кто ответил быстрее.\n\nЗаказчик — **ООО «Логово»** (сеть шиномонтажа в Минске, УНП 193616584): **4 филиала**, два работают **24/7**, безнал для автопарков и такси, полный контур услуг — от шиномонтажа и правки дисков до хранения и кондиционера. Бюджет проекта — **1 600 BYN** ([[≈ 42 800 ₽]] / [[≈ 560 $]]). Сайт собрала **команда TIVONIX** под ключ — не шаблон и не «отдали архив».\n\nКак работает\nЧеловек с телефона открывает **logovo24.by** → услуга → филиал на карте / режим → **записаться** или **позвонить**. Автопарк идёт в B2B: безнал, единый прайс, документы на четырёх точках — без переписки «пришлите счёт».\n\nЧто внутри\nВесь продукт сделали мы: **дизайн в Figma** (структура, mobile-first, CTA «с дороги»), потом разработка на **Next.js 16 + TypeScript + Tailwind v4** — статический экспорт под shared-хостинг. Не конструктор: ручная вёрстка, Leaflet-карта с геолокацией «найти меня», калькулятор «комплекс 4 колёса», до/после, отзывы, скидки, кейсы, FAQ, SEO (schema AutoRepair, sitemap, OG).\n\n**11 услуг** с отдельными страницами и прайсом: шиномонтаж, грузовой, правка и покраска дисков, аргон, прокол, вулканизация, балансировка, проточка, хранение, кондиционер. **4 адреса** (Лещинского и Логойский тракт — 24/7; Гурского и Дзержинского — дневной режим). B2B-блок: такси / логистика / флоты, бейдж **75+ клиентов**. Запись: форма → mailto на сеть. Sticky-бар на мобиле: позвонить / записаться.\n\nВизуал — светлая система **LOGOVO × Awesomic**: canvas `#f4f4f5`, ember-оранжевый `#ff5a00` только на CTA и бейджах 24/7, тёмные obsidian-блоки для контраста, крупные pill-кнопки, radius карточек 36px. Mobile-first — основной трафик с дороги.\n\nЗапуск под ключ\nПомогли с **доменом logovo24.by**, **сами** подняли хостинг (**hoster.by** / cPanel), выгрузили статику `out/`, настроили прод. Полный цикл: идея → Figma → код → деплой.\n\nИтог\nНе «сайт за тысячу». **Рабочий инструмент сети LOGOVO** за [[≈ 560 $]]: запись, карта, B2B, дизайн и прод на **logovo24.by** — сделала команда TIVONIX.\n",
+      detailsEn: "Why it matters\nTire service isn’t chosen from a couch — it’s chosen **from the road, one-handed, while a warning light blinks**. If address, hours and “book” hide across three screens, the client drives to whoever answers faster.\n\nClient — **LOGOVO LLC** (Minsk tire network, UNP 193616584): **4 branches**, two open **24/7**, fleet billing for taxi and logistics, full service loop — fitting, wheel repair/paint, storage, A/C and more. Project budget — **1,600 BYN** ([[≈ 42,800 ₽]] / [[≈ $560]]). Built **turnkey by the TIVONIX team** — not a template, not “here’s a zip”.\n\nHow it works\nSomeone opens **logovo24.by** on a phone → service → branch on the map / hours → **book** or **call**. Fleets go to B2B: invoices, unified pricing, docs across four locations — no “send the contract” threads.\n\nWhat’s inside\nWe built the whole product: **Figma design** (structure, mobile-first, on-the-road CTAs), then **Next.js 16 + TypeScript + Tailwind v4** — static export for shared hosting. No page builder: handmade layout, Leaflet map with “find me” geolocation, “4 wheels package” calculator, before/after, reviews, discounts, cases, FAQ, SEO (AutoRepair schema, sitemap, OG).\n\n**11 services** with dedicated pages and pricing: fitting, commercial, wheel repair/paint, argon, puncture, vulcanizing, balancing, brake disc machining, storage, A/C. **4 addresses** (Leshchinskogo and Logoyskiy trakt — 24/7; Gurskogo and Dzerzhinskogo — daytime). B2B block: taxi / logistics / fleets, **75+ clients** badge. Booking: form → mailto to the network. Sticky mobile bar: call / book.\n\nVisual system — light **LOGOVO × Awesomic**: canvas `#f4f4f5`, ember orange `#ff5a00` only on CTAs and 24/7 badges, dark obsidian blocks for contrast, large pill buttons, 36px card radius. Mobile-first — most traffic comes from the road.\n\nTurnkey launch\nWe helped with the **logovo24.by** domain, **set up hosting ourselves** (**hoster.by** / cPanel), shipped the `out/` static build, wired production. Full cycle: idea → Figma → code → deploy.\n\nOutcome\nNot a “thousand-buck site”. A **working tool for the LOGOVO network** for [[≈ $560]]: booking, map, B2B, design and prod on **logovo24.by** — by the TIVONIX team.\n",
+      domain: LOGOVO_DOMAIN,
+      status: "live",
+      tags: ["Website", "Next.js", "Local Business", "Booking", "B2B", "Figma"],
+      cover: "/images/project-priew/logovo.webp",
+      outcomes: [
+        isRu ? "Бюджет **1 600 BYN** ([[≈ 42 800 ₽]] / [[≈ 560 $]])" : "Budget **1,600 BYN** ([[≈ 42,800 ₽]] / [[≈ $560]])",
+        isRu ? "**TIVONIX** под ключ: Figma → Next.js → hoster.by" : "**TIVONIX** turnkey: Figma → Next.js → hoster.by",
+        isRu ? "**4 филиала** · два **24/7** · 11 услуг · B2B" : "**4 branches** · two **24/7** · 11 services · B2B",
+        isRu ? "Карта Leaflet · запись · калькулятор · SEO" : "Leaflet map · booking · calculator · SEO"
+      ],
+      stack: ["Next.js", "TypeScript", "Tailwind", "Leaflet", "Figma", "hoster.by"],
+      testimonial: {
+        name: isRu ? "ООО «Логово»" : "LOGOVO LLC",
+        role: isRu ? "Сеть шиномонтажа · Минск · 4 филиала" : "Tire-service network · Minsk · 4 branches",
+        text: isRu ? "Нужен был сайт, с которого клиент с дороги сразу пишет или звонит — без квеста по адресам. Команда TIVONIX собрала дизайн, разработку, домен и хостинг под ключ. Четыре точки, запись и безнал для автопарков — всё на месте, сайт в бою." : "We needed a site where a client on the road can book or call right away — no address scavenger hunt. TIVONIX shipped design, build, domain and hosting turnkey. Four locations, booking and fleet billing — all live, site in production."
+      }
     },
     // 2) UPC — SaaS MVP (client: ИП Безбородых И.В.) · https://upc.watch/
     {
@@ -5547,97 +5573,77 @@ function buildAllProjects(isRu) {
         text: isRu ? "Коммуникация — по делу, быстро вносят правки, результатом довольны." : "Clear communication, fast iterations, happy with the result."
       }
     },
-    // 4) HEADMIND — closed case (stack: HTML/CSS/JS ES6)
+    // 4) HEADMIND — корпоративный сайт на WordPress
     {
       id: "headmind",
       title: "Headmind",
-      subtitleRu: "Корпоративный сайт: услуги, команда, доверие и лид-ген под B2B.",
-      subtitleEn: "Corporate website: services structure, team credibility and B2B lead-gen.",
-      detailsRu: "Формат: корпоративный сайт / презентация услуг\n\nЗадача\nB2B-компании часто «знают всё про себя», но сайт не умеет это сказать. Нужно было **упаковать экспертизу**: кто мы, что делаем, почему можно доверить — и довести до заявки.\n\nЧто сделали\nСобрали маршрут: услуги → подход → кейсы → команда → контакт. Упростили формулировки, усилили доверие через роли и опыт. Чистая типографика, адаптив, скорость. **CTA** на местах, где человек уже готов написать.\n\nИтог\nСайт стал понятнее клиенту и лучше ведёт к заявке — без перегруза и без «обо всём и ни о чём».\n",
-      detailsEn: "Format: corporate website / services showcase\n\nThe challenge\nB2B teams often know their craft — the site just doesn’t say it. We needed to **package expertise**: who they are, what they do, why trust them — and move to a lead.\n\nWhat we did\nBuilt the path: services → approach → cases → team → contact. Sharpened copy, strengthened trust via roles and experience. Clean type, responsive layout, speed. **CTAs** where people are already ready to write.\n\nOutcome\nThe site is clearer for clients and drives leads better — no clutter, no “about everything and nothing”.\n",
+      subtitleRu: "Корпоративный сайт ООО «Хэдмайнд»: Figma → WordPress + Elementor, хостинг и домен headmind.ru — бюджет 100 000 ₽.",
+      subtitleEn: "Corporate site for Headmind: Figma → WordPress + Elementor, hosting and domain headmind.ru — budget 100,000 ₽.",
+      detailsRu: "Зачем это\nООО «Хэдмайнд» — консалтинг по трансформации бизнеса: стратегия, цифровизация, оргдизайн, производство, контракты. В B2B часто **теряют сделку на первом касании**, если сайт говорит «обо всём и ни о чём». Нужен был сайт, который спокойно шлют в первом сообщении.\n\nЗаказчик — **Евгений Беликов**, основатель и генеральный директор ООО «Хэдмайнд» (соучредитель — Виталий Петровский). Бюджет — **100 000 ₽** ([[≈ 1 280 $]]). Прод: **headmind.ru**.\n\nКак работает\nПосетитель проходит короткий маршрут: **услуги** → **подход / экспертиза** → **команда** → **контакт / заявка**. На каждом шаге понятно, кто вы и чем сильны. CTA стоит там, где человек уже готов написать.\n\nЧто внутри\nСначала **макеты в Figma**: несколько визуальных вариантов на выбор — пока заказчику не «зашло». Потом дизайн и сборка на **WordPress + Elementor**: услуги (трансформация, цифровизация, HR, производство, контракты, продажи), команда, доверие, формы заявки.\n\nПод ключ: подобрали и подключили **хостинг**, купили/привязали **домен headmind.ru**, выкатили в прод, настроили админку WordPress, чтобы контент правили сами. Стек не «с нуля на React» — осознанный выбор: быстрый запуск, удобное редактирование, спокойный B2B-сайт.\n\nЧто сделали\nFigma (выборка вариантов) → дизайн → WordPress/Elementor → хостинг + домен → живой **headmind.ru**. Упаковали экспертизу в маршрут до заявки.\n\nИтог\nНе шаблон «поставьте логотип». **Корпоративный сайт под ключ** для Евгения Беликова / ООО «Хэдмайнд»: 100 000 ₽, Figma → WP, домен и хостинг — можно открыть и проверить самому.\n",
+      detailsEn: "Why it matters\nHeadmind is a business-transformation consultancy: strategy, digitalization, org design, production, contracts. In B2B you often **lose the deal on first contact** if the site says everything and nothing. They needed a site you can send in the first message.\n\nClient — **Evgeniy Belikov**, founder and CEO of Headmind (co-founder — Vitaliy Petrovsky). Budget — **100,000 ₽** ([[≈ $1,280]]). Live: **headmind.ru**.\n\nHow it works\nA visitor follows a short path: **services** → **approach / expertise** → **team** → **contact / lead**. At every step it’s clear who you are and why you’re strong. CTAs sit where people are already ready to write.\n\nWhat’s inside\nFirst **Figma mockups**: several visual directions until the client picked a favourite. Then design and build on **WordPress + Elementor**: services (transformation, digitalization, HR, production, contracts, sales), team, trust, lead forms.\n\nTurnkey: hosting set up, **domain headmind.ru** connected, shipped to production, WordPress admin ready so they can edit content themselves. Not a custom React build on purpose — fast launch, easy editing, a calm B2B site.\n\nWhat we delivered\nFigma (variant selection) → design → WordPress/Elementor → hosting + domain → live **headmind.ru**. Expertise packaged into a path to a lead.\n\nOutcome\nNot a “drop your logo” template. A **turnkey corporate site** for Evgeniy Belikov / Headmind: 100,000 ₽, Figma → WP, domain and hosting — open it and check yourself.\n",
       domain: HEADMIND_DOMAIN,
       status: "live",
-      tags: ["B2B", "Website", "UI/UX", "Structure", "Conversion"],
+      tags: ["B2B", "WordPress", "Elementor", "Figma", "Corporate"],
       cover: "/images/project-priew/headmind.webp",
       outcomes: [
-        isRu ? "**Понятная** упаковка услуг и подхода" : "**Clear** services & approach packaging",
-        isRu ? "Доверие через **команду** и структуру" : "Trust via **team** and structure",
-        isRu ? "**CTA** и точки лид-генерации" : "**CTA** and lead capture points"
+        isRu ? "Заказчик **Евгений Беликов** · бюджет [[≈ 1 280 $]]" : "Client **Evgeniy Belikov** · budget [[≈ $1,280]]",
+        isRu ? "**Figma** (варианты) → **WordPress + Elementor**" : "**Figma** (variants) → **WordPress + Elementor**",
+        isRu ? "Хостинг + домен **headmind.ru** под ключ" : "Hosting + domain **headmind.ru** turnkey",
+        isRu ? "Маршрут услуг → команда → **заявка**" : "Path: services → team → **lead**"
       ],
-      stack: ["HTML", "CSS", "JavaScript (ES6)"],
+      stack: ["Figma", "WordPress", "Elementor", "Hosting", "Domain"],
       testimonial: {
         name: isRu ? "Евгений Беликов" : "Evgeniy Belikov",
-        role: isRu ? "CEO, ООО «Хэдмайнд»" : "CEO, Headmind",
-        text: isRu ? "Структуру и подачу собрали так, что клиентам стало понятнее, кто мы и чем занимаемся. Сайт спокойно отправляем на первом касании — заявки пошли ровнее." : "They shaped the structure and messaging so clients finally understand who we are and what we do. We send the site on first contact without hesitation — leads came in more steadily."
+        role: isRu ? "Основатель и гендиректор, ООО «Хэдмайнд»" : "Founder & CEO, Headmind",
+        text: isRu ? "Сначала показали несколько макетов в Figma — выбрали тот, что зашёл. Потом собрали на WordPress, подключили хостинг и домен. Клиентам стало понятнее, кто мы — сайт спокойно отправляем на первом касании." : "They showed several Figma directions first — we picked the one that clicked. Then WordPress, hosting and domain. Clients finally get who we are — we send the site on first contact without hesitation."
       }
     },
-    // 5) GIFTSNIPER — Telegram-бот для оценки NFT и Telegram Gifts в TON
-    {
-      id: "giftsniper",
-      title: "GiftSniper",
-      subtitleRu: "Telegram-бот для оценки NFT и Telegram Gifts в TON по рыночным данным: трейты, листинги, аналоги и ориентир цены.",
-      subtitleEn: "Telegram bot for TON NFT and Telegram Gifts valuation using market data: traits, listings, comparables, and pricing guidance.",
-      detailsRu: "Формат: Telegram-бот / аналитический продукт\n\nЗачем\nОценить NFT или Telegram Gift вручную — это **десятки вкладок** и сравнение «на глаз». GiftSniper даёт ориентир по рынку за один запрос в Telegram.\n\nКак работает\nКидаешь ссылку (Getgems, Fragment, Tonviewer) или адрес — бот возвращает трейты, листинг, аналоги и **ориентир цены**. Без кошелька и без seed-фразы: это аналитика, не биржа.\n\nЧто показывает\n• Трейты и характеристики объекта\n• Текущий листинг\n• Похожие объявления\n• Ориентир цены продажи\n• Данные, чтобы быстрее решить — продавать или ждать\n\nИтог\nПолноценный продукт внутри Telegram с понятной пользой для TON, NFT и Gifts. **Помощник по первому заработку** — проект команды TIVONIX.\n",
-      detailsEn: "Format: Telegram bot / analytics product\n\nWhy\nPricing an NFT or Telegram Gift by hand means **dozens of tabs** and gut-feel comparison. GiftSniper returns market guidance in one Telegram request.\n\nHow it works\nSend a link (Getgems, Fragment, Tonviewer) or an address — the bot returns traits, listing, comps and a **price range**. No wallet, no seed phrase: analytics, not a marketplace.\n\nWhat it shows\n• Traits and asset details\n• Current listing\n• Comparable offers\n• Selling price guidance\n• Data to decide faster — sell or wait\n\nOutcome\nA full product inside Telegram with real utility for TON, NFT and Gifts. Your **first-earnings assistant** — built by the TIVONIX team.\n",
-      domain: GIFTSNIPER_DOMAIN,
-      status: "live",
-      tags: ["Telegram Bot", "TON", "NFT", "Analytics", "Market Data"],
-      cover: "/images/project-priew/giftsniper.webp",
-      outcomes: [
-        isRu ? "Оценка NFT и Gifts по **рынку** в одном запросе" : "NFT and Gifts valuation from the **market** in one request",
-        isRu ? "Трейты, листинги, аналоги, **ориентир цены**" : "Traits, listings, comps, **price guidance**",
-        isRu ? "Без кошелька и доступа к аккаунту" : "No wallet or account-access risk"
-      ],
-      stack: ["Telegram Bot API", "TON", "NFT Data", "Parser", "Analytics"],
-      testimonial: {
-        name: isRu ? "Дмитрий Р." : "Dmitry R.",
-        role: isRu ? "Пользователь TON / Telegram Gifts" : "TON / Telegram Gifts user",
-        text: isRu ? "Раньше цену ловил вручную по вкладкам — долго и неточно. Сейчас кидаю ссылку в бота и за минуту вижу ориентир по рынку. Без кошелька и лишних рисков — удобно." : "I used to chase prices across tabs — slow and messy. Now I send a link to the bot and get market guidance in a minute. No wallet, no extra risk — just useful."
-      }
-    },
-    // 7) SLOTTY — платформа онлайн-записи к мастерам (MVP)
+    // 7) SLOTTY — маркетплейс онлайн-записи к мастерам
     {
       id: "slotty",
       title: "Slotty",
-      subtitleRu: "Платформа для онлайн-записи к мастерам, студиям и услугам: выбор специалиста, свободное время, запись, напоминания и история посещений в одном сервисе.",
-      subtitleEn: "Online booking platform for masters, studios and services: pick a specialist, see open slots, book, get reminders and visit history in one app.",
-      detailsRu: "Формат: SaaS / marketplace / онлайн-запись\n\nПроблема\nЗапись к мастеру до сих пор часто живёт в **Direct и WhatsApp**: «есть на завтра?», «а через час?», «забыл напомнить». Slotty убирает этот хаос.\n\nКак работает\nКлиент выбирает категорию, мастера, услугу и **свободный слот** — и записывается онлайн. Мастер в кабинете ведёт расписание, услуги, клиентов и статусы.\n\nЧто внутри\n• Каталог услуг и категорий\n• Карточки мастеров и студий\n• Свободные даты и время\n• Онлайн-запись и статус\n• Напоминания и история\n• **Кабинет мастера**\n\nПозиционирование\nSlotty не заменяет мастера. Он соединяет клиента и специалиста и убирает переписки. Вход через Telegram, Google и другие способы — с любого устройства.\n\nИтог\nЛокальный сервис записи, который ощущается как **полноценный продукт**: быстро для клиента, удобно для мастера, готов расти в marketplace.\n",
-      detailsEn: "Format: SaaS / marketplace / online booking\n\nThe problem\nBooking a master still often lives in **DMs and WhatsApp**: “free tomorrow?”, “in an hour?”, “forgot to remind”. Slotty removes that chaos.\n\nHow it works\nThe client picks a category, master, service and an **open slot** — then books online. The master runs schedule, services, clients and statuses in a dashboard.\n\nWhat’s inside\n• Services and categories\n• Master and studio cards\n• Open dates and times\n• Online booking and status\n• Reminders and history\n• **Master dashboard**\n\nPositioning\nSlotty doesn’t replace the master. It connects client and specialist and kills the chat clutter. Sign-in via Telegram, Google and more — from any device.\n\nOutcome\nA local booking service that feels like a **full product**: fast for clients, useful for masters, ready to grow into a marketplace.\n",
+      subtitleRu: "Полный маркетплейс записи к мастерам: каталог с фильтрами и картой, Telegram Mini App, кабинет мастера (SaaS Free/Pro), platform-admin, bePaid — на Railway, домен slotty.of.by.",
+      subtitleEn: "Full booking marketplace for masters: filtered catalog + map, Telegram Mini App, master SaaS cabinet (Free/Pro), platform admin, bePaid — on Railway, domain slotty.of.by.",
+      detailsRu: "Зачем это\nЗапись к мастеру до сих пор часто живёт в **Direct и WhatsApp**: «есть на завтра?», «а через час?», «ой, забыла напомнить». Клиент устаёт писать. Мастер устаёт отвечать. Слоты пропадают в тишине чата.\n\nНужен был не черновик и не «кнопка записаться», а **полный маркетплейс**: каталог с жёсткой фильтрацией, карта, путь клиента, SaaS-кабинет мастера, роли, platform-admin, оплаты, уведомления и прод. Заказчик — **Виктория Д.** Бюджет — 230 000 ₽ ([[≈ 2 940 $]]). Срок — **3 недели**.\n\nКак работает\nКлиент открывает **slotty.of.by** (сайт или Telegram Mini App) → каталог → фильтры / карта → мастер → услуга → **свободный слот** → подтверждение. Код записи, напоминания в Telegram и email — без звонков.\nМастер в кабинете ведёт профиль, портфолио, адрес, услуги, акции, расписание, заявки и клиентов; тариф Free или Pro.\nPlatform-admin модерирует мастеров, записи, биллинг, платежи bePaid, рассылки и журнал — платформой можно рулить уже сейчас.\n\nЧто внутри\nЭто **крупная разработка**, не лендинг с формой. Фронт: React + TypeScript + Vite + Tailwind. Бэкенд: Express API, PostgreSQL (**88 миграций**), JWT-сессии. Прод: **два сервиса на Railway** (web + api), домен **slotty.of.by** — подсказали, где купить домен, подняли хостинг, привязали DNS и выкатили в бой. Плюс Telegram Bot / Mini App, Google Auth, email (Resend), карты (Leaflet / OSM, опционально Яндекс), платежи **bePaid** (BYN), Sentry, SEO-prerender.\n\nМаркетплейс для клиента: **6 категорий** (маникюр, барберы, брови/ресницы, массаж, фитнес, тату). Каталог — не «список карточек», а полноценный поиск: все / популярные / акции / новинки, текстовый поиск, **карта с геосортировкой**.\n\nФильтры: сортировка (рекомендации, популярность, ближайший слот, расстояние, рейтинг, цена ↑↓, отзывы); дата (сегодня / завтра / неделя / выходные / точный день); время суток и слайдер часов; визит в салоне или на дому; длительность; цена в BYN; рейтинг от 4.5 / 4.7 / 4.9; число отзывов; только верифицированные; только с акциями; только с онлайн-записью. Запись: дата → слот → комментарий → референс-фото → успех с кодом **SL-…**. Профиль клиента: записи, избранное, уведомления, настройки, отзыв после визита.\n\nКабинет мастера — отдельный SaaS: сегодня / заявки / расписание / услуги (каталог, цены, пакеты, акции) / профиль и портфолио / клиенты / репутация / биллинг / уведомления (десятки типов событий). Онбординг в **8 шагов**: категории → профиль → адрес на карте → услуги → доверие → превью → тариф. Тарифы: Free (лимиты) / Pro / trial 7 дней — оплата bePaid или ручной перевод.\n\nPlatform-admin: обзор, заявки (категории, удаления, спонсорство, жалобы), поддержка, статус системы, пользователи, мастера, услуги, записи (в т.ч. проблемные отмены), биллинг и промокоды, платежи bePaid, рассылки, аудит. Роли: **client / master / platform_admin**. Auth: email, Google, Telegram — с телефона и с компьютера.\n\nСложные куски, которые обычно «ломают» сроки: concurrent booking и слоты, pending expiry, auto-complete, споры по записи; entitlements Free/Pro; очередь уведомлений; multi-identity auth; серверный каталог с 20+ параметрами фильтра и Pro-boost в рекомендациях.\n\nЧто сделали\nДизайн + разработка под ключ: маркетплейс, кабинеты, админка, интеграции, домен и хостинг. Продукт на **slotty.of.by** — **скоро запуск к настоящим клиентам и мастерам**.\n\nИтог\nНе демо «посмотрите идею». **Полный маркетплейс записи** с фильтрами, картой, Mini App, SaaS мастера и platform-admin. Виктория Д., [[≈ 2 940 $]], 3 недели — и живой прод, куда можно зайти и проверить самому.\n",
+      detailsEn: "Why it matters\nBooking a master still often lives in **DMs and WhatsApp**: “free tomorrow?”, “in an hour?”, “oops, forgot to remind”. Clients get tired of typing. Masters get tired of answering. Slots vanish into chat silence.\n\nThis wasn’t a draft or a “book now” button. It needed a **full marketplace**: filtered catalog, map, client path, master SaaS cabinet, roles, platform admin, payments, notifications and production. Client — **Victoria D.** Budget — 230,000 ₽ ([[≈ $2,940]]). Timeline — **3 weeks**.\n\nHow it works\nClient opens **slotty.of.by** (web or Telegram Mini App) → catalog → filters / map → master → service → **open slot** → confirm. Booking code, Telegram + email reminders — no calls.\nMasters run profile, portfolio, address, services, promos, schedule, requests and clients; Free or Pro plan.\nPlatform admin moderates masters, bookings, billing, bePaid payments, broadcasts and audit — the platform is operable now.\n\nWhat’s inside\nA **large build**, not a landing with a form. Frontend: React + TypeScript + Vite + Tailwind. Backend: Express API, PostgreSQL (**88 migrations**), JWT sessions. Production: **two Railway services** (web + api), domain **slotty.of.by** — we advised where to buy the domain, set up hosting, pointed DNS and shipped live. Plus Telegram Bot / Mini App, Google Auth, email (Resend), maps (Leaflet / OSM, optional Yandex), **bePaid** (BYN), Sentry, SEO prerender.\n\nClient marketplace: **6 categories** (manicure, barbers, brows/lashes, massage, fitness, tattoo). Catalog isn’t a flat card list — full search: all / popular / promos / new, text search, **map with geo sort**.\n\nFilters: sort (recommended, popular, soonest, distance, rating, price ↑↓, reviews); date (today / tomorrow / week / weekend / exact day); time of day + hour slider; studio or at-home; duration; BYN price; rating from 4.5 / 4.7 / 4.9; review count; verified only; promos only; online booking only. Booking: date → slot → comment → reference photos → success with code **SL-…**. Client profile: appointments, favorites, notifications, settings, post-visit review.\n\nMaster cabinet is a separate SaaS: today / requests / schedule / services (catalog, prices, bundles, promos) / profile & portfolio / clients / reputation / billing / notifications (dozens of event types). **8-step** onboarding: categories → profile → map address → services → trust → preview → plan. Plans: Free (limits) / Pro / 7-day trial — bePaid or manual transfer.\n\nPlatform admin: overview, requests (category changes, deletions, sponsorship, reports), support, system status, users, masters, services, bookings (incl. problem cancellations), billing & promo codes, bePaid payments, broadcasts, audit. Roles: **client / master / platform_admin**. Auth: email, Google, Telegram — phone or desktop.\n\nHard pieces that usually blow timelines: concurrent booking & slots, pending expiry, auto-complete, booking disputes; Free/Pro entitlements; notification job queue; multi-identity auth; server catalog with 20+ filter params and Pro boost in recommendations.\n\nWhat we delivered\nDesign + turnkey build: marketplace, cabinets, admin, integrations, domain and hosting. Live on **slotty.of.by** — **soon launching to real clients and masters**.\n\nOutcome\nNot a “look at the idea” demo. A **full booking marketplace** with filters, map, Mini App, master SaaS and platform admin. Victoria D., [[≈ $2,940]], 3 weeks — and a live prod you can open and check yourself.\n",
       domain: SLOTTY_DOMAIN,
       status: "live",
-      tags: ["Marketplace", "Booking", "Beauty", "SaaS", "Mobile App"],
+      tags: ["Marketplace", "Booking", "Beauty", "SaaS", "Telegram", "Admin Panel"],
       cover: "/images/project-priew/slotty.webp",
       gallery: SLOTTY_GALLERY,
       outcomes: [
-        isRu ? "Онлайн-запись **без** переписок" : "Online booking **without** endless messaging",
-        isRu ? "Услуги, мастера и **слоты** в одном месте" : "Services, masters and **slots** in one place",
-        isRu ? "Кабинеты для мастера и клиента" : "Areas for master and client",
-        isRu ? "Путь от выбора до **подтверждённой** записи" : "Path from pick to **confirmed** booking"
+        isRu ? "**Полный маркетплейс** за 3 недели — не MVP" : "**Full marketplace** in 3 weeks — not an MVP",
+        isRu ? "Каталог с **фильтрами + карта** · Mini App · Free/Pro" : "Catalog with **filters + map** · Mini App · Free/Pro",
+        isRu ? "Домен **slotty.of.by** · хостинг Railway (web + api)" : "Domain **slotty.of.by** · Railway hosting (web + api)",
+        isRu ? "Виктория Д. · [[≈ 2 940 $]] · скоро запуск к живым клиентам" : "Victoria D. · [[≈ $2,940]] · soon launching to live clients"
       ],
       stack: [
         "React",
         "TypeScript",
-        "Node.js",
-        "Supabase",
-        "Telegram Auth",
+        "Vite",
+        "Express",
+        "PostgreSQL",
+        "Railway",
+        "Telegram Mini App",
         "Google Auth",
-        "Calendar",
-        "Notifications"
+        "bePaid",
+        "Leaflet",
+        "Resend"
       ],
       testimonial: {
-        name: isRu ? "Анастасия М." : "Anastasia M.",
-        role: isRu ? "Мастер маникюра, Минск" : "Nail artist, Minsk",
-        text: isRu ? "Клиенты сами выбирают свободное время и записываются — меньше переписок и забытых слотов. Мне удобно вести расписание в кабинете, а не в чатах." : "Clients pick an open slot and book themselves — fewer chats and forgotten appointments. I manage the schedule in the dashboard instead of messaging apps."
+        name: isRu ? "Виктория Д." : "Victoria D.",
+        role: isRu ? "Заказчик Slotty" : "Slotty client",
+        text: isRu ? "Нужна была не «демо-запись», а нормальный маркетплейс с фильтрами, кабинетом мастера и админкой. Собрали быстро, по делу — за три недели получили продукт на своём домене, с которым можно идти к реальным клиентам." : "I needed a real marketplace with filters, a master cabinet and admin — not a booking demo. They shipped fast and clean: in three weeks we had a product on our own domain, ready for real clients."
       }
     },
     // 8) SPLITON — финтех-платформа для музыкальных активов
     {
       id: "spliton",
       title: "Spliton",
-      subtitleRu: "Финтех-платформа для музыкальных активов: каталог релизов, покупка долей, вторичный рынок, кошелёк, выплаты, юридические согласия и админ-панель.",
-      subtitleEn: "Fintech platform for music assets: release catalog, share purchases, secondary market, wallet, payouts, legal consents and admin panel.",
-      detailsRu: "Срок: 8–12 недель\n\nМасштаб\nЭто не лендинг и не «админка на коленке». Spliton — **финтех-платформа** под инвестирование в музыкальные активы: каталог, покупка долей, кошелёк, вторичный рынок, согласия, выплаты и админка.\n\nСложность\nНужна была система, где дизайн, роли, API, база, безопасность и реальные сценарии **сходятся в одну логику** — без дыр на confirm → processing → result.\n\nЧто собрали\n• Каталог релизов с финансовыми параметрами\n• Покупка долей со всеми критичными состояниями\n• **Кошелёк**: баланс, депозит, вывод, история\n• Вторичный рынок: фильтры, ордера, статусы\n• Юридические **consent-flow**\n• Админ-панель: финансы, документы, реквизиты, аудит\n• i18n **RU / EN / ES / PT**\n\nСценарий\nПользователь входит, выбирает релиз, принимает условия, покупает доли. Актив появляется в кабинете. Дальше — баланс, выплаты, вторичный рынок. Админ ведёт документы и финансы.\n\nИтог\nПлатформа **в продакшене**: тяжёлый продукт, который держит и UI, и бизнес-логику, и compliance.\n",
-      detailsEn: "Timeline: 8–12 weeks\n\nScale\nNot a landing page and not a “quick admin”. Spliton is a **fintech platform** for music-asset investing: catalog, share purchases, wallet, secondary market, consents, payouts and admin.\n\nComplexity\nWe needed a system where design, roles, API, database, security and real flows **lock into one logic** — no holes on confirm → processing → result.\n\nWhat we built\n• Release catalog with financial parameters\n• Share purchase with all critical states\n• **Wallet**: balance, deposit, withdrawal, history\n• Secondary market: filters, orders, statuses\n• Legal **consent flows**\n• Admin: finance, documents, requisites, audit\n• i18n **RU / EN / ES / PT**\n\nFlow\nA user signs in, picks a release, accepts terms, buys shares. The asset lands in the dashboard. Then balance, payouts, secondary market. Admins run documents and finance.\n\nOutcome\nPlatform is **live**: a heavy product that holds UI, business logic and compliance together.\n",
+      subtitleRu: "Финтех-платформа для долей в музыке: каталог, первичный и вторичный рынок, кошелёк USDT, ledger, compliance и operator portal — продукт с инвестором и живым сопровождением.",
+      subtitleEn: "Fintech platform for music shares: catalog, primary & secondary market, USDT wallet, ledger, compliance and operator portal — investor-backed product with ongoing support.",
+      detailsRu: "Зачем это\nМузыкальные активы — не лендинг с кнопкой «купить». Здесь **реальные деньги**, роли, согласия, депозиты и выводы должны сходиться без дыр: confirm → processing → result. Один сбой на выплате или consent — и доверие кончается быстрее любого релиза.\n\nНужна была не «админка на коленке», а **полноценная биржа долей**: кабинет инвестора, operator portal, ledger, treasury, KYC/AML, споры, публичный trust center. Мы собрали это end-to-end — и **до сих пор сопровождаем** продукт в бою.\n\nКак работает\nИнвестор регистрируется, проходит согласия и при необходимости KYC, пополняет баланс в **USDT (TRC20)**.\nДальше: выбирает релиз в каталоге → изучает data room → покупает доли (UNT) на первичке → видит позиции и начисления в кабинете → при желании торгует на **вторичном рынке** (стакан, лимитные заявки) → выводит средства через проверку treasury.\nОператор ведёт депозиты, выводы, compliance, релизы, рефералов, споры и публичный статус системы — всё из admin-портала.\n\nЧто внутри\nЭто **крупный продукт в одном репозитории**, не одностраничный сайт. Клиентская часть на Next.js, сервер на NestJS, база PostgreSQL через Prisma, автотесты на критичные денежные сценарии.\n\nКабинет инвестора: каталог релизов, покупка долей, портфель и метрики, кошелёк (пополнение, вывод, история, выписки), **вторичный рынок со сложным биржевым стаканом** и лимитными заявками, калькулятор, новости, поддержка и центр споров, реферальная и партнёрская программы, VIP.\n\nПубличная часть: лендинг продукта, **центр доверия** (учёт операций, статус сервисов, документы), страница статуса системы, комиссии, юридические тексты, справочный центр.\n\nПортал оператора — отдельная **огромная админ-панель** для команды платформы: не пара экранов, а десятки разделов управления. Главный обзор, задачи операторов, пользователи и роли, треки и раунды, артисты, лейблы, жанры.\n\nФинансы: кошельки, пополнения, **выплаты**, позиции, доход и доход платформы, казначейство, платёжные реквизиты. Рынок: вторичный рынок, сделки, подозрительные операции. Операции: поддержка, споры, комплаенс, KYC, юридические тексты, рефералы и партнёры.\n\nАналитика с **графиками**: финансы, пользователи, треки, рынок, доход, риски, операции. Плюс отчёты и выгрузки, новости, справочный центр, статус системы, уведомления, журнал аудита действий сотрудников. Роли: супер-админ, бухгалтер, контент, поддержка, комплаенс, бизнес-аналитик.\n\nФинансовое ядро: внутренний учёт операций с двойной записью, сверки, комиссии платформы, автоматизация депозитов в сети TRON, политика горячего и холодного кошелька, регламенты инцидентов. Интерфейс на acid lime `#b7f500` — как в живом продукте.\n\nЯзыки: интерфейс полностью на **четырёх языках** — русский, английский, испанский, португальский.\n\nЧто сделали\nСпроектировали и собрали весь контур: дизайн, фронтенд, бэкенд, база, комплаенс, автотесты и продакшен-операции. Продукт запущен, в него зашёл инвестор на [[200 000 $]], платформа в работе — **TIVONIX продолжает поддержку и развитие**.\n\nИтог\nНе демо и не презентация. **Живая финтех-платформа** с кабинетом инвестора, сложной биржей долей и огромной админкой под выплаты, графики и операционное управление. Сопровождаем до сих пор.\n",
+      detailsEn: "Why it matters\nMusic assets aren’t a landing page with a buy button. **Real money**, roles, consents, deposits and withdrawals have to lock without holes: confirm → processing → result. One payout or consent failure — and trust dies faster than any release.\n\nThis wasn’t a “quick admin”. It needed a **full share exchange**: investor cabinet, operator portal, ledger, treasury, KYC/AML, disputes, public trust center. We built it end-to-end — and **still support** it in production.\n\nHow it works\nAn investor signs up, accepts policies, completes KYC when required, and tops up in **USDT (TRC20)**.\nThen: pick a release in the catalog → review the data room → buy shares (UNT) on primary → track positions and accruals → optionally trade on the **secondary market** (order book, limit orders) → withdraw through treasury checks.\nOperators run deposits, withdrawals, compliance, releases, referrals, disputes and public system status — all from the admin portal.\n\nWhat’s inside\nA **large product in one repository**, not a single-page site. Client app on Next.js, server on NestJS, PostgreSQL via Prisma, automated tests on critical money flows.\n\nInvestor cabinet: release catalog, share purchase, portfolio and metrics, wallet (deposit, withdraw, history, statements), **secondary market with a complex order book** and limit orders, calculator, news, support and dispute center, referral and partner programs, VIP.\n\nPublic surface: product landing, **trust center** (operations ledger, service status, documents), system status page, fees, legal pages, help center.\n\nThe operator portal is a **huge admin panel** for the platform team: not a few screens, but dozens of management sections. Executive overview, operator tasks, users and roles, tracks and rounds, artists, labels, genres.\n\nFinance: wallets, deposits, **payouts**, holdings, revenue and platform revenue, treasury, payment requisites. Market: secondary market, trades, suspicious activity. Operations: support, disputes, compliance, KYC, legal texts, referrals and partners.\n\nAnalytics with **charts**: finance, users, tracks, market, revenue, risk, operations. Plus reports and exports, news, help center, system status, notifications, staff audit log. Roles: super admin, accountant, content, support, compliance, business analyst.\n\nFinancial core: internal double-entry operations ledger, reconciliation, platform fees, TRON deposit automation, hot/cold wallet policy, incident runbooks. Interface on acid lime `#b7f500` — matching the live product.\n\nLanguages: the interface is fully localized in **four languages** — Russian, English, Spanish, Portuguese.\n\nWhat we delivered\nDesigned and shipped the full loop: design, frontend, backend, database, compliance, automated tests and production ops. The product is live, backed by an investor at [[$200,000]], and **TIVONIX still supports and evolves** it.\n\nOutcome\nNot a demo and not a deck. A **live fintech platform** with an investor cabinet, a complex share exchange and a huge admin for payouts, charts and day-to-day operations. Still supported.\n",
       domain: SPLITON_DOMAIN,
       status: "live",
       tags: [
@@ -5656,13 +5662,13 @@ function buildAllProjects(isRu) {
       cover: "/images/project-priew/spliton.webp",
       gallery: SPLITON_GALLERY,
       outcomes: [
-        isRu ? "**Финтех-платформа** для музыкальных активов" : "**Fintech platform** for music assets",
-        isRu ? "Каталог и покупка **долей**" : "Catalog and **share** purchase flow",
-        isRu ? "Вторичный рынок с ордерами и статусами" : "Secondary market with orders and statuses",
-        isRu ? "**Кошелёк**, депозит и вывод" : "**Wallet**, deposit and withdrawal",
-        isRu ? "Юр. согласия и **админ-панель**" : "Legal consents and **admin panel**",
-        isRu ? "i18n RU / EN / ES / PT" : "i18n RU / EN / ES / PT",
-        isRu ? "В **продакшене**" : "**Live** in production"
+        isRu ? "Полный финтех-контур: кабинет + биржа долей + портал оператора" : "Full fintech loop: cabinet + share exchange + operator portal",
+        isRu ? "Огромная админка: выплаты, казначейство, графики, комплаенс" : "Huge admin: payouts, treasury, charts, compliance",
+        isRu ? "Учёт операций, KYC, центр доверия, USDT TRC20" : "Operations ledger, KYC, trust center, USDT TRC20",
+        isRu ? "Инвестор [[200 000 $]] · продукт в продакшене" : "Investor [[$200,000]] · live in production",
+        isRu ? "**TIVONIX сопровождает** платформу до сих пор" : "**TIVONIX still supports** the platform",
+        isRu ? "4 языка: русский, английский, испанский, португальский" : "4 languages: Russian, English, Spanish, Portuguese",
+        isRu ? "Сложный биржевой стакан на вторичном рынке" : "Complex order book on the secondary market"
       ],
       stack: [
         "Next.js",
@@ -5677,9 +5683,9 @@ function buildAllProjects(isRu) {
         "i18n"
       ],
       testimonial: {
-        name: isRu ? "Илья С." : "Ilya S.",
-        role: isRu ? "Product owner" : "Product owner",
-        text: isRu ? "Сложный продукт: финансы, согласия, вторичный рынок, админка. Довели до продакшена без сюрпризов на критичных сценариях. Коммуникация была по делу, правки вносили быстро." : "A complex build: finance, consents, secondary market, admin. Shipped to production without surprises on critical flows. Clear communication, fast iterations."
+        name: isRu ? "Виктор Безбородых" : "Viktor Bezborodykh",
+        role: isRu ? "Основатель MIN.ECO" : "Founder & CEO, MIN.ECO",
+        text: isRu ? "Spliton — тяжёлый продукт: биржа долей, кошелёк, выплаты и огромная админка. Собрали целиком, довели до продакшена и не бросили на поддержке. С нами спокойно масштабировать дальше." : "Spliton is a heavy product: share exchange, wallet, payouts and a huge admin. They shipped the full stack to production and stayed on support. Easy to keep scaling with them."
       }
     }
   ];
@@ -7151,8 +7157,8 @@ function Footer() {
     }
   );
 }
-const CANONICAL_ORIGIN = "https://tivonix.tech";
-const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN}/images/og-social.jpg`;
+const CANONICAL_ORIGIN$1 = "https://tivonix.tech";
+const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN$1}/images/og-social.jpg`;
 const OG_IMAGE_WIDTH = "1200";
 const OG_IMAGE_HEIGHT = "630";
 const OG_IMAGE_ALT = "TIVONIX AI — сайты, боты и автоматизация для бизнеса";
@@ -7165,7 +7171,7 @@ function SEO({
   schemaJsonLd,
   ogLocalePrimary = "ru_RU"
 }) {
-  const canonicalUrl = canonicalPath.startsWith("http") ? canonicalPath : `${CANONICAL_ORIGIN}${canonicalPath.startsWith("/") ? "" : "/"}${canonicalPath}`;
+  const canonicalUrl = canonicalPath.startsWith("http") ? canonicalPath : `${CANONICAL_ORIGIN$1}${canonicalPath.startsWith("/") ? "" : "/"}${canonicalPath}`;
   const ogLocaleAlt = ogLocalePrimary === "ru_RU" ? "en_US" : "ru_RU";
   return /* @__PURE__ */ jsxs(Helmet, { children: [
     /* @__PURE__ */ jsx("title", { children: title }),
@@ -7181,7 +7187,13 @@ function SEO({
     /* @__PURE__ */ jsx("meta", { property: "og:image", content: ogImage }),
     /* @__PURE__ */ jsx("meta", { property: "og:image:width", content: OG_IMAGE_WIDTH }),
     /* @__PURE__ */ jsx("meta", { property: "og:image:height", content: OG_IMAGE_HEIGHT }),
-    /* @__PURE__ */ jsx("meta", { property: "og:image:type", content: "image/jpeg" }),
+    /* @__PURE__ */ jsx(
+      "meta",
+      {
+        property: "og:image:type",
+        content: ogImage.endsWith(".webp") ? "image/webp" : ogImage.endsWith(".png") ? "image/png" : "image/jpeg"
+      }
+    ),
     /* @__PURE__ */ jsx("meta", { property: "og:image:alt", content: OG_IMAGE_ALT }),
     /* @__PURE__ */ jsx("meta", { name: "twitter:card", content: "summary_large_image" }),
     /* @__PURE__ */ jsx("meta", { name: "twitter:title", content: title }),
@@ -7260,6 +7272,84 @@ function buildHomePageSchema({ pageTitle, pageDescription }) {
         isPartOf: { "@id": "https://tivonix.tech/#website" },
         about: { "@id": "https://tivonix.tech/#org" },
         inLanguage: ["ru", "en"]
+      }
+    ]
+  };
+}
+function buildProjectCaseSchema({
+  id,
+  title,
+  description,
+  coverUrl,
+  domain,
+  tags,
+  stack,
+  lang,
+  dateModified
+}) {
+  const pageUrl = `https://tivonix.tech/projects/${id}`;
+  const inLanguage = lang === "ru" ? "ru" : "en";
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://tivonix.tech/#org",
+        name: "TIVONIX",
+        url: "https://tivonix.tech/"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${pageUrl}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: lang === "ru" ? "Главная" : "Home",
+            item: "https://tivonix.tech/"
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: lang === "ru" ? "Проекты" : "Projects",
+            item: "https://tivonix.tech/projects"
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: title,
+            item: pageUrl
+          }
+        ]
+      },
+      {
+        "@type": "WebPage",
+        "@id": `${pageUrl}#webpage`,
+        url: pageUrl,
+        name: `${title} — ${lang === "ru" ? "кейс TIVONIX" : "TIVONIX case study"}`,
+        description,
+        isPartOf: { "@id": "https://tivonix.tech/#website" },
+        about: { "@id": `${pageUrl}#creativework` },
+        breadcrumb: { "@id": `${pageUrl}#breadcrumb` },
+        inLanguage,
+        primaryImageOfPage: {
+          "@type": "ImageObject",
+          url: coverUrl
+        }
+      },
+      {
+        "@type": "CreativeWork",
+        "@id": `${pageUrl}#creativework`,
+        name: title,
+        description,
+        url: pageUrl,
+        image: coverUrl,
+        creator: { "@id": "https://tivonix.tech/#org" },
+        publisher: { "@id": "https://tivonix.tech/#org" },
+        inLanguage,
+        keywords: [...tags, ...stack ?? []].join(", "),
+        ...domain ? { sameAs: [domain] } : {},
+        ...dateModified ? { dateModified } : {}
       }
     ]
   };
@@ -7399,7 +7489,7 @@ function ProjectPreviewFrame({
           alt: "",
           className: cx$6(
             "block h-full w-full",
-            variant === "grid" ? "scale-110 object-cover object-top blur-[22px]" : "object-contain"
+            variant === "grid" ? "object-cover object-center" : "object-contain"
           ),
           draggable: false,
           loading: "lazy",
@@ -7793,15 +7883,447 @@ function ProjectsPage() {
     /* @__PURE__ */ jsx(Footer, {})
   ] });
 }
+const PROJECT_CASE_SYSTEM = {
+  tivonixpanel: {
+    moodRu: "Партнёрский кабинет без хаоса в чатах",
+    moodEn: "Partner cabinet without chat chaos",
+    storyRu: "Партнёрство сыпется не на оффере — на слепых зонах: где заявка, какой этап, когда выплата. Пока правда в Telegram и Excel — каждый день начинается с «напомни». Мы собрали кабинет, в который заходят сами: статусы, проекты и выплаты на тёмном canvas с одним оранжевым акцентом.",
+    storyEn: "Partnerships don’t die on the offer — they die on blind spots: where’s the request, what stage, when’s the payout. While truth lives in chats and spreadsheets, every day starts with “remind me”. We built a cabinet people actually open: statuses, projects and payouts on a dark canvas with one orange accent.",
+    logo: "/images/project-logos/tivonixpanel.png",
+    palette: [
+      {
+        name: "Signal Orange",
+        hex: "#FF6B2C",
+        group: "brand",
+        roleRu: "Единственный акцент: кнопки, статусы «в работе», ключевые CTA и точки внимания в кабинете.",
+        roleEn: "The only accent: filled buttons, in-progress statuses, primary CTAs and focus moments in the cabinet."
+      },
+      {
+        name: "Void Canvas",
+        hex: "#0a0a0b",
+        group: "neutral",
+        roleRu: "Основной фон страницы, hero-оверлей и «чёрное поле» вокруг панелей.",
+        roleEn: "Dominant page background, hero overlay and the black field around panels."
+      },
+      {
+        name: "Graphite Card",
+        hex: "#1c1c1f",
+        group: "neutral",
+        roleRu: "Поверхности карточек и секций — на шаг светлее canvas, без жёстких границ.",
+        roleEn: "Card and section surfaces — one step lighter than the canvas, no hard borders."
+      },
+      {
+        name: "Obsidian Control",
+        hex: "#27272b",
+        group: "neutral",
+        roleRu: "Вторичные кнопки, инпуты и тихие интерактивные зоны.",
+        roleEn: "Secondary buttons, inputs and quiet interactive surfaces."
+      },
+      {
+        name: "Ash Text",
+        hex: "#8a8a8e",
+        group: "neutral",
+        roleRu: "Вторичный текст, подписи к полям, вспомогательные лейблы.",
+        roleEn: "Muted body copy, field labels and helper text."
+      },
+      {
+        name: "Ivory Text",
+        hex: "#f2f2f2",
+        group: "neutral",
+        roleRu: "Заголовки, основной текст и иконки на тёмном фоне.",
+        roleEn: "Headlines, primary text and icons on dark surfaces."
+      },
+      {
+        name: "Pure White",
+        hex: "#ffffff",
+        group: "neutral",
+        roleRu: "Текст и иконки на оранжевых primary-кнопках — максимальный контраст.",
+        roleEn: "Text and icon fills on orange primary buttons for maximum contrast."
+      }
+    ]
+  },
+  spliton: {
+    moodRu: "Биржа долей в музыке — полный финтех-контур",
+    moodEn: "Music-share exchange — full fintech loop",
+    storyRu: "Музыкальные активы — не кнопка «купить». Деньги, согласия, пополнения и статусы должны сходиться **без дыр**: подтверждение → обработка → результат. Один сбой на выплате — и доверие кончается быстрее любого релиза.\n\nSpliton — живая **биржа долей**: каталог релизов, покупка на первичном рынке, сложный вторичный рынок со стаканом и лимитными заявками, кошелёк USDT, внутренний учёт операций, KYC, центр доверия и портал оператора. Не слайд «как будет» — продукт, где интерфейс, финансы и комплаенс в одной системе.\n\nИнтерфейс полностью на **четырёх языках**: русский, английский, испанский, португальский. В платформу зашёл инвестор на [[200 000 $]]. Мы собрали продукт целиком — включая **огромную админку** под выплаты, казначейство и аналитику с графиками — и **до сих пор сопровождаем**. Acid lime `#b7f500` на чёрном фоне — как на живом spliton.io.",
+    storyEn: "Music assets aren’t a buy button. Money, consents, deposits and statuses have to lock **without holes**: confirm → processing → result. One payout failure — and trust dies faster than any release.\n\nSpliton is a live **share exchange**: release catalog, primary-market purchase, a complex secondary market with an order book and limit orders, USDT wallet, internal operations ledger, KYC, trust center and operator portal. Not a “how it will look” slide — a product where interface, finance and compliance live in one system.\n\nThe interface is fully localized in **four languages**: Russian, English, Spanish, Portuguese. The platform is backed by an investor at [[$200,000]]. We shipped the full product — including a **huge admin** for payouts, treasury and analytics with charts — and **still support it**. Acid lime `#b7f500` on black — matching live spliton.io.",
+    logo: "/images/project-logos/spliton.webp",
+    palette: [
+      {
+        name: "Acid Lime",
+        hex: "#b7f500",
+        group: "brand",
+        roleRu: "Primary Spliton: кнопки покупки, активные статусы, графики и ключевые CTA на тёмном UI.",
+        roleEn: "Spliton primary: buy buttons, active statuses, sparklines and key CTAs on dark UI."
+      },
+      {
+        name: "Void Black",
+        hex: "#000000",
+        group: "neutral",
+        roleRu: "Основной canvas страниц доверия, кабинета и маркетинга.",
+        roleEn: "Main canvas for trust pages, cabinet and marketing."
+      },
+      {
+        name: "Ink Surface",
+        hex: "#141414",
+        group: "neutral",
+        roleRu: "Карточки кабинета, ledger-блоки и приподнятые панели.",
+        roleEn: "Cabinet cards, ledger blocks and elevated panels."
+      },
+      {
+        name: "Control Gray",
+        hex: "#161616",
+        group: "neutral",
+        roleRu: "Вторичные поверхности, инпуты и тихие акцентные зоны.",
+        roleEn: "Secondary surfaces, inputs and quiet accent areas."
+      },
+      {
+        name: "Muted Text",
+        hex: "#7a7a7a",
+        group: "neutral",
+        roleRu: "Вторичные подписи, метаданные операций и helper-текст.",
+        roleEn: "Secondary labels, operation metadata and helper text."
+      },
+      {
+        name: "Ivory Signal",
+        hex: "#e4e4e4",
+        group: "neutral",
+        roleRu: "Основной текст, суммы USDT и навигация.",
+        roleEn: "Primary text, USDT amounts and navigation."
+      },
+      {
+        name: "Ink on Lime",
+        hex: "#060606",
+        group: "neutral",
+        roleRu: "Текст и иконки на Acid Lime кнопках — максимальный контраст.",
+        roleEn: "Text and icons on Acid Lime buttons — maximum contrast."
+      }
+    ]
+  },
+  slotty: {
+    moodRu: "Полный маркетплейс записи — фильтры, карта, SaaS мастера",
+    moodEn: "Full booking marketplace — filters, map, master SaaS",
+    storyRu: "Не «кнопка записаться». **Маркетплейс**: каталог с жёсткими фильтрами и картой, Telegram Mini App, кабинет мастера Free/Pro, platform-admin, bePaid.\n\nЗаказчик — **Виктория Д.** Бюджет — 230 000 ₽ ([[≈ 2 940 $]]). Срок — **3 недели**. React + Express + PostgreSQL, прод на **Railway**, домен **slotty.of.by** — подсказали, где купить, подняли хостинг, выкатили.\n\nСкоро запуск к **настоящим клиентам и мастерам**. Зайти и проверить можно самому: слот видно сразу, без Direct.",
+    storyEn: "Not a “book now” button. A **marketplace**: filtered catalog + map, Telegram Mini App, master Free/Pro cabinet, platform admin, bePaid.\n\nClient — **Victoria D.** Budget — 230,000 ₽ ([[≈ $2,940]]). Timeline — **3 weeks**. React + Express + PostgreSQL, production on **Railway**, domain **slotty.of.by** — we advised where to buy, set up hosting, shipped live.\n\nSoon launching to **real clients and masters**. You can open it yourself: the slot is visible right away — no DMs.",
+    logo: "/images/project-logos/slotty.png",
+    palette: [
+      {
+        name: "Rose Brand",
+        hex: "#F47C8C",
+        group: "brand",
+        roleRu: "Основной бренд Slotty: кнопки, бордеры и акценты в каталоге и записи.",
+        roleEn: "Core Slotty brand: buttons, borders and accents across catalog and booking."
+      },
+      {
+        name: "Hot Pink",
+        hex: "#FF5F7A",
+        group: "brand",
+        roleRu: "Яркий CTA и hover: «записаться», подтверждение слота, живые акценты.",
+        roleEn: "Bright CTA and hover: book, confirm a slot, live accent moments."
+      },
+      {
+        name: "Blush Canvas",
+        hex: "#FFF1F4",
+        group: "neutral",
+        roleRu: "Мягкий розовый фон секций лендинга и подложек карточек.",
+        roleEn: "Soft pink wash for landing sections and card underlays."
+      },
+      {
+        name: "Dusty Rose",
+        hex: "#E29595",
+        group: "neutral",
+        roleRu: "Приглушённые бордеры и вторичные розовые обводки UI.",
+        roleEn: "Muted borders and secondary rose outlines in the UI."
+      },
+      {
+        name: "Ink",
+        hex: "#111827",
+        group: "neutral",
+        roleRu: "Тёмный текст и чёрные CTA на светлом интерфейсе.",
+        roleEn: "Dark copy and black CTAs on the light interface."
+      },
+      {
+        name: "Mist",
+        hex: "#EBEBEB",
+        group: "neutral",
+        roleRu: "Нейтральные поверхности, разделители и спокойные фоны.",
+        roleEn: "Neutral surfaces, dividers and quiet backgrounds."
+      },
+      {
+        name: "Pure White",
+        hex: "#FFFFFF",
+        group: "neutral",
+        roleRu: "Основной холст продукта и текст на розовых кнопках.",
+        roleEn: "Primary product canvas and text on pink buttons."
+      }
+    ]
+  },
+  headmind: {
+    moodRu: "Корпоративный сайт — Figma → WordPress под ключ",
+    moodEn: "Corporate site — Figma → WordPress turnkey",
+    storyRu: "Заказчик — **Евгений Беликов**, основатель и гендиректор ООО «Хэдмайнд». Бюджет — **100 000 ₽** ([[≈ 1 280 $]]).\n\nСначала макеты в **Figma** (несколько вариантов на выбор), потом сборка на **WordPress + Elementor**, хостинг и домен **headmind.ru**. Сайт, который спокойно шлют в первом B2B-сообщении.",
+    storyEn: "Client — **Evgeniy Belikov**, founder and CEO of Headmind. Budget — **100,000 ₽** ([[≈ $1,280]]).\n\nFirst **Figma** mockups (several options), then **WordPress + Elementor**, hosting and domain **headmind.ru**. A site you can send in the first B2B message.",
+    logo: "/images/project-logos/headmind.png",
+    palette: [
+      {
+        name: "Ocean Accent",
+        hex: "#0A7EA8",
+        group: "brand",
+        roleRu: "Брендовый акцент сайта: CTA, ссылки и фокус в маршруте к заявке.",
+        roleEn: "Site brand accent: CTAs, links and focus along the lead path."
+      },
+      {
+        name: "Deep Ocean",
+        hex: "#075F7F",
+        group: "brand",
+        roleRu: "Hover и усиление акцента на кнопках и активных состояниях.",
+        roleEn: "Hover and stronger accent on buttons and active states."
+      },
+      {
+        name: "Slate Canvas",
+        hex: "#0F172A",
+        group: "neutral",
+        roleRu: "Тёмный холст секций и спокойный корпоративный фон.",
+        roleEn: "Dark section canvas and calm corporate background."
+      },
+      {
+        name: "Ink",
+        hex: "#111827",
+        group: "neutral",
+        roleRu: "Основной текст и заголовки на светлых блоках.",
+        roleEn: "Primary text and headlines on light blocks."
+      },
+      {
+        name: "Warm Graphite",
+        hex: "#2E2828",
+        group: "neutral",
+        roleRu: "Тёмные поверхности карточек и вторичных панелей.",
+        roleEn: "Dark card surfaces and secondary panels."
+      },
+      {
+        name: "Steel Text",
+        hex: "#6B7280",
+        group: "neutral",
+        roleRu: "Вторичный текст: роли команды и подписи к услугам.",
+        roleEn: "Secondary copy: team roles and service captions."
+      },
+      {
+        name: "Pure White",
+        hex: "#FFFFFF",
+        group: "neutral",
+        roleRu: "Светлые секции и текст на акцентных кнопках.",
+        roleEn: "Light sections and text on accent buttons."
+      }
+    ]
+  },
+  logovo: {
+    moodRu: "Сеть шиномонтажа LOGOVO — сайт под ключ за 1 600 BYN",
+    moodEn: "LOGOVO tire network — turnkey site for 1,600 BYN",
+    storyRu: "Заказчик — **ООО «Логово»**, Минск: **4 филиала**, два **24/7**. Бюджет — **1 600 BYN** ([[≈ 42 800 ₽]] / [[≈ 560 $]]).\n\nСобрала **команда TIVONIX**: Figma → Next.js → домен и hoster.by. Светлый Awesomic-canvas, ember `#ff5a00` на CTA — запись с дороги за минуту.",
+    storyEn: "Client — **LOGOVO LLC**, Minsk: **4 branches**, two **24/7**. Budget — **1,600 BYN** ([[≈ 42,800 ₽]] / [[≈ $560]]).\n\nBuilt by the **TIVONIX team**: Figma → Next.js → domain and hoster.by. Light Awesomic canvas, ember `#ff5a00` on CTAs — book from the road in a minute.",
+    logo: "/images/project-logos/logovo.png",
+    logoFit: "contain",
+    palette: [
+      {
+        name: "Ember",
+        hex: "#FF5A00",
+        group: "brand",
+        roleRu: "Главный акцент продакшена: «Записаться», бейджи 24/7 и CTA с дороги.",
+        roleEn: "Production primary: Book, 24/7 badges and on-the-road CTAs."
+      },
+      {
+        name: "Ember Hover",
+        hex: "#E65200",
+        group: "brand",
+        roleRu: "Hover оранжевых кнопок — чуть темнее ember.",
+        roleEn: "Orange button hover — a shade darker than ember."
+      },
+      {
+        name: "Paper Canvas",
+        hex: "#F4F4F5",
+        group: "neutral",
+        roleRu: "Светлый фон страниц Awesomic — основной холст сайта.",
+        roleEn: "Light Awesomic page background — the site’s main canvas."
+      },
+      {
+        name: "Obsidian",
+        hex: "#09090B",
+        group: "neutral",
+        roleRu: "Тёмные CTA-блоки, футер и контрастные секции.",
+        roleEn: "Dark CTA blocks, footer and contrast sections."
+      },
+      {
+        name: "Graphite",
+        hex: "#18181B",
+        group: "neutral",
+        roleRu: "Основной текст body на светлом canvas.",
+        roleEn: "Primary body text on the light canvas."
+      },
+      {
+        name: "Cloud",
+        hex: "#ECECEE",
+        group: "neutral",
+        roleRu: "Карточки услуг, вторичные кнопки и мягкие панели.",
+        roleEn: "Service cards, secondary buttons and soft panels."
+      },
+      {
+        name: "Snow",
+        hex: "#FFFFFF",
+        group: "neutral",
+        roleRu: "Белые поверхности и текст на ember-кнопках.",
+        roleEn: "White surfaces and text on ember buttons."
+      }
+    ]
+  },
+  labelos: {
+    moodRu: "Премиум-лендинг лейбла",
+    moodEn: "Premium label landing",
+    storyRu: "Короткий промо-лендинг под конверсию: типографика, ритм и ясный оффер без воды. Тёмный canvas и один violet-акцент на CTA.",
+    storyEn: "A short conversion landing: type, rhythm and a clear offer without fluff. Dark canvas and one violet accent on CTAs.",
+    palette: [
+      {
+        name: "Violet Accent",
+        hex: "#8b5cf6",
+        group: "brand",
+        roleRu: "Акцент конверсии: primary CTA и выделенные product-моменты.",
+        roleEn: "Conversion accent: primary CTAs and highlighted product moments."
+      },
+      {
+        name: "Ink Canvas",
+        hex: "#0a0a0b",
+        group: "neutral",
+        roleRu: "Фон промо-лендинга и тёмные секции.",
+        roleEn: "Promo landing background and dark sections."
+      },
+      {
+        name: "Panel",
+        hex: "#161618",
+        group: "neutral",
+        roleRu: "Карточки возможностей и сценариев.",
+        roleEn: "Feature and flow cards."
+      },
+      {
+        name: "Muted Text",
+        hex: "#a1a1aa",
+        group: "neutral",
+        roleRu: "Вторичный текст и пояснения к офферу.",
+        roleEn: "Secondary copy and offer explanations."
+      },
+      {
+        name: "Ivory Text",
+        hex: "#f2f2f2",
+        group: "neutral",
+        roleRu: "Display-заголовки и основной UI-текст.",
+        roleEn: "Display headlines and primary UI text."
+      }
+    ]
+  },
+  upc: {
+    moodRu: "SaaS MVP: трек → ссылка → просмотры",
+    moodEn: "SaaS MVP: track → link → views",
+    storyRu: "Продуктовый интерфейс под монетизацию коротких видео: подключаешь трек, делишься ссылкой, следишь за охватом. Тёмная оболочка метрик и яркий Pulse-акцент на действие.",
+    storyEn: "Product UI for short-video monetization: attach a track, share a link, track reach. Dark metrics shell and a vivid Pulse accent on action.",
+    palette: [
+      {
+        name: "TikTok Pulse",
+        hex: "#fe2c55",
+        group: "brand",
+        roleRu: "Энергия продукта: primary CTA и акцент на цикле монетизации.",
+        roleEn: "Product energy: primary CTAs and accent on the monetization loop."
+      },
+      {
+        name: "Void Canvas",
+        hex: "#09090b",
+        group: "neutral",
+        roleRu: "Фон SaaS-интерфейса и тёмная оболочка метрик.",
+        roleEn: "SaaS interface background and dark metrics shell."
+      },
+      {
+        name: "Card",
+        hex: "#18181b",
+        group: "neutral",
+        roleRu: "Карточки треков, ссылок и метрик.",
+        roleEn: "Track, link and metrics cards."
+      },
+      {
+        name: "Cyan Cue",
+        hex: "#25f4ee",
+        group: "neutral",
+        roleRu: "Вторичный акцент рядом с Pulse — лёгкие highlights.",
+        roleEn: "Secondary accent beside Pulse — light highlights."
+      },
+      {
+        name: "Ivory Text",
+        hex: "#fafafa",
+        group: "neutral",
+        roleRu: "Заголовки и основной текст продукта.",
+        roleEn: "Titles and primary product text."
+      }
+    ]
+  },
+  payclip: {
+    moodRu: "Платежи: лендинг + онбординг",
+    moodEn: "Payments: landing + onboarding",
+    storyRu: "Посадочная и онбординг, которые быстрее доводят до действия. Clip Blue на primary, спокойные нейтрали вокруг форм и статусов оплаты.",
+    storyEn: "Landing and onboarding that move users to action faster. Clip Blue on primary, calm neutrals around forms and payment statuses.",
+    palette: [
+      {
+        name: "Clip Blue",
+        hex: "#3b82f6",
+        group: "brand",
+        roleRu: "Primary для онбординга и платежных действий.",
+        roleEn: "Primary for onboarding and payment actions."
+      },
+      {
+        name: "Night Canvas",
+        hex: "#0a0a0c",
+        group: "neutral",
+        roleRu: "Фон посадочной и онбординг-экранов.",
+        roleEn: "Landing and onboarding screen background."
+      },
+      {
+        name: "Graphite Form",
+        hex: "#1c1c22",
+        group: "neutral",
+        roleRu: "Фоны форм и вторичные поверхности.",
+        roleEn: "Form backgrounds and secondary surfaces."
+      },
+      {
+        name: "Success Mint",
+        hex: "#34d399",
+        group: "neutral",
+        roleRu: "Успешная оплата и позитивные статусы.",
+        roleEn: "Successful payment and positive statuses."
+      },
+      {
+        name: "Ivory Text",
+        hex: "#f0f0f2",
+        group: "neutral",
+        roleRu: "Основной текст и лейблы в онбординге.",
+        roleEn: "Primary text and labels in onboarding."
+      }
+    ]
+  }
+};
+function getProjectCaseSystem(id) {
+  return PROJECT_CASE_SYSTEM[id];
+}
 const HEADER_H = 72;
+const CANONICAL_ORIGIN = "https://tivonix.tech";
 const BULLET_RE = /^[•\-]\s*/;
-const LEAD_META_RE = /^(Формат|Срок|Format|Timeline)\s*:/i;
+const LEAD_META_RE = /^(Формат|Срок|Format|Timeline|Продукт|Product)\s*:/i;
+const BODY = "text-[17px] font-[400] leading-[1.55] tracking-[0.005em] text-[#c3c3cc] sm:text-[18px]";
+const H2 = "font-hero text-[clamp(1.75rem,3.2vw,2.5rem)] font-[600] tracking-[-0.03em] leading-[1.1] text-[#ededf3]";
 function clipMetaDescription(text, max = 158) {
   const t = text.replace(/\s+/g, " ").trim();
   if (t.length <= max) return t;
   const slice = t.slice(0, max - 1);
   const i = slice.lastIndexOf(" ");
   return `${(i > 70 ? slice.slice(0, i) : slice).trimEnd()}…`;
+}
+function absoluteAssetUrl(path) {
+  if (path.startsWith("http")) return path;
+  return `${CANONICAL_ORIGIN}${path.startsWith("/") ? "" : "/"}${path}`;
 }
 function isSectionHeading(line) {
   const t = line.trim();
@@ -7810,12 +8332,6 @@ function isSectionHeading(line) {
   if (/[.!?…]$/.test(t)) return false;
   if ((t.match(/[,;:—]/g) || []).length >= 2) return false;
   return true;
-}
-function MetaRow({ label, children }) {
-  return /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
-    /* @__PURE__ */ jsx("div", { className: "text-[11px] font-semibold uppercase tracking-[0.14em] text-white/38", children: label }),
-    /* @__PURE__ */ jsx("div", { className: "min-w-0 text-[14px] leading-snug text-white/[0.88]", children })
-  ] });
 }
 function ExternalIcon({ className }) {
   return /* @__PURE__ */ jsxs(
@@ -7840,32 +8356,229 @@ function ExternalIcon({ className }) {
   );
 }
 function RichText({ text }) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
+  const parts = text.split(/(\*\*[^*]+\*\*|\[\[[^\]]+\]\])/g).filter(Boolean);
   return /* @__PURE__ */ jsx(Fragment, { children: parts.map((part, idx) => {
+    if (part.startsWith("[[") && part.endsWith("]]")) {
+      return /* @__PURE__ */ jsx("span", { className: "font-[600] text-[#b7f500]", children: part.slice(2, -2) }, idx);
+    }
     if (part.startsWith("**") && part.endsWith("**")) {
-      return /* @__PURE__ */ jsx("strong", { className: "font-[700] text-white/[0.92]", children: part.slice(2, -2) }, idx);
+      return /* @__PURE__ */ jsx("strong", { className: "font-[600] text-[#ededf3]", children: part.slice(2, -2) }, idx);
     }
     return /* @__PURE__ */ jsx("span", { children: part }, idx);
   }) });
 }
-function DetailBulletList({ items }) {
-  return /* @__PURE__ */ jsx("ul", { className: "mt-4 list-none space-y-2.5", children: items.map((item, idx) => /* @__PURE__ */ jsxs(
+function SpecRow({ label, children }) {
+  return /* @__PURE__ */ jsxs("div", { className: "grid gap-2 border-t border-white/[0.06] py-5 first:border-t-0 first:pt-0 last:pb-0 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-8 sm:items-start", children: [
+    /* @__PURE__ */ jsx("dt", { className: "text-[13px] font-[500] tracking-normal text-[#8a8a8e]", children: label }),
+    /* @__PURE__ */ jsx("dd", { className: "min-w-0 text-[15px] font-[400] leading-[1.45] tracking-normal text-[#ededf3]", children })
+  ] });
+}
+function Pill({ children }) {
+  return /* @__PURE__ */ jsx("span", { className: "inline-flex items-center rounded-full bg-[#1c1c1f] px-3.5 py-1.5 text-[12px] font-[500] tracking-normal text-[#c3c3cc]", children });
+}
+function FeatureGrid({ items }) {
+  return /* @__PURE__ */ jsx("ul", { className: "mt-7 grid list-none gap-3 sm:grid-cols-2 sm:gap-4", children: items.map((item, idx) => /* @__PURE__ */ jsx(
     "li",
     {
-      className: "text-[15px] leading-[1.7] text-white/[0.66] sm:text-[16px]",
-      children: [
-        /* @__PURE__ */ jsx("span", { className: "mr-2.5 text-white/28 select-none", "aria-hidden": true, children: "—" }),
-        /* @__PURE__ */ jsx(RichText, { text: item })
-      ]
+      className: "rounded-[12px] bg-[#1c1c1f] px-5 py-4 text-[15px] font-[400] leading-[1.45] text-[#c3c3cc] sm:text-[16px]",
+      children: /* @__PURE__ */ jsx(RichText, { text: item })
     },
-    `${idx}-${item.slice(0, 48)}`
+    `${idx}-${item.slice(0, 40)}`
   )) });
 }
-function ProjectDetailBody({ text }) {
+function CaseBrandIntro({
+  title,
+  mood,
+  story,
+  logo,
+  logoFit = "cover",
+  domain,
+  domainClean,
+  wip
+}) {
+  return /* @__PURE__ */ jsxs("header", { children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex items-start justify-between gap-6", children: [
+      /* @__PURE__ */ jsxs("div", { className: "min-w-0 flex-1", children: [
+        /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(2.25rem,5vw,3.5rem)] font-[600] tracking-[-0.035em] leading-[1.02] text-[#ededf3]", children: title }),
+        /* @__PURE__ */ jsx("p", { className: "mt-3 text-[17px] font-[400] leading-snug text-[#c3c3cc] sm:text-[18px]", children: mood })
+      ] }),
+      logo ? /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: cx$6(
+            "shrink-0 overflow-hidden rounded-[14px] bg-black sm:rounded-[16px]",
+            logoFit === "contain" ? "h-[4.5rem] w-14 sm:h-[5.25rem] sm:w-16" : "h-14 w-14 sm:h-16 sm:w-16"
+          ),
+          children: /* @__PURE__ */ jsx(
+            "img",
+            {
+              src: logo,
+              alt: "",
+              className: cx$6(
+                "h-full w-full object-center",
+                logoFit === "contain" ? "object-contain" : "object-cover"
+              ),
+              draggable: false,
+              decoding: "async"
+            }
+          )
+        }
+      ) : null
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: cx$6("mt-8 max-w-[42rem] space-y-4", BODY), children: story.split(/\n\n+/).map((para, idx) => /* @__PURE__ */ jsx("p", { children: /* @__PURE__ */ jsx(RichText, { text: para }) }, idx)) }),
+    domain && !wip ? /* @__PURE__ */ jsxs(
+      "a",
+      {
+        href: domain,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        className: "mt-8 inline-flex max-w-full items-center gap-2 text-[15px] font-[500] text-[#c3c3cc] transition hover:text-white",
+        children: [
+          /* @__PURE__ */ jsx(ExternalIcon, { className: "shrink-0 text-[#8a8a8e]" }),
+          /* @__PURE__ */ jsx("span", { className: "truncate", children: domain.startsWith("http") ? domain : `https://${domainClean}` })
+        ]
+      }
+    ) : null
+  ] });
+}
+function ColorPalette({
+  swatches,
+  isRu
+}) {
+  const brand = swatches.filter((s2) => s2.group === "brand");
+  const neutrals = swatches.filter((s2) => s2.group === "neutral");
+  return /* @__PURE__ */ jsxs("section", { className: "mb-16 scroll-mt-28 sm:mb-[72px]", "aria-labelledby": "case-palette", children: [
+    /* @__PURE__ */ jsx("h2", { id: "case-palette", className: H2, children: isRu ? "Палитра" : "Color Palette" }),
+    brand.length ? /* @__PURE__ */ jsxs("div", { className: "mt-10", children: [
+      /* @__PURE__ */ jsx("p", { className: "text-[13px] font-[500] text-[#8a8a8e]", children: isRu ? "Бренд" : "Brand" }),
+      /* @__PURE__ */ jsx("div", { className: "mt-4 space-y-8", children: brand.map((sw) => /* @__PURE__ */ jsx(PaletteSwatch, { swatch: sw, isRu, wide: true }, sw.hex + sw.name)) })
+    ] }) : null,
+    neutrals.length ? /* @__PURE__ */ jsxs("div", { className: "mt-12", children: [
+      /* @__PURE__ */ jsx("p", { className: "text-[13px] font-[500] text-[#8a8a8e]", children: isRu ? "Нейтрали" : "Neutrals" }),
+      /* @__PURE__ */ jsx("div", { className: "mt-4 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-4", children: neutrals.map((sw) => /* @__PURE__ */ jsx(PaletteSwatch, { swatch: sw, isRu }, sw.hex + sw.name)) })
+    ] }) : null
+  ] });
+}
+function PaletteSwatch({
+  swatch,
+  isRu,
+  wide
+}) {
+  const [copied, setCopied] = useState(false);
+  const isLight = luminance(swatch.hex) > 0.55;
+  const copyLabel = isRu ? "Копировать" : "Copy";
+  const copiedLabel = isRu ? "Скопировано" : "Copied";
+  const onCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(swatch.hex);
+    } catch {
+      const el = document.createElement("textarea");
+      el.value = swatch.hex;
+      el.setAttribute("readonly", "");
+      el.style.position = "fixed";
+      el.style.opacity = "0";
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    }
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1400);
+  };
+  return /* @__PURE__ */ jsxs("div", { className: cx$6("min-w-0", wide && "max-w-xl"), children: [
+    /* @__PURE__ */ jsxs(
+      "button",
+      {
+        type: "button",
+        onClick: onCopy,
+        className: cx$6(
+          "group relative w-full overflow-hidden rounded-2xl ring-1 ring-white/[0.06]",
+          "outline-none transition focus-visible:ring-2 focus-visible:ring-[#FF6B2C]/55",
+          wide ? "h-16 sm:h-[72px]" : "h-14 sm:h-16"
+        ),
+        style: { backgroundColor: swatch.hex },
+        "aria-label": `${copyLabel} ${swatch.name} ${swatch.hex}`,
+        title: `${copyLabel} ${swatch.hex}`,
+        children: [
+          /* @__PURE__ */ jsx(
+            "span",
+            {
+              className: cx$6(
+                "pointer-events-none absolute inset-0 rounded-2xl",
+                isLight ? "ring-1 ring-inset ring-black/10" : "ring-1 ring-inset ring-white/[0.04]"
+              ),
+              "aria-hidden": true
+            }
+          ),
+          /* @__PURE__ */ jsxs(
+            "span",
+            {
+              className: cx$6(
+                "absolute right-3 top-1/2 z-[1] -translate-y-1/2",
+                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1",
+                "text-[11px] font-[600] tracking-normal backdrop-blur-sm",
+                "opacity-0 transition duration-150 group-hover:opacity-100 group-focus-visible:opacity-100",
+                isLight ? "bg-black/55 text-white" : "bg-white/90 text-[#171719]"
+              ),
+              children: [
+                /* @__PURE__ */ jsx(CopyIcon, { className: "h-3 w-3 shrink-0" }),
+                copied ? copiedLabel : copyLabel
+              ]
+            }
+          )
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsx("p", { className: "mt-3 text-[15px] font-[600] tracking-[-0.01em] text-[#ededf3] sm:text-[16px]", children: swatch.name }),
+    /* @__PURE__ */ jsx(
+      "button",
+      {
+        type: "button",
+        onClick: onCopy,
+        className: "mt-0.5 font-mono text-[12px] tabular-nums text-[#8a8a8e] transition hover:text-[#ededf3]",
+        children: copied ? copiedLabel : swatch.hex
+      }
+    ),
+    /* @__PURE__ */ jsx("p", { className: "mt-2 max-w-[36ch] text-[13px] leading-[1.45] text-[#78787d] sm:text-[14px]", children: isRu ? swatch.roleRu : swatch.roleEn })
+  ] });
+}
+function CopyIcon({ className }) {
+  return /* @__PURE__ */ jsxs("svg", { className, viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: [
+    /* @__PURE__ */ jsx(
+      "rect",
+      {
+        x: "9",
+        y: "9",
+        width: "11",
+        height: "11",
+        rx: "2",
+        stroke: "currentColor",
+        strokeWidth: "2"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      "path",
+      {
+        d: "M5 15V7a2 2 0 0 1 2-2h8",
+        stroke: "currentColor",
+        strokeWidth: "2",
+        strokeLinecap: "round"
+      }
+    )
+  ] });
+}
+function luminance(hex) {
+  const h = hex.replace("#", "");
+  if (h.length !== 6) return 0;
+  const r = parseInt(h.slice(0, 2), 16) / 255;
+  const g = parseInt(h.slice(2, 4), 16) / 255;
+  const b = parseInt(h.slice(4, 6), 16) / 255;
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+function parseCaseBody(text) {
   const lines = text.split("\n").map((l) => l.trim());
-  const nodes = [];
+  const blocks = [];
   let i = 0;
-  let k = 0;
   const nextNonEmpty = (from) => {
     for (let j = from; j < lines.length; j++) {
       const t = lines[j].trim();
@@ -7881,14 +8594,9 @@ function ProjectDetailBody({ text }) {
     }
     if (LEAD_META_RE.test(line)) {
       const colon = line.indexOf(":");
-      const label = colon >= 0 ? line.slice(0, colon + 1) : line;
+      const label = colon >= 0 ? line.slice(0, colon).trim() : line;
       const value = colon >= 0 ? line.slice(colon + 1).trim() : "";
-      nodes.push(
-        /* @__PURE__ */ jsxs("p", { className: "mb-9 text-[13px] leading-snug text-white/48", children: [
-          /* @__PURE__ */ jsx("span", { className: "font-[700] uppercase tracking-[0.14em] text-white/55", children: label }),
-          value ? /* @__PURE__ */ jsx("span", { className: "ml-2 font-[500] normal-case tracking-normal text-white/72", children: value }) : null
-        ] }, k++)
-      );
+      blocks.push({ type: "meta", label, value });
       i++;
       continue;
     }
@@ -7896,14 +8604,11 @@ function ProjectDetailBody({ text }) {
       const items = [];
       while (i < lines.length) {
         const L = lines[i].trim();
-        if (!L) break;
-        if (!BULLET_RE.test(L)) break;
+        if (!L || !BULLET_RE.test(L)) break;
         items.push(L.replace(BULLET_RE, ""));
         i++;
       }
-      nodes.push(
-        /* @__PURE__ */ jsx("div", { className: "mb-9", children: /* @__PURE__ */ jsx(DetailBulletList, { items }) }, k++)
-      );
+      blocks.push({ type: "bullets", items });
       continue;
     }
     const nxt = nextNonEmpty(i + 1);
@@ -7912,17 +8617,15 @@ function ProjectDetailBody({ text }) {
       const title = line;
       i++;
       while (i < lines.length && !lines[i].trim()) i++;
-      let body = null;
       if (i < lines.length && BULLET_RE.test(lines[i].trim())) {
         const items = [];
         while (i < lines.length) {
           const L = lines[i].trim();
-          if (!L) break;
-          if (!BULLET_RE.test(L)) break;
+          if (!L || !BULLET_RE.test(L)) break;
           items.push(L.replace(BULLET_RE, ""));
           i++;
         }
-        body = /* @__PURE__ */ jsx(DetailBulletList, { items });
+        blocks.push({ type: "section", title, bullets: items });
       } else {
         const para2 = [];
         while (i < lines.length) {
@@ -7933,23 +8636,8 @@ function ProjectDetailBody({ text }) {
           para2.push(L);
           i++;
         }
-        if (para2.length) {
-          body = /* @__PURE__ */ jsx("div", { className: "mt-3 space-y-3", children: para2.map((p, idx) => /* @__PURE__ */ jsx(
-            "p",
-            {
-              className: "text-[15px] leading-[1.75] text-white/[0.66] sm:text-[16px]",
-              children: /* @__PURE__ */ jsx(RichText, { text: p })
-            },
-            idx
-          )) });
-        }
+        blocks.push({ type: "section", title, paragraphs: para2 });
       }
-      nodes.push(
-        /* @__PURE__ */ jsxs("section", { className: "mb-10 sm:mb-12", children: [
-          /* @__PURE__ */ jsx("h2", { className: "text-[clamp(1.2rem,2.2vw,1.55rem)] font-[780] tracking-[-0.03em] leading-[1.15] text-white", children: title }),
-          body
-        ] }, k++)
-      );
       continue;
     }
     const para = [];
@@ -7961,32 +8649,120 @@ function ProjectDetailBody({ text }) {
       para.push(L);
       i++;
     }
-    if (para.length) {
+    if (para.length) blocks.push({ type: "prose", paragraphs: para });
+  }
+  return blocks;
+}
+function CaseDetailBody({
+  text,
+  isRu,
+  palette
+}) {
+  const blocks = useMemo(() => parseCaseBody(text), [text]);
+  const rest = blocks.filter((b) => b.type !== "meta");
+  let contentIndex = 0;
+  const nodes = [];
+  if (palette?.length) {
+    nodes.push(/* @__PURE__ */ jsx(ColorPalette, { swatches: palette, isRu }, "palette"));
+  }
+  for (const block of rest) {
+    contentIndex++;
+    if (block.type === "prose") {
       nodes.push(
-        /* @__PURE__ */ jsx("div", { className: "mb-8 space-y-3 last:mb-0", children: para.map((p, idx) => /* @__PURE__ */ jsx(
-          "p",
+        /* @__PURE__ */ jsx("div", { className: "mb-12 max-w-[42rem] space-y-4 last:mb-0 sm:mb-14", children: block.paragraphs.map((p, idx) => /* @__PURE__ */ jsx("p", { className: BODY, children: /* @__PURE__ */ jsx(RichText, { text: p }) }, idx)) }, `prose-${contentIndex}`)
+      );
+    } else if (block.type === "bullets") {
+      nodes.push(
+        /* @__PURE__ */ jsx("div", { className: "mb-14 sm:mb-16", children: /* @__PURE__ */ jsx(FeatureGrid, { items: block.items }) }, `bullets-${contentIndex}`)
+      );
+    } else if (block.type === "section") {
+      const isOutcome = /^(итог|outcome|результат|result)/i.test(block.title);
+      nodes.push(
+        /* @__PURE__ */ jsxs(
+          "section",
           {
-            className: "text-[15px] leading-[1.75] text-white/[0.66] sm:text-[16px]",
-            children: /* @__PURE__ */ jsx(RichText, { text: p })
+            className: "mb-16 scroll-mt-28 border-t border-white/[0.06] pt-10 sm:mb-[72px] sm:pt-12",
+            children: [
+              /* @__PURE__ */ jsx("h2", { className: H2, children: block.title }),
+              block.paragraphs?.length ? /* @__PURE__ */ jsx("div", { className: cx$6("mt-5 max-w-[42rem] space-y-4", isOutcome && "text-[#ededf3]"), children: block.paragraphs.map((p, idx) => /* @__PURE__ */ jsx("p", { className: BODY, children: /* @__PURE__ */ jsx(RichText, { text: p }) }, idx)) }) : null,
+              block.bullets?.length ? /* @__PURE__ */ jsx(FeatureGrid, { items: block.bullets }) : null
+            ]
           },
-          idx
-        )) }, k++)
+          `section-${contentIndex}`
+        )
       );
     }
   }
   return /* @__PURE__ */ jsx("div", { className: "text-left", children: nodes });
+}
+function OutcomesBlock({
+  items,
+  isRu
+}) {
+  return /* @__PURE__ */ jsxs("section", { id: "outcomes", className: "mt-4 scroll-mt-28 sm:mt-6", children: [
+    /* @__PURE__ */ jsx("h2", { className: H2, children: isRu ? "Что получили" : "Outcomes" }),
+    /* @__PURE__ */ jsx("ol", { className: "mt-8 list-none space-y-0 divide-y divide-white/[0.06]", children: items.map((item, idx) => /* @__PURE__ */ jsxs("li", { className: "flex gap-5 py-5 first:pt-0 last:pb-0 sm:gap-8", children: [
+      /* @__PURE__ */ jsx("span", { className: "font-hero w-8 shrink-0 text-[20px] font-[600] tabular-nums tracking-[-0.03em] text-[#8a8a8e]", children: String(idx + 1).padStart(2, "0") }),
+      /* @__PURE__ */ jsx("p", { className: "min-w-0 text-[17px] font-[400] leading-[1.45] text-[#c3c3cc] sm:text-[18px]", children: /* @__PURE__ */ jsx(RichText, { text: item }) })
+    ] }, `${idx}-${item.slice(0, 32)}`)) })
+  ] });
+}
+function MoreLikeThis({
+  currentId,
+  isRu
+}) {
+  const others = useMemo(
+    () => buildProjects(isRu).filter((p) => p.id !== currentId).slice(0, 4),
+    [currentId, isRu]
+  );
+  if (!others.length) return null;
+  const title = isRu ? "Ещё проекты" : "More like this";
+  return /* @__PURE__ */ jsxs("section", { className: "mt-[72px] sm:mt-24", "aria-labelledby": "more-like-this", children: [
+    /* @__PURE__ */ jsx(
+      "h2",
+      {
+        id: "more-like-this",
+        className: "mb-8 font-hero text-[clamp(1.5rem,2.8vw,2rem)] font-[600] tracking-[-0.03em] text-[#ededf3] sm:mb-10",
+        children: title
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 gap-10 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-12", children: others.map((p) => /* @__PURE__ */ jsx(MoreProjectCard, { project: p, isRu }, p.id)) })
+  ] });
+}
+function MoreProjectCard({ project, isRu }) {
+  const cover = projectPreviewSrc(project);
+  const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
+  return /* @__PURE__ */ jsxs(Link, { to: `/projects/${project.id}`, className: "group block min-w-0 outline-none", children: [
+    /* @__PURE__ */ jsx("div", { className: "relative aspect-[16/10] w-full overflow-hidden rounded-[12px] bg-[#141416]", children: /* @__PURE__ */ jsx(
+      "img",
+      {
+        src: cover,
+        alt: "",
+        className: "absolute inset-0 h-full w-full object-cover object-center transition duration-500 ease-out group-hover:scale-[1.03]",
+        loading: "lazy",
+        decoding: "async",
+        draggable: false
+      }
+    ) }),
+    /* @__PURE__ */ jsxs("div", { className: "mt-4 flex items-start gap-3", children: [
+      /* @__PURE__ */ jsx("div", { className: "mt-0.5 grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-[#1c1c1f]", children: /* @__PURE__ */ jsx("img", { src: cover, alt: "", className: "h-full w-full object-cover", draggable: false }) }),
+      /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+        /* @__PURE__ */ jsx("p", { className: "text-[16px] font-[600] tracking-normal text-[#ededf3] transition group-hover:text-white", children: project.title }),
+        /* @__PURE__ */ jsx("p", { className: "mt-1 line-clamp-2 text-[13px] leading-[1.45] tracking-normal text-[#8a8a8e]", children: subtitle })
+      ] })
+    ] })
+  ] });
 }
 function ProjectDetailPage() {
   const { slug } = useParams();
   const { lang } = useLang();
   const isRu = lang === "ru";
   const project = useMemo(() => findProjectBySlug(slug, isRu), [slug, isRu]);
+  const caseSystem = project ? getProjectCaseSystem(project.id) : void 0;
   useEffect(() => {
     if (project?.id) trackProjectView(project.id);
   }, [project?.id]);
   const backLabel = isRu ? "Все проекты" : "All projects";
-  const pageEyebrow = isRu ? "Проект" : "Project";
-  const resultsLabel = isRu ? "Результаты" : "Outcomes";
   const stackLabel = isRu ? "Стек" : "Stack";
   const domainLabel = isRu ? "Домен" : "Domain";
   const statusLabel = isRu ? "Статус" : "Status";
@@ -7997,12 +8773,12 @@ function ProjectDetailPage() {
   const websiteSoonLabel = isRu ? "Сайт скоро" : "Website soon";
   const roleLabel = isRu ? "Роль TIVONIX" : "TIVONIX role";
   const roleValue = isRu ? "Дизайн и разработка под ключ" : "End-to-end design and development";
+  const detailsLabel = isRu ? "Подробнее" : "Details";
   if (!slug) return /* @__PURE__ */ jsx(Navigate, { to: "/projects", replace: true });
-  if (!project) {
-    return /* @__PURE__ */ jsx(Navigate, { to: "/projects", replace: true });
-  }
+  if (!project) return /* @__PURE__ */ jsx(Navigate, { to: "/projects", replace: true });
   const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
   const details = isRu ? project.detailsRu : project.detailsEn;
+  const mood = caseSystem ? isRu ? caseSystem.moodRu : caseSystem.moodEn : null;
   const seoTitle = `${project.title} — ${isRu ? "кейс TIVONIX" : "TIVONIX case study"}`;
   const seoDescription = clipMetaDescription(
     subtitle + (isRu ? " Студия TIVONIX: веб-разработка, лендинги, продукты и MVP." : " TIVONIX studio: web development, landings, products and MVPs.")
@@ -8010,173 +8786,239 @@ function ProjectDetailPage() {
   const wip = project.status === "wip";
   const domainClean = project.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "") ?? "";
   const coverSrc = projectPreviewSrc(project);
-  const coverBlurStyle = s$1({
-    transform: "translate(-50%, -50%) scale(1.12)",
-    filter: "blur(40px)",
-    WebkitFilter: "blur(40px)",
-    opacity: 0.58
+  const coverAbsolute = absoluteAssetUrl(coverSrc);
+  const schemaJsonLd = buildProjectCaseSchema({
+    id: project.id,
+    title: project.title,
+    description: seoDescription,
+    coverUrl: coverAbsolute,
+    domain: project.domain,
+    tags: project.tags,
+    stack: project.stack,
+    lang
   });
-  return /* @__PURE__ */ jsxs("div", { className: "relative min-h-screen", style: s$1({ "--headerH": `${HEADER_H}px` }), children: [
-    /* @__PURE__ */ jsx(
-      SEO,
-      {
-        title: seoTitle,
-        description: seoDescription,
-        canonicalPath: `/projects/${project.id}`,
-        ogLocalePrimary: isRu ? "ru_RU" : "en_US"
-      }
-    ),
-    /* @__PURE__ */ jsxs("div", { className: "pointer-events-none fixed inset-0 z-0 overflow-hidden", "aria-hidden": true, children: [
-      /* @__PURE__ */ jsx(
-        "img",
-        {
-          src: coverSrc,
-          alt: "",
-          className: "absolute left-1/2 top-1/2 h-full min-h-[120%] w-full min-w-[120%] object-cover object-center",
-          style: coverBlurStyle,
-          draggable: false,
-          decoding: "async"
-        }
-      ),
-      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[linear-gradient(180deg,rgba(5,5,6,0.72)_0%,rgba(0,0,0,0.88)_50%,rgba(0,0,0,0.93)_100%)]" })
-    ] }),
-    /* @__PURE__ */ jsxs("div", { className: "relative z-10", children: [
-      /* @__PURE__ */ jsx(Header, {}),
-      /* @__PURE__ */ jsx(Section, { className: "pt-[calc(var(--headerH)+16px)] sm:pt-[calc(var(--headerH)+24px)] pb-24", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs("div", { className: "w-full text-left", children: [
-        /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4", children: [
-          /* @__PURE__ */ jsxs(
-            Link,
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: "relative min-h-screen overflow-x-clip bg-[#0a0a0b]",
+      style: s$1({ "--headerH": `${HEADER_H}px` }),
+      children: [
+        /* @__PURE__ */ jsx(
+          SEO,
+          {
+            title: seoTitle,
+            description: seoDescription,
+            canonicalPath: `/projects/${project.id}`,
+            ogImage: coverAbsolute,
+            ogType: "article",
+            ogLocalePrimary: isRu ? "ru_RU" : "en_US",
+            schemaJsonLd
+          }
+        ),
+        /* @__PURE__ */ jsxs("div", { className: "pointer-events-none fixed inset-0 z-0 overflow-hidden", "aria-hidden": true, children: [
+          /* @__PURE__ */ jsx(
+            "img",
             {
-              to: "/projects",
-              className: "inline-flex w-fit items-center gap-2 text-[13px] font-[650] text-white/50 hover:text-white/80 transition",
-              children: [
-                /* @__PURE__ */ jsx("span", { "aria-hidden": true, className: "text-white/35", children: "←" }),
-                backLabel
-              ]
+              src: coverSrc,
+              alt: "",
+              className: "absolute left-1/2 top-[-10%] h-[110%] w-[110%] max-w-none -translate-x-1/2 object-cover object-center opacity-40",
+              style: s$1({
+                filter: "blur(56px) saturate(1.08) brightness(0.55)",
+                WebkitFilter: "blur(56px) saturate(1.08) brightness(0.55)"
+              }),
+              draggable: false,
+              decoding: "async"
             }
           ),
-          /* @__PURE__ */ jsx("p", { className: "text-[13px] font-semibold tracking-tight text-white/80", children: pageEyebrow })
+          /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[#0a0a0b]/78" }),
+          /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,11,0.55)_0%,rgba(10,10,11,0.92)_55%,#0a0a0b_100%)]" })
         ] }),
-        /* @__PURE__ */ jsxs("div", { className: "mt-8 grid grid-cols-1 items-start gap-8 lg:mt-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(260px,400px)] lg:gap-10 xl:grid-cols-[minmax(0,1.25fr)_420px] xl:gap-12", children: [
-          /* @__PURE__ */ jsxs("div", { className: "order-2 min-w-0 lg:order-1", children: [
-            /* @__PURE__ */ jsx(ProjectPreviewFrame, { src: projectPreviewSrc(project), variant: "detail" }),
-            project.gallery?.length ? /* @__PURE__ */ jsx(ProjectGalleryStrip, { images: project.gallery, isRu }) : null
-          ] }),
-          /* @__PURE__ */ jsxs("div", { className: "order-1 min-w-0 space-y-8 lg:order-2 lg:pt-1", children: [
-            /* @__PURE__ */ jsxs("header", { className: "space-y-3", children: [
-              /* @__PURE__ */ jsx("h1", { className: "text-[clamp(1.6rem,3.2vw,2.1rem)] font-[800] tracking-[-0.03em] text-white leading-[1.1]", children: project.title }),
-              /* @__PURE__ */ jsx("p", { className: "text-[15px] leading-[1.55] text-white/58", children: subtitle })
-            ] }),
-            /* @__PURE__ */ jsxs("div", { className: "space-y-6 border-t border-white/[0.08] pt-6", children: [
-              /* @__PURE__ */ jsx(MetaRow, { label: domainLabel, children: project.domain && !wip ? /* @__PURE__ */ jsxs(
-                "a",
-                {
-                  href: project.domain,
-                  target: "_blank",
-                  rel: "noopener noreferrer",
-                  className: "group inline-flex max-w-full items-center gap-2 font-[500] text-white/90 underline decoration-white/20 underline-offset-2 transition hover:decoration-white/45",
-                  children: [
-                    /* @__PURE__ */ jsx("span", { className: "truncate", children: domainClean }),
-                    /* @__PURE__ */ jsx(ExternalIcon, { className: "shrink-0 text-white/45 transition group-hover:text-white/70" })
-                  ]
-                }
-              ) : /* @__PURE__ */ jsx("span", { className: "text-white/45", children: websiteSoonLabel }) }),
-              /* @__PURE__ */ jsx(MetaRow, { label: statusLabel, children: /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-2", children: [
-                /* @__PURE__ */ jsx(
-                  "span",
+        /* @__PURE__ */ jsxs("div", { className: "relative z-10", children: [
+          /* @__PURE__ */ jsx(Header, {}),
+          /* @__PURE__ */ jsx("main", { className: "pt-[calc(var(--headerH)+24px)] pb-28 sm:pt-[calc(var(--headerH)+32px)] sm:pb-36", children: /* @__PURE__ */ jsxs(Container, { children: [
+            /* @__PURE__ */ jsx("div", { className: "mt-8 flex flex-col gap-1 sm:mt-10 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4", children: /* @__PURE__ */ jsxs(
+              Link,
+              {
+                to: "/projects",
+                className: "inline-flex w-fit items-center gap-2 text-[13px] font-[500] tracking-normal text-[#8a8a8e] transition hover:text-[#ededf3]",
+                children: [
+                  /* @__PURE__ */ jsx("span", { "aria-hidden": true, children: "←" }),
+                  backLabel
+                ]
+              }
+            ) }),
+            /* @__PURE__ */ jsxs("div", { className: "mt-8 grid grid-cols-1 items-start gap-10 lg:mt-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.88fr)] lg:gap-14 xl:gap-16", children: [
+              /* @__PURE__ */ jsxs("div", { className: "order-2 min-w-0 lg:order-1", children: [
+                /* @__PURE__ */ jsx("figure", { className: "relative w-full overflow-hidden rounded-[12px] bg-[#141416]", children: /* @__PURE__ */ jsx("div", { className: "relative aspect-[16/10] w-full", children: /* @__PURE__ */ jsx(
+                  "img",
                   {
-                    className: cx$6(
-                      "h-2 w-2 shrink-0 rounded-full",
-                      wip ? "bg-amber-400/90" : "bg-emerald-400/90"
-                    )
+                    src: coverSrc,
+                    alt: `${project.title} — ${isRu ? "обложка кейса" : "case cover"}`,
+                    className: "absolute inset-0 h-full w-full object-cover object-center",
+                    draggable: false,
+                    decoding: "async",
+                    fetchPriority: "high"
                   }
-                ),
-                wip ? wipLabel : liveLabel
-              ] }) }),
-              /* @__PURE__ */ jsx(MetaRow, { label: roleLabel, children: /* @__PURE__ */ jsx("span", { children: roleValue }) }),
-              /* @__PURE__ */ jsx(MetaRow, { label: tagsLabel, children: /* @__PURE__ */ jsx("span", { className: "text-white/70", children: project.tags.map((tag, i) => /* @__PURE__ */ jsxs("span", { children: [
-                i > 0 ? /* @__PURE__ */ jsx("span", { className: "mx-1.5 text-white/25", children: "·" }) : null,
-                tag
-              ] }, tag)) }) }),
-              project.stack?.length ? /* @__PURE__ */ jsx(MetaRow, { label: stackLabel, children: /* @__PURE__ */ jsx("span", { className: "text-white/75", children: project.stack.join(" · ") }) }) : null
-            ] }),
-            /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-3 border-t border-white/[0.08] pt-6", children: [
-              project.domain && !wip ? /* @__PURE__ */ jsx(
-                "a",
-                {
-                  href: project.domain,
-                  target: "_blank",
-                  rel: "noopener noreferrer",
-                  className: cx$6(
-                    "inline-flex h-11 w-full items-center justify-center rounded-lg px-5",
-                    "bg-white text-[14px] font-[700] text-neutral-900 hover:bg-white/90 transition"
+                ) }) }),
+                project.gallery?.length ? /* @__PURE__ */ jsx("div", { className: "mt-8", children: /* @__PURE__ */ jsx(ProjectGalleryStrip, { images: project.gallery, isRu }) }) : null
+              ] }),
+              /* @__PURE__ */ jsxs("div", { className: "order-1 min-w-0 lg:order-2 lg:pt-1", children: [
+                /* @__PURE__ */ jsxs("header", { className: "space-y-4", children: [
+                  /* @__PURE__ */ jsx("h1", { className: "font-hero text-[clamp(2.15rem,5vw,3.35rem)] font-[600] tracking-[-0.035em] leading-[1.02] text-[#ededf3]", children: project.title }),
+                  /* @__PURE__ */ jsx("p", { className: cx$6("max-w-[36ch]", BODY), children: mood ?? subtitle }),
+                  mood ? /* @__PURE__ */ jsx("p", { className: "max-w-[40ch] text-[14px] leading-relaxed text-[#8a8a8e]", children: subtitle }) : null
+                ] }),
+                /* @__PURE__ */ jsxs("dl", { className: "mt-8", children: [
+                  /* @__PURE__ */ jsx(SpecRow, { label: domainLabel, children: project.domain && !wip ? /* @__PURE__ */ jsxs(
+                    "a",
+                    {
+                      href: project.domain,
+                      target: "_blank",
+                      rel: "noopener noreferrer",
+                      className: "inline-flex max-w-full items-center gap-2 transition hover:text-white",
+                      children: [
+                        /* @__PURE__ */ jsx("span", { className: "truncate", children: domainClean }),
+                        /* @__PURE__ */ jsx(ExternalIcon, { className: "shrink-0 text-[#8a8a8e]" })
+                      ]
+                    }
+                  ) : /* @__PURE__ */ jsx("span", { className: "text-[#8a8a8e]", children: websiteSoonLabel }) }),
+                  /* @__PURE__ */ jsx(SpecRow, { label: statusLabel, children: /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-2", children: [
+                    /* @__PURE__ */ jsx(
+                      "span",
+                      {
+                        className: cx$6(
+                          "h-1.5 w-1.5 shrink-0 rounded-full",
+                          wip ? "bg-amber-400/90" : "bg-emerald-400/90"
+                        )
+                      }
+                    ),
+                    wip ? wipLabel : liveLabel
+                  ] }) }),
+                  /* @__PURE__ */ jsx(SpecRow, { label: roleLabel, children: roleValue }),
+                  /* @__PURE__ */ jsx(SpecRow, { label: tagsLabel, children: /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-2", children: project.tags.map((tag) => /* @__PURE__ */ jsx(Pill, { children: tag }, tag)) }) }),
+                  project.stack?.length ? /* @__PURE__ */ jsx(SpecRow, { label: stackLabel, children: /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-2", children: project.stack.map((tech) => /* @__PURE__ */ jsx(Pill, { children: tech }, tech)) }) }) : null
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "mt-10 flex flex-col gap-4", children: [
+                  project.domain && !wip ? /* @__PURE__ */ jsx(
+                    "a",
+                    {
+                      href: project.domain,
+                      target: "_blank",
+                      rel: "noopener noreferrer",
+                      className: "inline-flex h-[52px] w-full items-center justify-center rounded-full bg-[#FF6B2C] px-6 text-[15px] font-[600] tracking-normal text-white transition hover:bg-[#ff7d45]",
+                      children: openSiteLabel
+                    }
+                  ) : /* @__PURE__ */ jsx("div", { className: "inline-flex h-[52px] w-full items-center justify-center rounded-full bg-[#1c1c1f] px-6 text-[15px] font-[600] tracking-normal text-[#8a8a8e]", children: websiteSoonLabel }),
+                  /* @__PURE__ */ jsx(
+                    LeadCTAButton,
+                    {
+                      source: "project_page",
+                      variant: "plain",
+                      className: "!h-auto !min-h-0 w-full !rounded-none !border-0 !bg-transparent !px-0 !py-1 !text-[15px] !font-[600] !tracking-normal !text-[#ededf3] hover:!bg-transparent hover:!text-white/75",
+                      children: leadFormCopy(lang).ctaDiscuss
+                    }
                   ),
-                  children: openSiteLabel
-                }
-              ) : /* @__PURE__ */ jsx(
-                "div",
-                {
-                  className: cx$6(
-                    "inline-flex h-11 w-full items-center justify-center rounded-lg px-5",
-                    "border border-white/[0.1] bg-white/[0.05] text-[14px] font-[700] text-white/45"
-                  ),
-                  children: websiteSoonLabel
-                }
-              ),
-              /* @__PURE__ */ jsx(
-                LeadCTAButton,
-                {
-                  source: "project_page",
-                  variant: "primary",
-                  className: "!h-11 w-full !rounded-lg !text-[14px] !font-[800]",
-                  children: leadFormCopy(lang).ctaDiscuss
-                }
-              ),
-              /* @__PURE__ */ jsx("p", { className: "text-[12px] leading-relaxed text-white/38", children: isRu ? /* @__PURE__ */ jsxs(Fragment, { children: [
-                "Напиши: ",
-                /* @__PURE__ */ jsx("span", { className: "text-white/52", children: "что делаем" }),
-                ",",
-                " ",
-                /* @__PURE__ */ jsx("span", { className: "text-white/52", children: "срок" }),
-                ", ",
-                /* @__PURE__ */ jsx("span", { className: "text-white/52", children: "пример" }),
-                "."
-              ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
-                "Message: ",
-                /* @__PURE__ */ jsx("span", { className: "text-white/52", children: "what to build" }),
-                ",",
-                " ",
-                /* @__PURE__ */ jsx("span", { className: "text-white/52", children: "timeline" }),
-                ", ",
-                /* @__PURE__ */ jsx("span", { className: "text-white/52", children: "reference" }),
-                "."
-              ] }) })
-            ] })
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxs("article", { className: "mt-14 max-w-[42rem] pt-2 lg:mt-16", children: [
-          /* @__PURE__ */ jsx(ProjectDetailBody, { text: details }),
-          project.outcomes?.length ? /* @__PURE__ */ jsxs("div", { className: "mt-2 max-w-[42rem]", children: [
-            /* @__PURE__ */ jsx("h2", { className: "text-[clamp(1.2rem,2.2vw,1.55rem)] font-[780] tracking-[-0.03em] leading-[1.15] text-white", children: resultsLabel }),
-            /* @__PURE__ */ jsx(DetailBulletList, { items: project.outcomes })
-          ] }) : null,
-          project.testimonial ? /* @__PURE__ */ jsxs("figure", { className: "mt-12 max-w-[42rem]", children: [
-            /* @__PURE__ */ jsx("p", { className: "text-[11px] font-semibold uppercase tracking-[0.16em] text-[#FF9A3D]/85", children: isRu ? "Отзыв · 5 из 5" : "Review · 5 of 5" }),
-            /* @__PURE__ */ jsxs("blockquote", { className: "mt-3 text-[16px] leading-[1.7] text-white/[0.78] sm:text-[17px]", children: [
-              "“",
-              project.testimonial.text,
-              "”"
+                  /* @__PURE__ */ jsx("p", { className: "text-left text-[13px] leading-relaxed tracking-normal text-[#8a8a8e]", children: isRu ? /* @__PURE__ */ jsxs(Fragment, { children: [
+                    "Напиши: ",
+                    /* @__PURE__ */ jsx("span", { className: "text-[#c3c3cc]", children: "что делаем" }),
+                    ",",
+                    " ",
+                    /* @__PURE__ */ jsx("span", { className: "text-[#c3c3cc]", children: "срок" }),
+                    ",",
+                    " ",
+                    /* @__PURE__ */ jsx("span", { className: "text-[#c3c3cc]", children: "пример" }),
+                    "."
+                  ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+                    "Message: ",
+                    /* @__PURE__ */ jsx("span", { className: "text-[#c3c3cc]", children: "what to build" }),
+                    ",",
+                    " ",
+                    /* @__PURE__ */ jsx("span", { className: "text-[#c3c3cc]", children: "timeline" }),
+                    ",",
+                    " ",
+                    /* @__PURE__ */ jsx("span", { className: "text-[#c3c3cc]", children: "reference" }),
+                    "."
+                  ] }) })
+                ] })
+              ] })
             ] }),
-            /* @__PURE__ */ jsxs("figcaption", { className: "mt-4 text-[13px] text-white/40", children: [
-              /* @__PURE__ */ jsx("span", { className: "font-[700] text-white/72", children: project.testimonial.name }),
-              /* @__PURE__ */ jsx("span", { className: "mx-1.5 text-white/25", children: "·" }),
-              project.testimonial.role
-            ] })
-          ] }) : null
+            /* @__PURE__ */ jsxs(
+              "article",
+              {
+                className: "mt-16 max-w-[52rem] sm:mt-[72px] lg:mt-24",
+                itemScope: true,
+                itemType: "https://schema.org/CreativeWork",
+                children: [
+                  /* @__PURE__ */ jsx("meta", { itemProp: "name", content: project.title }),
+                  /* @__PURE__ */ jsx("meta", { itemProp: "description", content: subtitle }),
+                  /* @__PURE__ */ jsx("link", { itemProp: "url", href: `${CANONICAL_ORIGIN}/projects/${project.id}` }),
+                  /* @__PURE__ */ jsx("div", { className: "mb-10 border-b border-white/[0.06] pb-10 sm:mb-12 sm:pb-12", children: caseSystem ? /* @__PURE__ */ jsx(
+                    CaseBrandIntro,
+                    {
+                      title: project.title,
+                      mood: isRu ? caseSystem.moodRu : caseSystem.moodEn,
+                      story: isRu ? caseSystem.storyRu : caseSystem.storyEn,
+                      logo: caseSystem.logo,
+                      logoFit: caseSystem.logoFit,
+                      domain: project.domain,
+                      domainClean,
+                      wip
+                    }
+                  ) : /* @__PURE__ */ jsxs(Fragment, { children: [
+                    /* @__PURE__ */ jsx("h2", { className: H2, children: detailsLabel }),
+                    /* @__PURE__ */ jsx("p", { className: "mt-3 max-w-[40rem] text-[15px] leading-relaxed text-[#8a8a8e]", children: isRu ? "Как устроен продукт: смысл, сценарии, интерфейс и токены." : "How the product is built: intent, flows, interface and tokens." })
+                  ] }) }),
+                  /* @__PURE__ */ jsx(
+                    CaseDetailBody,
+                    {
+                      text: details,
+                      isRu,
+                      palette: caseSystem?.palette
+                    }
+                  ),
+                  project.outcomes?.length ? /* @__PURE__ */ jsx(OutcomesBlock, { items: project.outcomes, isRu }) : null,
+                  project.testimonial ? /* @__PURE__ */ jsxs("figure", { className: "mt-16 max-w-[42rem] border-t border-white/[0.06] pt-10 sm:mt-[72px] sm:pt-12", children: [
+                    /* @__PURE__ */ jsx("p", { className: "text-[13px] font-[500] tracking-normal text-[#8a8a8e]", children: isRu ? "Отзыв · 5 из 5" : "Review · 5 of 5" }),
+                    project.testimonial.textAr ? /* @__PURE__ */ jsxs(Fragment, { children: [
+                      /* @__PURE__ */ jsxs(
+                        "blockquote",
+                        {
+                          className: "mt-4 text-[18px] font-[400] leading-[1.7] tracking-[0.005em] text-[#c3c3cc] sm:text-[20px]",
+                          dir: "rtl",
+                          lang: "ar",
+                          children: [
+                            "“",
+                            project.testimonial.textAr,
+                            "”"
+                          ]
+                        }
+                      ),
+                      /* @__PURE__ */ jsx("p", { className: "mt-5 text-[12px] font-[500] tracking-normal text-[#8a8a8e]", children: isRu ? "Расшифровка" : "Translation" }),
+                      /* @__PURE__ */ jsxs("blockquote", { className: "mt-2 text-[16px] font-[400] leading-[1.5] tracking-[0.005em] text-[#a8a8b0] sm:text-[17px]", children: [
+                        "“",
+                        project.testimonial.text,
+                        "”"
+                      ] })
+                    ] }) : /* @__PURE__ */ jsxs("blockquote", { className: "mt-4 text-[18px] font-[400] leading-[1.5] tracking-[0.005em] text-[#c3c3cc] sm:text-[20px]", children: [
+                      "“",
+                      project.testimonial.text,
+                      "”"
+                    ] }),
+                    /* @__PURE__ */ jsxs("figcaption", { className: "mt-5 text-[13px] tracking-normal text-[#8a8a8e]", children: [
+                      /* @__PURE__ */ jsx("span", { className: "font-[600] text-[#ededf3]", children: project.testimonial.name }),
+                      /* @__PURE__ */ jsx("span", { className: "mx-1.5 text-white/20", children: "·" }),
+                      project.testimonial.role
+                    ] })
+                  ] }) : null
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsx(MoreLikeThis, { currentId: project.id, isRu })
+          ] }) })
         ] })
-      ] }) }) })
-    ] })
-  ] });
+      ]
+    }
+  );
 }
 const ORANGE = "#FF9A3D";
 const ORANGE2 = "#FF6A1A";
@@ -11327,8 +12169,7 @@ const RU = {
     all: "Все проекты",
     texts: {
       spliton: "Финтех-платформа для музыкальных активов: каталог релизов, покупка долей, кошелёк, вторичный рынок, выплаты и административная система.",
-      slotty: "Система онлайн-записи: услуги, расписание, бронирование, напоминания, портфолио, подписки и личный кабинет.",
-      giftsniper: "Telegram-продукт для анализа NFT и Gifts: ссылки, рыночные данные, характеристики и ориентировочная оценка."
+      slotty: "Система онлайн-записи: услуги, расписание, бронирование, напоминания, портфолио, подписки и личный кабинет."
     }
   },
   examples: {
@@ -11588,8 +12429,7 @@ const EN = {
     all: "All projects",
     texts: {
       spliton: "Fintech platform for music assets: release catalog, fractional purchases, wallet, secondary market, payouts, and admin system.",
-      slotty: "Online booking system: services, schedule, reservations, reminders, portfolio, subscriptions, and client portal.",
-      giftsniper: "Telegram product for NFT and Gifts analysis: links, market data, attributes, and estimated valuation."
+      slotty: "Online booking system: services, schedule, reservations, reminders, portfolio, subscriptions, and client portal."
     }
   },
   examples: {
@@ -11719,12 +12559,6 @@ const CASES = [
     title: "Slotty",
     tags: ["Booking", "SaaS", "Telegram"],
     cover: "/images/project-priew/slotty.webp"
-  },
-  {
-    id: "giftsniper",
-    title: "GiftSniper",
-    tags: ["Telegram Bot", "TON", "Analytics"],
-    cover: "/images/project-priew/giftsniper.webp"
   }
 ];
 const CAPABILITY_IDS = ["landing", "bot", "crm", "cabinet", "integrations", "support"];
@@ -15987,7 +16821,7 @@ function PartnersPage() {
                       alt: "",
                       width: 640,
                       height: 400,
-                      className: "!h-full !max-w-none h-full w-full scale-110 object-cover object-top blur-[22px] transition duration-500 ease-out group-hover:scale-[1.16]",
+                      className: "!h-full !max-w-none h-full w-full object-cover object-center transition duration-500 ease-out group-hover:scale-[1.04]",
                       loading: "lazy",
                       decoding: "async"
                     }

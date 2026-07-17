@@ -24,10 +24,12 @@ const routes = [
   "/projects/slotty",
   "/projects/spliton",
   "/projects/headmind",
+  "/projects/logovo",
   "/projects/tivonixpanel",
   "/en/projects/slotty",
   "/en/projects/spliton",
   "/en/projects/headmind",
+  "/en/projects/logovo",
   "/en/projects/tivonixpanel",
 ];
 
