@@ -60,7 +60,7 @@ export function ProjectPreviewFrame({
         className={cx(
           "block h-full w-full",
           variant === "grid"
-            ? "scale-110 object-cover object-top blur-[22px]"
+            ? "object-cover object-center"
             : "object-contain"
         )}
         draggable={false}

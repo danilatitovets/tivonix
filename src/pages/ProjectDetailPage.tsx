@@ -1,22 +1,29 @@
-// src/pages/ProjectDetailPage.tsx
-import { useEffect, useMemo } from "react";
+// src/pages/ProjectDetailPage.tsx — Case System: досье кейса, не стена текста
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import Container from "../components/ui/Container";
-import Section from "../components/ui/Section";
 import Header from "../components/landing/Header";
 import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
-import { findProjectBySlug } from "../data/projectsCatalog";
-import { cx, projectPreviewSrc, ProjectPreviewFrame, ProjectGalleryStrip, s } from "./projectBlocks";
+import { buildProjects, findProjectBySlug, type Project } from "../data/projectsCatalog";
+import { getProjectCaseSystem, type CaseSwatch } from "../data/projectCaseSystem";
+import { cx, projectPreviewSrc, ProjectGalleryStrip, s } from "./projectBlocks";
 import { LeadCTAButton } from "../components/leads/LeadCTAButton";
 import { leadFormCopy } from "../i18n/leadFormCopy";
 import { trackProjectView } from "../lib/analytics";
+import { buildProjectCaseSchema } from "../lib/schema";
 
 const HEADER_H = 72;
+const CANONICAL_ORIGIN = "https://tivonix.tech";
 
 const BULLET_RE = /^[•\-]\s*/;
-const LEAD_META_RE = /^(Формат|Срок|Format|Timeline)\s*:/i;
+const LEAD_META_RE = /^(Формат|Срок|Format|Timeline|Продукт|Product)\s*:/i;
+
+const BODY =
+  "text-[17px] font-[400] leading-[1.55] tracking-[0.005em] text-[#c3c3cc] sm:text-[18px]";
+const H2 =
+  "font-hero text-[clamp(1.75rem,3.2vw,2.5rem)] font-[600] tracking-[-0.03em] leading-[1.1] text-[#ededf3]";
 
 function clipMetaDescription(text: string, max = 158): string {
   const t = text.replace(/\s+/g, " ").trim();
@@ -26,23 +33,18 @@ function clipMetaDescription(text: string, max = 158): string {
   return `${(i > 70 ? slice.slice(0, i) : slice).trimEnd()}…`;
 }
 
+function absoluteAssetUrl(path: string) {
+  if (path.startsWith("http")) return path;
+  return `${CANONICAL_ORIGIN}${path.startsWith("/") ? "" : "/"}${path}`;
+}
+
 function isSectionHeading(line: string) {
   const t = line.trim();
   if (!t || BULLET_RE.test(t) || LEAD_META_RE.test(t)) return false;
   if (t.length > 72) return false;
   if (/[.!?…]$/.test(t)) return false;
-  // Одно предложение / заголовок секции, а не абзац с запятыми-развёрнутым текстом
   if ((t.match(/[,;:—]/g) || []).length >= 2) return false;
   return true;
-}
-
-function MetaRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/38">{label}</div>
-      <div className="min-w-0 text-[14px] leading-snug text-white/[0.88]">{children}</div>
-    </div>
-  );
 }
 
 function ExternalIcon({ className }: { className?: string }) {
@@ -66,15 +68,21 @@ function ExternalIcon({ className }: { className?: string }) {
   );
 }
 
-/** Инлайн: **важное** → жирный акцент, остальной текст спокойнее. */
 function RichText({ text }: { text: string }) {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
+  const parts = text.split(/(\*\*[^*]+\*\*|\[\[[^\]]+\]\])/g).filter(Boolean);
   return (
     <>
       {parts.map((part, idx) => {
+        if (part.startsWith("[[") && part.endsWith("]]")) {
+          return (
+            <span key={idx} className="font-[600] text-[#b7f500]">
+              {part.slice(2, -2)}
+            </span>
+          );
+        }
         if (part.startsWith("**") && part.endsWith("**")) {
           return (
-            <strong key={idx} className="font-[700] text-white/[0.92]">
+            <strong key={idx} className="font-[600] text-[#ededf3]">
               {part.slice(2, -2)}
             </strong>
           );
@@ -85,17 +93,33 @@ function RichText({ text }: { text: string }) {
   );
 }
 
-function DetailBulletList({ items }: { items: string[] }) {
+function SpecRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <ul className="mt-4 list-none space-y-2.5">
+    <div className="grid gap-2 border-t border-white/[0.06] py-5 first:border-t-0 first:pt-0 last:pb-0 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-8 sm:items-start">
+      <dt className="text-[13px] font-[500] tracking-normal text-[#8a8a8e]">{label}</dt>
+      <dd className="min-w-0 text-[15px] font-[400] leading-[1.45] tracking-normal text-[#ededf3]">
+        {children}
+      </dd>
+    </div>
+  );
+}
+
+function Pill({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center rounded-full bg-[#1c1c1f] px-3.5 py-1.5 text-[12px] font-[500] tracking-normal text-[#c3c3cc]">
+      {children}
+    </span>
+  );
+}
+
+function FeatureGrid({ items }: { items: string[] }) {
+  return (
+    <ul className="mt-7 grid list-none gap-3 sm:grid-cols-2 sm:gap-4">
       {items.map((item, idx) => (
         <li
-          key={`${idx}-${item.slice(0, 48)}`}
-          className="text-[15px] leading-[1.7] text-white/[0.66] sm:text-[16px]"
+          key={`${idx}-${item.slice(0, 40)}`}
+          className="rounded-[12px] bg-[#1c1c1f] px-5 py-4 text-[15px] font-[400] leading-[1.45] text-[#c3c3cc] sm:text-[16px]"
         >
-          <span className="mr-2.5 text-white/28 select-none" aria-hidden>
-            —
-          </span>
           <RichText text={item} />
         </li>
       ))}
@@ -103,12 +127,255 @@ function DetailBulletList({ items }: { items: string[] }) {
   );
 }
 
-/** Заголовки секций + абзацы + списки (как в каталоге). Без карточек и border. */
-function ProjectDetailBody({ text }: { text: string }) {
+function CaseBrandIntro({
+  title,
+  mood,
+  story,
+  logo,
+  logoFit = "cover",
+  domain,
+  domainClean,
+  wip,
+}: {
+  title: string;
+  mood: string;
+  story: string;
+  logo?: string;
+  logoFit?: "cover" | "contain";
+  domain?: string;
+  domainClean: string;
+  wip: boolean;
+}) {
+  return (
+    <header>
+      <div className="flex items-start justify-between gap-6">
+        <div className="min-w-0 flex-1">
+          <h2 className="font-hero text-[clamp(2.25rem,5vw,3.5rem)] font-[600] tracking-[-0.035em] leading-[1.02] text-[#ededf3]">
+            {title}
+          </h2>
+          <p className="mt-3 text-[17px] font-[400] leading-snug text-[#c3c3cc] sm:text-[18px]">
+            {mood}
+          </p>
+        </div>
+        {logo ? (
+          <div
+            className={cx(
+              "shrink-0 overflow-hidden rounded-[14px] bg-black sm:rounded-[16px]",
+              logoFit === "contain"
+                ? "h-[4.5rem] w-14 sm:h-[5.25rem] sm:w-16"
+                : "h-14 w-14 sm:h-16 sm:w-16"
+            )}
+          >
+            <img
+              src={logo}
+              alt=""
+              className={cx(
+                "h-full w-full object-center",
+                logoFit === "contain" ? "object-contain" : "object-cover"
+              )}
+              draggable={false}
+              decoding="async"
+            />
+          </div>
+        ) : null}
+      </div>
+
+      <div className={cx("mt-8 max-w-[42rem] space-y-4", BODY)}>
+        {story.split(/\n\n+/).map((para, idx) => (
+          <p key={idx}>
+            <RichText text={para} />
+          </p>
+        ))}
+      </div>
+
+      {domain && !wip ? (
+        <a
+          href={domain}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-8 inline-flex max-w-full items-center gap-2 text-[15px] font-[500] text-[#c3c3cc] transition hover:text-white"
+        >
+          <ExternalIcon className="shrink-0 text-[#8a8a8e]" />
+          <span className="truncate">
+            {domain.startsWith("http") ? domain : `https://${domainClean}`}
+          </span>
+        </a>
+      ) : null}
+    </header>
+  );
+}
+
+function ColorPalette({
+  swatches,
+  isRu,
+}: {
+  swatches: CaseSwatch[];
+  isRu: boolean;
+}) {
+  const brand = swatches.filter((s) => s.group === "brand");
+  const neutrals = swatches.filter((s) => s.group === "neutral");
+
+  return (
+    <section className="mb-16 scroll-mt-28 sm:mb-[72px]" aria-labelledby="case-palette">
+      <h2 id="case-palette" className={H2}>
+        {isRu ? "Палитра" : "Color Palette"}
+      </h2>
+
+      {brand.length ? (
+        <div className="mt-10">
+          <p className="text-[13px] font-[500] text-[#8a8a8e]">
+            {isRu ? "Бренд" : "Brand"}
+          </p>
+          <div className="mt-4 space-y-8">
+            {brand.map((sw) => (
+              <PaletteSwatch key={sw.hex + sw.name} swatch={sw} isRu={isRu} wide />
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {neutrals.length ? (
+        <div className="mt-12">
+          <p className="text-[13px] font-[500] text-[#8a8a8e]">
+            {isRu ? "Нейтрали" : "Neutrals"}
+          </p>
+          <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+            {neutrals.map((sw) => (
+              <PaletteSwatch key={sw.hex + sw.name} swatch={sw} isRu={isRu} />
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function PaletteSwatch({
+  swatch,
+  isRu,
+  wide,
+}: {
+  swatch: CaseSwatch;
+  isRu: boolean;
+  wide?: boolean;
+}) {
+  const [copied, setCopied] = useState(false);
+  const isLight = luminance(swatch.hex) > 0.55;
+  const copyLabel = isRu ? "Копировать" : "Copy";
+  const copiedLabel = isRu ? "Скопировано" : "Copied";
+
+  const onCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(swatch.hex);
+    } catch {
+      const el = document.createElement("textarea");
+      el.value = swatch.hex;
+      el.setAttribute("readonly", "");
+      el.style.position = "fixed";
+      el.style.opacity = "0";
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    }
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1400);
+  };
+
+  return (
+    <div className={cx("min-w-0", wide && "max-w-xl")}>
+      <button
+        type="button"
+        onClick={onCopy}
+        className={cx(
+          "group relative w-full overflow-hidden rounded-2xl ring-1 ring-white/[0.06]",
+          "outline-none transition focus-visible:ring-2 focus-visible:ring-[#FF6B2C]/55",
+          wide ? "h-16 sm:h-[72px]" : "h-14 sm:h-16"
+        )}
+        style={{ backgroundColor: swatch.hex }}
+        aria-label={`${copyLabel} ${swatch.name} ${swatch.hex}`}
+        title={`${copyLabel} ${swatch.hex}`}
+      >
+        <span
+          className={cx(
+            "pointer-events-none absolute inset-0 rounded-2xl",
+            isLight ? "ring-1 ring-inset ring-black/10" : "ring-1 ring-inset ring-white/[0.04]"
+          )}
+          aria-hidden
+        />
+        <span
+          className={cx(
+            "absolute right-3 top-1/2 z-[1] -translate-y-1/2",
+            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1",
+            "text-[11px] font-[600] tracking-normal backdrop-blur-sm",
+            "opacity-0 transition duration-150 group-hover:opacity-100 group-focus-visible:opacity-100",
+            isLight
+              ? "bg-black/55 text-white"
+              : "bg-white/90 text-[#171719]"
+          )}
+        >
+          <CopyIcon className="h-3 w-3 shrink-0" />
+          {copied ? copiedLabel : copyLabel}
+        </span>
+      </button>
+      <p className="mt-3 text-[15px] font-[600] tracking-[-0.01em] text-[#ededf3] sm:text-[16px]">
+        {swatch.name}
+      </p>
+      <button
+        type="button"
+        onClick={onCopy}
+        className="mt-0.5 font-mono text-[12px] tabular-nums text-[#8a8a8e] transition hover:text-[#ededf3]"
+      >
+        {copied ? copiedLabel : swatch.hex}
+      </button>
+      <p className="mt-2 max-w-[36ch] text-[13px] leading-[1.45] text-[#78787d] sm:text-[14px]">
+        {isRu ? swatch.roleRu : swatch.roleEn}
+      </p>
+    </div>
+  );
+}
+
+function CopyIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect
+        x="9"
+        y="9"
+        width="11"
+        height="11"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+      <path
+        d="M5 15V7a2 2 0 0 1 2-2h8"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function luminance(hex: string): number {
+  const h = hex.replace("#", "");
+  if (h.length !== 6) return 0;
+  const r = parseInt(h.slice(0, 2), 16) / 255;
+  const g = parseInt(h.slice(2, 4), 16) / 255;
+  const b = parseInt(h.slice(4, 6), 16) / 255;
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+type ParsedBlock =
+  | { type: "meta"; label: string; value: string }
+  | { type: "prose"; paragraphs: string[] }
+  | { type: "section"; title: string; paragraphs?: string[]; bullets?: string[] }
+  | { type: "bullets"; items: string[] };
+
+function parseCaseBody(text: string): ParsedBlock[] {
   const lines = text.split("\n").map((l) => l.trim());
-  const nodes: ReactNode[] = [];
+  const blocks: ParsedBlock[] = [];
   let i = 0;
-  let k = 0;
 
   const nextNonEmpty = (from: number) => {
     for (let j = from; j < lines.length; j++) {
@@ -125,17 +392,11 @@ function ProjectDetailBody({ text }: { text: string }) {
       continue;
     }
 
-    // Intro meta: "Формат: …", "Срок: …"
     if (LEAD_META_RE.test(line)) {
       const colon = line.indexOf(":");
-      const label = colon >= 0 ? line.slice(0, colon + 1) : line;
+      const label = colon >= 0 ? line.slice(0, colon).trim() : line;
       const value = colon >= 0 ? line.slice(colon + 1).trim() : "";
-      nodes.push(
-        <p key={k++} className="mb-9 text-[13px] leading-snug text-white/48">
-          <span className="font-[700] uppercase tracking-[0.14em] text-white/55">{label}</span>
-          {value ? <span className="ml-2 font-[500] normal-case tracking-normal text-white/72">{value}</span> : null}
-        </p>
-      );
+      blocks.push({ type: "meta", label, value });
       i++;
       continue;
     }
@@ -144,41 +405,32 @@ function ProjectDetailBody({ text }: { text: string }) {
       const items: string[] = [];
       while (i < lines.length) {
         const L = lines[i].trim();
-        if (!L) break;
-        if (!BULLET_RE.test(L)) break;
+        if (!L || !BULLET_RE.test(L)) break;
         items.push(L.replace(BULLET_RE, ""));
         i++;
       }
-      nodes.push(
-        <div key={k++} className="mb-9">
-          <DetailBulletList items={items} />
-        </div>
-      );
+      blocks.push({ type: "bullets", items });
       continue;
     }
 
     const nxt = nextNonEmpty(i + 1);
     const heading =
-      isSectionHeading(line) &&
-      nxt &&
-      (BULLET_RE.test(nxt.t) || !isSectionHeading(nxt.t));
+      isSectionHeading(line) && nxt && (BULLET_RE.test(nxt.t) || !isSectionHeading(nxt.t));
 
     if (heading) {
       const title = line;
       i++;
       while (i < lines.length && !lines[i].trim()) i++;
 
-      let body: ReactNode = null;
       if (i < lines.length && BULLET_RE.test(lines[i].trim())) {
         const items: string[] = [];
         while (i < lines.length) {
           const L = lines[i].trim();
-          if (!L) break;
-          if (!BULLET_RE.test(L)) break;
+          if (!L || !BULLET_RE.test(L)) break;
           items.push(L.replace(BULLET_RE, ""));
           i++;
         }
-        body = <DetailBulletList items={items} />;
+        blocks.push({ type: "section", title, bullets: items });
       } else {
         const para: string[] = [];
         while (i < lines.length) {
@@ -189,30 +441,8 @@ function ProjectDetailBody({ text }: { text: string }) {
           para.push(L);
           i++;
         }
-        if (para.length) {
-          body = (
-            <div className="mt-3 space-y-3">
-              {para.map((p, idx) => (
-                <p
-                  key={idx}
-                  className="text-[15px] leading-[1.75] text-white/[0.66] sm:text-[16px]"
-                >
-                  <RichText text={p} />
-                </p>
-              ))}
-            </div>
-          );
-        }
+        blocks.push({ type: "section", title, paragraphs: para });
       }
-
-      nodes.push(
-        <section key={k++} className="mb-10 sm:mb-12">
-          <h2 className="text-[clamp(1.2rem,2.2vw,1.55rem)] font-[780] tracking-[-0.03em] leading-[1.15] text-white">
-            {title}
-          </h2>
-          {body}
-        </section>
-      );
       continue;
     }
 
@@ -225,23 +455,167 @@ function ProjectDetailBody({ text }: { text: string }) {
       para.push(L);
       i++;
     }
-    if (para.length) {
+    if (para.length) blocks.push({ type: "prose", paragraphs: para });
+  }
+
+  return blocks;
+}
+
+function CaseDetailBody({
+  text,
+  isRu,
+  palette,
+}: {
+  text: string;
+  isRu: boolean;
+  palette?: CaseSwatch[];
+}) {
+  const blocks = useMemo(() => parseCaseBody(text), [text]);
+  const rest = blocks.filter((b) => b.type !== "meta");
+
+  let contentIndex = 0;
+  const nodes: ReactNode[] = [];
+
+  if (palette?.length) {
+    nodes.push(<ColorPalette key="palette" swatches={palette} isRu={isRu} />);
+  }
+
+  for (const block of rest) {
+    contentIndex++;
+
+    if (block.type === "prose") {
       nodes.push(
-        <div key={k++} className="mb-8 space-y-3 last:mb-0">
-          {para.map((p, idx) => (
-            <p
-              key={idx}
-              className="text-[15px] leading-[1.75] text-white/[0.66] sm:text-[16px]"
-            >
+        <div key={`prose-${contentIndex}`} className="mb-12 max-w-[42rem] space-y-4 last:mb-0 sm:mb-14">
+          {block.paragraphs.map((p, idx) => (
+            <p key={idx} className={BODY}>
               <RichText text={p} />
             </p>
           ))}
         </div>
       );
+    } else if (block.type === "bullets") {
+      nodes.push(
+        <div key={`bullets-${contentIndex}`} className="mb-14 sm:mb-16">
+          <FeatureGrid items={block.items} />
+        </div>
+      );
+    } else if (block.type === "section") {
+      const isOutcome = /^(итог|outcome|результат|result)/i.test(block.title);
+      nodes.push(
+        <section
+          key={`section-${contentIndex}`}
+          className="mb-16 scroll-mt-28 border-t border-white/[0.06] pt-10 sm:mb-[72px] sm:pt-12"
+        >
+          <h2 className={H2}>{block.title}</h2>
+          {block.paragraphs?.length ? (
+            <div className={cx("mt-5 max-w-[42rem] space-y-4", isOutcome && "text-[#ededf3]")}>
+              {block.paragraphs.map((p, idx) => (
+                <p key={idx} className={BODY}>
+                  <RichText text={p} />
+                </p>
+              ))}
+            </div>
+          ) : null}
+          {block.bullets?.length ? <FeatureGrid items={block.bullets} /> : null}
+        </section>
+      );
     }
   }
 
   return <div className="text-left">{nodes}</div>;
+}
+
+function OutcomesBlock({
+  items,
+  isRu,
+}: {
+  items: string[];
+  isRu: boolean;
+}) {
+  return (
+    <section id="outcomes" className="mt-4 scroll-mt-28 sm:mt-6">
+      <h2 className={H2}>{isRu ? "Что получили" : "Outcomes"}</h2>
+      <ol className="mt-8 list-none space-y-0 divide-y divide-white/[0.06]">
+        {items.map((item, idx) => (
+          <li key={`${idx}-${item.slice(0, 32)}`} className="flex gap-5 py-5 first:pt-0 last:pb-0 sm:gap-8">
+            <span className="font-hero w-8 shrink-0 text-[20px] font-[600] tabular-nums tracking-[-0.03em] text-[#8a8a8e]">
+              {String(idx + 1).padStart(2, "0")}
+            </span>
+            <p className="min-w-0 text-[17px] font-[400] leading-[1.45] text-[#c3c3cc] sm:text-[18px]">
+              <RichText text={item} />
+            </p>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function MoreLikeThis({
+  currentId,
+  isRu,
+}: {
+  currentId: string;
+  isRu: boolean;
+}) {
+  const others = useMemo(
+    () => buildProjects(isRu).filter((p) => p.id !== currentId).slice(0, 4),
+    [currentId, isRu]
+  );
+
+  if (!others.length) return null;
+
+  const title = isRu ? "Ещё проекты" : "More like this";
+
+  return (
+    <section className="mt-[72px] sm:mt-24" aria-labelledby="more-like-this">
+      <h2
+        id="more-like-this"
+        className="mb-8 font-hero text-[clamp(1.5rem,2.8vw,2rem)] font-[600] tracking-[-0.03em] text-[#ededf3] sm:mb-10"
+      >
+        {title}
+      </h2>
+
+      <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-12">
+        {others.map((p) => (
+          <MoreProjectCard key={p.id} project={p} isRu={isRu} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function MoreProjectCard({ project, isRu }: { project: Project; isRu: boolean }) {
+  const cover = projectPreviewSrc(project);
+  const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
+
+  return (
+    <Link to={`/projects/${project.id}`} className="group block min-w-0 outline-none">
+      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[12px] bg-[#141416]">
+        <img
+          src={cover}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover object-center transition duration-500 ease-out group-hover:scale-[1.03]"
+          loading="lazy"
+          decoding="async"
+          draggable={false}
+        />
+      </div>
+      <div className="mt-4 flex items-start gap-3">
+        <div className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-[#1c1c1f]">
+          <img src={cover} alt="" className="h-full w-full object-cover" draggable={false} />
+        </div>
+        <div className="min-w-0">
+          <p className="text-[16px] font-[600] tracking-normal text-[#ededf3] transition group-hover:text-white">
+            {project.title}
+          </p>
+          <p className="mt-1 line-clamp-2 text-[13px] leading-[1.45] tracking-normal text-[#8a8a8e]">
+            {subtitle}
+          </p>
+        </div>
+      </div>
+    </Link>
+  );
 }
 
 export default function ProjectDetailPage() {
@@ -250,14 +624,13 @@ export default function ProjectDetailPage() {
   const isRu = lang === "ru";
 
   const project = useMemo(() => findProjectBySlug(slug, isRu), [slug, isRu]);
+  const caseSystem = project ? getProjectCaseSystem(project.id) : undefined;
 
   useEffect(() => {
     if (project?.id) trackProjectView(project.id);
   }, [project?.id]);
 
   const backLabel = isRu ? "Все проекты" : "All projects";
-  const pageEyebrow = isRu ? "Проект" : "Project";
-  const resultsLabel = isRu ? "Результаты" : "Outcomes";
   const stackLabel = isRu ? "Стек" : "Stack";
   const domainLabel = isRu ? "Домен" : "Domain";
   const statusLabel = isRu ? "Статус" : "Status";
@@ -270,15 +643,14 @@ export default function ProjectDetailPage() {
   const roleValue = isRu
     ? "Дизайн и разработка под ключ"
     : "End-to-end design and development";
+  const detailsLabel = isRu ? "Подробнее" : "Details";
 
   if (!slug) return <Navigate to="/projects" replace />;
-
-  if (!project) {
-    return <Navigate to="/projects" replace />;
-  }
+  if (!project) return <Navigate to="/projects" replace />;
 
   const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
   const details = isRu ? project.detailsRu : project.detailsEn;
+  const mood = caseSystem ? (isRu ? caseSystem.moodRu : caseSystem.moodEn) : null;
   const seoTitle = `${project.title} — ${isRu ? "кейс TIVONIX" : "TIVONIX case study"}`;
   const seoDescription = clipMetaDescription(
     subtitle +
@@ -289,167 +661,184 @@ export default function ProjectDetailPage() {
   const wip = project.status === "wip";
   const domainClean = project.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "") ?? "";
   const coverSrc = projectPreviewSrc(project);
+  const coverAbsolute = absoluteAssetUrl(coverSrc);
 
-  const coverBlurStyle = s({
-    transform: "translate(-50%, -50%) scale(1.12)",
-    filter: "blur(40px)",
-    WebkitFilter: "blur(40px)",
-    opacity: 0.58,
+  const schemaJsonLd = buildProjectCaseSchema({
+    id: project.id,
+    title: project.title,
+    description: seoDescription,
+    coverUrl: coverAbsolute,
+    domain: project.domain,
+    tags: project.tags,
+    stack: project.stack,
+    lang,
   });
 
   return (
-    <div className="relative min-h-screen" style={s({ "--headerH": `${HEADER_H}px` })}>
+    <div
+      className="relative min-h-screen overflow-x-clip bg-[#0a0a0b]"
+      style={s({ "--headerH": `${HEADER_H}px` })}
+    >
       <SEO
         title={seoTitle}
         description={seoDescription}
         canonicalPath={`/projects/${project.id}`}
+        ogImage={coverAbsolute}
+        ogType="article"
         ogLocalePrimary={isRu ? "ru_RU" : "en_US"}
+        schemaJsonLd={schemaJsonLd}
       />
 
-      {/*
-        Не используем -z-10: fixed-слой уходит под фон body (#000) и визуально «пропадает».
-        z-0 + контент z-10 — фон и blur всегда между body и страницей.
-      */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden>
         <img
           src={coverSrc}
           alt=""
-          className="absolute left-1/2 top-1/2 h-full min-h-[120%] w-full min-w-[120%] object-cover object-center"
-          style={coverBlurStyle}
+          className="absolute left-1/2 top-[-10%] h-[110%] w-[110%] max-w-none -translate-x-1/2 object-cover object-center opacity-40"
+          style={s({
+            filter: "blur(56px) saturate(1.08) brightness(0.55)",
+            WebkitFilter: "blur(56px) saturate(1.08) brightness(0.55)",
+          })}
           draggable={false}
           decoding="async"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,5,6,0.72)_0%,rgba(0,0,0,0.88)_50%,rgba(0,0,0,0.93)_100%)]" />
+        <div className="absolute inset-0 bg-[#0a0a0b]/78" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,11,0.55)_0%,rgba(10,10,11,0.92)_55%,#0a0a0b_100%)]" />
       </div>
 
       <div className="relative z-10">
-      <Header />
+        <Header />
 
-      <Section className="pt-[calc(var(--headerH)+16px)] sm:pt-[calc(var(--headerH)+24px)] pb-24">
-        <Container>
-          <div className="w-full text-left">
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+        <main className="pt-[calc(var(--headerH)+24px)] pb-28 sm:pt-[calc(var(--headerH)+32px)] sm:pb-36">
+          <Container>
+            <div className="mt-8 flex flex-col gap-1 sm:mt-10 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
               <Link
                 to="/projects"
-                className="inline-flex w-fit items-center gap-2 text-[13px] font-[650] text-white/50 hover:text-white/80 transition"
+                className="inline-flex w-fit items-center gap-2 text-[13px] font-[500] tracking-normal text-[#8a8a8e] transition hover:text-[#ededf3]"
               >
-                <span aria-hidden className="text-white/35">
-                  ←
-                </span>
+                <span aria-hidden>←</span>
                 {backLabel}
               </Link>
-              <p className="text-[13px] font-semibold tracking-tight text-white/80">{pageEyebrow}</p>
             </div>
 
-            <div className="mt-8 grid grid-cols-1 items-start gap-8 lg:mt-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(260px,400px)] lg:gap-10 xl:grid-cols-[minmax(0,1.25fr)_420px] xl:gap-12">
+            <div className="mt-8 grid grid-cols-1 items-start gap-10 lg:mt-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.88fr)] lg:gap-14 xl:gap-16">
               <div className="order-2 min-w-0 lg:order-1">
-                <ProjectPreviewFrame src={projectPreviewSrc(project)} variant="detail" />
+                <figure className="relative w-full overflow-hidden rounded-[12px] bg-[#141416]">
+                  <div className="relative aspect-[16/10] w-full">
+                    <img
+                      src={coverSrc}
+                      alt={`${project.title} — ${isRu ? "обложка кейса" : "case cover"}`}
+                      className="absolute inset-0 h-full w-full object-cover object-center"
+                      draggable={false}
+                      decoding="async"
+                      fetchPriority="high"
+                    />
+                  </div>
+                </figure>
+
                 {project.gallery?.length ? (
-                  <ProjectGalleryStrip images={project.gallery} isRu={isRu} />
+                  <div className="mt-8">
+                    <ProjectGalleryStrip images={project.gallery} isRu={isRu} />
+                  </div>
                 ) : null}
               </div>
 
-              <div className="order-1 min-w-0 space-y-8 lg:order-2 lg:pt-1">
-                <header className="space-y-3">
-                  <h1 className="text-[clamp(1.6rem,3.2vw,2.1rem)] font-[800] tracking-[-0.03em] text-white leading-[1.1]">
+              <div className="order-1 min-w-0 lg:order-2 lg:pt-1">
+                <header className="space-y-4">
+                  <h1 className="font-hero text-[clamp(2.15rem,5vw,3.35rem)] font-[600] tracking-[-0.035em] leading-[1.02] text-[#ededf3]">
                     {project.title}
                   </h1>
-                  <p className="text-[15px] leading-[1.55] text-white/58">{subtitle}</p>
+                  <p className={cx("max-w-[36ch]", BODY)}>{mood ?? subtitle}</p>
+                  {mood ? (
+                    <p className="max-w-[40ch] text-[14px] leading-relaxed text-[#8a8a8e]">{subtitle}</p>
+                  ) : null}
                 </header>
 
-                <div className="space-y-6 border-t border-white/[0.08] pt-6">
-                  <MetaRow label={domainLabel}>
+                <dl className="mt-8">
+                  <SpecRow label={domainLabel}>
                     {project.domain && !wip ? (
                       <a
                         href={project.domain}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group inline-flex max-w-full items-center gap-2 font-[500] text-white/90 underline decoration-white/20 underline-offset-2 transition hover:decoration-white/45"
+                        className="inline-flex max-w-full items-center gap-2 transition hover:text-white"
                       >
                         <span className="truncate">{domainClean}</span>
-                        <ExternalIcon className="shrink-0 text-white/45 transition group-hover:text-white/70" />
+                        <ExternalIcon className="shrink-0 text-[#8a8a8e]" />
                       </a>
                     ) : (
-                      <span className="text-white/45">{websiteSoonLabel}</span>
+                      <span className="text-[#8a8a8e]">{websiteSoonLabel}</span>
                     )}
-                  </MetaRow>
+                  </SpecRow>
 
-                  <MetaRow label={statusLabel}>
+                  <SpecRow label={statusLabel}>
                     <span className="inline-flex items-center gap-2">
                       <span
                         className={cx(
-                          "h-2 w-2 shrink-0 rounded-full",
+                          "h-1.5 w-1.5 shrink-0 rounded-full",
                           wip ? "bg-amber-400/90" : "bg-emerald-400/90"
                         )}
                       />
                       {wip ? wipLabel : liveLabel}
                     </span>
-                  </MetaRow>
+                  </SpecRow>
 
-                  <MetaRow label={roleLabel}>
-                    <span>{roleValue}</span>
-                  </MetaRow>
+                  <SpecRow label={roleLabel}>{roleValue}</SpecRow>
 
-                  <MetaRow label={tagsLabel}>
-                    <span className="text-white/70">
-                      {project.tags.map((tag, i) => (
-                        <span key={tag}>
-                          {i > 0 ? <span className="mx-1.5 text-white/25">·</span> : null}
-                          {tag}
-                        </span>
+                  <SpecRow label={tagsLabel}>
+                    <div className="flex flex-wrap gap-2">
+                      {project.tags.map((tag) => (
+                        <Pill key={tag}>{tag}</Pill>
                       ))}
-                    </span>
-                  </MetaRow>
+                    </div>
+                  </SpecRow>
 
                   {project.stack?.length ? (
-                    <MetaRow label={stackLabel}>
-                      <span className="text-white/75">{project.stack.join(" · ")}</span>
-                    </MetaRow>
+                    <SpecRow label={stackLabel}>
+                      <div className="flex flex-wrap gap-2">
+                        {project.stack.map((tech) => (
+                          <Pill key={tech}>{tech}</Pill>
+                        ))}
+                      </div>
+                    </SpecRow>
                   ) : null}
-                </div>
+                </dl>
 
-                <div className="flex flex-col gap-3 border-t border-white/[0.08] pt-6">
+                <div className="mt-10 flex flex-col gap-4">
                   {project.domain && !wip ? (
                     <a
                       href={project.domain}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={cx(
-                        "inline-flex h-11 w-full items-center justify-center rounded-lg px-5",
-                        "bg-white text-[14px] font-[700] text-neutral-900 hover:bg-white/90 transition"
-                      )}
+                      className="inline-flex h-[52px] w-full items-center justify-center rounded-full bg-[#FF6B2C] px-6 text-[15px] font-[600] tracking-normal text-white transition hover:bg-[#ff7d45]"
                     >
                       {openSiteLabel}
                     </a>
                   ) : (
-                    <div
-                      className={cx(
-                        "inline-flex h-11 w-full items-center justify-center rounded-lg px-5",
-                        "border border-white/[0.1] bg-white/[0.05] text-[14px] font-[700] text-white/45"
-                      )}
-                    >
+                    <div className="inline-flex h-[52px] w-full items-center justify-center rounded-full bg-[#1c1c1f] px-6 text-[15px] font-[600] tracking-normal text-[#8a8a8e]">
                       {websiteSoonLabel}
                     </div>
                   )}
 
                   <LeadCTAButton
                     source="project_page"
-                    variant="primary"
-                    className="!h-11 w-full !rounded-lg !text-[14px] !font-[800]"
+                    variant="plain"
+                    className="!h-auto !min-h-0 w-full !rounded-none !border-0 !bg-transparent !px-0 !py-1 !text-[15px] !font-[600] !tracking-normal !text-[#ededf3] hover:!bg-transparent hover:!text-white/75"
                   >
                     {leadFormCopy(lang).ctaDiscuss}
                   </LeadCTAButton>
 
-                  <p className="text-[12px] leading-relaxed text-white/38">
+                  <p className="text-left text-[13px] leading-relaxed tracking-normal text-[#8a8a8e]">
                     {isRu ? (
                       <>
-                        Напиши: <span className="text-white/52">что делаем</span>,{" "}
-                        <span className="text-white/52">срок</span>, <span className="text-white/52">пример</span>.
+                        Напиши: <span className="text-[#c3c3cc]">что делаем</span>,{" "}
+                        <span className="text-[#c3c3cc]">срок</span>,{" "}
+                        <span className="text-[#c3c3cc]">пример</span>.
                       </>
                     ) : (
                       <>
-                        Message: <span className="text-white/52">what to build</span>,{" "}
-                        <span className="text-white/52">timeline</span>, <span className="text-white/52">reference</span>.
+                        Message: <span className="text-[#c3c3cc]">what to build</span>,{" "}
+                        <span className="text-[#c3c3cc]">timeline</span>,{" "}
+                        <span className="text-[#c3c3cc]">reference</span>.
                       </>
                     )}
                   </p>
@@ -457,37 +846,87 @@ export default function ProjectDetailPage() {
               </div>
             </div>
 
-            <article className="mt-14 max-w-[42rem] pt-2 lg:mt-16">
-              <ProjectDetailBody text={details} />
+            <article
+              className="mt-16 max-w-[52rem] sm:mt-[72px] lg:mt-24"
+              itemScope
+              itemType="https://schema.org/CreativeWork"
+            >
+              <meta itemProp="name" content={project.title} />
+              <meta itemProp="description" content={subtitle} />
+              <link itemProp="url" href={`${CANONICAL_ORIGIN}/projects/${project.id}`} />
+
+              <div className="mb-10 border-b border-white/[0.06] pb-10 sm:mb-12 sm:pb-12">
+                {caseSystem ? (
+                  <CaseBrandIntro
+                    title={project.title}
+                    mood={isRu ? caseSystem.moodRu : caseSystem.moodEn}
+                    story={isRu ? caseSystem.storyRu : caseSystem.storyEn}
+                    logo={caseSystem.logo}
+                    logoFit={caseSystem.logoFit}
+                    domain={project.domain}
+                    domainClean={domainClean}
+                    wip={wip}
+                  />
+                ) : (
+                  <>
+                    <h2 className={H2}>{detailsLabel}</h2>
+                    <p className="mt-3 max-w-[40rem] text-[15px] leading-relaxed text-[#8a8a8e]">
+                      {isRu
+                        ? "Как устроен продукт: смысл, сценарии, интерфейс и токены."
+                        : "How the product is built: intent, flows, interface and tokens."}
+                    </p>
+                  </>
+                )}
+              </div>
+
+              <CaseDetailBody
+                text={details}
+                isRu={isRu}
+                palette={caseSystem?.palette}
+              />
 
               {project.outcomes?.length ? (
-                <div className="mt-2 max-w-[42rem]">
-                  <h2 className="text-[clamp(1.2rem,2.2vw,1.55rem)] font-[780] tracking-[-0.03em] leading-[1.15] text-white">
-                    {resultsLabel}
-                  </h2>
-                  <DetailBulletList items={project.outcomes} />
-                </div>
+                <OutcomesBlock items={project.outcomes} isRu={isRu} />
               ) : null}
 
               {project.testimonial ? (
-                <figure className="mt-12 max-w-[42rem]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#FF9A3D]/85">
+                <figure className="mt-16 max-w-[42rem] border-t border-white/[0.06] pt-10 sm:mt-[72px] sm:pt-12">
+                  <p className="text-[13px] font-[500] tracking-normal text-[#8a8a8e]">
                     {isRu ? "Отзыв · 5 из 5" : "Review · 5 of 5"}
                   </p>
-                  <blockquote className="mt-3 text-[16px] leading-[1.7] text-white/[0.78] sm:text-[17px]">
-                    “{project.testimonial.text}”
-                  </blockquote>
-                  <figcaption className="mt-4 text-[13px] text-white/40">
-                    <span className="font-[700] text-white/72">{project.testimonial.name}</span>
-                    <span className="mx-1.5 text-white/25">·</span>
+                  {project.testimonial.textAr ? (
+                    <>
+                      <blockquote
+                        className="mt-4 text-[18px] font-[400] leading-[1.7] tracking-[0.005em] text-[#c3c3cc] sm:text-[20px]"
+                        dir="rtl"
+                        lang="ar"
+                      >
+                        “{project.testimonial.textAr}”
+                      </blockquote>
+                      <p className="mt-5 text-[12px] font-[500] tracking-normal text-[#8a8a8e]">
+                        {isRu ? "Расшифровка" : "Translation"}
+                      </p>
+                      <blockquote className="mt-2 text-[16px] font-[400] leading-[1.5] tracking-[0.005em] text-[#a8a8b0] sm:text-[17px]">
+                        “{project.testimonial.text}”
+                      </blockquote>
+                    </>
+                  ) : (
+                    <blockquote className="mt-4 text-[18px] font-[400] leading-[1.5] tracking-[0.005em] text-[#c3c3cc] sm:text-[20px]">
+                      “{project.testimonial.text}”
+                    </blockquote>
+                  )}
+                  <figcaption className="mt-5 text-[13px] tracking-normal text-[#8a8a8e]">
+                    <span className="font-[600] text-[#ededf3]">{project.testimonial.name}</span>
+                    <span className="mx-1.5 text-white/20">·</span>
                     {project.testimonial.role}
                   </figcaption>
                 </figure>
               ) : null}
             </article>
-          </div>
-        </Container>
-      </Section>
+
+            <MoreLikeThis currentId={project.id} isRu={isRu} />
+          </Container>
+        </main>
       </div>
     </div>
   );

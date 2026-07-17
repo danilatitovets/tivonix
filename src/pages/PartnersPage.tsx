@@ -48,12 +48,6 @@ const CASES = [
     tags: ["Booking", "SaaS", "Telegram"],
     cover: "/images/project-priew/slotty.webp",
   },
-  {
-    id: "giftsniper",
-    title: "GiftSniper",
-    tags: ["Telegram Bot", "TON", "Analytics"],
-    cover: "/images/project-priew/giftsniper.webp",
-  },
 ] as const;
 
 const CAPABILITY_IDS = ["landing", "bot", "crm", "cabinet", "integrations", "support"] as const;
@@ -4586,7 +4580,7 @@ export default function PartnersPage() {
                       alt=""
                       width={640}
                       height={400}
-                      className="!h-full !max-w-none h-full w-full scale-110 object-cover object-top blur-[22px] transition duration-500 ease-out group-hover:scale-[1.16]"
+                      className="!h-full !max-w-none h-full w-full object-cover object-center transition duration-500 ease-out group-hover:scale-[1.04]"
                       loading="lazy"
                       decoding="async"
                     />

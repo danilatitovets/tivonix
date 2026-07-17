@@ -44,24 +44,84 @@
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://www.tivonix.tech/projects/giftsniper</loc>
+    <loc>https://www.tivonix.tech/projects/tivonixpanel</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/tivonixpanel" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/tivonixpanel" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/tivonixpanel" />
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://www.tivonix.tech/projects/slotty</loc>
+    <loc>https://www.tivonix.tech/en/projects/tivonixpanel</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/tivonixpanel" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/tivonixpanel" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/tivonixpanel" />
     <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.tivonix.tech/projects/spliton</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/spliton" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/spliton" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/spliton" />
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://www.tivonix.tech/projects/headmind</loc>
+    <loc>https://www.tivonix.tech/en/projects/spliton</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/spliton" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/spliton" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/spliton" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/projects/slotty</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/slotty" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/slotty" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/slotty" />
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/en/projects/slotty</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/slotty" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/slotty" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/slotty" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/projects/headmind</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/headmind" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/headmind" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/headmind" />
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/en/projects/headmind</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/headmind" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/headmind" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/headmind" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/projects/logovo</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/logovo" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/logovo" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/logovo" />
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/en/projects/logovo</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/logovo" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/logovo" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/logovo" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.tivonix.tech/contacts</loc>

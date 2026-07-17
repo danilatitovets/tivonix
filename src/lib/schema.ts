@@ -90,6 +90,99 @@ export function buildHomePageSchema({ pageTitle, pageDescription }: HomeSchemaIn
   };
 }
 
+type ProjectCaseSchemaInput = {
+  id: string;
+  title: string;
+  description: string;
+  coverUrl: string;
+  domain?: string;
+  tags: string[];
+  stack?: string[];
+  lang: Lang;
+  dateModified?: string;
+};
+
+/** Case study / CreativeWork JSON-LD для /projects/:id */
+export function buildProjectCaseSchema({
+  id,
+  title,
+  description,
+  coverUrl,
+  domain,
+  tags,
+  stack,
+  lang,
+  dateModified,
+}: ProjectCaseSchemaInput) {
+  const pageUrl = `https://tivonix.tech/projects/${id}`;
+  const inLanguage = lang === "ru" ? "ru" : "en";
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://tivonix.tech/#org",
+        name: "TIVONIX",
+        url: "https://tivonix.tech/",
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${pageUrl}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: lang === "ru" ? "Главная" : "Home",
+            item: "https://tivonix.tech/",
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: lang === "ru" ? "Проекты" : "Projects",
+            item: "https://tivonix.tech/projects",
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: title,
+            item: pageUrl,
+          },
+        ],
+      },
+      {
+        "@type": "WebPage",
+        "@id": `${pageUrl}#webpage`,
+        url: pageUrl,
+        name: `${title} — ${lang === "ru" ? "кейс TIVONIX" : "TIVONIX case study"}`,
+        description,
+        isPartOf: { "@id": "https://tivonix.tech/#website" },
+        about: { "@id": `${pageUrl}#creativework` },
+        breadcrumb: { "@id": `${pageUrl}#breadcrumb` },
+        inLanguage,
+        primaryImageOfPage: {
+          "@type": "ImageObject",
+          url: coverUrl,
+        },
+      },
+      {
+        "@type": "CreativeWork",
+        "@id": `${pageUrl}#creativework`,
+        name: title,
+        description,
+        url: pageUrl,
+        image: coverUrl,
+        creator: { "@id": "https://tivonix.tech/#org" },
+        publisher: { "@id": "https://tivonix.tech/#org" },
+        inLanguage,
+        keywords: [...tags, ...(stack ?? [])].join(", "),
+        ...(domain ? { sameAs: [domain] } : {}),
+        ...(dateModified ? { dateModified } : {}),
+      },
+    ],
+  };
+}
+
 export function buildPricingPageSchema({ pageTitle, pageDescription, lang }: PricingSchemaInput) {
   const copy = pricingCopy(lang);
 

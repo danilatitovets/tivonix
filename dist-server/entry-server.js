@@ -410,7 +410,7 @@ function isPartnersPath(pathname) {
   const p = pathname.replace(/\/+$/, "") || "/";
   return p === PARTNERS_PATH_LEGACY || p === PARTNERS_PATH_RU || p === PARTNERS_PATH_EN;
 }
-const PARTNERS_ORIGIN = "https://www.tivonix.tech";
+const PARTNERS_ORIGIN = "https://tivonix.tech";
 function partnersCanonicalUrl(lang, pathname) {
   const p = (pathname ?? "").replace(/\/+$/, "") || "";
   if (p === PARTNERS_PATH_LEGACY) {
@@ -5694,14 +5694,6 @@ function findProjectBySlug(slug, isRu) {
   if (!slug) return void 0;
   return buildProjects(isRu).find((p) => p.id === slug);
 }
-const TG_BOT_BASE_URL = "https://t.me/tivonixtech_leads_bot";
-const TG_CHANNEL_URL = "https://t.me/TIVONIX";
-const TG_BOT_URL = buildTelegramBotUrl("calc");
-function buildTelegramBotUrl(startPayload) {
-  if (!startPayload) return TG_BOT_BASE_URL;
-  return `${TG_BOT_BASE_URL}?start=${encodeURIComponent(startPayload)}`;
-}
-const PARTNER_AGENCY_TELEGRAM_URL = buildTelegramBotUrl(PARTNER_AGENCY_TELEGRAM_PAYLOAD);
 function clamp01$1(v) {
   return Math.min(1, Math.max(0, v));
 }
@@ -5742,6 +5734,8 @@ function useCaseCoverPan(blockRef) {
 function CasesSection() {
   const { lang } = useLang();
   const copy = landingCopy(lang);
+  const leadCopy = leadFormCopy(lang);
+  const { openLeadForm } = useLeadForm();
   const isRu = lang === "ru";
   const [activeTab, setActiveTab] = useState("view");
   const caseBlockRef = useRef(null);
@@ -5767,16 +5761,17 @@ function CasesSection() {
     }
     tabs.push({
       id: "cta",
-      label: copy.cases.cta,
-      href: TG_BOT_URL
+      label: leadCopy.ctaProjects,
+      onClick: () => openLeadForm("cases")
     });
     return tabs;
   }, [
-    copy.cases.cta,
     copy.cases.openProduct,
     copy.cases.viewCase,
     featured.domain,
-    featured.id
+    featured.id,
+    leadCopy.ctaProjects,
+    openLeadForm
   ]);
   return /* @__PURE__ */ jsx(Section, { id: "cases", className: "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs(Reveal$1, { className: "case-split", children: [
     /* @__PURE__ */ jsxs("div", { className: "case-split__visual", children: [
@@ -6658,6 +6653,14 @@ function FAQSection() {
     ] })
   ] });
 }
+const TG_BOT_BASE_URL = "https://t.me/tivonixtech_leads_bot";
+const TG_CHANNEL_URL = "https://t.me/TIVONIX";
+const TG_BOT_URL = buildTelegramBotUrl("calc");
+function buildTelegramBotUrl(startPayload) {
+  if (!startPayload) return TG_BOT_BASE_URL;
+  return `${TG_BOT_BASE_URL}?start=${encodeURIComponent(startPayload)}`;
+}
+const PARTNER_AGENCY_TELEGRAM_URL = buildTelegramBotUrl(PARTNER_AGENCY_TELEGRAM_PAYLOAD);
 function cx$8(...a) {
   return a.filter(Boolean).join(" ");
 }
@@ -7152,7 +7155,7 @@ const CANONICAL_ORIGIN = "https://tivonix.tech";
 const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN}/images/og-social.jpg`;
 const OG_IMAGE_WIDTH = "1200";
 const OG_IMAGE_HEIGHT = "630";
-const OG_IMAGE_ALT = "TIVONIX AI тАФ ╤Б╨░╨╣╤В╤Л, ╨▒╨╛╤В╤Л ╨╕ ╨░╨▓╤В╨╛╨╝╨░╤В╨╕╨╖╨░╤Ж╨╕╤П ╨┤╨╗╤П ╨▒╨╕╨╖╨╜╨╡╤Б╨░";
+const OG_IMAGE_ALT = "TIVONIX AI — сайты, боты и автоматизация для бизнеса";
 function SEO({
   title,
   description,
@@ -7194,14 +7197,14 @@ function buildHomePageSchema({ pageTitle, pageDescription }) {
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://www.tivonix.tech/#org",
+        "@id": "https://tivonix.tech/#org",
         name: "TIVONIX",
-        url: "https://www.tivonix.tech/",
+        url: "https://tivonix.tech/",
         logo: {
           "@type": "ImageObject",
-          url: "https://www.tivonix.tech/images/tivonix-logo-icon.webp"
+          url: "https://tivonix.tech/images/tivonix-logo-icon.webp"
         },
-        image: "https://www.tivonix.tech/images/ceo.png",
+        image: "https://tivonix.tech/images/ceo.png",
         description: pageDescription,
         contactPoint: [
           {
@@ -7212,50 +7215,50 @@ function buildHomePageSchema({ pageTitle, pageDescription }) {
           }
         ],
         sameAs: ["https://t.me/TIVONIX"],
-        founder: { "@id": "https://www.tivonix.tech/#danila-titovets" }
+        founder: { "@id": "https://tivonix.tech/#danila-titovets" }
       },
       {
         "@type": "Person",
-        "@id": "https://www.tivonix.tech/#danila-titovets",
+        "@id": "https://tivonix.tech/#danila-titovets",
         name: "Данила Титовец",
         alternateName: "Danila Titovets",
         jobTitle: "Founder & Full-stack developer",
-        worksFor: { "@id": "https://www.tivonix.tech/#org" },
+        worksFor: { "@id": "https://tivonix.tech/#org" },
         address: {
           "@type": "PostalAddress",
           addressCountry: "BY"
         },
-        url: "https://www.tivonix.tech/",
+        url: "https://tivonix.tech/",
         sameAs: ["https://t.me/TIVONIX"],
         email: "tivoonix@gmail.com",
-        image: "https://www.tivonix.tech/images/ceo.png"
+        image: "https://tivonix.tech/images/ceo.png"
       },
       {
         "@type": "ProfessionalService",
-        "@id": "https://www.tivonix.tech/#service",
+        "@id": "https://tivonix.tech/#service",
         name: "TIVONIX",
-        url: "https://www.tivonix.tech/",
+        url: "https://tivonix.tech/",
         description: pageDescription,
-        provider: { "@id": "https://www.tivonix.tech/#danila-titovets" },
+        provider: { "@id": "https://tivonix.tech/#danila-titovets" },
         areaServed: "Worldwide",
         email: "tivoonix@gmail.com"
       },
       {
         "@type": "WebSite",
-        "@id": "https://www.tivonix.tech/#website",
-        url: "https://www.tivonix.tech/",
+        "@id": "https://tivonix.tech/#website",
+        url: "https://tivonix.tech/",
         name: "TIVONIX",
-        publisher: { "@id": "https://www.tivonix.tech/#org" },
+        publisher: { "@id": "https://tivonix.tech/#org" },
         inLanguage: ["ru", "en"]
       },
       {
         "@type": "WebPage",
-        "@id": "https://www.tivonix.tech/#home",
-        url: "https://www.tivonix.tech/",
+        "@id": "https://tivonix.tech/#home",
+        url: "https://tivonix.tech/",
         name: pageTitle,
         description: pageDescription,
-        isPartOf: { "@id": "https://www.tivonix.tech/#website" },
-        about: { "@id": "https://www.tivonix.tech/#org" },
+        isPartOf: { "@id": "https://tivonix.tech/#website" },
+        about: { "@id": "https://tivonix.tech/#org" },
         inLanguage: ["ru", "en"]
       }
     ]
@@ -7978,6 +7981,9 @@ function ProjectDetailPage() {
   const { lang } = useLang();
   const isRu = lang === "ru";
   const project = useMemo(() => findProjectBySlug(slug, isRu), [slug, isRu]);
+  useEffect(() => {
+    if (project?.id) trackProjectView(project.id);
+  }, [project?.id]);
   const backLabel = isRu ? "Все проекты" : "All projects";
   const pageEyebrow = isRu ? "Проект" : "Project";
   const resultsLabel = isRu ? "Результаты" : "Outcomes";
@@ -7989,7 +7995,6 @@ function ProjectDetailPage() {
   const wipLabel = isRu ? "В разработке" : "In progress";
   const openSiteLabel = isRu ? "Открыть сайт" : "Open website";
   const websiteSoonLabel = isRu ? "Сайт скоро" : "Website soon";
-  const estimateLabel = isRu ? "Обсудить проект" : "Discuss the project";
   const roleLabel = isRu ? "Роль TIVONIX" : "TIVONIX role";
   const roleValue = isRu ? "Дизайн и разработка под ключ" : "End-to-end design and development";
   if (!slug) return /* @__PURE__ */ jsx(Navigate, { to: "/projects", replace: true });
@@ -8119,18 +8124,12 @@ function ProjectDetailPage() {
                 }
               ),
               /* @__PURE__ */ jsx(
-                "a",
+                LeadCTAButton,
                 {
-                  href: TG_CHANNEL_URL,
-                  target: "_blank",
-                  rel: "noopener noreferrer",
-                  className: cx$6(
-                    "inline-flex h-11 w-full items-center justify-center rounded-lg px-5",
-                    "text-[14px] font-[800] text-black",
-                    "bg-[linear-gradient(180deg,#FFD7B0_0%,#FF9A3D_52%,#FF6A1A_100%)]",
-                    "hover:brightness-105 transition"
-                  ),
-                  children: estimateLabel
+                  source: "project_page",
+                  variant: "primary",
+                  className: "!h-11 w-full !rounded-lg !text-[14px] !font-[800]",
+                  children: leadFormCopy(lang).ctaDiscuss
                 }
               ),
               /* @__PURE__ */ jsx("p", { className: "text-[12px] leading-relaxed text-white/38", children: isRu ? /* @__PURE__ */ jsxs(Fragment, { children: [

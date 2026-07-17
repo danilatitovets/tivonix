@@ -248,8 +248,6 @@ const RU: PartnersCopy = {
         "Финтех-платформа для музыкальных активов: каталог релизов, покупка долей, кошелёк, вторичный рынок, выплаты и административная система.",
       slotty:
         "Система онлайн-записи: услуги, расписание, бронирование, напоминания, портфолио, подписки и личный кабинет.",
-      giftsniper:
-        "Telegram-продукт для анализа NFT и Gifts: ссылки, рыночные данные, характеристики и ориентировочная оценка.",
     },
   },
   examples: {
@@ -517,8 +515,6 @@ const EN: PartnersCopy = {
         "Fintech platform for music assets: release catalog, fractional purchases, wallet, secondary market, payouts, and admin system.",
       slotty:
         "Online booking system: services, schedule, reservations, reminders, portfolio, subscriptions, and client portal.",
-      giftsniper:
-        "Telegram product for NFT and Gifts analysis: links, market data, attributes, and estimated valuation.",
     },
   },
   examples: {

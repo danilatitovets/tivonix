@@ -11,7 +11,6 @@ const requiredHtmlFiles = [
   "dist/partners/index.html",
   "dist/ru/partners/index.html",
   "dist/en/partners/index.html",
-  "dist/projects/giftsniper/index.html",
   "dist/projects/slotty/index.html",
   "dist/projects/spliton/index.html",
   "dist/projects/tivonixpanel/index.html",
@@ -44,7 +43,7 @@ const checks = [
   },
   {
     file: "dist/projects/index.html",
-    phrases: ["Проекты", "Tivonix Panel", "GiftSniper", "Slotty", "Spliton"],
+    phrases: ["Проекты", "Tivonix Panel", "Slotty", "Spliton"],
   },
   {
     file: "dist/projects/tivonixpanel/index.html",
@@ -71,15 +70,6 @@ const checks = [
       "онлайн-записи к мастерам",
       "https://tivonix.tech/projects/slotty",
       "slotty.of.by",
-    ],
-  },
-  {
-    file: "dist/projects/giftsniper/index.html",
-    phrases: [
-      "GiftSniper",
-      "Telegram-бот для оценки NFT и Telegram Gifts",
-      "https://tivonix.tech/projects/giftsniper",
-      "https://t.me/GiftSniperTonBot",
     ],
   },
   {

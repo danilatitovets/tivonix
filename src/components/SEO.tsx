@@ -49,7 +49,10 @@ export function SEO({
       <meta property="og:image" content={ogImage} />
       <meta property="og:image:width" content={OG_IMAGE_WIDTH} />
       <meta property="og:image:height" content={OG_IMAGE_HEIGHT} />
-      <meta property="og:image:type" content="image/jpeg" />
+      <meta
+        property="og:image:type"
+        content={ogImage.endsWith(".webp") ? "image/webp" : ogImage.endsWith(".png") ? "image/png" : "image/jpeg"}
+      />
       <meta property="og:image:alt" content={OG_IMAGE_ALT} />
 
       <meta name="twitter:card" content="summary_large_image" />
