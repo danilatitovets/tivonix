@@ -8,6 +8,7 @@ import { partnerPanelLoginUrl } from "../../lib/partnerPanel";
 import { trackPartnersEvent } from "../../lib/ads";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
 import { leadFormCopy } from "../../i18n/leadFormCopy";
+import LangToggle from "./LangToggle";
 
 // Десктоп-режим (бургер скрыт, показывается полоса навигации) с xl (>=1280).
 
@@ -19,6 +20,13 @@ type NavKey = "home" | "automation" | "plans" | "projects" | "partners";
 type NavItem = { to: string; key: NavKey };
 
 const NAV_MAIN: NavItem[] = [
+  { to: "/", key: "home" },
+  { to: "/plans", key: "plans" },
+  { to: "/projects", key: "projects" },
+  { to: "/partners", key: "partners" },
+];
+
+const NAV_MOBILE: NavItem[] = [
   { to: "/", key: "home" },
   { to: "/avtomatizaciya-biznesa", key: "automation" },
   { to: "/plans", key: "plans" },
@@ -323,6 +331,17 @@ export default function Header() {
     [lang]
   );
 
+  const mobileNavItems = useMemo(
+    () =>
+      NAV_MOBILE.map((it) => ({
+        key: it.key,
+        to: it.key === "partners" ? partnersPath(lang) : it.to,
+        label: navLabel(it.key),
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lang]
+  );
+
   const onNav = (to: string) => (e: React.MouseEvent) => {
     setOpen(false);
     if (to === "/") {
@@ -372,9 +391,9 @@ export default function Header() {
 
       <header
         className={cx(
-          "fixed inset-x-0 z-[120] transition-[top,transform,opacity]",
+          "pointer-events-none fixed inset-x-0 z-[120] transition-[top,transform,opacity]",
           heroInView && !isMobile ? "top-3 sm:top-4" : "top-0",
-          hideHeader ? "pointer-events-none -translate-y-full opacity-0" : "translate-y-0 opacity-100"
+          hideHeader ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100"
         )}
         style={reducedMotion ? undefined : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)}
       >
@@ -386,7 +405,7 @@ export default function Header() {
               )}
             >
                 {/* LEFT: логотип */}
-                <div className="flex min-w-0 items-center gap-3 shrink-0 xl:justify-self-start">
+                <div className={cx("flex min-w-0 items-center gap-3 shrink-0 xl:justify-self-start", !hideHeader && "pointer-events-auto")}>
                   <Link
                     to="/"
                     onClick={(e) => {
@@ -413,8 +432,25 @@ export default function Header() {
                   </Link>
                 </div>
 
-                {/* CENTER: навигация (только xl+) — колонка auto между двумя 1fr, визуально по центру экрана */}
-                <div className="hidden min-w-0 justify-self-center xl:block">
+                {/* CENTER: RU/EN на mobile/tablet в hero — на одной линии с лого и бургером */}
+                {heroInView && !isPartners ? (
+                  <div
+                    className={cx(
+                      "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 xl:hidden",
+                      !hideHeader && "pointer-events-auto"
+                    )}
+                  >
+                    <LangToggle variant="hero" reducedMotion={reducedMotion} />
+                  </div>
+                ) : null}
+
+                {/* CENTER: навигация (только xl+) + RU/EN рядом с табами */}
+                <div
+                  className={cx(
+                    "relative hidden min-w-0 items-center gap-2 justify-self-center xl:flex",
+                    !hideHeader && "pointer-events-auto"
+                  )}
+                >
                   <PillNav
                     activeKey={activeKey}
                     reducedMotion={reducedMotion}
@@ -422,10 +458,13 @@ export default function Header() {
                     onItemClick={onNav}
                     compact={false}
                   />
+                  {!isPartners ? (
+                    <LangToggle variant="hero" reducedMotion={reducedMotion} />
+                  ) : null}
                 </div>
 
                 {/* RIGHT: CTA (desktop xl+) */}
-                <div className="ml-auto hidden min-w-0 shrink-0 items-center xl:ml-0 xl:flex xl:justify-self-end">
+                <div className={cx("ml-auto hidden min-w-0 shrink-0 items-center xl:ml-0 xl:flex xl:justify-self-end", !hideHeader && "pointer-events-auto")}>
                   {onPartners ? (
                     <a
                       href={ctaHref}
@@ -442,7 +481,7 @@ export default function Header() {
                 </div>
 
                 {/* RIGHT: tablet/mobile (до xl) — CTA + бургер */}
-                <div className="ml-auto xl:hidden flex items-center gap-2">
+                <div className={cx("ml-auto xl:hidden flex items-center gap-2", !hideHeader && "pointer-events-auto")}>
                   <div className="hidden md:block">
                     {onPartners ? (
                       <a
@@ -620,7 +659,7 @@ export default function Header() {
 
           <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2 pb-5 sm:px-3">
             <nav className="mt-1 flex flex-col" aria-label={isRu ? "Навигация" : "Navigation"}>
-              {tabsItems.map((item) => (
+              {mobileNavItems.map((item) => (
                 <Link
                   key={item.key}
                   to={item.to}

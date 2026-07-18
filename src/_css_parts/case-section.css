@@ -1,0 +1,196 @@
+  .case-split {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border-radius: 24px;
+    overflow: hidden;
+    background: #0c0c0c;
+  }
+
+  .case-split__visual {
+    position: relative;
+    min-height: 240px;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .case-split__visual-gap {
+    display: none;
+  }
+
+  .case-split__grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .case-split__img {
+    width: 100%;
+    height: 100%;
+    min-height: 240px;
+    object-fit: cover;
+    object-position: 36% 18%;
+    will-change: object-position;
+  }
+
+  .case-split__visual-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      transparent 30%,
+      rgba(12, 12, 12, 0.55) 72%,
+      rgba(12, 12, 12, 0.92) 100%
+    );
+    pointer-events: none;
+  }
+
+  .case-split__content {
+    position: relative;
+    z-index: 1;
+    padding: 1.75rem 1.5rem 2rem;
+  }
+
+  .case-split__badge {
+    display: inline-flex;
+    border-radius: 999px;
+    background: rgba(255, 138, 30, 0.14);
+    padding: 0.45rem 0.85rem;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #ffae66;
+  }
+
+  .case-split__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .case-split__chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    border: none;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 0.22rem 0.55rem;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: rgba(255, 255, 255, 0.62);
+    white-space: nowrap;
+  }
+
+  .case-split__tabs {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    padding: 0 1.25rem 1.5rem;
+    margin-top: -0.25rem;
+  }
+
+  .case-split__tab-bar {
+    display: inline-flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    width: auto;
+    max-width: 100%;
+    gap: 0.25rem;
+    border-radius: 999px;
+    background: #141414;
+    padding: 0.2rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .case-split__tab-bar a,
+  .case-split__tab-bar button {
+    width: auto;
+    flex: 0 0 auto;
+    justify-content: center;
+    height: 2.25rem;
+    padding-inline: 0.85rem;
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .case-split__tab-bar a[aria-current="page"],
+  .case-split__tab-bar [data-active] {
+    background: rgba(255, 255, 255, 0.92) !important;
+    color: #000 !important;
+  }
+
+  @media (max-width: 1023px) {
+    .case-split__content {
+      padding: 1.5rem 1.25rem 1.25rem;
+    }
+
+    .case-split__chip {
+      padding: 0.2rem 0.5rem;
+      font-size: 10.5px;
+    }
+
+    .case-split__tabs {
+      margin-top: 0;
+      padding: 0 1.25rem 1.25rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .case-split {
+      min-height: 440px;
+      padding-bottom: 4.25rem;
+    }
+
+    .case-split__visual {
+      position: absolute;
+      inset: 0 auto 0 0;
+      z-index: 0;
+      width: 51%;
+      min-height: 100%;
+    }
+
+    .case-split__img {
+      min-height: 100%;
+      object-position: 42% 18%;
+    }
+
+    .case-split__visual-overlay {
+      background:
+        linear-gradient(180deg, transparent 55%, rgba(12, 12, 12, 0.35) 82%, rgba(12, 12, 12, 0.72) 100%),
+        linear-gradient(90deg, transparent 42%, rgba(12, 12, 12, 0.92) 100%);
+    }
+
+    .case-split__visual-gap {
+      display: block;
+    }
+
+    .case-split__grid {
+      grid-template-columns: 1.05fr 0.95fr;
+      min-height: 100%;
+    }
+
+    .case-split__content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 2.5rem 2.25rem 2rem 1.5rem;
+    }
+
+    .case-split__tabs {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      margin-top: 0;
+      padding: 0 2rem 1.75rem;
+    }
+  }

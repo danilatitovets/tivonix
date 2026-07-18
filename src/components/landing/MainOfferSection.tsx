@@ -21,11 +21,17 @@ type CardReveal = {
 };
 
 const OFFER_MOSAIC_BG = `/images/${encodeURI("как рабоает/пп/блоки/ffon.webp")}`;
-const OFFER_BOTTOM_MOBILE_BG = `/images/${encodeURI("как рабоает/пп/6.webp")}`;
-const TOP_ENTER_STAGGER_MS = 130;
-const TOP_ENTER_DURATION_MS = 820;
-const REVEAL_DELAY_MS = 200;
-const REVEAL_DURATION_MS = 2800;
+/** Native mosaic artboard aspect — keep bg from squashing on mobile strip */
+const OFFER_MOSAIC_ASPECT = 1672 / 941;
+/**
+ * TN sits in the bottom row of the full mosaic (~0.54 + half of 0.46).
+ * Pin that point to the vertical center of mobile cards (like desktop).
+ */
+const OFFER_TN_FOCUS_Y = 0.74;
+const TOP_ENTER_STAGGER_MS = 80;
+const TOP_ENTER_DURATION_MS = 420;
+const REVEAL_DELAY_MS = 60;
+const REVEAL_DURATION_MS = 1100;
 const OFFER_MOBILE_MAX_WIDTH = 1023;
 
 function clamp(value: number, min: number, max: number) {
@@ -56,37 +62,45 @@ function useOfferMosaicBackground(mosaicRef: React.RefObject<HTMLDivElement | nu
     if (!mosaic) return;
 
     const update = () => {
-      const mosaicRect = mosaic.getBoundingClientRect();
+      const mosaicEl = mosaicRef.current;
+      if (!mosaicEl) return;
+
+      const mosaicRect = mosaicEl.getBoundingClientRect();
       if (mosaicRect.width <= 0 || mosaicRect.height <= 0) return;
 
-      const rowBottom = mosaic.querySelector(".offer-mosaic__row-bottom");
       const isMobile = window.innerWidth < 1024;
-      const gridW =
-        isMobile && rowBottom
-          ? Math.max(mosaicRect.width, rowBottom.scrollWidth)
-          : mosaicRect.width;
-      const gridH = mosaicRect.height;
+      const rowBottom = mosaicEl.querySelector(".offer-mosaic__row-bottom") as HTMLElement | null;
 
-      mosaic.style.setProperty("--offer-grid-w", `${gridW}px`);
-      mosaic.style.setProperty("--offer-grid-h", `${gridH}px`);
+      mosaicEl.style.setProperty("--offer-grid-w", `${mosaicRect.width}px`);
+      mosaicEl.style.setProperty("--offer-grid-h", `${mosaicRect.height}px`);
 
-      mosaic.querySelectorAll<HTMLElement>("[data-offer-slice]").forEach((card) => {
-        const inBottomRow = card.closest(".offer-mosaic__row-bottom") !== null;
-        if (isMobile && inBottomRow) {
-          card.style.removeProperty("--offer-bg-w");
-          card.style.removeProperty("--offer-bg-h");
-          card.style.removeProperty("--offer-bg-pos-x");
-          card.style.removeProperty("--offer-bg-pos-y");
+      mosaicEl.querySelectorAll<HTMLElement>("[data-offer-slice]").forEach((card) => {
+        const inBottomRow = Boolean(card.closest(".offer-mosaic__row-bottom"));
+
+        // Mobile bottom carousel: keep image aspect, pin TN near vertical center
+        if (isMobile && inBottomRow && rowBottom) {
+          const rowRect = rowBottom.getBoundingClientRect();
+          const cardRect = card.getBoundingClientRect();
+          const gridW = Math.max(rowBottom.scrollWidth, rowRect.width);
+          const gridH = gridW / OFFER_MOSAIC_ASPECT;
+          const posX = cardRect.left - rowRect.left + rowBottom.scrollLeft;
+          // Place TN at ~48% card height (between title and text, as on desktop)
+          const posY = cardRect.height * 0.48 - gridH * OFFER_TN_FOCUS_Y;
+
+          card.style.setProperty("--offer-bg-w", `${gridW}px`);
+          card.style.setProperty("--offer-bg-h", `${gridH}px`);
+          card.style.setProperty("--offer-bg-pos-x", `${-posX}px`);
+          card.style.setProperty("--offer-bg-pos-y", `${posY}px`);
           return;
         }
 
         const cardRect = card.getBoundingClientRect();
-        const scroll = getAccumulatedScroll(card, mosaic);
+        const scroll = getAccumulatedScroll(card, mosaicEl);
         const posX = cardRect.left - mosaicRect.left + scroll.x;
         const posY = cardRect.top - mosaicRect.top + scroll.y;
 
-        card.style.setProperty("--offer-bg-w", `${gridW}px`);
-        card.style.setProperty("--offer-bg-h", `${gridH}px`);
+        card.style.setProperty("--offer-bg-w", `${mosaicRect.width}px`);
+        card.style.setProperty("--offer-bg-h", `${mosaicRect.height}px`);
         card.style.setProperty("--offer-bg-pos-x", `${-posX}px`);
         card.style.setProperty("--offer-bg-pos-y", `${-posY}px`);
       });
@@ -162,13 +176,13 @@ function useOfferSectionAnimation(
     if (!measured) return;
 
     const { cards } = measured;
-    const staggerSpan = 0.72;
+    const staggerSpan = 0.32;
 
     const next = cards.map((_, index) => {
       const start = (index / cards.length) * staggerSpan;
-      const local = clamp((progress - start) / (1 - start + 0.18), 0, 1);
-      const bgRaw = clamp(local / 0.58, 0, 1);
-      const textRaw = clamp((local - 0.32) / 0.52, 0, 1);
+      const local = clamp((progress - start) / (1 - start + 0.12), 0, 1);
+      const bgRaw = clamp(local / 0.45, 0, 1);
+      const textRaw = clamp((local - 0.12) / 0.4, 0, 1);
 
       return {
         bg: easeOutCubic(bgRaw),
@@ -308,13 +322,13 @@ function MetricCard({
       slice={slice}
       bgReveal={bgReveal}
       textReveal={textReveal}
-      className={["min-h-[200px] sm:min-h-[220px] lg:min-h-0", className].filter(Boolean).join(" ")}
+      className={["min-h-[280px] sm:min-h-[300px] lg:min-h-0", className].filter(Boolean).join(" ")}
     >
-      <div className="flex min-h-0 flex-1 flex-col justify-between gap-6">
-        <h3 className="font-hero text-[clamp(1.2rem,2.2vw,1.55rem)] font-semibold leading-[1.2] tracking-[-0.03em] text-white">
+      <div className="flex min-h-0 flex-1 flex-col justify-between gap-5">
+        <h3 className="min-h-[2.6em] font-hero text-[clamp(1.2rem,2.2vw,1.55rem)] font-semibold leading-[1.2] tracking-[-0.03em] text-white">
           {title}
         </h3>
-        <p className="text-pretty text-[14px] leading-[1.55] text-white/55 sm:text-[15px] sm:leading-[1.6]">
+        <p className="min-h-[4.65em] text-pretty text-[14px] font-normal leading-[1.55] tracking-normal text-white/70 sm:min-h-[4.65em] sm:text-[15px]">
           {text}
         </p>
       </div>
@@ -323,7 +337,6 @@ function MetricCard({
 }
 
 function FeaturedCard({
-  badge,
   title,
   text,
   linkText,
@@ -331,7 +344,6 @@ function FeaturedCard({
   className,
   visible,
 }: {
-  badge: string;
   title: string;
   text: string;
   linkText: string;
@@ -352,21 +364,17 @@ function FeaturedCard({
         .join(" ")}
     >
       <OfferBlockCard slice={1} className="h-full lg:min-h-0">
-        <div className="text-[13px] font-semibold tracking-[0.14em] text-white/70 sm:text-[14px]">
-          {badge}
-        </div>
-
-        <div className="my-4 max-w-[48ch] flex-1 sm:my-5 lg:my-4">
+        <div className="my-0 max-w-[48ch] flex-1 sm:my-1 lg:my-0">
           <h3 className="font-hero text-[clamp(1.35rem,2.8vw,1.85rem)] font-semibold leading-[1.2] tracking-[-0.03em] text-white">
             {title}
           </h3>
-          <p className="mt-3 text-[15px] leading-[1.65] text-white/62 sm:mt-3.5 sm:text-[16px] sm:leading-[1.7]">
+          <p className="mt-3 text-[15px] font-normal leading-[1.55] tracking-normal text-white/72 sm:mt-3.5 sm:text-[16px] sm:leading-[1.6]">
             {text}
           </p>
           <button
             type="button"
             onClick={() => openLeadForm("main_offer")}
-            className="group mt-5 inline-flex min-h-[2.5rem] items-center gap-1.5 text-[14px] font-medium text-white/85 transition hover:text-[#FFAE66]"
+            className="group mt-5 inline-flex min-h-[2.5rem] items-center gap-1.5 text-[14px] font-medium tracking-normal text-white/85 transition hover:text-[#FFAE66]"
           >
             {linkText}
             <ArrowUpRight
@@ -377,7 +385,9 @@ function FeaturedCard({
           </button>
         </div>
 
-        <p className="text-[13px] leading-snug text-white/45 sm:text-[14px]">{footer}</p>
+        <p className="text-[13px] font-normal leading-snug tracking-normal text-white/55 sm:text-[14px]">
+          {footer}
+        </p>
       </OfferBlockCard>
     </div>
   );
@@ -415,13 +425,11 @@ export default function MainOfferSection() {
             className="offer-mosaic relative mt-10 flex flex-col gap-2.5 sm:mt-12 sm:gap-4"
             style={{
               ["--offer-mosaic-image" as string]: `url("${OFFER_MOSAIC_BG}")`,
-              ["--offer-mobile-bottom-image" as string]: `url("${OFFER_BOTTOM_MOBILE_BG}")`,
             }}
           >
             <div className="offer-mosaic__row-top grid grid-cols-1 gap-2.5 sm:gap-4">
               <div className="offer-mosaic__cell min-h-[220px] min-w-0 w-full sm:min-h-[240px] lg:col-span-8 lg:min-h-0">
                 <FeaturedCard
-                  badge={copy.offer.featured.badge}
                   title={copy.offer.featured.title}
                   text={copy.offer.featured.text}
                   linkText={copy.offer.featured.linkText}
@@ -463,7 +471,7 @@ export default function MainOfferSection() {
                     {...item}
                     bgReveal={cardReveals[i]?.bg ?? 0}
                     textReveal={cardReveals[i]?.text ?? 0}
-                    className="h-full lg:min-h-0"
+                    className="h-full min-h-[21rem] sm:min-h-[21rem] lg:min-h-0"
                   />
                 </div>
               ))}

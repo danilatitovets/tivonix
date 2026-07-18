@@ -6,7 +6,6 @@ import { landingCopy } from "../../i18n/landingCopy";
 import { leadFormCopy } from "../../i18n/leadFormCopy";
 import { HERO_SCROLL_HEADLINE_CLASS, HERO_SCROLL_LEAD_CLASS } from "../../lib/landingLayout";
 import { isTelegramWebView } from "../../lib/telegramWebView";
-import LangToggle from "./LangToggle";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
 
 const HERO_IMAGES = [
@@ -141,33 +140,44 @@ function HeroCard({
   return (
     <div
       className={cx(
-        "relative isolate h-full min-h-0 flex-1 overflow-hidden rounded-[28px] lg:rounded-[32px]"
+        "relative isolate h-full min-h-0 flex-1 overflow-visible rounded-[28px] bg-black lg:rounded-[32px]"
       )}
     >
-      {HERO_IMAGES.map((src, i) => (
-        <img
-          key={src}
-          src={src}
-          alt=""
-          className={cx(
-            "pointer-events-none absolute inset-0 h-full w-full object-cover object-[center_92%] sm:object-[center_94%]",
-            i === 0 && "brightness-[0.92]"
-          )}
-          style={{ opacity: imageOpacity[i] } as CSSProperties}
-          decoding="async"
-          fetchPriority={i === 0 ? "high" : "low"}
-          loading={i === 0 ? "eager" : "lazy"}
+      {/* Обрезка только у фото — иначе blur радужной кнопки даёт яркую полосу по нижнему краю */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] bg-black">
+        {HERO_IMAGES.map((src, i) => (
+          <img
+            key={src}
+            src={src}
+            alt=""
+            className={cx(
+              /* Чуть больше контейнера — убирает белый fringe снизу/справа от border-radius */
+              "absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-[center_92%] sm:object-[center_94%]",
+              i === 0 && "brightness-[0.92]"
+            )}
+            style={{ opacity: imageOpacity[i] } as CSSProperties}
+            decoding="async"
+            fetchPriority={i === 0 ? "high" : "low"}
+            loading={i === 0 ? "eager" : "lazy"}
+          />
+        ))}
+
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-black/18 via-transparent to-black/40"
+          aria-hidden
         />
-      ))}
+        {/* Перекрывает светлый antialias-край фото снизу и справа */}
+        <div
+          className="absolute inset-0 shadow-[inset_0_-3px_0_0_#000,inset_-3px_0_0_0_#000]"
+          aria-hidden
+        />
+      </div>
 
-      <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/18 via-transparent to-black/16"
-        aria-hidden
-      />
-
+      {/* media overlays only */}
       <div className="absolute inset-0 z-10 flex flex-col px-6 pt-[calc(4.875rem+0.5rem)] sm:px-10 sm:pt-[calc(var(--tivonix-header-spacer)+2rem)] lg:px-14">
-        <div className="flex min-h-0 flex-1 items-center justify-center">
-          <div className="relative w-full max-w-[52rem]">
+        {/* Текст выше по центру — не едет вниз вместе с кнопкой */}
+        <div className="pointer-events-none absolute inset-x-6 top-[min(42%,18rem)] -translate-y-1/2 sm:inset-x-10 lg:inset-x-14">
+          <div className="relative mx-auto w-full max-w-[52rem]">
             <div className="relative grid w-full justify-items-center">
               {stages.map((stage, i) => {
                 const opacity = textOpacity[i];
@@ -196,23 +206,24 @@ function HeroCard({
           </div>
         </div>
 
-        <div className="pointer-events-auto relative z-20 flex shrink-0 flex-col items-center gap-3 pb-4 sm:gap-3.5 sm:pb-6 lg:pb-7">
-          <LeadCTAButton
-            source="hero"
-            variant="white"
-            size="lg"
-            className="min-w-[220px] shadow-[0_16px_48px_rgba(0,0,0,0.35)]"
-          >
-            {ctaLabel}
-          </LeadCTAButton>
-          <LangToggle variant="hero" />
+        <div className="pointer-events-auto relative z-20 mt-auto flex shrink-0 flex-col items-center gap-2 pb-1 sm:gap-2.5 sm:pb-1.5 lg:pb-2">
+          <span className="hero-cta-rainbow">
+            <LeadCTAButton
+              source="hero"
+              variant="white"
+              size="lg"
+              className="hero-cta-rainbow__btn min-w-[220px]"
+            >
+              {ctaLabel}
+            </LeadCTAButton>
+          </span>
           <ScrollFingerHint
             bare
             visible={progress < 0.35}
             variant="light"
             label={isRu ? "Листайте вниз" : "Scroll down"}
             onActivate={scrollDown}
-            className="mt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
           />
         </div>
       </div>

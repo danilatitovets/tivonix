@@ -50,6 +50,11 @@ const TIVONIXPANEL_GALLERY = [
   "/images/project-priew/tivonixpanel/1.png",
   "/images/project-priew/tivonixpanel/2.png",
   "/images/project-priew/tivonixpanel/3.png",
+  "/images/project-priew/tivonixpanel/4.png",
+  "/images/project-priew/tivonixpanel/5.png",
+  "/images/project-priew/tivonixpanel/6.png",
+  "/images/project-priew/tivonixpanel/7.png",
+  "/images/project-priew/tivonixpanel/8.png",
 ];
 
 function buildAllProjects(isRu: boolean): Project[] {
@@ -99,7 +104,7 @@ function buildAllProjects(isRu: boolean): Project[] {
         domain: TIVONIXPANEL_DOMAIN,
         status: "live",
         tags: ["SaaS", "Admin Panel", "Partners", "Dashboard", "UI/UX"],
-        cover: "/images/project-priew/tivonixpanel/prew.png",
+        cover: `/images/${encodeURI("обложки")}/tivonixpanel.png`,
         gallery: TIVONIXPANEL_GALLERY,
         outcomes: [
           isRu

@@ -727,7 +727,7 @@ export default function ProjectDetailPage() {
                     <img
                       src={coverSrc}
                       alt={`${project.title} — ${isRu ? "обложка кейса" : "case cover"}`}
-                      className="absolute inset-0 h-full w-full object-cover object-center"
+                      className="absolute inset-0 h-full w-full object-cover object-top"
                       draggable={false}
                       decoding="async"
                       fetchPriority="high"

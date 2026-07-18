@@ -21,13 +21,13 @@ type PreviewVariant = "card" | "detail" | "thumb" | "grid";
 const PREVIEW_SPECS: Record<PreviewVariant, { maxH: number; aspect: number; fullWidth?: boolean }> = {
   card: { maxH: 240, aspect: 16 / 9 },
   detail: { maxH: 360, aspect: 16 / 9 },
-  thumb: { maxH: 180, aspect: 3 / 2 },
+  thumb: { maxH: 200, aspect: 16 / 9 },
   grid: { maxH: 9999, aspect: 16 / 9, fullWidth: true },
 };
 
 const ZOOM_STEPS = [1, 1.5, 2.25] as const;
 
-/** Превью: целиком в кадре, без обрезки и без полос по бокам внутри рамки. */
+/** Превью скриншотов: заполняет рамку без «приподнятых» полос снизу. */
 export function ProjectPreviewFrame({
   src,
   variant = "card",
@@ -57,12 +57,7 @@ export function ProjectPreviewFrame({
       <img
         src={src}
         alt=""
-        className={cx(
-          "block h-full w-full",
-          variant === "grid"
-            ? "object-cover object-center"
-            : "object-contain"
-        )}
+        className="absolute inset-0 block h-full w-full object-cover object-top"
         draggable={false}
         loading="lazy"
         decoding="async"

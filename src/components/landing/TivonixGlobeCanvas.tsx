@@ -2,13 +2,19 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import createGlobe, { type COBEOptions } from "cobe";
 import type { GlobePin } from "../../lib/globeProjection";
 
-const ORANGE_DIM: [number, number, number] = [0.12, 0.04, 0.01];
-const ORANGE_BASE: [number, number, number] = [0.2, 0.07, 0.01];
+const ORANGE_DIM: [number, number, number] = [0.1, 0.035, 0.008];
+const ORANGE_BASE: [number, number, number] = [0.18, 0.06, 0.01];
 const ORANGE_ARC: [number, number, number] = [1, 0.52, 0.18];
-const THETA = 0.18;
-const PHI_SPEED = 0.00085;
-const MARKER_ELEVATION = 0.06;
-const MAX_RENDER_SIDE = 720;
+const THETA_BASE = 0.22;
+const PHI_SPEED = 0.0022;
+const MARKER_ELEVATION = 0.05;
+const MAX_RENDER_SIDE = 900;
+const DRAG_SENSITIVITY = 0.0052;
+const THETA_SENSITIVITY = 0.0032;
+const THETA_MIN = -0.45;
+const THETA_MAX = 0.55;
+const INERTIA = 0.94;
+const INERTIA_STOP = 0.00035;
 
 const PIN_COLORS: Record<string, [number, number, number]> = {
   masters: [1, 0.52, 0.18],
@@ -44,10 +50,14 @@ function GlobeFallback() {
 
 function prefersGlobeFallback() {
   if (typeof window === "undefined") return true;
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return true;
   const probe = document.createElement("canvas");
   const gl = probe.getContext("webgl") ?? probe.getContext("webgl2");
   return !gl;
+}
+
+function prefersReducedMotion() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 function renderSize(rect: DOMRect) {
@@ -58,6 +68,10 @@ function renderSize(rect: DOMRect) {
     width: Math.max(1, Math.round(layoutW * scale)),
     height: Math.max(1, Math.round(layoutH * scale)),
   };
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
 }
 
 type Props = {
@@ -91,15 +105,24 @@ export default function TivonixGlobeCanvas({ pins }: Props) {
     let width = 0;
     let height = 0;
     let phi = 0.9;
+    let theta = THETA_BASE;
     let frame = 0;
     let visible = true;
     let globe: ReturnType<typeof createGlobe> | null = null;
-    const dpr = Math.min(window.devicePixelRatio ?? 1, 1.5);
+    const dpr = Math.min(window.devicePixelRatio ?? 1, 1.75);
+    const reduced = prefersReducedMotion();
+
+    let dragging = false;
+    let lastX = 0;
+    let lastY = 0;
+    let velocityPhi = 0;
+    let velocityTheta = 0;
+    let activePointerId: number | null = null;
 
     const buildMarkers = (): COBEOptions["markers"] =>
       pinsRef.current.map((pin) => ({
         location: [pin.lat, pin.lng],
-        size: 0.05,
+        size: 0.048,
         color: PIN_COLORS[pin.id] ?? ORANGE_ARC,
       }));
 
@@ -108,22 +131,22 @@ export default function TivonixGlobeCanvas({ pins }: Props) {
       width: w,
       height: h,
       phi,
-      theta: THETA,
+      theta,
       dark: 1,
-      diffuse: 1.22,
-      mapSamples: 10000,
-      mapBrightness: window.innerWidth < 640 ? 13.5 : 11,
-      mapBaseBrightness: 0.015,
+      diffuse: 1.35,
+      mapSamples: window.innerWidth < 640 ? 12000 : 16000,
+      mapBrightness: window.innerWidth < 640 ? 14 : 12,
+      mapBaseBrightness: 0.012,
       baseColor: ORANGE_BASE,
       markerColor: ORANGE_ARC,
       glowColor: ORANGE_DIM,
       markers: buildMarkers(),
       arcs: ARCS,
       arcColor: ORANGE_ARC,
-      arcWidth: 0.4,
-      arcHeight: 0.18,
+      arcWidth: 0.42,
+      arcHeight: 0.2,
       markerElevation: MARKER_ELEVATION,
-      scale: 1,
+      scale: 1.05,
       offset: [0, 0],
     });
 
@@ -142,10 +165,62 @@ export default function TivonixGlobeCanvas({ pins }: Props) {
       globe = createGlobe(canvas, buildOptions(width, height));
     };
 
+    const setCursor = (value: string) => {
+      wrap.style.cursor = value;
+      canvas.style.cursor = value;
+    };
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.button !== 0 && event.pointerType === "mouse") return;
+      dragging = true;
+      activePointerId = event.pointerId;
+      lastX = event.clientX;
+      lastY = event.clientY;
+      velocityPhi = 0;
+      velocityTheta = 0;
+      setCursor("grabbing");
+      wrap.setPointerCapture?.(event.pointerId);
+      event.preventDefault();
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (!dragging || activePointerId !== event.pointerId) return;
+      const dx = event.clientX - lastX;
+      const dy = event.clientY - lastY;
+      lastX = event.clientX;
+      lastY = event.clientY;
+
+      phi += dx * DRAG_SENSITIVITY;
+      theta = clamp(theta + dy * THETA_SENSITIVITY, THETA_MIN, THETA_MAX);
+      velocityPhi = dx * DRAG_SENSITIVITY;
+      velocityTheta = dy * THETA_SENSITIVITY;
+      event.preventDefault();
+    };
+
+    const endDrag = (event?: PointerEvent) => {
+      if (!dragging) return;
+      if (event && activePointerId !== null && event.pointerId !== activePointerId) return;
+      dragging = false;
+      activePointerId = null;
+      setCursor("grab");
+    };
+
     const render = () => {
       if (visible) {
-        phi += PHI_SPEED;
-        globe?.update({ phi });
+        if (!dragging) {
+          if (Math.abs(velocityPhi) > INERTIA_STOP || Math.abs(velocityTheta) > INERTIA_STOP) {
+            phi += velocityPhi;
+            theta = clamp(theta + velocityTheta, THETA_MIN, THETA_MAX);
+            velocityPhi *= INERTIA;
+            velocityTheta *= INERTIA;
+          } else if (!reduced) {
+            velocityPhi = 0;
+            velocityTheta = 0;
+            phi += PHI_SPEED;
+          }
+        }
+
+        globe?.update({ phi, theta });
       }
       frame = requestAnimationFrame(render);
     };
@@ -153,7 +228,7 @@ export default function TivonixGlobeCanvas({ pins }: Props) {
     let resizeTimer = 0;
     const ro = new ResizeObserver(() => {
       window.clearTimeout(resizeTimer);
-      resizeTimer = window.setTimeout(resize, 120);
+      resizeTimer = window.setTimeout(resize, 80);
     });
     ro.observe(wrap);
 
@@ -165,6 +240,13 @@ export default function TivonixGlobeCanvas({ pins }: Props) {
     );
     io.observe(wrap);
 
+    wrap.addEventListener("pointerdown", onPointerDown, { passive: false });
+    wrap.addEventListener("pointermove", onPointerMove, { passive: false });
+    wrap.addEventListener("pointerup", endDrag);
+    wrap.addEventListener("pointercancel", endDrag);
+    wrap.addEventListener("pointerleave", endDrag);
+
+    setCursor("grab");
     resize();
     frame = requestAnimationFrame(render);
 
@@ -173,6 +255,11 @@ export default function TivonixGlobeCanvas({ pins }: Props) {
       window.clearTimeout(resizeTimer);
       ro.disconnect();
       io.disconnect();
+      wrap.removeEventListener("pointerdown", onPointerDown);
+      wrap.removeEventListener("pointermove", onPointerMove);
+      wrap.removeEventListener("pointerup", endDrag);
+      wrap.removeEventListener("pointercancel", endDrag);
+      wrap.removeEventListener("pointerleave", endDrag);
       globe?.destroy();
       host.replaceChildren();
     };
@@ -183,7 +270,12 @@ export default function TivonixGlobeCanvas({ pins }: Props) {
   }
 
   return (
-    <div ref={wrapRef} className="tivonix-globe-canvas-wrap">
+    <div
+      ref={wrapRef}
+      className="tivonix-globe-canvas-wrap tivonix-globe-canvas-wrap--interactive"
+      role="img"
+      aria-label="Interactive globe — drag to rotate"
+    >
       <div ref={hostRef} className="tivonix-globe-cobe-host" aria-hidden />
     </div>
   );

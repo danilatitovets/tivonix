@@ -5,7 +5,6 @@ import Reveal from "../ui/Reveal";
 import PillActionBar from "../ui/PillActionBar";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
-import { leadFormCopy } from "../../i18n/leadFormCopy";
 import { buildProjects } from "../../data/projectsCatalog";
 import { useLeadForm } from "../leads/useLeadForm";
 
@@ -14,7 +13,7 @@ function clamp01(v: number) {
 }
 
 function useCaseCoverPan(blockRef: RefObject<HTMLDivElement | null>) {
-  const [coverX, setCoverX] = useState(36);
+  const [coverX, setCoverX] = useState(38);
 
   useEffect(() => {
     const el = blockRef.current;
@@ -29,9 +28,10 @@ function useCaseCoverPan(blockRef: RefObject<HTMLDivElement | null>) {
       const scrolled = vh * 0.82 - rect.top;
       const progress = clamp01(scrolled / total);
       const wide = window.innerWidth >= 1024;
-      const start = wide ? 38 : 30;
-      const end = wide ? 74 : 58;
-      const target = reduced ? (wide ? 58 : 46) : start + (end - start) * progress;
+      // Cover art — gentle pan across the left visual
+      const start = wide ? 32 : 40;
+      const end = wide ? 48 : 55;
+      const target = reduced ? (wide ? 38 : 45) : start + (end - start) * progress;
       setCoverX(target);
     };
 
@@ -58,7 +58,6 @@ function useCaseCoverPan(blockRef: RefObject<HTMLDivElement | null>) {
 export default function CasesSection() {
   const { lang } = useLang();
   const copy = landingCopy(lang);
-  const leadCopy = leadFormCopy(lang);
   const { openLeadForm } = useLeadForm();
   const isRu = lang === "ru";
   const [activeTab, setActiveTab] = useState("view");
@@ -88,18 +87,20 @@ export default function CasesSection() {
     }
     tabs.push({
       id: "cta",
-      label: leadCopy.ctaProjects,
+      label: copy.cases.discussSimilar,
       onClick: () => openLeadForm("cases"),
     });
     return tabs;
   }, [
+    copy.cases.discussSimilar,
     copy.cases.openProduct,
     copy.cases.viewCase,
     featured.domain,
     featured.id,
-    leadCopy.ctaProjects,
     openLeadForm,
   ]);
+
+  const CASE_COVER = `/images/${encodeURI("обложки")}/tivonixpanel.png`;
 
   return (
     <Section id="cases" className="scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24">
@@ -107,12 +108,12 @@ export default function CasesSection() {
           <Reveal className="case-split">
             <div className="case-split__visual">
               <img
-                src={featured.cover ?? "/images/project-priew/tivonixpanel/prew.png"}
+                src={CASE_COVER}
                 alt={featured.title}
                 loading="lazy"
                 decoding="async"
                 className="case-split__img"
-                style={{ objectPosition: `${coverX}% 58%` }}
+                style={{ objectPosition: `${coverX}% 45%` }}
               />
               <div className="case-split__visual-overlay" aria-hidden />
             </div>
@@ -140,7 +141,7 @@ export default function CasesSection() {
                   </p>
                 </div>
 
-                <div className="case-split__chips mt-5 flex flex-wrap gap-2">
+                <div className="case-split__chips mt-5">
                   {caseCopy.modules.map((m) => (
                     <span key={m} className="case-split__chip">
                       {m}

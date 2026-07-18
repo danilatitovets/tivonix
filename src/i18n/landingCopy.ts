@@ -155,11 +155,6 @@ const COPY_RU = {
         text: "Блокнот, Excel или память администратора. Он вышел из чата — процесс встал.",
         solution: "Процесс в системе: заявки идут по правилам, а не по памяти одного человека.",
       },
-      {
-        title: "Реклама идёт, заявки теряются",
-        text: "Трафик есть, форма есть, но дальше заявка снова уходит в ручную обработку без контроля.",
-        solution: "Лендинг + форма + Telegram + CRM — заявка сразу попадает в работу, а не в заметки.",
-      },
     ],
   },
   offer: {
@@ -174,23 +169,23 @@ const COPY_RU = {
     metrics: [
       {
         title: "Сайт под рекламу",
-        text: "Лендинг и форма: клиент оставляет заявку с рекламы или Instagram.",
+        text: "Лендинг и форма: клиент оставляет заявку с рекламы или Instagram — сразу в работу.",
       },
       {
         title: "Telegram-бот",
-        text: "Заявка сразу у команды в Telegram — без поиска по чатам.",
+        text: "Заявка сразу у команды в Telegram — без поиска по чатам и потерянных сообщений.",
       },
       {
         title: "CRM или панель",
-        text: "Видно статусы: новая, в работе, записан, оплачен — и кто отвечает.",
+        text: "Видно статусы: новая, в работе, записан, оплачен — и кто отвечает по заявке.",
       },
       {
         title: "Личный кабинет",
-        text: "Клиенты и сотрудники работают в одном понятном интерфейсе.",
+        text: "Клиенты и сотрудники работают в одном понятном интерфейсе — без лишних переписок.",
       },
       {
         title: "Автоматизация",
-        text: "Меньше ручных таблиц и переписок — больше стабильного процесса.",
+        text: "Меньше ручных таблиц и переписок — больше стабильного процесса без сбоев.",
       },
     ],
     ctaBar: {
@@ -249,73 +244,11 @@ const COPY_RU = {
     regular: {
       title: "Обычный сайт",
       headline: "Форма есть — дальше вручную",
-      items: ["Есть текст", "Есть кнопка", "Есть форма", "Дальше — в чаты и таблицы"],
+      items: ["Текст", "Кнопка", "Форма", "Чаты и таблицы"],
     },
-    chaosTags: ["Заявка потерялась", "Нет статуса", "Вручную в Excel", "Ответили через день"],
-    hover: {
-      chaosMessages: [
-        { channel: "Instagram", text: "Здравствуйте, сколько стоит?", time: "сейчас" },
-        { channel: "Telegram", text: "Можно записаться на завтра?", time: "4 мин" },
-        { channel: "WhatsApp", text: "А в субботу работаете?", time: "11 мин" },
-        { channel: "Сайт", text: "Оставил заявку на сайте", time: "18 мин" },
-        { channel: "Звонок", text: "Пропущенный звонок", time: "25 мин" },
-        { channel: "Instagram", text: "??? вы тут?", time: "38 мин" },
-        { channel: "Telegram", text: "Жду ответ уже час", time: "1 ч" },
-        { channel: "Email", text: "Re: запрос с формы", time: "вчера" },
-        { channel: "WhatsApp", text: "Есть окно сегодня вечером?", time: "1 ч" },
-        { channel: "Сайт", text: "Нужен расчёт под ключ", time: "2 ч" },
-        { channel: "Instagram", text: "Скиньте прайс, пожалуйста", time: "3 ч" },
-        { channel: "Telegram", text: "Перезвоните, срочно", time: "4 ч" },
-        { channel: "Звонок", text: "2 пропущенных", time: "5 ч" },
-        { channel: "Email", text: "Fwd: коммерческое предложение", time: "6 ч" },
-      ],
-      crm: {
-        title: "TIVONIX CRM",
-        sidebar: [
-          { label: "Заявки", active: true, count: 4 },
-          { label: "Клиенты", active: false },
-          { label: "Календарь", active: false },
-          { label: "Отчёты", active: false },
-        ],
-        leadsTitle: "Заявки",
-        leads: [
-          {
-            name: "Анна К.",
-            source: "Сайт",
-            preview: "Запись на консультацию",
-            time: "2 мин",
-            status: "Новая",
-            tone: "new" as const,
-          },
-          {
-            name: "Игорь П.",
-            source: "Telegram",
-            preview: "Нужен расчёт проекта",
-            time: "14 мин",
-            status: "В работе",
-            tone: "progress" as const,
-          },
-          {
-            name: "Салон Lux",
-            source: "Instagram",
-            preview: "Онлайн-запись на пятницу",
-            time: "32 мин",
-            status: "Записан",
-            tone: "done" as const,
-          },
-          {
-            name: "Олег М.",
-            source: "Форма",
-            preview: "Оплата подтверждена",
-            time: "1 ч",
-            status: "Оплачен",
-            tone: "paid" as const,
-          },
-        ],
-      },
-    },
+    chaosTags: ["Заявка теряется", "Нет статуса", "Excel вручную", "Ответ на следующий день"],
     tivonix: {
-      title: "TIVONIX-система",
+      title: "Система",
       headline: "Заявка под контролем",
       badge: "Заявка не висит в переписке — команда видит следующий шаг",
       items: [
@@ -333,6 +266,7 @@ const COPY_RU = {
     cta: "Хочу похожую систему",
     viewCase: "Смотреть кейс",
     openProduct: "Открыть продукт",
+    discussSimilar: "Есть похожая задача",
     spliton: {
       need: "Нужна была финтех-платформа для инвестиций в музыкальные активы — не лендинг, а полноценный продукт",
       done: "Собрали каталог релизов, покупку долей, кошелёк, вторичный рынок, юридические согласия и админ-панель",
@@ -682,11 +616,6 @@ const COPY_EN = {
         text: "A notebook, Excel or the admin's memory. They go offline — the process stops.",
         solution: "The process lives in the system: leads move by rules, not one person's memory.",
       },
-      {
-        title: "Ads run, leads get lost",
-        text: "Traffic is there, the form is there, but after submit everything goes back to manual handling.",
-        solution: "Landing + form + Telegram + CRM — every lead enters the workflow immediately.",
-      },
     ],
   },
   offer: {
@@ -701,23 +630,23 @@ const COPY_EN = {
     metrics: [
       {
         title: "Ad landing pages",
-        text: "A landing page and form so leads come in from ads or Instagram.",
+        text: "A landing page and form so leads come in from ads or Instagram — straight into work.",
       },
       {
         title: "Telegram bots",
-        text: "Leads reach the team in Telegram right away — no digging through chats.",
+        text: "Leads reach the team in Telegram right away — no digging through chats or lost messages.",
       },
       {
         title: "CRM or admin panel",
-        text: "Clear statuses: new, in progress, booked, paid — and who owns each lead.",
+        text: "Clear statuses: new, in progress, booked, paid — and who owns each lead in the queue.",
       },
       {
         title: "Client portals",
-        text: "Clients and your team work in one clear interface.",
+        text: "Clients and your team work in one clear interface — without endless message threads.",
       },
       {
         title: "Automation",
-        text: "Fewer manual sheets and message threads — a steadier process.",
+        text: "Fewer manual sheets and chat threads — a steadier process without drop-offs.",
       },
     ],
     ctaBar: {
@@ -776,73 +705,11 @@ const COPY_EN = {
     regular: {
       title: "Typical website",
       headline: "Form submitted — then manual chaos",
-      items: ["Some text", "A button", "A form", "Then — chats and spreadsheets"],
+      items: ["Copy", "Button", "Form", "Chats & sheets"],
     },
-    chaosTags: ["Lead lost", "No status", "Manual spreadsheet", "Reply next day"],
-    hover: {
-      chaosMessages: [
-        { channel: "Instagram", text: "Hi, how much is it?", time: "now" },
-        { channel: "Telegram", text: "Can I book for tomorrow?", time: "4 min" },
-        { channel: "WhatsApp", text: "Are you open Saturday?", time: "11 min" },
-        { channel: "Website", text: "Submitted the form", time: "18 min" },
-        { channel: "Call", text: "Missed call", time: "25 min" },
-        { channel: "Instagram", text: "??? anyone there?", time: "38 min" },
-        { channel: "Telegram", text: "Waiting an hour already", time: "1 hr" },
-        { channel: "Email", text: "Re: form inquiry", time: "yesterday" },
-        { channel: "WhatsApp", text: "Any slot tonight?", time: "1 hr" },
-        { channel: "Website", text: "Need a full quote", time: "2 hr" },
-        { channel: "Instagram", text: "Please send pricing", time: "3 hr" },
-        { channel: "Telegram", text: "Call me back, urgent", time: "4 hr" },
-        { channel: "Call", text: "2 missed calls", time: "5 hr" },
-        { channel: "Email", text: "Fwd: proposal request", time: "6 hr" },
-      ],
-      crm: {
-        title: "TIVONIX CRM",
-        sidebar: [
-          { label: "Leads", active: true, count: 4 },
-          { label: "Clients", active: false },
-          { label: "Calendar", active: false },
-          { label: "Reports", active: false },
-        ],
-        leadsTitle: "Leads",
-        leads: [
-          {
-            name: "Anna K.",
-            source: "Website",
-            preview: "Book a consultation",
-            time: "2 min",
-            status: "New",
-            tone: "new" as const,
-          },
-          {
-            name: "Igor P.",
-            source: "Telegram",
-            preview: "Need a project estimate",
-            time: "14 min",
-            status: "In progress",
-            tone: "progress" as const,
-          },
-          {
-            name: "Lux Salon",
-            source: "Instagram",
-            preview: "Online booking for Friday",
-            time: "32 min",
-            status: "Booked",
-            tone: "done" as const,
-          },
-          {
-            name: "Oleg M.",
-            source: "Form",
-            preview: "Payment confirmed",
-            time: "1 hr",
-            status: "Paid",
-            tone: "paid" as const,
-          },
-        ],
-      },
-    },
+    chaosTags: ["Lead gets lost", "No status", "Manual Excel", "Reply the next day"],
     tivonix: {
-      title: "TIVONIX system",
+      title: "System",
       headline: "Lead under control",
       badge: "Lead doesn't sit in chat — the team sees the next step",
       items: [
@@ -860,6 +727,7 @@ const COPY_EN = {
     cta: "I want a similar system",
     viewCase: "View case",
     openProduct: "Open product",
+    discussSimilar: "Similar task",
     spliton: {
       need: "Needed a fintech platform for music-asset investing — a full product, not a landing page",
       done: "Built release catalog, share purchases, wallet, secondary market, legal consents and admin panel",

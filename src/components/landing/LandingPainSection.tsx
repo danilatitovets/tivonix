@@ -1,6 +1,5 @@
-import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
-import { ArrowRight, Check, Loader2, Shield } from "lucide-react";
-import { SiTelegram } from "react-icons/si";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Check } from "lucide-react";
 import Container from "../ui/Container";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
@@ -13,91 +12,157 @@ const PAIN_CARD_BACKGROUNDS = [
   "/images/pain-bg-4.webp",
   "/images/hero-stage-2.webp",
   "/images/hero-stage-2.webp",
-  "/images/hero-stage-3.webp",
 ] as const;
 
-function animStyle(delayMs: number, durationMs?: number): CSSProperties {
-  return {
-    animationDelay: `${delayMs}ms`,
-    ...(durationMs ? { animationDuration: `${durationMs}ms` } : {}),
-  };
-}
+/** Mobile + reduced-motion: static visuals, no looping motion. */
+function useCalmPainMotion() {
+  const [calm, setCalm] = useState(false);
 
-function FadeList({ children }: { children: ReactNode }) {
-  return (
-    <div className="relative">
-      {children}
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-[#141414] to-transparent"
-        aria-hidden
-      />
-    </div>
-  );
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const narrow = window.matchMedia("(max-width: 1023px)");
+    const sync = () => setCalm(reduced.matches || narrow.matches);
+    sync();
+    reduced.addEventListener("change", sync);
+    narrow.addEventListener("change", sync);
+    return () => {
+      reduced.removeEventListener("change", sync);
+      narrow.removeEventListener("change", sync);
+    };
+  }, []);
+
+  return calm;
 }
 
 function ChannelsVisual({ isRu }: { isRu: boolean }) {
   const rows = isRu
     ? [
-        { ch: "Instagram", status: "3 непрочитанных", pending: true },
-        { ch: "Telegram", status: "Ответ через 47 мин", pending: true },
-        { ch: "Сайт", status: "В таблице", pending: false },
-        { ch: "Звонок", status: "Не зафиксирован", pending: true },
+        { ch: "Instagram", icon: "/images/icons/instagram.svg", count: "20", unit: "заявок", hot: true },
+        { ch: "Telegram", icon: "/images/icons/telegram.svg", count: "8", unit: "непрочит.", hot: true },
+        { ch: "WhatsApp", icon: "/images/icons/whatsapp.svg", count: "5", unit: "сообщений", hot: true },
+        { ch: "Звонок", icon: "/images/icons/phone.svg", count: "3", unit: "пропущенных", hot: true },
+        { ch: "Сайт", icon: "/images/icons/globe.svg", count: "4", unit: "формы", hot: false },
+        { ch: "Email", icon: "/images/icons/gmail.svg", count: "6", unit: "писем", hot: true },
       ]
     : [
-        { ch: "Instagram", status: "3 unread", pending: true },
-        { ch: "Telegram", status: "Reply in 47 min", pending: true },
-        { ch: "Website", status: "In spreadsheet", pending: false },
-        { ch: "Call", status: "Not logged", pending: true },
+        { ch: "Instagram", icon: "/images/icons/instagram.svg", count: "20", unit: "leads", hot: true },
+        { ch: "Telegram", icon: "/images/icons/telegram.svg", count: "8", unit: "unread", hot: true },
+        { ch: "WhatsApp", icon: "/images/icons/whatsapp.svg", count: "5", unit: "messages", hot: true },
+        { ch: "Call", icon: "/images/icons/phone.svg", count: "3", unit: "missed", hot: true },
+        { ch: "Website", icon: "/images/icons/globe.svg", count: "4", unit: "forms", hot: false },
+        { ch: "Email", icon: "/images/icons/gmail.svg", count: "6", unit: "emails", hot: true },
       ];
+
+  const track = [...rows, ...rows];
+
   return (
-    <FadeList>
-      <div className="space-y-1.5">
-        {rows.map((r, i) => (
-          <div
-            key={r.ch}
-            className="pain-row-pulse flex items-center justify-between gap-3 rounded-lg bg-white/[0.05] px-3 py-2.5"
-            style={animStyle(i * 420, 2800)}
-          >
-            <span className="text-[12px] font-medium text-white/90">{r.ch}</span>
-            <span className="flex items-center gap-1.5 text-[11px] text-white/40">
-              {r.pending ? (
-                <Loader2 size={11} className="animate-spin text-[#FF5722]/90" />
-              ) : (
-                <Check size={11} className="text-white/35" />
-              )}
-              <span className="pain-shimmer" style={animStyle(i * 300 + 200)}>
-                {r.status}
+    <>
+      <style>{`
+        @keyframes pain-channels-scroll {
+          from { transform: translateY(0); }
+          to { transform: translateY(-50%); }
+        }
+        .pain-channels-track {
+          animation: pain-channels-scroll 18s linear infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .pain-channels-track { animation: none !important; }
+        }
+      `}</style>
+
+      <div className="relative h-[148px] overflow-hidden sm:h-[156px]">
+        <div className="pain-channels-track space-y-1.5">
+          {track.map((r, i) => (
+            <div
+              key={`${r.ch}-${i}`}
+              className="flex items-center justify-between gap-3 rounded-lg bg-white/[0.06] px-3 py-2.5"
+            >
+              <span className="flex min-w-0 items-center gap-2.5">
+                <img
+                  src={r.icon}
+                  alt=""
+                  width={18}
+                  height={18}
+                  aria-hidden
+                  className="h-[18px] w-[18px] shrink-0"
+                />
+                <span className="truncate text-[13px] font-medium text-white/90">{r.ch}</span>
               </span>
-            </span>
-          </div>
-        ))}
+              <span className="flex items-baseline gap-1.5">
+                {r.hot ? (
+                  <span className="h-1.5 w-1.5 shrink-0 self-center rounded-full bg-[#FF5722]" aria-hidden />
+                ) : (
+                  <Check size={12} className="self-center text-white/35" aria-hidden />
+                )}
+                <span
+                  className={[
+                    "text-[15px] font-semibold tabular-nums leading-none",
+                    r.hot ? "text-[#FF8A5C]" : "text-white/45",
+                  ].join(" ")}
+                >
+                  {r.count}
+                </span>
+                <span className={r.hot ? "text-[12px] text-white/70" : "text-[12px] text-white/40"}>
+                  {r.unit}
+                </span>
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-[#141414] to-transparent"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#141414] to-transparent"
+          aria-hidden
+        />
       </div>
-    </FadeList>
+    </>
   );
 }
 
 function TelegramVisual({ isRu }: { isRu: boolean }) {
+  const calm = useCalmPainMotion();
   const message = isRu
     ? "Здравствуйте, хочу записаться на консультацию…"
     : "Hi, I'd like to book a consultation…";
-  const times = isRu ? ["сейчас", "32 мин", "1 ч назад"] : ["now", "32 min", "1 hr ago"];
-  const status = isRu ? "Менеджер ещё не видел" : "Manager hasn't seen it";
 
-  const [typed, setTyped] = useState("");
-  const [timeIdx, setTimeIdx] = useState(0);
-  const [showStatus, setShowStatus] = useState(false);
-  const [cycle, setCycle] = useState(0);
+  const stages = isRu
+    ? [
+        { time: "сейчас", status: "Менеджер ещё не видел", late: false },
+        { time: "23 мин", status: "Никто не ответил", late: false },
+        { time: "4 часа", status: "Всё ещё без ответа", late: true },
+        { time: "день назад", status: "Клиент всё ещё ждёт", late: true },
+        { time: "неделю назад", status: "вы забыли?", late: true },
+      ]
+    : [
+        { time: "now", status: "Manager hasn't seen it", late: false },
+        { time: "23 min", status: "Nobody replied", late: false },
+        { time: "4 hours", status: "Still no reply", late: true },
+        { time: "a day ago", status: "Client is still waiting", late: true },
+        { time: "a week ago", status: "did you forget?", late: true },
+      ];
 
-  const isTyping = typed.length < message.length;
-  const isLate = timeIdx >= 2;
+  const last = stages.length - 1;
+  const [open, setOpen] = useState(calm);
+  const [typed, setTyped] = useState(calm ? message : "");
+  const [stageIdx, setStageIdx] = useState(calm ? last : 0);
+  const [showStatus, setShowStatus] = useState(calm);
+
+  const stage = stages[stageIdx] ?? stages[last];
+  const isTyping = open && !calm && typed.length < message.length;
+  const isLate = stage.late;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
+    if (calm) {
+      setOpen(true);
       setTyped(message);
-      setTimeIdx(2);
+      setStageIdx(last);
       setShowStatus(true);
       return;
     }
@@ -105,342 +170,596 @@ function TelegramVisual({ isRu }: { isRu: boolean }) {
     let cancelled = false;
     const timeouts: number[] = [];
     const t = (fn: () => void, ms: number) => {
-      timeouts.push(window.setTimeout(() => {
-        if (!cancelled) fn();
-      }, ms));
+      timeouts.push(
+        window.setTimeout(() => {
+          if (!cancelled) fn();
+        }, ms)
+      );
     };
 
+    setOpen(false);
     setTyped("");
-    setTimeIdx(0);
+    setStageIdx(0);
     setShowStatus(false);
 
+    t(() => setOpen(true), 280);
+
     message.split("").forEach((_, i) => {
-      t(() => setTyped(message.slice(0, i + 1)), 38 * (i + 1));
+      t(() => setTyped(message.slice(0, i + 1)), 480 + 32 * (i + 1));
     });
 
-    const typingDone = 38 * message.length + 320;
-
+    const typingDone = 480 + 32 * message.length + 300;
     t(() => setShowStatus(true), typingDone);
-    t(() => setTimeIdx(1), typingDone + 1600);
-    t(() => setTimeIdx(2), typingDone + 3400);
-    t(() => setCycle((c) => c + 1), typingDone + 6200);
+
+    // Time drifts: now → 23 min → 4h → day → week → "вы забыли?"
+    stages.forEach((_, i) => {
+      if (i === 0) return;
+      t(() => setStageIdx(i), typingDone + 1100 * i);
+    });
 
     return () => {
       cancelled = true;
       timeouts.forEach(clearTimeout);
     };
-  }, [message, cycle]);
+  }, [message, calm, last, isRu]);
 
   return (
     <div
-      className="flex items-start gap-2.5 rounded-xl p-3 sm:p-3.5"
+      className={[
+        "rounded-t-2xl border border-white/[0.08] border-b-0 shadow-[0_-16px_48px_rgba(0,0,0,0.55)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        open ? "translate-y-0" : "translate-y-[108%]",
+      ].join(" ")}
       style={{ backgroundColor: CARD_SOFT }}
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.1]">
-        <SiTelegram size={20} className="text-[#FF9A3D]" aria-hidden />
-      </span>
+      <div className="flex justify-center pt-2.5 pb-1" aria-hidden>
+        <span className="h-1 w-9 rounded-full bg-white/20" />
+      </div>
 
-      <div className="min-w-0 flex-1 pt-0.5">
+      <div className="flex items-start gap-2.5 px-3.5 pb-3.5 pt-1.5">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FF9A3D]/15">
+          <img src="/images/icons/telegram.svg" alt="" width={20} height={20} aria-hidden className="h-5 w-5" />
+        </span>
+
+        <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[11px] font-medium text-white/55">Telegram</span>
+            <span className="text-[12px] font-semibold text-white/90">Telegram</span>
             <span
               className={[
                 "text-[10px] tabular-nums transition-colors duration-500",
-                isLate ? "text-[#FFAB91] pain-blink" : "text-white/38",
+                isLate ? "text-[#FFAB91]" : "text-white/38",
               ].join(" ")}
             >
-              {times[timeIdx]}
+              {stage.time}
             </span>
           </div>
 
-          <p className="mt-1.5 min-h-[2.6rem] text-[12px] leading-snug text-white/90 sm:text-[13px]">
+          <p className="mt-1.5 min-h-[2.4rem] text-[12px] leading-snug text-white/88 sm:text-[13px]">
             {typed}
-            {isTyping && <span className="pain-cursor ml-0.5 inline-block text-[#FF9A3D]" aria-hidden />}
+            {isTyping ? (
+              <span className="ml-0.5 inline-block text-[#FF9A3D]" aria-hidden>
+                |
+              </span>
+            ) : null}
           </p>
 
           <div
             className={[
-              "mt-2.5 flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] transition-all duration-500 ease-out",
-              showStatus ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-1 opacity-0",
-              isLate ? "bg-[#FF5722]/28 text-white pain-glow" : "bg-white/10 text-white/88",
+              "mt-2.5 flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] font-medium transition-all duration-500",
+              showStatus
+                ? "translate-y-0 opacity-100"
+                : "pointer-events-none translate-y-1 opacity-0",
+              isLate ? "bg-[#FF5722]/28 text-white" : "bg-white/10 text-white/88",
+              stageIdx === last ? "bg-[#FF5722]/40 text-white" : "",
             ].join(" ")}
           >
             <span
               className={[
                 "h-1.5 w-1.5 rounded-full",
-                isLate ? "pain-dot-pulse bg-[#FF5722]" : "pain-dot-pulse bg-white/90",
+                isLate ? "bg-[#FF5722]" : "bg-white/90",
               ].join(" ")}
               aria-hidden
             />
-            <span className={isLate ? "pain-blink" : undefined}>{status}</span>
+            <span>{stage.status}</span>
           </div>
+        </div>
       </div>
     </div>
   );
 }
 
-function StatusPill({
-  label,
-  variant = "ok",
-}: {
-  label: string;
-  variant?: "ok" | "warn" | "unknown" | "lost";
-}) {
-  const styles = {
-    ok: "bg-white/[0.06] text-white/58",
-    warn: "bg-white/[0.05] text-white/42 pain-shimmer",
-    unknown: "bg-white/[0.05] text-white/30 pain-blink",
-    lost: "pain-glow bg-[#FF5722]/20 text-[#FF8A5C]",
-  };
-
-  return (
-    <span className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium ${styles[variant]}`}>
-      {label}
-    </span>
-  );
-}
-
-const STATUS_MARQUEE_STYLES = `
-  @keyframes pain-status-left {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
-  @keyframes pain-status-right {
-    from { transform: translateX(-50%); }
-    to { transform: translateX(0); }
-  }
-  .pain-status-track-left {
-    animation: pain-status-left 26s linear infinite;
-  }
-  .pain-status-track-right {
-    animation: pain-status-right 30s linear infinite;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .pain-status-track-left,
-    .pain-status-track-right {
-      animation: none !important;
-    }
-  }
-`;
-
-type StatusItem = { label: string; variant?: "ok" | "warn" | "unknown" | "lost" };
-
 function StatusMarqueeRow({
+  title,
+  titleClass,
   items,
-  direction,
+  toneClass,
+  durationSec,
 }: {
-  items: StatusItem[];
-  direction: "left" | "right";
+  title: string;
+  titleClass: string;
+  items: { label: string; tone: string }[];
+  toneClass: Record<string, string>;
+  durationSec: number;
 }) {
-  const track = [...items, ...items];
+  const trackRef = useRef<HTMLDivElement>(null);
+  const offsetRef = useRef(0);
+  const rafRef = useRef(0);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    let last = performance.now();
+    // Recalc after layout
+    const measure = () => track.scrollWidth / 3;
+
+    const tick = (now: number) => {
+      const dt = Math.min(32, now - last);
+      last = now;
+      const setW = measure();
+      if (setW > 0) {
+        const speed = setW / (durationSec * 1000);
+        offsetRef.current = (offsetRef.current + speed * dt) % setW;
+        track.style.transform = `translate3d(${-offsetRef.current}px, 0, 0)`;
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [durationSec, items]);
+
+  const loop = [...items, ...items, ...items];
 
   return (
-    <div className="overflow-hidden">
-      <div
-        className={[
-          "flex w-max gap-2",
-          direction === "left" ? "pain-status-track-left" : "pain-status-track-right",
-        ].join(" ")}
-      >
-        {track.map((item, i) => (
-          <StatusPill key={`${item.label}-${i}`} label={item.label} variant={item.variant} />
-        ))}
+    <div>
+      <p className={`mb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] ${titleClass}`}>
+        {title}
+      </p>
+      <div className="relative overflow-hidden">
+        <div ref={trackRef} className="flex w-max items-center gap-1.5 will-change-transform">
+          {loop.map((item, i) => (
+            <span
+              key={`${item.label}-${i}`}
+              className={[
+                "shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium",
+                toneClass[item.tone],
+              ].join(" ")}
+            >
+              {item.label}
+            </span>
+          ))}
+        </div>
+        <div
+          className="pointer-events-none absolute inset-y-0 left-0 w-5 bg-gradient-to-r from-[#141414] to-transparent"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute inset-y-0 right-0 w-5 bg-gradient-to-l from-[#141414] to-transparent"
+          aria-hidden
+        />
       </div>
     </div>
   );
 }
 
 function StatusVisual({ isRu }: { isRu: boolean }) {
-  const rowLeft: StatusItem[] = isRu
-    ? [
-        { label: "Новая", variant: "ok" },
-        { label: "В работе", variant: "ok" },
-        { label: "Записан", variant: "warn" },
-        { label: "Оплачен", variant: "ok" },
-        { label: "На связи", variant: "warn" },
-      ]
-    : [
-        { label: "New", variant: "ok" },
-        { label: "In progress", variant: "ok" },
-        { label: "Booked", variant: "warn" },
-        { label: "Paid", variant: "ok" },
-        { label: "Contacted", variant: "warn" },
-      ];
+  const copy = isRu
+    ? {
+        goodTitle: "Как должно быть",
+        badTitle: "Как сейчас",
+        good: [
+          { label: "Новая", tone: "soft" },
+          { label: "В работе", tone: "mid" },
+          { label: "Записан", tone: "strong" },
+          { label: "Оплачен", tone: "paid" },
+        ],
+        bad: [
+          { label: "???", tone: "chaos" },
+          { label: "Потеряна", tone: "lost" },
+          { label: "Ждёт ответа", tone: "warn" },
+          { label: "Пропущена", tone: "lost" },
+        ],
+      }
+    : {
+        goodTitle: "How it should be",
+        badTitle: "How it is now",
+        good: [
+          { label: "New", tone: "soft" },
+          { label: "In progress", tone: "mid" },
+          { label: "Booked", tone: "strong" },
+          { label: "Paid", tone: "paid" },
+        ],
+        bad: [
+          { label: "???", tone: "chaos" },
+          { label: "Lost", tone: "lost" },
+          { label: "Awaiting", tone: "warn" },
+          { label: "Missed", tone: "lost" },
+        ],
+      };
 
-  const rowRight: StatusItem[] = isRu
-    ? [
-        { label: "???", variant: "unknown" },
-        { label: "Потеряна", variant: "lost" },
-        { label: "Не обработана", variant: "warn" },
-        { label: "Ждёт ответа", variant: "unknown" },
-        { label: "Пропущена", variant: "lost" },
-      ]
-    : [
-        { label: "???", variant: "unknown" },
-        { label: "Lost", variant: "lost" },
-        { label: "Unprocessed", variant: "warn" },
-        { label: "Awaiting reply", variant: "unknown" },
-        { label: "Missed", variant: "lost" },
-      ];
+  const goodTone: Record<string, string> = {
+    soft: "bg-emerald-500/15 text-emerald-200/85",
+    mid: "bg-emerald-500/25 text-emerald-100",
+    strong: "bg-emerald-500/40 text-white",
+    paid: "bg-emerald-500 text-white",
+  };
 
-  return (
-    <>
-      <style>{STATUS_MARQUEE_STYLES}</style>
-      <div className="min-w-0 pt-4 sm:pt-5">
-        <Shield
-          size={14}
-          className="pain-shimmer mb-3 text-[#FF5722]"
-          strokeWidth={1.75}
-          aria-hidden
-        />
-        <div className="space-y-2">
-          <StatusMarqueeRow items={rowLeft} direction="left" />
-          <StatusMarqueeRow items={rowRight} direction="right" />
-        </div>
-      </div>
-    </>
-  );
-}
-
-function AdminVisual({ isRu }: { isRu: boolean }) {
-  const lines = isRu
-    ? [
-        { label: "Блокнот", value: "Анна — перезвонить" },
-        { label: "Таблица", value: "строка 14" },
-        { label: "Память", value: "«вроде ответил»", uncertain: true },
-      ]
-    : [
-        { label: "Notebook", value: "Anna — call back" },
-        { label: "Sheet", value: "row 14" },
-        { label: "Memory", value: "«think I replied»", uncertain: true },
-      ];
+  const badTone: Record<string, string> = {
+    chaos: "bg-white/10 text-white/55",
+    warn: "bg-[#FF5722]/20 text-[#FFAB91]",
+    lost: "bg-[#FF5722]/30 text-white",
+  };
 
   return (
-    <div className="space-y-2 font-mono text-[11px] leading-relaxed sm:text-[12px]">
-      {lines.map((line, i) => (
-        <p
-          key={line.label}
-          className={line.uncertain ? "pain-blink text-white/50" : "pain-fade-cycle text-white/48"}
-          style={animStyle(i * 500, 3200)}
-        >
-          <span className="text-[#FF9A3D]">›</span>{" "}
-          <span className="text-white/55">{line.label}:</span> {line.value}
-        </p>
-      ))}
+    <div className="min-w-0 space-y-3 pt-1 sm:pt-2">
+      <StatusMarqueeRow
+        title={copy.goodTitle}
+        titleClass="text-emerald-400/70"
+        items={copy.good}
+        toneClass={goodTone}
+        durationSec={14}
+      />
+      <StatusMarqueeRow
+        title={copy.badTitle}
+        titleClass="text-[#FF8A5C]/85"
+        items={copy.bad}
+        toneClass={badTone}
+        durationSec={12}
+      />
     </div>
   );
 }
 
-function FlowTerminalVisual({ isRu }: { isRu: boolean }) {
-  const header = "form.submit → email";
-  const branches = isRu
-    ? [
-        { prefix: "└─", text: "вручную в таблицу" },
-        { prefix: "└─", text: "статус: неизвестно" },
-        { prefix: "└─", label: "Telegram:", value: "нет", missing: true },
-      ]
-    : [
-        { prefix: "└─", text: "manual spreadsheet" },
-        { prefix: "└─", text: "status: unknown" },
-        { prefix: "└─", label: "Telegram:", value: "none", missing: true },
-      ];
+function AdminToolCard({
+  kind,
+  title,
+  lines,
+  isRu,
+}: {
+  kind: "notebook" | "calendar" | "table" | "excel" | "memory" | "chats";
+  title: string;
+  lines: string[];
+  isRu: boolean;
+}) {
+  if (kind === "notebook") {
+    return (
+      <div className="relative w-[9.75rem] shrink-0 overflow-hidden rounded-xl bg-[#1e1c18] sm:w-[10.75rem]">
+        <div
+          className="absolute inset-y-0 left-0 w-3 bg-[#FF9A3D]/35"
+          aria-hidden
+        />
+        <div
+          className="absolute inset-y-2 left-[5px] flex flex-col justify-around"
+          aria-hidden
+        >
+          {[0, 1, 2].map((n) => (
+            <span key={n} className="h-1.5 w-1.5 rounded-full bg-[#141414]/80" />
+          ))}
+        </div>
+        <div className="relative pl-5 pr-2.5 py-2.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#FF9A3D]/90">
+            {title}
+          </p>
+          <ul className="mt-2 space-y-1.5 border-t border-dashed border-white/10 pt-2">
+            {lines.map((line) => (
+              <li
+                key={line}
+                className="border-b border-white/[0.06] pb-1 font-mono text-[10px] leading-snug text-white/70"
+              >
+                {line}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    );
+  }
 
-  const [step, setStep] = useState(0);
-  const [cycle, setCycle] = useState(0);
-  const totalSteps = 1 + branches.length;
+  if (kind === "calendar") {
+    const days = isRu
+      ? ["пн", "вт", "ср", "чт", "пт", "сб", "вс"]
+      : ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+    const cells = [null, null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+    const hot = new Set([3, 7, 12]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+    return (
+      <div className="w-[9.75rem] shrink-0 overflow-hidden rounded-xl bg-[#1a1a1a] sm:w-[10.75rem]">
+        <div className="bg-[#FF5722] px-2.5 py-1.5 text-center">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/90">
+            {isRu ? "март" : "march"}
+          </p>
+        </div>
+        <div className="grid grid-cols-7 gap-px px-1.5 pt-1.5 text-center text-[8px] text-white/35">
+          {days.map((d) => (
+            <span key={d}>{d}</span>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-0.5 px-1.5 pb-1.5 pt-1">
+          {cells.map((day, i) => (
+            <span
+              key={i}
+              className={[
+                "flex h-4 items-center justify-center rounded-sm text-[9px]",
+                day == null
+                  ? ""
+                  : hot.has(day)
+                    ? "bg-[#FF5722] font-semibold text-white"
+                    : "text-white/55",
+              ].join(" ")}
+            >
+              {day ?? ""}
+            </span>
+          ))}
+        </div>
+        <p className="truncate border-t border-white/[0.06] px-2.5 py-1.5 text-[9px] text-white/50">
+          {lines[0]}
+        </p>
+      </div>
+    );
+  }
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
-      setStep(totalSteps);
-      return;
-    }
+  if (kind === "excel" || kind === "table") {
+    return (
+      <div className="w-[9.75rem] shrink-0 overflow-hidden rounded-xl bg-[#1a1a1a] sm:w-[10.75rem]">
+        <div className="flex items-center gap-1.5 border-b border-white/[0.06] bg-white/[0.04] px-2 py-1.5">
+          {kind === "excel" ? (
+            <img
+              src="/images/icons/excel.svg"
+              alt=""
+              width={14}
+              height={14}
+              aria-hidden
+              className="h-3.5 w-3.5 shrink-0"
+            />
+          ) : (
+            <span className="rounded px-1.5 py-0.5 text-[9px] font-semibold bg-white/15 text-white/80">
+              Sheet
+            </span>
+          )}
+          <span className="truncate text-[10px] text-white/50">{title}</span>
+        </div>
+        <div className="p-2">
+          <div className="overflow-hidden rounded border border-white/10">
+            {lines.map((line, row) => (
+              <div
+                key={line}
+                className={[
+                  "flex border-b border-white/10 last:border-b-0",
+                  row === 0 ? "bg-white/[0.06]" : "",
+                ].join(" ")}
+              >
+                <span className="w-5 shrink-0 border-r border-white/10 px-1 py-1 text-center text-[8px] text-white/30">
+                  {row + 1}
+                </span>
+                <span className="truncate px-1.5 py-1 text-[9px] text-white/65">{line}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-    let cancelled = false;
-    const timeouts: number[] = [];
-    const t = (fn: () => void, ms: number) => {
-      timeouts.push(window.setTimeout(() => {
-        if (!cancelled) fn();
-      }, ms));
-    };
+  if (kind === "chats") {
+    const bubbles = isRu
+      ? [
+          { side: "in" as const, text: "Здравствуйте!" },
+          { side: "out" as const, text: "…" },
+          { side: "in" as const, text: "Можно записаться?" },
+        ]
+      : [
+          { side: "in" as const, text: "Hello!" },
+          { side: "out" as const, text: "…" },
+          { side: "in" as const, text: "Can I book?" },
+        ];
 
-    setStep(0);
-    for (let i = 1; i <= totalSteps; i++) {
-      t(() => setStep(i), 520 * i);
-    }
-    t(() => setCycle((c) => c + 1), 520 * totalSteps + 2400);
-
-    return () => {
-      cancelled = true;
-      timeouts.forEach(clearTimeout);
-    };
-  }, [totalSteps, cycle, isRu]);
-
-  const showEnter = step >= totalSteps;
+    return (
+      <div className="flex w-[9.75rem] shrink-0 flex-col overflow-hidden rounded-xl bg-[#1a1a1a] sm:w-[10.75rem]">
+        <div className="flex items-center gap-2 border-b border-white/[0.06] bg-white/[0.04] px-2.5 py-1.5">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#FF9A3D]/20">
+            <img src="/images/icons/telegram.svg" alt="" width={12} height={12} aria-hidden className="h-3 w-3" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[10px] font-semibold text-white/85">{title}</p>
+            <p className="text-[8px] text-white/35">{isRu ? "12 непрочит." : "12 unread"}</p>
+          </div>
+        </div>
+        <div className="flex flex-1 flex-col gap-1 px-2 py-2">
+          {bubbles.map((b, i) => (
+            <div
+              key={`${b.text}-${i}`}
+              className={[
+                "max-w-[85%] rounded-lg px-2 py-1 text-[9px] leading-snug",
+                b.side === "in"
+                  ? "self-start rounded-tl-sm bg-white/10 text-white/75"
+                  : "self-end rounded-tr-sm bg-[#FF5722]/35 text-white/85",
+              ].join(" ")}
+            >
+              {b.text}
+            </div>
+          ))}
+        </div>
+        <div className="border-t border-white/[0.06] px-2 py-1.5">
+          <div className="rounded-full bg-white/[0.06] px-2 py-1 text-[8px] text-white/30">
+            {isRu ? "Сообщение…" : "Message…"}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
-      className="rounded-xl p-3.5 font-mono sm:p-4"
+      className="w-[9.75rem] shrink-0 rounded-xl px-3 py-2.5 sm:w-[10.75rem]"
       style={{ backgroundColor: CARD_SOFT }}
     >
-        <div className="mb-3 flex items-center gap-1.5 border-b border-white/[0.06] pb-2.5">
-          <span className="h-2 w-2 rounded-full bg-[#FF5F57]/80" aria-hidden />
-          <span className="h-2 w-2 rounded-full bg-[#FEBC2E]/80" aria-hidden />
-          <span className="h-2 w-2 rounded-full bg-[#28C840]/80" aria-hidden />
-          <span className="ml-auto text-[9px] uppercase tracking-wide text-white/28">
-            {isRu ? "обработка" : "handler"}
-          </span>
-        </div>
+      <p className="text-[11px] font-semibold text-[#FF9A3D]">{title}</p>
+      <ul className="mt-1.5 space-y-1">
+        {lines.map((line) => (
+          <li key={line} className="truncate text-[11px] leading-snug text-white/60">
+            <span className="text-[#FF9A3D]/80">›</span> {line}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
-        <div className="space-y-1 text-[10px] leading-[1.8] sm:text-[11px]">
-          <p
-            className={[
-              "text-white/78 transition-opacity duration-300",
-              step >= 1 ? "opacity-100" : "opacity-0",
-            ].join(" ")}
-          >
-            {header}
-          </p>
+function AdminVisual({ isRu }: { isRu: boolean }) {
+  const cards = isRu
+    ? [
+        {
+          kind: "notebook" as const,
+          title: "Блокнот",
+          lines: ["Анна — перезвонить", "Игорь — прайс", "Салон — бронь"],
+        },
+        {
+          kind: "calendar" as const,
+          title: "Календарь",
+          lines: ["15:00 — консультация"],
+        },
+        {
+          kind: "table" as const,
+          title: "Таблица",
+          lines: ["строка 14 — новая", "строка 22 — ждёт", "фильтр сбит"],
+        },
+        {
+          kind: "excel" as const,
+          title: "Excel",
+          lines: ["лист «заявки»", "нет статуса", "кто ответил?"],
+        },
+        {
+          kind: "memory" as const,
+          title: "Память",
+          lines: ["«вроде ответил»", "«завтра напишу»", "«уже не помню»"],
+        },
+        {
+          kind: "chats" as const,
+          title: "Чаты",
+          lines: ["12 непрочитанных", "3 пропущенных", "никто не взял"],
+        },
+      ]
+    : [
+        {
+          kind: "notebook" as const,
+          title: "Notebook",
+          lines: ["Anna — call back", "Igor — price list", "Salon — booking"],
+        },
+        {
+          kind: "calendar" as const,
+          title: "Calendar",
+          lines: ["3:00 pm — consult"],
+        },
+        {
+          kind: "table" as const,
+          title: "Sheet",
+          lines: ["row 14 — new", "row 22 — waiting", "filter broken"],
+        },
+        {
+          kind: "excel" as const,
+          title: "Excel",
+          lines: ["leads tab", "no status", "who replied?"],
+        },
+        {
+          kind: "memory" as const,
+          title: "Memory",
+          lines: ["«think I replied»", "«will write tomorrow»", "«don't remember»"],
+        },
+        {
+          kind: "chats" as const,
+          title: "Chats",
+          lines: ["12 unread", "3 missed", "nobody took it"],
+        },
+      ];
 
-          {branches.map((line, i) => {
-            const visible = step >= i + 2;
+  const trackRef = useRef<HTMLDivElement>(null);
+  const indexRef = useRef(0);
+  const [index, setIndex] = useState(0);
+  const [noTransition, setNoTransition] = useState(false);
 
-            return (
-              <p
-                key={line.text ?? line.label}
-                className={[
-                  "transition-opacity duration-300",
-                  visible ? "opacity-100" : "opacity-0",
-                  line.missing ? "" : "text-white/42",
-                ].join(" ")}
-              >
-                <span className="text-white/35">{line.prefix} </span>
-                {line.missing ? (
-                  <>
-                    <span className="text-white/42">{line.label} </span>
-                    <span className="pain-blink text-[#FF5722]">{line.value}</span>
-                  </>
-                ) : (
-                  line.text
-                )}
-              </p>
-            );
-          })}
-        </div>
+  const HOLD_MS = 2400;
+  const SWIPE_MS = 480;
+  const n = cards.length;
 
-        <div
-          className={[
-            "mt-4 flex items-center justify-end gap-1.5 transition-all duration-500",
-            showEnter ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0",
-          ].join(" ")}
-        >
-          <span className="pain-cursor text-[#FF9A3D]" aria-hidden />
-          <span className="inline-flex items-center gap-1.5 rounded-md bg-[#FF5722] px-2.5 py-1 text-[10px] font-medium text-white">
-            Enter ↵
-          </span>
-        </div>
+  // Two full copies for seamless infinite swipe
+  const loop = [...cards, ...cards];
+
+  useEffect(() => {
+    let holdId = 0;
+    let swipeId = 0;
+    let alive = true;
+
+    const goNext = () => {
+      if (!alive) return;
+      const next = indexRef.current + 1;
+      indexRef.current = next;
+      setNoTransition(false);
+      setIndex(next);
+
+      if (next === n) {
+        // After swipe onto the duplicate of first card, snap to start
+        swipeId = window.setTimeout(() => {
+          if (!alive) return;
+          setNoTransition(true);
+          indexRef.current = 0;
+          setIndex(0);
+          // re-enable transition on next frame, then continue
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              if (!alive) return;
+              setNoTransition(false);
+              holdId = window.setTimeout(goNext, HOLD_MS);
+            });
+          });
+        }, SWIPE_MS);
+      } else {
+        holdId = window.setTimeout(goNext, HOLD_MS);
+      }
+    };
+
+    holdId = window.setTimeout(goNext, HOLD_MS);
+    return () => {
+      alive = false;
+      window.clearTimeout(holdId);
+      window.clearTimeout(swipeId);
+    };
+  }, [n]);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const first = track.children[0] as HTMLElement | undefined;
+    if (!first) return;
+    const gap = 10;
+    const step = first.offsetWidth + gap;
+    track.style.transform = `translate3d(${-index * step}px, 0, 0)`;
+  }, [index]);
+
+  return (
+    <div className="relative min-w-0 overflow-hidden pt-1 sm:pt-2">
+      <div
+        ref={trackRef}
+        className={[
+          "flex w-max items-stretch gap-2.5 will-change-transform",
+          noTransition
+            ? "transition-none"
+            : "transition-transform duration-[480ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+        ].join(" ")}
+      >
+        {loop.map((card, i) => (
+          <AdminToolCard
+            key={`${card.kind}-${i}`}
+            kind={card.kind}
+            title={card.title}
+            lines={card.lines}
+            isRu={isRu}
+          />
+        ))}
+      </div>
+      <div
+        className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[#141414] to-transparent"
+        aria-hidden
+      />
     </div>
   );
 }
@@ -448,40 +767,33 @@ function FlowTerminalVisual({ isRu }: { isRu: boolean }) {
 function PainBentoCard({
   title,
   text,
-  solution,
-  hoverCta,
   visual,
   accent = false,
-  split = false,
+  overlay = false,
   bgImage,
   bgAlways = false,
   bgPosition = "center center",
   className,
-  href = "#offer",
 }: {
   title: string;
   text: string;
-  solution: string;
-  hoverCta: string;
   visual: ReactNode;
   accent?: boolean;
-  split?: boolean;
+  /** Visual as bottom sheet overlapping the title/text */
+  overlay?: boolean;
   bgImage?: string;
   bgAlways?: boolean;
   bgPosition?: string;
   className?: string;
-  href?: string;
 }) {
-  const hoverBg = bgImage ?? "/images/hero-stage-1.webp";
-
   return (
     <article
       className={[
-        "group relative flex min-h-[260px] flex-col overflow-hidden rounded-2xl transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        accent ? "bg-[#FF5722]" : "bg-[#141414]",
+        "relative isolate flex flex-col overflow-hidden rounded-[20px] sm:rounded-2xl",
+        "min-h-0 sm:min-h-[260px] bg-[#141414]",
         className ?? "",
       ].join(" ")}
-      style={accent ? undefined : { backgroundColor: CARD_DARK }}
+      style={{ backgroundColor: CARD_DARK }}
     >
       {bgImage ? (
         <>
@@ -492,54 +804,47 @@ function PainBentoCard({
             decoding="async"
             draggable={false}
             className={[
-              "absolute inset-0 z-0 h-full w-full object-cover transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-              bgAlways ? "opacity-100" : "opacity-0 motion-safe:group-hover:opacity-100",
+              "absolute inset-0 z-0 h-full w-full scale-[1.04] object-cover",
+              bgAlways ? "opacity-100" : "opacity-0",
             ].join(" ")}
             style={{ objectPosition: bgPosition }}
           />
-          <div
-            className={[
-              "pointer-events-none absolute inset-0 z-0 transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-              bgAlways ? "opacity-100" : "opacity-0 motion-safe:group-hover:opacity-100",
-              accent
-                ? "bg-gradient-to-b from-black/40 via-black/35 to-black/55"
-                : bgAlways
-                  ? "bg-gradient-to-b from-black/55 via-black/42 to-black/68"
-                  : "bg-gradient-to-b from-black/72 via-black/58 to-black/82",
-            ].join(" ")}
-            aria-hidden
-          />
+          {bgAlways ? (
+            <div
+              className={[
+                "pointer-events-none absolute inset-0 z-0",
+                accent
+                  ? "bg-gradient-to-b from-black/55 via-black/48 to-black/78"
+                  : "bg-gradient-to-b from-black/60 via-black/48 to-black/78",
+              ].join(" ")}
+              aria-hidden
+            />
+          ) : null}
         </>
       ) : null}
       <div
         className={[
-          "relative z-[1] flex flex-1 flex-col p-6 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-8",
-          "motion-safe:group-hover:opacity-0 motion-safe:group-hover:translate-y-[-6px]",
+          "relative z-[1] flex flex-1 flex-col",
+          overlay ? "px-5 pb-4 pt-5 sm:px-8 sm:pb-5 sm:pt-8" : "px-5 pb-4 pt-5 sm:p-8",
         ].join(" ")}
       >
-        {split ? (
-          <div className="grid flex-1 gap-6 lg:grid-cols-[1fr_minmax(260px,440px)] lg:items-center">
-            <div className="order-2 lg:order-1">
-              <h3 className="font-hero text-[17px] font-semibold leading-snug tracking-[-0.02em] text-white sm:text-[18px]">
-                {title}
-              </h3>
-              <p className="mt-2 text-[13px] leading-[1.6] text-white/48 sm:text-[14px]">{text}</p>
-            </div>
-            <div className="order-1 lg:order-2 lg:self-start">{visual}</div>
+        {overlay ? (
+          <div className="relative z-[1] flex min-h-[240px] flex-1 flex-col justify-start pb-[6.75rem] sm:min-h-[280px] sm:pb-[7.5rem]">
+            <h3 className="font-hero text-[22px] font-semibold leading-snug tracking-[-0.03em] text-white sm:text-[24px]">
+              {title}
+            </h3>
+            <p className="mt-2.5 max-w-[36ch] text-[15px] leading-[1.55] text-white/72 sm:text-[16px] sm:leading-[1.6]">
+              {text}
+            </p>
           </div>
         ) : (
           <>
-            <div className="mb-5 min-h-[88px] sm:min-h-[96px]">{visual}</div>
-            <div className="mt-auto">
-              <h3 className="font-hero text-[17px] font-semibold leading-snug tracking-[-0.02em] text-white sm:text-[18px]">
+            <div className="mb-4 sm:mb-5 sm:min-h-[96px]">{visual}</div>
+            <div className="flex flex-col gap-2 sm:mt-auto sm:gap-0">
+              <h3 className="font-hero text-[22px] font-semibold leading-snug tracking-[-0.03em] text-white sm:text-[24px]">
                 {title}
               </h3>
-              <p
-                className={[
-                  "mt-2 text-[13px] leading-[1.6] sm:text-[14px]",
-                  accent ? "text-white/80" : "text-white/48",
-                ].join(" ")}
-              >
+              <p className="text-[15px] leading-[1.55] text-white/72 sm:mt-2.5 sm:text-[16px] sm:leading-[1.6]">
                 {text}
               </p>
             </div>
@@ -547,52 +852,11 @@ function PainBentoCard({
         )}
       </div>
 
-      <a
-        href={href}
-        className={[
-          "absolute inset-0 z-[2] flex flex-col no-underline opacity-0 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          "translate-y-2 motion-safe:group-hover:translate-y-0 motion-safe:group-hover:opacity-100",
-          "max-md:pointer-events-none max-md:opacity-0",
-          "focus-visible:opacity-100 focus-visible:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF9A3D]/50",
-        ].join(" ")}
-        aria-label={`${hoverCta}: ${title}`}
-      >
-        <div className="relative flex flex-1 flex-col justify-end overflow-hidden p-6 pb-5 sm:p-8 sm:pb-6">
-          <img
-            src={hoverBg}
-            alt=""
-            aria-hidden
-            loading="lazy"
-            decoding="async"
-            draggable={false}
-            className="pointer-events-none absolute inset-0 h-full w-full scale-125 object-cover blur-[28px]"
-            style={{ objectPosition: bgPosition }}
-          />
-          <div
-            className="pointer-events-none absolute inset-0 bg-black/45"
-            aria-hidden
-          />
-          <p className="relative z-[1] max-w-[42ch] text-[14px] leading-[1.65] text-white sm:text-[15px] sm:leading-[1.7]">
-            {solution}
-          </p>
+      {overlay ? (
+        <div className="pointer-events-none absolute inset-x-3 bottom-0 z-[3] sm:inset-x-4">
+          {visual}
         </div>
-
-        <div className="relative z-[1] flex items-center justify-between gap-3 bg-[#141414] px-6 py-4 sm:px-8 sm:py-5">
-          <span className="text-[13px] font-medium text-white sm:text-[14px]">{hoverCta}</span>
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white motion-safe:group-hover:animate-pulse">
-            <ArrowRight size={14} strokeWidth={2} aria-hidden />
-          </span>
-        </div>
-      </a>
-
-      <div className="bg-white/[0.04] px-6 py-4 md:hidden">
-        <a
-          href={href}
-          className="block text-[13px] leading-[1.6] text-white/55 no-underline transition hover:text-white/80"
-        >
-          {solution}
-        </a>
-      </div>
+      ) : null}
     </article>
   );
 }
@@ -606,11 +870,13 @@ export default function LandingPainSection() {
   return (
     <section
       id="pain"
-      className="relative z-[1] mt-4 scroll-mt-[var(--tivonix-header-spacer)] bg-black pt-2 pb-16 sm:mt-6 sm:pt-4 sm:pb-20 lg:mt-8 lg:pt-6 lg:pb-24"
+      className="relative z-[1] mt-2 scroll-mt-[calc(var(--tivonix-header-spacer)+12px)] bg-black pt-6 pb-14 sm:mt-6 sm:pt-4 sm:pb-20 lg:mt-8 lg:pt-6 lg:pb-24"
     >
       <Container className="relative">
         <div className="min-w-0 text-center">
-          <h2 className={`${LANDING_HEADLINE_CLASS} text-center`}>
+          <h2
+            className={`${LANDING_HEADLINE_CLASS} text-center leading-[1.08] sm:leading-[0.98]`}
+          >
             {copy.pain.titleLines.map((line) => (
               <span key={line} className="block">
                 {line}
@@ -619,60 +885,41 @@ export default function LandingPainSection() {
           </h2>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-5 sm:mt-8 sm:grid-cols-2 lg:grid-cols-12 lg:items-stretch">
+        <div className="mt-5 grid grid-cols-1 gap-3.5 sm:mt-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-12 lg:items-stretch">
           <PainBentoCard
-            className="h-full lg:col-span-8 lg:min-h-[340px]"
+            className="h-auto sm:h-full lg:col-span-8 lg:min-h-[340px]"
             title={items[0].title}
             text={items[0].text}
-            solution={items[0].solution}
-            hoverCta={copy.pain.hoverCta}
             bgImage={PAIN_CARD_BACKGROUNDS[0]}
             visual={<ChannelsVisual isRu={isRu} />}
           />
 
           <PainBentoCard
-            className="h-full lg:col-span-4 lg:min-h-[340px]"
+            className="h-auto sm:h-full lg:col-span-4 lg:min-h-[340px]"
             title={items[1].title}
             text={items[1].text}
-            solution={items[1].solution}
-            hoverCta={copy.pain.hoverCta}
             accent
+            overlay
             bgImage={PAIN_CARD_BACKGROUNDS[1]}
             bgAlways
+            bgPosition="center 32%"
             visual={<TelegramVisual isRu={isRu} />}
           />
 
           <PainBentoCard
-            className="h-full lg:col-span-6"
+            className="h-auto sm:h-full lg:col-span-6"
             title={items[3].title}
             text={items[3].text}
-            solution={items[3].solution}
-            hoverCta={copy.pain.hoverCta}
             bgImage={PAIN_CARD_BACKGROUNDS[3]}
             visual={<AdminVisual isRu={isRu} />}
           />
 
           <PainBentoCard
-            className="h-full lg:col-span-6"
+            className="h-auto sm:h-full lg:col-span-6"
             title={items[2].title}
             text={items[2].text}
-            solution={items[2].solution}
-            hoverCta={copy.pain.hoverCta}
             bgImage={PAIN_CARD_BACKGROUNDS[2]}
             visual={<StatusVisual isRu={isRu} />}
-          />
-
-          <PainBentoCard
-            className="h-full sm:col-span-2 lg:col-span-12 lg:min-h-[280px]"
-            title={items[4].title}
-            text={items[4].text}
-            solution={items[4].solution}
-            hoverCta={copy.pain.hoverCta}
-            bgImage={PAIN_CARD_BACKGROUNDS[4]}
-            bgAlways
-            bgPosition="center center"
-            split
-            visual={<FlowTerminalVisual isRu={isRu} />}
           />
         </div>
       </Container>

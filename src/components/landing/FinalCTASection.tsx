@@ -3,7 +3,6 @@ import Container from "../ui/Container";
 import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
-import { leadFormCopy } from "../../i18n/leadFormCopy";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
 import { TelegramLink } from "./LandingCTA";
 import { TG_CHANNEL_URL } from "../../constants/links";
@@ -61,7 +60,6 @@ function useSectionScrollScale(sectionRef: React.RefObject<HTMLElement | null>) 
 export default function FinalCTASection() {
   const { lang } = useLang();
   const copy = landingCopy(lang);
-  const leadCopy = leadFormCopy(lang);
   const cardRef = useRef<HTMLDivElement>(null);
   const bgScale = useSectionScrollScale(cardRef);
 
@@ -98,24 +96,22 @@ export default function FinalCTASection() {
             </h2>
 
             <div className="final-cta-card__actions relative z-[1] mt-6 flex flex-col items-center justify-center gap-3 sm:mt-7 sm:flex-row sm:gap-4">
-              <div className="projects-cta-glow final-cta-glow w-full max-w-[280px] sm:w-auto sm:min-w-[220px]">
-                <LeadCTAButton
-                  source="final_cta"
-                  variant="white"
-                  size="lg"
-                  className="projects-cta-glow__btn final-cta-glow__btn w-full"
-                >
-                  {leadCopy.ctaDiscuss}
-                </LeadCTAButton>
-              </div>
+              <LeadCTAButton
+                source="final_cta"
+                variant="white"
+                size="lg"
+                className="final-cta-btn w-full max-w-[280px] sm:w-auto sm:min-w-[220px]"
+              >
+                {lang === "ru" ? "Обсудить задачу" : "Discuss the task"}
+              </LeadCTAButton>
               <TelegramLink
                 variant="white"
                 size="lg"
                 href={TG_CHANNEL_URL}
-                className="final-cta-btn final-cta-btn--secondary w-full max-w-[280px] sm:w-auto sm:min-w-[220px]"
+                className="final-cta-btn final-cta-btn--black w-full max-w-[280px] sm:w-auto sm:min-w-[220px]"
                 onClick={() => trackTelegramDirectClick()}
               >
-                @TIVONIX
+                {lang === "ru" ? "Написать в TG" : "Message on TG"}
               </TelegramLink>
             </div>
           </div>
