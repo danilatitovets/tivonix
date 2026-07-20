@@ -4,6 +4,7 @@ import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
 import { HERO_SCROLL_HEADLINE_CLASS, LANDING_SHELL_CLASS } from "../../lib/landingLayout";
 import { isTelegramWebView } from "../../lib/telegramWebView";
+import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
 
 const HERO_VIDEO = "/images/hero-bg.mp4";
 const HERO_POSTER = "/images/hero-bg-poster.webp";
@@ -129,20 +130,7 @@ function HeroCard({
   const textOpacity = useMemo(() => textOpacities(progress), [progress]);
   const activeStage = textOpacity[2] > 0.5 ? 2 : textOpacity[1] > 0.5 ? 1 : 0;
   const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    const play = () => {
-      void video.play().catch(() => {});
-    };
-    play();
-    const onVis = () => {
-      if (document.visibilityState === "visible") play();
-    };
-    document.addEventListener("visibilitychange", onVis);
-    return () => document.removeEventListener("visibilitychange", onVis);
-  }, []);
+  useKeepVideoPlaying(videoRef);
 
   return (
     <div

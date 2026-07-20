@@ -7,6 +7,7 @@ import { LeadCTAButton } from "../leads/LeadCTAButton";
 import { TelegramLink } from "./LandingCTA";
 import { TG_CHANNEL_URL } from "../../constants/links";
 import { trackTelegramDirectClick } from "../../lib/analytics";
+import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
 
 const FINAL_CTA_VIDEO = "/images/hero-bg.mp4";
 const FINAL_CTA_POSTER = "/images/hero-bg-poster.webp";
@@ -69,19 +70,7 @@ export default function FinalCTASection() {
     transform: `translate3d(-50%, -50%, 0) scale(${bgScale})`,
   };
 
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    const play = () => {
-      void video.play().catch(() => {});
-    };
-    play();
-    const onVis = () => {
-      if (document.visibilityState === "visible") play();
-    };
-    document.addEventListener("visibilitychange", onVis);
-    return () => document.removeEventListener("visibilitychange", onVis);
-  }, []);
+  useKeepVideoPlaying(videoRef);
 
   return (
     <Section
@@ -104,7 +93,7 @@ export default function FinalCTASection() {
               muted
               loop
               playsInline
-              preload="metadata"
+              preload="auto"
             />
             <div className="final-cta-card__bg-overlay" />
           </div>
