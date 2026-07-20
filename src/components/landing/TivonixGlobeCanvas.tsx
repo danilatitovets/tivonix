@@ -180,25 +180,13 @@ export default function TivonixGlobeCanvas({ pins }: Props) {
       velocityTheta = 0;
       setCursor("grabbing");
       wrap.setPointerCapture?.(event.pointerId);
-      // Don't preventDefault on down — vertical page scroll can still start
+      event.preventDefault();
     };
 
     const onPointerMove = (event: PointerEvent) => {
       if (!dragging || activePointerId !== event.pointerId) return;
       const dx = event.clientX - lastX;
       const dy = event.clientY - lastY;
-      // Vertical swipe → release globe and let the page scroll
-      if (event.pointerType !== "mouse" && Math.abs(dy) > Math.abs(dx) * 1.15) {
-        dragging = false;
-        activePointerId = null;
-        setCursor("grab");
-        try {
-          wrap.releasePointerCapture?.(event.pointerId);
-        } catch {
-          /* ignore */
-        }
-        return;
-      }
       lastX = event.clientX;
       lastY = event.clientY;
 
@@ -206,9 +194,7 @@ export default function TivonixGlobeCanvas({ pins }: Props) {
       theta = clamp(theta + dy * THETA_SENSITIVITY, THETA_MIN, THETA_MAX);
       velocityPhi = dx * DRAG_SENSITIVITY;
       velocityTheta = dy * THETA_SENSITIVITY;
-      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
-        event.preventDefault();
-      }
+      event.preventDefault();
     };
 
     const endDrag = (event?: PointerEvent) => {

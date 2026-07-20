@@ -58,7 +58,7 @@
 }
 
 .tivonix-globe-canvas-wrap--interactive {
-  touch-action: pan-y;
+  touch-action: none;
   user-select: none;
   -webkit-user-select: none;
   cursor: grab;
@@ -79,7 +79,7 @@
   display: block;
   width: 100% !important;
   height: 100% !important;
-  touch-action: pan-y;
+  touch-action: none;
 }
 
 .tivonix-globe-cobe-host > div {

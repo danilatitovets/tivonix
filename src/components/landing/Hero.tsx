@@ -3,7 +3,7 @@ import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
 import { HERO_SCROLL_HEADLINE_CLASS, LANDING_SHELL_CLASS } from "../../lib/landingLayout";
-import { isTelegramWebView, shouldSimplifyScroll } from "../../lib/telegramWebView";
+import { isTelegramWebView } from "../../lib/telegramWebView";
 import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
 
 const HERO_VIDEO = "/images/hero-bg.mp4";
@@ -204,7 +204,7 @@ export default function Hero() {
   const [tgWebView, setTgWebView] = useState(false);
 
   useEffect(() => {
-    setTgWebView(shouldSimplifyScroll() || isTelegramWebView());
+    setTgWebView(isTelegramWebView());
   }, []);
 
   const cardProps = {
