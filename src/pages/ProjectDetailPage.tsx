@@ -21,9 +21,9 @@ const BULLET_RE = /^[•\-]\s*/;
 const LEAD_META_RE = /^(Формат|Срок|Format|Timeline|Продукт|Product)\s*:/i;
 
 const BODY =
-  "text-[17px] font-[400] leading-[1.55] tracking-[0.005em] text-[#c3c3cc] sm:text-[18px]";
+  "font-sans text-[16px] font-medium leading-[1.55] tracking-normal text-[#c3c3cc] sm:text-[17px]";
 const H2 =
-  "font-hero text-[clamp(1.75rem,3.2vw,2.5rem)] font-[600] tracking-[-0.03em] leading-[1.1] text-[#ededf3]";
+  "font-hero text-[clamp(1.55rem,2.8vw,2.1rem)] font-normal uppercase tracking-[0.02em] leading-[1.05] text-[#ededf3]";
 
 function clipMetaDescription(text: string, max = 158): string {
   const t = text.replace(/\s+/g, " ").trim();
@@ -150,7 +150,7 @@ function CaseBrandIntro({
     <header>
       <div className="flex items-start justify-between gap-6">
         <div className="min-w-0 flex-1">
-          <h2 className="font-hero text-[clamp(2.25rem,5vw,3.5rem)] font-[600] tracking-[-0.035em] leading-[1.02] text-[#ededf3]">
+          <h2 className="font-hero text-[clamp(1.85rem,4vw,2.75rem)] font-normal uppercase tracking-[0.02em] leading-[1.05] text-[#ededf3]">
             {title}
           </h2>
           <p className="mt-3 text-[17px] font-[400] leading-snug text-[#c3c3cc] sm:text-[18px]">
@@ -318,7 +318,7 @@ function PaletteSwatch({
           {copied ? copiedLabel : copyLabel}
         </span>
       </button>
-      <p className="mt-3 text-[15px] font-[600] tracking-[-0.01em] text-[#ededf3] sm:text-[16px]">
+      <p className="mt-3 text-[15px] font-medium tracking-normal text-[#ededf3] sm:text-[16px]">
         {swatch.name}
       </p>
       <button
@@ -538,7 +538,7 @@ function OutcomesBlock({
       <ol className="mt-8 list-none space-y-0 divide-y divide-white/[0.06]">
         {items.map((item, idx) => (
           <li key={`${idx}-${item.slice(0, 32)}`} className="flex gap-5 py-5 first:pt-0 last:pb-0 sm:gap-8">
-            <span className="font-hero w-8 shrink-0 text-[20px] font-[600] tabular-nums tracking-[-0.03em] text-[#8a8a8e]">
+            <span className="font-hero w-8 shrink-0 text-[18px] font-normal tabular-nums tracking-[0.02em] text-[#8a8a8e]">
               {String(idx + 1).padStart(2, "0")}
             </span>
             <p className="min-w-0 text-[17px] font-[400] leading-[1.45] text-[#c3c3cc] sm:text-[18px]">
@@ -571,7 +571,7 @@ function MoreLikeThis({
     <section className="mt-[72px] sm:mt-24" aria-labelledby="more-like-this">
       <h2
         id="more-like-this"
-        className="mb-8 font-hero text-[clamp(1.5rem,2.8vw,2rem)] font-[600] tracking-[-0.03em] text-[#ededf3] sm:mb-10"
+        className="mb-8 font-hero text-[clamp(1.35rem,2.4vw,1.75rem)] font-normal uppercase tracking-[0.02em] text-[#ededf3] sm:mb-10"
       >
         {title}
       </h2>
@@ -606,7 +606,7 @@ function MoreProjectCard({ project, isRu }: { project: Project; isRu: boolean })
           <img src={cover} alt="" className="h-full w-full object-cover" draggable={false} />
         </div>
         <div className="min-w-0">
-          <p className="text-[16px] font-[600] tracking-normal text-[#ededf3] transition group-hover:text-white">
+          <p className="text-[15px] font-medium tracking-normal text-[#ededf3] transition group-hover:text-white">
             {project.title}
           </p>
           <p className="mt-1 line-clamp-2 text-[13px] leading-[1.45] tracking-normal text-[#8a8a8e]">
@@ -744,7 +744,7 @@ export default function ProjectDetailPage() {
 
               <div className="order-1 min-w-0 lg:order-2 lg:pt-1">
                 <header className="space-y-4">
-                  <h1 className="font-hero text-[clamp(2.15rem,5vw,3.35rem)] font-[600] tracking-[-0.035em] leading-[1.02] text-[#ededf3]">
+                  <h1 className="font-hero text-[clamp(1.85rem,4.2vw,2.75rem)] font-normal uppercase tracking-[0.02em] leading-[1.02] text-[#ededf3]">
                     {project.title}
                   </h1>
                   <p className={cx("max-w-[36ch]", BODY)}>{mood ?? subtitle}</p>
@@ -809,12 +809,12 @@ export default function ProjectDetailPage() {
                       href={project.domain}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex h-[52px] w-full items-center justify-center rounded-full bg-[#FF6B2C] px-6 text-[15px] font-[600] tracking-normal text-white transition hover:bg-[#ff7d45]"
+                      className="inline-flex h-[52px] w-full items-center justify-center rounded-full bg-[#FF6B2C] px-6 text-[15px] font-medium tracking-normal text-white transition hover:bg-[#ff7d45]"
                     >
                       {openSiteLabel}
                     </a>
                   ) : (
-                    <div className="inline-flex h-[52px] w-full items-center justify-center rounded-full bg-[#1c1c1f] px-6 text-[15px] font-[600] tracking-normal text-[#8a8a8e]">
+                    <div className="inline-flex h-[52px] w-full items-center justify-center rounded-full bg-[#1c1c1f] px-6 text-[15px] font-medium tracking-normal text-[#8a8a8e]">
                       {websiteSoonLabel}
                     </div>
                   )}
@@ -822,7 +822,7 @@ export default function ProjectDetailPage() {
                   <LeadCTAButton
                     source="project_page"
                     variant="plain"
-                    className="!h-auto !min-h-0 w-full !rounded-none !border-0 !bg-transparent !px-0 !py-1 !text-[15px] !font-[600] !tracking-normal !text-[#ededf3] hover:!bg-transparent hover:!text-white/75"
+                    className="!h-auto !min-h-0 w-full !rounded-none !border-0 !bg-transparent !px-0 !py-1 !text-[15px] !font-medium !tracking-normal !text-[#ededf3] hover:!bg-transparent hover:!text-white/75"
                   >
                     {leadFormCopy(lang).ctaDiscuss}
                   </LeadCTAButton>
@@ -916,7 +916,7 @@ export default function ProjectDetailPage() {
                     </blockquote>
                   )}
                   <figcaption className="mt-5 text-[13px] tracking-normal text-[#8a8a8e]">
-                    <span className="font-[600] text-[#ededf3]">{project.testimonial.name}</span>
+                    <span className="font-medium text-[#ededf3]">{project.testimonial.name}</span>
                     <span className="mx-1.5 text-white/20">·</span>
                     {project.testimonial.role}
                   </figcaption>

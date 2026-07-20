@@ -45,14 +45,14 @@ export default function LangToggle({
           aria-checked={active}
           onClick={() => switchLang(code)}
           className={cx(
-            "relative flex h-9 items-center justify-center rounded-full border-0 px-4 font-bold uppercase tracking-[0.12em] outline-none select-none transition duration-[260ms]",
+            "relative flex h-10 items-center justify-center rounded-full border-0 px-4 font-bold uppercase tracking-[0.12em] outline-none select-none transition duration-[260ms]",
             "text-[11px] focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
             active
               ? "bg-[#2c2c2c] text-white"
               : "bg-transparent text-white hover:bg-white/[0.06]"
           )}
         >
-          <span className="leading-none">{code.toUpperCase()}</span>
+          <span className="leading-none translate-y-[0.5px]">{code.toUpperCase()}</span>
         </button>
       );
     };

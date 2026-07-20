@@ -7,6 +7,7 @@ import ContactsPage from "./pages/ContactsPage";
 import WebsiteCreationPage from "./pages/WebsiteCreationPage";
 import AutomationBusinessPage from "./pages/AutomationBusinessPage";
 import PricingPage from "./pages/PricingPage";
+import AboutPage from "./pages/AboutPage";
 import PartnersPage from "./pages/PartnersPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import { LangPathSync } from "./i18n/LangProvider";
@@ -49,6 +50,8 @@ export function AppRoutes() {
         <Route path="/projects/:slug" element={<ProjectDetailPage />} />
         <Route path="/en/projects/:slug" element={<ProjectDetailPage />} />
         <Route path="/plans" element={<PricingPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/en/about" element={<AboutPage />} />
         <Route path="/contacts" element={<ContactsPage />} />
         <Route path="/en/contacts" element={<ContactsPage />} />
         <Route path="/sozdanie-sajtov" element={<WebsiteCreationPage />} />

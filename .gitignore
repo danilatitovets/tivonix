@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Raw UHD hero source (use hero-bg.mp4 instead)
+public/images/15432030-uhd_3840_2160_50fps.mp4
+

@@ -74,14 +74,14 @@ function ProjectGridCard({ p, isRu }: { p: Project; isRu: boolean }) {
 
       <div className="mt-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/40">
+          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/40">
             {productType}
           </p>
           <Link
             to={`/projects/${p.id}`}
             className="block min-w-0 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45"
           >
-            <h2 className="mt-1 truncate text-[15px] font-[700] tracking-[-0.02em] text-white/[0.92] transition group-hover:text-white">
+            <h2 className="mt-1 truncate font-sans text-[15px] font-medium tracking-normal text-white/[0.92] transition group-hover:text-white">
               {p.title}
             </h2>
           </Link>
@@ -102,7 +102,7 @@ function ProjectGridCard({ p, isRu }: { p: Project; isRu: boolean }) {
         </div>
 
         {wip ? (
-          <span className="shrink-0 rounded-full bg-[#1c1c1f] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-white/48">
+          <span className="shrink-0 rounded-full bg-[#1c1c1f] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-white/48">
             WIP
           </span>
         ) : p.domain ? (
@@ -112,7 +112,7 @@ function ProjectGridCard({ p, isRu }: { p: Project; isRu: boolean }) {
             rel="noopener noreferrer"
             className={cx(
               "shrink-0 inline-flex items-center gap-1 rounded-full",
-              "bg-[#1c1c1f] px-2.5 py-1 text-[11px] font-[600] text-white/58",
+              "bg-[#1c1c1f] px-2.5 py-1 text-[11px] font-medium text-white/58",
               "transition hover:bg-[#262626] hover:text-white/85"
             )}
             aria-label={isRu ? `Открыть ${p.title}` : `Open ${p.title}`}
@@ -171,7 +171,7 @@ export default function ProjectsPage() {
         <Section className="projects-page scroll-mt-[var(--tivonix-header-spacer)] !pb-20 !pt-[calc(var(--tivonix-header-spacer)+1.75rem)] sm:!pt-[calc(var(--tivonix-header-spacer)+2.25rem)]">
           <Container className="max-w-[1180px]">
             <header className="mx-auto max-w-[720px] text-center">
-              <h1 className="font-display text-[clamp(2rem,5vw,3.25rem)] font-extrabold leading-[1.05] tracking-[-0.04em] text-white">
+              <h1 className="font-hero text-[clamp(1.85rem,4.5vw,2.75rem)] font-normal uppercase leading-[1.02] tracking-[0.02em] text-white">
                 {heroTitle}
               </h1>
             </header>

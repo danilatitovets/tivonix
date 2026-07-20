@@ -1,13 +1,15 @@
 // src/pages/LandingPage.tsx
 import Header from "../components/landing/Header";
 import Hero from "../components/landing/Hero";
+import FeaturedProjectsSection from "../components/landing/FeaturedProjectsSection";
 import LandingPainSection from "../components/landing/LandingPainSection";
 import MainOfferSection from "../components/landing/MainOfferSection";
 import AiPremiumSection from "../components/landing/AiPremiumSection";
 import ComparisonSection from "../components/landing/ComparisonSection";
-import CasesSection from "../components/landing/CasesSection";
-import TivonixAudienceSection from "../components/landing/TivonixAudienceSection";
+import HomePricingSection from "../components/landing/HomePricingSection";
 import ProcessTimelineSection from "../components/landing/ProcessTimelineSection";
+import FounderSection from "../components/landing/FounderSection";
+import HomeTestimonialsSection from "../components/landing/HomeTestimonialsSection";
 import FAQ from "../components/landing/FAQ";
 import FinalCTASection from "../components/landing/FinalCTASection";
 import Footer from "../components/landing/Footer";
@@ -28,18 +30,10 @@ export default function LandingPage() {
   });
 
   return (
-    <div className="min-h-screen overflow-x-clip bg-black">
+    <div className="landing-caldera min-h-screen overflow-x-clip bg-black">
       <SEO
-        title={
-          isEnPath
-            ? "TIVONIX — websites, bots and web services for business"
-            : seo.title
-        }
-        description={
-          isEnPath
-            ? "We build websites, Telegram bots, CRMs, client portals and lead automation — tailored to your business workflow."
-            : seo.description
-        }
+        title={seo.title}
+        description={seo.description}
         canonicalPath={canonicalPath}
         schemaJsonLd={schemaJsonLd}
         ogLocalePrimary={lang === "en" ? "en_US" : "ru_RU"}
@@ -53,6 +47,8 @@ export default function LandingPage() {
           <Hero />
         </div>
 
+        <FeaturedProjectsSection />
+
         <LandingPainSection />
 
         <MainOfferSection />
@@ -61,13 +57,13 @@ export default function LandingPage() {
 
         <ComparisonSection />
 
-        <div id="new-case">
-          <CasesSection />
-        </div>
-
-        <TivonixAudienceSection />
+        <HomePricingSection />
 
         <ProcessTimelineSection />
+
+        <FounderSection />
+
+        <HomeTestimonialsSection />
 
         <FAQ />
       </main>

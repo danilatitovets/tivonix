@@ -100,7 +100,7 @@ export default function CasesSection() {
     openLeadForm,
   ]);
 
-  const CASE_COVER = `/images/${encodeURI("обложки")}/tivonixpanel.png`;
+  const CASE_COVER = `/images/${encodeURI("обложки")}/tivonixpanel.webp`;
 
   return (
     <Section id="cases" className="scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24">
@@ -123,6 +123,11 @@ export default function CasesSection() {
 
               <div className="case-split__content">
                 <span className="case-split__badge">{copy.cases.badge}</span>
+                {"ownProduct" in caseCopy && caseCopy.ownProduct ? (
+                  <p className="mt-2 text-[12px] font-medium text-[#FF9A3D]/85">
+                    {caseCopy.ownProduct}
+                  </p>
+                ) : null}
 
                 <h2 className="mt-4 font-hero text-[clamp(1.75rem,4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white">
                   {featured.title}
@@ -132,12 +137,24 @@ export default function CasesSection() {
 
                 <div className="mt-6 space-y-3 text-[13.5px] leading-relaxed text-white/62">
                   <p>
-                    <span className="font-medium text-white/78">{isRu ? "Задача:" : "Need:"}</span>{" "}
+                    <span className="font-medium text-white/78">
+                      {isRu ? "Проблема:" : "Problem:"}
+                    </span>{" "}
                     {caseCopy.need}
                   </p>
                   <p>
-                    <span className="font-medium text-white/78">{isRu ? "Сделали:" : "Built:"}</span>{" "}
+                    <span className="font-medium text-white/78">
+                      {isRu ? "Решение:" : "Solution:"}
+                    </span>{" "}
                     {caseCopy.done}
+                  </p>
+                  <p>
+                    <span className="font-medium text-white/78">
+                      {isRu ? "Результат:" : "Result:"}
+                    </span>{" "}
+                    {isRu
+                      ? "Живая партнёрская панель в продакшене: сделки, статусы и выплаты в одном кабинете."
+                      : "Live partner panel in production: deals, statuses and payouts in one cabinet."}
                   </p>
                 </div>
 

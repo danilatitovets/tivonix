@@ -325,7 +325,7 @@ function MetricCard({
       className={["min-h-[280px] sm:min-h-[300px] lg:min-h-0", className].filter(Boolean).join(" ")}
     >
       <div className="flex min-h-0 flex-1 flex-col justify-between gap-5">
-        <h3 className="min-h-[2.6em] font-hero text-[clamp(1.2rem,2.2vw,1.55rem)] font-semibold leading-[1.2] tracking-[-0.03em] text-white">
+        <h3 className="min-h-[2.6em] font-hero text-[clamp(1.2rem,2.2vw,1.55rem)] font-normal uppercase leading-[1.12] tracking-[0.02em] text-white">
           {title}
         </h3>
         <p className="min-h-[4.65em] text-pretty text-[14px] font-normal leading-[1.55] tracking-normal text-white/70 sm:min-h-[4.65em] sm:text-[15px]">
@@ -365,7 +365,7 @@ function FeaturedCard({
     >
       <OfferBlockCard slice={1} className="h-full lg:min-h-0">
         <div className="my-0 max-w-[48ch] flex-1 sm:my-1 lg:my-0">
-          <h3 className="font-hero text-[clamp(1.35rem,2.8vw,1.85rem)] font-semibold leading-[1.2] tracking-[-0.03em] text-white">
+          <h3 className="font-hero text-[clamp(1.35rem,2.8vw,1.85rem)] font-normal uppercase leading-[1.12] tracking-[0.02em] text-white">
             {title}
           </h3>
           <p className="mt-3 text-[15px] font-normal leading-[1.55] tracking-normal text-white/72 sm:mt-3.5 sm:text-[16px] sm:leading-[1.6]">

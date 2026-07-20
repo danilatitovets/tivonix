@@ -9,7 +9,7 @@ const CARD_DARK = "#141414";
 const CARD_SOFT = "#262626";
 const PAIN_CARD_BACKGROUNDS = [
   "/images/hero-stage-1.webp",
-  "/images/pain-bg-4.webp",
+  "/images/pain-bg-late.webp",
   "/images/hero-stage-2.webp",
   "/images/hero-stage-2.webp",
 ] as const;
@@ -267,76 +267,34 @@ function TelegramVisual({ isRu }: { isRu: boolean }) {
   );
 }
 
-function StatusMarqueeRow({
+function StatusRow({
   title,
   titleClass,
   items,
   toneClass,
-  durationSec,
 }: {
   title: string;
   titleClass: string;
   items: { label: string; tone: string }[];
   toneClass: Record<string, string>;
-  durationSec: number;
 }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const offsetRef = useRef(0);
-  const rafRef = useRef(0);
-
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-
-    let last = performance.now();
-    // Recalc after layout
-    const measure = () => track.scrollWidth / 3;
-
-    const tick = (now: number) => {
-      const dt = Math.min(32, now - last);
-      last = now;
-      const setW = measure();
-      if (setW > 0) {
-        const speed = setW / (durationSec * 1000);
-        offsetRef.current = (offsetRef.current + speed * dt) % setW;
-        track.style.transform = `translate3d(${-offsetRef.current}px, 0, 0)`;
-      }
-      rafRef.current = requestAnimationFrame(tick);
-    };
-
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [durationSec, items]);
-
-  const loop = [...items, ...items, ...items];
-
   return (
     <div>
       <p className={`mb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] ${titleClass}`}>
         {title}
       </p>
-      <div className="relative overflow-hidden">
-        <div ref={trackRef} className="flex w-max items-center gap-1.5 will-change-transform">
-          {loop.map((item, i) => (
-            <span
-              key={`${item.label}-${i}`}
-              className={[
-                "shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium",
-                toneClass[item.tone],
-              ].join(" ")}
-            >
-              {item.label}
-            </span>
-          ))}
-        </div>
-        <div
-          className="pointer-events-none absolute inset-y-0 left-0 w-5 bg-gradient-to-r from-[#141414] to-transparent"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute inset-y-0 right-0 w-5 bg-gradient-to-l from-[#141414] to-transparent"
-          aria-hidden
-        />
+      <div className="flex flex-wrap items-center gap-1.5">
+        {items.map((item) => (
+          <span
+            key={item.label}
+            className={[
+              "inline-flex items-center rounded-md px-2.5 py-1 text-[11px] font-medium",
+              toneClass[item.tone],
+            ].join(" ")}
+          >
+            {item.label}
+          </span>
+        ))}
       </div>
     </div>
   );
@@ -354,7 +312,7 @@ function StatusVisual({ isRu }: { isRu: boolean }) {
           { label: "Оплачен", tone: "paid" },
         ],
         bad: [
-          { label: "???", tone: "chaos" },
+          { label: "Без статуса", tone: "chaos" },
           { label: "Потеряна", tone: "lost" },
           { label: "Ждёт ответа", tone: "warn" },
           { label: "Пропущена", tone: "lost" },
@@ -370,7 +328,7 @@ function StatusVisual({ isRu }: { isRu: boolean }) {
           { label: "Paid", tone: "paid" },
         ],
         bad: [
-          { label: "???", tone: "chaos" },
+          { label: "No status", tone: "chaos" },
           { label: "Lost", tone: "lost" },
           { label: "Awaiting", tone: "warn" },
           { label: "Missed", tone: "lost" },
@@ -385,26 +343,24 @@ function StatusVisual({ isRu }: { isRu: boolean }) {
   };
 
   const badTone: Record<string, string> = {
-    chaos: "bg-white/10 text-white/55",
+    chaos: "bg-white/10 text-white/70",
     warn: "bg-[#FF5722]/20 text-[#FFAB91]",
     lost: "bg-[#FF5722]/30 text-white",
   };
 
   return (
     <div className="min-w-0 space-y-3 pt-1 sm:pt-2">
-      <StatusMarqueeRow
+      <StatusRow
         title={copy.goodTitle}
         titleClass="text-emerald-400/70"
         items={copy.good}
         toneClass={goodTone}
-        durationSec={14}
       />
-      <StatusMarqueeRow
+      <StatusRow
         title={copy.badTitle}
         titleClass="text-[#FF8A5C]/85"
         items={copy.bad}
         toneClass={badTone}
-        durationSec={12}
       />
     </div>
   );
@@ -772,6 +728,7 @@ function PainBentoCard({
   overlay = false,
   bgImage,
   bgAlways = false,
+  bgBlur = false,
   bgPosition = "center center",
   className,
 }: {
@@ -783,6 +740,7 @@ function PainBentoCard({
   overlay?: boolean;
   bgImage?: string;
   bgAlways?: boolean;
+  bgBlur?: boolean;
   bgPosition?: string;
   className?: string;
 }) {
@@ -804,8 +762,9 @@ function PainBentoCard({
             decoding="async"
             draggable={false}
             className={[
-              "absolute inset-0 z-0 h-full w-full scale-[1.04] object-cover",
+              "absolute inset-0 z-0 h-full w-full scale-[1.08] object-cover",
               bgAlways ? "opacity-100" : "opacity-0",
+              bgBlur ? "blur-[5px] brightness-[0.68] saturate-[0.92]" : "",
             ].join(" ")}
             style={{ objectPosition: bgPosition }}
           />
@@ -813,9 +772,11 @@ function PainBentoCard({
             <div
               className={[
                 "pointer-events-none absolute inset-0 z-0",
-                accent
-                  ? "bg-gradient-to-b from-black/55 via-black/48 to-black/78"
-                  : "bg-gradient-to-b from-black/60 via-black/48 to-black/78",
+                bgBlur
+                  ? "bg-gradient-to-b from-black/55 via-black/48 to-black/72"
+                  : accent
+                    ? "bg-gradient-to-b from-black/55 via-black/48 to-black/78"
+                    : "bg-gradient-to-b from-black/60 via-black/48 to-black/78",
               ].join(" ")}
               aria-hidden
             />
@@ -902,6 +863,7 @@ export default function LandingPainSection() {
             overlay
             bgImage={PAIN_CARD_BACKGROUNDS[1]}
             bgAlways
+            bgBlur
             bgPosition="center 32%"
             visual={<TelegramVisual isRu={isRu} />}
           />

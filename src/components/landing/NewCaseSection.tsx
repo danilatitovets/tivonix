@@ -109,7 +109,7 @@ export default function NewCaseSection() {
 
   const featured = buildProjects(isRu).find((p) => p.id === "tivonixpanel");
   const subtitle = featured ? (isRu ? featured.subtitleRu : featured.subtitleEn) : "";
-  const cover = featured?.cover ?? `/images/${encodeURI("обложки")}/tivonixpanel.png`;
+  const cover = featured?.cover ?? `/images/${encodeURI("обложки")}/tivonixpanel.webp`;
   const domain =
     featured?.domain?.replace(/^https?:\/\//, "") ?? "tivonixpanel-production.up.railway.app/login";
   const outcome = featured?.outcomes?.[0] ?? "";

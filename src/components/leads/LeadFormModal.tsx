@@ -266,14 +266,14 @@ export default function LeadFormModal({
   const budgetOptions = copy.budgets.filter((b) => b.id !== "");
 
   const inputBase = cx(
-    "w-full h-12 rounded-2xl px-4",
-    "border-0 bg-white/[0.07] text-white placeholder:text-white/35",
-    "outline-none ring-1 ring-white/10 focus:bg-white/[0.10] focus:ring-white/22",
-    "backdrop-blur-xl text-[13.5px] transition",
+    "w-full h-12 rounded-xl px-4",
+    "border-0 bg-white/[0.08] text-white placeholder:text-white/40",
+    "outline-none focus:bg-white/[0.12]",
+    "text-[14px] font-medium transition",
     HOTJAR_MASK_CLASS
   );
 
-  const labelClass = "mb-1.5 block text-[11.5px] font-semibold tracking-wide text-white/65";
+  const labelClass = "mb-1.5 block min-h-[1.15rem] text-[12px] font-medium leading-none text-white/80";
 
   const node = (
     <div
@@ -407,7 +407,7 @@ export default function LeadFormModal({
                   type="button"
                   onClick={handleClose}
                   disabled={status === "loading"}
-                  className="group grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white/[0.06] text-[#FFB36A] ring-1 ring-white/12 transition hover:bg-white/[0.12] hover:ring-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50 disabled:opacity-50"
+                  className="group grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.08] text-white/80 transition hover:bg-white/[0.14] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/40 disabled:opacity-50"
                   aria-label={copy.close}
                 >
                   <svg
@@ -433,7 +433,11 @@ export default function LeadFormModal({
             {/* body */}
             <div className="lead-modal-scroll relative z-10 min-h-0 flex-1 px-5 pb-2 pt-1 sm:px-7">
               {status === "success" ? (
-                <div className="flex min-h-[280px] flex-col items-center justify-center gap-5 py-10 text-center">
+                <div
+                  className="flex min-h-[280px] flex-col items-center justify-center gap-4 py-10 text-center"
+                  role="status"
+                  aria-live="polite"
+                >
                   <div
                     className="grid h-14 w-14 place-items-center rounded-full"
                     style={{
@@ -452,19 +456,31 @@ export default function LeadFormModal({
                       />
                     </svg>
                   </div>
-                  <p className="max-w-[34ch] text-[15px] leading-relaxed text-white/90 sm:text-[16px]">
+                  <h3 className="font-hero text-[1.35rem] font-semibold tracking-[-0.02em] text-white">
+                    {copy.successTitle}
+                  </h3>
+                  <p className="max-w-[36ch] text-[15px] leading-relaxed text-white/75 sm:text-[16px]">
                     {copy.success}
                   </p>
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="inline-flex h-11 items-center justify-center rounded-full bg-white px-8 text-[14px] font-bold text-black transition hover:bg-white/92"
-                  >
-                    {copy.close}
-                  </button>
+                  <div className="mt-2 flex flex-col items-center gap-2.5 sm:flex-row">
+                    <a
+                      href="/projects/spliton"
+                      className="inline-flex h-11 items-center justify-center rounded-full border border-white/15 px-5 text-[13.5px] font-medium text-white/85 transition hover:border-white/30 hover:text-white"
+                      onClick={onClose}
+                    >
+                      {copy.successCase}
+                    </a>
+                    <a
+                      href="/"
+                      className="inline-flex h-11 items-center justify-center rounded-full bg-white px-5 text-[13.5px] font-bold text-black transition hover:bg-white/92"
+                      onClick={onClose}
+                    >
+                      {copy.successHome}
+                    </a>
+                  </div>
                 </div>
               ) : (
-                <form id="lead-form" onSubmit={onSubmit} noValidate className="space-y-4 pb-2">
+                <form id="lead-form" onSubmit={onSubmit} noValidate className="space-y-3.5 pb-2">
                   <div className="absolute -left-[9999px] top-auto h-0 w-0 overflow-hidden" aria-hidden>
                     <label htmlFor="lead-company-fax">Company fax</label>
                     <input
@@ -479,36 +495,35 @@ export default function LeadFormModal({
                   </div>
 
                   {activePlanId && planName ? (
-                    <div className="flex items-start justify-between gap-3 rounded-2xl bg-white/[0.05] px-4 py-3 ring-1 ring-[#FF9A3D]/25">
+                    <div className="flex items-start justify-between gap-3 rounded-xl bg-white/[0.06] px-3.5 py-3">
                       <div className="min-w-0">
-                        <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[#FFB36A]/80">
+                        <p className="text-[10.5px] font-medium uppercase tracking-[0.12em] text-white/55">
                           {copy.selectedPlan}
                         </p>
-                        <p className="mt-1 text-[15px] font-bold tracking-tight text-white">
+                        <p className="mt-1 text-[15px] font-semibold tracking-tight text-white">
                           {planName}
                           {planPrice ? (
-                            <span className="ml-2 text-[13px] font-semibold text-white/55">
+                            <span className="ml-2 text-[13px] font-medium text-white/55">
                               {planPrice}
                             </span>
                           ) : null}
                         </p>
-                        <p className="mt-1 text-[12px] text-white/45">{copy.planHint}</p>
                       </div>
                       <button
                         type="button"
                         onClick={() => setActivePlanId(null)}
-                        className="shrink-0 text-[11.5px] font-medium text-white/40 underline decoration-white/15 underline-offset-2 transition hover:text-white/70"
+                        className="shrink-0 text-[12px] font-medium text-white/45 transition hover:text-white/75"
                       >
                         {copy.clearPlan}
                       </button>
                     </div>
                   ) : null}
 
-                  <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4">
-                    <div>
+                  <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+                    <div className="min-w-0">
                       <label htmlFor="lead-name" className={labelClass}>
                         {copy.name}{" "}
-                        <span className="font-normal text-white/35">({copy.nameOptional})</span>
+                        <span className="font-normal text-white/45">({copy.nameOptional})</span>
                       </label>
                       <input
                         id="lead-name"
@@ -523,10 +538,9 @@ export default function LeadFormModal({
                       />
                     </div>
 
-                    <div>
+                    <div className="min-w-0">
                       <label htmlFor="lead-contact" className={labelClass}>
-                        {copy.contact} *{" "}
-                        <span className="font-normal text-white/35">— {copy.contactHint}</span>
+                        {copy.contact} *
                       </label>
                       <input
                         ref={contactRef}
@@ -539,7 +553,7 @@ export default function LeadFormModal({
                         placeholder={copy.contactPh}
                         className={cx(
                           inputBase,
-                          errorField === "contact" && "ring-[#FF9A3D]/55 focus:ring-[#FF9A3D]/70"
+                          errorField === "contact" && "bg-[#FF9A3D]/12 focus:bg-[#FF9A3D]/16"
                         )}
                         value={form.contact}
                         onChange={(e) => update("contact", e.target.value)}
@@ -551,7 +565,7 @@ export default function LeadFormModal({
                     </div>
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
                     <label htmlFor="lead-task" className={labelClass}>
                       {copy.task} *
                     </label>
@@ -569,12 +583,11 @@ export default function LeadFormModal({
                           : copy.taskPh
                       }
                       className={cx(
-                        "min-h-[108px] w-full resize-none rounded-2xl px-4 py-3 text-[13.5px]",
-                        "border-0 bg-white/[0.07] text-white placeholder:text-white/35",
-                        "outline-none ring-1 ring-white/10 focus:bg-white/[0.10] focus:ring-white/22",
-                        "backdrop-blur-xl transition",
+                        "min-h-[108px] w-full resize-none rounded-xl px-4 py-3 text-[14px] font-medium",
+                        "border-0 bg-white/[0.08] text-white placeholder:text-white/40",
+                        "outline-none focus:bg-white/[0.12] transition",
                         HOTJAR_MASK_CLASS,
-                        errorField === "task" && "ring-[#FF9A3D]/55 focus:ring-[#FF9A3D]/70"
+                        errorField === "task" && "bg-[#FF9A3D]/12 focus:bg-[#FF9A3D]/16"
                       )}
                       value={form.task}
                       onChange={(e) => update("task", e.target.value)}
@@ -587,7 +600,7 @@ export default function LeadFormModal({
                   <div>
                     <div className={labelClass}>
                       {copy.budget}{" "}
-                      <span className="font-normal text-white/35">({copy.budgetOptional})</span>
+                      <span className="font-normal text-white/45">({copy.budgetOptional})</span>
                     </div>
                     <div className="flex flex-wrap gap-2" role="group" aria-label={copy.budget}>
                       {budgetOptions.map((b) => {
@@ -601,11 +614,11 @@ export default function LeadFormModal({
                               update("budget", active ? "" : (b.id as BudgetId))
                             }
                             className={cx(
-                              "h-9 rounded-full px-3.5 text-[12px] font-semibold transition",
-                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45",
+                              "h-9 rounded-full px-3.5 text-[12px] font-medium transition",
+                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40",
                               active
                                 ? "bg-white text-black"
-                                : "bg-white/[0.06] text-white/70 ring-1 ring-white/10 hover:bg-white/[0.10] hover:text-white"
+                                : "bg-white/[0.08] text-white/75 hover:bg-white/[0.12] hover:text-white"
                             )}
                           >
                             {b.label}
@@ -615,28 +628,26 @@ export default function LeadFormModal({
                     </div>
                   </div>
 
-                  <label
-                    className={cx(
-                      "flex cursor-pointer items-start gap-3 rounded-2xl bg-white/[0.04] px-4 py-3.5 ring-1 ring-white/8",
-                      errorField === "consent" && "ring-[#FF9A3D]/55"
-                    )}
-                  >
+                  <label className="flex cursor-pointer items-start gap-2.5 px-0.5 py-1">
                     <input
                       ref={consentRef}
                       type="checkbox"
                       checked={form.consent}
                       onChange={(e) => update("consent", e.target.checked)}
                       disabled={status === "loading"}
-                      className="mt-0.5 h-4 w-4 shrink-0 accent-[#FF9A3D]"
+                      className={cx(
+                        "mt-0.5 h-4 w-4 shrink-0 accent-[#FF9A3D]",
+                        errorField === "consent" && "outline outline-2 outline-[#FF9A3D]/60 outline-offset-2"
+                      )}
                       aria-required="true"
                     />
-                    <span className="text-[12.5px] leading-relaxed text-white/72">
+                    <span className="text-[13px] leading-snug text-white/70">
                       {copy.consent}{" "}
                       <a
                         href={copy.privacyHref}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-semibold text-[#FFB36A] underline decoration-[#FF9A3D]/35 underline-offset-2 hover:text-[#FFD7B0]"
+                        className="font-medium text-[#FFB36A] underline decoration-[#FF9A3D]/30 underline-offset-2 hover:text-[#FFD7B0]"
                       >
                         {copy.privacyLabel}
                       </a>
@@ -652,7 +663,7 @@ export default function LeadFormModal({
                   {serverError ? (
                     <div
                       role="alert"
-                      className="rounded-2xl bg-[#FF9A3D]/10 px-4 py-3.5 text-[12.5px] text-white/88 ring-1 ring-[#FF9A3D]/30"
+                      className="rounded-xl bg-[#FF9A3D]/10 px-4 py-3.5 text-[12.5px] text-white/88"
                     >
                       <p className="font-semibold">{copy.errorTitle}</p>
                       <p className="mt-1 text-white/60">{copy.errorBody}</p>
@@ -669,7 +680,7 @@ export default function LeadFormModal({
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() => trackTelegramDirectClick()}
-                          className="inline-flex h-10 items-center justify-center rounded-full bg-white/[0.06] px-4 text-[13px] font-semibold text-white ring-1 ring-white/15"
+                          className="inline-flex h-10 items-center justify-center rounded-full bg-white/[0.08] px-4 text-[13px] font-medium text-white"
                         >
                           {copy.fallbackTelegram}
                         </a>

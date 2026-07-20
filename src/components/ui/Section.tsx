@@ -1,17 +1,25 @@
 import React from "react";
 
-export default function Section({
-    id,
-    className,
-    children,
-  }: {
-    id?: string;
-    className?: string;
-    children: React.ReactNode;
-}) {
-  return (
-    <section id={id} className={["py-14 sm:py-20", className].filter(Boolean).join(" ")}>
-      {children}
-    </section>
-  );
-}
+type SectionProps = {
+  id?: string;
+  className?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+};
+
+const Section = React.forwardRef<HTMLElement, SectionProps>(
+  function Section({ id, className, style, children }, ref) {
+    return (
+      <section
+        ref={ref}
+        id={id}
+        style={style}
+        className={["py-14 sm:py-20", className].filter(Boolean).join(" ")}
+      >
+        {children}
+      </section>
+    );
+  }
+);
+
+export default Section;

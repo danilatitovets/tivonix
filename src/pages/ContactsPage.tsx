@@ -258,6 +258,16 @@ function SunContacts({ size }: { size: number }) {
               <h1 className="mt-2 text-[22px] sm:text-[24px] font-[820] tracking-tight text-white/92 leading-[1.1]">
                 {title}
               </h1>
+              <p className="mt-2 text-[12.5px] leading-snug text-white/50">
+                {isRu
+                  ? "Данила Титовец · ответ в течение рабочего дня"
+                  : "Danila Titovets · reply within a business day"}
+              </p>
+              <p className="mt-1.5 text-[12px] leading-snug text-white/40">
+                {isRu
+                  ? "Опишите задачу — пришлём план, срок и диапазон стоимости."
+                  : "Describe the task — we'll send a plan, timeline and cost range."}
+              </p>
 
               <div className="mt-6">
                 <div className="grid gap-2 relative z-20 pointer-events-auto text-left">

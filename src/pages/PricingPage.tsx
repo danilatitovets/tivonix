@@ -26,7 +26,7 @@ export default function PricingPage() {
   const schemaJsonLd = buildPricingPageSchema({ pageTitle: title, pageDescription: description, lang });
 
   return (
-    <div className="min-h-screen overflow-x-clip bg-[var(--bg)]">
+    <div className="landing-caldera plans-caldera min-h-screen overflow-x-clip bg-black">
       <SEO
         title={title}
         description={description}

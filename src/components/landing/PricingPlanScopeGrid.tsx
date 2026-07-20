@@ -42,26 +42,22 @@ export default function PricingPlanScopeGrid({ onPlanAction }: { onPlanAction: (
               <div className="pricing-plan-scope__head">
                 <span
                   className={cx(
-                    "pricing-plan-scope__name font-hero font-semibold tracking-[-0.02em]",
-                    isGrowth ? "text-[#FF9A3D]" : "text-white"
+                    "pricing-plan-scope__name font-hero font-normal uppercase tracking-[0.02em]",
+                    isGrowth ? "text-[var(--color-ember)]" : "text-white"
                   )}
                 >
                   {planCopy.name}
                 </span>
                 <span
                   className={cx(
-                    "pricing-plan-scope__price-old text-[10px] font-medium line-through",
+                    "pricing-plan-scope__price-old font-sans text-[10px] font-medium line-through",
                     planCopy.priceOriginal ? "text-white/35" : "text-transparent"
                   )}
                   aria-hidden={!planCopy.priceOriginal}
                 >
                   {planCopy.priceOriginal ?? "\u00A0"}
                 </span>
-                <span
-                  className={cx(
-                    "pricing-plan-scope__price font-hero text-[13px] font-semibold text-[#FF9A3D]"
-                  )}
-                >
+                <span className="pricing-plan-scope__price font-hero text-[13px] font-normal tracking-[0.02em] text-[var(--color-ember)] normal-case">
                   {planCopy.price}
                 </span>
               </div>

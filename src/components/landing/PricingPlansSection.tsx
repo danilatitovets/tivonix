@@ -15,8 +15,18 @@ import {
   type PlanId,
 } from "../../lib/pricingData";
 import { useLeadForm } from "../leads/useLeadForm";
+import { ctaClass } from "../leads/ctaStyles";
 
 const COMPARE_LOGO = "/images/tivonix-logo-white.webp";
+const EMBER = "#fc5000";
+const PLANS_IMG = `/images/${encodeURIComponent("планы")}`;
+
+const PLAN_IMAGES: Record<PlanId, string> = {
+  start: `${PLANS_IMG}/1.webp`,
+  growth: `${PLANS_IMG}/2.webp`,
+  product: `${PLANS_IMG}/3.webp`,
+  custom: `${PLANS_IMG}/4.webp`,
+};
 
 function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
@@ -39,13 +49,10 @@ function PlanCtaButton({
     <button
       type="button"
       onClick={onClick}
-      className={cx(
-        "inline-flex w-full items-center justify-center rounded-full border-0 font-bold tracking-[-0.015em] transition duration-200",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-        "active:scale-[0.98]",
-        compact ? "h-9 text-[12px] sm:h-10 sm:text-[13px]" : "h-11 px-7 text-[14px]",
-        featured ? "bg-[#FF9A3D] text-black hover:bg-[#FFB05C]" : "bg-white text-black hover:bg-white/92",
-        className
+      className={ctaClass(
+        featured ? "primary" : "white",
+        compact ? "md" : "md",
+        cx("w-full", compact && "h-9 text-[12px] sm:h-10 sm:text-[13px]", className)
       )}
     >
       {children}
@@ -64,7 +71,7 @@ function ComparisonValue({
 }) {
   if (cell.kind === "yes") {
     return (
-      <span className="inline-flex items-center justify-center text-[#FF9A3D]" aria-label={labels.yes}>
+      <span className="inline-flex items-center justify-center text-[var(--color-ember)]" aria-label={labels.yes}>
         <Check size={15} strokeWidth={2.25} aria-hidden />
       </span>
     );
@@ -83,7 +90,9 @@ function ComparisonValue({
       ? textLabels[cell.textKey]
       : labels[cell.kind];
 
-  return <span className="text-[11px] font-medium text-white/50 sm:text-[12px]">{label}</span>;
+  return (
+    <span className="font-sans text-[11px] font-medium text-white/50 sm:text-[12px]">{label}</span>
+  );
 }
 
 function ComparePlanHead({
@@ -116,16 +125,16 @@ function ComparePlanHead({
     >
       <span
         className={cx(
-          "pricing-compare__plan-name font-hero font-semibold tracking-[-0.02em]",
+          "pricing-compare__plan-name font-hero font-normal uppercase tracking-[0.02em]",
           layout === "column" ? "text-[15px] sm:text-[16px]" : "text-[14px]",
-          featured ? "text-[#FF9A3D]" : "text-white"
+          featured ? "text-[var(--color-ember)]" : "text-white"
         )}
       >
         {name}
       </span>
       <span
         className={cx(
-          "pricing-compare__plan-original text-[11px] font-medium",
+          "pricing-compare__plan-original font-sans text-[11px] font-medium",
           priceOriginal ? "text-white/35 line-through" : "text-transparent"
         )}
         aria-hidden={!priceOriginal}
@@ -134,9 +143,9 @@ function ComparePlanHead({
       </span>
       <span
         className={cx(
-          "pricing-compare__plan-price font-hero font-semibold leading-none tracking-[-0.02em]",
+          "pricing-compare__plan-price font-hero font-normal leading-none tracking-[0.02em] normal-case",
           layout === "column" ? "text-[14px] sm:text-[15px]" : "text-[13px]",
-          isCustom ? "text-white" : "text-[#FF9A3D]"
+          isCustom ? "text-white" : "text-[var(--color-ember)]"
         )}
       >
         {price}
@@ -152,39 +161,57 @@ function ComparePlanHead({
 
 function PlanPrice({ price, priceOriginal }: { price: string; priceOriginal?: string }) {
   const hasOriginal = Boolean(priceOriginal);
+  const match = price.match(/^(от|from)\s+(.+)$/i);
+  const from = match?.[1];
+  const amount = match?.[2];
 
   return (
-    <>
-      <p
+    <div className="pricing-plan-card__price-block">
+      <div
         className={cx(
-          "pricing-plan-card__price-original text-[13px] font-medium leading-[1.125]",
-          hasOriginal ? "text-white/38 line-through" : "text-transparent"
-        )}
-        aria-hidden={!hasOriginal}
-      >
-        {priceOriginal ?? "\u00A0"}
-      </p>
-      <p
-        className={cx(
-          "pricing-plan-card__price-value mt-1 font-hero text-[clamp(1.65rem,2.2vw,2rem)] font-semibold leading-[1.05] tracking-[-0.03em]",
-          hasOriginal ? "text-[#FF9A3D]" : "text-white"
+          "pricing-plan-card__price-value",
+          from && amount ? "pricing-plan-card__price-value--stack" : "pricing-plan-card__price-value--solo"
         )}
       >
-        {price}
-      </p>
-    </>
+        <p
+          className={cx(
+            "pricing-plan-card__price-original",
+            hasOriginal ? "is-visible" : "is-empty"
+          )}
+          aria-hidden={!hasOriginal}
+        >
+          {priceOriginal ?? "\u00A0"}
+        </p>
+        {from && amount ? (
+          <>
+            <span className="pricing-plan-card__price-from">{from}</span>
+            <span className="pricing-plan-card__price-amount">{amount}</span>
+          </>
+        ) : (
+          <span className="pricing-plan-card__price-amount pricing-plan-card__price-amount--solo">
+            {price}
+          </span>
+        )}
+      </div>
+    </div>
   );
 }
 
 function CompactPlanPrice({ price, priceOriginal }: { price: string; priceOriginal?: string }) {
   if (!priceOriginal) {
-    return <p className="mt-4 font-hero text-[1.45rem] font-semibold tracking-[-0.03em] text-white">{price}</p>;
+    return (
+      <p className="mt-4 font-hero text-[1.55rem] font-normal tracking-[0.02em] text-white normal-case">
+        {price}
+      </p>
+    );
   }
 
   return (
     <div className="mt-4">
-      <p className="text-[12px] font-medium text-white/38 line-through">{priceOriginal}</p>
-      <p className="mt-0.5 font-hero text-[1.45rem] font-semibold tracking-[-0.03em] text-[#FF9A3D]">{price}</p>
+      <p className="font-sans text-[12px] font-semibold text-white/75 line-through">{priceOriginal}</p>
+      <p className="mt-0.5 font-hero text-[1.55rem] font-normal tracking-[0.02em] text-white normal-case">
+        {price}
+      </p>
     </div>
   );
 }
@@ -217,63 +244,71 @@ function PlanCard({
   return (
     <article
       className={cx(
-        "pricing-plan-card flex h-full flex-col",
+        "pricing-plan-card",
         highlight && "pricing-plan-card--highlight",
         planId === "growth" && "pricing-plan-card--growth",
         planId === "product" && "pricing-plan-card--product"
       )}
     >
-      <div className="pricing-plan-card__body flex flex-col p-5 sm:p-6">
+      <div className="pricing-plan-card__media" aria-hidden>
+        <img
+          src={PLAN_IMAGES[planId]}
+          alt=""
+          className="pricing-plan-card__bg"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+      <div className="pricing-plan-card__veil" aria-hidden />
+
+      <div className="pricing-plan-card__body">
         <div className="pricing-plan-card__head">
-        <div className="pricing-plan-card__badge-slot">
-          {badge ? (
-            <span className="inline-flex w-fit whitespace-nowrap rounded-full bg-[#FF9A3D]/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#FF9A3D]">
-              {badge}
-            </span>
-          ) : null}
+          <div className="pricing-plan-card__badge-slot">
+            {badge ? (
+              <span className="pricing-plan-card__badge">{badge}</span>
+            ) : (
+              <span className="pricing-plan-card__badge is-empty" aria-hidden>
+                &nbsp;
+              </span>
+            )}
+          </div>
+
+          <h3
+            className={cx(
+              "pricing-plan-card__name"
+            )}
+          >
+            {name}
+          </h3>
+          <p className="pricing-plan-card__tagline">{tagline}</p>
+
+          <div className="pricing-plan-card__price-slot">
+            <PlanPrice price={price} priceOriginal={priceOriginal} />
+          </div>
         </div>
 
-        <h3
-          className={cx(
-            "pricing-plan-card__name font-hero text-[1.35rem] font-semibold leading-[1.15] tracking-[-0.03em]",
-            planId === "growth" ? "text-[#FF9A3D]" : "text-white"
-          )}
-        >
-          {name}
-        </h3>
-        <p
-          className={cx(
-            "pricing-plan-card__tagline mt-1 text-[13px] leading-[1.35]",
-            planId === "growth" ? "text-[#FF9A3D]/80" : "text-white/48"
-          )}
-        >
-          {tagline}
-        </p>
-
-        <div className="pricing-plan-card__price-slot">
-          <PlanPrice price={price} priceOriginal={priceOriginal} />
-        </div>
-
-        <p className="pricing-plan-card__desc mt-4 text-[13px] leading-[1.6] text-white/52">{desc}</p>
-        </div>
-
-        <div className="pricing-plan-card__includes">
-          <ul className="pricing-plan-card__includes-list space-y-2">
+        <div className="pricing-plan-card__details">
+          <p className="pricing-plan-card__desc">{desc}</p>
+          <ul className="pricing-plan-card__includes-list">
             {includes.map((item) => (
-              <li key={item} className="pricing-plan-card__includes-item flex items-start gap-2.5 text-[12.5px] leading-[1.5] text-white/68">
-                <Check size={13} className="mt-0.5 shrink-0 text-[#FF9A3D]" strokeWidth={2.25} aria-hidden />
+              <li key={item} className="pricing-plan-card__includes-item">
+                <Check
+                  size={13}
+                  className="pricing-plan-card__check"
+                  strokeWidth={2.25}
+                  aria-hidden
+                />
                 <span>{item}</span>
               </li>
             ))}
           </ul>
-        </div>
-        <div className="pricing-plan-card__spacer flex-1" aria-hidden />
-      </div>
 
-      <div className="pricing-plan-card__footer border-t border-white/[0.08] p-5 sm:p-6">
-        <PlanCtaButton featured={planId === "growth"} onClick={onCta}>
-          {cta}
-        </PlanCtaButton>
+          <div className="pricing-plan-card__footer">
+            <PlanCtaButton featured={planId === "growth"} onClick={onCta}>
+              {cta}
+            </PlanCtaButton>
+          </div>
+        </div>
       </div>
     </article>
   );
@@ -308,28 +343,29 @@ function CompactPlanCard({
         planId === "growth" && "pricing-footer-card--growth"
       )}
     >
-      <div className="pricing-footer-card__body flex flex-col p-5 sm:p-6">
+      <div className="pricing-footer-card__body flex flex-col p-6 sm:p-8">
         <div className="pricing-footer-card__head">
-        <h4 className="font-hero text-[1.1rem] font-semibold tracking-[-0.02em] text-white">{name}</h4>
-        <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/48">{shortDesc}</p>
-        <div className="pricing-footer-card__price-slot">
-          <CompactPlanPrice price={price} priceOriginal={priceOriginal} />
-        </div>
+          <h4 className="font-hero text-[1.25rem] font-normal uppercase tracking-[0.02em] text-white">
+            {name}
+          </h4>
+          <p className="mt-1.5 font-sans text-[12.5px] font-medium leading-relaxed text-white/48">
+            {shortDesc}
+          </p>
+          <div className="pricing-footer-card__price-slot">
+            <CompactPlanPrice price={price} priceOriginal={priceOriginal} />
+          </div>
         </div>
         <div className="pricing-footer-card__chips mt-auto pt-4">
-        <div className="flex flex-wrap gap-2">
-          {chips.map((chip) => (
-            <span
-              key={chip}
-              className="rounded-full border border-white/[0.12] bg-white/[0.03] px-2.5 py-1 text-[10px] font-medium text-white/58"
-            >
-              {chip}
-            </span>
-          ))}
-        </div>
+          <div className="flex flex-wrap gap-2">
+            {chips.map((chip) => (
+              <span key={chip} className="pricing-footer-card__chip">
+                {chip}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
-      <div className="pricing-footer-card__footer border-t border-white/[0.08] p-5 sm:p-6">
+      <div className="pricing-footer-card__footer !pt-0 p-6 sm:p-8">
         <PlanCtaButton featured={planId === "growth"} compact onClick={onCta}>
           {compactCta}
         </PlanCtaButton>
@@ -377,14 +413,17 @@ export default function PricingPlansSection({ className }: { className?: string 
     >
       <Container>
         <Reveal className="mx-auto max-w-[48rem] text-center">
-          <h2 className="font-hero text-[clamp(1.85rem,4.2vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white">
+          <h2 className="font-hero text-[clamp(2rem,5vw,3.25rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white text-balance">
             {copy.title}
           </h2>
-          <div className="mx-auto mt-3 flex flex-wrap items-baseline justify-center gap-x-2.5 gap-y-1 sm:mt-4">
-            <span className="font-hero shrink-0 text-[clamp(1.85rem,3.8vw,2.5rem)] font-bold leading-none tracking-[-0.03em] text-[#FF9A3D]">
+          <div className="mx-auto mt-4 flex flex-wrap items-baseline justify-center gap-x-2.5 gap-y-1 sm:mt-5">
+            <span
+              className="font-hero shrink-0 text-[clamp(1.85rem,3.8vw,2.5rem)] font-normal uppercase leading-none tracking-[0.02em]"
+              style={{ color: EMBER }}
+            >
               {copy.launchDiscount.percent}
             </span>
-            <span className="max-w-[42ch] text-center text-[11px] leading-snug text-[#FF9A3D]/72 sm:text-left sm:text-[12px]">
+            <span className="max-w-[42ch] text-center font-sans text-[12px] font-medium leading-snug text-[var(--color-ember)]/75 sm:text-left sm:text-[13px]">
               {copy.launchDiscount.note}
             </span>
           </div>
@@ -415,7 +454,7 @@ export default function PricingPlansSection({ className }: { className?: string 
         <Reveal delay={120} className="mt-10 sm:mt-12">
           <div className="pricing-compare">
             <div className="pricing-compare__intro">
-              <h3 className="font-hero text-[clamp(1.35rem,2.8vw,1.85rem)] font-semibold tracking-[-0.03em] text-white">
+              <h3 className="font-hero text-[clamp(1.5rem,3vw,2.1rem)] font-normal uppercase tracking-[0.02em] text-white">
                 {copy.compareTitle}
               </h3>
               <button
@@ -540,7 +579,9 @@ export default function PricingPlansSection({ className }: { className?: string 
                             <div className="pricing-compare__mobile-values">
                               {PLAN_IDS.map((planId) => (
                                 <div key={planId} className="pricing-compare__mobile-value">
-                                  <p className="pricing-compare__mobile-plan-label">{copy.plans[planId].name}</p>
+                                  <p className="pricing-compare__mobile-plan-label">
+                                    {copy.plans[planId].name}
+                                  </p>
                                   <ComparisonValue
                                     cell={row.values[planId]}
                                     labels={copy.cell}
@@ -563,12 +604,16 @@ export default function PricingPlansSection({ className }: { className?: string 
         <Reveal delay={150} className="mt-10 sm:mt-12">
           <div className="pricing-value-band">
             <div className="pricing-value-band__copy">
-              <h3 className="font-hero text-[clamp(1.35rem,2.8vw,2rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-white">
+              <h3 className="font-hero text-[clamp(1.5rem,3vw,2.25rem)] font-normal uppercase leading-[1.05] tracking-[0.02em] text-white">
                 {copy.footer.valueTitle}{" "}
                 <span className="pricing-value-band__highlight">{copy.footer.valueTitleHighlight}</span>
               </h3>
-              <p className="mt-2 text-[12px] text-white/38">{copy.footer.valueAside}</p>
-              <p className="mt-5 max-w-[38ch] text-[14px] leading-[1.65] text-white/50">{copy.footer.valueLead}</p>
+              <p className="mt-2 font-sans text-[12px] font-medium text-white/38">
+                {copy.footer.valueAside}
+              </p>
+              <p className="mt-5 max-w-[38ch] font-sans text-[14px] font-medium leading-[1.65] text-white/50">
+                {copy.footer.valueLead}
+              </p>
             </div>
             <PricingPlanScopeGrid onPlanAction={handlePlanCta} />
           </div>

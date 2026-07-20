@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import Container from "../ui/Container";
 import { useLang } from "../../i18n/LangProvider";
 import { isPartnersPath, partnersPath } from "../../i18n/partnersPaths";
+import { aboutPath } from "../../i18n/aboutCopy";
 import { partnerPanelLoginUrl } from "../../lib/partnerPanel";
 import { trackPartnersEvent } from "../../lib/ads";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
@@ -16,22 +17,23 @@ function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
 
-type NavKey = "home" | "automation" | "plans" | "projects" | "partners";
-type NavItem = { to: string; key: NavKey };
+type NavKey = "services" | "projects" | "plans" | "about" | "partners";
+type NavItem = { to?: string; key: NavKey; hash?: string };
 
 const NAV_MAIN: NavItem[] = [
-  { to: "/", key: "home" },
-  { to: "/plans", key: "plans" },
+  { to: "/#offer", key: "services", hash: "offer" },
   { to: "/projects", key: "projects" },
-  { to: "/partners", key: "partners" },
+  { to: "/plans", key: "plans" },
+  { to: "/about", key: "about" },
+  { key: "partners" },
 ];
 
 const NAV_MOBILE: NavItem[] = [
-  { to: "/", key: "home" },
-  { to: "/avtomatizaciya-biznesa", key: "automation" },
-  { to: "/plans", key: "plans" },
+  { to: "/#offer", key: "services", hash: "offer" },
   { to: "/projects", key: "projects" },
-  { to: "/partners", key: "partners" },
+  { to: "/plans", key: "plans" },
+  { to: "/about", key: "about" },
+  { key: "partners" },
 ];
 
 // Важно: десктоп-режим теперь только с xl (>=1280).
@@ -62,7 +64,8 @@ function useHomeHeroInView(pathname: string) {
   const [inView, setInView] = useState(false);
 
   useEffect(() => {
-    if (pathname !== "/") {
+    const isHome = pathname === "/" || pathname === "/en";
+    if (!isHome) {
       setInView(false);
       return;
     }
@@ -153,9 +156,9 @@ function PillNav({
   reducedMotion,
   compact,
 }: {
-  activeKey: NavKey;
-  items: Array<{ key: NavKey; label: string; to: string }>;
-  onItemClick: (to: string) => (e: React.MouseEvent) => void;
+  activeKey: NavKey | null;
+  items: Array<{ key: NavKey; label: string; to: string; hash?: string }>;
+  onItemClick: (to: string, hash?: string) => (e: React.MouseEvent) => void;
   reducedMotion: boolean;
   compact?: boolean;
 }) {
@@ -170,17 +173,17 @@ function PillNav({
     >
       {items.map((it) => {
         const isActive = it.key === activeKey;
-        const pad = compact ? "px-3.5 h-9" : "px-5 h-10";
+        const pad = compact ? "px-3.5 h-10" : "px-5 h-11";
         const text = compact ? "text-[10.5px]" : "text-[11px]";
 
         return (
           <Link
             key={it.key}
             to={it.to}
-            onClick={onItemClick(it.to)}
+            onClick={onItemClick(it.to, it.hash)}
             aria-current={isActive ? "page" : undefined}
             className={cx(
-              "relative flex items-center gap-2 rounded-full border-0 font-bold uppercase tracking-[0.14em] outline-none select-none transition",
+              "relative flex items-center justify-center gap-2 rounded-full border-0 font-bold uppercase tracking-[0.14em] outline-none select-none transition",
               "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
               pad,
               text,
@@ -192,7 +195,7 @@ function PillNav({
               reducedMotion ? undefined : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)
             }
           >
-            <span className="leading-none">{it.label}</span>
+            <span className="leading-none translate-y-[0.5px]">{it.label}</span>
           </Link>
         );
       })}
@@ -297,35 +300,43 @@ export default function Header() {
 
   const navLabel = (key: NavKey) => {
     if (isRu) {
-      if (key === "home") return "главная";
-      if (key === "automation") return "автоматизация";
-      if (key === "plans") return "планы";
+      if (key === "services") return "услуги";
       if (key === "projects") return "проекты";
+      if (key === "plans") return "тарифы";
+      if (key === "about") return "о компании";
       if (key === "partners") return "партнёры";
     } else {
-      if (key === "home") return "home";
-      if (key === "automation") return "automation";
-      if (key === "plans") return "plans";
+      if (key === "services") return "services";
       if (key === "projects") return "projects";
+      if (key === "plans") return "pricing";
+      if (key === "about") return "about";
       if (key === "partners") return "partners";
     }
     return key;
   };
 
-  const activeKey: NavKey = useMemo(() => {
+  const navTo = (it: NavItem) => {
+    if (it.key === "partners") return partnersPath(lang);
+    if (it.key === "about") return aboutPath(lang);
+    return it.to ?? "/";
+  };
+
+  const activeKey: NavKey | null = useMemo(() => {
     if (location.pathname === "/plans") return "plans";
-    if (location.pathname === "/projects") return "projects";
-    if (location.pathname === "/avtomatizaciya-biznesa") return "automation";
+    if (location.pathname === "/projects" || location.pathname.startsWith("/projects/"))
+      return "projects";
+    if (location.pathname === "/about" || location.pathname === "/en/about") return "about";
     if (isPartnersPath(location.pathname)) return "partners";
-    return "home";
+    return null;
   }, [location.pathname]);
 
   const tabsItems = useMemo(
     () =>
       NAV_MAIN.map((it) => ({
         key: it.key,
-        to: it.key === "partners" ? partnersPath(lang) : it.to,
+        to: navTo(it),
         label: navLabel(it.key),
+        hash: it.hash,
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [lang]
@@ -335,15 +346,30 @@ export default function Header() {
     () =>
       NAV_MOBILE.map((it) => ({
         key: it.key,
-        to: it.key === "partners" ? partnersPath(lang) : it.to,
+        to: navTo(it),
         label: navLabel(it.key),
+        hash: it.hash,
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [lang]
   );
 
-  const onNav = (to: string) => (e: React.MouseEvent) => {
+  const onNav = (to: string, hash?: string) => (e: React.MouseEvent) => {
     setOpen(false);
+    if (hash) {
+      e.preventDefault();
+      const go = () => {
+        const el = document.getElementById(hash);
+        if (el) el.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+      };
+      if (location.pathname !== "/" && location.pathname !== "/en") {
+        navigate(lang === "en" ? "/en" : "/");
+        window.setTimeout(go, 80);
+      } else {
+        go();
+      }
+      return;
+    }
     if (to === "/") {
       e.preventDefault();
       if (location.pathname !== "/") navigate("/");
@@ -366,7 +392,9 @@ export default function Header() {
     ? isRu
       ? "Войти в панель"
       : "Log in to panel"
-    : leadCopy.ctaDiscuss;
+    : isRu
+      ? "Оценить проект"
+      : "Estimate project";
   const ctaHref = onPartners ? partnerPanelLoginUrl() : "#";
   const onPartnersCtaClick = onPartners
     ? () => trackPartnersEvent("partners_login_click", { source: "header" })
@@ -422,8 +450,8 @@ export default function Header() {
                       src={logoSrc}
                       alt="TIVONIX"
                       className={cx(
-                        "w-auto object-contain opacity-95 transition-all hover:opacity-100",
-                        heroInView ? "h-10 sm:h-11 lg:h-12" : "h-8 sm:h-9"
+                        "w-auto object-contain object-left opacity-95 transition-all hover:opacity-100",
+                        "h-9 sm:h-10"
                       )}
                       draggable={false}
                       loading="eager"
@@ -469,7 +497,7 @@ export default function Header() {
                     <a
                       href={ctaHref}
                       onClick={onPartnersCtaClick}
-                      className="inline-flex h-11 items-center justify-center rounded-full bg-white px-7 text-[14px] font-bold tracking-[-0.015em] text-black no-underline transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
+                      className="inline-flex h-11 items-center justify-center rounded-full bg-white px-7 font-sans text-[14px] font-medium tracking-normal text-[#070607] no-underline transition hover:bg-white/92 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
                     >
                       {ctaTop}
                     </a>
@@ -487,7 +515,7 @@ export default function Header() {
                       <a
                         href={ctaHref}
                         onClick={onPartnersCtaClick}
-                        className="inline-flex h-11 items-center justify-center rounded-full bg-white px-6 text-[13px] font-bold tracking-[-0.015em] text-black no-underline transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45"
+                        className="inline-flex h-11 items-center justify-center rounded-full bg-white px-6 font-sans text-[13px] font-medium tracking-normal text-[#070607] no-underline transition hover:bg-white/92 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45"
                       >
                         {ctaTop}
                       </a>
@@ -669,7 +697,7 @@ export default function Header() {
                     activeKey === item.key && "text-[#FFAE66]"
                   )}
                   onClick={(e) => {
-                    onNav(item.to)(e);
+                    onNav(item.to, item.hash)(e);
                     closeMenu();
                   }}
                 >
@@ -696,8 +724,8 @@ export default function Header() {
               ) : (
                 <LeadCTAButton
                   source="header"
-                  variant="plain"
-                  className="h-12 w-full rounded-xl border border-white/[0.08] text-[14px]"
+                  variant="white"
+                  className="h-12 w-full text-[14px]"
                   aria-label={leadCopy.ctaDiscuss}
                   onClick={() => setOpen(false)}
                 >
@@ -707,9 +735,9 @@ export default function Header() {
               <Link
                 to={onPartners ? `${partnersPath(lang)}#partner-formats` : "/plans"}
                 className={cx(
-                  "inline-flex h-12 items-center justify-center rounded-xl px-6 text-[14px] font-semibold text-black",
-                  "bg-[#ff6a21] transition hover:brightness-105",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40"
+                  "inline-flex h-12 items-center justify-center rounded-full px-6 font-sans text-[14px] font-medium text-white",
+                  "bg-[#070607] transition hover:bg-[#1a1a1a]",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
                 )}
                 onClick={() => setOpen(false)}
               >

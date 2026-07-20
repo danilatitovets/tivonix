@@ -8,6 +8,7 @@ import { trackAdsConversion, trackPartnersEvent } from "./ads";
 
 export type CtaSource =
   | "hero"
+  | "hero_projects"
   | "projects"
   | "project_page"
   | "final_cta"
@@ -21,6 +22,11 @@ export type CtaSource =
   | "pricing_help"
   | "service_websites"
   | "service_automation"
+  | "direction_leads"
+  | "direction_product"
+  | "founder"
+  | "compare"
+  | "footer"
   | "unknown";
 
 const CTA_SOURCE_KEY = "tivonix_cta_source";
@@ -81,6 +87,11 @@ export function trackEvent(
 export function trackCtaPrimaryClick(source: CtaSource): void {
   setCtaSource(source);
   trackEvent("cta_primary_click", { source });
+  if (source === "hero") trackEvent("hero_primary_cta_click", { source });
+}
+
+export function trackHeroProjectsClick(): void {
+  trackEvent("hero_projects_click");
 }
 
 export function trackLeadFormOpen(source: CtaSource): void {

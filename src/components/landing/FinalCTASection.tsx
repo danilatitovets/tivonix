@@ -8,7 +8,8 @@ import { TelegramLink } from "./LandingCTA";
 import { TG_CHANNEL_URL } from "../../constants/links";
 import { trackTelegramDirectClick } from "../../lib/analytics";
 
-const FINAL_CTA_BG = `/images/${encodeURI("как рабоает")}/future.webp`;
+const FINAL_CTA_VIDEO = "/images/hero-bg.mp4";
+const FINAL_CTA_POSTER = "/images/hero-bg-poster.webp";
 
 function clamp01(v: number) {
   return Math.min(1, Math.max(0, v));
@@ -61,62 +62,82 @@ export default function FinalCTASection() {
   const { lang } = useLang();
   const copy = landingCopy(lang);
   const cardRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const bgScale = useSectionScrollScale(cardRef);
 
   const bgStyle: CSSProperties = {
     transform: `translate3d(-50%, -50%, 0) scale(${bgScale})`,
   };
 
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const play = () => {
+      void video.play().catch(() => {});
+    };
+    play();
+    const onVis = () => {
+      if (document.visibilityState === "visible") play();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, []);
+
   return (
-    <>
-      <Section
-        id="contact"
-        className="final-cta-section scroll-mt-[var(--tivonix-header-spacer)] py-14 sm:py-16 lg:py-20"
-      >
-        <Container className="pb-2 sm:pb-4 lg:pb-6">
-          <div
-            ref={cardRef}
-            className="final-cta-card relative overflow-hidden rounded-[28px] px-6 py-12 text-center sm:rounded-[32px] sm:px-10 sm:py-14 lg:px-16 lg:py-16"
-          >
-            <div className="final-cta-card__bg" aria-hidden>
-              <img
-                src={FINAL_CTA_BG}
-                alt=""
-                className="final-cta-card__bg-img"
-                style={bgStyle}
-                loading="lazy"
-                decoding="async"
-                draggable={false}
-              />
-              <div className="final-cta-card__bg-overlay" />
-            </div>
-
-            <h2 className="relative z-[1] mx-auto max-w-[20ch] font-hero text-[clamp(1.75rem,4.5vw,2.85rem)] font-semibold leading-[1.06] tracking-[-0.03em] text-white text-balance">
-              {copy.finalCta.title}
-            </h2>
-
-            <div className="final-cta-card__actions relative z-[1] mt-6 flex flex-col items-center justify-center gap-3 sm:mt-7 sm:flex-row sm:gap-4">
-              <LeadCTAButton
-                source="final_cta"
-                variant="white"
-                size="lg"
-                className="final-cta-btn w-full max-w-[280px] sm:w-auto sm:min-w-[220px]"
-              >
-                {lang === "ru" ? "Обсудить задачу" : "Discuss the task"}
-              </LeadCTAButton>
-              <TelegramLink
-                variant="white"
-                size="lg"
-                href={TG_CHANNEL_URL}
-                className="final-cta-btn final-cta-btn--black w-full max-w-[280px] sm:w-auto sm:min-w-[220px]"
-                onClick={() => trackTelegramDirectClick()}
-              >
-                {lang === "ru" ? "Написать в TG" : "Message on TG"}
-              </TelegramLink>
-            </div>
+    <Section
+      id="contact"
+      className="final-cta-section scroll-mt-[var(--tivonix-header-spacer)] py-14 sm:py-16 lg:py-20"
+    >
+      <Container className="pb-2 sm:pb-4 lg:pb-6">
+        <div
+          ref={cardRef}
+          className="final-cta-card relative overflow-hidden rounded-[28px] px-6 py-12 text-center sm:rounded-[40px] sm:px-10 sm:py-14 lg:px-16 lg:py-16"
+        >
+          <div className="final-cta-card__bg" aria-hidden>
+            <video
+              ref={videoRef}
+              className="final-cta-card__bg-img"
+              style={bgStyle}
+              src={FINAL_CTA_VIDEO}
+              poster={FINAL_CTA_POSTER}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+            />
+            <div className="final-cta-card__bg-overlay" />
           </div>
-        </Container>
-      </Section>
-    </>
+
+          <h2 className="relative z-[1] mx-auto max-w-[22ch] font-hero text-[clamp(1.75rem,4.5vw,2.85rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white text-balance">
+            {copy.finalCta.title}
+          </h2>
+
+          <p className="relative z-[1] mx-auto mt-4 max-w-[36rem] font-sans text-[15px] font-medium leading-[1.55] text-white/78 sm:text-[16px]">
+            {copy.finalCta.subtitle}
+          </p>
+
+          <div className="final-cta-card__actions relative z-[1] mt-7 flex flex-col items-stretch justify-center gap-3 sm:mt-8 sm:flex-row sm:items-center sm:justify-center sm:gap-3">
+            <LeadCTAButton
+              source="final_cta"
+              variant="white"
+              size="lg"
+              className="final-cta-btn"
+            >
+              {copy.finalCta.ctaPrimary}
+            </LeadCTAButton>
+            <TelegramLink
+              variant="white"
+              size="lg"
+              href={TG_CHANNEL_URL}
+              className="final-cta-btn final-cta-btn--black"
+              onClick={() => trackTelegramDirectClick()}
+            >
+              {copy.finalCta.ctaSecondary}
+            </TelegramLink>
+          </div>
+        </div>
+      </Container>
+    </Section>
   );
 }

@@ -47,14 +47,14 @@ export const PUBLIC_PROJECT_IDS = [
 const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/r${i + 1}.webp`);
 const SPLITON_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/spliton/g${i + 1}.webp`);
 const TIVONIXPANEL_GALLERY = [
-  "/images/project-priew/tivonixpanel/1.png",
-  "/images/project-priew/tivonixpanel/2.png",
-  "/images/project-priew/tivonixpanel/3.png",
-  "/images/project-priew/tivonixpanel/4.png",
-  "/images/project-priew/tivonixpanel/5.png",
-  "/images/project-priew/tivonixpanel/6.png",
-  "/images/project-priew/tivonixpanel/7.png",
-  "/images/project-priew/tivonixpanel/8.png",
+  "/images/project-priew/tivonixpanel/1.webp",
+  "/images/project-priew/tivonixpanel/2.webp",
+  "/images/project-priew/tivonixpanel/3.webp",
+  "/images/project-priew/tivonixpanel/4.webp",
+  "/images/project-priew/tivonixpanel/5.webp",
+  "/images/project-priew/tivonixpanel/6.webp",
+  "/images/project-priew/tivonixpanel/7.webp",
+  "/images/project-priew/tivonixpanel/8.webp",
 ];
 
 function buildAllProjects(isRu: boolean): Project[] {
@@ -104,7 +104,7 @@ function buildAllProjects(isRu: boolean): Project[] {
         domain: TIVONIXPANEL_DOMAIN,
         status: "live",
         tags: ["SaaS", "Admin Panel", "Partners", "Dashboard", "UI/UX"],
-        cover: `/images/${encodeURI("обложки")}/tivonixpanel.png`,
+        cover: `/images/${encodeURI("обложки")}/tivonixpanel.webp`,
         gallery: TIVONIXPANEL_GALLERY,
         outcomes: [
           isRu
@@ -640,6 +640,15 @@ export function buildProjects(isRu: boolean): Project[] {
   return PUBLIC_PROJECT_IDS.map((id) => all.find((p) => p.id === id)).filter(
     (p): p is Project => Boolean(p)
   );
+}
+
+/** All catalog projects that have a client testimonial (incl. non-public cases). */
+export function projectsWithTestimonials(isRu: boolean): Project[] {
+  return buildAllProjects(isRu).filter((p) => Boolean(p.testimonial));
+}
+
+export function isPublicProjectId(id: string): boolean {
+  return (PUBLIC_PROJECT_IDS as readonly string[]).includes(id);
 }
 
 export function findProjectBySlug(slug: string | undefined, isRu: boolean): Project | undefined {

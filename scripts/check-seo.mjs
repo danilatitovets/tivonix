@@ -1,4 +1,4 @@
-﻿import { access, readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 
 const requiredHtmlFiles = [
@@ -22,14 +22,14 @@ const checks = [
   {
     file: "dist/index.html",
     phrases: [
-      "TIVONIX — сайты, боты и AI-сервисы для бизнеса",
-      "Создаём сайты, Telegram-ботов, CRM, личные кабинеты и автоматизацию заявок под ключ.",
-      "Кому помогаем",
-      "Что мы делаем",
-      "Новый кейс",
-      "Tivonix Panel",
+      "TIVONIX — сайты, CRM, боты и веб-продукты для бизнеса",
+      "Разрабатываем лендинги, Telegram-ботов, CRM, личные кабинеты, SaaS и MVP",
+      "Собираем сайты и системы,",
+      "Услуги и продукты",
+      "живые",
+      "Spliton",
       "Частые вопросы",
-      "Расскажите, что хотите запустить или автоматизировать",
+      "Расскажите, что нужно запустить",
       "https://tivonix.tech/",
       'property="og:image" content="https://tivonix.tech/images/og-social.jpg"',
     ],
@@ -260,7 +260,7 @@ try {
     console.log(`OK ${automationFile}: exactly 1 link rel="canonical"`);
   }
 
-  const homeTitleWrong = "<title>TIVONIX — сайты, боты и AI-сервисы для бизнеса</title>";
+  const homeTitleWrong = "<title>TIVONIX — сайты, CRM, боты и веб-продукты для бизнеса</title>";
   if (autoHtml.includes(homeTitleWrong)) {
     console.error(`${automationFile}: must not contain home page <title>`);
     hasErrors = true;

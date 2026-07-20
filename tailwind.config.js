@@ -34,9 +34,11 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        hero: ['"Instrument Sans"', "Inter", "system-ui", "sans-serif"],
-        display: ["Manrope", "Inter", "system-ui", "sans-serif"],
-        sans: ["Inter", "system-ui", "sans-serif"],
+        hero: ['"Bebas Neue"', "Anton", "Impact", "sans-serif"],
+        display: ['"Bebas Neue"', "Anton", "Impact", "sans-serif"],
+        sans: ['"DM Sans"', "Manrope", "Inter", "system-ui", "sans-serif"],
+        "caldera-display": ['"Bebas Neue"', "Anton", "Impact", "sans-serif"],
+        caldera: ['"DM Sans"', "Manrope", "Inter", "system-ui", "sans-serif"],
         /* Partners — Family display substitute (Archivo Medium ≈ condensed utility display) */
         "partners-display": [
           "Archivo",

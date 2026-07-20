@@ -9,6 +9,10 @@
   .compare-split-wrap {
     padding-top: 2.75rem;
   }
+
+  .compare-split-wrap--static {
+    padding-top: 0;
+  }
 }
 
 .compare-split {

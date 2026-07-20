@@ -563,16 +563,15 @@ export function homePageSeoFromDict(dict: Dictionary): { title: string; descript
   const isRu = dict.header.home === "На главную";
   if (isRu) {
     return {
-      title: "TIVONIX — сайты, боты и AI-сервисы для бизнеса",
+      title: "TIVONIX — сайты, CRM, боты и веб-продукты для бизнеса",
       description:
-        "Создаём сайты, Telegram-ботов, CRM, личные кабинеты и автоматизацию заявок под ключ.",
+        "Разрабатываем лендинги, Telegram-ботов, CRM, личные кабинеты, SaaS и MVP — и связываем их в единый процесс: от первого обращения до оплаты.",
     };
   }
 
-  const { titleLine1, titleLine2Prefix, titleLine2Premium, subtitle } = dict.hero;
-  const heroTitle = `${titleLine1} ${titleLine2Prefix} ${titleLine2Premium}`.replace(/\s+/g, " ").trim();
   return {
-    title: `TIVONIX — ${heroTitle}`,
-    description: subtitle,
+    title: "TIVONIX — websites, CRM, bots and web products for business",
+    description:
+      "We build landing pages, Telegram bots, CRMs, client portals, SaaS and MVPs — and connect them into one lead process from first inquiry to payment.",
   };
 }
