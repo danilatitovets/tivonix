@@ -6148,13 +6148,17 @@ html.tg-webview .direction-cu__stack {
   white-space: nowrap;
   overflow: visible;
   color: transparent;
-  background-image: var(--footer-sell-img, url("/images/pexels-didsss-3045825.jpg"));
+  background-color: #ff5722;
+  background-image: var(--footer-sell-img, url("/images/footer-sell.webp"));
   background-size: cover;
   background-position: center 45%;
   background-repeat: no-repeat;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  /* Keep paint stable on iOS Safari when image is slow */
+  transform: translateZ(0);
+  will-change: background-position;
 }
 
 @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
@@ -6184,7 +6188,7 @@ html.tg-webview .direction-cu__stack {
   color: rgba(255, 255, 255, 0.42);
 }
 
-@media (max-width: 639px) {
+  @media (max-width: 639px) {
   .site-footer__panel {
     border-radius: 28px;
   }
@@ -6200,7 +6204,10 @@ html.tg-webview .direction-cu__stack {
   }
 
   .site-footer__sell-word {
-    font-size: clamp(2.7rem, 28cqi, 5rem);
+    /* vw fallback — some mobile WebViews mishandle cqi here */
+    font-size: clamp(2.75rem, 17.5vw, 5.25rem);
+    background-size: cover;
+    background-position: center 40%;
   }
 }
 

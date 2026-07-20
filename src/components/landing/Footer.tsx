@@ -15,7 +15,7 @@ function cx(...a: Array<string | false | null | undefined>) {
 
 const LOGO_LOCKUP_PNG = "/images/tivonix-logo-lockup.webp";
 const FOOTER_BG = `/images/${encodeURI("как рабоает")}/${encodeURI("футер.webp")}`;
-const SELL_IMG = "/images/pexels-didsss-3045825.jpg";
+const SELL_IMG = "/images/footer-sell.webp";
 
 const FOOTER_PAGES = [
   { to: "/", label: { ru: "Главная", en: "Home" } },
