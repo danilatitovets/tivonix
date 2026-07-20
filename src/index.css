@@ -36,7 +36,7 @@
   html {
     scroll-padding-top: 6.75rem;
     background: #000000;
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: contain;
   }
   body {
     margin: 0;
@@ -44,7 +44,7 @@
     color: rgba(255, 255, 255, 0.92);
     font-family: var(--font-dm-sans);
     font-weight: 500;
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: contain;
   }
 
   /* Caldera CTAs — ember fill, pill, DM Sans 500, flat */
@@ -96,12 +96,15 @@
   }
 
   /*
-   * Telegram in-app browser: sticky + vh/dvh tracks fight the collapsing chrome
-   * and cause left/up/down scroll jumps. Stabilize layout + overscroll.
+   * Telegram / mobile: sticky + vh/svh scrub tracks fight collapsing chrome
+   * and cause stuck scroll + upward jumps. Stabilize layout + overscroll.
    */
   html.tg-webview,
   html.tg-webview body,
-  html.tg-webview #root {
+  html.tg-webview #root,
+  html.simple-scroll,
+  html.simple-scroll body,
+  html.simple-scroll #root {
     height: auto;
     min-height: 100%;
     overscroll-behavior-y: auto;
@@ -109,23 +112,29 @@
     overflow-x: hidden;
     touch-action: pan-y;
   }
-  html.tg-webview {
+  html.tg-webview,
+  html.simple-scroll {
     /* Prefer stable small viewport units when chrome resizes mid-scroll */
     --tivonix-tg-stable-vh: 1svh;
   }
 
   /* Kill sticky scroll-scrub tracks before React hydrates/adapts */
-  html.tg-webview .hero-scroll-track {
+  html.tg-webview .hero-scroll-track,
+  html.simple-scroll .hero-scroll-track {
     height: auto !important;
   }
-  html.tg-webview .hero-scroll-sticky {
+  html.tg-webview .hero-scroll-sticky,
+  html.simple-scroll .hero-scroll-sticky {
     position: relative !important;
   }
   html.tg-webview .ai-premium-pin,
-  html.tg-webview .ai-premium-anim-pin {
+  html.tg-webview .ai-premium-anim-pin,
+  html.simple-scroll .ai-premium-pin,
+  html.simple-scroll .ai-premium-anim-pin {
     height: auto !important;
   }
-  html.tg-webview .ai-premium-section {
+  html.tg-webview .ai-premium-section,
+  html.simple-scroll .ai-premium-section {
     position: relative !important;
     height: auto !important;
     min-height: 100svh;
@@ -3389,7 +3398,8 @@
 }
 
 .tivonix-globe-canvas-wrap--interactive {
-  touch-action: none;
+  /* Allow vertical page scroll; only horizontal drag rotates the globe */
+  touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
   cursor: grab;
@@ -3410,7 +3420,7 @@
   display: block;
   width: 100% !important;
   height: 100% !important;
-  touch-action: none;
+  touch-action: pan-y;
 }
 
 .tivonix-globe-cobe-host > div {

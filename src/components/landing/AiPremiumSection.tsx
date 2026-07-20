@@ -20,7 +20,7 @@ import {
   rowPosition,
   rowPositionScrollStrip,
 } from "../../lib/aiModels";
-import { isTelegramWebView } from "../../lib/telegramWebView";
+import { isTelegramWebView, shouldSimplifyScroll } from "../../lib/telegramWebView";
 import TivonixGlowBorder from "../ui/TivonixGlowBorder";
 import ScrollFingerHint from "../ui/ScrollFingerHint";
 
@@ -161,7 +161,7 @@ export default function AiPremiumSection() {
   const reducedMotionPref = usePrefersReducedMotion();
   const [tgWebView, setTgWebView] = useState(false);
   useEffect(() => {
-    setTgWebView(isTelegramWebView());
+    setTgWebView(shouldSimplifyScroll() || isTelegramWebView());
   }, []);
   // Telegram WebView: same end-state as reduced motion, without multi-vh sticky pin
   const reducedMotion = reducedMotionPref || tgWebView;
