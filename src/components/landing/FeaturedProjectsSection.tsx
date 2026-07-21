@@ -7,6 +7,7 @@ import { useLang } from "../../i18n/LangProvider";
 import { homeExtraCopy } from "../../i18n/homeExtraCopy";
 import { findProjectBySlug } from "../../data/projectsCatalog";
 import { trackEvent } from "../../lib/analytics";
+import { useInView } from "../../hooks/useInView";
 
 const AUTO_MS = 5500;
 
@@ -18,6 +19,9 @@ export default function FeaturedProjectsSection() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const touchX = useRef<number | null>(null);
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const shellRef = useRef<HTMLDivElement | null>(null);
+  const inView = useInView(sectionRef, { rootMargin: "40px 0px", threshold: 0 });
 
   const go = useCallback(
     (next: number) => {
@@ -28,8 +32,28 @@ export default function FeaturedProjectsSection() {
     [items.length]
   );
 
+  // Lock height to the tallest slide so autoplay above the fold can't shove the page
   useEffect(() => {
-    if (paused || items.length < 2) return;
+    const shell = shellRef.current;
+    if (!shell || typeof window === "undefined") return;
+
+    let max = 0;
+    const measure = () => {
+      const h = shell.scrollHeight;
+      if (h > max) {
+        max = h;
+        shell.style.minHeight = `${max}px`;
+      }
+    };
+
+    measure();
+    const id = window.setTimeout(measure, 80);
+    return () => window.clearTimeout(id);
+  }, [index, items, lang]);
+
+  useEffect(() => {
+    // Only rotate while visible — off-screen height changes were jumping scroll after idle
+    if (!inView || paused || items.length < 2) return;
     if (typeof window === "undefined") return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
@@ -38,7 +62,7 @@ export default function FeaturedProjectsSection() {
     }, AUTO_MS);
 
     return () => window.clearInterval(id);
-  }, [paused, items.length, index]);
+  }, [paused, items.length, inView]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -58,6 +82,7 @@ export default function FeaturedProjectsSection() {
 
   return (
     <Section
+      ref={sectionRef}
       id="featured-projects"
       className="scroll-mt-[var(--tivonix-header-spacer)] !py-12 sm:!py-16 lg:!py-20"
     >
@@ -70,7 +95,9 @@ export default function FeaturedProjectsSection() {
 
         <Reveal>
           <div
-            className="featured-case-carousel relative"
+            ref={shellRef}
+            className="featured-case-carousel relative overflow-anchor-none"
+            style={{ overflowAnchor: "none" } as CSSProperties}
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
             onFocusCapture={() => setPaused(true)}

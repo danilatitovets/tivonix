@@ -4,6 +4,7 @@ import Container from "../ui/Container";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
 import { LANDING_HEADLINE_CLASS } from "../../lib/landingLayout";
+import { useInView } from "../../hooks/useInView";
 
 const CARD_DARK = "#141414";
 const CARD_SOFT = "#262626";
@@ -587,7 +588,7 @@ function AdminVisual({ isRu }: { isRu: boolean }) {
         {
           kind: "memory" as const,
           title: "Память",
-          lines: ["«вроде ответил»", "«завтра напишу»", "«уже не помню»"],
+          lines: ["«вроде ответил»", "«завтра напишу»", "«не помню»"],
         },
         {
           kind: "chats" as const,
@@ -628,10 +629,12 @@ function AdminVisual({ isRu }: { isRu: boolean }) {
         },
       ];
 
+  const rootRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const indexRef = useRef(0);
   const [index, setIndex] = useState(0);
   const [noTransition, setNoTransition] = useState(false);
+  const inView = useInView(rootRef, { rootMargin: "60px 0px", threshold: 0 });
 
   const HOLD_MS = 2400;
   const SWIPE_MS = 480;
@@ -641,6 +644,8 @@ function AdminVisual({ isRu }: { isRu: boolean }) {
   const loop = [...cards, ...cards];
 
   useEffect(() => {
+    if (!inView) return;
+
     let holdId = 0;
     let swipeId = 0;
     let alive = true;
@@ -679,7 +684,7 @@ function AdminVisual({ isRu }: { isRu: boolean }) {
       window.clearTimeout(holdId);
       window.clearTimeout(swipeId);
     };
-  }, [n]);
+  }, [n, inView]);
 
   useEffect(() => {
     const track = trackRef.current;
@@ -692,7 +697,7 @@ function AdminVisual({ isRu }: { isRu: boolean }) {
   }, [index]);
 
   return (
-    <div className="relative min-w-0 overflow-hidden pt-1 sm:pt-2">
+    <div ref={rootRef} className="relative min-w-0 overflow-hidden pt-1 sm:pt-2" style={{ overflowAnchor: "none" }}>
       <div
         ref={trackRef}
         className={[

@@ -258,7 +258,9 @@ export default function AiPremiumSection() {
       const textOpacity = textReveal(progress, drop) * (1 - hubFade);
       const hubOpacity = hub * (1 - hubFade);
       const targetExitScroll = rowExitScroll(drift);
-      const smoothRate = reducedMotion ? 1 : scrollY === lastScrollY ? 0.1 : 0.18;
+      // Snap when idle — continued easing after scroll stop made logos drift and felt like a page jump
+      const isScrolling = scrollY !== lastScrollY;
+      const smoothRate = reducedMotion || !isScrolling ? 1 : 0.18;
       smoothExitScroll += (targetExitScroll - smoothExitScroll) * smoothRate;
       const exitScroll = smoothExitScroll;
       const auroraStrength = 1;
@@ -270,7 +272,10 @@ export default function AiPremiumSection() {
         !reducedMotion && inAnimPin && rectTop <= 48 && progress < 0.28;
       if (nextHint !== showHintRef.current) {
         showHintRef.current = nextHint;
-        setShowScrollHint(nextHint);
+        // Avoid React setState while idle-smoothing — it re-rendered the sticky pin
+        if (isScrolling || !nextHint) {
+          setShowScrollHint(nextHint);
+        }
       }
 
       lastScrollY = scrollY;
@@ -510,7 +515,7 @@ export default function AiPremiumSection() {
         }
       });
 
-      return Math.abs(smoothExitScroll - targetExitScroll) > 0.0015;
+      return isScrolling && Math.abs(smoothExitScroll - targetExitScroll) > 0.0015;
     };
 
     const update = () => {

@@ -81,27 +81,15 @@ function useHomeHeroInView(pathname: string) {
       return;
     }
 
-    let leaveTimer = 0;
     const io = new IntersectionObserver(
       ([entry]) => {
-        const next = !!entry?.isIntersecting;
-        if (next) {
-          window.clearTimeout(leaveTimer);
-          setInView(true);
-          return;
-        }
-        // Hysteresis: avoid top/float flicker at the hero edge (~12–20px jumps)
-        window.clearTimeout(leaveTimer);
-        leaveTimer = window.setTimeout(() => setInView(false), 140);
+        setInView(!!entry?.isIntersecting);
       },
       { threshold: 0.06, rootMargin: "-80px 0px -30% 0px" }
     );
 
     io.observe(hero);
-    return () => {
-      window.clearTimeout(leaveTimer);
-      io.disconnect();
-    };
+    return () => io.disconnect();
   }, [pathname]);
 
   return inView;
@@ -114,7 +102,6 @@ function useFooterInView(pathname: string) {
     if (typeof window === "undefined") return;
 
     let io: IntersectionObserver | null = null;
-    let leaveTimer = 0;
 
     const attach = () => {
       const footer = document.getElementById("site-footer");
@@ -125,16 +112,7 @@ function useFooterInView(pathname: string) {
 
       io?.disconnect();
       io = new IntersectionObserver(
-        ([entry]) => {
-          const next = !!entry?.isIntersecting;
-          if (next) {
-            window.clearTimeout(leaveTimer);
-            setInView(true);
-            return;
-          }
-          window.clearTimeout(leaveTimer);
-          leaveTimer = window.setTimeout(() => setInView(false), 160);
-        },
+        ([entry]) => setInView(!!entry?.isIntersecting),
         { threshold: 0, rootMargin: "-72px 0px 0px 0px" }
       );
       io.observe(footer);
@@ -145,7 +123,6 @@ function useFooterInView(pathname: string) {
 
     return () => {
       window.clearTimeout(t);
-      window.clearTimeout(leaveTimer);
       io?.disconnect();
     };
   }, [pathname]);
