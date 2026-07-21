@@ -146,7 +146,7 @@ function HeroCard({
       <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] bg-black">
         <video
           ref={videoRef}
-          className="absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center"
+          className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center"
           src={HERO_VIDEO}
           poster={HERO_POSTER}
           autoPlay
@@ -154,6 +154,8 @@ function HeroCard({
           loop
           playsInline
           preload="auto"
+          controls={false}
+          disablePictureInPicture
           aria-hidden
         />
 

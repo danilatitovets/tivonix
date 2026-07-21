@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { Link } from "react-router-dom";
 import type { CSSProperties } from "react";
 import Container from "../ui/Container";
@@ -15,6 +15,7 @@ import {
 /** Same photos as home pricing cards */
 const PLANS_IMG = `/images/${encodeURIComponent("планы")}`;
 const PLAN_PHOTOS = [1, 2, 3, 4, 5].map((n) => `${PLANS_IMG}/${n}.png`);
+const SPEED_PX_PER_SEC = 38;
 
 function initialsFromName(name: string) {
   const parts = name.replace(/[«»""]/g, "").split(/\s+/).filter(Boolean);
@@ -75,28 +76,95 @@ export default function HomeTestimonialsSection() {
   const copy = homeExtraCopy(lang);
   const items = projectsWithTestimonials(lang === "ru");
   const marqueeRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [holding, setHolding] = useState(false);
+  const holdingRef = useRef(false);
+  const inViewRef = useRef(true);
+  const reducedRef = useRef(false);
 
   useEffect(() => {
-    const el = marqueeRef.current;
-    if (!el || typeof window === "undefined") return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
-      el.classList.add("is-paused");
-      return;
-    }
+    holdingRef.current = holding;
+  }, [holding]);
+
+  useEffect(() => {
+    const scroller = marqueeRef.current;
+    const track = trackRef.current;
+    if (!scroller || !track || typeof window === "undefined") return;
+
+    reducedRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedRef.current) return;
+
+    let raf = 0;
+    let lastTs = 0;
+    let halfWidth = 0;
+
+    const measure = () => {
+      halfWidth = track.scrollWidth / 2;
+    };
+
+    const loop = (ts: number) => {
+      raf = requestAnimationFrame(loop);
+      if (!lastTs) lastTs = ts;
+      const dt = Math.min(0.05, (ts - lastTs) / 1000);
+      lastTs = ts;
+
+      if (holdingRef.current || !inViewRef.current) return;
+      if (halfWidth <= 0) measure();
+      if (halfWidth <= 0) return;
+
+      scroller.scrollLeft += SPEED_PX_PER_SEC * dt;
+      if (scroller.scrollLeft >= halfWidth) {
+        scroller.scrollLeft -= halfWidth;
+      }
+    };
+
+    measure();
+    raf = requestAnimationFrame(loop);
+
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
+    ro?.observe(track);
+
     const io = new IntersectionObserver(
       ([entry]) => {
-        el.classList.toggle("is-paused", !entry.isIntersecting);
+        inViewRef.current = Boolean(entry?.isIntersecting);
       },
-      { rootMargin: "10% 0px" },
+      { rootMargin: "10% 0px" }
     );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
+    io.observe(scroller);
+
+    const onScroll = () => {
+      if (halfWidth <= 0) return;
+      // Keep infinite loop when user drags past the seam
+      if (scroller.scrollLeft >= halfWidth) {
+        scroller.scrollLeft -= halfWidth;
+      } else if (scroller.scrollLeft <= 0) {
+        scroller.scrollLeft += halfWidth;
+      }
+    };
+
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ro?.disconnect();
+      io.disconnect();
+      scroller.removeEventListener("scroll", onScroll);
+    };
+  }, [items.length]);
 
   if (items.length === 0) return null;
 
   const sequence = [...items, ...items];
+
+  const pause = (e: ReactPointerEvent<HTMLDivElement>) => {
+    setHolding(true);
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      /* ignore */
+    }
+  };
+  const resume = () => setHolding(false);
 
   return (
     <Section
@@ -113,10 +181,19 @@ export default function HomeTestimonialsSection() {
 
       <div
         ref={marqueeRef}
-        className="home-testimonials__marquee mt-10"
+        className={[
+          "home-testimonials__marquee mt-10",
+          holding ? "is-holding" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
         aria-label={copy.testimonials.title}
+        onPointerDown={pause}
+        onPointerUp={resume}
+        onPointerCancel={resume}
+        onLostPointerCapture={resume}
       >
-        <div className="home-testimonials__track">
+        <div ref={trackRef} className="home-testimonials__track">
           {sequence.map((project, i) => (
             <TestimonialCard
               key={`${project.id}-${i}`}

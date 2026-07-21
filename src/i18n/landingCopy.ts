@@ -145,7 +145,7 @@ const COPY_RU = {
   },
   pain: {
     title: "Пока заявка живёт в чатах — процесс ломается",
-    titleLines: ["Пока заявка живёт в чатах —", "процесс ломается"],
+    titleLines: ["Пока заявка живёт в чатах", "процесс ломается"],
     subtitle:
       "Когда обращения остаются в чатах, почте и таблицах, команда отвечает поздно, забывает клиентов и не понимает следующий шаг.",
     hoverCta: "Как закрываем",
@@ -620,7 +620,7 @@ const COPY_EN = {
   },
   pain: {
     title: "While leads live in chats — the process breaks",
-    titleLines: ["While leads live in chats —", "the process breaks"],
+    titleLines: ["While leads live in chats", "the process breaks"],
     subtitle:
       "When inquiries live in chats, inboxes and spreadsheets, the team replies late, forgets clients and doesn't know the next step.",
     hoverCta: "How we fix it",

@@ -89,7 +89,7 @@ export default function FinalCTASection() {
           <div className="final-cta-card__bg" aria-hidden>
             <video
               ref={videoRef}
-              className="final-cta-card__bg-img"
+              className="final-cta-card__bg-img pointer-events-none"
               style={bgStyle}
               src={FINAL_CTA_VIDEO}
               poster={FINAL_CTA_POSTER}
@@ -98,6 +98,8 @@ export default function FinalCTASection() {
               loop
               playsInline
               preload="auto"
+              controls={false}
+              disablePictureInPicture
             />
             <div className="final-cta-card__bg-overlay" />
           </div>
