@@ -521,7 +521,11 @@ export default function AiPremiumSection() {
       if (!raf) raf = requestAnimationFrame(update);
     };
 
+    let lastH = window.innerHeight;
     const onResize = () => {
+      const h = window.innerHeight;
+      if (Math.abs(h - lastH) < 48) return;
+      lastH = h;
       lastScrollY = -1;
       smoothExitScroll = 0;
       measure();

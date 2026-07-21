@@ -48,7 +48,7 @@ export default function Reveal({ children, className, delay = 0 }: RevealProps) 
         className,
         visible
           ? "translate-y-0 opacity-100 motion-safe:transition-[opacity,transform] motion-safe:duration-[0.55s] motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]"
-          : "translate-y-5 opacity-0",
+          : "translate-y-3 opacity-0",
       ]
         .filter(Boolean)
         .join(" ")}

@@ -83,7 +83,12 @@ function useHeroScrollProgress(trackRef: React.RefObject<HTMLElement | null>) {
       if (!raf) raf = requestAnimationFrame(update);
     };
 
+    let lastH = window.innerHeight;
     const onResize = () => {
+      const h = window.innerHeight;
+      // Ignore tiny mobile-chrome resizes that nudge sticky math by ~10–30px
+      if (Math.abs(h - lastH) < 48) return;
+      lastH = h;
       measure();
       update();
     };

@@ -81,13 +81,27 @@ function useHomeHeroInView(pathname: string) {
       return;
     }
 
+    let leaveTimer = 0;
     const io = new IntersectionObserver(
-      ([entry]) => setInView(!!entry?.isIntersecting),
+      ([entry]) => {
+        const next = !!entry?.isIntersecting;
+        if (next) {
+          window.clearTimeout(leaveTimer);
+          setInView(true);
+          return;
+        }
+        // Hysteresis: avoid top/float flicker at the hero edge (~12–20px jumps)
+        window.clearTimeout(leaveTimer);
+        leaveTimer = window.setTimeout(() => setInView(false), 140);
+      },
       { threshold: 0.06, rootMargin: "-80px 0px -30% 0px" }
     );
 
     io.observe(hero);
-    return () => io.disconnect();
+    return () => {
+      window.clearTimeout(leaveTimer);
+      io.disconnect();
+    };
   }, [pathname]);
 
   return inView;
@@ -100,6 +114,7 @@ function useFooterInView(pathname: string) {
     if (typeof window === "undefined") return;
 
     let io: IntersectionObserver | null = null;
+    let leaveTimer = 0;
 
     const attach = () => {
       const footer = document.getElementById("site-footer");
@@ -110,7 +125,16 @@ function useFooterInView(pathname: string) {
 
       io?.disconnect();
       io = new IntersectionObserver(
-        ([entry]) => setInView(!!entry?.isIntersecting),
+        ([entry]) => {
+          const next = !!entry?.isIntersecting;
+          if (next) {
+            window.clearTimeout(leaveTimer);
+            setInView(true);
+            return;
+          }
+          window.clearTimeout(leaveTimer);
+          leaveTimer = window.setTimeout(() => setInView(false), 160);
+        },
         { threshold: 0, rootMargin: "-72px 0px 0px 0px" }
       );
       io.observe(footer);
@@ -121,6 +145,7 @@ function useFooterInView(pathname: string) {
 
     return () => {
       window.clearTimeout(t);
+      window.clearTimeout(leaveTimer);
       io?.disconnect();
     };
   }, [pathname]);
@@ -419,9 +444,13 @@ export default function Header() {
 
       <header
         className={cx(
-          "pointer-events-none fixed inset-x-0 z-[120] transition-[top,transform,opacity]",
-          heroInView && !isMobile ? "top-3 sm:top-4" : "top-0",
-          hideHeader ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100"
+          "pointer-events-none fixed inset-x-0 top-0 z-[120] transition-[transform,opacity]",
+          // Float via transform (not `top`) so chrome/scroll never fights a top tween (~12–20px jumps)
+          hideHeader
+            ? "-translate-y-full opacity-0"
+            : heroInView && !isMobile
+              ? "translate-y-3 opacity-100 sm:translate-y-4"
+              : "translate-y-0 opacity-100"
         )}
         style={reducedMotion ? undefined : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)}
       >
