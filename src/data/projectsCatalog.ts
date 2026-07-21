@@ -126,8 +126,8 @@ function buildAllProjects(isRu: boolean): Project[] {
           name: isRu ? "Артём К." : "Artem K.",
           role: isRu ? "Один из основателей TIVONIX" : "Co-founder, TIVONIX",
           text: isRu
-            ? "Панель закрыла то, из‑за чего раньше всё сыпалось: статусы жили в чатах, выплаты — в таблицах. Сейчас открыл кабинет — и сразу видно, где сделка и что дальше. Рабочий инструмент, без лишнего."
-            : "The panel fixed what kept breaking: statuses lived in chats, payouts in spreadsheets. Now you open the dashboard and see where the deal is and what’s next. A real tool, no fluff.",
+            ? "Раньше статусы размазывались по чатам, выплаты сидели в таблицах. С панелью открыл кабинет и сразу понятно, где сделка и что дальше. Без воды, просто работает."
+            : "Statuses used to live in chats, payouts in spreadsheets. With the panel you open the dashboard and know where the deal is. No fluff, it just works.",
         },
       },
 
@@ -238,8 +238,8 @@ function buildAllProjects(isRu: boolean): Project[] {
             ? "Сеть шиномонтажа · Минск · 4 филиала"
             : "Tire-service network · Minsk · 4 branches",
           text: isRu
-            ? "Нужен был сайт, с которого клиент с дороги сразу пишет или звонит — без квеста по адресам. Команда TIVONIX собрала дизайн, разработку, домен и хостинг под ключ. Четыре точки, запись и безнал для автопарков — всё на месте, сайт в бою."
-            : "We needed a site where a client on the road can book or call right away — no address scavenger hunt. TIVONIX shipped design, build, domain and hosting turnkey. Four locations, booking and fleet billing — all live, site in production.",
+            ? "Хотели сайт, с которого человек с дороги сразу пишет или звонит, а не ищет адреса по кругу. Ребята сделали всё под ключ: дизайн, разработку, домен. Четыре точки, запись, безнал для автопарков. Сайт уже в работе."
+            : "We wanted a site where people can book or call right from the road, not hunt for addresses. The team did the full thing: design, build, domain. Four locations, booking, fleet billing. Site is live.",
         },
       },
 
@@ -306,8 +306,8 @@ function buildAllProjects(isRu: boolean): Project[] {
           name: isRu ? "Виктор Безбородых" : "Viktor Bezborodykh",
           role: isRu ? "Founder & CEO MIN.ECO" : "Founder & CEO, MIN.ECO",
           text: isRu
-            ? "Сделали быстро, аккуратно и с правильным ощущением премиума. Отдельно — за скорость и структуру."
-            : "Fast, clean delivery with a premium feel. Great performance and structure.",
+            ? "Сделали быстро и аккуратно. Сайт выглядит дорого, без ощущения шаблона. По срокам тоже всё нормально."
+            : "Fast and neat. The site looks premium, not like a template. Timeline was fine too.",
         },
       },
 
@@ -366,8 +366,8 @@ function buildAllProjects(isRu: boolean): Project[] {
           name: isRu ? "Виктор Безбородых" : "Viktor Bezborodykh",
           role: isRu ? "Founder & CEO MIN.ECO" : "Founder & CEO, MIN.ECO",
           text: isRu
-            ? "Коммуникация — по делу, быстро вносят правки, результатом довольны."
-            : "Clear communication, fast iterations, happy with the result.",
+            ? "Пишем в чат, правки прилетают быстро. Без лишней воды, результатом довольны."
+            : "We message them, edits come back fast. Straight talk, happy with the result.",
         },
       },
 
@@ -430,8 +430,8 @@ function buildAllProjects(isRu: boolean): Project[] {
             ? "Основатель и гендиректор, ООО «Хэдмайнд»"
             : "Founder & CEO, Headmind",
           text: isRu
-            ? "Сначала показали несколько макетов в Figma — выбрали тот, что зашёл. Потом собрали на WordPress, подключили хостинг и домен. Клиентам стало понятнее, кто мы — сайт спокойно отправляем на первом касании."
-            : "They showed several Figma directions first — we picked the one that clicked. Then WordPress, hosting and domain. Clients finally get who we are — we send the site on first contact without hesitation.",
+            ? "Сначала кинули несколько макетов в Figma, мы выбрали свой. Потом WordPress, хостинг, домен. Теперь спокойно кидаем сайт клиенту на первом звонке."
+            : "They sent a few Figma options, we picked one. Then WordPress, hosting, domain. Now we send the site on the first call without thinking twice.",
         },
       },
 
@@ -517,8 +517,8 @@ function buildAllProjects(isRu: boolean): Project[] {
           name: isRu ? "Виктория Д." : "Victoria D.",
           role: isRu ? "Заказчик Slotty" : "Slotty client",
           text: isRu
-            ? "Нужна была не «демо-запись», а нормальный маркетплейс с фильтрами, кабинетом мастера и админкой. Собрали быстро, по делу — за три недели получили продукт на своём домене, с которым можно идти к реальным клиентам."
-            : "I needed a real marketplace with filters, a master cabinet and admin — not a booking demo. They shipped fast and clean: in three weeks we had a product on our own domain, ready for real clients.",
+            ? "Мне нужен был нормальный маркетплейс: фильтры, кабинет мастера, админка. Не демо. За три недели собрали на нашем домене, уже можно звать реальных клиентов."
+            : "I needed a real marketplace: filters, master cabinet, admin. Not a demo. In three weeks it was on our domain and ready for real clients.",
         },
       },
 
@@ -628,8 +628,8 @@ function buildAllProjects(isRu: boolean): Project[] {
           name: isRu ? "Виктор Безбородых" : "Viktor Bezborodykh",
           role: isRu ? "Основатель MIN.ECO" : "Founder & CEO, MIN.ECO",
           text: isRu
-            ? "Spliton — тяжёлый продукт: биржа долей, кошелёк, выплаты и огромная админка. Собрали целиком, довели до продакшена и не бросили на поддержке. С нами спокойно масштабировать дальше."
-            : "Spliton is a heavy product: share exchange, wallet, payouts and a huge admin. They shipped the full stack to production and stayed on support. Easy to keep scaling with them.",
+            ? "У Spliton тяжёлая начинка: доли, кошелёк, выплаты, большая админка. Собрали целиком, выкатили в прод и не пропали. С ними спокойно идти дальше."
+            : "Spliton is heavy: shares, wallet, payouts, a big admin. They built the full stack, shipped to production, and stayed around. Easy to keep going with them.",
         },
       },
   ];
