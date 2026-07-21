@@ -5,6 +5,7 @@ import { landingCopy } from "../../i18n/landingCopy";
 import { HERO_SCROLL_HEADLINE_CLASS, LANDING_SHELL_CLASS } from "../../lib/landingLayout";
 import { isTelegramWebView } from "../../lib/telegramWebView";
 import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
+import { getStableViewportHeight } from "../../lib/stableViewport";
 
 const HERO_VIDEO = "/images/hero-bg.mp4";
 const HERO_POSTER = "/images/hero-bg-poster.webp";
@@ -71,7 +72,7 @@ function useHeroScrollProgress(trackRef: React.RefObject<HTMLElement | null>) {
     const measure = () => {
       const rect = el.getBoundingClientRect();
       trackTop = window.scrollY + rect.top;
-      scrollable = Math.max(1, el.offsetHeight - window.innerHeight);
+      scrollable = Math.max(1, el.offsetHeight - getStableViewportHeight());
     };
 
     const update = () => {
@@ -83,12 +84,11 @@ function useHeroScrollProgress(trackRef: React.RefObject<HTMLElement | null>) {
       if (!raf) raf = requestAnimationFrame(update);
     };
 
-    let lastH = window.innerHeight;
+    let lastW = window.innerWidth;
     const onResize = () => {
-      const h = window.innerHeight;
-      // Ignore tiny mobile-chrome resizes that nudge sticky math by ~10–30px
-      if (Math.abs(h - lastH) < 48) return;
-      lastH = h;
+      // Ignore mobile chrome height toggles; only react to real layout width changes
+      if (Math.abs(window.innerWidth - lastW) < 10) return;
+      lastW = window.innerWidth;
       measure();
       update();
     };

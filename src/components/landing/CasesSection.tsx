@@ -7,6 +7,7 @@ import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
 import { buildProjects } from "../../data/projectsCatalog";
 import { useLeadForm } from "../leads/useLeadForm";
+import { getStableViewportHeight } from "../../lib/stableViewport";
 
 function clamp01(v: number) {
   return Math.min(1, Math.max(0, v));
@@ -20,22 +21,24 @@ function useCaseCoverPan(blockRef: RefObject<HTMLDivElement | null>) {
     if (!el || typeof window === "undefined") return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let raf = 0;
+    let lastX = 38;
 
     const update = () => {
       const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight;
+      const vh = getStableViewportHeight();
       const total = Math.max(1, rect.height + vh * 0.35);
       const scrolled = vh * 0.82 - rect.top;
       const progress = clamp01(scrolled / total);
       const wide = window.innerWidth >= 1024;
-      // Cover art — gentle pan across the left visual
       const start = wide ? 32 : 40;
       const end = wide ? 48 : 55;
       const target = reduced ? (wide ? 38 : 45) : start + (end - start) * progress;
+      if (Math.abs(target - lastX) < 0.15) return;
+      lastX = target;
       setCoverX(target);
     };
 
-    let raf = 0;
     const schedule = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(update);
@@ -43,12 +46,10 @@ function useCaseCoverPan(blockRef: RefObject<HTMLDivElement | null>) {
 
     schedule();
     window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
 
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
     };
   }, [blockRef]);
 

@@ -10,6 +10,7 @@ import { pricingCopy, LAUNCH_DISCOUNT_PERCENT } from "../../i18n/pricingCopy";
 import type { PlanId } from "../../lib/pricingData";
 import { useLeadForm } from "../leads/useLeadForm";
 import { trackEvent } from "../../lib/analytics";
+import { getStableViewportHeight } from "../../lib/stableViewport";
 
 const PLANS_IMG = `/images/${encodeURIComponent("планы")}`;
 
@@ -67,14 +68,18 @@ function usePlanPhotoScale(sectionRef: RefObject<HTMLElement | null>) {
     }
 
     let raf = 0;
+    let lastScale = 1.04;
 
     const update = () => {
       const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight;
+      const vh = getStableViewportHeight();
       const total = Math.max(1, rect.height + vh * 0.45);
       const scrolled = vh * 0.75 - rect.top;
       const progress = clamp01(scrolled / total);
-      setScale(1.04 + progress * 0.28);
+      const next = 1.04 + progress * 0.28;
+      if (Math.abs(next - lastScale) < 0.004) return;
+      lastScale = next;
+      setScale(next);
     };
 
     const schedule = () => {
@@ -84,12 +89,10 @@ function usePlanPhotoScale(sectionRef: RefObject<HTMLElement | null>) {
 
     schedule();
     window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
 
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
     };
   }, [sectionRef]);
 

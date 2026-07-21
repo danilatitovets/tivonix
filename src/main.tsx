@@ -3,9 +3,11 @@ import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
 import { LangProvider } from "./i18n/LangProvider";
 import { markTelegramWebView } from "./lib/telegramWebView";
+import { bindStableViewport } from "./lib/stableViewport";
 import "./index.css";
 
 markTelegramWebView();
+bindStableViewport();
 
 const root = document.getElementById("root");
 

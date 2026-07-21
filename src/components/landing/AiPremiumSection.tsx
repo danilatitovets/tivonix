@@ -21,6 +21,7 @@ import {
   rowPositionScrollStrip,
 } from "../../lib/aiModels";
 import { isTelegramWebView } from "../../lib/telegramWebView";
+import { getStableViewportHeight } from "../../lib/stableViewport";
 import TivonixGlowBorder from "../ui/TivonixGlowBorder";
 import ScrollFingerHint from "../ui/ScrollFingerHint";
 
@@ -206,9 +207,9 @@ export default function AiPremiumSection() {
       trackTop = window.scrollY + rect.top;
       animPinHeight = animPin.offsetHeight;
       trackHeight = track.offsetHeight;
-      animScrollable = Math.max(1, animPinHeight - window.innerHeight);
+      animScrollable = Math.max(1, animPinHeight - getStableViewportHeight());
       driftScrollable = Math.max(1, trackHeight - animPinHeight);
-      tailPx = (DRIFT_RUNWAY_VH / 100) * window.innerHeight;
+      tailPx = (DRIFT_RUNWAY_VH / 100) * getStableViewportHeight();
       headerSpacer =
         Number.parseFloat(
           getComputedStyle(document.documentElement).getPropertyValue("--tivonix-header-spacer")
@@ -217,7 +218,7 @@ export default function AiPremiumSection() {
 
     const applyFrame = () => {
       const scrollY = window.scrollY;
-      const viewport = window.innerHeight;
+      const viewport = getStableViewportHeight();
       const scrollInTrack = scrollY - trackTop;
       if (scrollInTrack < -viewport || scrollInTrack > trackHeight + viewport) {
         if (showHintRef.current) {
@@ -521,11 +522,10 @@ export default function AiPremiumSection() {
       if (!raf) raf = requestAnimationFrame(update);
     };
 
-    let lastH = window.innerHeight;
+    let lastW = window.innerWidth;
     const onResize = () => {
-      const h = window.innerHeight;
-      if (Math.abs(h - lastH) < 48) return;
-      lastH = h;
+      if (Math.abs(window.innerWidth - lastW) < 10) return;
+      lastW = window.innerWidth;
       lastScrollY = -1;
       smoothExitScroll = 0;
       measure();

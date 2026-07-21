@@ -31,12 +31,21 @@
       --tivonix-header-spacer: 104px;
     }
   }
-  html, body, #root { height: 100%; }
+  html, body, #root {
+    /* auto height — `height: 100%` resizes when mobile chrome toggles and jumps the page while idle */
+    height: auto;
+    min-height: 100%;
+  }
+  @supports (min-height: 100svh) {
+    html, body, #root {
+      min-height: 100svh;
+    }
+  }
   /* в•Ёв•›в•¤Р’в•¤Р‘в•¤Р’в•¤Р“в•Ёв”ђ в•Ёв”ђв•Ёв•›в•Ёв”¤ в•¤Р”в•Ёв••в•Ёв•‘в•¤Р‘-в•¤Р•в•Ёв•Ўв•Ёв”¤в•Ёв•Ўв•¤Рђ (~92С‚РђРЈ104px + в•Ёв•–в•Ёв–‘в•Ёв”ђв•Ёв–‘в•¤Р‘) в•Ёв”ђв•¤Рђв•Ёв•• в•¤Рџв•Ёв•‘в•Ёв•›в•¤Рђв•¤Рџв•¤Р• в•Ёв•• в•Ёв”ђв•¤Рђв•Ёв•›в•Ёв”‚в•¤Рђв•Ёв–‘в•Ёв•ќв•Ёв•ќв•Ёв•њв•Ёв•›в•Ёв•ќ в•¤Р‘в•Ёв•‘в•¤Рђв•Ёв•›в•Ёв•—в•Ёв•—в•Ёв•Ў */
   html {
     scroll-padding-top: 6.75rem;
     background: #000000;
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: contain;
     overflow-anchor: none;
   }
   body {
@@ -45,7 +54,7 @@
     color: rgba(255, 255, 255, 0.92);
     font-family: var(--font-dm-sans);
     font-weight: 500;
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: contain;
     overflow-anchor: none;
   }
 

@@ -6,6 +6,7 @@ import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
 import { aboutCopy, aboutPath } from "../../i18n/aboutCopy";
 import { homeExtraCopy } from "../../i18n/homeExtraCopy";
+import { getStableViewportHeight } from "../../lib/stableViewport";
 
 const LOGO = "/images/tivonix-logo-white.webp";
 const LOGO_COLORS = ["#ffffff", "#FF9A3D", "#FF5C00"] as const;
@@ -69,7 +70,7 @@ export default function FounderSection() {
       raf = 0;
       if (!active) return;
 
-      const vh = window.innerHeight;
+      const vh = getStableViewportHeight();
       const sRect = section.getBoundingClientRect();
       const raw = Math.min(1, Math.max(0, (vh * 0.75 - sRect.top) / (sRect.height + vh * 0.35)));
       const logoKey = Math.round(raw * 40);
@@ -110,14 +111,12 @@ export default function FounderSection() {
     requestAnimationFrame(() => schedule());
 
     window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
 
     return () => {
       active = false;
       io.disconnect();
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
     };
   }, [words]);
 

@@ -8,6 +8,7 @@ import { TelegramLink } from "./LandingCTA";
 import { TG_CHANNEL_URL } from "../../constants/links";
 import { trackTelegramDirectClick } from "../../lib/analytics";
 import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
+import { getStableViewportHeight } from "../../lib/stableViewport";
 
 const FINAL_CTA_VIDEO = "/images/hero-bg.mp4";
 const FINAL_CTA_POSTER = "/images/hero-bg-poster.webp";
@@ -30,14 +31,18 @@ function useSectionScrollScale(sectionRef: React.RefObject<HTMLElement | null>) 
     }
 
     let raf = 0;
+    let lastScale = 1.05;
 
     const update = () => {
       const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight;
+      const vh = getStableViewportHeight();
       const total = rect.height + vh;
       const scrolled = vh - rect.top;
       const progress = clamp01(scrolled / total);
-      setScale(1.08 + progress * 0.44);
+      const next = 1.08 + progress * 0.44;
+      if (Math.abs(next - lastScale) < 0.004) return;
+      lastScale = next;
+      setScale(next);
     };
 
     const schedule = () => {
@@ -47,12 +52,11 @@ function useSectionScrollScale(sectionRef: React.RefObject<HTMLElement | null>) 
 
     schedule();
     window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
+    // no resize: mobile chrome height changes must not retarget scale while idle
 
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
     };
   }, [sectionRef]);
 
