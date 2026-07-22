@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Header from "../components/landing/Header";
 import Footer from "../components/landing/Footer";
 import PricingPlansSection from "../components/landing/PricingPlansSection";
@@ -9,6 +10,8 @@ import { trackPricingView } from "../lib/analytics";
 
 export default function PricingPage() {
   const { lang } = useLang();
+  const { pathname } = useLocation();
+  const isEnPath = pathname === "/en/plans";
 
   useEffect(() => {
     trackPricingView();
@@ -24,14 +27,16 @@ export default function PricingPage() {
       : "TIVONIX plans: Start, Growth, Product and Custom — from a lead page to a full web service with CRM, payments and automation.";
 
   const schemaJsonLd = buildPricingPageSchema({ pageTitle: title, pageDescription: description, lang });
+  const canonicalPath = isEnPath ? "/en/plans" : "/plans";
 
   return (
     <div className="landing-caldera plans-caldera min-h-screen overflow-x-clip bg-black">
       <SEO
         title={title}
         description={description}
-        canonicalPath="/plans"
+        canonicalPath={canonicalPath}
         ogLocalePrimary={lang === "en" ? "en_US" : "ru_RU"}
+        hreflang
         schemaJsonLd={schemaJsonLd}
       />
       <div id="top" />

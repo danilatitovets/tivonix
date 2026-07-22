@@ -11,6 +11,124 @@ import { useInView } from "../../hooks/useInView";
 
 const AUTO_MS = 5500;
 
+function cx(...parts: Array<string | false | null | undefined>) {
+  return parts.filter(Boolean).join(" ");
+}
+
+type FeaturedItem = ReturnType<typeof homeExtraCopy>["featured"]["items"][number];
+
+function FeaturedCaseSlide({
+  item,
+  isRu,
+  copy,
+  active,
+}: {
+  item: FeaturedItem;
+  isRu: boolean;
+  copy: ReturnType<typeof homeExtraCopy>;
+  active: boolean;
+}) {
+  const project = findProjectBySlug(item.id, isRu);
+  if (!project) return null;
+
+  const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
+  const cover = project.cover ?? "";
+
+  return (
+    <article
+      className={cx(
+        "case-split case-split--no-tabs col-start-1 row-start-1 transition-opacity duration-300 ease-out",
+        active
+          ? "relative z-[1] opacity-100"
+          : "pointer-events-none invisible z-0 opacity-0"
+      )}
+      aria-hidden={!active}
+    >
+      <div className="case-split__visual">
+        {cover ? (
+          <img
+            src={cover}
+            alt={project.title}
+            loading={active ? "eager" : "lazy"}
+            decoding="async"
+            className="case-split__img"
+            width={960}
+            height={640}
+          />
+        ) : null}
+        <div className="case-split__visual-overlay" aria-hidden />
+      </div>
+
+      <div className="case-split__grid">
+        <div className="case-split__visual-gap" aria-hidden />
+
+        <div className="case-split__content">
+          <span className="case-split__badge">{item.type}</span>
+
+          <h3 className="mt-4 font-hero text-[clamp(1.75rem,4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white">
+            <Link
+              to={`/projects/${project.id}`}
+              tabIndex={active ? 0 : -1}
+              onClick={() =>
+                trackEvent("project_open", {
+                  project: project.id,
+                  source: "featured",
+                })
+              }
+              className="transition-colors hover:text-white/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/70"
+            >
+              {project.title}
+            </Link>
+          </h3>
+
+          <p className="mt-3 text-[14px] leading-relaxed text-white/48 sm:text-[15px]">{subtitle}</p>
+
+          <div className="mt-6 space-y-3 text-[13.5px] leading-relaxed text-white/62">
+            <p>
+              <span className="font-medium text-white/78">{copy.featured.problem}</span>{" "}
+              {item.problem}
+            </p>
+            <p>
+              <span className="font-medium text-white/78">{copy.featured.solution}</span>{" "}
+              {item.solution}
+            </p>
+            <p>
+              <span className="font-medium text-white/78">{copy.featured.resultLabel}</span>{" "}
+              {item.result}
+            </p>
+          </div>
+
+          <div className="case-split__chips mt-5">
+            {item.modules.map((m) => (
+              <span key={m} className="case-split__chip">
+                {m}
+              </span>
+            ))}
+          </div>
+
+          {project.domain ? (
+            <a
+              href={project.domain}
+              target="_blank"
+              rel="noopener noreferrer"
+              tabIndex={active ? 0 : -1}
+              onClick={() =>
+                trackEvent("project_live_open", {
+                  project: project.id,
+                  source: "featured",
+                })
+              }
+              className="mt-6 inline-flex text-[13px] font-medium text-[#FF9A3D] transition-colors hover:text-[#FFB06A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/70"
+            >
+              {copy.featured.openLive} →
+            </a>
+          ) : null}
+        </div>
+      </div>
+    </article>
+  );
+}
+
 export default function FeaturedProjectsSection() {
   const { lang } = useLang();
   const isRu = lang === "ru";
@@ -20,7 +138,6 @@ export default function FeaturedProjectsSection() {
   const [paused, setPaused] = useState(false);
   const touchX = useRef<number | null>(null);
   const sectionRef = useRef<HTMLElement | null>(null);
-  const shellRef = useRef<HTMLDivElement | null>(null);
   const inView = useInView(sectionRef, { rootMargin: "40px 0px", threshold: 0 });
 
   const go = useCallback(
@@ -31,25 +148,6 @@ export default function FeaturedProjectsSection() {
     },
     [items.length]
   );
-
-  // Lock height to the tallest slide so autoplay above the fold can't shove the page
-  useEffect(() => {
-    const shell = shellRef.current;
-    if (!shell || typeof window === "undefined") return;
-
-    let max = 0;
-    const measure = () => {
-      const h = shell.scrollHeight;
-      if (h > max) {
-        max = h;
-        shell.style.minHeight = `${max}px`;
-      }
-    };
-
-    measure();
-    const id = window.setTimeout(measure, 80);
-    return () => window.clearTimeout(id);
-  }, [index, items, lang]);
 
   useEffect(() => {
     // Only rotate while visible — off-screen height changes were jumping scroll after idle
@@ -73,12 +171,7 @@ export default function FeaturedProjectsSection() {
     return () => window.removeEventListener("keydown", onKey);
   }, [go, index]);
 
-  const item = items[index];
-  const project = item ? findProjectBySlug(item.id, isRu) : undefined;
-  if (!item || !project) return null;
-
-  const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
-  const cover = project.cover ?? "";
+  if (items.length === 0) return null;
 
   return (
     <Section
@@ -95,7 +188,6 @@ export default function FeaturedProjectsSection() {
 
         <Reveal>
           <div
-            ref={shellRef}
             className="featured-case-carousel relative overflow-anchor-none"
             style={{ overflowAnchor: "none" } as CSSProperties}
             onMouseEnter={() => setPaused(true)}
@@ -121,95 +213,17 @@ export default function FeaturedProjectsSection() {
               go(delta < 0 ? index + 1 : index - 1);
             }}
           >
-            <article className="case-split case-split--no-tabs" key={item.id}>
-              <div className="case-split__visual">
-                {cover ? (
-                  <img
-                    src={cover}
-                    alt={project.title}
-                    loading="eager"
-                    decoding="async"
-                    className="case-split__img"
-                    width={960}
-                    height={640}
-                  />
-                ) : null}
-                <div className="case-split__visual-overlay" aria-hidden />
-              </div>
-
-              <div className="case-split__grid">
-                <div className="case-split__visual-gap" aria-hidden />
-
-                <div className="case-split__content">
-                  <span className="case-split__badge">{item.type}</span>
-
-                  <h3 className="mt-4 font-hero text-[clamp(1.75rem,4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white">
-                    <Link
-                      to={`/projects/${project.id}`}
-                      onClick={() =>
-                        trackEvent("project_open", {
-                          project: project.id,
-                          source: "featured",
-                        })
-                      }
-                      className="transition-colors hover:text-white/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/70"
-                    >
-                      {project.title}
-                    </Link>
-                  </h3>
-
-                  <p className="mt-3 text-[14px] leading-relaxed text-white/48 sm:text-[15px]">
-                    {subtitle}
-                  </p>
-
-                  <div className="mt-6 space-y-3 text-[13.5px] leading-relaxed text-white/62">
-                    <p>
-                      <span className="font-medium text-white/78">
-                        {copy.featured.problem}
-                      </span>{" "}
-                      {item.problem}
-                    </p>
-                    <p>
-                      <span className="font-medium text-white/78">
-                        {copy.featured.solution}
-                      </span>{" "}
-                      {item.solution}
-                    </p>
-                    <p>
-                      <span className="font-medium text-white/78">
-                        {copy.featured.resultLabel}
-                      </span>{" "}
-                      {item.result}
-                    </p>
-                  </div>
-
-                  <div className="case-split__chips mt-5">
-                    {item.modules.map((m) => (
-                      <span key={m} className="case-split__chip">
-                        {m}
-                      </span>
-                    ))}
-                  </div>
-
-                  {project.domain ? (
-                    <a
-                      href={project.domain}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() =>
-                        trackEvent("project_live_open", {
-                          project: project.id,
-                          source: "featured",
-                        })
-                      }
-                      className="mt-6 inline-flex text-[13px] font-medium text-[#FF9A3D] transition-colors hover:text-[#FFB06A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/70"
-                    >
-                      {copy.featured.openLive} →
-                    </a>
-                  ) : null}
-                </div>
-              </div>
-            </article>
+            <div className="featured-case-carousel__stage grid">
+              {items.map((slide, i) => (
+                <FeaturedCaseSlide
+                  key={slide.id}
+                  item={slide}
+                  isRu={isRu}
+                  copy={copy}
+                  active={i === index}
+                />
+              ))}
+            </div>
 
             <div
               className="mt-6 flex items-center justify-center gap-2"

@@ -893,6 +893,13 @@
   z-index: 120;
 }
 
+/* Mobile menu is portaled to document.body — keep above page overlays */
+#mobile-header-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+}
+
 .about-caldera__mesh {
   position: absolute;
   inset: 0;
@@ -1185,295 +1192,6 @@
     animation: none;
     stroke-dasharray: 0.1 0.9;
     stroke-dashoffset: 0.35;
-  }
-}
-
-/* ——— About page: mobile / tablet adaptive ——— */
-@media (max-width: 899px) {
-  .about-caldera {
-    --caldera-section-gap: 56px;
-    --caldera-card-pad: 28px;
-    --caldera-radius-card: 28px;
-  }
-
-  .about-caldera__mesh-track--soft {
-    display: none;
-  }
-
-  .about-caldera__display {
-    font-size: clamp(2.2rem, 10.5vw, 3.5rem);
-  }
-
-  .about-caldera__display--section {
-    font-size: clamp(1.85rem, 7.5vw, 2.75rem);
-  }
-
-  .about-caldera__h {
-    font-size: clamp(1.35rem, 5vw, 1.65rem);
-  }
-
-  .about-caldera__h--sm {
-    font-size: 1.2rem;
-  }
-
-  .about-caldera__body {
-    font-size: 15px;
-  }
-
-  .about-caldera__btn.tivonix-cta-primary,
-  .about-caldera button.about-caldera__btn {
-    max-width: 100%;
-    min-height: 48px;
-  }
-
-  .about-hero--lines {
-    min-height: calc(100svh + var(--hero-lines) * 36vh);
-  }
-
-  .about-hero__pin {
-    min-height: 100svh;
-    padding-top: calc(var(--tivonix-header-spacer) + 0.25rem);
-    padding-bottom: 1.75rem;
-  }
-
-  .about-hero__title {
-    max-width: 12ch;
-  }
-
-  .about-hero__rail {
-    top: 48%;
-    height: clamp(88px, 28vw, 140px);
-  }
-
-  .about-story__text {
-    font-size: clamp(1.08rem, 4.2vw, 1.35rem);
-    line-height: 1.5;
-    letter-spacing: -0.012em;
-  }
-
-  /* Team: photo first, members wrap — no side overflow */
-  .about-people__stage {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    min-height: 0;
-  }
-
-  .about-people__shot {
-    order: -1;
-    opacity: 1;
-    transform: none;
-    filter: none;
-    pointer-events: auto;
-    z-index: 1;
-    width: 100%;
-  }
-
-  .about-people__side {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.85rem 0.55rem;
-    transform: none !important;
-    width: 100%;
-  }
-
-  .about-people__item {
-    width: calc(33.333% - 0.45rem);
-    max-width: 6.5rem;
-    transform: none;
-  }
-
-  .about-people__name,
-  .about-people__role {
-    opacity: 1;
-  }
-
-  .about-people__avatar {
-    filter: none;
-  }
-
-  .about-people__shot .about-join {
-    min-height: clamp(210px, 58vw, 280px);
-  }
-
-  .about-people__shot .about-join__cta {
-    padding-top: 7.5rem;
-    padding-bottom: 1.25rem;
-  }
-
-  .about-join {
-    border-radius: var(--caldera-radius-card);
-    min-height: clamp(210px, 58vw, 280px);
-  }
-
-  .about-footer-wrap {
-    margin-inline: 0.75rem;
-    margin-bottom: 0.85rem;
-    padding-top: 2rem;
-  }
-
-  .about-footer__leads {
-    height: 2rem;
-  }
-
-  .about-footer .site-footer__content {
-    padding: var(--caldera-card-pad);
-  }
-
-  .about-footer .site-footer__grid {
-    gap: 1.35rem 1rem;
-  }
-
-  .about-why__item:nth-child(odd)::after {
-    display: none;
-  }
-}
-
-@media (max-width: 639px) {
-  .about-caldera {
-    --caldera-section-gap: 44px;
-    --caldera-card-pad: 22px;
-    --caldera-radius-card: 22px;
-  }
-
-  .about-caldera main.overflow-x-clip,
-  .about-caldera .overflow-x-clip {
-    overflow-x: clip;
-  }
-
-  .about-caldera__mesh {
-    opacity: 0.7;
-  }
-
-  .about-caldera__mesh-runner,
-  .about-caldera__mesh-runner--delay {
-    stroke-width: 1.6;
-  }
-
-  .about-hero--lines {
-    min-height: calc(100svh + var(--hero-lines) * 28vh);
-  }
-
-  .about-hero__cta {
-    width: 100%;
-    padding-inline: 0.25rem;
-  }
-
-  .about-hero__cta .about-caldera__btn,
-  .about-hero__cta button {
-    width: 100%;
-  }
-
-  .about-caldera__section .mt-14,
-  .about-why-section .mt-14 {
-    margin-top: 2.25rem;
-  }
-
-  .about-why-section .flex.justify-center {
-    width: 100%;
-  }
-
-  .about-why-section .about-caldera__btn,
-  .about-why-section button.about-caldera__btn {
-    width: 100%;
-  }
-
-  .about-people__stage {
-    margin-top: 2rem;
-    gap: 1.25rem;
-  }
-
-  .about-people__item {
-    width: calc(33.333% - 0.35rem);
-    max-width: 5.75rem;
-  }
-
-  .about-people__name {
-    font-size: 0.72rem;
-    margin-top: 0.45rem;
-  }
-
-  .about-people__role {
-    font-size: 0.62rem;
-  }
-
-  .about-people__avatar {
-    width: 2.5rem;
-    height: 3.15rem;
-  }
-
-  .about-people__shot .about-join__cta {
-    padding-top: 6.5rem;
-    padding-inline: 0.75rem;
-  }
-
-  .about-people__shot .about-join__cta .about-caldera__btn,
-  .about-people__shot .about-join__cta button {
-    width: 100%;
-    max-width: 18rem;
-  }
-
-  .about-values {
-    gap: 12px;
-  }
-
-  .about-values__item {
-    padding: 18px;
-    border-radius: var(--caldera-radius-card);
-  }
-
-  .about-footer-wrap {
-    margin-inline: 0.65rem;
-    margin-bottom: 0.75rem;
-    padding-top: 1.75rem;
-  }
-
-  .about-footer__leads {
-    height: 1.75rem;
-  }
-
-  .about-footer .site-footer__touch {
-    max-width: none;
-    gap: 0.75rem;
-  }
-
-  .about-footer .site-footer__logo img {
-    height: 2rem;
-    width: auto;
-  }
-
-  .about-footer .site-footer__touch-title {
-    font-size: 1.45rem;
-  }
-
-  .about-footer .site-footer__col-title {
-    margin-bottom: 0.65rem;
-    font-size: 11px;
-  }
-
-  .about-footer .site-footer__link {
-    font-size: 13px;
-  }
-
-  .about-footer .site-footer__bottom {
-    margin-top: 1.35rem;
-    padding-top: 1.1rem;
-    gap: 1rem;
-  }
-}
-
-@media (max-width: 379px) {
-  .about-people__item {
-    width: calc(50% - 0.35rem);
-    max-width: none;
-  }
-
-  .about-caldera__display {
-    font-size: clamp(1.95rem, 11vw, 2.4rem);
-  }
-
-  .about-footer-wrap {
-    margin-inline: 0.5rem;
   }
 }
 
@@ -2102,18 +1820,23 @@
   font-size: 0.8rem;
   font-weight: 500;
   letter-spacing: 0;
+  line-height: 1.35;
   color: var(--caldera-chalk);
   opacity: calc(0.15 + var(--spread) * 0.85);
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .about-people__role {
   margin: 0.2rem 0 0;
   max-width: 100%;
   font-size: 0.68rem;
-  line-height: 1.35;
+  line-height: 1.4;
   font-weight: 500;
   color: var(--caldera-muted);
   opacity: calc(0.1 + var(--spread) * 0.85);
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .about-people__shot {
@@ -2197,6 +1920,332 @@
     rgba(0, 0, 0, 0.55) 100%
   );
   pointer-events: none;
+}
+
+/* ——— About page: mobile / tablet adaptive ——— */
+@media (max-width: 899px) {
+  .about-caldera {
+    --caldera-section-gap: 56px;
+    --caldera-card-pad: 28px;
+    --caldera-radius-card: 28px;
+    overflow-x: clip;
+  }
+
+  .about-caldera > header > .h-\[78px\] {
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.96) 0%,
+      rgba(0, 0, 0, 0.82) 72%,
+      transparent 100%
+    );
+  }
+
+  .about-caldera__mesh-track--soft {
+    display: none;
+  }
+
+  .about-caldera__display {
+    font-size: clamp(2.2rem, 10.5vw, 3.5rem);
+  }
+
+  .about-caldera__display--section {
+    font-size: clamp(1.85rem, 7.5vw, 2.75rem);
+  }
+
+  .about-caldera__h {
+    font-size: clamp(1.35rem, 5vw, 1.65rem);
+  }
+
+  .about-caldera__h--sm {
+    font-size: 1.2rem;
+  }
+
+  .about-caldera__body {
+    font-size: 15px;
+  }
+
+  .about-caldera__section {
+    scroll-margin-top: var(--tivonix-header-spacer);
+  }
+
+  .about-caldera__btn.tivonix-cta-primary,
+  .about-caldera button.about-caldera__btn {
+    max-width: 100%;
+    min-height: 48px;
+  }
+
+  .about-hero--lines {
+    min-height: calc(100svh + var(--hero-lines) * 24vh);
+  }
+
+  .about-hero__pin {
+    min-height: 100svh;
+    padding-top: calc(var(--tivonix-header-spacer) + 0.15rem);
+    padding-bottom: 1.5rem;
+  }
+
+  .about-hero__title {
+    max-width: min(14ch, 100%);
+  }
+
+  .about-hero__cta {
+    --cta-on: clamp(0, (var(--hero-p) - 0.58) / 0.24, 1);
+  }
+
+  .about-hero__rail {
+    top: 48%;
+    height: clamp(88px, 28vw, 140px);
+  }
+
+  .about-story__text {
+    font-size: clamp(1.08rem, 4.2vw, 1.35rem);
+    line-height: 1.5;
+    letter-spacing: -0.012em;
+  }
+
+  /* Team: photo first, unified grid — scroll spread animation */
+  .about-people__stage {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 0.75rem;
+    row-gap: 1.25rem;
+    min-height: 0;
+  }
+
+  .about-people__shot {
+    grid-column: 1 / -1;
+    order: -1;
+    width: 100%;
+    opacity: calc(var(--spread) * var(--spread));
+    transform: scale(calc(0.52 + var(--spread) * 0.48));
+    filter: blur(calc((1 - var(--spread)) * 8px));
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .about-people[data-formed="1"] .about-people__shot {
+    pointer-events: auto;
+    filter: none;
+  }
+
+  .about-people__side {
+    display: contents;
+  }
+
+  .about-people__side--left,
+  .about-people__side--right {
+    transform: none;
+  }
+
+  .about-people__item {
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    transform: translate3d(0, calc((1 - var(--spread)) * (10px + var(--i, 0) * 5px)), 0);
+  }
+
+  .about-people__name,
+  .about-people__role {
+    width: 100%;
+    opacity: calc(0.15 + var(--spread) * 0.85);
+    hyphens: none;
+    -webkit-hyphens: none;
+  }
+
+  .about-people__role {
+    opacity: calc(0.1 + var(--spread) * 0.85);
+  }
+
+  .about-people__avatar {
+    filter: saturate(calc(0.55 + var(--spread) * 0.45));
+  }
+
+  @media (min-width: 640px) {
+    .about-people__stage {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: 0.85rem;
+    }
+  }
+
+  .about-people__shot .about-join {
+    min-height: clamp(210px, 58vw, 280px);
+  }
+
+  .about-people__shot .about-join__cta {
+    padding-top: 7.5rem;
+    padding-bottom: 1.25rem;
+  }
+
+  .about-join {
+    border-radius: var(--caldera-radius-card);
+    min-height: clamp(210px, 58vw, 280px);
+  }
+
+  .about-footer-wrap {
+    margin-inline: 0.75rem;
+    margin-bottom: 0.85rem;
+    padding-top: 2rem;
+  }
+
+  .about-footer__leads {
+    height: 2rem;
+  }
+
+  .about-footer .site-footer__content {
+    padding: var(--caldera-card-pad);
+  }
+
+  .about-footer .site-footer__grid {
+    gap: 1.35rem 1rem;
+  }
+
+  .about-why__item:nth-child(odd)::after {
+    display: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .about-caldera {
+    --caldera-section-gap: 44px;
+    --caldera-card-pad: 22px;
+    --caldera-radius-card: 22px;
+  }
+
+  .about-caldera main.overflow-x-clip,
+  .about-caldera .overflow-x-clip {
+    overflow-x: clip;
+  }
+
+  .about-caldera__mesh {
+    opacity: 0.7;
+  }
+
+  .about-caldera__mesh-runner,
+  .about-caldera__mesh-runner--delay {
+    stroke-width: 1.6;
+  }
+
+  .about-hero--lines {
+    min-height: calc(100svh + var(--hero-lines) * 20vh);
+  }
+
+  .about-hero__pin {
+    padding-top: calc(var(--tivonix-header-spacer) + 0.1rem);
+    padding-bottom: 1.25rem;
+  }
+
+  .about-hero__cta {
+    width: 100%;
+    padding-inline: 0.25rem;
+  }
+
+  .about-hero__cta .about-caldera__btn,
+  .about-hero__cta button {
+    width: 100%;
+  }
+
+  .about-caldera__section .mt-14,
+  .about-why-section .mt-14 {
+    margin-top: 2.25rem;
+  }
+
+  .about-why-section .flex.justify-center {
+    width: 100%;
+  }
+
+  .about-why-section .about-caldera__btn,
+  .about-why-section button.about-caldera__btn {
+    width: 100%;
+  }
+
+  .about-people__stage {
+    margin-top: 2rem;
+    row-gap: 1.15rem;
+  }
+
+  .about-people__name {
+    font-size: 0.78rem;
+    margin-top: 0.45rem;
+  }
+
+  .about-people__role {
+    font-size: 0.68rem;
+    line-height: 1.45;
+  }
+
+  .about-people__avatar {
+    width: 2.5rem;
+    height: 3.15rem;
+  }
+
+  .about-people__shot .about-join__cta {
+    padding-top: 6.5rem;
+    padding-inline: 0.75rem;
+  }
+
+  .about-people__shot .about-join__cta .about-caldera__btn,
+  .about-people__shot .about-join__cta button {
+    width: 100%;
+    max-width: 18rem;
+  }
+
+  .about-values {
+    gap: 12px;
+  }
+
+  .about-values__item {
+    padding: 18px;
+    border-radius: var(--caldera-radius-card);
+  }
+
+  .about-footer-wrap {
+    margin-inline: 0.65rem;
+    margin-bottom: 0.75rem;
+    padding-top: 1.75rem;
+  }
+
+  .about-footer__leads {
+    height: 1.75rem;
+  }
+
+  .about-footer .site-footer__touch {
+    max-width: none;
+    gap: 0.75rem;
+  }
+
+  .about-footer .site-footer__logo img {
+    height: 2rem;
+    width: auto;
+  }
+
+  .about-footer .site-footer__touch-title {
+    font-size: 1.45rem;
+  }
+
+  .about-footer .site-footer__col-title {
+    margin-bottom: 0.65rem;
+    font-size: 11px;
+  }
+
+  .about-footer .site-footer__link {
+    font-size: 13px;
+  }
+
+  .about-footer .site-footer__bottom {
+    margin-top: 1.35rem;
+    padding-top: 1.1rem;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 379px) {
+  .about-caldera__display {
+    font-size: clamp(1.95rem, 11vw, 2.4rem);
+  }
+
+  .about-footer-wrap {
+    margin-inline: 0.5rem;
+  }
 }
 
 /* Home: company story — black bg, gray → white on scroll */
@@ -4217,6 +4266,16 @@
       padding: 0 2rem 1.75rem;
     }
   }
+
+.featured-case-carousel__stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+.featured-case-carousel__stage > .case-split {
+  grid-area: 1 / 1;
+}
 
 @keyframes featured-case-line-fill {
   from {

@@ -2,42 +2,14 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
+import { PRERENDER_ROUTES, prerenderHtmlPath } from "./prerender-routes.mjs";
 
 const DIST_DIR = path.resolve("dist");
 const DIST_SERVER_DIR = path.resolve("dist-server");
 const TEMPLATE_PATH = path.join(DIST_DIR, "index.html");
 const SERVER_ENTRY_PATH = path.join(DIST_SERVER_DIR, "entry-server.js");
 
-const routes = [
-  "/",
-  "/en",
-  "/sozdanie-sajtov",
-  "/avtomatizaciya-biznesa",
-  "/projects",
-  "/en/projects",
-  "/plans",
-  "/contacts",
-  "/en/contacts",
-  "/partners",
-  "/ru/partners",
-  "/en/partners",
-  "/projects/slotty",
-  "/projects/spliton",
-  "/projects/headmind",
-  "/projects/logovo",
-  "/projects/tivonixpanel",
-  "/en/projects/slotty",
-  "/en/projects/spliton",
-  "/en/projects/headmind",
-  "/en/projects/logovo",
-  "/en/projects/tivonixpanel",
-];
-
-function outputFileForRoute(route) {
-  if (route === "/") return path.join(DIST_DIR, "index.html");
-  const clean = route.replace(/^\/+/, "").replace(/\/+$/, "");
-  return path.join(DIST_DIR, clean, "index.html");
-}
+const routes = PRERENDER_ROUTES;
 
 function splitLeadingHeadTags(appHtml) {
   const tagRegex =
@@ -55,16 +27,24 @@ function splitLeadingHeadTags(appHtml) {
   return { extractedHeadTags: extracted.join("\n"), bodyHtml };
 }
 
-function injectRenderedHtml(template, appHtml, headTags) {
+function langForRoute(route) {
+  return route === "/en" || route.startsWith("/en/") ? "en" : "ru";
+}
+
+function injectRenderedHtml(template, appHtml, headTags, route) {
   const { extractedHeadTags, bodyHtml } = splitLeadingHeadTags(appHtml);
   const mergedHead = [headTags, extractedHeadTags].filter(Boolean).join("\n");
-  const headInjected = template.includes("</head>")
+  let html = template.includes("</head>")
     ? template.replace("</head>", `${mergedHead}\n</head>`)
     : template;
 
+  const lang = langForRoute(route);
+  html = html.replace(/<html lang="[^"]*"/, `<html lang="${lang}"`);
+  html = html.replace(/<html([^>]*?)data-lang="[^"]*"/, `<html$1data-lang="${lang}"`);
+
   const rootRegex = /<div id="root"><\/div>/;
-  if (rootRegex.test(headInjected)) {
-    return headInjected.replace('<div id="root"></div>', `<div id="root">${bodyHtml}</div>`);
+  if (rootRegex.test(html)) {
+    return html.replace('<div id="root"></div>', `<div id="root">${bodyHtml}</div>`);
   }
 
   throw new Error('Template does not contain exact "<div id=\\"root\\"></div>" placeholder.');
@@ -77,8 +57,8 @@ async function main() {
 
   for (const route of routes) {
     const { appHtml, headTags } = render(route);
-    const html = injectRenderedHtml(template, appHtml, headTags);
-    const outFile = outputFileForRoute(route);
+    const html = injectRenderedHtml(template, appHtml, headTags, route);
+    const outFile = prerenderHtmlPath(DIST_DIR, route);
     await mkdir(path.dirname(outFile), { recursive: true });
     await writeFile(outFile, html, "utf8");
     console.log(`prerendered: ${route} -> ${path.relative(process.cwd(), outFile)}`);

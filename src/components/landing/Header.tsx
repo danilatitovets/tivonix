@@ -1,5 +1,6 @@
 // src/components/landing/Header.tsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Container from "../ui/Container";
 import { useLang } from "../../i18n/LangProvider";
@@ -131,24 +132,16 @@ function useFooterInView(pathname: string) {
 }
 
 function useIsMobile(maxWidth = 899) {
-  const [isMobile, setIsMobile] = useState(
-    () => typeof window !== "undefined" && window.innerWidth <= maxWidth
+  const query = `(max-width: ${maxWidth}px)`;
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia(query);
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(query).matches,
+    () => false
   );
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const mq = window.matchMedia(`(max-width: ${maxWidth}px)`);
-    const on = () => setIsMobile(mq.matches);
-    on();
-    if (mq.addEventListener) mq.addEventListener("change", on);
-    else mq.addListener(on);
-    return () => {
-      if (mq.removeEventListener) mq.removeEventListener("change", on);
-      else mq.removeListener(on);
-    };
-  }, [maxWidth]);
-
-  return isMobile;
 }
 
 function PillNav({
@@ -228,11 +221,13 @@ export default function Header() {
     mo.observe(el, { attributes: true, attributeFilter: ["data-partners-caps"] });
     return () => mo.disconnect();
   }, [location.pathname]);
-  const hideHeader = (footerInView || partnersCapsLock) && !open;
+  const hideHeader = (footerInView || (partnersCapsLock && !isMobile)) && !open;
   const isPartners = isPartnersPath(location.pathname);
   const logoSrc = isPartners ? LOGO_BLACK : heroInView ? LOGO_WHITE : LOGO_DEFAULT;
-  const isHome = location.pathname === "/";
-  const needsSpacer = isMobile && !isHome;
+  const isHome = location.pathname === "/" || location.pathname === "/en";
+  const isAbout =
+    location.pathname === "/about" || location.pathname === "/en/about";
+  const needsSpacer = isMobile && !isHome && !isAbout;
   const { lang } = useLang();
   const isRu = lang === "ru";
 
@@ -408,6 +403,162 @@ export default function Header() {
     setOpen(false);
     requestAnimationFrame(() => burgerRef.current?.focus({ preventScroll: true }));
   };
+
+  const mobileMenu =
+    typeof document !== "undefined" ? (
+      <div
+        id="mobile-header-menu"
+        className={cx(
+          "xl:hidden fixed inset-0 z-[200]",
+          open ? "pointer-events-auto" : "pointer-events-none"
+        )}
+        aria-hidden={!open}
+      >
+        <div
+          className={cx(
+            "mobile-menu-panel absolute inset-0 flex min-h-[100dvh] flex-col overflow-hidden bg-[#161313]",
+            "transition-[opacity,transform,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+            open ? "visible translate-y-0 opacity-100" : "invisible -translate-y-4 opacity-0"
+          )}
+          role="dialog"
+          aria-modal="true"
+          aria-label={isRu ? "Меню" : "Menu"}
+        >
+          <div className="relative flex items-center justify-between px-4 pb-4 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5">
+            <Link
+              to="/"
+              onClick={(e) => {
+                e.preventDefault();
+                goHome();
+              }}
+              className="flex items-center outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70 rounded-xl"
+              aria-label={ariaHome}
+            >
+              <img
+                src={heroInView ? LOGO_WHITE : LOGO_DEFAULT}
+                alt="TIVONIX"
+                className="h-7 w-auto object-contain opacity-95"
+                draggable={false}
+                decoding="async"
+              />
+            </Link>
+            <button
+              type="button"
+              onClick={closeMenu}
+              className={cx(
+                "grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-xl border-0",
+                "bg-white/[0.04] text-white/72 transition hover:bg-white/[0.08] active:scale-95",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
+              )}
+              aria-label={isRu ? "Закрыть меню" : "Close menu"}
+            >
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="transition-transform duration-200 ease-out"
+                aria-hidden
+              >
+                <path
+                  d="M4 7H20"
+                  stroke="#FF9A3D"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  style={{
+                    transformOrigin: "12px 7px",
+                    transform: "translateY(5px) rotate(45deg)",
+                    transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)",
+                  } as React.CSSProperties}
+                />
+                <path
+                  d="M4 12H20"
+                  stroke="#FF9A3D"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  style={{
+                    opacity: 0,
+                    transition: reducedMotion ? "none" : "opacity 0.18s ease-out",
+                  } as React.CSSProperties}
+                />
+                <path
+                  d="M4 17H20"
+                  stroke="#FF9A3D"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  style={{
+                    transformOrigin: "12px 17px",
+                    transform: "translateY(-5px) rotate(-45deg)",
+                    transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)",
+                  } as React.CSSProperties}
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2 pb-5 sm:px-3">
+            <nav className="mt-1 flex flex-col" aria-label={isRu ? "Навигация" : "Navigation"}>
+              {mobileNavItems.map((item) => (
+                <Link
+                  key={item.key}
+                  to={item.to}
+                  className={cx(
+                    "flex items-center justify-between border-b border-white/[0.08] px-3 py-4 text-[15px] font-medium text-white/92",
+                    "transition-colors hover:bg-white/[0.03] active:bg-white/[0.02]",
+                    activeKey === item.key && "text-[#FFAE66]"
+                  )}
+                  onClick={(e) => {
+                    onNav(item.to, item.hash)(e);
+                    closeMenu();
+                  }}
+                >
+                  <span className="capitalize">{item.label}</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0 text-white/32" aria-hidden>
+                    <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Link>
+              ))}
+            </nav>
+
+            <div className="mt-auto flex flex-col gap-2 px-2 pt-6 pb-[max(1rem,env(safe-area-inset-bottom))]">
+              {onPartners ? (
+                <a
+                  href={ctaHref}
+                  onClick={() => {
+                    onPartnersCtaClick?.();
+                    setOpen(false);
+                  }}
+                  className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-white/[0.08] px-6 text-[14px] font-bold text-white no-underline transition hover:bg-white/[0.03]"
+                >
+                  {ctaTop}
+                </a>
+              ) : (
+                <LeadCTAButton
+                  source="header"
+                  variant="white"
+                  className="h-12 w-full text-[14px]"
+                  aria-label={leadCopy.ctaDiscuss}
+                  onClick={() => setOpen(false)}
+                >
+                  {leadCopy.ctaDiscuss}
+                </LeadCTAButton>
+              )}
+              <Link
+                to={onPartners ? `${partnersPath(lang)}#partner-formats` : "/plans"}
+                className={cx(
+                  "inline-flex h-12 items-center justify-center rounded-full px-6 font-sans text-[14px] font-medium text-white",
+                  "bg-[#070607] transition hover:bg-[#1a1a1a]",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                )}
+                onClick={() => setOpen(false)}
+              >
+                {onPartners ? (isRu ? "Форматы" : "Formats") : isRu ? "Планы" : "Plans"}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    ) : null;
 
   return (
     <>
@@ -601,158 +752,7 @@ export default function Header() {
         </div>
       </header>
 
-      <div
-        id="mobile-header-menu"
-        className={cx(
-          "xl:hidden fixed inset-0 z-[200]",
-          open ? "pointer-events-auto" : "pointer-events-none"
-        )}
-        aria-hidden={!open}
-      >
-        <div
-          className={cx(
-            "mobile-menu-panel absolute inset-0 flex min-h-[100dvh] flex-col overflow-hidden bg-[#161313]",
-            "transition-[opacity,transform,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
-            open ? "visible translate-y-0 opacity-100" : "invisible -translate-y-4 opacity-0"
-          )}
-          role="dialog"
-          aria-modal="true"
-          aria-label={isRu ? "Меню" : "Menu"}
-        >
-          <div className="relative flex items-center justify-between px-4 pb-4 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5">
-            <Link
-              to="/"
-              onClick={(e) => {
-                e.preventDefault();
-                goHome();
-              }}
-              className="flex items-center outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70 rounded-xl"
-              aria-label={ariaHome}
-            >
-              <img
-                src={heroInView ? LOGO_WHITE : LOGO_DEFAULT}
-                alt="TIVONIX"
-                className="h-7 w-auto object-contain opacity-95"
-                draggable={false}
-                decoding="async"
-              />
-            </Link>
-            <button
-              type="button"
-              onClick={closeMenu}
-              className={cx(
-                "grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-xl border-0",
-                "bg-white/[0.04] text-white/72 transition hover:bg-white/[0.08] active:scale-95",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
-              )}
-              aria-label={isRu ? "Закрыть меню" : "Close menu"}
-            >
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                className="transition-transform duration-200 ease-out"
-                aria-hidden
-              >
-                <path
-                  d="M4 7H20"
-                  stroke="#FF9A3D"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  style={{
-                    transformOrigin: "12px 7px",
-                    transform: "translateY(5px) rotate(45deg)",
-                    transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)",
-                  } as React.CSSProperties}
-                />
-                <path
-                  d="M4 12H20"
-                  stroke="#FF9A3D"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  style={{
-                    opacity: 0,
-                    transition: reducedMotion ? "none" : "opacity 0.18s ease-out",
-                  } as React.CSSProperties}
-                />
-                <path
-                  d="M4 17H20"
-                  stroke="#FF9A3D"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  style={{
-                    transformOrigin: "12px 17px",
-                    transform: "translateY(-5px) rotate(-45deg)",
-                    transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)",
-                  } as React.CSSProperties}
-                />
-              </svg>
-            </button>
-          </div>
-
-          <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2 pb-5 sm:px-3">
-            <nav className="mt-1 flex flex-col" aria-label={isRu ? "Навигация" : "Navigation"}>
-              {mobileNavItems.map((item) => (
-                <Link
-                  key={item.key}
-                  to={item.to}
-                  className={cx(
-                    "flex items-center justify-between border-b border-white/[0.08] px-3 py-4 text-[15px] font-medium text-white/92",
-                    "transition-colors hover:bg-white/[0.03] active:bg-white/[0.02]",
-                    activeKey === item.key && "text-[#FFAE66]"
-                  )}
-                  onClick={(e) => {
-                    onNav(item.to, item.hash)(e);
-                    closeMenu();
-                  }}
-                >
-                  <span className="capitalize">{item.label}</span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0 text-white/32" aria-hidden>
-                    <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </Link>
-              ))}
-            </nav>
-
-            <div className="mt-auto flex flex-col gap-2 px-2 pt-6 pb-[max(1rem,env(safe-area-inset-bottom))]">
-              {onPartners ? (
-                <a
-                  href={ctaHref}
-                  onClick={() => {
-                    onPartnersCtaClick?.();
-                    setOpen(false);
-                  }}
-                  className="inline-flex h-12 w-full items-center justify-center rounded-xl border border-white/[0.08] px-6 text-[14px] font-bold text-white no-underline transition hover:bg-white/[0.03]"
-                >
-                  {ctaTop}
-                </a>
-              ) : (
-                <LeadCTAButton
-                  source="header"
-                  variant="white"
-                  className="h-12 w-full text-[14px]"
-                  aria-label={leadCopy.ctaDiscuss}
-                  onClick={() => setOpen(false)}
-                >
-                  {leadCopy.ctaDiscuss}
-                </LeadCTAButton>
-              )}
-              <Link
-                to={onPartners ? `${partnersPath(lang)}#partner-formats` : "/plans"}
-                className={cx(
-                  "inline-flex h-12 items-center justify-center rounded-full px-6 font-sans text-[14px] font-medium text-white",
-                  "bg-[#070607] transition hover:bg-[#1a1a1a]",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
-                )}
-                onClick={() => setOpen(false)}
-              >
-                {onPartners ? (isRu ? "Форматы" : "Formats") : isRu ? "Планы" : "Plans"}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
+      {mobileMenu ? createPortal(mobileMenu, document.body) : null}
     </>
   );
 }

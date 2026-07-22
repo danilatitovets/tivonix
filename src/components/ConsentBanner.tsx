@@ -6,32 +6,38 @@ import {
 } from "../lib/consent";
 import { initHotjar } from "../lib/hotjar";
 import { useLang } from "../i18n/LangProvider";
+import { useLeadForm } from "./leads/useLeadForm";
 
 const PRIVACY_RU = "/doc/Политика_обработки_ПД_Tivonix_RU.pdf";
 const PRIVACY_EN = "/doc/Privacy_Policy_Tivonix_EN.pdf";
 
 /**
  * Floating analytics consent card (Hotjar) — dark, pill buttons.
+ * Starts hidden (matches SSR); reads consent after mount. Hidden while lead form is open.
  */
 export default function ConsentBanner() {
   const { lang } = useLang();
+  const { isOpen: leadFormOpen } = useLeadForm();
   const isRu = lang === "ru";
-  const [visible, setVisible] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return getAnalyticsConsent() === "pending";
-  });
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    const sync = () => {
+      setVisible(getAnalyticsConsent() === "pending");
+    };
+
+    sync();
     if (getAnalyticsConsent() === "accepted") {
       initHotjar();
     }
-    return onConsentChange((s) => {
-      if (s === "accepted") initHotjar();
-      setVisible(s === "pending");
+
+    return onConsentChange((state) => {
+      if (state === "accepted") initHotjar();
+      setVisible(state === "pending");
     });
   }, []);
 
-  if (!visible) return null;
+  if (!visible || leadFormOpen) return null;
 
   const accept = () => {
     setAnalyticsConsent("accepted");
@@ -48,7 +54,7 @@ export default function ConsentBanner() {
 
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-[120] flex justify-start p-4 sm:p-6"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] flex justify-start p-4 sm:p-6"
       style={{
         paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
       }}

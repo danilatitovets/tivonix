@@ -14,7 +14,8 @@
     "lint:leads": "eslint \"src/components/leads/**/*.{ts,tsx}\" \"src/lib/leads.ts\" \"src/lib/analytics.ts\" \"src/lib/hotjar.ts\" \"src/lib/consent.ts\" \"src/components/ConsentBanner.tsx\" \"src/components/ScrollDepthTracker.tsx\" \"src/pages/NotFoundPage.tsx\" \"api/leads.ts\" \"api/_leadsDelivery.ts\" \"api/_leadsRateLimit.ts\" \"api/_leadsSubject.ts\"",
     "typecheck": "tsc --noEmit",
     "prerender": "node scripts/prerender-node.mjs",
-    "preview": "vite preview",
+    "preview": "vite preview --host 127.0.0.1 --port 4174",
+    "verify:hydration": "node scripts/verify-hydration.mjs",
     "test": "node scripts/check-leads.mjs"
   },
   "dependencies": {
@@ -45,6 +46,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "playwright": "^1.50.1",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.19",
     "typescript": "~5.9.3",

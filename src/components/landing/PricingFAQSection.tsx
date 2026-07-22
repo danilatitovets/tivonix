@@ -11,7 +11,7 @@ function cx(...parts: Array<string | false | null | undefined>) {
 export default function PricingFAQSection() {
   const { lang } = useLang();
   const copy = pricingCopy(lang);
-  const [openId, setOpenId] = useState<string | null>(copy.faq.items[0]?.id ?? null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   return (
     <Reveal delay={160} className="mt-10 sm:mt-12">

@@ -413,9 +413,9 @@ export default function PricingPlansSection({ className }: { className?: string 
     >
       <Container>
         <Reveal className="mx-auto max-w-[48rem] text-center">
-          <h2 className="font-hero text-[clamp(2rem,5vw,3.25rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white text-balance">
+          <h1 className="font-hero text-[clamp(2rem,5vw,3.25rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white text-balance">
             {copy.title}
-          </h2>
+          </h1>
           <div className="mx-auto mt-4 flex flex-wrap items-baseline justify-center gap-x-2.5 gap-y-1 sm:mt-5">
             <span
               className="font-hero shrink-0 text-[clamp(1.85rem,3.8vw,2.5rem)] font-normal uppercase leading-none tracking-[0.02em]"
@@ -454,9 +454,9 @@ export default function PricingPlansSection({ className }: { className?: string 
         <Reveal delay={120} className="mt-10 sm:mt-12">
           <div className="pricing-compare">
             <div className="pricing-compare__intro">
-              <h3 className="font-hero text-[clamp(1.5rem,3vw,2.1rem)] font-normal uppercase tracking-[0.02em] text-white">
+              <h2 className="font-hero text-[clamp(1.5rem,3vw,2.1rem)] font-normal uppercase tracking-[0.02em] text-white">
                 {copy.compareTitle}
-              </h3>
+              </h2>
               <button
                 type="button"
                 onClick={toggleAll}

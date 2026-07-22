@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { Link } from "react-router-dom";
 import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
@@ -6,6 +7,7 @@ import { HERO_SCROLL_HEADLINE_CLASS, LANDING_SHELL_CLASS } from "../../lib/landi
 import { isTelegramWebView } from "../../lib/telegramWebView";
 import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
 import { getStableViewportHeight } from "../../lib/stableViewport";
+import { LeadCTAButton } from "../leads/LeadCTAButton";
 
 const HERO_VIDEO = "/images/hero-bg.mp4";
 const HERO_POSTER = "/images/hero-bg-poster.webp";
@@ -128,9 +130,15 @@ function HeroHeadline({ stage }: { stage: HeroScrollStage }) {
 function HeroCard({
   progress,
   stages,
+  ctaPrimary,
+  ctaSecondary,
+  micro,
 }: {
   progress: number;
   stages: ReadonlyArray<HeroScrollStage>;
+  ctaPrimary: string;
+  ctaSecondary: string;
+  micro: string;
 }) {
   const textOpacity = useMemo(() => textOpacities(progress), [progress]);
   const activeStage = textOpacity[2] > 0.5 ? 2 : textOpacity[1] > 0.5 ? 1 : 0;
@@ -176,7 +184,7 @@ function HeroCard({
             "pointer-events-none relative flex w-full flex-1 flex-col items-center justify-center"
           )}
         >
-          <div className="relative grid w-full justify-items-center">
+          <div className="relative grid w-full flex-1 justify-items-center content-center">
             {stages.map((stage, i) => {
               const opacity = textOpacity[i];
               return (
@@ -192,9 +200,32 @@ function HeroCard({
                   aria-hidden={i !== activeStage}
                 >
                   <HeroHeadline stage={stage} />
+                  <p className="pointer-events-none mt-4 max-w-[38rem] px-2 text-[14px] font-medium leading-[1.55] text-white/72 sm:mt-5 sm:text-[15px]">
+                    {stage.lead}
+                  </p>
                 </div>
               );
             })}
+          </div>
+
+          <div className="pointer-events-auto relative z-20 mt-6 flex w-full max-w-[38rem] flex-col items-center gap-3 px-2 sm:mt-8">
+            <LeadCTAButton
+              source="hero"
+              variant="primary"
+              size="lg"
+              className="min-h-[48px] w-full max-w-[20rem] shadow-[0_12px_40px_rgba(255,107,44,0.28)] sm:min-h-[52px] sm:max-w-[22rem]"
+            >
+              {ctaPrimary}
+            </LeadCTAButton>
+            <Link
+              to="/projects"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-white/20 bg-white/[0.04] px-6 text-[13px] font-semibold text-white/82 transition hover:border-white/35 hover:bg-white/[0.08] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/55"
+            >
+              {ctaSecondary}
+            </Link>
+            <p className="max-w-[34rem] text-center text-[11px] font-medium leading-snug text-white/45 sm:text-[12px]">
+              {micro}
+            </p>
           </div>
         </div>
       </div>
@@ -216,6 +247,9 @@ export default function Hero() {
 
   const cardProps = {
     stages,
+    ctaPrimary: copy.hero.ctaPrimary,
+    ctaSecondary: copy.hero.ctaSecondary,
+    micro: copy.hero.micro,
   };
 
   if (tgWebView) {

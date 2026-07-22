@@ -5,12 +5,16 @@ const EN_ROUTE_MAP: Record<string, string> = {
   "/": "/en",
   "/projects": "/en/projects",
   "/contacts": "/en/contacts",
+  "/plans": "/en/plans",
+  "/about": "/en/about",
 };
 
 const RU_ROUTE_MAP: Record<string, string> = {
   "/en": "/",
   "/en/projects": "/projects",
   "/en/contacts": "/contacts",
+  "/en/plans": "/plans",
+  "/en/about": "/about",
 };
 
 export function stripLangPrefix(pathname: string): string {
@@ -81,6 +85,20 @@ export function hreflangPair(canonicalPath: string): {
       ru: `${origin}/contacts`,
       en: `${origin}/en/contacts`,
       xDefault: `${origin}/contacts`,
+    };
+  }
+  if (base === "/plans") {
+    return {
+      ru: `${origin}/plans`,
+      en: `${origin}/en/plans`,
+      xDefault: `${origin}/plans`,
+    };
+  }
+  if (base === "/about") {
+    return {
+      ru: `${origin}/about`,
+      en: `${origin}/en/about`,
+      xDefault: `${origin}/about`,
     };
   }
   const proj = base.match(/^\/projects\/([^/]+)$/);

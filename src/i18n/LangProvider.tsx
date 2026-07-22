@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { useLocation } from "react-router-dom";
+import { detectLangFromUrl, readBootstrapLang } from "../lib/readBootstrapLang";
 
 export type Lang = "ru" | "en";
 
@@ -331,12 +332,12 @@ const DICT: Record<Lang, Dictionary> = {
       leadsAria: "Sample incoming leads",
       leads: [
         { title: "TIVONIX Bot", source: "New lead: need a website quote for ads", time: "now", channel: "telegram" },
-        { title: "maria_beauty", source: "Hi, I'd like a consultation about your services", time: "1 min", channel: "instagram" },
+        { title: "maria_beauty", source: "Hi, I\u2019d like a consultation about your services", time: "1 min", channel: "instagram" },
         { title: "Anna", source: "Can I book a manicure for Saturday?", time: "2 min", channel: "whatsapp" },
         { title: "Commercial proposal", source: "Sent the dev proposal — see the attachment", time: "3 min", channel: "gmail" },
         { title: "Website form", source: "Ivan · landing for ads · +1 555 123-4567", time: "4 min", channel: "website" },
         { title: "Ads · Leads", source: "New lead: automation for a beauty salon", time: "6 min", channel: "facebook" },
-        { title: "Message", source: "Interested in lead automation — what's the price?", time: "7 min", channel: "vk" },
+        { title: "Message", source: "Interested in lead automation — what\u2019s the price?", time: "7 min", channel: "vk" },
         { title: "New contact", source: "BuildCo LLC — submitted a CRM inquiry", time: "9 min", channel: "hubspot" },
         { title: "Project brief", source: "Brief filled in Notion — ready to review", time: "11 min", channel: "notion" },
         { title: "Client meeting", source: "Tomorrow at 3 PM · MVP discussion", time: "13 min", channel: "calendar" },
@@ -469,26 +470,16 @@ type LangContextValue = {
 const LangContext = createContext<LangContextValue | null>(null);
 
 /**
- * Приоритеты:
- * 1) ?lang=ru|en (позволяет тестить/шарить ссылки)
- * 2) window.__TIVONIX_LANG__ (ранний выбор из index.html, если ты добавлял)
- * 3) localStorage (ручной выбор)
- * 4) navigator.languages / navigator.language (регион/язык браузера)
+ * Client language resolution (after inline bootstrap in index.html):
+ * 1) ?lang=ru|en
+ * 2) /en/... or /ru/... URL prefix
+ * 3) window.__TIVONIX_LANG__ (localStorage, set before React)
+ * 4) default ru
+ *
+ * SSR/prerender uses `initialLang` from URL only — must stay in sync with bootstrap URL rules.
  */
 function detectLang(): Lang {
-  if (typeof window === "undefined") return "ru";
-
-  // 1) query param
-  try {
-    const qp = new URL(window.location.href).searchParams.get("lang");
-    if (qp === "ru" || qp === "en") return qp;
-  } catch (_) {}
-
-  // 2) явный английский URL
-  if (window.location.pathname.startsWith("/en")) return "en";
-
-  // 3) основной URL всегда русская версия
-  return "ru";
+  return readBootstrapLang(detectLangFromUrl());
 }
 
 function syncHtmlLang(lang: Lang) {
@@ -546,6 +537,15 @@ export function LangPathSync() {
     if (clean === "/en" || clean.startsWith("/en/")) next = "en";
     else if (clean === "/ru" || clean.startsWith("/ru/")) next = "ru";
     else if (clean === "/partners") next = "ru";
+    else if (
+      clean === "/" ||
+      clean === "/plans" ||
+      clean === "/about" ||
+      clean === "/projects" ||
+      clean === "/contacts"
+    ) {
+      next = "ru";
+    }
     if (next && next !== lang) setLang(next);
   }, [pathname, lang, setLang]);
 

@@ -77,7 +77,7 @@ const COPY_RU = {
 const COPY_EN = {
   title: "Tell us what you need to launch",
   subtitle:
-    "Describe the task in your own words. We'll review it and send a preliminary plan, timeline and cost range.",
+    "Describe the task in your own words. We\u2019ll review it and send a preliminary plan, timeline and cost range.",
   name: "Name",
   nameOptional: "optional",
   contact: "Telegram, email or another contact",
@@ -102,10 +102,10 @@ const COPY_EN = {
   },
   successTitle: "Request received",
   success:
-    "We'll review the task and reply via your contact within a business day.",
+    "We\u2019ll review the task and reply via your contact within a business day.",
   successCase: "See a similar case",
   successHome: "Back to home",
-  errorTitle: "Couldn't send the request",
+  errorTitle: "Couldn\u2019t send the request",
   errorBody: "You can reach out directly:",
   fallbackEmail: "Email tivoonix@gmail.com",
   fallbackTelegram: "Open chat @TIVONIX",
@@ -120,5 +120,5 @@ const COPY_EN = {
   clearPlan: "No plan",
   planHint: "Request for this plan — add details below.",
   formNote:
-    "We reply within a business day. A call is optional. We don't share contacts with third parties.",
+    "We reply within a business day. A call is optional. We don\u2019t share contacts with third parties.",
 };

@@ -50,6 +50,7 @@ export function AppRoutes() {
         <Route path="/projects/:slug" element={<ProjectDetailPage />} />
         <Route path="/en/projects/:slug" element={<ProjectDetailPage />} />
         <Route path="/plans" element={<PricingPage />} />
+        <Route path="/en/plans" element={<PricingPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/en/about" element={<AboutPage />} />
         <Route path="/contacts" element={<ContactsPage />} />

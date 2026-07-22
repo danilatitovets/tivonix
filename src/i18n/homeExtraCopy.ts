@@ -303,7 +303,7 @@ const COPY_EN = {
         id: "logovo",
         type: "Local business",
         problem:
-          "Drivers couldn't find a branch or booking path — addresses and CTAs were buried, leads were lost.",
+          "Drivers couldn’t find a branch or booking path — addresses and CTAs were buried, leads were lost.",
         solution:
           "Built a network site: branches, services, prices, map and a short path to book or call.",
         result:

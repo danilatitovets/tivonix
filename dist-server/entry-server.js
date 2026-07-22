@@ -1,13 +1,34 @@
 import { jsx, jsxs, Fragment } from "react/jsx-runtime";
-import React, { createContext, useState, useEffect, useMemo, useContext, useRef, useLayoutEffect, useCallback, lazy, Suspense, useId } from "react";
 import { renderToString } from "react-dom/server";
 import { useLocation, useNavigate, Link, useParams, Navigate, Routes, Route, MemoryRouter } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
-import { ArrowRight, Loader2, Check, Shield, ArrowUpRight, Phone, Mail, Globe, Globe2, MapPin, Maximize2, Bot, Zap, LayoutDashboard, Users, TrendingUp, ShieldCheck, ChevronLeft, ChevronRight, FolderOpen, Plus, ChevronDown, Minus } from "lucide-react";
-import { SiTelegram, SiInstagram, SiWhatsapp, SiGmail, SiHubspot, SiGooglesheets, SiNotion, SiGooglecalendar, SiClickup, SiStripe, SiGoogledocs, SiGoogleanalytics, SiZapier } from "react-icons/si";
-import createGlobe from "cobe";
+import React, { createContext, useState, useEffect, useMemo, useContext, useId, useRef, useCallback, useSyncExternalStore, useLayoutEffect, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
+import { Check, ArrowUpRight, ChevronDown, Mail, Bot, Zap, LayoutDashboard, Users, TrendingUp, ShieldCheck, ChevronLeft, ChevronRight, FolderOpen, Plus, Minus } from "lucide-react";
+import { SiTelegram, SiGmail, SiHubspot, SiGooglesheets, SiWhatsapp, SiNotion, SiGooglecalendar, SiClickup, SiStripe, SiGoogledocs, SiGoogleanalytics, SiZapier } from "react-icons/si";
 import { FiBell } from "react-icons/fi";
+function detectLangFromUrl() {
+  if (typeof window === "undefined") return "ru";
+  try {
+    const qp = new URL(window.location.href).searchParams.get("lang");
+    if (qp === "ru" || qp === "en") return qp;
+  } catch {
+  }
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  if (path === "/en" || path.startsWith("/en/")) return "en";
+  if (path === "/ru" || path.startsWith("/ru/")) return "ru";
+  if (path === "/partners") return "ru";
+  return "ru";
+}
+function readBootstrapLang(fallback) {
+  if (typeof window === "undefined") return fallback ?? "ru";
+  const urlLang = detectLangFromUrl();
+  const boot = window.__TIVONIX_LANG__;
+  if (boot === "ru" || boot === "en") {
+    return boot === urlLang ? boot : urlLang;
+  }
+  return fallback ?? urlLang;
+}
 const LANG_STORAGE_KEY = "tivonix_lang";
 const DICT = {
   ru: {
@@ -189,12 +210,12 @@ const DICT = {
       leadsAria: "Sample incoming leads",
       leads: [
         { title: "TIVONIX Bot", source: "New lead: need a website quote for ads", time: "now", channel: "telegram" },
-        { title: "maria_beauty", source: "Hi, I'd like a consultation about your services", time: "1 min", channel: "instagram" },
+        { title: "maria_beauty", source: "Hi, I’d like a consultation about your services", time: "1 min", channel: "instagram" },
         { title: "Anna", source: "Can I book a manicure for Saturday?", time: "2 min", channel: "whatsapp" },
         { title: "Commercial proposal", source: "Sent the dev proposal — see the attachment", time: "3 min", channel: "gmail" },
         { title: "Website form", source: "Ivan · landing for ads · +1 555 123-4567", time: "4 min", channel: "website" },
         { title: "Ads · Leads", source: "New lead: automation for a beauty salon", time: "6 min", channel: "facebook" },
-        { title: "Message", source: "Interested in lead automation — what's the price?", time: "7 min", channel: "vk" },
+        { title: "Message", source: "Interested in lead automation — what’s the price?", time: "7 min", channel: "vk" },
         { title: "New contact", source: "BuildCo LLC — submitted a CRM inquiry", time: "9 min", channel: "hubspot" },
         { title: "Project brief", source: "Brief filled in Notion — ready to review", time: "11 min", channel: "notion" },
         { title: "Client meeting", source: "Tomorrow at 3 PM · MVP discussion", time: "13 min", channel: "calendar" },
@@ -313,14 +334,7 @@ const DICT = {
 };
 const LangContext = createContext(null);
 function detectLang() {
-  if (typeof window === "undefined") return "ru";
-  try {
-    const qp = new URL(window.location.href).searchParams.get("lang");
-    if (qp === "ru" || qp === "en") return qp;
-  } catch (_) {
-  }
-  if (window.location.pathname.startsWith("/en")) return "en";
-  return "ru";
+  return readBootstrapLang(detectLangFromUrl());
 }
 function syncHtmlLang(lang) {
   if (typeof document === "undefined") return;
@@ -366,6 +380,9 @@ function LangPathSync() {
     if (clean === "/en" || clean.startsWith("/en/")) next = "en";
     else if (clean === "/ru" || clean.startsWith("/ru/")) next = "ru";
     else if (clean === "/partners") next = "ru";
+    else if (clean === "/" || clean === "/plans" || clean === "/about" || clean === "/projects" || clean === "/contacts") {
+      next = "ru";
+    }
     if (next && next !== lang) setLang(next);
   }, [pathname, lang, setLang]);
   return null;
@@ -379,21 +396,1697 @@ function homePageSeoFromDict(dict) {
   const isRu = dict.header.home === "На главную";
   if (isRu) {
     return {
-      title: "TIVONIX — сайты, боты и AI-сервисы для бизнеса",
-      description: "Создаём сайты, Telegram-ботов, CRM, личные кабинеты и автоматизацию заявок под ключ."
+      title: "TIVONIX — сайты, CRM, боты и веб-продукты для бизнеса",
+      description: "Разрабатываем лендинги, Telegram-ботов, CRM, личные кабинеты, SaaS и MVP — и связываем их в единый процесс: от первого обращения до оплаты."
     };
   }
-  const { titleLine1, titleLine2Prefix, titleLine2Premium, subtitle } = dict.hero;
-  const heroTitle = `${titleLine1} ${titleLine2Prefix} ${titleLine2Premium}`.replace(/\s+/g, " ").trim();
   return {
-    title: `TIVONIX — ${heroTitle}`,
-    description: subtitle
+    title: "TIVONIX — websites, CRM, bots and web products for business",
+    description: "We build landing pages, Telegram bots, CRMs, client portals, SaaS and MVPs — and connect them into one lead process from first inquiry to payment."
   };
 }
+const LOADED_FLAG = "__tivonix_hotjar_loaded";
+function hotjarId() {
+  return null;
+}
+function hotjarSv() {
+  const n = Number("6");
+  return Number.isFinite(n) && n > 0 ? n : 6;
+}
+function alreadyLoaded() {
+  if (typeof window === "undefined") return true;
+  return Boolean(window[LOADED_FLAG]);
+}
+function markLoaded() {
+  window[LOADED_FLAG] = true;
+}
+function initHotjar() {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+  const id = hotjarId();
+  if (!id) return;
+  if (alreadyLoaded() || typeof window.hj === "function") {
+    markLoaded();
+    return;
+  }
+  const sv = hotjarSv();
+  (function(h, o, t, j) {
+    h.hj = h.hj || function(...args) {
+      (h.hj.q = h.hj.q || []).push(args);
+    };
+    h._hjSettings = { hjid: id, hjsv: sv };
+    const a = o.getElementsByTagName("head")[0];
+    const r = o.createElement("script");
+    r.async = true;
+    r.src = t + h._hjSettings.hjid + j + h._hjSettings.hjsv;
+    a.appendChild(r);
+  })(window, document, "https://static.hotjar.com/c/hotjar-", ".js?sv=");
+  markLoaded();
+}
+function trackHotjarEvent(name) {
+  if (typeof window === "undefined") return;
+  if (typeof window.hj !== "function") return;
+  if (!name) return;
+  try {
+    window.hj("event", name);
+  } catch {
+  }
+}
+const HOTJAR_MASK_CLASS = "hj-masked";
+const HOTJAR_SUPPRESS_ATTR = { "data-hj-suppress": "" };
+function trackPartnersEvent(eventName, params) {
+  if (typeof window === "undefined" || typeof window.gtag !== "function") return;
+  if (!eventName) return;
+  window.gtag("event", eventName, params ?? {});
+}
+const CTA_SOURCE_KEY = "tivonix_cta_source";
+function setCtaSource(source) {
+  try {
+    sessionStorage.setItem(CTA_SOURCE_KEY, source);
+  } catch {
+  }
+}
+function getCtaSource() {
+  try {
+    const v = sessionStorage.getItem(CTA_SOURCE_KEY);
+    if (v) return v;
+  } catch {
+  }
+  return "unknown";
+}
+function scrub(props) {
+  if (!props) return void 0;
+  const out = {};
+  for (const [k, v] of Object.entries(props)) {
+    const key = k.toLowerCase();
+    if (key.includes("email") || key.includes("phone") || key.includes("telegram") || key.includes("name") || key.includes("task") || key.includes("contact") || key.includes("message") || key.includes("detail")) {
+      continue;
+    }
+    if (typeof v === "string" && v.length > 80) continue;
+    out[k] = v;
+  }
+  return out;
+}
+function trackEvent(name, props) {
+  const safe = scrub(props);
+  trackHotjarEvent(name);
+  trackPartnersEvent(name, safe);
+}
+function trackCtaPrimaryClick(source) {
+  setCtaSource(source);
+  trackEvent("cta_primary_click", { source });
+  if (source === "hero") trackEvent("hero_primary_cta_click", { source });
+}
+function trackLeadFormOpen(source) {
+  setCtaSource(source);
+  trackEvent("lead_form_open", { source });
+}
+function trackLeadFormStart() {
+  trackEvent("lead_form_start");
+}
+function trackLeadFormValidationError(field) {
+  trackEvent("lead_form_validation_error", field ? { field } : void 0);
+}
+function trackLeadFormSubmit(source) {
+  trackEvent("lead_form_submit", { source });
+}
+function trackLeadFormSuccess(source) {
+  trackEvent("lead_form_success", { source });
+}
+function trackLeadFormServerError() {
+  trackEvent("lead_form_server_error");
+}
+function trackLeadFormAbandon(source) {
+  trackEvent("lead_form_abandon", { source });
+}
+function trackTelegramDirectClick() {
+  trackEvent("telegram_direct_click");
+}
+function trackTelegramBotClick() {
+  trackEvent("telegram_bot_click");
+}
+function trackEmailClick() {
+  trackEvent("email_click");
+}
+function trackProjectView(slug) {
+  trackEvent("project_view", { slug: slug.slice(0, 40) });
+}
+function trackPricingView() {
+  trackEvent("pricing_view");
+}
+function leadFormCopy(lang) {
+  const isRu = lang === "ru";
+  return isRu ? COPY_RU$4 : COPY_EN$4;
+}
+const BUDGET_RU = [
+  { id: "", label: "Не выбран" },
+  { id: "under_500", label: "до $500" },
+  { id: "500_1500", label: "$500–1,500" },
+  { id: "1500_5000", label: "$1,500–5,000" },
+  { id: "from_5000", label: "от $5,000" },
+  { id: "unknown", label: "пока не знаю" }
+];
+const BUDGET_EN = [
+  { id: "", label: "Not selected" },
+  { id: "under_500", label: "under $500" },
+  { id: "500_1500", label: "$500–1,500" },
+  { id: "1500_5000", label: "$1,500–5,000" },
+  { id: "from_5000", label: "from $5,000" },
+  { id: "unknown", label: "not sure yet" }
+];
+const COPY_RU$4 = {
+  title: "Расскажите, что нужно запустить",
+  subtitle: "Опишите задачу своими словами. Мы разберём её и отправим предварительный план, срок и диапазон стоимости.",
+  name: "Имя",
+  nameOptional: "необязательно",
+  contact: "Telegram, email или другой контакт",
+  contactHint: "Email, Telegram или телефон",
+  contactPh: "email, @username или +375…",
+  task: "Описание задачи",
+  taskPh: "Что нужно сделать?",
+  budget: "Примерный бюджет",
+  budgetOptional: "необязательно",
+  budgets: BUDGET_RU,
+  consent: "Согласен(на) с политикой обработки персональных данных",
+  privacyLabel: "Политика",
+  privacyHref: "/doc/Политика_обработки_ПД_Tivonix_RU.pdf",
+  send: "Получить предварительную оценку",
+  sending: "Отправляю…",
+  close: "Закрыть",
+  cancel: "Отмена",
+  errors: {
+    contact: "Укажите email, Telegram или телефон.",
+    task: "Кратко опишите задачу (хотя бы пару слов).",
+    consent: "Нужно согласие с политикой конфиденциальности."
+  },
+  successTitle: "Заявка получена",
+  success: "Изучим задачу и ответим по указанному контакту в течение рабочего дня.",
+  successCase: "Посмотреть похожий кейс",
+  successHome: "Вернуться на главную",
+  errorTitle: "Не удалось отправить заявку",
+  errorBody: "Можно написать напрямую:",
+  fallbackEmail: "Написать на tivoonix@gmail.com",
+  fallbackTelegram: "Открыть чат @TIVONIX",
+  altTelegram: "Или написать в Telegram",
+  altBot: "Telegram-бот",
+  altEmail: "Email",
+  sticky: "Получить оценку",
+  ctaDiscuss: "Оценить проект",
+  ctaEstimate: "Получить оценку проекта",
+  ctaProjects: "Есть похожая задача? Обсудить проект",
+  selectedPlan: "Выбранный план",
+  clearPlan: "Без плана",
+  planHint: "Заявка по тарифу — можно уточнить детали ниже.",
+  formNote: "Ответим в течение рабочего дня. Созвон не обязателен. Контакты не передаём третьим лицам."
+};
+const COPY_EN$4 = {
+  title: "Tell us what you need to launch",
+  subtitle: "Describe the task in your own words. We’ll review it and send a preliminary plan, timeline and cost range.",
+  name: "Name",
+  nameOptional: "optional",
+  contact: "Telegram, email or another contact",
+  contactHint: "Email, Telegram, or phone",
+  contactPh: "email, @username, or phone",
+  task: "Task description",
+  taskPh: "What do you need?",
+  budget: "Approximate budget",
+  budgetOptional: "optional",
+  budgets: BUDGET_EN,
+  consent: "I agree to the privacy policy",
+  privacyLabel: "Privacy policy",
+  privacyHref: "/doc/Privacy_Policy_Tivonix_EN.pdf",
+  send: "Get a preliminary estimate",
+  sending: "Sending…",
+  close: "Close",
+  cancel: "Cancel",
+  errors: {
+    contact: "Enter an email, Telegram, or phone number.",
+    task: "Briefly describe the task (a few words).",
+    consent: "Please accept the privacy policy."
+  },
+  successTitle: "Request received",
+  success: "We’ll review the task and reply via your contact within a business day.",
+  successCase: "See a similar case",
+  successHome: "Back to home",
+  errorTitle: "Couldn’t send the request",
+  errorBody: "You can reach out directly:",
+  fallbackEmail: "Email tivoonix@gmail.com",
+  fallbackTelegram: "Open chat @TIVONIX",
+  altTelegram: "Or message on Telegram",
+  altBot: "Telegram bot",
+  altEmail: "Email",
+  sticky: "Get an estimate",
+  ctaDiscuss: "Estimate project",
+  ctaEstimate: "Get a project estimate",
+  ctaProjects: "Have a similar task? Let’s discuss",
+  selectedPlan: "Selected plan",
+  clearPlan: "No plan",
+  planHint: "Request for this plan — add details below.",
+  formNote: "We reply within a business day. A call is optional. We don’t share contacts with third parties."
+};
+function readUtm(param) {
+  if (typeof window === "undefined") return "";
+  try {
+    return new URL(window.location.href).searchParams.get(param) || "";
+  } catch {
+    return "";
+  }
+}
+function buildLeadMeta(ctaSource, plan) {
+  const source = ctaSource || getCtaSource();
+  return {
+    url: typeof window !== "undefined" ? window.location.href : "",
+    page: typeof window !== "undefined" ? window.location.pathname : "",
+    ctaSource: source,
+    referrer: typeof document !== "undefined" ? document.referrer || "" : "",
+    utmSource: readUtm("utm_source"),
+    utmMedium: readUtm("utm_medium"),
+    utmCampaign: readUtm("utm_campaign"),
+    datetime: (/* @__PURE__ */ new Date()).toISOString(),
+    planId: plan?.id,
+    planName: plan?.name
+  };
+}
+const DRAFT_KEY = "tivonix_lead_draft_v1";
+function loadLeadDraft() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+function saveLeadDraft(fields) {
+  if (typeof window === "undefined") return;
+  try {
+    const { company_fax_url: _honeypot, ...rest } = fields;
+    void _honeypot;
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(rest));
+  } catch {
+  }
+}
+function clearLeadDraft() {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.removeItem(DRAFT_KEY);
+  } catch {
+  }
+}
+function suggestedBudgetForPlan(planId) {
+  switch (planId) {
+    case "start":
+      return "500_1500";
+    case "growth":
+      return "1500_5000";
+    case "product":
+      return "from_5000";
+    case "custom":
+      return "unknown";
+    default:
+      return "";
+  }
+}
+function validateLeadFields(fields) {
+  if (!fields.contact.trim() || fields.contact.trim().length < 3) {
+    return { ok: false, field: "contact", messageKey: "contact" };
+  }
+  if (!fields.task.trim() || fields.task.trim().length < 5) {
+    return { ok: false, field: "task", messageKey: "task" };
+  }
+  if (!fields.consent) {
+    return { ok: false, field: "consent", messageKey: "consent" };
+  }
+  return { ok: true };
+}
+async function submitLead(body, signal) {
+  try {
+    const res = await fetch("/api/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.ok) {
+      return {
+        ok: true,
+        emailSent: data.emailSent,
+        telegramSent: data.telegramSent
+      };
+    }
+    return {
+      ok: false,
+      error: data.error || `http_${res.status}`,
+      fallback: data.fallback || res.status >= 500
+    };
+  } catch {
+    return { ok: false, error: "network_error", fallback: true };
+  }
+}
+const CONTACT_EMAIL = "tivoonix@gmail.com";
+const TELEGRAM_DIRECT_URL = "https://t.me/TIVONIX";
+const PLAN_CATALOG = {
+  start: {
+    id: "start",
+    name: "Start",
+    tagline: {
+      ru: "Лендинг + заявки + Telegram",
+      en: "Landing page + leads + Telegram"
+    },
+    telegramPayload: "plan_start",
+    adminSource: "Start (/plans)",
+    ctaAction: "telegram"
+  },
+  growth: {
+    id: "growth",
+    name: "Growth",
+    tagline: {
+      ru: "Система заявок + Telegram + мини-CRM",
+      en: "Lead system + Telegram + mini-CRM"
+    },
+    telegramPayload: "plan_growth",
+    adminSource: "Growth (/plans)",
+    ctaAction: "telegram"
+  },
+  product: {
+    id: "product",
+    name: "Product",
+    tagline: {
+      ru: "Веб-сервис, кабинет, админка, оплата",
+      en: "Web service, client area, admin, payments"
+    },
+    telegramPayload: "plan_product",
+    adminSource: "Product (/plans)",
+    ctaAction: "telegram"
+  },
+  custom: {
+    id: "custom",
+    name: "Custom",
+    tagline: {
+      ru: "Автоматизация, AI и индивидуальное решение",
+      en: "Automation, AI and a custom build"
+    },
+    telegramPayload: "plan_custom",
+    adminSource: "Custom (/plans)",
+    ctaAction: "telegram"
+  },
+  help: {
+    id: "help",
+    name: "Help",
+    tagline: {
+      ru: "Подбор подходящего формата запуска",
+      en: "Finding the right launch format"
+    },
+    telegramPayload: "plan_help",
+    adminSource: "Help (/plans)",
+    ctaAction: "telegram"
+  }
+};
+({
+  start: PLAN_CATALOG.start.telegramPayload,
+  growth: PLAN_CATALOG.growth.telegramPayload,
+  product: PLAN_CATALOG.product.telegramPayload,
+  custom: PLAN_CATALOG.custom.telegramPayload
+});
+PLAN_CATALOG.help.telegramPayload;
+const PARTNER_AGENCY_TELEGRAM_PAYLOAD = "partner_agency";
+function getPlanCtaAction(planId) {
+  return PLAN_CATALOG[planId].ctaAction;
+}
+({
+  ...Object.fromEntries(
+    Object.values(PLAN_CATALOG).map((entry) => [entry.telegramPayload, entry.adminSource])
+  )
+});
+const TG_BOT_BASE_URL = "https://t.me/tivonixtech_leads_bot";
+const TG_CHANNEL_URL = "https://t.me/TIVONIX";
+const TG_BOT_URL = buildTelegramBotUrl("calc");
+function buildTelegramBotUrl(startPayload) {
+  if (!startPayload) return TG_BOT_BASE_URL;
+  return `${TG_BOT_BASE_URL}?start=${encodeURIComponent(startPayload)}`;
+}
+const PARTNER_AGENCY_TELEGRAM_URL = buildTelegramBotUrl(PARTNER_AGENCY_TELEGRAM_PAYLOAD);
+const PLAN_IDS = ["start", "growth", "product", "custom"];
+const COMPARISON_GROUPS = [
+  {
+    id: "core",
+    rows: [
+      { id: "landing", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "responsive", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "form", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "contactButtons", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "telegramNotify", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "emailNotify", values: { start: { kind: "option" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
+    ]
+  },
+  {
+    id: "crm",
+    rows: [
+      { id: "leadStorage", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "leadTable", values: { start: { kind: "option" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "miniCrm", values: { start: { kind: "no" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "statuses", values: { start: { kind: "no" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "history", values: { start: { kind: "no" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "roles", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
+    ]
+  },
+  {
+    id: "product",
+    rows: [
+      { id: "cabinet", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "admin", values: { start: { kind: "no" }, growth: { kind: "basic" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "auth", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "database", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "booking", values: { start: { kind: "option" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "payments", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
+    ]
+  },
+  {
+    id: "automation",
+    rows: [
+      { id: "autoNotify", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "integrations", values: { start: { kind: "no" }, growth: { kind: "basic" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "aiBot", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "option" }, custom: { kind: "yes" } } },
+      { id: "aiLeads", values: { start: { kind: "no" }, growth: { kind: "no" }, product: { kind: "option" }, custom: { kind: "yes" } } },
+      { id: "documents", values: { start: { kind: "no" }, growth: { kind: "no" }, product: { kind: "option" }, custom: { kind: "yes" } } },
+      { id: "customFlows", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
+    ]
+  },
+  {
+    id: "launch",
+    rows: [
+      { id: "domain", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "deploy", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "guide", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      { id: "testing", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
+      {
+        id: "support",
+        values: {
+          start: { kind: "text", textKey: "support7" },
+          growth: { kind: "text", textKey: "support14" },
+          product: { kind: "text", textKey: "support30" },
+          custom: { kind: "text", textKey: "supportCustom" }
+        }
+      }
+    ]
+  }
+];
+const PLANS = [
+  { id: "start", ctaAction: getPlanCtaAction("start") },
+  { id: "growth", badgeKey: "popular", highlight: true, ctaAction: getPlanCtaAction("growth") },
+  { id: "product", badgeKey: "product", ctaAction: getPlanCtaAction("product") },
+  { id: "custom", ctaAction: getPlanCtaAction("custom") }
+];
+const LAUNCH_DISCOUNT_PERCENT = 10;
+const PLAN_PRICE_USD = {
+  start: 400,
+  growth: 900,
+  product: 2e3
+};
+function planPriceStrings(fromLabel, usd) {
+  const discounted = Math.round(usd * (1 - LAUNCH_DISCOUNT_PERCENT / 100));
+  return {
+    price: `${fromLabel} $${discounted}`,
+    priceOriginal: `${fromLabel} $${usd}`
+  };
+}
+function planPagePrice(lang, planId) {
+  const copy = pricingCopy(lang);
+  const p = copy.plans[planId];
+  return p.price !== "индивидуально" && p.price !== "custom" ? p.price : void 0;
+}
+const COPY_RU$3 = {
+  title: "Планы запуска",
+  subtitle: "Понятные тарифы под вашу задачу — от первых заявок до полноценного веб-сервиса",
+  includesLabel: "Что входит",
+  launchDiscount: {
+    percent: "10%",
+    note: "* Скидка на запуск: первые проекты ведём по сниженной цене от базового прайса."
+  },
+  afterSelect: {
+    title: "Что будет после выбора плана",
+    steps: [
+      "Вы выбираете подходящий план",
+      "Мы уточняем задачу и объём",
+      "Предлагаем понятный вариант запуска",
+      "После согласования начинаем работу"
+    ],
+    note: "Цены указаны «от», потому что итог зависит от экранов, логики, интеграций и сроков. Оплата происходит после обсуждения и согласования задачи."
+  },
+  compareTitle: "Сравнение тарифов",
+  expandAll: "Развернуть всё",
+  collapseAll: "Свернуть",
+  cell: {
+    yes: "Да",
+    no: "—",
+    option: "Опция",
+    basic: "Базово"
+  },
+  cellText: {
+    support7: "7 дней",
+    support14: "14 дней",
+    support30: "30 дней",
+    supportCustom: "По договорённости"
+  },
+  badges: {
+    popular: "Чаще выбирают",
+    product: "Для веб-сервиса"
+  },
+  plans: {
+    start: {
+      name: "Start",
+      tagline: "Для быстрого запуска заявок",
+      ...planPriceStrings("от", PLAN_PRICE_USD.start),
+      desc: "Когда нужно быстро запустить страницу под рекламу, Instagram или Telegram и начать собирать заявки в одном месте.",
+      includes: [
+        "лендинг",
+        "адаптивная версия",
+        "форма заявки",
+        "уведомление в Telegram или email",
+        "базовая аналитика",
+        "согласованный объём правок",
+        "срок от 7 рабочих дней"
+      ],
+      cta: "Получить состав Start",
+      ctaHint: "Откроется форма заявки. План Start уже будет выбран.",
+      compactCta: "Состав Start"
+    },
+    growth: {
+      name: "Growth",
+      tagline: "Система заявок для бизнеса",
+      ...planPriceStrings("от", PLAN_PRICE_USD.growth),
+      desc: "Когда заявок становится больше, они приходят из разных каналов и команде нужен порядок: статусы, ответственные, таблица или mini-CRM.",
+      includes: [
+        "многостраничный сайт",
+        "формы и интеграции",
+        "Telegram или таблица",
+        "статусы заявок",
+        "базовая административная часть",
+        "до двух базовых интеграций",
+        "срок от 2 недель"
+      ],
+      cta: "Оценить Growth",
+      ctaHint: "Откроется короткая форма. План Growth уже будет выбран.",
+      compactCta: "Оценить Growth"
+    },
+    product: {
+      name: "Product",
+      tagline: "Веб-сервис и MVP",
+      ...planPriceStrings("от", PLAN_PRICE_USD.product),
+      desc: "Когда нужен не просто сайт, а рабочий веб-сервис: пользователи, личные кабинеты, роли, база данных и админ-панель. Сложный SaaS целиком в этот тариф не входит.",
+      includes: [
+        "личный кабинет",
+        "авторизация",
+        "роли",
+        "база данных",
+        "базовая админ-панель",
+        "одна основная внешняя интеграция",
+        "срок от 4 недель"
+      ],
+      cta: "Рассчитать MVP",
+      ctaHint: "Откроется форма. Опишите продукт — оценим объём.",
+      compactCta: "Рассчитать MVP"
+    },
+    custom: {
+      name: "Custom",
+      tagline: "Сложная логика и масштаб",
+      price: "индивидуально",
+      desc: "Когда задача не помещается в готовый тариф: несколько ролей, платежи, интеграции, аналитика и масштабирование.",
+      includes: [
+        "сложная бизнес-логика",
+        "несколько ролей",
+        "платежи",
+        "интеграции",
+        "аналитика",
+        "масштабирование",
+        "индивидуальная оценка"
+      ],
+      cta: "Обсудить Custom",
+      ctaHint: "Откроется форма для обсуждения нестандартной задачи.",
+      compactCta: "Обсудить Custom"
+    }
+  },
+  faq: {
+    title: "Частые вопросы о тарифах",
+    items: [
+      {
+        id: "price-from",
+        q: "Что значит цена «от»?",
+        a: "Это минимальная стоимость запуска. Итог зависит от количества экранов, логики, интеграций, личного кабинета, CRM и сроков."
+      },
+      {
+        id: "pay-now",
+        q: "Нужно ли платить сразу?",
+        a: "Нет. Сначала мы обсуждаем задачу, уточняем объём и только потом согласуем стоимость и этапы работы."
+      },
+      {
+        id: "which-plan",
+        q: "Какой план выбрать, если я не понимаю?",
+        a: "Можно выбрать Growth или просто написать нам. Мы разберём задачу и подскажем, нужен сайт, бот, CRM, кабинет или кастомная автоматизация."
+      },
+      {
+        id: "start-expand",
+        q: "Можно начать со Start, а потом расширить?",
+        a: "Да. Часто лучше запустить простую версию, проверить заявки, а потом добавить CRM, статусы, кабинет или интеграции."
+      },
+      {
+        id: "growth-includes",
+        q: "Что входит в Growth?",
+        a: "Growth подходит, когда нужно не просто принять заявку, а навести порядок: формы, Telegram-уведомления, статусы, таблица или mini-CRM, понятный процесс обработки."
+      },
+      {
+        id: "when-product",
+        q: "Когда нужен Product?",
+        a: "Product нужен, если это уже не просто сайт, а веб-сервис: пользователи, личные кабинеты, роли, база данных, оплата, админ-панель."
+      },
+      {
+        id: "when-custom",
+        q: "Когда выбирать Custom?",
+        a: "Custom подходит для нестандартных задач: AI-боты, сложные CRM, автоматизация документов, интеграции, внутренние панели и процессы под вашу команду."
+      }
+    ]
+  },
+  groups: {
+    core: "Основное",
+    crm: "Заявки и CRM",
+    product: "Продуктовая логика",
+    automation: "Автоматизация и AI",
+    launch: "Запуск и поддержка"
+  },
+  features: {
+    landing: "Лендинг / страница",
+    responsive: "Адаптив под телефон",
+    form: "Форма заявки",
+    contactButtons: "Кнопки связи",
+    telegramNotify: "Telegram-уведомления",
+    emailNotify: "Email-уведомления",
+    leadStorage: "Хранение заявок",
+    leadTable: "Таблица заявок",
+    miniCrm: "Мини-CRM",
+    statuses: "Статусы заявок",
+    history: "История обработки",
+    roles: "Роли сотрудников",
+    cabinet: "Личный кабинет",
+    admin: "Админ-панель",
+    auth: "Авторизация",
+    database: "База данных",
+    booking: "Онлайн-запись",
+    payments: "Оплата",
+    autoNotify: "Автоуведомления",
+    integrations: "Интеграции",
+    aiBot: "AI-бот",
+    aiLeads: "AI-обработка заявок",
+    documents: "Обработка документов",
+    customFlows: "Кастомные сценарии",
+    domain: "Помощь с доменом",
+    deploy: "Деплой",
+    guide: "Базовая инструкция",
+    testing: "Тестирование сценариев",
+    support: "Поддержка после запуска"
+  },
+  footer: {
+    valueTitle: "Платите только за",
+    valueTitleHighlight: "нужный объём запуска",
+    valueAside: "Не за лишние модули, которыми пока не пользуетесь",
+    valueLead: "Сначала запускаем то, что помогает получать и обрабатывать заявки. Когда бизнесу становится тесно — добавляем CRM, кабинет, оплату, интеграции или автоматизацию.",
+    helpTitle: "Не уверены, какой план выбрать?",
+    helpLead: "Опишите задачу своими словами — подскажем, с чего лучше начать: Start, Growth, Product или Custom.",
+    helpCta: "Написать в Telegram",
+    helpModalCta: "Оставить заявку",
+    planScopeCaption: "Объём запуска по планам",
+    chips: {
+      start: ["Лендинг", "Форма", "Telegram"],
+      growth: ["Мини-CRM", "Статусы", "Админка"],
+      product: ["Кабинет", "Оплата", "Роли"],
+      custom: ["AI-боты", "Интеграции", "CRM"]
+    },
+    shortDesc: {
+      start: "Быстрый запуск страницы и заявок",
+      growth: "Система заявок для команды",
+      product: "Полноценный веб-сервис",
+      custom: "Индивидуальная автоматизация"
+    }
+  }
+};
+const COPY_EN$3 = {
+  title: "Launch plans",
+  subtitle: "Clear plans for your task — from first leads to a full web service",
+  includesLabel: "What’s included",
+  launchDiscount: {
+    percent: "10%",
+    note: "* Launch discount: early projects ship at a reduced rate from the base price."
+  },
+  afterSelect: {
+    title: "What happens after you choose a plan",
+    steps: [
+      "You pick the plan that fits",
+      "We clarify the task and scope",
+      "We propose a clear launch option",
+      "After agreement, we start work"
+    ],
+    note: "Prices are shown “from” because the final cost depends on screens, logic, integrations and timeline. Payment happens after we discuss and agree on the scope."
+  },
+  compareTitle: "Compare plans",
+  expandAll: "Expand all",
+  collapseAll: "Collapse",
+  cell: {
+    yes: "Yes",
+    no: "—",
+    option: "Optional",
+    basic: "Basic"
+  },
+  cellText: {
+    support7: "7 days",
+    support14: "14 days",
+    support30: "30 days",
+    supportCustom: "By agreement"
+  },
+  badges: {
+    popular: "Most popular",
+    product: "For web products"
+  },
+  plans: {
+    start: {
+      name: "Start",
+      tagline: "Fast lead capture launch",
+      ...planPriceStrings("from", PLAN_PRICE_USD.start),
+      desc: "When you need a page for ads, Instagram or Telegram — and want to collect inquiries in one place quickly.",
+      includes: [
+        "landing or service page",
+        "lead form",
+        "contact buttons",
+        "Telegram/email alerts",
+        "mobile-friendly layout",
+        "basic analytics",
+        "domain launch"
+      ],
+      cta: "Discuss launch",
+      ctaHint: "Opens our Telegram bot — takes about 2 minutes.",
+      compactCta: "Discuss Start"
+    },
+    growth: {
+      name: "Growth",
+      tagline: "Lead system for business",
+      ...planPriceStrings("from", PLAN_PRICE_USD.growth),
+      desc: "When leads grow and come from multiple channels — your team needs order: statuses, owners, a sheet or mini-CRM.",
+      includes: [
+        "site or multiple pages",
+        "lead form",
+        "Telegram alerts",
+        "sheet or mini-CRM",
+        "lead statuses",
+        "basic admin",
+        "analytics setup",
+        "launch assistance"
+      ],
+      cta: "Get a quote",
+      ctaHint: "Opens a short form. The Growth plan will already be selected.",
+      compactCta: "Submit request"
+    },
+    product: {
+      name: "Product",
+      tagline: "Full web service",
+      ...planPriceStrings("from", PLAN_PRICE_USD.product),
+      desc: "When you need more than a website — a working web service with users, client areas, roles, a database and admin panel.",
+      includes: [
+        "client area",
+        "admin panel",
+        "sign-up and auth",
+        "user roles",
+        "leads, statuses, alerts",
+        "database",
+        "integrations",
+        "payments",
+        "responsive UI",
+        "launch preparation"
+      ],
+      cta: "Discuss product",
+      ctaHint: "Opens a short form. Describe the product — we’ll estimate scope.",
+      compactCta: "Describe product"
+    },
+    custom: {
+      name: "Custom",
+      tagline: "Automation & AI",
+      price: "custom",
+      desc: "When the task doesn’t fit a ready plan: AI bots, complex CRM, document automation, integrations or an internal system.",
+      includes: [
+        "AI bots and assistants",
+        "lead automation",
+        "service integrations",
+        "data and document processing",
+        "client areas",
+        "complex roles and flows",
+        "custom CRM",
+        "support and evolution"
+      ],
+      cta: "Request a plan",
+      ctaHint: "Opens our Telegram bot to discuss a non-standard task.",
+      compactCta: "Discuss Custom"
+    }
+  },
+  faq: {
+    title: "Pricing FAQ",
+    items: [
+      {
+        id: "price-from",
+        q: "What does “from” mean?",
+        a: "It’s the minimum launch cost. The final price depends on screens, logic, integrations, client area, CRM and timeline."
+      },
+      {
+        id: "pay-now",
+        q: "Do I pay right away?",
+        a: "No. We discuss the task, clarify scope, then agree on cost and stages before any payment."
+      },
+      {
+        id: "which-plan",
+        q: "Which plan if I’m not sure?",
+        a: "Pick Growth or message us. We’ll review your task and tell you if you need a site, bot, CRM, client area or custom automation."
+      },
+      {
+        id: "start-expand",
+        q: "Can I start with Start and expand later?",
+        a: "Yes. Often it’s better to launch a simple version, test leads, then add CRM, statuses, client area or integrations."
+      },
+      {
+        id: "growth-includes",
+        q: "What’s in Growth?",
+        a: "Growth is for when you need order, not just a form: alerts, statuses, a sheet or mini-CRM and a clear processing flow."
+      },
+      {
+        id: "when-product",
+        q: "When do I need Product?",
+        a: "Product is for a real web service: users, client areas, roles, database, payments and admin panel."
+      },
+      {
+        id: "when-custom",
+        q: "When to choose Custom?",
+        a: "Custom fits non-standard work: AI bots, complex CRM, document automation, integrations and internal tools for your team."
+      }
+    ]
+  },
+  groups: {
+    core: "Core",
+    crm: "Leads & CRM",
+    product: "Product logic",
+    automation: "Automation & AI",
+    launch: "Launch & support"
+  },
+  features: {
+    landing: "Landing / page",
+    responsive: "Mobile layout",
+    form: "Lead form",
+    contactButtons: "Contact buttons",
+    telegramNotify: "Telegram alerts",
+    emailNotify: "Email alerts",
+    leadStorage: "Lead storage",
+    leadTable: "Lead table",
+    miniCrm: "Mini-CRM",
+    statuses: "Lead statuses",
+    history: "Processing history",
+    roles: "Staff roles",
+    cabinet: "Client area",
+    admin: "Admin panel",
+    auth: "Authentication",
+    database: "Database",
+    booking: "Online booking",
+    payments: "Payments",
+    autoNotify: "Auto alerts",
+    integrations: "Integrations",
+    aiBot: "AI bot",
+    aiLeads: "AI lead processing",
+    documents: "Document processing",
+    customFlows: "Custom scenarios",
+    domain: "Domain help",
+    deploy: "Deploy",
+    guide: "Basic guide",
+    testing: "Scenario testing",
+    support: "Post-launch support"
+  },
+  footer: {
+    valueTitle: "Pay only for",
+    valueTitleHighlight: "the launch scope you need",
+    valueAside: "Not for modules you don’t use yet",
+    valueLead: "We launch what helps you capture and process leads first. When the business outgrows it — we add CRM, client area, payments, integrations or automation.",
+    helpTitle: "Not sure which plan to pick?",
+    helpLead: "Describe your task in your own words — we’ll suggest whether to start with Start, Growth, Product or Custom.",
+    helpCta: "Message on Telegram",
+    helpModalCta: "Submit request",
+    planScopeCaption: "Launch scope by plan",
+    chips: {
+      start: ["Landing", "Form", "Telegram"],
+      growth: ["Mini-CRM", "Statuses", "Admin"],
+      product: ["Client area", "Payments", "Roles"],
+      custom: ["AI bots", "Integrations", "CRM"]
+    },
+    shortDesc: {
+      start: "Fast page and lead launch",
+      growth: "Lead system for your team",
+      product: "Full web service",
+      custom: "Custom automation"
+    }
+  }
+};
+function pricingCopy(lang) {
+  return lang === "ru" ? COPY_RU$3 : COPY_EN$3;
+}
+function cx$f(...a) {
+  return a.filter(Boolean).join(" ");
+}
+const BRAND_CTA = "linear-gradient(90deg, #FFD7B0 0%, #FF9A3D 45%, #FF6A1A 100%)";
+const ORANGE_LINE = "linear-gradient(90deg, rgba(255,160,70,0) 0%, rgba(255,120,40,0.95) 18%, rgba(255,198,120,1) 50%, rgba(255,120,40,0.95) 82%, rgba(255,160,70,0) 100%)";
+const FRAME = "linear-gradient(135deg, rgba(255,154,61,0.55), rgba(255,255,255,0.12) 38%, rgba(143,168,200,0.28) 72%, rgba(255,154,61,0.35))";
+const emptyForm = () => ({
+  name: "",
+  contact: "",
+  task: "",
+  budget: "",
+  consent: false,
+  company_fax_url: ""
+});
+function LeadFormModal({
+  open,
+  onClose,
+  source,
+  planId = null
+}) {
+  const { lang } = useLang();
+  const copy = leadFormCopy(lang);
+  const pricing = pricingCopy(lang);
+  const titleId = useId();
+  const descId = useId();
+  const dialogRef = useRef(null);
+  const contactRef = useRef(null);
+  const taskRef = useRef(null);
+  const consentRef = useRef(null);
+  const startedRef = useRef(false);
+  const successRef = useRef(false);
+  const submittingRef = useRef(false);
+  const [activePlanId, setActivePlanId] = useState(planId);
+  const [mounted, setMounted] = useState(open);
+  const [visible, setVisible] = useState(false);
+  const [form, setForm] = useState(emptyForm);
+  const [status, setStatus] = useState("idle");
+  const [fieldError, setFieldError] = useState("");
+  const [errorField, setErrorField] = useState(
+    null
+  );
+  const [serverError, setServerError] = useState(false);
+  const planName = activePlanId ? pricing.plans[activePlanId].name : null;
+  const planPrice = activePlanId ? planPagePrice(lang, activePlanId) : null;
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      setStatus("idle");
+      setFieldError("");
+      setErrorField(null);
+      setServerError(false);
+      startedRef.current = false;
+      successRef.current = false;
+      setActivePlanId(planId);
+      const draft = loadLeadDraft();
+      const suggested = suggestedBudgetForPlan(planId);
+      setForm({
+        ...emptyForm(),
+        ...draft,
+        company_fax_url: "",
+        budget: draft?.budget || suggested || "",
+        consent: draft?.consent === true
+      });
+      requestAnimationFrame(() => setVisible(true));
+    } else {
+      setVisible(false);
+      const t = window.setTimeout(() => setMounted(false), 220);
+      return () => window.clearTimeout(t);
+    }
+  }, [open, planId]);
+  useEffect(() => {
+    if (!open || status === "success") return;
+    saveLeadDraft(form);
+  }, [form, open, status]);
+  useEffect(() => {
+    if (!open) return;
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.overflow;
+    const prevBody = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = prevHtml;
+      body.style.overflow = prevBody;
+    };
+  }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    const t = window.setTimeout(() => contactRef.current?.focus(), 120);
+    return () => window.clearTimeout(t);
+  }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    const root = dialogRef.current;
+    if (!root) return;
+    const onKey = (e) => {
+      if (e.key === "Escape" && status !== "loading") {
+        e.preventDefault();
+        handleClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusable = root.querySelectorAll(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      const list = Array.from(focusable).filter((el) => el.offsetParent !== null);
+      if (list.length === 0) return;
+      const first = list[0];
+      const last = list[list.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, status, source, form]);
+  const handleClose = () => {
+    if (status === "loading") return;
+    if (!successRef.current && (form.contact || form.task || form.name)) {
+      trackLeadFormAbandon(source);
+    }
+    onClose();
+  };
+  const update = (k, v) => {
+    if (!startedRef.current && (k === "contact" || k === "task" || k === "name")) {
+      startedRef.current = true;
+      trackLeadFormStart();
+    }
+    setFieldError("");
+    setErrorField(null);
+    setForm((p) => ({ ...p, [k]: v }));
+  };
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    if (submittingRef.current || status === "loading") return;
+    const v = validateLeadFields(form);
+    if (!v.ok) {
+      trackLeadFormValidationError(v.field);
+      setErrorField(v.field ?? null);
+      if (v.messageKey === "contact") {
+        setFieldError(copy.errors.contact);
+        contactRef.current?.focus();
+      } else if (v.messageKey === "task") {
+        setFieldError(copy.errors.task);
+        taskRef.current?.focus();
+      } else {
+        setFieldError(copy.errors.consent);
+        consentRef.current?.focus();
+      }
+      return;
+    }
+    submittingRef.current = true;
+    setStatus("loading");
+    setServerError(false);
+    trackLeadFormSubmit(source);
+    const result = await submitLead({
+      name: form.name.trim(),
+      contact: form.contact.trim(),
+      task: form.task.trim(),
+      budget: form.budget,
+      consent: form.consent,
+      company_fax_url: form.company_fax_url,
+      lang,
+      planId: activePlanId || void 0,
+      meta: buildLeadMeta(source, {
+        id: activePlanId || void 0,
+        name: planName || void 0
+      })
+    });
+    submittingRef.current = false;
+    if (result.ok) {
+      successRef.current = true;
+      clearLeadDraft();
+      setForm(emptyForm());
+      setStatus("success");
+      trackLeadFormSuccess(source);
+      return;
+    }
+    trackLeadFormServerError();
+    setServerError(true);
+    setStatus("error");
+  };
+  if (!mounted && !open) return null;
+  if (typeof document === "undefined") return null;
+  const budgetOptions = copy.budgets.filter((b) => b.id !== "");
+  const inputBase = cx$f(
+    "w-full h-12 rounded-xl px-4",
+    "border-0 bg-white/[0.08] text-white placeholder:text-white/40",
+    "outline-none focus:bg-white/[0.12]",
+    "text-[14px] font-medium transition",
+    HOTJAR_MASK_CLASS
+  );
+  const labelClass = "mb-1.5 block min-h-[1.15rem] text-[12px] font-medium leading-none text-white/80";
+  const node = /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: cx$f(
+        "fixed inset-0 z-[220]",
+        "flex items-end justify-center sm:items-center",
+        "px-0 sm:px-5 py-0 sm:py-5"
+      ),
+      "aria-hidden": !open,
+      children: [
+        /* @__PURE__ */ jsx("style", { children: `
+        .lead-modal-scroll {
+          overflow-y: auto;
+          overflow-x: hidden;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255,154,61,.7) rgba(255,255,255,.06);
+        }
+        .lead-modal-scroll::-webkit-scrollbar { width: 6px; }
+        .lead-modal-scroll::-webkit-scrollbar-track {
+          background: rgba(255,255,255,.06);
+          border-radius: 999px;
+        }
+        .lead-modal-scroll::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, #FFD7B0, #FF9A3D, #FF6A1A);
+          border-radius: 999px;
+        }
+      ` }),
+        /* @__PURE__ */ jsx(
+          "div",
+          {
+            className: "absolute inset-0 bg-black/72 backdrop-blur-[14px] transition-opacity duration-200 cursor-pointer",
+            style: { opacity: open && visible ? 1 : 0 },
+            onClick: handleClose,
+            "aria-hidden": "true"
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "div",
+          {
+            className: "relative w-full max-w-none sm:max-w-[640px] lg:max-w-[720px] transition-[transform,opacity] duration-220 ease-out",
+            style: {
+              opacity: open && visible ? 1 : 0,
+              transform: open && visible ? "translateY(0) scale(1)" : "translateY(18px) scale(0.98)",
+              pointerEvents: open ? "auto" : "none"
+            },
+            role: "dialog",
+            "aria-modal": "true",
+            "aria-labelledby": titleId,
+            "aria-describedby": descId,
+            ref: dialogRef,
+            onMouseDown: (e) => e.stopPropagation(),
+            children: /* @__PURE__ */ jsx(
+              "div",
+              {
+                className: "rounded-t-[28px] p-[1px] shadow-[0_32px_120px_rgba(0,0,0,0.72)] sm:rounded-[28px]",
+                style: { background: FRAME },
+                children: /* @__PURE__ */ jsxs(
+                  "div",
+                  {
+                    className: "relative flex max-h-[min(94dvh,780px)] flex-col overflow-hidden rounded-t-[27px] bg-black/50 backdrop-blur-2xl sm:rounded-[27px]",
+                    children: [
+                      /* @__PURE__ */ jsx(
+                        "div",
+                        {
+                          "aria-hidden": true,
+                          className: "pointer-events-none absolute inset-0 opacity-80",
+                          style: {
+                            backgroundImage: "url(/images/121.webp)",
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                            filter: "blur(22px)",
+                            transform: "scale(1.08)"
+                          }
+                        }
+                      ),
+                      /* @__PURE__ */ jsx(
+                        "div",
+                        {
+                          "aria-hidden": true,
+                          className: "pointer-events-none absolute inset-0",
+                          style: {
+                            backgroundImage: "radial-gradient(720px 380px at 16% 0%, rgba(255,154,61,0.20), transparent 58%),radial-gradient(640px 420px at 92% 28%, rgba(143,168,200,0.16), transparent 60%),radial-gradient(520px 360px at 50% 110%, rgba(255,106,26,0.12), transparent 55%)"
+                          }
+                        }
+                      ),
+                      /* @__PURE__ */ jsx(
+                        "div",
+                        {
+                          "aria-hidden": true,
+                          className: "pointer-events-none absolute inset-0 opacity-[0.18]",
+                          style: {
+                            backgroundImage: "radial-gradient(rgba(255,255,255,0.22) 1px, transparent 1px)",
+                            backgroundSize: "18px 18px",
+                            maskImage: "radial-gradient(closest-side at 50% 35%, black, transparent 80%)",
+                            WebkitMaskImage: "radial-gradient(closest-side at 50% 35%, black, transparent 80%)"
+                          }
+                        }
+                      ),
+                      /* @__PURE__ */ jsxs("div", { className: "relative z-10 shrink-0 px-5 pt-4 sm:px-7 sm:pt-5", children: [
+                        /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between gap-3", children: [
+                          /* @__PURE__ */ jsxs("div", { className: "flex min-w-0 items-center gap-3", children: [
+                            /* @__PURE__ */ jsx("div", { className: "grid h-10 w-10 place-items-center overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-white/12 backdrop-blur-xl sm:hidden", children: /* @__PURE__ */ jsx(
+                              "img",
+                              {
+                                src: "/images/tivonix-logo-icon.webp",
+                                alt: "",
+                                className: "h-6 w-6 opacity-90",
+                                draggable: false
+                              }
+                            ) }),
+                            /* @__PURE__ */ jsx(
+                              "img",
+                              {
+                                src: "/images/tivonix-logo-lockup.webp",
+                                alt: "TIVONIX",
+                                draggable: false,
+                                className: "hidden h-9 w-auto opacity-90 sm:block"
+                              }
+                            ),
+                            /* @__PURE__ */ jsxs("div", { className: "min-w-0 sm:ml-1", children: [
+                              /* @__PURE__ */ jsx(
+                                "h2",
+                                {
+                                  id: titleId,
+                                  className: "truncate text-[17px] font-extrabold tracking-tight text-white sm:text-[19px]",
+                                  children: copy.title
+                                }
+                              ),
+                              /* @__PURE__ */ jsx("p", { id: descId, className: "mt-0.5 truncate text-[12px] text-white/55 sm:text-[12.5px]", children: copy.subtitle })
+                            ] })
+                          ] }),
+                          /* @__PURE__ */ jsx(
+                            "button",
+                            {
+                              type: "button",
+                              onClick: handleClose,
+                              disabled: status === "loading",
+                              className: "group grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.08] text-white/80 transition hover:bg-white/[0.14] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/40 disabled:opacity-50",
+                              "aria-label": copy.close,
+                              children: /* @__PURE__ */ jsxs(
+                                "svg",
+                                {
+                                  width: "15",
+                                  height: "15",
+                                  viewBox: "0 0 24 24",
+                                  fill: "none",
+                                  className: "transition-transform duration-200 group-hover:rotate-90",
+                                  "aria-hidden": true,
+                                  children: [
+                                    /* @__PURE__ */ jsx("path", { d: "M6 6L18 18", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round" }),
+                                    /* @__PURE__ */ jsx("path", { d: "M18 6L6 18", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round" })
+                                  ]
+                                }
+                              )
+                            }
+                          )
+                        ] }),
+                        /* @__PURE__ */ jsxs("div", { className: "pointer-events-none mt-4 h-4", children: [
+                          /* @__PURE__ */ jsx("div", { className: "mx-auto h-[2px] w-full rounded-full opacity-95", style: { background: ORANGE_LINE } }),
+                          /* @__PURE__ */ jsx("div", { className: "mx-auto mt-[-2px] h-5 w-full opacity-35 blur-xl", style: { background: ORANGE_LINE } })
+                        ] })
+                      ] }),
+                      /* @__PURE__ */ jsx("div", { className: "lead-modal-scroll relative z-10 min-h-0 flex-1 px-5 pb-2 pt-1 sm:px-7", children: status === "success" ? /* @__PURE__ */ jsxs(
+                        "div",
+                        {
+                          className: "flex min-h-[280px] flex-col items-center justify-center gap-4 py-10 text-center",
+                          role: "status",
+                          "aria-live": "polite",
+                          children: [
+                            /* @__PURE__ */ jsx(
+                              "div",
+                              {
+                                className: "grid h-14 w-14 place-items-center rounded-full",
+                                style: {
+                                  background: "linear-gradient(145deg, rgba(255,215,176,0.25), rgba(255,106,26,0.2))",
+                                  boxShadow: "0 0 40px rgba(255,154,61,0.25)"
+                                },
+                                children: /* @__PURE__ */ jsx("svg", { width: "26", height: "26", viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: /* @__PURE__ */ jsx(
+                                  "path",
+                                  {
+                                    d: "M5.5 12.6c2 1.6 3.3 3.2 4.2 5.1 2.6-4.8 5.8-8.2 10-11.2",
+                                    stroke: "#FF9A3D",
+                                    strokeWidth: "2.4",
+                                    strokeLinecap: "round",
+                                    strokeLinejoin: "round"
+                                  }
+                                ) })
+                              }
+                            ),
+                            /* @__PURE__ */ jsx("h3", { className: "font-hero text-[1.35rem] font-semibold tracking-[-0.02em] text-white", children: copy.successTitle }),
+                            /* @__PURE__ */ jsx("p", { className: "max-w-[36ch] text-[15px] leading-relaxed text-white/75 sm:text-[16px]", children: copy.success }),
+                            /* @__PURE__ */ jsxs("div", { className: "mt-2 flex flex-col items-center gap-2.5 sm:flex-row", children: [
+                              /* @__PURE__ */ jsx(
+                                "a",
+                                {
+                                  href: "/projects/spliton",
+                                  className: "inline-flex h-11 items-center justify-center rounded-full border border-white/15 px-5 text-[13.5px] font-medium text-white/85 transition hover:border-white/30 hover:text-white",
+                                  onClick: onClose,
+                                  children: copy.successCase
+                                }
+                              ),
+                              /* @__PURE__ */ jsx(
+                                "a",
+                                {
+                                  href: "/",
+                                  className: "inline-flex h-11 items-center justify-center rounded-full bg-white px-5 text-[13.5px] font-bold text-black transition hover:bg-white/92",
+                                  onClick: onClose,
+                                  children: copy.successHome
+                                }
+                              )
+                            ] })
+                          ]
+                        }
+                      ) : /* @__PURE__ */ jsxs("form", { id: "lead-form", onSubmit, noValidate: true, className: "space-y-3.5 pb-2", children: [
+                        /* @__PURE__ */ jsxs("div", { className: "absolute -left-[9999px] top-auto h-0 w-0 overflow-hidden", "aria-hidden": true, children: [
+                          /* @__PURE__ */ jsx("label", { htmlFor: "lead-company-fax", children: "Company fax" }),
+                          /* @__PURE__ */ jsx(
+                            "input",
+                            {
+                              id: "lead-company-fax",
+                              name: "company_fax_url",
+                              type: "text",
+                              tabIndex: -1,
+                              autoComplete: "off",
+                              value: form.company_fax_url,
+                              onChange: (e) => update("company_fax_url", e.target.value)
+                            }
+                          )
+                        ] }),
+                        activePlanId && planName ? /* @__PURE__ */ jsxs("div", { className: "flex items-start justify-between gap-3 rounded-xl bg-white/[0.06] px-3.5 py-3", children: [
+                          /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+                            /* @__PURE__ */ jsx("p", { className: "text-[10.5px] font-medium uppercase tracking-[0.12em] text-white/55", children: copy.selectedPlan }),
+                            /* @__PURE__ */ jsxs("p", { className: "mt-1 text-[15px] font-semibold tracking-tight text-white", children: [
+                              planName,
+                              planPrice ? /* @__PURE__ */ jsx("span", { className: "ml-2 text-[13px] font-medium text-white/55", children: planPrice }) : null
+                            ] })
+                          ] }),
+                          /* @__PURE__ */ jsx(
+                            "button",
+                            {
+                              type: "button",
+                              onClick: () => setActivePlanId(null),
+                              className: "shrink-0 text-[12px] font-medium text-white/45 transition hover:text-white/75",
+                              children: copy.clearPlan
+                            }
+                          )
+                        ] }) : null,
+                        /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 gap-3.5 sm:grid-cols-2", children: [
+                          /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+                            /* @__PURE__ */ jsxs("label", { htmlFor: "lead-name", className: labelClass, children: [
+                              copy.name,
+                              " ",
+                              /* @__PURE__ */ jsxs("span", { className: "font-normal text-white/45", children: [
+                                "(",
+                                copy.nameOptional,
+                                ")"
+                              ] })
+                            ] }),
+                            /* @__PURE__ */ jsx(
+                              "input",
+                              {
+                                id: "lead-name",
+                                name: "name",
+                                type: "text",
+                                autoComplete: "name",
+                                className: inputBase,
+                                value: form.name,
+                                onChange: (e) => update("name", e.target.value),
+                                disabled: status === "loading",
+                                ...HOTJAR_SUPPRESS_ATTR
+                              }
+                            )
+                          ] }),
+                          /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+                            /* @__PURE__ */ jsxs("label", { htmlFor: "lead-contact", className: labelClass, children: [
+                              copy.contact,
+                              " *"
+                            ] }),
+                            /* @__PURE__ */ jsx(
+                              "input",
+                              {
+                                ref: contactRef,
+                                id: "lead-contact",
+                                name: "contact",
+                                type: "text",
+                                required: true,
+                                autoComplete: "email",
+                                inputMode: "email",
+                                placeholder: copy.contactPh,
+                                className: cx$f(
+                                  inputBase,
+                                  errorField === "contact" && "bg-[#FF9A3D]/12 focus:bg-[#FF9A3D]/16"
+                                ),
+                                value: form.contact,
+                                onChange: (e) => update("contact", e.target.value),
+                                disabled: status === "loading",
+                                "aria-invalid": errorField === "contact",
+                                "aria-describedby": fieldError ? "lead-field-error" : void 0,
+                                ...HOTJAR_SUPPRESS_ATTR
+                              }
+                            )
+                          ] })
+                        ] }),
+                        /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+                          /* @__PURE__ */ jsxs("label", { htmlFor: "lead-task", className: labelClass, children: [
+                            copy.task,
+                            " *"
+                          ] }),
+                          /* @__PURE__ */ jsx(
+                            "textarea",
+                            {
+                              ref: taskRef,
+                              id: "lead-task",
+                              name: "task",
+                              required: true,
+                              rows: 4,
+                              placeholder: activePlanId && planName ? lang === "ru" ? `Что важно по плану ${planName}? Сроки, примеры, пожелания…` : `What matters for the ${planName} plan? Timeline, examples, notes…` : copy.taskPh,
+                              className: cx$f(
+                                "min-h-[108px] w-full resize-none rounded-xl px-4 py-3 text-[14px] font-medium",
+                                "border-0 bg-white/[0.08] text-white placeholder:text-white/40",
+                                "outline-none focus:bg-white/[0.12] transition",
+                                HOTJAR_MASK_CLASS,
+                                errorField === "task" && "bg-[#FF9A3D]/12 focus:bg-[#FF9A3D]/16"
+                              ),
+                              value: form.task,
+                              onChange: (e) => update("task", e.target.value),
+                              disabled: status === "loading",
+                              "aria-invalid": errorField === "task",
+                              ...HOTJAR_SUPPRESS_ATTR
+                            }
+                          )
+                        ] }),
+                        /* @__PURE__ */ jsxs("div", { children: [
+                          /* @__PURE__ */ jsxs("div", { className: labelClass, children: [
+                            copy.budget,
+                            " ",
+                            /* @__PURE__ */ jsxs("span", { className: "font-normal text-white/45", children: [
+                              "(",
+                              copy.budgetOptional,
+                              ")"
+                            ] })
+                          ] }),
+                          /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-2", role: "group", "aria-label": copy.budget, children: budgetOptions.map((b) => {
+                            const active = form.budget === b.id;
+                            return /* @__PURE__ */ jsx(
+                              "button",
+                              {
+                                type: "button",
+                                disabled: status === "loading",
+                                onClick: () => update("budget", active ? "" : b.id),
+                                className: cx$f(
+                                  "h-9 rounded-full px-3.5 text-[12px] font-medium transition",
+                                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40",
+                                  active ? "bg-white text-black" : "bg-white/[0.08] text-white/75 hover:bg-white/[0.12] hover:text-white"
+                                ),
+                                children: b.label
+                              },
+                              b.id
+                            );
+                          }) })
+                        ] }),
+                        /* @__PURE__ */ jsxs("label", { className: "flex cursor-pointer items-start gap-2.5 px-0.5 py-1", children: [
+                          /* @__PURE__ */ jsx(
+                            "input",
+                            {
+                              ref: consentRef,
+                              type: "checkbox",
+                              checked: form.consent,
+                              onChange: (e) => update("consent", e.target.checked),
+                              disabled: status === "loading",
+                              className: cx$f(
+                                "mt-0.5 h-4 w-4 shrink-0 accent-[#FF9A3D]",
+                                errorField === "consent" && "outline outline-2 outline-[#FF9A3D]/60 outline-offset-2"
+                              ),
+                              "aria-required": "true"
+                            }
+                          ),
+                          /* @__PURE__ */ jsxs("span", { className: "text-[13px] leading-snug text-white/70", children: [
+                            copy.consent,
+                            " ",
+                            /* @__PURE__ */ jsx(
+                              "a",
+                              {
+                                href: copy.privacyHref,
+                                target: "_blank",
+                                rel: "noopener noreferrer",
+                                className: "font-medium text-[#FFB36A] underline decoration-[#FF9A3D]/30 underline-offset-2 hover:text-[#FFD7B0]",
+                                children: copy.privacyLabel
+                              }
+                            )
+                          ] })
+                        ] }),
+                        fieldError ? /* @__PURE__ */ jsx("p", { id: "lead-field-error", role: "alert", className: "text-[12.5px] text-[#FFB36A]", children: fieldError }) : null,
+                        serverError ? /* @__PURE__ */ jsxs(
+                          "div",
+                          {
+                            role: "alert",
+                            className: "rounded-xl bg-[#FF9A3D]/10 px-4 py-3.5 text-[12.5px] text-white/88",
+                            children: [
+                              /* @__PURE__ */ jsx("p", { className: "font-semibold", children: copy.errorTitle }),
+                              /* @__PURE__ */ jsx("p", { className: "mt-1 text-white/60", children: copy.errorBody }),
+                              /* @__PURE__ */ jsxs("div", { className: "mt-3 flex flex-col gap-2 sm:flex-row", children: [
+                                /* @__PURE__ */ jsx(
+                                  "a",
+                                  {
+                                    href: `mailto:${CONTACT_EMAIL}`,
+                                    onClick: () => trackEmailClick(),
+                                    className: "inline-flex h-10 items-center justify-center rounded-full bg-white px-4 text-[13px] font-bold text-black",
+                                    children: copy.fallbackEmail
+                                  }
+                                ),
+                                /* @__PURE__ */ jsx(
+                                  "a",
+                                  {
+                                    href: TELEGRAM_DIRECT_URL,
+                                    target: "_blank",
+                                    rel: "noopener noreferrer",
+                                    onClick: () => trackTelegramDirectClick(),
+                                    className: "inline-flex h-10 items-center justify-center rounded-full bg-white/[0.08] px-4 text-[13px] font-medium text-white",
+                                    children: copy.fallbackTelegram
+                                  }
+                                )
+                              ] })
+                            ]
+                          }
+                        ) : null
+                      ] }) }),
+                      status !== "success" ? /* @__PURE__ */ jsxs("div", { className: "relative z-10 shrink-0 bg-black/35 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl sm:px-7 sm:pb-5", children: [
+                        /* @__PURE__ */ jsx(
+                          "div",
+                          {
+                            "aria-hidden": true,
+                            className: "mb-3 h-px w-full opacity-60",
+                            style: {
+                              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent)"
+                            }
+                          }
+                        ),
+                        /* @__PURE__ */ jsx(
+                          "button",
+                          {
+                            type: "submit",
+                            form: "lead-form",
+                            disabled: status === "loading",
+                            className: cx$f(
+                              "flex h-12 w-full items-center justify-center rounded-full text-[15px] font-bold text-black",
+                              "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
+                              "hover:brightness-[1.04] active:brightness-[0.96]",
+                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50",
+                              status === "loading" && "cursor-not-allowed opacity-70"
+                            ),
+                            style: { background: BRAND_CTA },
+                            children: status === "loading" ? copy.sending : copy.send
+                          }
+                        ),
+                        /* @__PURE__ */ jsxs("div", { className: "mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-[11.5px] text-white/40", children: [
+                          /* @__PURE__ */ jsx(
+                            "a",
+                            {
+                              href: TELEGRAM_DIRECT_URL,
+                              target: "_blank",
+                              rel: "noopener noreferrer",
+                              onClick: () => trackTelegramDirectClick(),
+                              className: "transition hover:text-white/75",
+                              children: "@TIVONIX"
+                            }
+                          ),
+                          /* @__PURE__ */ jsx("span", { "aria-hidden": true, className: "text-white/18", children: "·" }),
+                          /* @__PURE__ */ jsx(
+                            "a",
+                            {
+                              href: TG_BOT_URL,
+                              target: "_blank",
+                              rel: "noopener noreferrer",
+                              onClick: () => trackTelegramBotClick(),
+                              className: "transition hover:text-white/75",
+                              children: copy.altBot
+                            }
+                          ),
+                          /* @__PURE__ */ jsx("span", { "aria-hidden": true, className: "text-white/18", children: "·" }),
+                          /* @__PURE__ */ jsx(
+                            "a",
+                            {
+                              href: `mailto:${CONTACT_EMAIL}`,
+                              onClick: () => trackEmailClick(),
+                              className: "transition hover:text-white/75",
+                              children: CONTACT_EMAIL
+                            }
+                          )
+                        ] })
+                      ] }) : null
+                    ]
+                  }
+                )
+              }
+            )
+          }
+        )
+      ]
+    }
+  );
+  return createPortal(node, document.body);
+}
+const LeadFormContext = createContext(null);
+function LeadFormProvider({ children }) {
+  const [open, setOpen] = useState(false);
+  const [source, setSource] = useState("unknown");
+  const [planId, setPlanId] = useState(null);
+  const openLeadForm = useCallback((ctaSource, options) => {
+    trackCtaPrimaryClick(ctaSource);
+    trackLeadFormOpen(ctaSource);
+    setSource(ctaSource);
+    setPlanId(options?.planId ?? null);
+    setOpen(true);
+  }, []);
+  const closeLeadForm = useCallback(() => {
+    setOpen(false);
+  }, []);
+  const value = useMemo(
+    () => ({ openLeadForm, closeLeadForm, isOpen: open, source, planId }),
+    [openLeadForm, closeLeadForm, open, source, planId]
+  );
+  return /* @__PURE__ */ jsxs(LeadFormContext.Provider, { value, children: [
+    children,
+    /* @__PURE__ */ jsx(
+      LeadFormModal,
+      {
+        open,
+        source,
+        planId,
+        onClose: closeLeadForm
+      }
+    )
+  ] });
+}
 const LANDING_SHELL_CLASS = "mx-auto w-full max-w-[1480px] px-6 sm:px-8 md:px-12 lg:px-16 xl:px-[100px]";
-const HERO_SCROLL_HEADLINE_CLASS = "font-sans text-balance font-bold tracking-[-0.022em] text-white leading-[1.05] text-[clamp(1.9rem,4.6vw,3.65rem)] sm:text-[clamp(2.2rem,4vw,4.1rem)] lg:text-[clamp(2.35rem,3.6vw,4.35rem)]";
-const HERO_SCROLL_LEAD_CLASS = "mx-auto mt-5 max-w-[38rem] font-sans text-[clamp(0.95rem,1.4vw,1.2rem)] font-normal leading-[1.55] text-white/92 sm:mt-6";
-const LANDING_HEADLINE_CLASS = "font-hero font-semibold tracking-[-0.04em] text-white leading-[0.98] text-[clamp(2.25rem,7.2vw,3.25rem)] sm:text-[clamp(2.75rem,5.8vw,4rem)] lg:text-[clamp(3rem,4.8vw,4.75rem)]";
+const HERO_SCROLL_HEADLINE_CLASS = "font-hero w-full max-w-full font-normal uppercase tracking-[0.01em] text-white leading-[0.88] text-[clamp(2.35rem,6.8vw,4.75rem)] sm:text-[clamp(2.85rem,5.8vw,5.75rem)] lg:text-[clamp(3.25rem,5.2vw,6.5rem)] xl:text-[clamp(3.75rem,4.8vw,7rem)]";
+const LANDING_HEADLINE_CLASS = "font-hero font-normal uppercase tracking-[0.02em] text-white leading-[0.98] text-[clamp(2.25rem,7.2vw,3.75rem)] sm:text-[clamp(2.75rem,5.8vw,4.5rem)] lg:text-[clamp(3.25rem,4.8vw,5.25rem)]";
 function Container({
   children,
   className
@@ -424,6 +2117,198 @@ function partnersCanonicalUrl(lang, pathname) {
 function partnersHreflangUrl(path) {
   return `${PARTNERS_ORIGIN}${path}`;
 }
+const COPY_RU$2 = {
+  seo: {
+    title: "О компании — TIVONIX",
+    description: "TIVONIX — продуктовая команда: сайты, заявки, кабинеты и автоматизация. Зачем мы начали, миссия, ценности и почему с нами работают."
+  },
+  hero: {
+    title: "Системы, в которых заявки не теряются",
+    titleLines: ["Системы,", "в которых", "заявки не", "теряются"],
+    cta: "Обсудить задачу"
+  },
+  story: {
+    paragraphs: [
+      "Форма на сайте есть. А дальше часто начинается хаос: письма во входящих, статусы в голове, Excel вручную, и никто не знает, кто взял заявку. Из этой боли и вырос TIVONIX. Не из презентации.",
+      "Мы сами собирали для бизнеса цепочки от сайта до Telegram, CRM и кабинета. Видели, где всё ломается. Поэтому делаем не красивую страницу ради галочки, а рабочую систему.",
+      "Сегодня запускаем лендинги под заявки, mini-CRM, личные кабинеты и MVP. С понятным объёмом, сроками и ответом за результат. Собираем состав под задачу, показываем ход работы и отдаём код с доступами. Система живёт у вас, а не в чужом кабинете."
+    ]
+  },
+  mission: {
+    label: "Миссия",
+    title: "Автоматизировать рутину вокруг клиента",
+    text: "Мы помогаем бизнесу убрать ручной перенос заявок и хаос в коммуникациях — чтобы команда занималась продажами и продуктом, а не поиском «кто взял лид»."
+  },
+  vision: {
+    label: "Видение",
+    title: "Понятный цифровой контур для любого масштаба",
+    text: "От локального бизнеса до веб-сервиса: один процесс от первого касания до статуса в системе. Без лишней разработки ради галочки — только то, что двигает деньги и скорость ответа."
+  },
+  values: {
+    label: "Ценности",
+    title: "Скорость, ясность и ответственность",
+    text: "Так мы работаем на каждом проекте — от первого сообщения до передачи доступов.",
+    items: [
+      {
+        title: "Скорость",
+        text: "Быстрый старт и короткие итерации: промежуточный результат видно уже в первые недели, а не в конце."
+      },
+      {
+        title: "Ясность",
+        text: "Фиксируем объём, сроки и границы до старта. Понятно, что входит в работу и что остаётся на следующий этап."
+      },
+      {
+        title: "Ответственность",
+        text: "Отвечаем за результат: сценарии заявок, статусы и ключевые пути пользователя проверяем до релиза."
+      },
+      {
+        title: "Прозрачность",
+        text: "Передаём код и доступы. Конфиденциальность и контроль над системой остаются у вас."
+      }
+    ]
+  },
+  why: {
+    title: "Почему TIVONIX",
+    text: "Мы соединяем продукт, интеграции и запуск — чтобы вы росли, а не тонули в спорах «где заявка».",
+    cta: "Обсудить задачу",
+    items: [
+      {
+        key: "experience",
+        title: "Опыт",
+        text: "Делаем живые проекты: от лендинга с Telegram до fintech и маркетплейсов с кабинетами и оплатой."
+      },
+      {
+        key: "expertise",
+        title: "Экспертиза",
+        text: "Умеем упрощать сложное: маршруты заявок, роли, статусы, интеграции — без лишней архитектуры."
+      },
+      {
+        key: "innovation",
+        title: "Технологии",
+        text: "Современный стек, AI там, где он экономит время, и автоматизация рутины вокруг клиента."
+      },
+      {
+        key: "team",
+        title: "Команда",
+        text: "Дизайн, разработка, QA и запуск в одной связке. Состав под задачу — без безликой «студии на аутсорсе»."
+      }
+    ]
+  },
+  people: {
+    title: "Это мы",
+    text: "Роли, которые реально закрывают проект — от идеи до продакшена.",
+    members: [
+      { id: "danila", initials: "ДТ", name: "Данила Т.", role: "Архитектура и full-stack" },
+      { id: "anna", initials: "АК", name: "Анна К.", role: "UI/UX дизайн" },
+      { id: "maxim", initials: "МС", name: "Максим С.", role: "Frontend" },
+      { id: "igor", initials: "ИВ", name: "Игорь В.", role: "Backend" },
+      { id: "elena", initials: "ЕН", name: "Елена Н.", role: "QA и тестирование" },
+      { id: "roman", initials: "РП", name: "Роман П.", role: "Проджект-менеджмент" }
+    ]
+  },
+  join: {
+    cta: "Начать разговор"
+  }
+};
+const COPY_EN$2 = {
+  seo: {
+    title: "About — TIVONIX",
+    description: "TIVONIX is a product team: sites, lead flows, portals and automation. Why we started, our mission, values and how we work."
+  },
+  hero: {
+    title: "Systems where leads don’t get lost",
+    titleLines: ["Systems", "where leads", "don’t get", "lost"],
+    cta: "Discuss your task"
+  },
+  story: {
+    paragraphs: [
+      "The form on the site works. Then chaos often starts: inbox noise, status in someone’s head, Excel by hand, and nobody knows who took the lead. That’s the pain TIVONIX grew from. Not a pitch deck.",
+      "We kept building chains from site to Telegram, CRM and portal for real businesses. We saw where things break. So we don’t ship a pretty page for the checkbox. We ship a system that works.",
+      "Today we launch lead pages, mini-CRM, client portals and MVPs. Clear scope, clear timelines, clear ownership of the result. We assemble the right people for the job, show progress as we go, and hand over code and access. The system lives with you, not in someone else’s account."
+    ]
+  },
+  mission: {
+    label: "Mission",
+    title: "Automate the busywork around the customer",
+    text: "We help teams stop manually moving leads and losing context — so people sell and build product instead of hunting “who took that lead”."
+  },
+  vision: {
+    label: "Vision",
+    title: "A clear digital loop at any scale",
+    text: "From local business to a web product: one path from first touch to a status in the system. No vanity scope — only what moves money and response speed."
+  },
+  values: {
+    label: "Values",
+    title: "Speed, clarity, accountability",
+    text: "How we work on every project — from the first message to handing over access.",
+    items: [
+      {
+        title: "Speed",
+        text: "Fast kickoff and short iterations: you see intermediate progress in the first weeks, not only at the end."
+      },
+      {
+        title: "Clarity",
+        text: "We lock scope, timeline and boundaries before start. What’s in and what’s next is explicit."
+      },
+      {
+        title: "Accountability",
+        text: "We own the outcome: lead flows, statuses and key user paths are checked before release."
+      },
+      {
+        title: "Transparency",
+        text: "We hand over code and access. Privacy and control of the system stay with you."
+      }
+    ]
+  },
+  why: {
+    title: "Why TIVONIX",
+    text: "We connect product, integrations and launch — so you grow instead of arguing “where is the lead”.",
+    cta: "Discuss your task",
+    items: [
+      {
+        key: "experience",
+        title: "Experience",
+        text: "Live projects from Telegram lead capture to fintech and marketplaces with portals and payments."
+      },
+      {
+        key: "expertise",
+        title: "Expertise",
+        text: "We simplify the hard parts: routing, roles, statuses, integrations — without overbuilt architecture."
+      },
+      {
+        key: "innovation",
+        title: "Technology",
+        text: "Modern stack, AI where it saves time, and automation around the customer journey."
+      },
+      {
+        key: "team",
+        title: "Team",
+        text: "Design, engineering, QA and launch together. The right mix for the task — not a faceless outsourcing shop."
+      }
+    ]
+  },
+  people: {
+    title: "This is us",
+    text: "Roles that actually ship the project — from idea to production.",
+    members: [
+      { id: "danila", initials: "DT", name: "Danila T.", role: "Architecture & full-stack" },
+      { id: "anna", initials: "AK", name: "Anna K.", role: "UI/UX design" },
+      { id: "maxim", initials: "MS", name: "Maxim S.", role: "Frontend" },
+      { id: "igor", initials: "IV", name: "Igor V.", role: "Backend" },
+      { id: "elena", initials: "EN", name: "Elena N.", role: "QA & testing" },
+      { id: "roman", initials: "RP", name: "Roman P.", role: "Project management" }
+    ]
+  },
+  join: {
+    cta: "Start the conversation"
+  }
+};
+function aboutCopy(lang) {
+  return lang === "en" ? COPY_EN$2 : COPY_RU$2;
+}
+function aboutPath(lang) {
+  return lang === "en" ? "/en/about" : "/about";
+}
 const DEFAULT_PANEL_ORIGIN = "https://tivonixpanel-production.up.railway.app";
 function partnerPanelOrigin() {
   return DEFAULT_PANEL_ORIGIN;
@@ -436,31 +2321,25 @@ function partnerPanelRegisterUrl(type) {
   url.searchParams.set("type", type);
   return url.toString();
 }
-function trackPartnersEvent(eventName, params) {
-  if (typeof window === "undefined" || typeof window.gtag !== "function") return;
-  if (!eventName) return;
-  window.gtag("event", eventName, params ?? {});
-}
-function cx$g(...a) {
+function cx$e(...a) {
   return a.filter(Boolean).join(" ");
 }
 function ctaClass$1(variant, size, className) {
   const isSquare = variant === "plain";
-  return cx$g(
-    "inline-flex items-center justify-center font-bold tracking-[-0.015em] transition duration-200",
+  return cx$e(
+    "inline-flex items-center justify-center font-sans font-medium tracking-normal transition duration-200",
     isSquare ? "rounded-none shadow-none" : "rounded-full",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
     "active:scale-[0.98]",
     size === "lg" ? "h-12 px-8 text-[15px] sm:h-[52px] sm:px-9 sm:text-[16px]" : "h-11 px-7 text-[14px] sm:px-8",
     (variant === "primary" || variant === "cream") && "tivonix-cta-primary",
     variant === "secondary" && "tivonix-cta-secondary",
     variant === "ghost" && "text-white/75 hover:text-white",
-    variant === "plain" && "border-0 bg-transparent font-semibold text-white/88 hover:bg-white/[0.04] hover:text-white",
-    variant === "white" && "border-0 bg-white font-bold text-black shadow-none hover:bg-white/92",
+    variant === "plain" && "border-0 bg-transparent font-medium text-white/88 hover:bg-white/[0.04] hover:text-white",
+    variant === "white" && "border-0 bg-white font-medium text-[#070607] shadow-none hover:bg-white/92",
     className
   );
 }
-const LeadFormContext = createContext(null);
 function useLeadForm() {
   const ctx = useContext(LeadFormContext);
   if (!ctx) throw new Error("useLeadForm must be used within LeadFormProvider");
@@ -490,117 +2369,186 @@ function LeadCTAButton({
     }
   );
 }
-function leadFormCopy(lang) {
-  const isRu = lang === "ru";
-  return isRu ? COPY_RU$2 : COPY_EN$2;
+const EN_ROUTE_MAP = {
+  "/": "/en",
+  "/projects": "/en/projects",
+  "/contacts": "/en/contacts",
+  "/plans": "/en/plans",
+  "/about": "/en/about"
+};
+const RU_ROUTE_MAP = {
+  "/en": "/",
+  "/en/projects": "/projects",
+  "/en/contacts": "/contacts",
+  "/en/plans": "/plans",
+  "/en/about": "/about"
+};
+function stripLangPrefix(pathname) {
+  const p = pathname.replace(/\/+$/, "") || "/";
+  if (p === "/en") return "/";
+  if (p.startsWith("/en/")) return p.slice(3) || "/";
+  return p;
 }
-const BUDGET_RU = [
-  { id: "", label: "Не выбран" },
-  { id: "under_500", label: "до $500" },
-  { id: "500_1500", label: "$500–1,500" },
-  { id: "1500_5000", label: "$1,500–5,000" },
-  { id: "from_5000", label: "от $5,000" },
-  { id: "unknown", label: "пока не знаю" }
-];
-const BUDGET_EN = [
-  { id: "", label: "Not selected" },
-  { id: "under_500", label: "under $500" },
-  { id: "500_1500", label: "$500–1,500" },
-  { id: "1500_5000", label: "$1,500–5,000" },
-  { id: "from_5000", label: "from $5,000" },
-  { id: "unknown", label: "not sure yet" }
-];
-const COPY_RU$2 = {
-  title: "Обсудить задачу",
-  subtitle: "Коротко опишите задачу — отвечу указанным способом.",
-  name: "Имя",
-  nameOptional: "необязательно",
-  contact: "Как связаться",
-  contactHint: "Email, Telegram или телефон",
-  contactPh: "email, @username или +375…",
-  task: "Описание задачи",
-  taskPh: "Что нужно сделать?",
-  budget: "Бюджет",
-  budgetOptional: "необязательно",
-  budgets: BUDGET_RU,
-  consent: "Согласен(на) с политикой обработки персональных данных",
-  privacyLabel: "Политика",
-  privacyHref: "/doc/Политика_обработки_ПД_Tivonix_RU.pdf",
-  send: "Отправить заявку",
-  sending: "Отправляю…",
-  close: "Закрыть",
-  cancel: "Отмена",
-  errors: {
-    contact: "Укажите email, Telegram или телефон.",
-    task: "Кратко опишите задачу (хотя бы пару слов).",
-    consent: "Нужно согласие с политикой конфиденциальности."
-  },
-  success: "Спасибо! Заявка отправлена. Я свяжусь с вами указанным способом.",
-  errorTitle: "Не удалось отправить заявку",
-  errorBody: "Можно написать напрямую:",
-  fallbackEmail: "Написать на tivoonix@gmail.com",
-  fallbackTelegram: "Открыть чат @TIVONIX",
-  altTelegram: "Или написать в Telegram",
-  altBot: "Telegram-бот",
-  altEmail: "Email",
-  sticky: "Обсудить задачу",
-  ctaDiscuss: "Обсудить задачу",
-  ctaEstimate: "Получить оценку проекта",
-  ctaProjects: "Есть похожая задача? Обсудить проект",
-  selectedPlan: "Выбранный план",
-  clearPlan: "Без плана",
-  planHint: "Заявка по тарифу — можно уточнить детали ниже."
-};
-const COPY_EN$2 = {
-  title: "Discuss your task",
-  subtitle: "Briefly describe the task — I’ll reply via your preferred channel.",
-  name: "Name",
-  nameOptional: "optional",
-  contact: "How to reach you",
-  contactHint: "Email, Telegram, or phone",
-  contactPh: "email, @username, or phone",
-  task: "Task description",
-  taskPh: "What do you need?",
-  budget: "Budget",
-  budgetOptional: "optional",
-  budgets: BUDGET_EN,
-  consent: "I agree to the privacy policy",
-  privacyLabel: "Privacy policy",
-  privacyHref: "/doc/Privacy_Policy_Tivonix_EN.pdf",
-  send: "Send request",
-  sending: "Sending…",
-  close: "Close",
-  cancel: "Cancel",
-  errors: {
-    contact: "Enter an email, Telegram, or phone number.",
-    task: "Briefly describe the task (a few words).",
-    consent: "Please accept the privacy policy."
-  },
-  success: "Thanks! Your request was sent. I’ll contact you via the channel you provided.",
-  errorTitle: "Couldn’t send the request",
-  errorBody: "You can reach out directly:",
-  fallbackEmail: "Email tivoonix@gmail.com",
-  fallbackTelegram: "Open chat @TIVONIX",
-  altTelegram: "Or message on Telegram",
-  altBot: "Telegram bot",
-  altEmail: "Email",
-  sticky: "Discuss task",
-  ctaDiscuss: "Discuss the task",
-  ctaEstimate: "Get a project estimate",
-  ctaProjects: "Have a similar task? Let’s discuss",
-  selectedPlan: "Selected plan",
-  clearPlan: "No plan",
-  planHint: "Request for this plan — add details below."
-};
-function cx$f(...a) {
+function pathForLang(pathname, lang) {
+  const clean = pathname.replace(/\/+$/, "") || "/";
+  if (clean === "/partners" || clean === "/ru/partners") {
+    return lang === "en" ? "/en/partners" : "/ru/partners";
+  }
+  if (clean === "/en/partners") {
+    return lang === "en" ? "/en/partners" : "/ru/partners";
+  }
+  const mRu = clean.match(/^\/projects\/([^/]+)$/);
+  if (mRu) {
+    return lang === "en" ? `/en/projects/${mRu[1]}` : `/projects/${mRu[1]}`;
+  }
+  const mEn = clean.match(/^\/en\/projects\/([^/]+)$/);
+  if (mEn) {
+    return lang === "en" ? `/en/projects/${mEn[1]}` : `/projects/${mEn[1]}`;
+  }
+  if (lang === "en") {
+    if (EN_ROUTE_MAP[clean]) return EN_ROUTE_MAP[clean];
+    if (clean.startsWith("/en")) return clean;
+    return clean;
+  }
+  if (RU_ROUTE_MAP[clean]) return RU_ROUTE_MAP[clean];
+  if (clean.startsWith("/en/")) return stripLangPrefix(clean);
+  return clean;
+}
+const ORANGE_PILL = "bg-gradient-to-r from-[#FFD7B0] via-[#FF9A3D] to-[#FF6A1A] shadow-[0_6px_20px_rgba(255,107,44,0.2)]";
+function cx$d(...a) {
+  return a.filter(Boolean).join(" ");
+}
+function LangToggle({
+  compact,
+  reducedMotion,
+  variant = "header"
+}) {
+  const { lang, setLang } = useLang();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isHero = variant === "hero";
+  const switchLang = (next) => {
+    setLang(next);
+    const target = pathForLang(location.pathname, next);
+    if (target !== location.pathname) {
+      navigate(`${target}${location.search}${location.hash}`, { replace: true });
+    }
+  };
+  const label = lang === "ru" ? "Выбор языка" : "Language";
+  if (isHero) {
+    const item = (code) => {
+      const active = lang === code;
+      return /* @__PURE__ */ jsx(
+        "button",
+        {
+          type: "button",
+          role: "radio",
+          "aria-checked": active,
+          onClick: () => switchLang(code),
+          className: cx$d(
+            "relative flex h-10 items-center justify-center rounded-full border-0 px-4 font-bold uppercase tracking-[0.12em] outline-none select-none transition duration-[260ms]",
+            "text-[11px] focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
+            active ? "bg-[#2c2c2c] text-white" : "bg-transparent text-white hover:bg-white/[0.06]"
+          ),
+          children: /* @__PURE__ */ jsx("span", { className: "leading-none translate-y-[0.5px]", children: code.toUpperCase() })
+        }
+      );
+    };
+    return /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: "relative inline-flex shrink-0 items-center gap-0.5 rounded-full border-0 bg-[#141414] p-1 select-none",
+        role: "radiogroup",
+        "aria-label": label,
+        "aria-orientation": "horizontal",
+        children: [
+          item("ru"),
+          item("en")
+        ]
+      }
+    );
+  }
+  const h = compact ? "h-9 w-[5.25rem]" : "h-10 w-[5.75rem]";
+  const text = compact ? "text-[11px]" : "text-xs";
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: cx$d(
+        "relative shrink-0 select-none rounded-full border border-white/[0.08] bg-[#121212] p-1",
+        h
+      ),
+      role: "radiogroup",
+      "aria-label": label,
+      "aria-orientation": "horizontal",
+      children: [
+        /* @__PURE__ */ jsx(
+          "span",
+          {
+            "aria-hidden": true,
+            className: cx$d(
+              "pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-8px)/2)] rounded-full",
+              ORANGE_PILL,
+              !reducedMotion && "transition-transform duration-200 ease-[cubic-bezier(0.33,1,0.68,1)]"
+            ),
+            style: {
+              transform: lang === "en" ? "translateX(100%)" : "translateX(0)"
+            }
+          }
+        ),
+        /* @__PURE__ */ jsxs("div", { className: "relative z-10 grid h-full grid-cols-2", children: [
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              role: "radio",
+              "aria-checked": lang === "ru",
+              onClick: () => switchLang("ru"),
+              className: cx$d(
+                "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
+                "focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+                text,
+                lang === "ru" ? "text-[#1A202C]" : "text-white/45 hover:text-white/72"
+              ),
+              children: "RU"
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              role: "radio",
+              "aria-checked": lang === "en",
+              onClick: () => switchLang("en"),
+              className: cx$d(
+                "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
+                "focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+                text,
+                lang === "en" ? "text-[#1A202C]" : "text-white/45 hover:text-white/72"
+              ),
+              children: "EN"
+            }
+          )
+        ] })
+      ]
+    }
+  );
+}
+function cx$c(...a) {
   return a.filter(Boolean).join(" ");
 }
 const NAV_MAIN = [
-  { to: "/", key: "home" },
-  { to: "/avtomatizaciya-biznesa", key: "automation" },
-  { to: "/plans", key: "plans" },
+  { to: "/#offer", key: "services", hash: "offer" },
   { to: "/projects", key: "projects" },
-  { to: "/partners", key: "partners" }
+  { to: "/plans", key: "plans" },
+  { to: "/about", key: "about" },
+  { key: "partners" }
+];
+const NAV_MOBILE = [
+  { to: "/#offer", key: "services", hash: "offer" },
+  { to: "/projects", key: "projects" },
+  { to: "/plans", key: "plans" },
+  { to: "/about", key: "about" },
+  { key: "partners" }
 ];
 const DESKTOP_MIN_WIDTH = 1280;
 const LOGO_DEFAULT = "/images/tivonix-logo-lockup.webp";
@@ -625,7 +2573,8 @@ function usePrefersReducedMotion$1() {
 function useHomeHeroInView(pathname) {
   const [inView, setInView] = useState(false);
   useEffect(() => {
-    if (pathname !== "/") {
+    const isHome = pathname === "/" || pathname === "/en";
+    if (!isHome) {
       setInView(false);
       return;
     }
@@ -639,7 +2588,9 @@ function useHomeHeroInView(pathname) {
       return;
     }
     const io = new IntersectionObserver(
-      ([entry]) => setInView(!!entry?.isIntersecting),
+      ([entry]) => {
+        setInView(!!entry?.isIntersecting);
+      },
       { threshold: 0.06, rootMargin: "-80px 0px -30% 0px" }
     );
     io.observe(hero);
@@ -675,22 +2626,16 @@ function useFooterInView(pathname) {
   return inView;
 }
 function useIsMobile(maxWidth = 899) {
-  const [isMobile, setIsMobile] = useState(
-    () => typeof window !== "undefined" && window.innerWidth <= maxWidth
+  const query = `(max-width: ${maxWidth}px)`;
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia(query);
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(query).matches,
+    () => false
   );
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const mq = window.matchMedia(`(max-width: ${maxWidth}px)`);
-    const on = () => setIsMobile(mq.matches);
-    on();
-    if (mq.addEventListener) mq.addEventListener("change", on);
-    else mq.addListener(on);
-    return () => {
-      if (mq.removeEventListener) mq.removeEventListener("change", on);
-      else mq.removeListener(on);
-    };
-  }, [maxWidth]);
-  return isMobile;
 }
 function PillNav({
   activeKey,
@@ -703,29 +2648,29 @@ function PillNav({
   return /* @__PURE__ */ jsx(
     "nav",
     {
-      className: cx$f(
+      className: cx$c(
         "relative inline-flex items-center gap-0.5 rounded-full border-0 bg-[#141414] p-1"
       ),
       "aria-label": "Header navigation",
       children: items.map((it) => {
         const isActive = it.key === activeKey;
-        const pad = compact ? "px-3.5 h-9" : "px-5 h-10";
+        const pad = compact ? "px-3.5 h-10" : "px-5 h-11";
         const text = compact ? "text-[10.5px]" : "text-[11px]";
         return /* @__PURE__ */ jsx(
           Link,
           {
             to: it.to,
-            onClick: onItemClick(it.to),
+            onClick: onItemClick(it.to, it.hash),
             "aria-current": isActive ? "page" : void 0,
-            className: cx$f(
-              "relative flex items-center gap-2 rounded-full border-0 font-bold uppercase tracking-[0.14em] outline-none select-none transition",
+            className: cx$c(
+              "relative flex items-center justify-center gap-2 rounded-full border-0 font-bold uppercase tracking-[0.14em] outline-none select-none transition",
               "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
               pad,
               text,
               isActive ? "bg-[#2c2c2c] text-white" : "bg-transparent text-white/55 hover:bg-white/[0.04] hover:text-white/85"
             ),
             style: reducedMotion ? void 0 : { transitionDuration: `${dur}ms` },
-            children: /* @__PURE__ */ jsx("span", { className: "leading-none", children: it.label })
+            children: /* @__PURE__ */ jsx("span", { className: "leading-none translate-y-[0.5px]", children: it.label })
           },
           it.key
         );
@@ -816,38 +2761,69 @@ function Header() {
   }, [open]);
   const navLabel = (key) => {
     if (isRu) {
-      if (key === "home") return "главная";
-      if (key === "automation") return "автоматизация";
-      if (key === "plans") return "планы";
+      if (key === "services") return "услуги";
       if (key === "projects") return "проекты";
+      if (key === "plans") return "тарифы";
+      if (key === "about") return "о компании";
       if (key === "partners") return "партнёры";
     } else {
-      if (key === "home") return "home";
-      if (key === "automation") return "automation";
-      if (key === "plans") return "plans";
+      if (key === "services") return "services";
       if (key === "projects") return "projects";
+      if (key === "plans") return "pricing";
+      if (key === "about") return "about";
       if (key === "partners") return "partners";
     }
     return key;
   };
+  const navTo = (it) => {
+    if (it.key === "partners") return partnersPath(lang);
+    if (it.key === "about") return aboutPath(lang);
+    return it.to ?? "/";
+  };
   const activeKey = useMemo(() => {
     if (location.pathname === "/plans") return "plans";
-    if (location.pathname === "/projects") return "projects";
-    if (location.pathname === "/avtomatizaciya-biznesa") return "automation";
+    if (location.pathname === "/projects" || location.pathname.startsWith("/projects/"))
+      return "projects";
+    if (location.pathname === "/about" || location.pathname === "/en/about") return "about";
     if (isPartnersPath(location.pathname)) return "partners";
-    return "home";
+    return null;
   }, [location.pathname]);
   const tabsItems = useMemo(
     () => NAV_MAIN.map((it) => ({
       key: it.key,
-      to: it.key === "partners" ? partnersPath(lang) : it.to,
-      label: navLabel(it.key)
+      to: navTo(it),
+      label: navLabel(it.key),
+      hash: it.hash
     })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [lang]
   );
-  const onNav = (to) => (e) => {
+  const mobileNavItems = useMemo(
+    () => NAV_MOBILE.map((it) => ({
+      key: it.key,
+      to: navTo(it),
+      label: navLabel(it.key),
+      hash: it.hash
+    })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lang]
+  );
+  const onNav = (to, hash) => (e) => {
     setOpen(false);
+    if (hash) {
+      e.preventDefault();
+      const go = () => {
+        const el = document.getElementById(hash);
+        if (el) el.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+      };
+      if (location.pathname !== "/" && location.pathname !== "/en") {
+        navigate(lang === "en" ? "/en" : "/");
+        window.setTimeout(go, 80);
+      } else {
+        go();
+      }
+      return;
+    }
     if (to === "/") {
       e.preventDefault();
       if (location.pathname !== "/") navigate("/");
@@ -863,7 +2839,7 @@ function Header() {
   const ariaMenu = isRu ? "Меню" : "Menu";
   const onPartners = isPartnersPath(location.pathname);
   const leadCopy = leadFormCopy(lang);
-  const ctaTop = onPartners ? isRu ? "Войти в панель" : "Log in to panel" : leadCopy.ctaDiscuss;
+  const ctaTop = onPartners ? isRu ? "Войти в панель" : "Log in to panel" : isRu ? "Оценить проект" : "Estimate project";
   const ctaHref = onPartners ? partnerPanelLoginUrl() : "#";
   const onPartnersCtaClick = onPartners ? () => trackPartnersEvent("partners_login_click", { source: "header" }) : void 0;
   const dur = reducedMotion ? 0 : 280;
@@ -876,7 +2852,7 @@ function Header() {
       "div",
       {
         "aria-hidden": true,
-        className: cx$f(
+        className: cx$c(
           needsSpacer ? "h-[78px] sm:h-[82px]" : "h-0"
         )
       }
@@ -884,20 +2860,20 @@ function Header() {
     /* @__PURE__ */ jsx(
       "header",
       {
-        className: cx$f(
-          "fixed inset-x-0 z-[120] transition-[top,transform,opacity]",
-          heroInView && !isMobile ? "top-3 sm:top-4" : "top-0",
-          hideHeader ? "pointer-events-none -translate-y-full opacity-0" : "translate-y-0 opacity-100"
+        className: cx$c(
+          "pointer-events-none fixed inset-x-0 top-0 z-[120] transition-[transform,opacity]",
+          // Float via transform (not `top`) so chrome/scroll never fights a top tween (~12–20px jumps)
+          hideHeader ? "-translate-y-full opacity-0" : heroInView && !isMobile ? "translate-y-3 opacity-100 sm:translate-y-4" : "translate-y-0 opacity-100"
         ),
         style: reducedMotion ? void 0 : { transitionDuration: `${dur}ms` },
         children: /* @__PURE__ */ jsx("div", { className: "h-[78px] w-full bg-transparent sm:h-[82px]", children: /* @__PURE__ */ jsx(Container, { className: "h-full", children: /* @__PURE__ */ jsxs(
           "div",
           {
-            className: cx$f(
+            className: cx$c(
               "relative flex h-full w-full min-w-0 items-center xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:items-center xl:gap-x-4"
             ),
             children: [
-              /* @__PURE__ */ jsx("div", { className: "flex min-w-0 items-center gap-3 shrink-0 xl:justify-self-start", children: /* @__PURE__ */ jsx(
+              /* @__PURE__ */ jsx("div", { className: cx$c("flex min-w-0 items-center gap-3 shrink-0 xl:justify-self-start", !hideHeader && "pointer-events-auto"), children: /* @__PURE__ */ jsx(
                 Link,
                 {
                   to: "/",
@@ -905,7 +2881,7 @@ function Header() {
                     e.preventDefault();
                     goHome();
                   },
-                  className: cx$f(
+                  className: cx$c(
                     "flex items-center outline-none",
                     "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 rounded-xl"
                   ),
@@ -915,9 +2891,9 @@ function Header() {
                     {
                       src: logoSrc,
                       alt: "TIVONIX",
-                      className: cx$f(
-                        "w-auto object-contain opacity-95 transition-all hover:opacity-100",
-                        heroInView ? "h-10 sm:h-11 lg:h-12" : "h-8 sm:h-9"
+                      className: cx$c(
+                        "w-auto object-contain object-left opacity-95 transition-all hover:opacity-100",
+                        "h-9 sm:h-10"
                       ),
                       draggable: false,
                       loading: "eager",
@@ -926,32 +2902,54 @@ function Header() {
                   )
                 }
               ) }),
-              /* @__PURE__ */ jsx("div", { className: "hidden min-w-0 justify-self-center xl:block", children: /* @__PURE__ */ jsx(
-                PillNav,
+              heroInView && !isPartners ? /* @__PURE__ */ jsx(
+                "div",
                 {
-                  activeKey,
-                  reducedMotion,
-                  items: tabsItems,
-                  onItemClick: onNav,
-                  compact: false
+                  className: cx$c(
+                    "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 xl:hidden",
+                    !hideHeader && "pointer-events-auto"
+                  ),
+                  children: /* @__PURE__ */ jsx(LangToggle, { variant: "hero", reducedMotion })
                 }
-              ) }),
-              /* @__PURE__ */ jsx("div", { className: "ml-auto hidden min-w-0 shrink-0 items-center xl:ml-0 xl:flex xl:justify-self-end", children: onPartners ? /* @__PURE__ */ jsx(
+              ) : null,
+              /* @__PURE__ */ jsxs(
+                "div",
+                {
+                  className: cx$c(
+                    "relative hidden min-w-0 items-center gap-2 justify-self-center xl:flex",
+                    !hideHeader && "pointer-events-auto"
+                  ),
+                  children: [
+                    /* @__PURE__ */ jsx(
+                      PillNav,
+                      {
+                        activeKey,
+                        reducedMotion,
+                        items: tabsItems,
+                        onItemClick: onNav,
+                        compact: false
+                      }
+                    ),
+                    !isPartners ? /* @__PURE__ */ jsx(LangToggle, { variant: "hero", reducedMotion }) : null
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsx("div", { className: cx$c("ml-auto hidden min-w-0 shrink-0 items-center xl:ml-0 xl:flex xl:justify-self-end", !hideHeader && "pointer-events-auto"), children: onPartners ? /* @__PURE__ */ jsx(
                 "a",
                 {
                   href: ctaHref,
                   onClick: onPartnersCtaClick,
-                  className: "inline-flex h-11 items-center justify-center rounded-full bg-white px-7 text-[14px] font-bold tracking-[-0.015em] text-black no-underline transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
+                  className: "inline-flex h-11 items-center justify-center rounded-full bg-white px-7 font-sans text-[14px] font-medium tracking-normal text-[#070607] no-underline transition hover:bg-white/92 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
                   children: ctaTop
                 }
               ) : /* @__PURE__ */ jsx(LeadCTAButton, { source: "header", variant: "white", className: "h-11 px-7 text-[14px]", children: ctaTop }) }),
-              /* @__PURE__ */ jsxs("div", { className: "ml-auto xl:hidden flex items-center gap-2", children: [
+              /* @__PURE__ */ jsxs("div", { className: cx$c("ml-auto xl:hidden flex items-center gap-2", !hideHeader && "pointer-events-auto"), children: [
                 /* @__PURE__ */ jsx("div", { className: "hidden md:block", children: onPartners ? /* @__PURE__ */ jsx(
                   "a",
                   {
                     href: ctaHref,
                     onClick: onPartnersCtaClick,
-                    className: "inline-flex h-11 items-center justify-center rounded-full bg-white px-6 text-[13px] font-bold tracking-[-0.015em] text-black no-underline transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45",
+                    className: "inline-flex h-11 items-center justify-center rounded-full bg-white px-6 font-sans text-[13px] font-medium tracking-normal text-[#070607] no-underline transition hover:bg-white/92 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45",
                     children: ctaTop
                   }
                 ) : /* @__PURE__ */ jsx(LeadCTAButton, { source: "header", variant: "white", className: "h-11 px-6 text-[13px]", children: ctaTop }) }),
@@ -960,7 +2958,7 @@ function Header() {
                   {
                     ref: burgerRef,
                     type: "button",
-                    className: cx$f(
+                    className: cx$c(
                       "grid place-items-center outline-none border-0",
                       "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
                       "h-11 w-11 rounded-2xl",
@@ -1043,7 +3041,7 @@ function Header() {
       "div",
       {
         id: "mobile-header-menu",
-        className: cx$f(
+        className: cx$c(
           "xl:hidden fixed inset-0 z-[200]",
           open ? "pointer-events-auto" : "pointer-events-none"
         ),
@@ -1051,7 +3049,7 @@ function Header() {
         children: /* @__PURE__ */ jsxs(
           "div",
           {
-            className: cx$f(
+            className: cx$c(
               "mobile-menu-panel absolute inset-0 flex min-h-[100dvh] flex-col overflow-hidden bg-[#161313]",
               "transition-[opacity,transform,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
               open ? "visible translate-y-0 opacity-100" : "invisible -translate-y-4 opacity-0"
@@ -1088,7 +3086,7 @@ function Header() {
                   {
                     type: "button",
                     onClick: closeMenu,
-                    className: cx$f(
+                    className: cx$c(
                       "grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-xl border-0",
                       "bg-white/[0.04] text-white/72 transition hover:bg-white/[0.08] active:scale-95",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
@@ -1152,17 +3150,17 @@ function Header() {
                 )
               ] }),
               /* @__PURE__ */ jsxs("div", { className: "relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2 pb-5 sm:px-3", children: [
-                /* @__PURE__ */ jsx("nav", { className: "mt-1 flex flex-col", "aria-label": isRu ? "Навигация" : "Navigation", children: tabsItems.map((item) => /* @__PURE__ */ jsxs(
+                /* @__PURE__ */ jsx("nav", { className: "mt-1 flex flex-col", "aria-label": isRu ? "Навигация" : "Navigation", children: mobileNavItems.map((item) => /* @__PURE__ */ jsxs(
                   Link,
                   {
                     to: item.to,
-                    className: cx$f(
+                    className: cx$c(
                       "flex items-center justify-between border-b border-white/[0.08] px-3 py-4 text-[15px] font-medium text-white/92",
                       "transition-colors hover:bg-white/[0.03] active:bg-white/[0.02]",
                       activeKey === item.key && "text-[#FFAE66]"
                     ),
                     onClick: (e) => {
-                      onNav(item.to)(e);
+                      onNav(item.to, item.hash)(e);
                       closeMenu();
                     },
                     children: [
@@ -1188,8 +3186,8 @@ function Header() {
                     LeadCTAButton,
                     {
                       source: "header",
-                      variant: "plain",
-                      className: "h-12 w-full rounded-xl border border-white/[0.08] text-[14px]",
+                      variant: "white",
+                      className: "h-12 w-full text-[14px]",
                       "aria-label": leadCopy.ctaDiscuss,
                       onClick: () => setOpen(false),
                       children: leadCopy.ctaDiscuss
@@ -1199,10 +3197,10 @@ function Header() {
                     Link,
                     {
                       to: onPartners ? `${partnersPath(lang)}#partner-formats` : "/plans",
-                      className: cx$f(
-                        "inline-flex h-12 items-center justify-center rounded-xl px-6 text-[14px] font-semibold text-black",
-                        "bg-[#ff6a21] transition hover:brightness-105",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40"
+                      className: cx$c(
+                        "inline-flex h-12 items-center justify-center rounded-full px-6 font-sans text-[14px] font-medium text-white",
+                        "bg-[#070607] transition hover:bg-[#1a1a1a]",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
                       ),
                       onClick: () => setOpen(false),
                       children: onPartners ? isRu ? "Форматы" : "Formats" : isRu ? "Планы" : "Plans"
@@ -1217,91 +3215,59 @@ function Header() {
     )
   ] });
 }
-function Section({
-  id,
-  className,
-  children
-}) {
-  return /* @__PURE__ */ jsx("section", { id, className: ["py-14 sm:py-20", className].filter(Boolean).join(" "), children });
-}
-function cx$e(...a) {
-  return a.filter(Boolean).join(" ");
-}
-function ScrollFingerHint({
-  visible,
-  label,
-  variant = "light",
-  bare: _bare = false,
-  onActivate,
-  className,
-  style
-}) {
-  const isDark = variant === "dark";
-  const ink = isDark ? "#1a1a1a" : "#ffffff";
-  const accent = "#ff6b2c";
-  const Tag = onActivate ? "button" : "div";
-  return /* @__PURE__ */ jsxs(
-    Tag,
-    {
-      type: onActivate ? "button" : void 0,
-      onClick: onActivate,
-      className: cx$e(
-        "scroll-finger-hint",
-        visible && "scroll-finger-hint--visible",
-        isDark && "scroll-finger-hint--dark",
-        className
-      ),
-      style,
-      "aria-hidden": !visible,
-      "aria-label": onActivate ? label ?? "Scroll down" : void 0,
-      tabIndex: onActivate && visible ? 0 : -1,
-      children: [
-        /* @__PURE__ */ jsx("span", { className: "scroll-finger-hint__icon", "aria-hidden": true, children: /* @__PURE__ */ jsxs("svg", { viewBox: "0 0 28 44", width: "28", height: "44", fill: "none", children: [
-          /* @__PURE__ */ jsx(
-            "rect",
-            {
-              x: "2",
-              y: "1",
-              width: "24",
-              height: "40",
-              rx: "12",
-              stroke: ink,
-              strokeWidth: "2"
-            }
-          ),
-          /* @__PURE__ */ jsx("rect", { x: "12", y: "8", width: "4", height: "12", rx: "2", stroke: ink, strokeWidth: "1.5", opacity: "0.55" }),
-          /* @__PURE__ */ jsx("circle", { className: "scroll-finger-hint__wheel", cx: "14", cy: "11", r: "2", fill: accent })
-        ] }) }),
-        label ? /* @__PURE__ */ jsx("span", { className: "scroll-finger-hint__label", children: label }) : null
-      ]
-    }
-  );
-}
+const Section = React.forwardRef(
+  function Section2({ id, className, style, children }, ref) {
+    return /* @__PURE__ */ jsx(
+      "section",
+      {
+        ref,
+        id,
+        style,
+        className: ["py-14 sm:py-20", className].filter(Boolean).join(" "),
+        children
+      }
+    );
+  }
+);
 function landingCopy(lang) {
   const isRu = lang === "ru";
   return isRu ? COPY_RU$1 : COPY_EN$1;
 }
 const COPY_RU$1 = {
   hero: {
-    titleLines: ["Сайты, боты и сервисы,", "чтобы заявки не терялись"],
+    eyebrow: "САЙТЫ · CRM · БОТЫ · ВЕБ-СЕРВИСЫ",
+    titleLines: ["Собираем сайты и системы,", "в которых заявки не теряются"],
+    titleHighlight: "заявки не теряются",
     scrollStages: [
       {
-        headline: "Сайты, боты и веб-сервисы, которые помогают получать заявки",
-        lead: "Разбираем задачу, предлагаем решение и запускаем продукт под ключ: лендинг, бот, CRM, кабинет или автоматизацию."
+        headline: "Собираем сайты и системы, в которых заявки не теряются",
+        headlineLines: ["Собираем сайты и системы,", "в которых заявки не теряются"],
+        headlineBefore: "Собираем сайты и системы,",
+        headlineAccent: "в которых заявки не теряются",
+        headlineAfter: "",
+        lead: "Разрабатываем лендинги, Telegram-ботов, CRM, личные кабинеты и MVP — и связываем их в единый процесс: от первого обращения до оплаты и результата."
       },
       {
-        headline: "Заявки приходят в разные места — и теряются",
-        lead: "Сайт, Telegram, Instagram, звонки, таблица. Менеджер забывает ответить — клиент уходит."
+        headline: "Форма отправлена. А что происходит дальше?",
+        headlineLines: ["Форма отправлена.", "А что происходит дальше?"],
+        headlineBefore: "Форма отправлена.",
+        headlineAccent: "А что происходит дальше?",
+        headlineAfter: "",
+        lead: "Когда обращения остаются в чатах, почте и таблицах, команда отвечает поздно, забывает клиентов и не понимает следующий шаг."
       },
       {
-        headline: "Собираем систему, где заявка не теряется",
-        lead: "Клиент оставил заявку — команда сразу видит её в Telegram или CRM и знает, кто отвечает и что делать дальше."
+        headline: "Одна заявка. Один понятный процесс",
+        headlineLines: ["Одна заявка.", "Один понятный процесс"],
+        headlineBefore: "Одна заявка.",
+        headlineAccent: "Один понятный процесс",
+        headlineAfter: "",
+        lead: "Связываем сайт, Telegram, CRM, таблицы и внутренние сервисы так, чтобы команда сразу видела клиента, статус и следующий шаг."
       }
     ],
-    subtitle: "Делаем сайты, Telegram-ботов, CRM, админ-панели и веб-сервисы под конкретную задачу бизнеса — чтобы заявки не терялись и команда работала без ручного хаоса.",
-    ctaPrimary: "Обсудить проект",
-    ctaSecondary: "Посмотреть, что делаем",
-    micro: "Ответим в течение дня • Первая консультация бесплатно • Можно начать с идеи",
+    subtitle: "Разрабатываем лендинги, Telegram-ботов, CRM, личные кабинеты и MVP — и связываем их в единый процесс: от первого обращения до оплаты и результата.",
+    ctaPrimary: "Получить оценку проекта",
+    ctaSecondary: "Посмотреть живые проекты",
+    micro: "Ответим в течение рабочего дня · Работаем по этапам · Передаём исходники и доступы",
     flowNodes: ["Заявка", "Обработка", "Telegram", "CRM"],
     flowNodeHints: ["С сайта", "Автообработка", "Уведомление", "В CRM"],
     flowTelegramBot: "TIVONIX Bot",
@@ -1401,111 +3367,106 @@ const COPY_RU$1 = {
     ]
   },
   pain: {
-    title: "Почему заявки теряются",
-    titleLines: ["Почему заявки", "теряются"],
-    subtitle: "Обычно дело не в продукте, а в том, что нет нормальной системы приёма и обработки.",
+    title: "Пока заявка живёт в чатах — процесс ломается",
+    titleLines: ["Пока заявка живёт в чатах", "процесс ломается"],
+    subtitle: "Когда обращения остаются в чатах, почте и таблицах, команда отвечает поздно, забывает клиентов и не понимает следующий шаг.",
     hoverCta: "Как закрываем",
     items: [
       {
-        title: "Заявки в разных местах",
-        text: "Сайт, Telegram, Instagram, звонки, email — всё в разных окнах. Непонятно, кто уже ответил.",
-        solution: "Собираем обращения в одно место: форма, бот, CRM или админка — команда видит все заявки сразу."
+        title: "Никто не назначен",
+        text: "Заявка пришла, но ответственный не выбран — она зависает, пока кто-то случайно не откроет чат.",
+        solution: "Автоназначение или правило маршрутизации: заявка сразу попадает к нужному человеку."
       },
       {
         title: "Ответили слишком поздно",
-        text: "Клиент написал утром, менеджер увидел вечером. К этому моменту он уже записался к другим.",
-        solution: "Уведомления в Telegram или email — заявка не ждёт в переписке."
+        text: "Менеджер увидел обращение вечером. К этому моменту клиент уже ушёл к тем, кто ответил быстрее.",
+        solution: "Мгновенные уведомления в Telegram или email — заявка не ждёт в переписке."
       },
       {
-        title: "Нет статусов",
-        text: "Непонятно, кто новый, кто ждёт ответа, кто записан, а кто просто потерялся.",
-        solution: "Статусы в CRM или таблице: новая → в работе → записан → оплачен."
+        title: "Статус неизвестен",
+        text: "Непонятно, кто новый, кто ждёт оценки, кто в работе, а кто уже оплатил.",
+        solution: "Статусы в CRM или таблице: новая → в работе → оценка отправлена → оплачена."
       },
       {
-        title: "Всё держится на одном человеке",
-        text: "Блокнот, Excel или память администратора. Он вышел из чата — процесс встал.",
-        solution: "Процесс в системе: заявки идут по правилам, а не по памяти одного человека."
-      },
-      {
-        title: "Реклама идёт, заявки теряются",
-        text: "Трафик есть, форма есть, но дальше заявка снова уходит в ручную обработку без контроля.",
-        solution: "Лендинг + форма + Telegram + CRM — заявка сразу попадает в работу, а не в заметки."
+        title: "Клиент пишет повторно",
+        text: "Человеку приходится напоминать о себе, потому что команда потеряла нить диалога.",
+        solution: "История и следующий шаг видны в системе — без поиска по чатам."
       }
     ]
   },
   offer: {
-    title: "Что мы делаем",
+    title: "Услуги и продукты",
     featured: {
       badge: "TIVONIX",
-      title: "Собираем то, через что приходят заявки",
-      text: "Сайт, бот, CRM или кабинет — под вашу задачу. Сначала смотрим, где клиенты теряются, потом запускаем рабочую связку без лишнего.",
+      title: "Не только лендинги: сайты, учёт, боты и веб-продукты",
+      text: "Собираем то, через что приходят заявки и работают пользователи: от страницы под рекламу до сервиса с ролями и платежами.",
       linkText: "Рассказать о задаче",
-      footer: "От идеи до запуска — с вами на каждом шаге"
+      footer: "Фиксируем объём до старта и показываем результат по этапам"
     },
     metrics: [
       {
-        title: "Сайт под рекламу",
-        text: "Лендинг и форма: клиент оставляет заявку с рекламы или Instagram."
+        title: "Сайты и лендинги",
+        text: "Страницы, которые объясняют предложение, собирают обращения и передают их команде."
       },
       {
-        title: "Telegram-бот",
-        text: "Заявка сразу у команды в Telegram — без поиска по чатам."
+        title: "Телеграм боты",
+        text: "Боты принимают заявки, задают вопросы, уведомляют сотрудников и показывают клиенту следующий шаг."
       },
       {
-        title: "CRM или панель",
-        text: "Видно статусы: новая, в работе, записан, оплачен — и кто отвечает."
+        title: "Админ панели и учёт",
+        text: "Компактные системы под ваш процесс: статусы, ответственные, история, роли и отчёты."
       },
       {
-        title: "Личный кабинет",
-        text: "Клиенты и сотрудники работают в одном понятном интерфейсе."
+        title: "Личные кабинеты",
+        text: "Интерфейсы для клиентов, партнёров и сотрудников с авторизацией, документами, оплатой и историей."
       },
       {
-        title: "Автоматизация",
-        text: "Меньше ручных таблиц и переписок — больше стабильного процесса."
+        title: "Сервисы и автоматизация",
+        text: "Первая версия продукта с ролями и платежами или связка форм, ботов, таблиц и учёта без ручного переноса."
       }
     ],
     ctaBar: {
-      title: "Соберём систему, где заявки не теряются.",
-      primary: "Обсудить проект",
+      title: "Соберём систему, где заявки не теряются — или первую версию продукта.",
+      primary: "Получить оценку",
       secondary: "Рассчитать проект"
     }
   },
   ai: {
     ariaLabel: "TIVONIX — AI в продуктах для бизнеса",
     centerBadge: "TIVONIX AI",
-    headline: "Подключаем AI там, где он реально экономит время: ответы, разбор заявок, поддержка",
+    headline: "AI там, где он действительно экономит время",
     models: ["OpenAI", "Claude", "Gemini", "Grok"],
-    tags: ["AI-боты", "Автоответы", "Разбор заявок", "CRM", "Поддержка", "Аналитика"]
+    tags: ["Разбор заявок", "Документы", "Черновики ответов", "CRM", "Поддержка"]
   },
   flow: {
-    label: "Схема",
-    title: "Как работает система",
-    titleMuted: "от заявки до результата — без потерь по пути",
+    label: "Решение",
+    title: "Форма отправлена. А что происходит дальше?",
+    titleMuted: "Нормальный путь: заявка сохраняется, команда получает сигнал, есть ответственный, статус и следующий шаг — без поиска по чатам.",
     steps: [
       {
         label: "Заявка",
-        title: "Клиент оставляет заявку",
-        desc: "На сайте, в форме, боте или с рекламы"
+        title: "Клиент оставляет обращение",
+        desc: "С сайта, бота, рекламы или формы"
       },
       {
-        label: "Telegram",
-        title: "Команда получает уведомление",
-        desc: "В Telegram или на email — сразу, без задержки"
+        label: "Уведомление",
+        title: "Команда получает сигнал",
+        desc: "В Telegram или на email — сразу"
       },
       {
-        label: "CRM",
-        title: "Заявка попадает в CRM",
-        desc: "В таблицу, мини-CRM или админ-панель"
+        label: "Ответственный",
+        title: "Назначается владелец",
+        desc: "Понятно, кто отвечает за заявку"
       },
       {
         label: "Статус",
-        title: "У заявки есть статус",
-        desc: "Новая → в работе → записан → оплачен"
+        title: "Статус всегда актуален",
+        desc: "Новая → в работе → оценка → оплата"
       },
       {
-        label: "Результат",
-        title: "Понятно, что делать дальше",
-        desc: "Есть ответственный — клиент не теряется"
+        label: "Оплата",
+        title: "Сделка доходит до результата",
+        desc: "Без потери контекста по пути"
       }
     ]
   },
@@ -1515,95 +3476,40 @@ const COPY_RU$1 = {
     more: "Подробнее"
   },
   compare: {
-    title: "Мы делаем не страницу, а рабочую систему заявок",
-    subtitle: "Чтобы заявка не зависала в переписке — от формы до CRM и команды.",
+    title: "Обычный сайт и система TIVONIX",
+    subtitle: "Разница не в «красивой странице», а в том, что происходит после отправки формы.",
     regular: {
       title: "Обычный сайт",
       headline: "Форма есть — дальше вручную",
-      items: ["Есть текст", "Есть кнопка", "Есть форма", "Дальше — в чаты и таблицы"]
+      items: [
+        "Форма отправлена",
+        "Письмо лежит во входящих",
+        "Статус неизвестен",
+        "Ответственный не назначен",
+        "Данные переносятся вручную"
+      ]
     },
-    chaosTags: ["Заявка потерялась", "Нет статуса", "Вручную в Excel", "Ответили через день"],
-    hover: {
-      chaosMessages: [
-        { channel: "Instagram", text: "Здравствуйте, сколько стоит?", time: "сейчас" },
-        { channel: "Telegram", text: "Можно записаться на завтра?", time: "4 мин" },
-        { channel: "WhatsApp", text: "А в субботу работаете?", time: "11 мин" },
-        { channel: "Сайт", text: "Оставил заявку на сайте", time: "18 мин" },
-        { channel: "Звонок", text: "Пропущенный звонок", time: "25 мин" },
-        { channel: "Instagram", text: "??? вы тут?", time: "38 мин" },
-        { channel: "Telegram", text: "Жду ответ уже час", time: "1 ч" },
-        { channel: "Email", text: "Re: запрос с формы", time: "вчера" },
-        { channel: "WhatsApp", text: "Есть окно сегодня вечером?", time: "1 ч" },
-        { channel: "Сайт", text: "Нужен расчёт под ключ", time: "2 ч" },
-        { channel: "Instagram", text: "Скиньте прайс, пожалуйста", time: "3 ч" },
-        { channel: "Telegram", text: "Перезвоните, срочно", time: "4 ч" },
-        { channel: "Звонок", text: "2 пропущенных", time: "5 ч" },
-        { channel: "Email", text: "Fwd: коммерческое предложение", time: "6 ч" }
-      ],
-      crm: {
-        title: "TIVONIX CRM",
-        sidebar: [
-          { label: "Заявки", active: true, count: 4 },
-          { label: "Клиенты", active: false },
-          { label: "Календарь", active: false },
-          { label: "Отчёты", active: false }
-        ],
-        leadsTitle: "Заявки",
-        leads: [
-          {
-            name: "Анна К.",
-            source: "Сайт",
-            preview: "Запись на консультацию",
-            time: "2 мин",
-            status: "Новая",
-            tone: "new"
-          },
-          {
-            name: "Игорь П.",
-            source: "Telegram",
-            preview: "Нужен расчёт проекта",
-            time: "14 мин",
-            status: "В работе",
-            tone: "progress"
-          },
-          {
-            name: "Салон Lux",
-            source: "Instagram",
-            preview: "Онлайн-запись на пятницу",
-            time: "32 мин",
-            status: "Записан",
-            tone: "done"
-          },
-          {
-            name: "Олег М.",
-            source: "Форма",
-            preview: "Оплата подтверждена",
-            time: "1 ч",
-            status: "Оплачен",
-            tone: "paid"
-          }
-        ]
-      }
-    },
+    chaosTags: ["Заявка теряется", "Нет статуса", "Excel вручную", "Ответ на следующий день"],
     tivonix: {
-      title: "TIVONIX-система",
+      title: "Система TIVONIX",
       headline: "Заявка под контролем",
       badge: "Заявка не висит в переписке — команда видит следующий шаг",
       items: [
-        "Заявка не теряется",
-        "Приходит в Telegram или email",
-        "Попадает в CRM или таблицу",
-        "Имеет статус и ответственного",
-        "Команда понимает, что делать",
-        "Можно наращивать рекламу без хаоса"
+        "Заявка сразу приходит в нужный канал",
+        "Автоматически создаётся запись",
+        "Назначается ответственный",
+        "Команда видит статус",
+        "Руководитель видит результат"
       ]
-    }
+    },
+    cta: "Разобрать мой процесс"
   },
   cases: {
     badge: "Новый кейс",
     cta: "Хочу похожую систему",
     viewCase: "Смотреть кейс",
     openProduct: "Открыть продукт",
+    discussSimilar: "Есть похожая задача",
     spliton: {
       need: "Нужна была финтех-платформа для инвестиций в музыкальные активы — не лендинг, а полноценный продукт",
       done: "Собрали каталог релизов, покупку долей, кошелёк, вторичный рынок, юридические согласия и админ-панель",
@@ -1630,7 +3536,8 @@ const COPY_RU$1 = {
         "Сделки",
         "Проекты",
         "Выплаты"
-      ]
+      ],
+      ownProduct: "Собственный продукт TIVONIX"
     }
   },
   audience: {
@@ -1698,62 +3605,52 @@ const COPY_RU$1 = {
         kind: "bullets",
         title: "Разбираем задачу",
         items: [
-          "Что хотите получить на выходе",
-          "Откуда сейчас приходят заявки",
-          "Что уже есть: сайт, CRM, мессенджеры",
-          "Где команда теряет время"
-        ]
-      },
-      {
-        kind: "search",
-        title: "Предлагаем решение",
-        query: "что лучше — сайт, бот, CRM или кабинет для моей задачи",
-        hint: "Смотрим, что подойдёт под ваш объём и сроки"
-      },
-      {
-        kind: "bullets",
-        title: "Собираем дизайн и логику",
-        items: [
-          "Ключевые экраны и путь клиента",
-          "Сценарии для менеджера и команды",
-          "UI под ваш бренд"
+          "Определяем пользователей, основной сценарий и результат первой версии."
         ]
       },
       {
         kind: "bullets",
-        title: "Разрабатываем продукт",
+        title: "Фиксируем объём",
         items: [
-          "Фронтенд и логика заявок",
-          "База данных и роли доступа",
-          "Проверяем сценарии до запуска"
+          "Согласовываем функции, этапы, сроки, стоимость и формат связи."
         ]
       },
       {
         kind: "bullets",
-        title: "Подключаем заявки, оплату, CRM или Telegram",
+        title: "Показываем прототип или структуру",
         items: [
-          "Формы и точки входа",
-          "Интеграции с мессенджерами и почтой",
-          "Оплата, таблицы, аналитика"
+          "До разработки проверяем логику экранов и ключевой путь пользователя."
         ]
       },
       {
         kind: "bullets",
-        title: "Запускаем и помогаем проверить",
+        title: "Разрабатываем по этапам",
         items: [
-          "Публикуем и смотрим на реальных заявках",
-          "Показываем команде, как работать",
-          "Остаёмся на связи после запуска"
+          "После каждого этапа показываем рабочий результат и собираем обратную связь."
+        ]
+      },
+      {
+        kind: "bullets",
+        title: "Тестируем и запускаем",
+        items: [
+          "Проверяем мобильную версию, формы, роли, интеграции и основные сценарии."
+        ]
+      },
+      {
+        kind: "bullets",
+        title: "Передаём и поддерживаем",
+        items: [
+          "Передаём исходники, доступы и инструкции. После запуска исправляем выявленные ошибки в рамках согласованной гарантии."
         ]
       }
     ]
   },
   finalCta: {
-    title: "Расскажите, что хотите запустить или автоматизировать",
-    subtitle: "Посмотрим задачу и предложим понятный первый шаг: сайт, бот, CRM, кабинет или MVP.",
-    ctaPrimary: "Обсудить проект",
-    ctaSecondary: "Получить разбор задачи",
-    micro: "Ответим в течение дня • Первая консультация бесплатно"
+    title: "Расскажите, что нужно запустить",
+    subtitle: "Опишите задачу своими словами. Мы разберём её и отправим предварительный план, срок и диапазон стоимости.",
+    ctaPrimary: "Получить оценку",
+    ctaSecondary: "Написать в Telegram",
+    micro: "Ответим в течение рабочего дня. Созвон не обязателен. Контакты не передаём третьим лицам."
   },
   packages: {
     sectionTitle: "Три направления под вашу задачу",
@@ -1807,32 +3704,46 @@ const COPY_RU$1 = {
 };
 const COPY_EN$1 = {
   hero: {
-    titleLines: ["Websites, bots and services", "so leads don't get lost"],
+    eyebrow: "WEBSITES · CRM · BOTS · WEB APPS",
+    titleLines: ["We build sites and systems", "where leads do not get lost"],
+    titleHighlight: "leads do not get lost",
     scrollStages: [
       {
-        headline: "Websites, bots and web apps that help you capture leads",
-        lead: "We review your task, suggest a solution and launch it end-to-end: landing page, bot, CRM, client area or automation."
+        headline: "We build sites and systems where leads do not get lost",
+        headlineLines: ["We build sites and systems", "where leads do not get lost"],
+        headlineBefore: "We build sites and systems",
+        headlineAccent: "where leads do not get lost",
+        headlineAfter: "",
+        lead: "We develop landing pages, Telegram bots, CRMs, client portals and MVPs — and connect them into one process: from first inquiry to payment and result."
       },
       {
-        headline: "Leads arrive in different places — and get lost",
-        lead: "Website, Telegram, Instagram, calls, spreadsheets. A manager forgets to reply — the client leaves."
+        headline: "The form was submitted. What happens next?",
+        headlineLines: ["The form was submitted.", "What happens next?"],
+        headlineBefore: "The form was submitted.",
+        headlineAccent: "What happens next?",
+        headlineAfter: "",
+        lead: "When inquiries live in chats, inboxes and spreadsheets, the team replies late, forgets clients and does not know the next step."
       },
       {
-        headline: "We build a system where leads stay tracked",
-        lead: "A client submits a request — your team sees it in Telegram or CRM right away and knows who owns it and what to do next."
+        headline: "One lead. One clear process",
+        headlineLines: ["One lead.", "One clear process"],
+        headlineBefore: "One lead.",
+        headlineAccent: "One clear process",
+        headlineAfter: "",
+        lead: "We connect the site, Telegram, CRM, sheets and internal tools so the team sees the client, status and next step right away."
       }
     ],
-    subtitle: "We build websites, Telegram bots, CRMs, admin panels and web services for real business tasks — so leads don't slip away and your team isn't stuck in manual chaos.",
-    ctaPrimary: "Discuss the project",
-    ctaSecondary: "See what we build",
-    micro: "We reply within a day • First consultation is free • You can start with just an idea",
+    subtitle: "We develop landing pages, Telegram bots, CRMs, client portals and MVPs — and connect them into one process: from first inquiry to payment and result.",
+    ctaPrimary: "Get a project estimate",
+    ctaSecondary: "See live projects",
+    micro: "We reply within a business day · Phased delivery · Source code and access handed over",
     flowNodes: ["Lead", "Processing", "Telegram", "CRM"],
     flowNodeHints: ["From site", "Auto", "Alert", "In CRM"],
     flowTelegramBot: "TIVONIX Bot",
     flowDisplayChips: ["Landing", "Form", "Telegram"],
     flowAnalysis: {
       headline: "Task reviewed",
-      lead: "The landing captures traffic, the form saves contact details, Telegram alerts your team — the lead doesn't sit in a chat thread.",
+      lead: "The landing captures traffic, the form saves contact details, Telegram alerts your team — the lead doesn’t sit in a chat thread.",
       routeLabel: "Route:",
       routeText: "site → form → Telegram → CRM.",
       modulesLabel: "Stack:"
@@ -1925,111 +3836,106 @@ const COPY_EN$1 = {
     ]
   },
   pain: {
-    title: "Why leads get lost",
-    titleLines: ["Why leads", "get lost"],
-    subtitle: "Usually it's not the product — it's the lack of a proper intake and follow-up system.",
+    title: "While leads live in chats — the process breaks",
+    titleLines: ["While leads live in chats", "the process breaks"],
+    subtitle: "When inquiries live in chats, inboxes and spreadsheets, the team replies late, forgets clients and doesn’t know the next step.",
     hoverCta: "How we fix it",
     items: [
       {
-        title: "Leads in different places",
-        text: "Website, Telegram, Instagram, calls, email — all in separate windows. Unclear who already replied.",
-        solution: "We pull inquiries into one place: form, bot, CRM or admin panel — the team sees every lead at once."
+        title: "No owner assigned",
+        text: "The lead arrived, but nobody owns it — it sits until someone opens the chat by chance.",
+        solution: "Auto-assignment or routing rules: the lead goes to the right person immediately."
       },
       {
         title: "Reply came too late",
-        text: "A client wrote in the morning, the manager saw it in the evening. By then they booked elsewhere.",
-        solution: "Telegram or email alerts — leads don't wait in chat threads."
+        text: "The manager saw it in the evening. By then the client already went to whoever answered faster.",
+        solution: "Instant Telegram or email alerts — leads don’t wait in threads."
       },
       {
-        title: "No statuses",
-        text: "Unclear who is new, who is waiting, who is booked, and who simply fell through.",
-        solution: "Statuses in CRM or a sheet: new → in progress → booked → paid."
+        title: "Status unknown",
+        text: "Unclear who is new, who waits for a quote, who is in progress, and who already paid.",
+        solution: "Statuses in CRM or a sheet: new → in progress → quote sent → paid."
       },
       {
-        title: "Everything depends on one person",
-        text: "A notebook, Excel or the admin's memory. They go offline — the process stops.",
-        solution: "The process lives in the system: leads move by rules, not one person's memory."
-      },
-      {
-        title: "Ads run, leads get lost",
-        text: "Traffic is there, the form is there, but after submit everything goes back to manual handling.",
-        solution: "Landing + form + Telegram + CRM — every lead enters the workflow immediately."
+        title: "Client has to follow up",
+        text: "People have to remind you about themselves because the team lost the thread.",
+        solution: "History and next step stay visible in the system — no chat archaeology."
       }
     ]
   },
   offer: {
-    title: "What we build",
+    title: "Services and products",
     featured: {
       badge: "TIVONIX",
-      title: "We build the tools that capture your leads",
-      text: "A website, bot, CRM, or client portal — matched to your task. First we find where leads get lost, then we ship a working setup without extra fluff.",
+      title: "Not only landing pages — sites, CRM, bots and web products",
+      text: "We build what captures leads and runs users: from an ad page to SaaS with roles and payments.",
       linkText: "Tell us about your task",
-      footer: "From idea to launch — with you at every step"
+      footer: "We lock scope before start — and show results by stage"
     },
     metrics: [
       {
-        title: "Ad landing pages",
-        text: "A landing page and form so leads come in from ads or Instagram."
+        title: "Websites and landing pages",
+        text: "Pages that explain the offer, capture inquiries and hand them to your team."
       },
       {
         title: "Telegram bots",
-        text: "Leads reach the team in Telegram right away — no digging through chats."
+        text: "Bots take leads, ask questions, alert staff and show the client the next step."
       },
       {
-        title: "CRM or admin panel",
-        text: "Clear statuses: new, in progress, booked, paid — and who owns each lead."
+        title: "CRM and admin panels",
+        text: "Compact systems for your process: statuses, owners, history, roles and reports."
       },
       {
         title: "Client portals",
-        text: "Clients and your team work in one clear interface."
+        text: "Interfaces for clients, partners and staff with auth, documents, payments and history."
       },
       {
-        title: "Automation",
-        text: "Fewer manual sheets and message threads — a steadier process."
+        title: "SaaS, MVP and automation",
+        text: "A first product version with roles and payments — or forms, Telegram, sheets and CRM without manual hopping."
       }
     ],
     ctaBar: {
-      title: "We'll build a system where leads don't get lost.",
-      primary: "Discuss the project",
-      secondary: "Get an estimate"
+      title: "We’ll build a system where leads don’t get lost — or a first product version.",
+      primary: "Get an estimate",
+      secondary: "Estimate the project"
     }
   },
   ai: {
     ariaLabel: "TIVONIX — AI in business products",
     centerBadge: "TIVONIX AI",
-    headline: "We add AI where it actually saves time: replies, lead triage, support",
+    headline: "AI where it actually saves time",
     models: ["OpenAI", "Claude", "Gemini", "Grok"],
-    tags: ["AI bots", "Auto-replies", "Lead triage", "CRM", "Support", "Analytics"]
+    tags: ["Lead triage", "Documents", "Reply drafts", "CRM", "Support"]
   },
   flow: {
-    label: "Flow",
-    title: "How the system works",
-    titleMuted: "from lead to result — without losses along the way",
+    label: "Solution",
+    title: "Form submitted. What happens next?",
+    titleMuted: "The right path: the lead is saved, the team gets a signal, someone owns it, status and next step stay clear — without digging through chats.",
     steps: [
       {
         label: "Lead",
         title: "Client submits a request",
-        desc: "On the site, in a form, bot or from ads"
+        desc: "From the site, bot, ads or a form"
       },
       {
-        label: "Telegram",
-        title: "Team gets an alert",
-        desc: "In Telegram or email — right away"
+        label: "Alert",
+        title: "Team gets a signal",
+        desc: "In Telegram or email — immediately"
       },
       {
-        label: "CRM",
-        title: "Lead lands in CRM",
-        desc: "In a sheet, mini-CRM or admin panel"
+        label: "Owner",
+        title: "An owner is assigned",
+        desc: "Clear who is responsible"
       },
       {
         label: "Status",
-        title: "Lead gets a status",
-        desc: "New → in progress → booked → paid"
+        title: "Status stays up to date",
+        desc: "New → in progress → quote → paid"
       },
       {
-        label: "Result",
-        title: "Clear what to do next",
-        desc: "There's an owner — the client isn't lost"
+        label: "Payment",
+        title: "The deal reaches a result",
+        desc: "Without losing context along the way"
       }
     ]
   },
@@ -2039,95 +3945,40 @@ const COPY_EN$1 = {
     more: "Learn more"
   },
   compare: {
-    title: "We build a working lead system — not just a page",
-    subtitle: "So leads don't sit in chat threads — from form to CRM and your team.",
+    title: "Typical website vs TIVONIX system",
+    subtitle: "The difference isn’t a prettier page — it’s what happens after the form is submitted.",
     regular: {
       title: "Typical website",
-      headline: "Form submitted — then manual chaos",
-      items: ["Some text", "A button", "A form", "Then — chats and spreadsheets"]
+      headline: "Form submitted — then manual work",
+      items: [
+        "Form submitted",
+        "Email sits in the inbox",
+        "Status unknown",
+        "No owner assigned",
+        "Data moved by hand"
+      ]
     },
-    chaosTags: ["Lead lost", "No status", "Manual spreadsheet", "Reply next day"],
-    hover: {
-      chaosMessages: [
-        { channel: "Instagram", text: "Hi, how much is it?", time: "now" },
-        { channel: "Telegram", text: "Can I book for tomorrow?", time: "4 min" },
-        { channel: "WhatsApp", text: "Are you open Saturday?", time: "11 min" },
-        { channel: "Website", text: "Submitted the form", time: "18 min" },
-        { channel: "Call", text: "Missed call", time: "25 min" },
-        { channel: "Instagram", text: "??? anyone there?", time: "38 min" },
-        { channel: "Telegram", text: "Waiting an hour already", time: "1 hr" },
-        { channel: "Email", text: "Re: form inquiry", time: "yesterday" },
-        { channel: "WhatsApp", text: "Any slot tonight?", time: "1 hr" },
-        { channel: "Website", text: "Need a full quote", time: "2 hr" },
-        { channel: "Instagram", text: "Please send pricing", time: "3 hr" },
-        { channel: "Telegram", text: "Call me back, urgent", time: "4 hr" },
-        { channel: "Call", text: "2 missed calls", time: "5 hr" },
-        { channel: "Email", text: "Fwd: proposal request", time: "6 hr" }
-      ],
-      crm: {
-        title: "TIVONIX CRM",
-        sidebar: [
-          { label: "Leads", active: true, count: 4 },
-          { label: "Clients", active: false },
-          { label: "Calendar", active: false },
-          { label: "Reports", active: false }
-        ],
-        leadsTitle: "Leads",
-        leads: [
-          {
-            name: "Anna K.",
-            source: "Website",
-            preview: "Book a consultation",
-            time: "2 min",
-            status: "New",
-            tone: "new"
-          },
-          {
-            name: "Igor P.",
-            source: "Telegram",
-            preview: "Need a project estimate",
-            time: "14 min",
-            status: "In progress",
-            tone: "progress"
-          },
-          {
-            name: "Lux Salon",
-            source: "Instagram",
-            preview: "Online booking for Friday",
-            time: "32 min",
-            status: "Booked",
-            tone: "done"
-          },
-          {
-            name: "Oleg M.",
-            source: "Form",
-            preview: "Payment confirmed",
-            time: "1 hr",
-            status: "Paid",
-            tone: "paid"
-          }
-        ]
-      }
-    },
+    chaosTags: ["Lead gets lost", "No status", "Manual Excel", "Reply the next day"],
     tivonix: {
       title: "TIVONIX system",
       headline: "Lead under control",
-      badge: "Lead doesn't sit in chat — the team sees the next step",
+      badge: "Lead doesn’t sit in chat — the team sees the next step",
       items: [
-        "Lead is not lost",
-        "Arrives in Telegram or email",
-        "Lands in CRM or a sheet",
-        "Has a status and owner",
-        "Team knows what to do",
-        "You can scale ads without chaos"
+        "Lead arrives in the right channel",
+        "A record is created automatically",
+        "An owner is assigned",
+        "The team sees the status",
+        "Leadership sees the result"
       ]
-    }
+    },
+    cta: "Map my process"
   },
   cases: {
     badge: "New case",
     cta: "I want a similar system",
     viewCase: "View case",
     openProduct: "Open product",
+    discussSimilar: "Similar task",
     spliton: {
       need: "Needed a fintech platform for music-asset investing — a full product, not a landing page",
       done: "Built release catalog, share purchases, wallet, secondary market, legal consents and admin panel",
@@ -2154,7 +4005,8 @@ const COPY_EN$1 = {
         "Deals",
         "Projects",
         "Payouts"
-      ]
+      ],
+      ownProduct: "TIVONIX own product"
     }
   },
   audience: {
@@ -2163,7 +4015,7 @@ const COPY_EN$1 = {
     subtitle: "Businesses that need more than a pretty site — a working system: leads, bookings, statuses, payments or a client area.",
     callouts: {
       left: {
-        text: "Leads reach the manager in under a minute — not buried in chats or tomorrow's spreadsheet."
+        text: "Leads reach the manager in under a minute — not buried in chats or tomorrow’s spreadsheet."
       },
       right: {
         text: "Instagram, Telegram, website and calls — every channel in one flow."
@@ -2196,7 +4048,7 @@ const COPY_EN$1 = {
       },
       {
         title: "Fast response",
-        text: "Telegram alerts, statuses — clients don't wait and leave."
+        text: "Telegram alerts, statuses — clients don’t wait and leave."
       },
       {
         title: "Growth without chaos",
@@ -2212,7 +4064,7 @@ const COPY_EN$1 = {
       { title: "Experts and consultants", desc: "Leads from landing straight to Telegram and CRM" },
       { title: "Startups and MVPs", desc: "Fast product launch with the modules you need — nothing extra" },
       { title: "Agencies and teams", desc: "Ad landing pages with a working lead funnel" },
-      { title: "Small business", desc: "When leads are handled manually — and that's already getting in the way" }
+      { title: "Small business", desc: "When leads are handled manually — and that’s already getting in the way" }
     ]
   },
   process: {
@@ -2220,64 +4072,54 @@ const COPY_EN$1 = {
     steps: [
       {
         kind: "bullets",
-        title: "We review the task",
+        title: "We clarify the task",
         items: [
-          "What outcome you need",
-          "Where leads come from today",
-          "What already exists: site, CRM, messengers",
-          "Where the team loses time"
-        ]
-      },
-      {
-        kind: "search",
-        title: "We suggest a solution",
-        query: "what fits better — website, bot, CRM or client area for my task",
-        hint: "We look at scope and timeline — not buzzwords"
-      },
-      {
-        kind: "bullets",
-        title: "We shape design and logic",
-        items: [
-          "Key screens and client journey",
-          "Scenarios for managers and the team",
-          "UI aligned with your brand"
+          "We define users, the core scenario and the first-version outcome."
         ]
       },
       {
         kind: "bullets",
-        title: "We build the product",
+        title: "We lock the scope",
         items: [
-          "Frontend and lead logic",
-          "Database and access roles",
-          "We test scenarios before launch"
+          "We agree on features, stages, timeline, cost and how we communicate."
         ]
       },
       {
         kind: "bullets",
-        title: "We connect leads, payments, CRM or Telegram",
+        title: "We show a prototype or structure",
         items: [
-          "Forms and entry points",
-          "Messenger and email integrations",
-          "Payments, sheets, analytics"
+          "Before build we validate screen logic and the key user path."
         ]
       },
       {
         kind: "bullets",
-        title: "We launch and help you verify",
+        title: "We develop in stages",
         items: [
-          "Go live and check with real leads",
-          "Walk the team through daily use",
-          "Stay in touch after launch"
+          "After each stage we show a working result and gather feedback."
+        ]
+      },
+      {
+        kind: "bullets",
+        title: "We test and launch",
+        items: [
+          "We check mobile, forms, roles, integrations and core flows."
+        ]
+      },
+      {
+        kind: "bullets",
+        title: "We hand over and support",
+        items: [
+          "We hand over source code, access and instructions. After launch we fix issues found within the agreed warranty."
         ]
       }
     ]
   },
   finalCta: {
-    title: "Tell us what you want to launch or automate",
-    subtitle: "We'll review the task and suggest a clear first step: site, bot, CRM, client area or MVP.",
-    ctaPrimary: "Discuss the project",
-    ctaSecondary: "Get a task review",
-    micro: "We reply within a day • First consultation is free"
+    title: "Tell us what you need to launch",
+    subtitle: "Describe the task in your own words. We’ll review it and send a preliminary plan, timeline and cost range.",
+    ctaPrimary: "Get an estimate",
+    ctaSecondary: "Message on Telegram",
+    micro: "We reply within a business day. A call is optional. We don’t share contacts with third parties."
   },
   packages: {
     sectionTitle: "Three directions for your task",
@@ -2336,157 +4178,89 @@ function isTelegramWebView() {
   if (/Telegram/i.test(ua)) return true;
   return false;
 }
-const EN_ROUTE_MAP = {
-  "/": "/en",
-  "/projects": "/en/projects",
-  "/contacts": "/en/contacts"
-};
-const RU_ROUTE_MAP = {
-  "/en": "/",
-  "/en/projects": "/projects",
-  "/en/contacts": "/contacts"
-};
-function stripLangPrefix(pathname) {
-  const p = pathname.replace(/\/+$/, "") || "/";
-  if (p === "/en") return "/";
-  if (p.startsWith("/en/")) return p.slice(3) || "/";
-  return p;
+function useKeepVideoPlaying(videoRef) {
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.loop = true;
+    video.setAttribute("muted", "");
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+    video.disableRemotePlayback = true;
+    const play = () => {
+      if (document.visibilityState === "hidden") return;
+      if (!video.paused && !video.ended) return;
+      void video.play().catch(() => {
+      });
+    };
+    play();
+    const onReady = () => play();
+    const onEnded = () => {
+      video.currentTime = 0;
+      play();
+    };
+    const onPause = () => {
+      if (document.visibilityState === "visible") {
+        requestAnimationFrame(play);
+      }
+    };
+    const onVis = () => {
+      if (document.visibilityState === "visible") play();
+    };
+    const onPageShow = () => play();
+    const unlock = () => play();
+    video.addEventListener("loadeddata", onReady);
+    video.addEventListener("canplay", onReady);
+    video.addEventListener("canplaythrough", onReady);
+    video.addEventListener("ended", onEnded);
+    video.addEventListener("pause", onPause);
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("pageshow", onPageShow);
+    window.addEventListener("touchstart", unlock, { passive: true, once: true });
+    window.addEventListener("pointerdown", unlock, { passive: true, once: true });
+    const watchdog = window.setInterval(() => {
+      if (document.visibilityState === "visible" && (video.paused || video.ended)) {
+        play();
+      }
+    }, 700);
+    return () => {
+      window.clearInterval(watchdog);
+      video.removeEventListener("loadeddata", onReady);
+      video.removeEventListener("canplay", onReady);
+      video.removeEventListener("canplaythrough", onReady);
+      video.removeEventListener("ended", onEnded);
+      video.removeEventListener("pause", onPause);
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("pageshow", onPageShow);
+      window.removeEventListener("touchstart", unlock);
+      window.removeEventListener("pointerdown", unlock);
+    };
+  }, [videoRef]);
 }
-function pathForLang(pathname, lang) {
-  const clean = pathname.replace(/\/+$/, "") || "/";
-  if (clean === "/partners" || clean === "/ru/partners") {
-    return lang === "en" ? "/en/partners" : "/ru/partners";
-  }
-  if (clean === "/en/partners") {
-    return lang === "en" ? "/en/partners" : "/ru/partners";
-  }
-  const mRu = clean.match(/^\/projects\/([^/]+)$/);
-  if (mRu) {
-    return lang === "en" ? `/en/projects/${mRu[1]}` : `/projects/${mRu[1]}`;
-  }
-  const mEn = clean.match(/^\/en\/projects\/([^/]+)$/);
-  if (mEn) {
-    return lang === "en" ? `/en/projects/${mEn[1]}` : `/projects/${mEn[1]}`;
-  }
-  if (lang === "en") {
-    if (EN_ROUTE_MAP[clean]) return EN_ROUTE_MAP[clean];
-    if (clean.startsWith("/en")) return clean;
-    return clean;
-  }
-  if (RU_ROUTE_MAP[clean]) return RU_ROUTE_MAP[clean];
-  if (clean.startsWith("/en/")) return stripLangPrefix(clean);
-  return clean;
+let frozenH = 0;
+function readNow() {
+  frozenH = window.innerHeight || frozenH || 800;
 }
-const ORANGE_PILL = "bg-gradient-to-r from-[#FFD7B0] via-[#FF9A3D] to-[#FF6A1A] shadow-[0_6px_20px_rgba(255,107,44,0.2)]";
-function cx$d(...a) {
-  return a.filter(Boolean).join(" ");
+function getStableViewportHeight() {
+  if (typeof window === "undefined") return 800;
+  if (!frozenH) readNow();
+  return frozenH;
 }
-function LangToggle({
-  compact,
-  reducedMotion,
-  variant = "header"
-}) {
-  const { lang, setLang } = useLang();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const isHero = variant === "hero";
-  const switchLang = (next) => {
-    setLang(next);
-    const target = pathForLang(location.pathname, next);
-    if (target !== location.pathname) {
-      navigate(`${target}${location.search}${location.hash}`, { replace: true });
-    }
-  };
-  const label = lang === "ru" ? "Выбор языка" : "Language";
-  const h = compact ? "h-9 w-[5.25rem]" : isHero ? "h-11 w-[6.5rem]" : "h-10 w-[5.75rem]";
-  const text = compact ? "text-[11px]" : isHero ? "text-[13px]" : "text-xs";
-  return /* @__PURE__ */ jsxs(
-    "div",
-    {
-      className: cx$d(
-        "relative shrink-0 select-none rounded-full p-1",
-        isHero ? "border border-white/35 bg-white/[0.10] backdrop-blur-md" : "border border-white/[0.08] bg-[#121212]",
-        h
-      ),
-      role: "radiogroup",
-      "aria-label": label,
-      "aria-orientation": "horizontal",
-      children: [
-        /* @__PURE__ */ jsx(
-          "span",
-          {
-            "aria-hidden": true,
-            className: cx$d(
-              "pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-8px)/2)] rounded-full",
-              isHero ? "bg-[#FFFCF5] shadow-[0_4px_14px_rgba(0,0,0,0.18)]" : ORANGE_PILL,
-              !reducedMotion && "transition-transform duration-200 ease-[cubic-bezier(0.33,1,0.68,1)]"
-            ),
-            style: {
-              transform: lang === "en" ? "translateX(100%)" : "translateX(0)"
-            }
-          }
-        ),
-        /* @__PURE__ */ jsxs("div", { className: "relative z-10 grid h-full grid-cols-2", children: [
-          /* @__PURE__ */ jsx(
-            "button",
-            {
-              type: "button",
-              role: "radio",
-              "aria-checked": lang === "ru",
-              onClick: () => switchLang("ru"),
-              className: cx$d(
-                "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
-                "focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-                text,
-                lang === "ru" ? "text-[#1A202C]" : isHero ? "text-white/70 hover:text-white/90" : "text-white/45 hover:text-white/72"
-              ),
-              children: "RU"
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            "button",
-            {
-              type: "button",
-              role: "radio",
-              "aria-checked": lang === "en",
-              onClick: () => switchLang("en"),
-              className: cx$d(
-                "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
-                "focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-                text,
-                lang === "en" ? "text-[#1A202C]" : isHero ? "text-white/70 hover:text-white/90" : "text-white/45 hover:text-white/72"
-              ),
-              children: "EN"
-            }
-          )
-        ] })
-      ]
-    }
-  );
-}
-const HERO_IMAGES = [
-  "/images/hero-stage-1.webp",
-  "/images/hero-stage-2.webp",
-  "/images/hero-stage-3.webp"
-];
+const HERO_VIDEO = "/images/hero-bg.mp4";
+const HERO_POSTER = "/images/hero-bg-poster.webp";
 const SCROLL_TRACK_VH = 240;
-function cx$c(...a) {
+function cx$b(...a) {
   return a.filter(Boolean).join(" ");
 }
-function clamp01$4(v) {
+function clamp01$3(v) {
   return Math.min(1, Math.max(0, v));
 }
 function smoothstep$1(t) {
-  const x = clamp01$4(t);
+  const x = clamp01$3(t);
   return x * x * (3 - 2 * x);
-}
-function imageOpacities(progress) {
-  if (progress <= 0.5) {
-    const t2 = smoothstep$1(progress / 0.5);
-    return [1 - t2, t2, 0];
-  }
-  const t = smoothstep$1((progress - 0.5) / 0.5);
-  return [0, 1 - t, t];
 }
 function textOpacities(progress) {
   const stage = progress * 3;
@@ -2518,16 +4292,19 @@ function useHeroScrollProgress(trackRef) {
     const measure = () => {
       const rect = el.getBoundingClientRect();
       trackTop = window.scrollY + rect.top;
-      scrollable = Math.max(1, el.offsetHeight - window.innerHeight);
+      scrollable = Math.max(1, el.offsetHeight - getStableViewportHeight());
     };
     const update = () => {
       raf = 0;
-      setProgress(clamp01$4((window.scrollY - trackTop) / scrollable));
+      setProgress(clamp01$3((window.scrollY - trackTop) / scrollable));
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
     };
+    let lastW = window.innerWidth;
     const onResize = () => {
+      if (Math.abs(window.innerWidth - lastW) < 10) return;
+      lastW = window.innerWidth;
       measure();
       update();
     };
@@ -2543,98 +4320,112 @@ function useHeroScrollProgress(trackRef) {
   }, [trackRef]);
   return progress;
 }
+function HeroHeadline({ stage }) {
+  const lines = stage.headlineLines && stage.headlineLines.length > 0 ? stage.headlineLines : [stage.headline];
+  return /* @__PURE__ */ jsx("h1", { className: cx$b(HERO_SCROLL_HEADLINE_CLASS, "hero-scroll-headline mx-auto text-center"), children: lines.map((line, i) => /* @__PURE__ */ jsx("span", { className: "hero-scroll-headline__line block", children: line }, `${line}-${i}`)) });
+}
 function HeroCard({
   progress,
   stages,
-  isRu,
-  ctaLabel
+  ctaPrimary,
+  ctaSecondary,
+  micro
 }) {
-  const imageOpacity = useMemo(() => imageOpacities(progress), [progress]);
   const textOpacity = useMemo(() => textOpacities(progress), [progress]);
   const activeStage = textOpacity[2] > 0.5 ? 2 : textOpacity[1] > 0.5 ? 1 : 0;
-  const scrollDown = () => {
-    const next = document.getElementById("pain");
-    if (next) {
-      next.scrollIntoView({ behavior: "smooth", block: "start" });
-      return;
-    }
-    window.scrollBy({ top: window.innerHeight * 0.9, behavior: "smooth" });
-  };
+  const videoRef = useRef(null);
+  useKeepVideoPlaying(videoRef);
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$c(
-        "relative isolate h-full min-h-0 flex-1 overflow-hidden rounded-[28px] lg:rounded-[32px]"
+      className: cx$b(
+        "relative isolate h-full min-h-0 flex-1 overflow-visible rounded-[40px] bg-black"
       ),
       children: [
-        HERO_IMAGES.map((src, i) => /* @__PURE__ */ jsx(
-          "img",
-          {
-            src,
-            alt: "",
-            className: cx$c(
-              "pointer-events-none absolute inset-0 h-full w-full object-cover object-[center_92%] sm:object-[center_94%]",
-              i === 0 && "brightness-[0.92]"
-            ),
-            style: { opacity: imageOpacity[i] },
-            decoding: "async",
-            fetchPriority: i === 0 ? "high" : "low",
-            loading: i === 0 ? "eager" : "lazy"
-          },
-          src
-        )),
-        /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsxs("div", { className: "pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] bg-black", children: [
+          /* @__PURE__ */ jsx(
+            "video",
+            {
+              ref: videoRef,
+              className: "pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center",
+              src: HERO_VIDEO,
+              poster: HERO_POSTER,
+              autoPlay: true,
+              muted: true,
+              loop: true,
+              playsInline: true,
+              preload: "auto",
+              controls: false,
+              disablePictureInPicture: true,
+              "aria-hidden": true
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "div",
+            {
+              className: "absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/55",
+              "aria-hidden": true
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "div",
+            {
+              className: "absolute inset-0 shadow-[inset_0_-3px_0_0_#000,inset_-3px_0_0_0_#000]",
+              "aria-hidden": true
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-10 flex flex-col items-center justify-center pt-[calc(4.875rem+0.5rem)] pb-6 sm:pt-[calc(var(--tivonix-header-spacer)+1.5rem)]", children: /* @__PURE__ */ jsxs(
           "div",
           {
-            className: "pointer-events-none absolute inset-0 bg-gradient-to-b from-black/18 via-transparent to-black/16",
-            "aria-hidden": true
-          }
-        ),
-        /* @__PURE__ */ jsxs("div", { className: "absolute inset-0 z-10 flex flex-col px-6 pt-[calc(4.875rem+0.5rem)] sm:px-10 sm:pt-[calc(var(--tivonix-header-spacer)+2rem)] lg:px-14", children: [
-          /* @__PURE__ */ jsx("div", { className: "flex min-h-0 flex-1 items-center justify-center", children: /* @__PURE__ */ jsx("div", { className: "relative w-full max-w-[52rem]", children: /* @__PURE__ */ jsx("div", { className: "relative grid w-full justify-items-center", children: stages.map((stage, i) => {
-            const opacity = textOpacity[i];
-            return /* @__PURE__ */ jsxs(
-              "div",
-              {
-                className: "hero-stage-copy col-start-1 row-start-1 flex w-full max-w-[52rem] flex-col items-center justify-center text-center",
-                style: {
-                  opacity,
-                  visibility: opacity < 0.04 ? "hidden" : "visible"
-                },
-                "aria-hidden": i !== activeStage,
-                children: [
-                  /* @__PURE__ */ jsx("h1", { className: cx$c(HERO_SCROLL_HEADLINE_CLASS, "mx-auto w-full text-center"), children: stage.headline }),
-                  /* @__PURE__ */ jsx("p", { className: cx$c(HERO_SCROLL_LEAD_CLASS, "mx-auto w-full max-w-[34rem] text-center"), children: stage.lead })
-                ]
-              },
-              stage.headline
-            );
-          }) }) }) }),
-          /* @__PURE__ */ jsxs("div", { className: "pointer-events-auto relative z-20 flex shrink-0 flex-col items-center gap-3 pb-4 sm:gap-3.5 sm:pb-6 lg:pb-7", children: [
-            /* @__PURE__ */ jsx(
-              LeadCTAButton,
-              {
-                source: "hero",
-                variant: "white",
-                size: "lg",
-                className: "min-w-[220px] shadow-[0_16px_48px_rgba(0,0,0,0.35)]",
-                children: ctaLabel
-              }
+            className: cx$b(
+              LANDING_SHELL_CLASS,
+              "pointer-events-none relative flex w-full flex-1 flex-col items-center justify-center"
             ),
-            /* @__PURE__ */ jsx(LangToggle, { variant: "hero" }),
-            /* @__PURE__ */ jsx(
-              ScrollFingerHint,
-              {
-                bare: true,
-                visible: progress < 0.35,
-                variant: "light",
-                label: isRu ? "Листайте вниз" : "Scroll down",
-                onActivate: scrollDown,
-                className: "mt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
-              }
-            )
-          ] })
-        ] })
+            children: [
+              /* @__PURE__ */ jsx("div", { className: "relative grid w-full flex-1 justify-items-center content-center", children: stages.map((stage, i) => {
+                const opacity = textOpacity[i];
+                return /* @__PURE__ */ jsxs(
+                  "div",
+                  {
+                    className: "hero-stage-copy col-start-1 row-start-1 flex w-full flex-col items-center justify-center text-center",
+                    style: {
+                      opacity,
+                      visibility: opacity < 0.04 ? "hidden" : "visible"
+                    },
+                    "aria-hidden": i !== activeStage,
+                    children: [
+                      /* @__PURE__ */ jsx(HeroHeadline, { stage }),
+                      /* @__PURE__ */ jsx("p", { className: "pointer-events-none mt-4 max-w-[38rem] px-2 text-[14px] font-medium leading-[1.55] text-white/72 sm:mt-5 sm:text-[15px]", children: stage.lead })
+                    ]
+                  },
+                  stage.headline
+                );
+              }) }),
+              /* @__PURE__ */ jsxs("div", { className: "pointer-events-auto relative z-20 mt-6 flex w-full max-w-[38rem] flex-col items-center gap-3 px-2 sm:mt-8", children: [
+                /* @__PURE__ */ jsx(
+                  LeadCTAButton,
+                  {
+                    source: "hero",
+                    variant: "primary",
+                    size: "lg",
+                    className: "min-h-[48px] w-full max-w-[20rem] shadow-[0_12px_40px_rgba(255,107,44,0.28)] sm:min-h-[52px] sm:max-w-[22rem]",
+                    children: ctaPrimary
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  Link,
+                  {
+                    to: "/projects",
+                    className: "inline-flex min-h-[44px] items-center justify-center rounded-full border border-white/20 bg-white/[0.04] px-6 text-[13px] font-semibold text-white/82 transition hover:border-white/35 hover:bg-white/[0.08] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/55",
+                    children: ctaSecondary
+                  }
+                ),
+                /* @__PURE__ */ jsx("p", { className: "max-w-[34rem] text-center text-[11px] font-medium leading-snug text-white/45 sm:text-[12px]", children: micro })
+              ] })
+            ]
+          }
+        ) })
       ]
     }
   );
@@ -2643,40 +4434,36 @@ function Hero() {
   const trackRef = useRef(null);
   const progress = useHeroScrollProgress(trackRef);
   const { lang } = useLang();
-  const isRu = lang === "ru";
   const copy = landingCopy(lang);
-  const leadCopy = leadFormCopy(lang);
   const stages = copy.hero.scrollStages;
   const [tgWebView, setTgWebView] = useState(false);
   useEffect(() => {
     setTgWebView(isTelegramWebView());
   }, []);
+  const cardProps = {
+    stages,
+    ctaPrimary: copy.hero.ctaPrimary,
+    ctaSecondary: copy.hero.ctaSecondary,
+    micro: copy.hero.micro
+  };
   if (tgWebView) {
     return /* @__PURE__ */ jsx(
       Section,
       {
-        className: cx$c(
+        className: cx$b(
           "relative z-[1] isolate overflow-hidden bg-transparent !py-0",
           "min-h-[100svh] pb-0"
         ),
         children: /* @__PURE__ */ jsx(
           "div",
           {
-            className: cx$c(
+            className: cx$b(
               "mx-auto flex h-[calc(100svh-1.25rem)] min-h-0 w-full max-w-none flex-col",
               "px-3 pt-2.5 pb-2.5",
               "sm:max-w-[min(98vw,1840px)] sm:px-3",
               "lg:px-4 lg:pt-3 lg:pb-3"
             ),
-            children: /* @__PURE__ */ jsx(
-              HeroCard,
-              {
-                progress: 1,
-                stages,
-                isRu,
-                ctaLabel: leadCopy.ctaDiscuss
-              }
-            )
+            children: /* @__PURE__ */ jsx(HeroCard, { progress: 1, ...cardProps })
           }
         )
       }
@@ -2691,635 +4478,24 @@ function Hero() {
       children: /* @__PURE__ */ jsx(
         Section,
         {
-          className: cx$c(
+          className: cx$b(
             "hero-scroll-sticky sticky top-0 z-[1] isolate overflow-hidden bg-transparent !py-0",
             "min-h-[100svh] pb-0"
           ),
           children: /* @__PURE__ */ jsx(
             "div",
             {
-              className: cx$c(
+              className: cx$b(
                 "mx-auto flex h-[calc(100svh-1.25rem)] min-h-0 w-full max-w-none flex-col",
                 "px-3 pt-2.5 pb-2.5",
                 "sm:max-w-[min(98vw,1840px)] sm:px-3",
                 "lg:px-4 lg:pt-3 lg:pb-3"
               ),
-              children: /* @__PURE__ */ jsx(
-                HeroCard,
-                {
-                  progress,
-                  stages,
-                  isRu,
-                  ctaLabel: leadCopy.ctaDiscuss
-                }
-              )
+              children: /* @__PURE__ */ jsx(HeroCard, { progress, ...cardProps })
             }
           )
         }
       )
-    }
-  );
-}
-const CARD_DARK = "#141414";
-const CARD_SOFT = "#262626";
-const PAIN_CARD_BACKGROUNDS = [
-  "/images/hero-stage-1.webp",
-  "/images/pain-bg-4.webp",
-  "/images/hero-stage-2.webp",
-  "/images/hero-stage-2.webp",
-  "/images/hero-stage-3.webp"
-];
-function animStyle(delayMs, durationMs) {
-  return {
-    animationDelay: `${delayMs}ms`,
-    ...durationMs ? { animationDuration: `${durationMs}ms` } : {}
-  };
-}
-function FadeList({ children }) {
-  return /* @__PURE__ */ jsxs("div", { className: "relative", children: [
-    children,
-    /* @__PURE__ */ jsx(
-      "div",
-      {
-        className: "pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-[#141414] to-transparent",
-        "aria-hidden": true
-      }
-    )
-  ] });
-}
-function ChannelsVisual({ isRu }) {
-  const rows = isRu ? [
-    { ch: "Instagram", status: "3 непрочитанных", pending: true },
-    { ch: "Telegram", status: "Ответ через 47 мин", pending: true },
-    { ch: "Сайт", status: "В таблице", pending: false },
-    { ch: "Звонок", status: "Не зафиксирован", pending: true }
-  ] : [
-    { ch: "Instagram", status: "3 unread", pending: true },
-    { ch: "Telegram", status: "Reply in 47 min", pending: true },
-    { ch: "Website", status: "In spreadsheet", pending: false },
-    { ch: "Call", status: "Not logged", pending: true }
-  ];
-  return /* @__PURE__ */ jsx(FadeList, { children: /* @__PURE__ */ jsx("div", { className: "space-y-1.5", children: rows.map((r, i) => /* @__PURE__ */ jsxs(
-    "div",
-    {
-      className: "pain-row-pulse flex items-center justify-between gap-3 rounded-lg bg-white/[0.05] px-3 py-2.5",
-      style: animStyle(i * 420, 2800),
-      children: [
-        /* @__PURE__ */ jsx("span", { className: "text-[12px] font-medium text-white/90", children: r.ch }),
-        /* @__PURE__ */ jsxs("span", { className: "flex items-center gap-1.5 text-[11px] text-white/40", children: [
-          r.pending ? /* @__PURE__ */ jsx(Loader2, { size: 11, className: "animate-spin text-[#FF5722]/90" }) : /* @__PURE__ */ jsx(Check, { size: 11, className: "text-white/35" }),
-          /* @__PURE__ */ jsx("span", { className: "pain-shimmer", style: animStyle(i * 300 + 200), children: r.status })
-        ] })
-      ]
-    },
-    r.ch
-  )) }) });
-}
-function TelegramVisual({ isRu }) {
-  const message = isRu ? "Здравствуйте, хочу записаться на консультацию…" : "Hi, I'd like to book a consultation…";
-  const times = isRu ? ["сейчас", "32 мин", "1 ч назад"] : ["now", "32 min", "1 hr ago"];
-  const status = isRu ? "Менеджер ещё не видел" : "Manager hasn't seen it";
-  const [typed, setTyped] = useState("");
-  const [timeIdx, setTimeIdx] = useState(0);
-  const [showStatus, setShowStatus] = useState(false);
-  const [cycle, setCycle] = useState(0);
-  const isTyping = typed.length < message.length;
-  const isLate = timeIdx >= 2;
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
-      setTyped(message);
-      setTimeIdx(2);
-      setShowStatus(true);
-      return;
-    }
-    let cancelled = false;
-    const timeouts = [];
-    const t = (fn, ms) => {
-      timeouts.push(window.setTimeout(() => {
-        if (!cancelled) fn();
-      }, ms));
-    };
-    setTyped("");
-    setTimeIdx(0);
-    setShowStatus(false);
-    message.split("").forEach((_, i) => {
-      t(() => setTyped(message.slice(0, i + 1)), 38 * (i + 1));
-    });
-    const typingDone = 38 * message.length + 320;
-    t(() => setShowStatus(true), typingDone);
-    t(() => setTimeIdx(1), typingDone + 1600);
-    t(() => setTimeIdx(2), typingDone + 3400);
-    t(() => setCycle((c) => c + 1), typingDone + 6200);
-    return () => {
-      cancelled = true;
-      timeouts.forEach(clearTimeout);
-    };
-  }, [message, cycle]);
-  return /* @__PURE__ */ jsxs(
-    "div",
-    {
-      className: "flex items-start gap-2.5 rounded-xl p-3 sm:p-3.5",
-      style: { backgroundColor: CARD_SOFT },
-      children: [
-        /* @__PURE__ */ jsx("span", { className: "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.1]", children: /* @__PURE__ */ jsx(SiTelegram, { size: 20, className: "text-[#FF9A3D]", "aria-hidden": true }) }),
-        /* @__PURE__ */ jsxs("div", { className: "min-w-0 flex-1 pt-0.5", children: [
-          /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between gap-2", children: [
-            /* @__PURE__ */ jsx("span", { className: "text-[11px] font-medium text-white/55", children: "Telegram" }),
-            /* @__PURE__ */ jsx(
-              "span",
-              {
-                className: [
-                  "text-[10px] tabular-nums transition-colors duration-500",
-                  isLate ? "text-[#FFAB91] pain-blink" : "text-white/38"
-                ].join(" "),
-                children: times[timeIdx]
-              }
-            )
-          ] }),
-          /* @__PURE__ */ jsxs("p", { className: "mt-1.5 min-h-[2.6rem] text-[12px] leading-snug text-white/90 sm:text-[13px]", children: [
-            typed,
-            isTyping && /* @__PURE__ */ jsx("span", { className: "pain-cursor ml-0.5 inline-block text-[#FF9A3D]", "aria-hidden": true })
-          ] }),
-          /* @__PURE__ */ jsxs(
-            "div",
-            {
-              className: [
-                "mt-2.5 flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] transition-all duration-500 ease-out",
-                showStatus ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-1 opacity-0",
-                isLate ? "bg-[#FF5722]/28 text-white pain-glow" : "bg-white/10 text-white/88"
-              ].join(" "),
-              children: [
-                /* @__PURE__ */ jsx(
-                  "span",
-                  {
-                    className: [
-                      "h-1.5 w-1.5 rounded-full",
-                      isLate ? "pain-dot-pulse bg-[#FF5722]" : "pain-dot-pulse bg-white/90"
-                    ].join(" "),
-                    "aria-hidden": true
-                  }
-                ),
-                /* @__PURE__ */ jsx("span", { className: isLate ? "pain-blink" : void 0, children: status })
-              ]
-            }
-          )
-        ] })
-      ]
-    }
-  );
-}
-function StatusPill({
-  label,
-  variant = "ok"
-}) {
-  const styles = {
-    ok: "bg-white/[0.06] text-white/58",
-    warn: "bg-white/[0.05] text-white/42 pain-shimmer",
-    unknown: "bg-white/[0.05] text-white/30 pain-blink",
-    lost: "pain-glow bg-[#FF5722]/20 text-[#FF8A5C]"
-  };
-  return /* @__PURE__ */ jsx("span", { className: `shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium ${styles[variant]}`, children: label });
-}
-const STATUS_MARQUEE_STYLES = `
-  @keyframes pain-status-left {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
-  @keyframes pain-status-right {
-    from { transform: translateX(-50%); }
-    to { transform: translateX(0); }
-  }
-  .pain-status-track-left {
-    animation: pain-status-left 26s linear infinite;
-  }
-  .pain-status-track-right {
-    animation: pain-status-right 30s linear infinite;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .pain-status-track-left,
-    .pain-status-track-right {
-      animation: none !important;
-    }
-  }
-`;
-function StatusMarqueeRow({
-  items,
-  direction
-}) {
-  const track = [...items, ...items];
-  return /* @__PURE__ */ jsx("div", { className: "overflow-hidden", children: /* @__PURE__ */ jsx(
-    "div",
-    {
-      className: [
-        "flex w-max gap-2",
-        direction === "left" ? "pain-status-track-left" : "pain-status-track-right"
-      ].join(" "),
-      children: track.map((item, i) => /* @__PURE__ */ jsx(StatusPill, { label: item.label, variant: item.variant }, `${item.label}-${i}`))
-    }
-  ) });
-}
-function StatusVisual({ isRu }) {
-  const rowLeft = isRu ? [
-    { label: "Новая", variant: "ok" },
-    { label: "В работе", variant: "ok" },
-    { label: "Записан", variant: "warn" },
-    { label: "Оплачен", variant: "ok" },
-    { label: "На связи", variant: "warn" }
-  ] : [
-    { label: "New", variant: "ok" },
-    { label: "In progress", variant: "ok" },
-    { label: "Booked", variant: "warn" },
-    { label: "Paid", variant: "ok" },
-    { label: "Contacted", variant: "warn" }
-  ];
-  const rowRight = isRu ? [
-    { label: "???", variant: "unknown" },
-    { label: "Потеряна", variant: "lost" },
-    { label: "Не обработана", variant: "warn" },
-    { label: "Ждёт ответа", variant: "unknown" },
-    { label: "Пропущена", variant: "lost" }
-  ] : [
-    { label: "???", variant: "unknown" },
-    { label: "Lost", variant: "lost" },
-    { label: "Unprocessed", variant: "warn" },
-    { label: "Awaiting reply", variant: "unknown" },
-    { label: "Missed", variant: "lost" }
-  ];
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx("style", { children: STATUS_MARQUEE_STYLES }),
-    /* @__PURE__ */ jsxs("div", { className: "min-w-0 pt-4 sm:pt-5", children: [
-      /* @__PURE__ */ jsx(
-        Shield,
-        {
-          size: 14,
-          className: "pain-shimmer mb-3 text-[#FF5722]",
-          strokeWidth: 1.75,
-          "aria-hidden": true
-        }
-      ),
-      /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsx(StatusMarqueeRow, { items: rowLeft, direction: "left" }),
-        /* @__PURE__ */ jsx(StatusMarqueeRow, { items: rowRight, direction: "right" })
-      ] })
-    ] })
-  ] });
-}
-function AdminVisual({ isRu }) {
-  const lines = isRu ? [
-    { label: "Блокнот", value: "Анна — перезвонить" },
-    { label: "Таблица", value: "строка 14" },
-    { label: "Память", value: "«вроде ответил»", uncertain: true }
-  ] : [
-    { label: "Notebook", value: "Anna — call back" },
-    { label: "Sheet", value: "row 14" },
-    { label: "Memory", value: "«think I replied»", uncertain: true }
-  ];
-  return /* @__PURE__ */ jsx("div", { className: "space-y-2 font-mono text-[11px] leading-relaxed sm:text-[12px]", children: lines.map((line, i) => /* @__PURE__ */ jsxs(
-    "p",
-    {
-      className: line.uncertain ? "pain-blink text-white/50" : "pain-fade-cycle text-white/48",
-      style: animStyle(i * 500, 3200),
-      children: [
-        /* @__PURE__ */ jsx("span", { className: "text-[#FF9A3D]", children: "›" }),
-        " ",
-        /* @__PURE__ */ jsxs("span", { className: "text-white/55", children: [
-          line.label,
-          ":"
-        ] }),
-        " ",
-        line.value
-      ]
-    },
-    line.label
-  )) });
-}
-function FlowTerminalVisual({ isRu }) {
-  const header = "form.submit → email";
-  const branches = isRu ? [
-    { prefix: "└─", text: "вручную в таблицу" },
-    { prefix: "└─", text: "статус: неизвестно" },
-    { prefix: "└─", label: "Telegram:", value: "нет", missing: true }
-  ] : [
-    { prefix: "└─", text: "manual spreadsheet" },
-    { prefix: "└─", text: "status: unknown" },
-    { prefix: "└─", label: "Telegram:", value: "none", missing: true }
-  ];
-  const [step, setStep] = useState(0);
-  const [cycle, setCycle] = useState(0);
-  const totalSteps = 1 + branches.length;
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
-      setStep(totalSteps);
-      return;
-    }
-    let cancelled = false;
-    const timeouts = [];
-    const t = (fn, ms) => {
-      timeouts.push(window.setTimeout(() => {
-        if (!cancelled) fn();
-      }, ms));
-    };
-    setStep(0);
-    for (let i = 1; i <= totalSteps; i++) {
-      t(() => setStep(i), 520 * i);
-    }
-    t(() => setCycle((c) => c + 1), 520 * totalSteps + 2400);
-    return () => {
-      cancelled = true;
-      timeouts.forEach(clearTimeout);
-    };
-  }, [totalSteps, cycle, isRu]);
-  const showEnter = step >= totalSteps;
-  return /* @__PURE__ */ jsxs(
-    "div",
-    {
-      className: "rounded-xl p-3.5 font-mono sm:p-4",
-      style: { backgroundColor: CARD_SOFT },
-      children: [
-        /* @__PURE__ */ jsxs("div", { className: "mb-3 flex items-center gap-1.5 border-b border-white/[0.06] pb-2.5", children: [
-          /* @__PURE__ */ jsx("span", { className: "h-2 w-2 rounded-full bg-[#FF5F57]/80", "aria-hidden": true }),
-          /* @__PURE__ */ jsx("span", { className: "h-2 w-2 rounded-full bg-[#FEBC2E]/80", "aria-hidden": true }),
-          /* @__PURE__ */ jsx("span", { className: "h-2 w-2 rounded-full bg-[#28C840]/80", "aria-hidden": true }),
-          /* @__PURE__ */ jsx("span", { className: "ml-auto text-[9px] uppercase tracking-wide text-white/28", children: isRu ? "обработка" : "handler" })
-        ] }),
-        /* @__PURE__ */ jsxs("div", { className: "space-y-1 text-[10px] leading-[1.8] sm:text-[11px]", children: [
-          /* @__PURE__ */ jsx(
-            "p",
-            {
-              className: [
-                "text-white/78 transition-opacity duration-300",
-                step >= 1 ? "opacity-100" : "opacity-0"
-              ].join(" "),
-              children: header
-            }
-          ),
-          branches.map((line, i) => {
-            const visible = step >= i + 2;
-            return /* @__PURE__ */ jsxs(
-              "p",
-              {
-                className: [
-                  "transition-opacity duration-300",
-                  visible ? "opacity-100" : "opacity-0",
-                  line.missing ? "" : "text-white/42"
-                ].join(" "),
-                children: [
-                  /* @__PURE__ */ jsxs("span", { className: "text-white/35", children: [
-                    line.prefix,
-                    " "
-                  ] }),
-                  line.missing ? /* @__PURE__ */ jsxs(Fragment, { children: [
-                    /* @__PURE__ */ jsxs("span", { className: "text-white/42", children: [
-                      line.label,
-                      " "
-                    ] }),
-                    /* @__PURE__ */ jsx("span", { className: "pain-blink text-[#FF5722]", children: line.value })
-                  ] }) : line.text
-                ]
-              },
-              line.text ?? line.label
-            );
-          })
-        ] }),
-        /* @__PURE__ */ jsxs(
-          "div",
-          {
-            className: [
-              "mt-4 flex items-center justify-end gap-1.5 transition-all duration-500",
-              showEnter ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
-            ].join(" "),
-            children: [
-              /* @__PURE__ */ jsx("span", { className: "pain-cursor text-[#FF9A3D]", "aria-hidden": true }),
-              /* @__PURE__ */ jsx("span", { className: "inline-flex items-center gap-1.5 rounded-md bg-[#FF5722] px-2.5 py-1 text-[10px] font-medium text-white", children: "Enter ↵" })
-            ]
-          }
-        )
-      ]
-    }
-  );
-}
-function PainBentoCard({
-  title,
-  text,
-  solution,
-  hoverCta,
-  visual,
-  accent = false,
-  split = false,
-  bgImage,
-  bgAlways = false,
-  bgPosition = "center center",
-  className,
-  href = "#offer"
-}) {
-  const hoverBg = bgImage ?? "/images/hero-stage-1.webp";
-  return /* @__PURE__ */ jsxs(
-    "article",
-    {
-      className: [
-        "group relative flex min-h-[260px] flex-col overflow-hidden rounded-2xl transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        accent ? "bg-[#FF5722]" : "bg-[#141414]",
-        className ?? ""
-      ].join(" "),
-      style: accent ? void 0 : { backgroundColor: CARD_DARK },
-      children: [
-        bgImage ? /* @__PURE__ */ jsxs(Fragment, { children: [
-          /* @__PURE__ */ jsx(
-            "img",
-            {
-              src: bgImage,
-              alt: "",
-              loading: "lazy",
-              decoding: "async",
-              draggable: false,
-              className: [
-                "absolute inset-0 z-0 h-full w-full object-cover transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                bgAlways ? "opacity-100" : "opacity-0 motion-safe:group-hover:opacity-100"
-              ].join(" "),
-              style: { objectPosition: bgPosition }
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            "div",
-            {
-              className: [
-                "pointer-events-none absolute inset-0 z-0 transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                bgAlways ? "opacity-100" : "opacity-0 motion-safe:group-hover:opacity-100",
-                accent ? "bg-gradient-to-b from-black/40 via-black/35 to-black/55" : bgAlways ? "bg-gradient-to-b from-black/55 via-black/42 to-black/68" : "bg-gradient-to-b from-black/72 via-black/58 to-black/82"
-              ].join(" "),
-              "aria-hidden": true
-            }
-          )
-        ] }) : null,
-        /* @__PURE__ */ jsx(
-          "div",
-          {
-            className: [
-              "relative z-[1] flex flex-1 flex-col p-6 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-8",
-              "motion-safe:group-hover:opacity-0 motion-safe:group-hover:translate-y-[-6px]"
-            ].join(" "),
-            children: split ? /* @__PURE__ */ jsxs("div", { className: "grid flex-1 gap-6 lg:grid-cols-[1fr_minmax(260px,440px)] lg:items-center", children: [
-              /* @__PURE__ */ jsxs("div", { className: "order-2 lg:order-1", children: [
-                /* @__PURE__ */ jsx("h3", { className: "font-hero text-[17px] font-semibold leading-snug tracking-[-0.02em] text-white sm:text-[18px]", children: title }),
-                /* @__PURE__ */ jsx("p", { className: "mt-2 text-[13px] leading-[1.6] text-white/48 sm:text-[14px]", children: text })
-              ] }),
-              /* @__PURE__ */ jsx("div", { className: "order-1 lg:order-2 lg:self-start", children: visual })
-            ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
-              /* @__PURE__ */ jsx("div", { className: "mb-5 min-h-[88px] sm:min-h-[96px]", children: visual }),
-              /* @__PURE__ */ jsxs("div", { className: "mt-auto", children: [
-                /* @__PURE__ */ jsx("h3", { className: "font-hero text-[17px] font-semibold leading-snug tracking-[-0.02em] text-white sm:text-[18px]", children: title }),
-                /* @__PURE__ */ jsx(
-                  "p",
-                  {
-                    className: [
-                      "mt-2 text-[13px] leading-[1.6] sm:text-[14px]",
-                      accent ? "text-white/80" : "text-white/48"
-                    ].join(" "),
-                    children: text
-                  }
-                )
-              ] })
-            ] })
-          }
-        ),
-        /* @__PURE__ */ jsxs(
-          "a",
-          {
-            href,
-            className: [
-              "absolute inset-0 z-[2] flex flex-col no-underline opacity-0 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-              "translate-y-2 motion-safe:group-hover:translate-y-0 motion-safe:group-hover:opacity-100",
-              "max-md:pointer-events-none max-md:opacity-0",
-              "focus-visible:opacity-100 focus-visible:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF9A3D]/50"
-            ].join(" "),
-            "aria-label": `${hoverCta}: ${title}`,
-            children: [
-              /* @__PURE__ */ jsxs("div", { className: "relative flex flex-1 flex-col justify-end overflow-hidden p-6 pb-5 sm:p-8 sm:pb-6", children: [
-                /* @__PURE__ */ jsx(
-                  "img",
-                  {
-                    src: hoverBg,
-                    alt: "",
-                    "aria-hidden": true,
-                    loading: "lazy",
-                    decoding: "async",
-                    draggable: false,
-                    className: "pointer-events-none absolute inset-0 h-full w-full scale-125 object-cover blur-[28px]",
-                    style: { objectPosition: bgPosition }
-                  }
-                ),
-                /* @__PURE__ */ jsx(
-                  "div",
-                  {
-                    className: "pointer-events-none absolute inset-0 bg-black/45",
-                    "aria-hidden": true
-                  }
-                ),
-                /* @__PURE__ */ jsx("p", { className: "relative z-[1] max-w-[42ch] text-[14px] leading-[1.65] text-white sm:text-[15px] sm:leading-[1.7]", children: solution })
-              ] }),
-              /* @__PURE__ */ jsxs("div", { className: "relative z-[1] flex items-center justify-between gap-3 bg-[#141414] px-6 py-4 sm:px-8 sm:py-5", children: [
-                /* @__PURE__ */ jsx("span", { className: "text-[13px] font-medium text-white sm:text-[14px]", children: hoverCta }),
-                /* @__PURE__ */ jsx("span", { className: "flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white motion-safe:group-hover:animate-pulse", children: /* @__PURE__ */ jsx(ArrowRight, { size: 14, strokeWidth: 2, "aria-hidden": true }) })
-              ] })
-            ]
-          }
-        ),
-        /* @__PURE__ */ jsx("div", { className: "bg-white/[0.04] px-6 py-4 md:hidden", children: /* @__PURE__ */ jsx(
-          "a",
-          {
-            href,
-            className: "block text-[13px] leading-[1.6] text-white/55 no-underline transition hover:text-white/80",
-            children: solution
-          }
-        ) })
-      ]
-    }
-  );
-}
-function LandingPainSection() {
-  const { lang } = useLang();
-  const copy = landingCopy(lang);
-  const isRu = lang === "ru";
-  const items = copy.pain.items;
-  return /* @__PURE__ */ jsx(
-    "section",
-    {
-      id: "pain",
-      className: "relative z-[1] mt-4 scroll-mt-[var(--tivonix-header-spacer)] bg-black pt-2 pb-16 sm:mt-6 sm:pt-4 sm:pb-20 lg:mt-8 lg:pt-6 lg:pb-24",
-      children: /* @__PURE__ */ jsxs(Container, { className: "relative", children: [
-        /* @__PURE__ */ jsx("div", { className: "min-w-0 text-center", children: /* @__PURE__ */ jsx("h2", { className: `${LANDING_HEADLINE_CLASS} text-center`, children: copy.pain.titleLines.map((line) => /* @__PURE__ */ jsx("span", { className: "block", children: line }, line)) }) }),
-        /* @__PURE__ */ jsxs("div", { className: "mt-6 grid grid-cols-1 gap-5 sm:mt-8 sm:grid-cols-2 lg:grid-cols-12 lg:items-stretch", children: [
-          /* @__PURE__ */ jsx(
-            PainBentoCard,
-            {
-              className: "h-full lg:col-span-8 lg:min-h-[340px]",
-              title: items[0].title,
-              text: items[0].text,
-              solution: items[0].solution,
-              hoverCta: copy.pain.hoverCta,
-              bgImage: PAIN_CARD_BACKGROUNDS[0],
-              visual: /* @__PURE__ */ jsx(ChannelsVisual, { isRu })
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            PainBentoCard,
-            {
-              className: "h-full lg:col-span-4 lg:min-h-[340px]",
-              title: items[1].title,
-              text: items[1].text,
-              solution: items[1].solution,
-              hoverCta: copy.pain.hoverCta,
-              accent: true,
-              bgImage: PAIN_CARD_BACKGROUNDS[1],
-              bgAlways: true,
-              visual: /* @__PURE__ */ jsx(TelegramVisual, { isRu })
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            PainBentoCard,
-            {
-              className: "h-full lg:col-span-6",
-              title: items[3].title,
-              text: items[3].text,
-              solution: items[3].solution,
-              hoverCta: copy.pain.hoverCta,
-              bgImage: PAIN_CARD_BACKGROUNDS[3],
-              visual: /* @__PURE__ */ jsx(AdminVisual, { isRu })
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            PainBentoCard,
-            {
-              className: "h-full lg:col-span-6",
-              title: items[2].title,
-              text: items[2].text,
-              solution: items[2].solution,
-              hoverCta: copy.pain.hoverCta,
-              bgImage: PAIN_CARD_BACKGROUNDS[2],
-              visual: /* @__PURE__ */ jsx(StatusVisual, { isRu })
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            PainBentoCard,
-            {
-              className: "h-full sm:col-span-2 lg:col-span-12 lg:min-h-[280px]",
-              title: items[4].title,
-              text: items[4].text,
-              solution: items[4].solution,
-              hoverCta: copy.pain.hoverCta,
-              bgImage: PAIN_CARD_BACKGROUNDS[4],
-              bgAlways: true,
-              bgPosition: "center center",
-              split: true,
-              visual: /* @__PURE__ */ jsx(FlowTerminalVisual, { isRu })
-            }
-          )
-        ] })
-      ] })
     }
   );
 }
@@ -3356,19 +4532,1748 @@ function Reveal$1({ children, className, delay = 0 }) {
       ref,
       className: [
         className,
-        visible ? "translate-y-0 opacity-100 motion-safe:transition-[opacity,transform] motion-safe:duration-[0.55s] motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]" : "translate-y-5 opacity-0"
+        visible ? "translate-y-0 opacity-100 motion-safe:transition-[opacity,transform] motion-safe:duration-[0.55s] motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]" : "translate-y-3 opacity-0"
       ].filter(Boolean).join(" "),
       style,
       children
     }
   );
 }
+function homeExtraCopy(lang) {
+  return lang === "ru" ? COPY_RU : COPY_EN;
+}
+const COPY_RU = {
+  trust: {
+    ariaLabel: "Почему можно доверять",
+    items: [
+      "Поддержка после запуска"
+    ]
+  },
+  featured: {
+    eyebrow: "Проекты",
+    title: "Три живых результата",
+    subtitle: "Разные типы задач — от финтех-платформы до локального бизнеса.",
+    viewCase: "Посмотреть кейс",
+    openLive: "Открыть проект",
+    problem: "Проблема:",
+    solution: "Решение:",
+    resultLabel: "Результат:",
+    prev: "Предыдущий кейс",
+    next: "Следующий кейс",
+    items: [
+      {
+        id: "spliton",
+        type: "Веб-продукт · FinTech",
+        problem: "Нужна была финтех-платформа для долей в музыке — не лендинг, а полноценный продукт с деньгами, ролями и комплаенсом.",
+        solution: "Собрали каталог релизов, кабинеты, KYC, платежи, вторичный рынок и портал оператора.",
+        result: "Финтех-платформа в продакшене: кабинеты, роли, KYC, платежи и вторичный рынок.",
+        modules: [
+          "Кабинеты",
+          "KYC",
+          "Платежи",
+          "Вторичный рынок",
+          "Админ-панель",
+          "i18n"
+        ]
+      },
+      {
+        id: "slotty",
+        type: "Маркетплейс · запись",
+        problem: "Нужен был не лендинг с кнопкой, а маркетплейс записи: каталог, слоты, кабинет мастера и оплата.",
+        solution: "Собрали каталог с фильтрами и картой, Telegram Mini App, кабинет Free/Pro, админку и bePaid.",
+        result: "Маркетплейс на slotty.of.by: запись без звонков, кабинеты и платежи в одной системе.",
+        modules: [
+          "Каталог",
+          "Карта",
+          "Слоты",
+          "Кабинет мастера",
+          "Telegram",
+          "bePaid"
+        ]
+      },
+      {
+        id: "logovo",
+        type: "Локальный бизнес",
+        problem: "Клиент с дороги не находил филиал и запись — адреса и CTA прятались, заявка терялась.",
+        solution: "Собрали сайт сети: филиалы, услуги, цены, карта и короткий путь до заявки или звонка.",
+        result: "Сайт сети шиномонтажей с филиалами, услугами, ценами и маршрутом до заявки.",
+        modules: ["Филиалы", "Услуги", "Цены", "Карта", "Запись", "B2B"]
+      }
+    ]
+  },
+  direction: {
+    eyebrow: "Направления",
+    title: "Что нужно запустить?",
+    subtitle: "Выберите сценарий — разберём задачу и предложим первый шаг.",
+    leads: {
+      label: "Заявки",
+      title: "Собрать заявки в один поток",
+      text: "Сайт, бот и CRM — один маршрут до ответа.",
+      cta: "Разобрать путь",
+      points: ["Сайт и лендинг", "Telegram-бот", "Mini-CRM"],
+      stack: [
+        {
+          title: "Сайт",
+          text: "Форма → заявка сразу",
+          headline: "Пользователь заполняет форму",
+          mock: "form",
+          mockName: "Иван",
+          mockContact: "+375 29 000-00-00",
+          mockSubmit: "Отправить"
+        },
+        {
+          title: "Бот",
+          text: "Уведомление в Telegram",
+          headline: "Заявка приходит в бот",
+          mock: "bot",
+          mockName: "Новая заявка",
+          mockContact: "Иван · сайт",
+          mockSubmit: "сейчас"
+        },
+        {
+          title: "CRM",
+          text: "Ответственный назначен",
+          headline: "Ответственный берёт в работу",
+          mock: "crm",
+          mockName: "Иван · сайт",
+          mockContact: "Анна",
+          mockSubmit: "В работе"
+        }
+      ]
+    },
+    product: {
+      label: "Продукт",
+      title: "Запустить продукт",
+      text: "MVP с кабинетом, ролями и платежами.",
+      cta: "Обсудить MVP",
+      points: ["Личный кабинет", "Роли и доступы", "Платежи"],
+      stack: [
+        {
+          title: "SaaS / MVP",
+          text: "Первая рабочая версия",
+          headline: "Собираем первую версию",
+          mock: "mvp",
+          mockName: "Dashboard",
+          mockContact: "12 задач",
+          mockSubmit: "Live"
+        },
+        {
+          title: "Кабинет",
+          text: "Роли без хаоса",
+          headline: "Роли и доступы в кабинете",
+          mock: "cabinet",
+          mockName: "Клиент",
+          mockContact: "Менеджер",
+          mockSubmit: "Админ"
+        },
+        {
+          title: "Платежи",
+          text: "Интеграции под ключ",
+          headline: "Подключаем оплату",
+          mock: "pay",
+          mockName: "Оплата",
+          mockContact: "4 900 ₽",
+          mockSubmit: "Успешно"
+        }
+      ]
+    }
+  },
+  solution: {
+    outcomes: [
+      "Заявка не потеряна",
+      "Ответственный назначен",
+      "Следующий шаг понятен"
+    ]
+  },
+  aiScenarios: {
+    title: "AI там, где он действительно экономит время",
+    note: "Подбираем модель под задачу и требования к данным — не добавляем AI ради логотипа.",
+    items: [
+      {
+        title: "Разбор заявок",
+        text: "AI определяет тему обращения, извлекает ключевые данные и направляет заявку нужному сотруднику."
+      },
+      {
+        title: "Работа с документами",
+        text: "Система читает файлы, извлекает реквизиты и сохраняет данные в нужные поля."
+      },
+      {
+        title: "Помощь менеджеру",
+        text: "AI находит информацию в базе компании и готовит черновик ответа клиенту."
+      }
+    ]
+  },
+  homePricing: {
+    eyebrow: "Тарифы",
+    title: "Понятный старт без скрытых обещаний",
+    note: "Стоимость зависит от количества экранов, ролей, интеграций и сложности бизнес-логики. До старта фиксируем объём, этапы и стоимость.",
+    allPlans: "Сравнить все планы",
+    more: "Подробнее",
+    ctas: {
+      start: "Получить состав Start",
+      growth: "Оценить Growth",
+      product: "Рассчитать MVP",
+      custom: "Обсудить Custom"
+    }
+  },
+  guarantees: {
+    title: "Понятные условия до начала разработки",
+    subtitle: "До старта письменно фиксируем объём, сроки, стоимость и ответственность сторон.",
+    items: [
+      "Объём и стоимость фиксируются до старта этапа",
+      "Работа делится на понятные части",
+      "Клиент видит промежуточный результат",
+      "Исходный код и доступы передаются клиенту",
+      "Конфиденциальные данные не публикуются",
+      "Перед запуском проверяются ключевые сценарии",
+      "Условия поддержки согласовываются заранее"
+    ]
+  },
+  founder: {
+    title: "За проект отвечает не безликая студия",
+    name: "Данила Титовец",
+    role: "Основатель TIVONIX, full-stack разработчик",
+    bio: "Отвечает за архитектуру, разработку и запуск проектов. В зависимости от задачи подключает специалистов по дизайну, frontend, backend, мобильной разработке и продвижению.",
+    cta: "Написать основателю"
+  },
+  team: {
+    title: "Над проектом работает команда",
+    text: "TIVONIX — продуктовая команда: дизайн, разработка, тестирование и запуск в одной связке. Собираем состав под задачу для быстрого внедрения продукта и осуществления ваших мечт — и ведём проект до результата.",
+    cta: "О компании",
+    members: [
+      { initials: "ДТ", name: "Данила Т.", role: "Архитектура и full-stack" },
+      { initials: "АК", name: "Анна К.", role: "UI/UX дизайн" },
+      { initials: "МС", name: "Максим С.", role: "Frontend-разработка" },
+      { initials: "ИВ", name: "Игорь В.", role: "Backend-разработка" },
+      { initials: "ЕН", name: "Елена Н.", role: "Тестирование и QA" },
+      { initials: "РП", name: "Роман П.", role: "Проджект-менеджмент" }
+    ]
+  },
+  testimonials: {
+    eyebrow: "Отзывы",
+    title: "Что говорят о работе",
+    viewCase: "Кейс",
+    ownProduct: "Собственный продукт TIVONIX"
+  },
+  scale: {
+    badge: "Живые системы",
+    title: "Запускаем продукты, в которых заявки не теряются",
+    seal: "От идеи до запуска",
+    foot: "Сайты, Telegram, CRM, кабинеты и MVP в одной связке. Фиксируем объём, сроки и передаём код с доступами.",
+    stats: [
+      { value: "7+", label: "Проектов в продакшене" },
+      { value: "1 нед.", label: "Быстрый запуск панели" },
+      { value: "100%", label: "Код и доступы у вас" },
+      { value: "BY · RU", label: "География запусков" }
+    ]
+  },
+  mobileSticky: {
+    label: "Получить оценку"
+  }
+};
+const COPY_EN = {
+  trust: {
+    ariaLabel: "Why you can trust us",
+    items: [
+      "Support after launch"
+    ]
+  },
+  featured: {
+    eyebrow: "Projects",
+    title: "Three live results",
+    subtitle: "Different project types — from a fintech platform to local business.",
+    viewCase: "View case",
+    openLive: "Open live",
+    problem: "Problem:",
+    solution: "Solution:",
+    resultLabel: "Result:",
+    prev: "Previous case",
+    next: "Next case",
+    items: [
+      {
+        id: "spliton",
+        type: "Web product · FinTech",
+        problem: "Needed a fintech platform for music shares — a full product with money flows, roles and compliance, not a landing page.",
+        solution: "Built release catalog, portals, KYC, payments, secondary market and an operator portal.",
+        result: "Fintech platform in production: portals, roles, KYC, payments and a secondary market.",
+        modules: [
+          "Portals",
+          "KYC",
+          "Payments",
+          "Secondary market",
+          "Admin",
+          "i18n"
+        ]
+      },
+      {
+        id: "slotty",
+        type: "Marketplace · booking",
+        problem: "Needed more than a “book now” landing — a booking marketplace with catalog, slots, master cabinet and payments.",
+        solution: "Built filtered catalog + map, Telegram Mini App, Free/Pro master cabinet, admin and bePaid.",
+        result: "Marketplace on slotty.of.by: book without calls, cabinets and payments in one system.",
+        modules: [
+          "Catalog",
+          "Map",
+          "Slots",
+          "Master cabinet",
+          "Telegram",
+          "bePaid"
+        ]
+      },
+      {
+        id: "logovo",
+        type: "Local business",
+        problem: "Drivers couldn’t find a branch or booking path — addresses and CTAs were buried, leads were lost.",
+        solution: "Built a network site: branches, services, prices, map and a short path to book or call.",
+        result: "Tire-service network site with branches, services, prices and a clear path to a lead.",
+        modules: ["Branches", "Services", "Prices", "Map", "Booking", "B2B"]
+      }
+    ]
+  },
+  direction: {
+    eyebrow: "Directions",
+    title: "What do you need to launch?",
+    subtitle: "Pick a path — we’ll review the task and suggest the first step.",
+    leads: {
+      label: "Leads",
+      title: "One stream for every lead",
+      text: "Site, bot and CRM — one path to a reply.",
+      cta: "Map the path",
+      points: ["Website & landing", "Telegram bot", "Mini-CRM"],
+      stack: [
+        {
+          title: "Site",
+          text: "Form → lead instantly",
+          headline: "The user fills out the form",
+          mock: "form",
+          mockName: "Alex",
+          mockContact: "+1 555 010-2030",
+          mockSubmit: "Send"
+        },
+        {
+          title: "Bot",
+          text: "Alert in Telegram",
+          headline: "The lead lands in the bot",
+          mock: "bot",
+          mockName: "New lead",
+          mockContact: "Alex · site",
+          mockSubmit: "now"
+        },
+        {
+          title: "CRM",
+          text: "Owner assigned",
+          headline: "An owner picks it up",
+          mock: "crm",
+          mockName: "Alex · site",
+          mockContact: "Anna",
+          mockSubmit: "In progress"
+        }
+      ]
+    },
+    product: {
+      label: "Product",
+      title: "Launch a product",
+      text: "MVP with portal, roles and payments.",
+      cta: "Discuss MVP",
+      points: ["Client portal", "Roles & access", "Payments"],
+      stack: [
+        {
+          title: "SaaS / MVP",
+          text: "First working version",
+          headline: "We ship the first version",
+          mock: "mvp",
+          mockName: "Dashboard",
+          mockContact: "12 tasks",
+          mockSubmit: "Live"
+        },
+        {
+          title: "Portal",
+          text: "Roles without chaos",
+          headline: "Roles and access in the portal",
+          mock: "cabinet",
+          mockName: "Client",
+          mockContact: "Manager",
+          mockSubmit: "Admin"
+        },
+        {
+          title: "Payments",
+          text: "Integrations included",
+          headline: "Payments get connected",
+          mock: "pay",
+          mockName: "Payment",
+          mockContact: "$49",
+          mockSubmit: "Paid"
+        }
+      ]
+    }
+  },
+  solution: {
+    outcomes: [
+      "Lead not lost",
+      "Owner assigned",
+      "Next step is clear"
+    ]
+  },
+  aiScenarios: {
+    title: "AI where it actually saves time",
+    note: "We pick the model for the task and data requirements — we don’t add AI for the logo.",
+    items: [
+      {
+        title: "Lead triage",
+        text: "AI detects the topic, extracts key fields and routes the lead to the right person."
+      },
+      {
+        title: "Document handling",
+        text: "The system reads files, extracts details and fills the right fields."
+      },
+      {
+        title: "Manager assist",
+        text: "AI finds info in your company knowledge base and drafts a reply for the client."
+      }
+    ]
+  },
+  homePricing: {
+    eyebrow: "Pricing",
+    title: "A clear start without vague promises",
+    note: "Price depends on screens, roles, integrations and business logic. Before we start we lock scope, stages and cost.",
+    allPlans: "Compare all plans",
+    more: "Details",
+    ctas: {
+      start: "Get Start scope",
+      growth: "Estimate Growth",
+      product: "Estimate MVP",
+      custom: "Discuss Custom"
+    }
+  },
+  guarantees: {
+    title: "Clear terms before development starts",
+    subtitle: "Before kickoff we put scope, timeline, cost and responsibilities in writing.",
+    items: [
+      "Scope and cost are fixed before a stage starts",
+      "Work is split into clear parts",
+      "You see intermediate results",
+      "Source code and access are handed over",
+      "Confidential data is not published",
+      "Key flows are checked before launch",
+      "Support terms are agreed in advance"
+    ]
+  },
+  founder: {
+    title: "A real person owns the project — not a faceless studio",
+    name: "Danila Titovets",
+    role: "Founder of TIVONIX, full-stack developer",
+    bio: "Owns architecture, development and launch. Depending on the task, brings in design, frontend, backend, mobile and growth specialists.",
+    cta: "Message the founder"
+  },
+  team: {
+    title: "A team works on your project",
+    text: "TIVONIX is a product team: design, engineering, QA and launch in one loop. We assemble the right mix for fast product delivery — and turn your ideas into a live result.",
+    cta: "About the company",
+    members: [
+      { initials: "DT", name: "Danila T.", role: "Architecture & full-stack" },
+      { initials: "AK", name: "Anna K.", role: "UI/UX design" },
+      { initials: "MS", name: "Maxim S.", role: "Frontend engineering" },
+      { initials: "IV", name: "Igor V.", role: "Backend engineering" },
+      { initials: "EN", name: "Elena N.", role: "QA & testing" },
+      { initials: "RP", name: "Roman P.", role: "Project management" }
+    ]
+  },
+  testimonials: {
+    eyebrow: "Testimonials",
+    title: "What clients say",
+    viewCase: "Case",
+    ownProduct: "TIVONIX own product"
+  },
+  scale: {
+    badge: "Live systems",
+    title: "We ship products where leads don’t get lost",
+    seal: "From idea to launch",
+    foot: "Sites, Telegram, CRM, portals and MVPs in one loop. We lock scope and timelines, then hand over code and access.",
+    stats: [
+      { value: "7+", label: "Projects in production" },
+      { value: "1 wk", label: "Fastest panel launch" },
+      { value: "100%", label: "Code and access yours" },
+      { value: "BY · RU", label: "Where we ship" }
+    ]
+  },
+  mobileSticky: {
+    label: "Get an estimate"
+  }
+};
+const UPC_DOMAIN = "https://upc.watch/";
+const PAYCLIP_DOMAIN = "https://usepayclip.com/";
+const LABELOS_DOMAIN = "https://labelos.digital/";
+const LOGOVO_DOMAIN = "https://www.logovo24.by/";
+const HEADMIND_DOMAIN = "https://headmind.ru/";
+const SLOTTY_DOMAIN = "https://slotty.of.by/book";
+const SPLITON_DOMAIN = "https://spliton.io/app";
+const TIVONIXPANEL_DOMAIN = "https://tivonixpanel-production.up.railway.app/login";
+const PUBLIC_PROJECT_IDS = [
+  "tivonixpanel",
+  "spliton",
+  "slotty",
+  "headmind",
+  "logovo"
+];
+const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/r${i + 1}.webp`);
+const SPLITON_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/spliton/g${i + 1}.webp`);
+const TIVONIXPANEL_GALLERY = [
+  "/images/project-priew/tivonixpanel/1.webp",
+  "/images/project-priew/tivonixpanel/2.webp",
+  "/images/project-priew/tivonixpanel/3.webp",
+  "/images/project-priew/tivonixpanel/4.webp",
+  "/images/project-priew/tivonixpanel/5.webp",
+  "/images/project-priew/tivonixpanel/6.webp",
+  "/images/project-priew/tivonixpanel/7.webp",
+  "/images/project-priew/tivonixpanel/8.webp"
+];
+function buildAllProjects(isRu) {
+  return [
+    // 0) TIVONIX PANEL — партнёрская панель
+    {
+      id: "tivonixpanel",
+      title: "Tivonix Panel",
+      subtitleRu: "Партнёрская панель TIVONIX: сделки, статусы, проекты и выплаты — один кабинет вместо хаоса в чатах и таблицах.",
+      subtitleEn: "TIVONIX partner panel: deals, statuses, projects and payouts — one dashboard instead of chaos in chats and spreadsheets.",
+      detailsRu: "Формат: партнёрская панель / SaaS-кабинет\n\nЗачем это\nПартнёрство редко разваливается из‑за оффера. Оно сыпется, когда **никто не видит картину**: где заявка, на каком этапе сделка, когда выплата. Пока правда живёт в Telegram и Excel — каждый день начинается с «напомни» и скринов в полночь.\n\nМы собрали **кабинет, в который заходят сами**: регистрация, вход, статусы, проекты и выплаты в одном месте. Не слайд «как будет», а инструмент, который уже ведёт деньги и доверие.\n\nКак работает\nПартнёр регистрируется, выбирает модель — **Referral** или **White-label** — и после модерации получает доступ в кабинет.\nДальше цикл простой: передал задачу → видит статус → понимает следующий шаг → отслеживает выплату. Одна панель вместо чатов, таблиц и «напомни, пожалуйста».\n\nЧто внутри\nЭто полноценный **кабинет партнёрской сети**, не лендинг. Слева тёмный сайдбар: главная, клиенты, партнёры, сделки, выплаты, отчёты, настройки, юр. профили, заявки партнёров и журнал действий.\n\nНа **главной** — живые KPI: клиенты, партнёры, закрытые сделки, сумма продаж, начисленные комиссии и «к выплате», плюс графики по дням и месяцам, воронка по статусам, топ партнёров, источников и услуг. Данные обновляются в реальном времени.\n\nВ **клиентах** — база компаний и контактов, которых партнёры передают в работу: поиск, вкладки статусов (на проверке / одобрено / в работе / закрыт / дубли), фильтры по партнёру, услуге, источнику, бюджету и дате, добавление клиента и выгрузка в Excel.\n\nВ **партнёрах** — сеть целиком: активность, клиенты, сделки, продажи, комиссия и баланс. Отдельно — заявки на вход (Referral / White-label) и модерация. **Выплаты** и комиссии живут в панели, без сторонних таблиц. UI собран под ежедневную работу, а не под презентацию.\n\nЧто сделали\nРазработка TIVONIX — **1 неделя**. Спроектировали структуру под реальный партнёрский процесс, собрали регистрацию, логин и сделки, довели UI (сетка, статусы, **пустые состояния**) и выкатили в продакшен на Railway.\n\nИтог\nЖивая панель, куда партнёры **заходят сами** — ведут сделки и видят выплаты. Не презентация «как будет», а продукт, который уже в работе.\n",
+      detailsEn: "Format: partner panel / SaaS dashboard\n\nWhy it matters\nPartnerships rarely die on the offer. They die when **nobody shares the same picture**: where’s the request, what stage is the deal, when’s the payout. While truth lives in chats and spreadsheets, every day starts with “remind me” and midnight screenshots.\n\nWe built a **cabinet people actually open**: registration, login, statuses, projects and payouts in one place. Not a “how it will look” slide — a tool that already moves money and trust.\n\nHow it works\nA partner signs up, picks **Referral** or **White-label**, and gets access after moderation.\nThen the loop is simple: submit a task → see the status → know the next step → track the payout. One cabinet instead of chats, spreadsheets and “please remind me”.\n\nWhat’s inside\nA full **partner-network cabinet**, not a landing page. Dark sidebar on the left: home, clients, partners, deals, payouts, reports, settings, legal profiles, partner applications and an activity log.\n\n**Home** shows live KPIs: clients, partners, closed deals, sales total, accrued commissions and “to be paid”, plus charts by day and month, a status funnel, top partners, sources and services. Data updates in real time.\n\n**Clients** is the database of companies and contacts partners hand over: search, status tabs (under review / approved / in work / closed / duplicates), filters by partner, service, source, budget and date, add-client and Excel export.\n\n**Partners** is the whole network: activity, clients, deals, sales, commission and balance. Separately — join requests (Referral / White-label) and moderation. **Payouts** and commissions live in the panel, no side spreadsheets. UI built for daily work, not for a deck.\n\nWhat we delivered\nTIVONIX build — **1 week**. Designed the partner workflow, shipped registration, login and deals, polished UI (grid, statuses, **empty states**) and went live on Railway.\n\nOutcome\nA live panel partners **actually open** — they run deals and see payouts. Not a “how it will look” demo, but a product already in use.\n",
+      domain: TIVONIXPANEL_DOMAIN,
+      status: "live",
+      tags: ["SaaS", "Admin Panel", "Partners", "Dashboard", "UI/UX"],
+      cover: `/images/${encodeURI("обложки")}/tivonixpanel.webp`,
+      gallery: TIVONIXPANEL_GALLERY,
+      outcomes: [
+        isRu ? "**Кабинет** с логином и онбордингом" : "**Dashboard** with login and onboarding",
+        isRu ? "Сделки, проекты и **выплаты** в одном месте" : "Deals, projects and **payouts** in one place",
+        isRu ? "Модели **Referral** и **White-label**" : "**Referral** and **White-label** models",
+        isRu ? "Продукт **в продакшене** на Railway" : "Product **live** on Railway",
+        isRu ? "Собрали за **1 неделю**" : "Shipped in **1 week**"
+      ],
+      stack: ["React", "TypeScript", "Node.js", "PostgreSQL", "Railway"],
+      testimonial: {
+        name: isRu ? "Артём К." : "Artem K.",
+        role: isRu ? "Один из основателей TIVONIX" : "Co-founder, TIVONIX",
+        text: isRu ? "Раньше статусы размазывались по чатам, выплаты сидели в таблицах. С панелью открыл кабинет и сразу понятно, где сделка и что дальше. Без воды, просто работает." : "Statuses used to live in chats, payouts in spreadsheets. With the panel you open the dashboard and know where the deal is. No fluff, it just works."
+      }
+    },
+    // 1) LABEL0S — 3 days
+    {
+      id: "labelos",
+      title: "LabelOS",
+      subtitleRu: "SaaS для музыкальных лейблов: отчёты, рассылка, шаблоны и контроль выплат.",
+      subtitleEn: "SaaS for music labels: reporting, email delivery, templates and payout control.",
+      detailsRu: "Срок: 3 дня\n\nЦель\n• Быстро собрать внятный промо-лендинг продукта и зафиксировать ценностное предложение.\n\nЧто сделали\n• Сформировали структуру и блоки: Hero → проблемы → решение → возможности → сценарии → CTA\n• Привели типографику к премиум-стилю: иерархия, ритм, воздух, читабельность\n• Собрали адаптивную вёрстку (mobile-first) и аккуратные интерактивные состояния\n• Оптимизировали загрузку: lazy-графика, корректные размеры, аккуратные фоны\n\nОсобенности\n• Чёткий фокус на конверсию: короткие формулировки, сильный CTA, логичная структура\n• Минимум “воды” — только то, что отвечает на вопросы клиента\n",
+      detailsEn: "Timeline: 3 days\n\nGoal\n• Build a clear promo landing and solidify the value proposition fast.\n\nWhat we did\n• Designed the page structure: Hero → pain points → solution → features → flows → CTA\n• Refined premium typography: hierarchy, rhythm, spacing, readability\n• Built responsive layout (mobile-first) with clean interactive states\n• Improved loading: lazy assets, correct sizing, polished background layers\n\nHighlights\n• Conversion-first copy and structure\n• No fluff — only what answers buyer questions\n",
+      domain: LABELOS_DOMAIN,
+      status: "live",
+      tags: ["SaaS", "Landing", "UI/UX", "React", "Tailwind"],
+      cover: "/images/project-priew/labelo.webp",
+      outcomes: [
+        isRu ? "Готовый промо-лендинг за 3 дня" : "Promo landing delivered in 3 days",
+        isRu ? "Чёткая структура под конверсию" : "Conversion-focused structure",
+        isRu ? "Адаптив + оптимизация загрузки" : "Responsive + optimized loading"
+      ],
+      stack: ["React", "Tailwind", "Vite"]
+    },
+    // 1b) LOGOVO — сеть шиномонтажа · https://www.logovo24.by/
+    {
+      id: "logovo",
+      title: "LOGOVO",
+      subtitleRu: "Сайт сети шиномонтажа LOGOVO в Минске: Figma → Next.js, 4 филиала, запись, карта, B2B — под ключ за 1 600 BYN, команда TIVONIX.",
+      subtitleEn: "Website for LOGOVO tire network in Minsk: Figma → Next.js, 4 branches, booking, map, B2B — turnkey for 1,600 BYN by TIVONIX.",
+      detailsRu: "Зачем это\nШиномонтаж выбирают не в кресле — **с дороги, одной рукой, пока мигает индикатор**. Если адрес, часы и «записаться» прячутся на трёх экранах — клиент уедет к тому, кто ответил быстрее.\n\nЗаказчик — **ООО «Логово»** (сеть шиномонтажа в Минске, УНП 193616584): **4 филиала**, два работают **24/7**, безнал для автопарков и такси, полный контур услуг — от шиномонтажа и правки дисков до хранения и кондиционера. Бюджет проекта — **1 600 BYN** ([[≈ 42 800 ₽]] / [[≈ 560 $]]). Сайт собрала **команда TIVONIX** под ключ — не шаблон и не «отдали архив».\n\nКак работает\nЧеловек с телефона открывает **logovo24.by** → услуга → филиал на карте / режим → **записаться** или **позвонить**. Автопарк идёт в B2B: безнал, единый прайс, документы на четырёх точках — без переписки «пришлите счёт».\n\nЧто внутри\nВесь продукт сделали мы: **дизайн в Figma** (структура, mobile-first, CTA «с дороги»), потом разработка на **Next.js 16 + TypeScript + Tailwind v4** — статический экспорт под shared-хостинг. Не конструктор: ручная вёрстка, Leaflet-карта с геолокацией «найти меня», калькулятор «комплекс 4 колёса», до/после, отзывы, скидки, кейсы, FAQ, SEO (schema AutoRepair, sitemap, OG).\n\n**11 услуг** с отдельными страницами и прайсом: шиномонтаж, грузовой, правка и покраска дисков, аргон, прокол, вулканизация, балансировка, проточка, хранение, кондиционер. **4 адреса** (Лещинского и Логойский тракт — 24/7; Гурского и Дзержинского — дневной режим). B2B-блок: такси / логистика / флоты, бейдж **75+ клиентов**. Запись: форма → mailto на сеть. Sticky-бар на мобиле: позвонить / записаться.\n\nВизуал — светлая система **LOGOVO × Awesomic**: canvas `#f4f4f5`, ember-оранжевый `#ff5a00` только на CTA и бейджах 24/7, тёмные obsidian-блоки для контраста, крупные pill-кнопки, radius карточек 36px. Mobile-first — основной трафик с дороги.\n\nЗапуск под ключ\nПомогли с **доменом logovo24.by**, **сами** подняли хостинг (**hoster.by** / cPanel), выгрузили статику `out/`, настроили прод. Полный цикл: идея → Figma → код → деплой.\n\nИтог\nНе «сайт за тысячу». **Рабочий инструмент сети LOGOVO** за [[≈ 560 $]]: запись, карта, B2B, дизайн и прод на **logovo24.by** — сделала команда TIVONIX.\n",
+      detailsEn: "Why it matters\nTire service isn’t chosen from a couch — it’s chosen **from the road, one-handed, while a warning light blinks**. If address, hours and “book” hide across three screens, the client drives to whoever answers faster.\n\nClient — **LOGOVO LLC** (Minsk tire network, UNP 193616584): **4 branches**, two open **24/7**, fleet billing for taxi and logistics, full service loop — fitting, wheel repair/paint, storage, A/C and more. Project budget — **1,600 BYN** ([[≈ 42,800 ₽]] / [[≈ $560]]). Built **turnkey by the TIVONIX team** — not a template, not “here’s a zip”.\n\nHow it works\nSomeone opens **logovo24.by** on a phone → service → branch on the map / hours → **book** or **call**. Fleets go to B2B: invoices, unified pricing, docs across four locations — no “send the contract” threads.\n\nWhat’s inside\nWe built the whole product: **Figma design** (structure, mobile-first, on-the-road CTAs), then **Next.js 16 + TypeScript + Tailwind v4** — static export for shared hosting. No page builder: handmade layout, Leaflet map with “find me” geolocation, “4 wheels package” calculator, before/after, reviews, discounts, cases, FAQ, SEO (AutoRepair schema, sitemap, OG).\n\n**11 services** with dedicated pages and pricing: fitting, commercial, wheel repair/paint, argon, puncture, vulcanizing, balancing, brake disc machining, storage, A/C. **4 addresses** (Leshchinskogo and Logoyskiy trakt — 24/7; Gurskogo and Dzerzhinskogo — daytime). B2B block: taxi / logistics / fleets, **75+ clients** badge. Booking: form → mailto to the network. Sticky mobile bar: call / book.\n\nVisual system — light **LOGOVO × Awesomic**: canvas `#f4f4f5`, ember orange `#ff5a00` only on CTAs and 24/7 badges, dark obsidian blocks for contrast, large pill buttons, 36px card radius. Mobile-first — most traffic comes from the road.\n\nTurnkey launch\nWe helped with the **logovo24.by** domain, **set up hosting ourselves** (**hoster.by** / cPanel), shipped the `out/` static build, wired production. Full cycle: idea → Figma → code → deploy.\n\nOutcome\nNot a “thousand-buck site”. A **working tool for the LOGOVO network** for [[≈ $560]]: booking, map, B2B, design and prod on **logovo24.by** — by the TIVONIX team.\n",
+      domain: LOGOVO_DOMAIN,
+      status: "live",
+      tags: ["Website", "Next.js", "Local Business", "Booking", "B2B", "Figma"],
+      cover: "/images/project-priew/logovo.webp",
+      outcomes: [
+        isRu ? "Бюджет **1 600 BYN** ([[≈ 42 800 ₽]] / [[≈ 560 $]])" : "Budget **1,600 BYN** ([[≈ 42,800 ₽]] / [[≈ $560]])",
+        isRu ? "**TIVONIX** под ключ: Figma → Next.js → hoster.by" : "**TIVONIX** turnkey: Figma → Next.js → hoster.by",
+        isRu ? "**4 филиала** · два **24/7** · 11 услуг · B2B" : "**4 branches** · two **24/7** · 11 services · B2B",
+        isRu ? "Карта Leaflet · запись · калькулятор · SEO" : "Leaflet map · booking · calculator · SEO"
+      ],
+      stack: ["Next.js", "TypeScript", "Tailwind", "Leaflet", "Figma", "hoster.by"],
+      testimonial: {
+        name: isRu ? "ООО «Логово»" : "LOGOVO LLC",
+        role: isRu ? "Сеть шиномонтажа · Минск · 4 филиала" : "Tire-service network · Minsk · 4 branches",
+        text: isRu ? "Хотели сайт, с которого человек с дороги сразу пишет или звонит, а не ищет адреса по кругу. Ребята сделали всё под ключ: дизайн, разработку, домен. Четыре точки, запись, безнал для автопарков. Сайт уже в работе." : "We wanted a site where people can book or call right from the road, not hunt for addresses. The team did the full thing: design, build, domain. Four locations, booking, fleet billing. Site is live."
+      }
+    },
+    // 2) UPC — SaaS MVP (client: ИП Безбородых И.В.) · https://upc.watch/
+    {
+      id: "upc",
+      title: "UPC",
+      subtitleRu: "SaaS MVP: подключаешь трек к TikTok, делишься ссылкой — монетизируешь просмотры, когда ролик набирает охват.",
+      subtitleEn: "SaaS MVP: attach your sound on TikTok, share a link — monetize views as the clip gains traction.",
+      detailsRu: "Продукт: SaaS / MVP (не одностраничный лендинг)\n\nИдея\n• Артист или правообладатель подключает трек к ролику в TikTok и получает ссылку на отслеживание\n• Доход завязан на просмотрах и охвате: чем устойчивее набирает видео, тем сильнее монетизация сценария\n\nЗаказчик\n• ИП Безбородых И.В.\nКонтакт/представитель\n• Виктор Безбородых — Founder & CEO MIN.ECO (music distribution ecosystem)\n\nЧто сделали\n• Собрали продуктовый интерфейс и логику сценария «трек → ссылка → метрики»\n• Премиум-подача UI: сетка, типографика, анимации без перегруза\n• Адаптив, микровзаимодействия, скорость загрузки\n• Backend на Supabase/Postgres под учёт, интеграции и рост функциональности\n\nРезультат\n• Живой MVP на upc.watch с понятным циклом монетизации для коротких видео\n",
+      detailsEn: "Product: SaaS / MVP (not a single-page marketing-only site)\n\nConcept\n• The rights holder connects a track to a TikTok video and gets a tracking link\n• Revenue ties to views and reach — stronger traction means a stronger monetization path\n\nClient\n• IE Bezborodykh I.V.\n• INN 261709192509\n• OGRNIP 325200000025627\nContact/rep\n• Viktor Bezborodykh — Founder & CEO of MIN.ECO (music distribution ecosystem)\n\nWhat we did\n• Product UI and flows: track → link → metrics\n• Premium UI craft: grid, typography, motion without clutter\n• Responsive layout, micro-interactions, fast loading\n• Supabase/Postgres backend for data, integrations and feature growth\n\nOutcome\n• Live MVP at upc.watch with a clear short-video monetization loop\n",
+      domain: UPC_DOMAIN,
+      status: "live",
+      tags: ["SaaS", "MVP", "React", "TypeScript", "Supabase"],
+      cover: "/images/project-priew/upcwatc.webp",
+      outcomes: [
+        isRu ? "MVP с циклом трек → ссылка → монетизация просмотров" : "MVP loop: track → link → view-based monetization",
+        isRu ? "Премиум UI + стабильная скорость" : "Premium UI + solid performance",
+        isRu ? "База Supabase/Postgres под масштаб продукта" : "Supabase/Postgres foundation to scale the product"
+      ],
+      stack: [
+        "React",
+        "TypeScript",
+        "Vite",
+        "Tailwind",
+        "Supabase",
+        "PostgreSQL"
+      ],
+      testimonial: {
+        name: isRu ? "Виктор Безбородых" : "Viktor Bezborodykh",
+        role: isRu ? "Founder & CEO MIN.ECO" : "Founder & CEO, MIN.ECO",
+        text: isRu ? "Сделали быстро и аккуратно. Сайт выглядит дорого, без ощущения шаблона. По срокам тоже всё нормально." : "Fast and neat. The site looks premium, not like a template. Timeline was fine too."
+      }
+    },
+    // 3) PAYCLIP — 2 weeks (client: ИП Безбородых И.В.)
+    {
+      id: "payclip",
+      title: "PayClip",
+      subtitleRu: "Платёжный продукт: лендинг под конверсию + онбординг. Быстро доводит до действия.",
+      subtitleEn: "Payment product: conversion landing + onboarding.",
+      detailsRu: "Срок: 2 недели\n\nЗаказчик\n• ИП Безбородых И.В.\nКонтакт/представитель\n• Виктор Безбородых — Founder & CEO MIN.ECO\n\nЦель\n• Сделать продуктовую посадочную + онбординг, чтобы быстрее доводить пользователя до действия.\n\nЧто сделали за 2 недели\n• Спроектировали структуру под лиды: оффер → доверие → сценарии → CTA\n• Собрали чистый UI: сетка, отступы, контраст, типографика\n• Протянули ключевые пользовательские сценарии (онбординг/первые шаги)\n• Добавили состояния/валидации/микровзаимодействия\n• Сделали адаптив и проверили кроссбраузерность\n\nРезультат\n• Понятная посадочная + онбординг, меньше вопросов у пользователей, выше конверсия в контакт\n",
+      detailsEn: "Timeline: 2 weeks\n\nClient\n• IE Bezborodykh I.V.\n• INN 261709192509\n• OGRNIP 325200000025627\nContact/rep\n• Viktor Bezborodykh — Founder & CEO, MIN.ECO\n\nGoal\n• Build a product landing + onboarding to move users to action faster.\n\nWhat we delivered in 2 weeks\n• Lead-oriented structure: offer → trust → flows → CTA\n• Clean UI: grid, spacing, contrast, typography\n• Core user flows (onboarding / first steps)\n• States, validation, micro-interactions\n• Responsive layout + cross-browser checks\n\nResult\n• Clear landing + onboarding, fewer user questions, better conversion to contact\n",
+      domain: PAYCLIP_DOMAIN,
+      status: "live",
+      tags: ["Fintech", "Landing", "Onboarding", "UI/UX", "Conversion"],
+      cover: "/images/project-priew/payslip.webp",
+      outcomes: [
+        isRu ? "Сделано за 2 недели" : "Delivered in 2 weeks",
+        isRu ? "Структура под конверсию" : "Conversion-driven structure",
+        isRu ? "Онбординг и сценарии" : "Onboarding and user flows"
+      ],
+      stack: ["React", "TypeScript", "Tailwind", "API"],
+      testimonial: {
+        name: isRu ? "Виктор Безбородых" : "Viktor Bezborodykh",
+        role: isRu ? "Founder & CEO MIN.ECO" : "Founder & CEO, MIN.ECO",
+        text: isRu ? "Пишем в чат, правки прилетают быстро. Без лишней воды, результатом довольны." : "We message them, edits come back fast. Straight talk, happy with the result."
+      }
+    },
+    // 4) HEADMIND — корпоративный сайт на WordPress
+    {
+      id: "headmind",
+      title: "Headmind",
+      subtitleRu: "Корпоративный сайт ООО «Хэдмайнд»: Figma → WordPress + Elementor, хостинг и домен headmind.ru — бюджет 100 000 ₽.",
+      subtitleEn: "Corporate site for Headmind: Figma → WordPress + Elementor, hosting and domain headmind.ru — budget 100,000 ₽.",
+      detailsRu: "Зачем это\nООО «Хэдмайнд» — консалтинг по трансформации бизнеса: стратегия, цифровизация, оргдизайн, производство, контракты. В B2B часто **теряют сделку на первом касании**, если сайт говорит «обо всём и ни о чём». Нужен был сайт, который спокойно шлют в первом сообщении.\n\nЗаказчик — **Евгений Беликов**, основатель и генеральный директор ООО «Хэдмайнд» (соучредитель — Виталий Петровский). Бюджет — **100 000 ₽** ([[≈ 1 280 $]]). Прод: **headmind.ru**.\n\nКак работает\nПосетитель проходит короткий маршрут: **услуги** → **подход / экспертиза** → **команда** → **контакт / заявка**. На каждом шаге понятно, кто вы и чем сильны. CTA стоит там, где человек уже готов написать.\n\nЧто внутри\nСначала **макеты в Figma**: несколько визуальных вариантов на выбор — пока заказчику не «зашло». Потом дизайн и сборка на **WordPress + Elementor**: услуги (трансформация, цифровизация, HR, производство, контракты, продажи), команда, доверие, формы заявки.\n\nПод ключ: подобрали и подключили **хостинг**, купили/привязали **домен headmind.ru**, выкатили в прод, настроили админку WordPress, чтобы контент правили сами. Стек не «с нуля на React» — осознанный выбор: быстрый запуск, удобное редактирование, спокойный B2B-сайт.\n\nЧто сделали\nFigma (выборка вариантов) → дизайн → WordPress/Elementor → хостинг + домен → живой **headmind.ru**. Упаковали экспертизу в маршрут до заявки.\n\nИтог\nНе шаблон «поставьте логотип». **Корпоративный сайт под ключ** для Евгения Беликова / ООО «Хэдмайнд»: 100 000 ₽, Figma → WP, домен и хостинг — можно открыть и проверить самому.\n",
+      detailsEn: "Why it matters\nHeadmind is a business-transformation consultancy: strategy, digitalization, org design, production, contracts. In B2B you often **lose the deal on first contact** if the site says everything and nothing. They needed a site you can send in the first message.\n\nClient — **Evgeniy Belikov**, founder and CEO of Headmind (co-founder — Vitaliy Petrovsky). Budget — **100,000 ₽** ([[≈ $1,280]]). Live: **headmind.ru**.\n\nHow it works\nA visitor follows a short path: **services** → **approach / expertise** → **team** → **contact / lead**. At every step it’s clear who you are and why you’re strong. CTAs sit where people are already ready to write.\n\nWhat’s inside\nFirst **Figma mockups**: several visual directions until the client picked a favourite. Then design and build on **WordPress + Elementor**: services (transformation, digitalization, HR, production, contracts, sales), team, trust, lead forms.\n\nTurnkey: hosting set up, **domain headmind.ru** connected, shipped to production, WordPress admin ready so they can edit content themselves. Not a custom React build on purpose — fast launch, easy editing, a calm B2B site.\n\nWhat we delivered\nFigma (variant selection) → design → WordPress/Elementor → hosting + domain → live **headmind.ru**. Expertise packaged into a path to a lead.\n\nOutcome\nNot a “drop your logo” template. A **turnkey corporate site** for Evgeniy Belikov / Headmind: 100,000 ₽, Figma → WP, domain and hosting — open it and check yourself.\n",
+      domain: HEADMIND_DOMAIN,
+      status: "live",
+      tags: ["B2B", "WordPress", "Elementor", "Figma", "Corporate"],
+      cover: "/images/project-priew/headmind.webp",
+      outcomes: [
+        isRu ? "Заказчик **Евгений Беликов** · бюджет [[≈ 1 280 $]]" : "Client **Evgeniy Belikov** · budget [[≈ $1,280]]",
+        isRu ? "**Figma** (варианты) → **WordPress + Elementor**" : "**Figma** (variants) → **WordPress + Elementor**",
+        isRu ? "Хостинг + домен **headmind.ru** под ключ" : "Hosting + domain **headmind.ru** turnkey",
+        isRu ? "Маршрут услуг → команда → **заявка**" : "Path: services → team → **lead**"
+      ],
+      stack: ["Figma", "WordPress", "Elementor", "Hosting", "Domain"],
+      testimonial: {
+        name: isRu ? "Евгений Беликов" : "Evgeniy Belikov",
+        role: isRu ? "Основатель и гендиректор, ООО «Хэдмайнд»" : "Founder & CEO, Headmind",
+        text: isRu ? "Сначала кинули несколько макетов в Figma, мы выбрали свой. Потом WordPress, хостинг, домен. Теперь спокойно кидаем сайт клиенту на первом звонке." : "They sent a few Figma options, we picked one. Then WordPress, hosting, domain. Now we send the site on the first call without thinking twice."
+      }
+    },
+    // 7) SLOTTY — маркетплейс онлайн-записи к мастерам
+    {
+      id: "slotty",
+      title: "Slotty",
+      subtitleRu: "Полный маркетплейс записи к мастерам: каталог с фильтрами и картой, Telegram Mini App, кабинет мастера (SaaS Free/Pro), platform-admin, bePaid — на Railway, домен slotty.of.by.",
+      subtitleEn: "Full booking marketplace for masters: filtered catalog + map, Telegram Mini App, master SaaS cabinet (Free/Pro), platform admin, bePaid — on Railway, domain slotty.of.by.",
+      detailsRu: "Зачем это\nЗапись к мастеру до сих пор часто живёт в **Direct и WhatsApp**: «есть на завтра?», «а через час?», «ой, забыла напомнить». Клиент устаёт писать. Мастер устаёт отвечать. Слоты пропадают в тишине чата.\n\nНужен был не черновик и не «кнопка записаться», а **полный маркетплейс**: каталог с жёсткой фильтрацией, карта, путь клиента, SaaS-кабинет мастера, роли, platform-admin, оплаты, уведомления и прод. Заказчик — **Виктория Д.** Бюджет — 230 000 ₽ ([[≈ 2 940 $]]). Срок — **3 недели**.\n\nКак работает\nКлиент открывает **slotty.of.by** (сайт или Telegram Mini App) → каталог → фильтры / карта → мастер → услуга → **свободный слот** → подтверждение. Код записи, напоминания в Telegram и email — без звонков.\nМастер в кабинете ведёт профиль, портфолио, адрес, услуги, акции, расписание, заявки и клиентов; тариф Free или Pro.\nPlatform-admin модерирует мастеров, записи, биллинг, платежи bePaid, рассылки и журнал — платформой можно рулить уже сейчас.\n\nЧто внутри\nЭто **крупная разработка**, не лендинг с формой. Фронт: React + TypeScript + Vite + Tailwind. Бэкенд: Express API, PostgreSQL (**88 миграций**), JWT-сессии. Прод: **два сервиса на Railway** (web + api), домен **slotty.of.by** — подсказали, где купить домен, подняли хостинг, привязали DNS и выкатили в бой. Плюс Telegram Bot / Mini App, Google Auth, email (Resend), карты (Leaflet / OSM, опционально Яндекс), платежи **bePaid** (BYN), Sentry, SEO-prerender.\n\nМаркетплейс для клиента: **6 категорий** (маникюр, барберы, брови/ресницы, массаж, фитнес, тату). Каталог — не «список карточек», а полноценный поиск: все / популярные / акции / новинки, текстовый поиск, **карта с геосортировкой**.\n\nФильтры: сортировка (рекомендации, популярность, ближайший слот, расстояние, рейтинг, цена ↑↓, отзывы); дата (сегодня / завтра / неделя / выходные / точный день); время суток и слайдер часов; визит в салоне или на дому; длительность; цена в BYN; рейтинг от 4.5 / 4.7 / 4.9; число отзывов; только верифицированные; только с акциями; только с онлайн-записью. Запись: дата → слот → комментарий → референс-фото → успех с кодом **SL-…**. Профиль клиента: записи, избранное, уведомления, настройки, отзыв после визита.\n\nКабинет мастера — отдельный SaaS: сегодня / заявки / расписание / услуги (каталог, цены, пакеты, акции) / профиль и портфолио / клиенты / репутация / биллинг / уведомления (десятки типов событий). Онбординг в **8 шагов**: категории → профиль → адрес на карте → услуги → доверие → превью → тариф. Тарифы: Free (лимиты) / Pro / trial 7 дней — оплата bePaid или ручной перевод.\n\nPlatform-admin: обзор, заявки (категории, удаления, спонсорство, жалобы), поддержка, статус системы, пользователи, мастера, услуги, записи (в т.ч. проблемные отмены), биллинг и промокоды, платежи bePaid, рассылки, аудит. Роли: **client / master / platform_admin**. Auth: email, Google, Telegram — с телефона и с компьютера.\n\nСложные куски, которые обычно «ломают» сроки: concurrent booking и слоты, pending expiry, auto-complete, споры по записи; entitlements Free/Pro; очередь уведомлений; multi-identity auth; серверный каталог с 20+ параметрами фильтра и Pro-boost в рекомендациях.\n\nЧто сделали\nДизайн + разработка под ключ: маркетплейс, кабинеты, админка, интеграции, домен и хостинг. Продукт на **slotty.of.by** — **скоро запуск к настоящим клиентам и мастерам**.\n\nИтог\nНе демо «посмотрите идею». **Полный маркетплейс записи** с фильтрами, картой, Mini App, SaaS мастера и platform-admin. Виктория Д., [[≈ 2 940 $]], 3 недели — и живой прод, куда можно зайти и проверить самому.\n",
+      detailsEn: "Why it matters\nBooking a master still often lives in **DMs and WhatsApp**: “free tomorrow?”, “in an hour?”, “oops, forgot to remind”. Clients get tired of typing. Masters get tired of answering. Slots vanish into chat silence.\n\nThis wasn’t a draft or a “book now” button. It needed a **full marketplace**: filtered catalog, map, client path, master SaaS cabinet, roles, platform admin, payments, notifications and production. Client — **Victoria D.** Budget — 230,000 ₽ ([[≈ $2,940]]). Timeline — **3 weeks**.\n\nHow it works\nClient opens **slotty.of.by** (web or Telegram Mini App) → catalog → filters / map → master → service → **open slot** → confirm. Booking code, Telegram + email reminders — no calls.\nMasters run profile, portfolio, address, services, promos, schedule, requests and clients; Free or Pro plan.\nPlatform admin moderates masters, bookings, billing, bePaid payments, broadcasts and audit — the platform is operable now.\n\nWhat’s inside\nA **large build**, not a landing with a form. Frontend: React + TypeScript + Vite + Tailwind. Backend: Express API, PostgreSQL (**88 migrations**), JWT sessions. Production: **two Railway services** (web + api), domain **slotty.of.by** — we advised where to buy the domain, set up hosting, pointed DNS and shipped live. Plus Telegram Bot / Mini App, Google Auth, email (Resend), maps (Leaflet / OSM, optional Yandex), **bePaid** (BYN), Sentry, SEO prerender.\n\nClient marketplace: **6 categories** (manicure, barbers, brows/lashes, massage, fitness, tattoo). Catalog isn’t a flat card list — full search: all / popular / promos / new, text search, **map with geo sort**.\n\nFilters: sort (recommended, popular, soonest, distance, rating, price ↑↓, reviews); date (today / tomorrow / week / weekend / exact day); time of day + hour slider; studio or at-home; duration; BYN price; rating from 4.5 / 4.7 / 4.9; review count; verified only; promos only; online booking only. Booking: date → slot → comment → reference photos → success with code **SL-…**. Client profile: appointments, favorites, notifications, settings, post-visit review.\n\nMaster cabinet is a separate SaaS: today / requests / schedule / services (catalog, prices, bundles, promos) / profile & portfolio / clients / reputation / billing / notifications (dozens of event types). **8-step** onboarding: categories → profile → map address → services → trust → preview → plan. Plans: Free (limits) / Pro / 7-day trial — bePaid or manual transfer.\n\nPlatform admin: overview, requests (category changes, deletions, sponsorship, reports), support, system status, users, masters, services, bookings (incl. problem cancellations), billing & promo codes, bePaid payments, broadcasts, audit. Roles: **client / master / platform_admin**. Auth: email, Google, Telegram — phone or desktop.\n\nHard pieces that usually blow timelines: concurrent booking & slots, pending expiry, auto-complete, booking disputes; Free/Pro entitlements; notification job queue; multi-identity auth; server catalog with 20+ filter params and Pro boost in recommendations.\n\nWhat we delivered\nDesign + turnkey build: marketplace, cabinets, admin, integrations, domain and hosting. Live on **slotty.of.by** — **soon launching to real clients and masters**.\n\nOutcome\nNot a “look at the idea” demo. A **full booking marketplace** with filters, map, Mini App, master SaaS and platform admin. Victoria D., [[≈ $2,940]], 3 weeks — and a live prod you can open and check yourself.\n",
+      domain: SLOTTY_DOMAIN,
+      status: "live",
+      tags: ["Marketplace", "Booking", "Beauty", "SaaS", "Telegram", "Admin Panel"],
+      cover: "/images/project-priew/slotty.webp",
+      gallery: SLOTTY_GALLERY,
+      outcomes: [
+        isRu ? "**Полный маркетплейс** за 3 недели — не MVP" : "**Full marketplace** in 3 weeks — not an MVP",
+        isRu ? "Каталог с **фильтрами + карта** · Mini App · Free/Pro" : "Catalog with **filters + map** · Mini App · Free/Pro",
+        isRu ? "Домен **slotty.of.by** · хостинг Railway (web + api)" : "Domain **slotty.of.by** · Railway hosting (web + api)",
+        isRu ? "Виктория Д. · [[≈ 2 940 $]] · скоро запуск к живым клиентам" : "Victoria D. · [[≈ $2,940]] · soon launching to live clients"
+      ],
+      stack: [
+        "React",
+        "TypeScript",
+        "Vite",
+        "Express",
+        "PostgreSQL",
+        "Railway",
+        "Telegram Mini App",
+        "Google Auth",
+        "bePaid",
+        "Leaflet",
+        "Resend"
+      ],
+      testimonial: {
+        name: isRu ? "Виктория Д." : "Victoria D.",
+        role: isRu ? "Заказчик Slotty" : "Slotty client",
+        text: isRu ? "Мне нужен был нормальный маркетплейс: фильтры, кабинет мастера, админка. Не демо. За три недели собрали на нашем домене, уже можно звать реальных клиентов." : "I needed a real marketplace: filters, master cabinet, admin. Not a demo. In three weeks it was on our domain and ready for real clients."
+      }
+    },
+    // 8) SPLITON — финтех-платформа для музыкальных активов
+    {
+      id: "spliton",
+      title: "Spliton",
+      subtitleRu: "Финтех-платформа для долей в музыке: каталог, первичный и вторичный рынок, кошелёк USDT, ledger, compliance и operator portal — продукт с инвестором и живым сопровождением.",
+      subtitleEn: "Fintech platform for music shares: catalog, primary & secondary market, USDT wallet, ledger, compliance and operator portal — investor-backed product with ongoing support.",
+      detailsRu: "Зачем это\nМузыкальные активы — не лендинг с кнопкой «купить». Здесь **реальные деньги**, роли, согласия, депозиты и выводы должны сходиться без дыр: confirm → processing → result. Один сбой на выплате или consent — и доверие кончается быстрее любого релиза.\n\nНужна была не «админка на коленке», а **полноценная биржа долей**: кабинет инвестора, operator portal, ledger, treasury, KYC/AML, споры, публичный trust center. Мы собрали это end-to-end — и **до сих пор сопровождаем** продукт в бою.\n\nКак работает\nИнвестор регистрируется, проходит согласия и при необходимости KYC, пополняет баланс в **USDT (TRC20)**.\nДальше: выбирает релиз в каталоге → изучает data room → покупает доли (UNT) на первичке → видит позиции и начисления в кабинете → при желании торгует на **вторичном рынке** (стакан, лимитные заявки) → выводит средства через проверку treasury.\nОператор ведёт депозиты, выводы, compliance, релизы, рефералов, споры и публичный статус системы — всё из admin-портала.\n\nЧто внутри\nЭто **крупный продукт в одном репозитории**, не одностраничный сайт. Клиентская часть на Next.js, сервер на NestJS, база PostgreSQL через Prisma, автотесты на критичные денежные сценарии.\n\nКабинет инвестора: каталог релизов, покупка долей, портфель и метрики, кошелёк (пополнение, вывод, история, выписки), **вторичный рынок со сложным биржевым стаканом** и лимитными заявками, калькулятор, новости, поддержка и центр споров, реферальная и партнёрская программы, VIP.\n\nПубличная часть: лендинг продукта, **центр доверия** (учёт операций, статус сервисов, документы), страница статуса системы, комиссии, юридические тексты, справочный центр.\n\nПортал оператора — отдельная **огромная админ-панель** для команды платформы: не пара экранов, а десятки разделов управления. Главный обзор, задачи операторов, пользователи и роли, треки и раунды, артисты, лейблы, жанры.\n\nФинансы: кошельки, пополнения, **выплаты**, позиции, доход и доход платформы, казначейство, платёжные реквизиты. Рынок: вторичный рынок, сделки, подозрительные операции. Операции: поддержка, споры, комплаенс, KYC, юридические тексты, рефералы и партнёры.\n\nАналитика с **графиками**: финансы, пользователи, треки, рынок, доход, риски, операции. Плюс отчёты и выгрузки, новости, справочный центр, статус системы, уведомления, журнал аудита действий сотрудников. Роли: супер-админ, бухгалтер, контент, поддержка, комплаенс, бизнес-аналитик.\n\nФинансовое ядро: внутренний учёт операций с двойной записью, сверки, комиссии платформы, автоматизация депозитов в сети TRON, политика горячего и холодного кошелька, регламенты инцидентов. Интерфейс на acid lime `#b7f500` — как в живом продукте.\n\nЯзыки: интерфейс полностью на **четырёх языках** — русский, английский, испанский, португальский.\n\nЧто сделали\nСпроектировали и собрали весь контур: дизайн, фронтенд, бэкенд, база, комплаенс, автотесты и продакшен-операции. Продукт запущен, в него зашёл инвестор на [[200 000 $]], платформа в работе — **TIVONIX продолжает поддержку и развитие**.\n\nИтог\nНе демо и не презентация. **Живая финтех-платформа** с кабинетом инвестора, сложной биржей долей и огромной админкой под выплаты, графики и операционное управление. Сопровождаем до сих пор.\n",
+      detailsEn: "Why it matters\nMusic assets aren’t a landing page with a buy button. **Real money**, roles, consents, deposits and withdrawals have to lock without holes: confirm → processing → result. One payout or consent failure — and trust dies faster than any release.\n\nThis wasn’t a “quick admin”. It needed a **full share exchange**: investor cabinet, operator portal, ledger, treasury, KYC/AML, disputes, public trust center. We built it end-to-end — and **still support** it in production.\n\nHow it works\nAn investor signs up, accepts policies, completes KYC when required, and tops up in **USDT (TRC20)**.\nThen: pick a release in the catalog → review the data room → buy shares (UNT) on primary → track positions and accruals → optionally trade on the **secondary market** (order book, limit orders) → withdraw through treasury checks.\nOperators run deposits, withdrawals, compliance, releases, referrals, disputes and public system status — all from the admin portal.\n\nWhat’s inside\nA **large product in one repository**, not a single-page site. Client app on Next.js, server on NestJS, PostgreSQL via Prisma, automated tests on critical money flows.\n\nInvestor cabinet: release catalog, share purchase, portfolio and metrics, wallet (deposit, withdraw, history, statements), **secondary market with a complex order book** and limit orders, calculator, news, support and dispute center, referral and partner programs, VIP.\n\nPublic surface: product landing, **trust center** (operations ledger, service status, documents), system status page, fees, legal pages, help center.\n\nThe operator portal is a **huge admin panel** for the platform team: not a few screens, but dozens of management sections. Executive overview, operator tasks, users and roles, tracks and rounds, artists, labels, genres.\n\nFinance: wallets, deposits, **payouts**, holdings, revenue and platform revenue, treasury, payment requisites. Market: secondary market, trades, suspicious activity. Operations: support, disputes, compliance, KYC, legal texts, referrals and partners.\n\nAnalytics with **charts**: finance, users, tracks, market, revenue, risk, operations. Plus reports and exports, news, help center, system status, notifications, staff audit log. Roles: super admin, accountant, content, support, compliance, business analyst.\n\nFinancial core: internal double-entry operations ledger, reconciliation, platform fees, TRON deposit automation, hot/cold wallet policy, incident runbooks. Interface on acid lime `#b7f500` — matching the live product.\n\nLanguages: the interface is fully localized in **four languages** — Russian, English, Spanish, Portuguese.\n\nWhat we delivered\nDesigned and shipped the full loop: design, frontend, backend, database, compliance, automated tests and production ops. The product is live, backed by an investor at [[$200,000]], and **TIVONIX still supports and evolves** it.\n\nOutcome\nNot a demo and not a deck. A **live fintech platform** with an investor cabinet, a complex share exchange and a huge admin for payouts, charts and day-to-day operations. Still supported.\n",
+      domain: SPLITON_DOMAIN,
+      status: "live",
+      tags: [
+        "FinTech",
+        "Marketplace",
+        "SaaS",
+        "MusicTech",
+        "React",
+        "Next.js",
+        "Node.js",
+        "PostgreSQL",
+        "UI/UX",
+        "Admin Panel",
+        "Compliance"
+      ],
+      cover: "/images/project-priew/spliton.webp",
+      gallery: SPLITON_GALLERY,
+      outcomes: [
+        isRu ? "Полный финтех-контур: кабинет + биржа долей + портал оператора" : "Full fintech loop: cabinet + share exchange + operator portal",
+        isRu ? "Огромная админка: выплаты, казначейство, графики, комплаенс" : "Huge admin: payouts, treasury, charts, compliance",
+        isRu ? "Учёт операций, KYC, центр доверия, USDT TRC20" : "Operations ledger, KYC, trust center, USDT TRC20",
+        isRu ? "Инвестор [[200 000 $]] · продукт в продакшене" : "Investor [[$200,000]] · live in production",
+        isRu ? "**TIVONIX сопровождает** платформу до сих пор" : "**TIVONIX still supports** the platform",
+        isRu ? "4 языка: русский, английский, испанский, португальский" : "4 languages: Russian, English, Spanish, Portuguese",
+        isRu ? "Сложный биржевой стакан на вторичном рынке" : "Complex order book on the secondary market"
+      ],
+      stack: [
+        "Next.js",
+        "React",
+        "TypeScript",
+        "Tailwind",
+        "NestJS",
+        "PostgreSQL",
+        "Supabase",
+        "Prisma",
+        "Playwright",
+        "i18n"
+      ],
+      testimonial: {
+        name: isRu ? "Виктор Безбородых" : "Viktor Bezborodykh",
+        role: isRu ? "Основатель MIN.ECO" : "Founder & CEO, MIN.ECO",
+        text: isRu ? "У Spliton тяжёлая начинка: доли, кошелёк, выплаты, большая админка. Собрали целиком, выкатили в прод и не пропали. С ними спокойно идти дальше." : "Spliton is heavy: shares, wallet, payouts, a big admin. They built the full stack, shipped to production, and stayed around. Easy to keep going with them."
+      }
+    }
+  ];
+}
+function buildProjects(isRu) {
+  const all = buildAllProjects(isRu);
+  return PUBLIC_PROJECT_IDS.map((id) => all.find((p) => p.id === id)).filter(
+    (p) => Boolean(p)
+  );
+}
+function projectsWithTestimonials(isRu) {
+  return buildAllProjects(isRu).filter((p) => Boolean(p.testimonial));
+}
+function isPublicProjectId(id) {
+  return PUBLIC_PROJECT_IDS.includes(id);
+}
+function findProjectBySlug(slug, isRu) {
+  if (!slug) return void 0;
+  return buildProjects(isRu).find((p) => p.id === slug);
+}
+function useInView(ref, options) {
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const io = new IntersectionObserver(([entry]) => {
+      setInView(Boolean(entry?.isIntersecting));
+    }, options ?? { root: null, rootMargin: "80px 0px", threshold: 0 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [ref, options?.rootMargin, options?.threshold]);
+  return inView;
+}
+const AUTO_MS = 5500;
+function cx$a(...parts) {
+  return parts.filter(Boolean).join(" ");
+}
+function FeaturedCaseSlide({
+  item,
+  isRu,
+  copy,
+  active
+}) {
+  const project = findProjectBySlug(item.id, isRu);
+  if (!project) return null;
+  const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
+  const cover = project.cover ?? "";
+  return /* @__PURE__ */ jsxs(
+    "article",
+    {
+      className: cx$a(
+        "case-split case-split--no-tabs col-start-1 row-start-1 transition-opacity duration-300 ease-out",
+        active ? "relative z-[1] opacity-100" : "pointer-events-none invisible z-0 opacity-0"
+      ),
+      "aria-hidden": !active,
+      children: [
+        /* @__PURE__ */ jsxs("div", { className: "case-split__visual", children: [
+          cover ? /* @__PURE__ */ jsx(
+            "img",
+            {
+              src: cover,
+              alt: project.title,
+              loading: active ? "eager" : "lazy",
+              decoding: "async",
+              className: "case-split__img",
+              width: 960,
+              height: 640
+            }
+          ) : null,
+          /* @__PURE__ */ jsx("div", { className: "case-split__visual-overlay", "aria-hidden": true })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "case-split__grid", children: [
+          /* @__PURE__ */ jsx("div", { className: "case-split__visual-gap", "aria-hidden": true }),
+          /* @__PURE__ */ jsxs("div", { className: "case-split__content", children: [
+            /* @__PURE__ */ jsx("span", { className: "case-split__badge", children: item.type }),
+            /* @__PURE__ */ jsx("h3", { className: "mt-4 font-hero text-[clamp(1.75rem,4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white", children: /* @__PURE__ */ jsx(
+              Link,
+              {
+                to: `/projects/${project.id}`,
+                tabIndex: active ? 0 : -1,
+                onClick: () => trackEvent("project_open", {
+                  project: project.id,
+                  source: "featured"
+                }),
+                className: "transition-colors hover:text-white/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/70",
+                children: project.title
+              }
+            ) }),
+            /* @__PURE__ */ jsx("p", { className: "mt-3 text-[14px] leading-relaxed text-white/48 sm:text-[15px]", children: subtitle }),
+            /* @__PURE__ */ jsxs("div", { className: "mt-6 space-y-3 text-[13.5px] leading-relaxed text-white/62", children: [
+              /* @__PURE__ */ jsxs("p", { children: [
+                /* @__PURE__ */ jsx("span", { className: "font-medium text-white/78", children: copy.featured.problem }),
+                " ",
+                item.problem
+              ] }),
+              /* @__PURE__ */ jsxs("p", { children: [
+                /* @__PURE__ */ jsx("span", { className: "font-medium text-white/78", children: copy.featured.solution }),
+                " ",
+                item.solution
+              ] }),
+              /* @__PURE__ */ jsxs("p", { children: [
+                /* @__PURE__ */ jsx("span", { className: "font-medium text-white/78", children: copy.featured.resultLabel }),
+                " ",
+                item.result
+              ] })
+            ] }),
+            /* @__PURE__ */ jsx("div", { className: "case-split__chips mt-5", children: item.modules.map((m) => /* @__PURE__ */ jsx("span", { className: "case-split__chip", children: m }, m)) }),
+            project.domain ? /* @__PURE__ */ jsxs(
+              "a",
+              {
+                href: project.domain,
+                target: "_blank",
+                rel: "noopener noreferrer",
+                tabIndex: active ? 0 : -1,
+                onClick: () => trackEvent("project_live_open", {
+                  project: project.id,
+                  source: "featured"
+                }),
+                className: "mt-6 inline-flex text-[13px] font-medium text-[#FF9A3D] transition-colors hover:text-[#FFB06A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/70",
+                children: [
+                  copy.featured.openLive,
+                  " →"
+                ]
+              }
+            ) : null
+          ] })
+        ] })
+      ]
+    }
+  );
+}
+function FeaturedProjectsSection() {
+  const { lang } = useLang();
+  const isRu = lang === "ru";
+  const copy = homeExtraCopy(lang);
+  const items = copy.featured.items;
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const touchX = useRef(null);
+  const sectionRef = useRef(null);
+  const inView = useInView(sectionRef, { rootMargin: "40px 0px", threshold: 0 });
+  const go = useCallback(
+    (next) => {
+      const len = items.length;
+      if (len === 0) return;
+      setIndex((next % len + len) % len);
+    },
+    [items.length]
+  );
+  useEffect(() => {
+    if (!inView || paused || items.length < 2) return;
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = window.setInterval(() => {
+      setIndex((prev) => (prev + 1) % items.length);
+    }, AUTO_MS);
+    return () => window.clearInterval(id);
+  }, [paused, items.length, inView]);
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "ArrowLeft") go(index - 1);
+      if (e.key === "ArrowRight") go(index + 1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [go, index]);
+  if (items.length === 0) return null;
+  return /* @__PURE__ */ jsx(
+    Section,
+    {
+      ref: sectionRef,
+      id: "featured-projects",
+      className: "scroll-mt-[var(--tivonix-header-spacer)] !py-12 sm:!py-16 lg:!py-20",
+      children: /* @__PURE__ */ jsxs(Container, { children: [
+        /* @__PURE__ */ jsx(Reveal$1, { className: "mx-auto mb-8 max-w-[40rem] text-center sm:mb-10", children: /* @__PURE__ */ jsx("h2", { className: "mx-auto text-center font-hero text-[clamp(1.85rem,4.2vw,2.85rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white text-balance", children: isRu ? "Три живые результата" : "Three live results" }) }),
+        /* @__PURE__ */ jsx(Reveal$1, { children: /* @__PURE__ */ jsxs(
+          "div",
+          {
+            className: "featured-case-carousel relative overflow-anchor-none",
+            style: { overflowAnchor: "none" },
+            onMouseEnter: () => setPaused(true),
+            onMouseLeave: () => setPaused(false),
+            onFocusCapture: () => setPaused(true),
+            onBlurCapture: (e) => {
+              if (!e.currentTarget.contains(e.relatedTarget)) {
+                setPaused(false);
+              }
+            },
+            onTouchStart: (e) => {
+              touchX.current = e.changedTouches[0]?.clientX ?? null;
+              setPaused(true);
+            },
+            onTouchEnd: (e) => {
+              const start = touchX.current;
+              const end = e.changedTouches[0]?.clientX;
+              touchX.current = null;
+              setPaused(false);
+              if (start == null || end == null) return;
+              const delta = end - start;
+              if (Math.abs(delta) < 48) return;
+              go(delta < 0 ? index + 1 : index - 1);
+            },
+            children: [
+              /* @__PURE__ */ jsx("div", { className: "featured-case-carousel__stage grid", children: items.map((slide, i) => /* @__PURE__ */ jsx(
+                FeaturedCaseSlide,
+                {
+                  item: slide,
+                  isRu,
+                  copy,
+                  active: i === index
+                },
+                slide.id
+              )) }),
+              /* @__PURE__ */ jsx(
+                "div",
+                {
+                  className: "mt-6 flex items-center justify-center gap-2",
+                  role: "tablist",
+                  "aria-label": isRu ? "Кейсы" : "Cases",
+                  children: items.map((slide, i) => /* @__PURE__ */ jsx(
+                    "button",
+                    {
+                      type: "button",
+                      role: "tab",
+                      "aria-selected": i === index,
+                      "aria-label": slide.id,
+                      onClick: () => setIndex(i),
+                      className: "relative h-1 w-10 overflow-hidden rounded-full bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/70 sm:w-12",
+                      children: i === index ? /* @__PURE__ */ jsx(
+                        "span",
+                        {
+                          className: "featured-case-line-fill absolute inset-0 rounded-full bg-[#FF6B2C]",
+                          style: {
+                            animationDuration: `${AUTO_MS}ms`,
+                            animationPlayState: paused ? "paused" : "running"
+                          }
+                        },
+                        `${slide.id}-${index}`
+                      ) : null
+                    },
+                    slide.id
+                  ))
+                }
+              )
+            ]
+          }
+        ) })
+      ] })
+    }
+  );
+}
+const CARD_DARK = "#141414";
+const CARD_SOFT = "#262626";
+const PAIN_CARD_BACKGROUNDS = [
+  "/images/hero-stage-1.webp",
+  "/images/pain-bg-late.webp",
+  "/images/hero-stage-2.webp",
+  "/images/hero-stage-2.webp"
+];
+function useCalmPainMotion() {
+  const [calm, setCalm] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const narrow = window.matchMedia("(max-width: 1023px)");
+    const sync = () => setCalm(reduced.matches || narrow.matches);
+    sync();
+    reduced.addEventListener("change", sync);
+    narrow.addEventListener("change", sync);
+    return () => {
+      reduced.removeEventListener("change", sync);
+      narrow.removeEventListener("change", sync);
+    };
+  }, []);
+  return calm;
+}
+function ChannelsVisual({ isRu }) {
+  const rows = isRu ? [
+    { ch: "Instagram", icon: "/images/icons/instagram.svg", count: "20", unit: "заявок", hot: true },
+    { ch: "Telegram", icon: "/images/icons/telegram.svg", count: "8", unit: "непрочит.", hot: true },
+    { ch: "WhatsApp", icon: "/images/icons/whatsapp.svg", count: "5", unit: "сообщений", hot: true },
+    { ch: "Звонок", icon: "/images/icons/phone.svg", count: "3", unit: "пропущенных", hot: true },
+    { ch: "Сайт", icon: "/images/icons/globe.svg", count: "4", unit: "формы", hot: false },
+    { ch: "Email", icon: "/images/icons/gmail.svg", count: "6", unit: "писем", hot: true }
+  ] : [
+    { ch: "Instagram", icon: "/images/icons/instagram.svg", count: "20", unit: "leads", hot: true },
+    { ch: "Telegram", icon: "/images/icons/telegram.svg", count: "8", unit: "unread", hot: true },
+    { ch: "WhatsApp", icon: "/images/icons/whatsapp.svg", count: "5", unit: "messages", hot: true },
+    { ch: "Call", icon: "/images/icons/phone.svg", count: "3", unit: "missed", hot: true },
+    { ch: "Website", icon: "/images/icons/globe.svg", count: "4", unit: "forms", hot: false },
+    { ch: "Email", icon: "/images/icons/gmail.svg", count: "6", unit: "emails", hot: true }
+  ];
+  const track = [...rows, ...rows];
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx("style", { children: `
+        @keyframes pain-channels-scroll {
+          from { transform: translateY(0); }
+          to { transform: translateY(-50%); }
+        }
+        .pain-channels-track {
+          animation: pain-channels-scroll 18s linear infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .pain-channels-track { animation: none !important; }
+        }
+      ` }),
+    /* @__PURE__ */ jsxs("div", { className: "relative h-[148px] overflow-hidden sm:h-[156px]", children: [
+      /* @__PURE__ */ jsx("div", { className: "pain-channels-track space-y-1.5", children: track.map((r, i) => /* @__PURE__ */ jsxs(
+        "div",
+        {
+          className: "flex items-center justify-between gap-3 rounded-lg bg-white/[0.06] px-3 py-2.5",
+          children: [
+            /* @__PURE__ */ jsxs("span", { className: "flex min-w-0 items-center gap-2.5", children: [
+              /* @__PURE__ */ jsx(
+                "img",
+                {
+                  src: r.icon,
+                  alt: "",
+                  width: 18,
+                  height: 18,
+                  "aria-hidden": true,
+                  className: "h-[18px] w-[18px] shrink-0"
+                }
+              ),
+              /* @__PURE__ */ jsx("span", { className: "truncate text-[13px] font-medium text-white/90", children: r.ch })
+            ] }),
+            /* @__PURE__ */ jsxs("span", { className: "flex items-baseline gap-1.5", children: [
+              r.hot ? /* @__PURE__ */ jsx("span", { className: "h-1.5 w-1.5 shrink-0 self-center rounded-full bg-[#FF5722]", "aria-hidden": true }) : /* @__PURE__ */ jsx(Check, { size: 12, className: "self-center text-white/35", "aria-hidden": true }),
+              /* @__PURE__ */ jsx(
+                "span",
+                {
+                  className: [
+                    "text-[15px] font-semibold tabular-nums leading-none",
+                    r.hot ? "text-[#FF8A5C]" : "text-white/45"
+                  ].join(" "),
+                  children: r.count
+                }
+              ),
+              /* @__PURE__ */ jsx("span", { className: r.hot ? "text-[12px] text-white/70" : "text-[12px] text-white/40", children: r.unit })
+            ] })
+          ]
+        },
+        `${r.ch}-${i}`
+      )) }),
+      /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: "pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-[#141414] to-transparent",
+          "aria-hidden": true
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: "pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#141414] to-transparent",
+          "aria-hidden": true
+        }
+      )
+    ] })
+  ] });
+}
+function TelegramVisual({ isRu }) {
+  const calm = useCalmPainMotion();
+  const message = isRu ? "Здравствуйте, хочу записаться на консультацию…" : "Hi, I’d like to book a consultation…";
+  const stages = isRu ? [
+    { time: "сейчас", status: "Менеджер ещё не видел", late: false },
+    { time: "23 мин", status: "Никто не ответил", late: false },
+    { time: "4 часа", status: "Всё ещё без ответа", late: true },
+    { time: "день назад", status: "Клиент всё ещё ждёт", late: true },
+    { time: "неделю назад", status: "вы забыли?", late: true }
+  ] : [
+    { time: "now", status: "Manager hasn’t seen it", late: false },
+    { time: "23 min", status: "Nobody replied", late: false },
+    { time: "4 hours", status: "Still no reply", late: true },
+    { time: "a day ago", status: "Client is still waiting", late: true },
+    { time: "a week ago", status: "did you forget?", late: true }
+  ];
+  const last = stages.length - 1;
+  const [open, setOpen] = useState(calm);
+  const [typed, setTyped] = useState(calm ? message : "");
+  const [stageIdx, setStageIdx] = useState(calm ? last : 0);
+  const [showStatus, setShowStatus] = useState(calm);
+  const stage = stages[stageIdx] ?? stages[last];
+  const isTyping = open && !calm && typed.length < message.length;
+  const isLate = stage.late;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (calm) {
+      setOpen(true);
+      setTyped(message);
+      setStageIdx(last);
+      setShowStatus(true);
+      return;
+    }
+    let cancelled = false;
+    const timeouts = [];
+    const t = (fn, ms) => {
+      timeouts.push(
+        window.setTimeout(() => {
+          if (!cancelled) fn();
+        }, ms)
+      );
+    };
+    setOpen(false);
+    setTyped("");
+    setStageIdx(0);
+    setShowStatus(false);
+    t(() => setOpen(true), 280);
+    message.split("").forEach((_, i) => {
+      t(() => setTyped(message.slice(0, i + 1)), 480 + 32 * (i + 1));
+    });
+    const typingDone = 480 + 32 * message.length + 300;
+    t(() => setShowStatus(true), typingDone);
+    stages.forEach((_, i) => {
+      if (i === 0) return;
+      t(() => setStageIdx(i), typingDone + 1100 * i);
+    });
+    return () => {
+      cancelled = true;
+      timeouts.forEach(clearTimeout);
+    };
+  }, [message, calm, last, isRu]);
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: [
+        "rounded-t-2xl border border-white/[0.08] border-b-0 shadow-[0_-16px_48px_rgba(0,0,0,0.55)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        open ? "translate-y-0" : "translate-y-[108%]"
+      ].join(" "),
+      style: { backgroundColor: CARD_SOFT },
+      children: [
+        /* @__PURE__ */ jsx("div", { className: "flex justify-center pt-2.5 pb-1", "aria-hidden": true, children: /* @__PURE__ */ jsx("span", { className: "h-1 w-9 rounded-full bg-white/20" }) }),
+        /* @__PURE__ */ jsxs("div", { className: "flex items-start gap-2.5 px-3.5 pb-3.5 pt-1.5", children: [
+          /* @__PURE__ */ jsx("span", { className: "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FF9A3D]/15", children: /* @__PURE__ */ jsx("img", { src: "/images/icons/telegram.svg", alt: "", width: 20, height: 20, "aria-hidden": true, className: "h-5 w-5" }) }),
+          /* @__PURE__ */ jsxs("div", { className: "min-w-0 flex-1", children: [
+            /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+              /* @__PURE__ */ jsx("span", { className: "text-[12px] font-semibold text-white/90", children: "Telegram" }),
+              /* @__PURE__ */ jsx(
+                "span",
+                {
+                  className: [
+                    "text-[10px] tabular-nums transition-colors duration-500",
+                    isLate ? "text-[#FFAB91]" : "text-white/38"
+                  ].join(" "),
+                  children: stage.time
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxs("p", { className: "mt-1.5 min-h-[2.4rem] text-[12px] leading-snug text-white/88 sm:text-[13px]", children: [
+              typed,
+              isTyping ? /* @__PURE__ */ jsx("span", { className: "ml-0.5 inline-block text-[#FF9A3D]", "aria-hidden": true, children: "|" }) : null
+            ] }),
+            /* @__PURE__ */ jsxs(
+              "div",
+              {
+                className: [
+                  "mt-2.5 flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[10px] font-medium transition-all duration-500",
+                  showStatus ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-1 opacity-0",
+                  isLate ? "bg-[#FF5722]/28 text-white" : "bg-white/10 text-white/88",
+                  stageIdx === last ? "bg-[#FF5722]/40 text-white" : ""
+                ].join(" "),
+                children: [
+                  /* @__PURE__ */ jsx(
+                    "span",
+                    {
+                      className: [
+                        "h-1.5 w-1.5 rounded-full",
+                        isLate ? "bg-[#FF5722]" : "bg-white/90"
+                      ].join(" "),
+                      "aria-hidden": true
+                    }
+                  ),
+                  /* @__PURE__ */ jsx("span", { children: stage.status })
+                ]
+              }
+            )
+          ] })
+        ] })
+      ]
+    }
+  );
+}
+function StatusRow({
+  title,
+  titleClass,
+  items,
+  toneClass
+}) {
+  return /* @__PURE__ */ jsxs("div", { children: [
+    /* @__PURE__ */ jsx("p", { className: `mb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] ${titleClass}`, children: title }),
+    /* @__PURE__ */ jsx("div", { className: "flex flex-wrap items-center gap-1.5", children: items.map((item) => /* @__PURE__ */ jsx(
+      "span",
+      {
+        className: [
+          "inline-flex items-center rounded-md px-2.5 py-1 text-[11px] font-medium",
+          toneClass[item.tone]
+        ].join(" "),
+        children: item.label
+      },
+      item.label
+    )) })
+  ] });
+}
+function StatusVisual({ isRu }) {
+  const copy = isRu ? {
+    goodTitle: "Как должно быть",
+    badTitle: "Как сейчас",
+    good: [
+      { label: "Новая", tone: "soft" },
+      { label: "В работе", tone: "mid" },
+      { label: "Записан", tone: "strong" },
+      { label: "Оплачен", tone: "paid" }
+    ],
+    bad: [
+      { label: "Без статуса", tone: "chaos" },
+      { label: "Потеряна", tone: "lost" },
+      { label: "Ждёт ответа", tone: "warn" },
+      { label: "Пропущена", tone: "lost" }
+    ]
+  } : {
+    goodTitle: "How it should be",
+    badTitle: "How it is now",
+    good: [
+      { label: "New", tone: "soft" },
+      { label: "In progress", tone: "mid" },
+      { label: "Booked", tone: "strong" },
+      { label: "Paid", tone: "paid" }
+    ],
+    bad: [
+      { label: "No status", tone: "chaos" },
+      { label: "Lost", tone: "lost" },
+      { label: "Awaiting", tone: "warn" },
+      { label: "Missed", tone: "lost" }
+    ]
+  };
+  const goodTone = {
+    soft: "bg-emerald-500/15 text-emerald-200/85",
+    mid: "bg-emerald-500/25 text-emerald-100",
+    strong: "bg-emerald-500/40 text-white",
+    paid: "bg-emerald-500 text-white"
+  };
+  const badTone = {
+    chaos: "bg-white/10 text-white/70",
+    warn: "bg-[#FF5722]/20 text-[#FFAB91]",
+    lost: "bg-[#FF5722]/30 text-white"
+  };
+  return /* @__PURE__ */ jsxs("div", { className: "min-w-0 space-y-3 pt-1 sm:pt-2", children: [
+    /* @__PURE__ */ jsx(
+      StatusRow,
+      {
+        title: copy.goodTitle,
+        titleClass: "text-emerald-400/70",
+        items: copy.good,
+        toneClass: goodTone
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      StatusRow,
+      {
+        title: copy.badTitle,
+        titleClass: "text-[#FF8A5C]/85",
+        items: copy.bad,
+        toneClass: badTone
+      }
+    )
+  ] });
+}
+function AdminToolCard({
+  kind,
+  title,
+  lines,
+  isRu
+}) {
+  if (kind === "notebook") {
+    return /* @__PURE__ */ jsxs("div", { className: "relative w-[9.75rem] shrink-0 overflow-hidden rounded-xl bg-[#1e1c18] sm:w-[10.75rem]", children: [
+      /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: "absolute inset-y-0 left-0 w-3 bg-[#FF9A3D]/35",
+          "aria-hidden": true
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: "absolute inset-y-2 left-[5px] flex flex-col justify-around",
+          "aria-hidden": true,
+          children: [0, 1, 2].map((n) => /* @__PURE__ */ jsx("span", { className: "h-1.5 w-1.5 rounded-full bg-[#141414]/80" }, n))
+        }
+      ),
+      /* @__PURE__ */ jsxs("div", { className: "relative pl-5 pr-2.5 py-2.5", children: [
+        /* @__PURE__ */ jsx("p", { className: "text-[10px] font-semibold uppercase tracking-[0.08em] text-[#FF9A3D]/90", children: title }),
+        /* @__PURE__ */ jsx("ul", { className: "mt-2 space-y-1.5 border-t border-dashed border-white/10 pt-2", children: lines.map((line) => /* @__PURE__ */ jsx(
+          "li",
+          {
+            className: "border-b border-white/[0.06] pb-1 font-mono text-[10px] leading-snug text-white/70",
+            children: line
+          },
+          line
+        )) })
+      ] })
+    ] });
+  }
+  if (kind === "calendar") {
+    const days = isRu ? ["пн", "вт", "ср", "чт", "пт", "сб", "вс"] : ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+    const cells = [null, null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+    const hot = /* @__PURE__ */ new Set([3, 7, 12]);
+    return /* @__PURE__ */ jsxs("div", { className: "w-[9.75rem] shrink-0 overflow-hidden rounded-xl bg-[#1a1a1a] sm:w-[10.75rem]", children: [
+      /* @__PURE__ */ jsx("div", { className: "bg-[#FF5722] px-2.5 py-1.5 text-center", children: /* @__PURE__ */ jsx("p", { className: "text-[10px] font-semibold uppercase tracking-[0.12em] text-white/90", children: isRu ? "март" : "march" }) }),
+      /* @__PURE__ */ jsx("div", { className: "grid grid-cols-7 gap-px px-1.5 pt-1.5 text-center text-[8px] text-white/35", children: days.map((d) => /* @__PURE__ */ jsx("span", { children: d }, d)) }),
+      /* @__PURE__ */ jsx("div", { className: "grid grid-cols-7 gap-0.5 px-1.5 pb-1.5 pt-1", children: cells.map((day, i) => /* @__PURE__ */ jsx(
+        "span",
+        {
+          className: [
+            "flex h-4 items-center justify-center rounded-sm text-[9px]",
+            day == null ? "" : hot.has(day) ? "bg-[#FF5722] font-semibold text-white" : "text-white/55"
+          ].join(" "),
+          children: day ?? ""
+        },
+        i
+      )) }),
+      /* @__PURE__ */ jsx("p", { className: "truncate border-t border-white/[0.06] px-2.5 py-1.5 text-[9px] text-white/50", children: lines[0] })
+    ] });
+  }
+  if (kind === "excel" || kind === "table") {
+    return /* @__PURE__ */ jsxs("div", { className: "w-[9.75rem] shrink-0 overflow-hidden rounded-xl bg-[#1a1a1a] sm:w-[10.75rem]", children: [
+      /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5 border-b border-white/[0.06] bg-white/[0.04] px-2 py-1.5", children: [
+        kind === "excel" ? /* @__PURE__ */ jsx(
+          "img",
+          {
+            src: "/images/icons/excel.svg",
+            alt: "",
+            width: 14,
+            height: 14,
+            "aria-hidden": true,
+            className: "h-3.5 w-3.5 shrink-0"
+          }
+        ) : /* @__PURE__ */ jsx("span", { className: "rounded px-1.5 py-0.5 text-[9px] font-semibold bg-white/15 text-white/80", children: "Sheet" }),
+        /* @__PURE__ */ jsx("span", { className: "truncate text-[10px] text-white/50", children: title })
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "p-2", children: /* @__PURE__ */ jsx("div", { className: "overflow-hidden rounded border border-white/10", children: lines.map((line, row) => /* @__PURE__ */ jsxs(
+        "div",
+        {
+          className: [
+            "flex border-b border-white/10 last:border-b-0",
+            row === 0 ? "bg-white/[0.06]" : ""
+          ].join(" "),
+          children: [
+            /* @__PURE__ */ jsx("span", { className: "w-5 shrink-0 border-r border-white/10 px-1 py-1 text-center text-[8px] text-white/30", children: row + 1 }),
+            /* @__PURE__ */ jsx("span", { className: "truncate px-1.5 py-1 text-[9px] text-white/65", children: line })
+          ]
+        },
+        line
+      )) }) })
+    ] });
+  }
+  if (kind === "chats") {
+    const bubbles = isRu ? [
+      { side: "in", text: "Здравствуйте!" },
+      { side: "out", text: "…" },
+      { side: "in", text: "Можно записаться?" }
+    ] : [
+      { side: "in", text: "Hello!" },
+      { side: "out", text: "…" },
+      { side: "in", text: "Can I book?" }
+    ];
+    return /* @__PURE__ */ jsxs("div", { className: "flex w-[9.75rem] shrink-0 flex-col overflow-hidden rounded-xl bg-[#1a1a1a] sm:w-[10.75rem]", children: [
+      /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 border-b border-white/[0.06] bg-white/[0.04] px-2.5 py-1.5", children: [
+        /* @__PURE__ */ jsx("span", { className: "flex h-5 w-5 items-center justify-center rounded-full bg-[#FF9A3D]/20", children: /* @__PURE__ */ jsx("img", { src: "/images/icons/telegram.svg", alt: "", width: 12, height: 12, "aria-hidden": true, className: "h-3 w-3" }) }),
+        /* @__PURE__ */ jsxs("div", { className: "min-w-0 flex-1", children: [
+          /* @__PURE__ */ jsx("p", { className: "truncate text-[10px] font-semibold text-white/85", children: title }),
+          /* @__PURE__ */ jsx("p", { className: "text-[8px] text-white/35", children: isRu ? "12 непрочит." : "12 unread" })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "flex flex-1 flex-col gap-1 px-2 py-2", children: bubbles.map((b, i) => /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: [
+            "max-w-[85%] rounded-lg px-2 py-1 text-[9px] leading-snug",
+            b.side === "in" ? "self-start rounded-tl-sm bg-white/10 text-white/75" : "self-end rounded-tr-sm bg-[#FF5722]/35 text-white/85"
+          ].join(" "),
+          children: b.text
+        },
+        `${b.text}-${i}`
+      )) }),
+      /* @__PURE__ */ jsx("div", { className: "border-t border-white/[0.06] px-2 py-1.5", children: /* @__PURE__ */ jsx("div", { className: "rounded-full bg-white/[0.06] px-2 py-1 text-[8px] text-white/30", children: isRu ? "Сообщение…" : "Message…" }) })
+    ] });
+  }
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: "w-[9.75rem] shrink-0 rounded-xl px-3 py-2.5 sm:w-[10.75rem]",
+      style: { backgroundColor: CARD_SOFT },
+      children: [
+        /* @__PURE__ */ jsx("p", { className: "text-[11px] font-semibold text-[#FF9A3D]", children: title }),
+        /* @__PURE__ */ jsx("ul", { className: "mt-1.5 space-y-1", children: lines.map((line) => /* @__PURE__ */ jsxs("li", { className: "truncate text-[11px] leading-snug text-white/60", children: [
+          /* @__PURE__ */ jsx("span", { className: "text-[#FF9A3D]/80", children: "›" }),
+          " ",
+          line
+        ] }, line)) })
+      ]
+    }
+  );
+}
+function AdminVisual({ isRu }) {
+  const cards = isRu ? [
+    {
+      kind: "notebook",
+      title: "Блокнот",
+      lines: ["Анна — перезвонить", "Игорь — прайс", "Салон — бронь"]
+    },
+    {
+      kind: "calendar",
+      title: "Календарь",
+      lines: ["15:00 — консультация"]
+    },
+    {
+      kind: "table",
+      title: "Таблица",
+      lines: ["строка 14 — новая", "строка 22 — ждёт", "фильтр сбит"]
+    },
+    {
+      kind: "excel",
+      title: "Excel",
+      lines: ["лист «заявки»", "нет статуса", "кто ответил?"]
+    },
+    {
+      kind: "memory",
+      title: "Память",
+      lines: ["«вроде ответил»", "«завтра напишу»", "«не помню»"]
+    },
+    {
+      kind: "chats",
+      title: "Чаты",
+      lines: ["12 непрочитанных", "3 пропущенных", "никто не взял"]
+    }
+  ] : [
+    {
+      kind: "notebook",
+      title: "Notebook",
+      lines: ["Anna — call back", "Igor — price list", "Salon — booking"]
+    },
+    {
+      kind: "calendar",
+      title: "Calendar",
+      lines: ["3:00 pm — consult"]
+    },
+    {
+      kind: "table",
+      title: "Sheet",
+      lines: ["row 14 — new", "row 22 — waiting", "filter broken"]
+    },
+    {
+      kind: "excel",
+      title: "Excel",
+      lines: ["leads tab", "no status", "who replied?"]
+    },
+    {
+      kind: "memory",
+      title: "Memory",
+      lines: ["«think I replied»", "«will write tomorrow»", "«don’t remember»"]
+    },
+    {
+      kind: "chats",
+      title: "Chats",
+      lines: ["12 unread", "3 missed", "nobody took it"]
+    }
+  ];
+  const rootRef = useRef(null);
+  const trackRef = useRef(null);
+  const indexRef = useRef(0);
+  const [index, setIndex] = useState(0);
+  const [noTransition, setNoTransition] = useState(false);
+  const inView = useInView(rootRef, { rootMargin: "60px 0px", threshold: 0 });
+  const HOLD_MS = 2400;
+  const SWIPE_MS = 480;
+  const n = cards.length;
+  const loop = [...cards, ...cards];
+  useEffect(() => {
+    if (!inView) return;
+    let holdId = 0;
+    let swipeId = 0;
+    let alive = true;
+    const goNext = () => {
+      if (!alive) return;
+      const next = indexRef.current + 1;
+      indexRef.current = next;
+      setNoTransition(false);
+      setIndex(next);
+      if (next === n) {
+        swipeId = window.setTimeout(() => {
+          if (!alive) return;
+          setNoTransition(true);
+          indexRef.current = 0;
+          setIndex(0);
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              if (!alive) return;
+              setNoTransition(false);
+              holdId = window.setTimeout(goNext, HOLD_MS);
+            });
+          });
+        }, SWIPE_MS);
+      } else {
+        holdId = window.setTimeout(goNext, HOLD_MS);
+      }
+    };
+    holdId = window.setTimeout(goNext, HOLD_MS);
+    return () => {
+      alive = false;
+      window.clearTimeout(holdId);
+      window.clearTimeout(swipeId);
+    };
+  }, [n, inView]);
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const first = track.children[0];
+    if (!first) return;
+    const gap = 10;
+    const step = first.offsetWidth + gap;
+    track.style.transform = `translate3d(${-index * step}px, 0, 0)`;
+  }, [index]);
+  return /* @__PURE__ */ jsxs("div", { ref: rootRef, className: "relative min-w-0 overflow-hidden pt-1 sm:pt-2", style: { overflowAnchor: "none" }, children: [
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        ref: trackRef,
+        className: [
+          "flex w-max items-stretch gap-2.5 will-change-transform",
+          noTransition ? "transition-none" : "transition-transform duration-[480ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+        ].join(" "),
+        children: loop.map((card, i) => /* @__PURE__ */ jsx(
+          AdminToolCard,
+          {
+            kind: card.kind,
+            title: card.title,
+            lines: card.lines,
+            isRu
+          },
+          `${card.kind}-${i}`
+        ))
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[#141414] to-transparent",
+        "aria-hidden": true
+      }
+    )
+  ] });
+}
+function PainBentoCard({
+  title,
+  text,
+  visual,
+  accent = false,
+  overlay = false,
+  bgImage,
+  bgAlways = false,
+  bgBlur = false,
+  bgPosition = "center center",
+  className
+}) {
+  return /* @__PURE__ */ jsxs(
+    "article",
+    {
+      className: [
+        "relative isolate flex flex-col overflow-hidden rounded-[20px] sm:rounded-2xl",
+        "min-h-0 sm:min-h-[260px] bg-[#141414]",
+        className ?? ""
+      ].join(" "),
+      style: { backgroundColor: CARD_DARK },
+      children: [
+        bgImage ? /* @__PURE__ */ jsxs(Fragment, { children: [
+          /* @__PURE__ */ jsx(
+            "img",
+            {
+              src: bgImage,
+              alt: "",
+              loading: "lazy",
+              decoding: "async",
+              draggable: false,
+              className: [
+                "absolute inset-0 z-0 h-full w-full scale-[1.08] object-cover",
+                bgAlways ? "opacity-100" : "opacity-0",
+                bgBlur ? "blur-[5px] brightness-[0.68] saturate-[0.92]" : ""
+              ].join(" "),
+              style: { objectPosition: bgPosition }
+            }
+          ),
+          bgAlways ? /* @__PURE__ */ jsx(
+            "div",
+            {
+              className: [
+                "pointer-events-none absolute inset-0 z-0",
+                bgBlur ? "bg-gradient-to-b from-black/55 via-black/48 to-black/72" : accent ? "bg-gradient-to-b from-black/55 via-black/48 to-black/78" : "bg-gradient-to-b from-black/60 via-black/48 to-black/78"
+              ].join(" "),
+              "aria-hidden": true
+            }
+          ) : null
+        ] }) : null,
+        /* @__PURE__ */ jsx(
+          "div",
+          {
+            className: [
+              "relative z-[1] flex flex-1 flex-col",
+              overlay ? "px-5 pb-4 pt-5 sm:px-8 sm:pb-5 sm:pt-8" : "px-5 pb-4 pt-5 sm:p-8"
+            ].join(" "),
+            children: overlay ? /* @__PURE__ */ jsxs("div", { className: "relative z-[1] flex min-h-[240px] flex-1 flex-col justify-start pb-[6.75rem] sm:min-h-[280px] sm:pb-[7.5rem]", children: [
+              /* @__PURE__ */ jsx("h3", { className: "font-hero text-[22px] font-semibold leading-snug tracking-[-0.03em] text-white sm:text-[24px]", children: title }),
+              /* @__PURE__ */ jsx("p", { className: "mt-2.5 max-w-[36ch] text-[15px] leading-[1.55] text-white/72 sm:text-[16px] sm:leading-[1.6]", children: text })
+            ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+              /* @__PURE__ */ jsx("div", { className: "mb-4 sm:mb-5 sm:min-h-[96px]", children: visual }),
+              /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-2 sm:mt-auto sm:gap-0", children: [
+                /* @__PURE__ */ jsx("h3", { className: "font-hero text-[22px] font-semibold leading-snug tracking-[-0.03em] text-white sm:text-[24px]", children: title }),
+                /* @__PURE__ */ jsx("p", { className: "text-[15px] leading-[1.55] text-white/72 sm:mt-2.5 sm:text-[16px] sm:leading-[1.6]", children: text })
+              ] })
+            ] })
+          }
+        ),
+        overlay ? /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-x-3 bottom-0 z-[3] sm:inset-x-4", children: visual }) : null
+      ]
+    }
+  );
+}
+function LandingPainSection() {
+  const { lang } = useLang();
+  const copy = landingCopy(lang);
+  const isRu = lang === "ru";
+  const items = copy.pain.items;
+  return /* @__PURE__ */ jsx(
+    "section",
+    {
+      id: "pain",
+      className: "relative z-[1] mt-2 scroll-mt-[calc(var(--tivonix-header-spacer)+12px)] bg-black pt-6 pb-14 sm:mt-6 sm:pt-4 sm:pb-20 lg:mt-8 lg:pt-6 lg:pb-24",
+      children: /* @__PURE__ */ jsxs(Container, { className: "relative", children: [
+        /* @__PURE__ */ jsx("div", { className: "min-w-0 text-center", children: /* @__PURE__ */ jsx(
+          "h2",
+          {
+            className: `${LANDING_HEADLINE_CLASS} text-center leading-[1.08] sm:leading-[0.98]`,
+            children: copy.pain.titleLines.map((line) => /* @__PURE__ */ jsx("span", { className: "block", children: line }, line))
+          }
+        ) }),
+        /* @__PURE__ */ jsxs("div", { className: "mt-5 grid grid-cols-1 gap-3.5 sm:mt-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-12 lg:items-stretch", children: [
+          /* @__PURE__ */ jsx(
+            PainBentoCard,
+            {
+              className: "h-auto sm:h-full lg:col-span-8 lg:min-h-[340px]",
+              title: items[0].title,
+              text: items[0].text,
+              bgImage: PAIN_CARD_BACKGROUNDS[0],
+              visual: /* @__PURE__ */ jsx(ChannelsVisual, { isRu })
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            PainBentoCard,
+            {
+              className: "h-auto sm:h-full lg:col-span-4 lg:min-h-[340px]",
+              title: items[1].title,
+              text: items[1].text,
+              accent: true,
+              overlay: true,
+              bgImage: PAIN_CARD_BACKGROUNDS[1],
+              bgAlways: true,
+              bgBlur: true,
+              bgPosition: "center 32%",
+              visual: /* @__PURE__ */ jsx(TelegramVisual, { isRu })
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            PainBentoCard,
+            {
+              className: "h-auto sm:h-full lg:col-span-6",
+              title: items[3].title,
+              text: items[3].text,
+              bgImage: PAIN_CARD_BACKGROUNDS[3],
+              visual: /* @__PURE__ */ jsx(AdminVisual, { isRu })
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            PainBentoCard,
+            {
+              className: "h-auto sm:h-full lg:col-span-6",
+              title: items[2].title,
+              text: items[2].text,
+              bgImage: PAIN_CARD_BACKGROUNDS[2],
+              visual: /* @__PURE__ */ jsx(StatusVisual, { isRu })
+            }
+          )
+        ] })
+      ] })
+    }
+  );
+}
 const OFFER_MOSAIC_BG = `/images/${encodeURI("как рабоает/пп/блоки/ffon.webp")}`;
-const OFFER_BOTTOM_MOBILE_BG = `/images/${encodeURI("как рабоает/пп/6.webp")}`;
-const TOP_ENTER_STAGGER_MS = 130;
-const TOP_ENTER_DURATION_MS = 820;
-const REVEAL_DELAY_MS = 200;
-const REVEAL_DURATION_MS = 2800;
+const OFFER_MOSAIC_ASPECT = 1672 / 941;
+const OFFER_TN_FOCUS_Y = 0.74;
+const TOP_ENTER_STAGGER_MS = 80;
+const TOP_ENTER_DURATION_MS = 420;
+const REVEAL_DELAY_MS = 60;
+const REVEAL_DURATION_MS = 1100;
 const OFFER_MOBILE_MAX_WIDTH = 1023;
 function clamp$1(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -3392,29 +6297,35 @@ function useOfferMosaicBackground(mosaicRef) {
     const mosaic = mosaicRef.current;
     if (!mosaic) return;
     const update = () => {
-      const mosaicRect = mosaic.getBoundingClientRect();
+      const mosaicEl = mosaicRef.current;
+      if (!mosaicEl) return;
+      const mosaicRect = mosaicEl.getBoundingClientRect();
       if (mosaicRect.width <= 0 || mosaicRect.height <= 0) return;
-      const rowBottom2 = mosaic.querySelector(".offer-mosaic__row-bottom");
       const isMobile = window.innerWidth < 1024;
-      const gridW = isMobile && rowBottom2 ? Math.max(mosaicRect.width, rowBottom2.scrollWidth) : mosaicRect.width;
-      const gridH = mosaicRect.height;
-      mosaic.style.setProperty("--offer-grid-w", `${gridW}px`);
-      mosaic.style.setProperty("--offer-grid-h", `${gridH}px`);
-      mosaic.querySelectorAll("[data-offer-slice]").forEach((card) => {
-        const inBottomRow = card.closest(".offer-mosaic__row-bottom") !== null;
-        if (isMobile && inBottomRow) {
-          card.style.removeProperty("--offer-bg-w");
-          card.style.removeProperty("--offer-bg-h");
-          card.style.removeProperty("--offer-bg-pos-x");
-          card.style.removeProperty("--offer-bg-pos-y");
+      const rowBottom2 = mosaicEl.querySelector(".offer-mosaic__row-bottom");
+      mosaicEl.style.setProperty("--offer-grid-w", `${mosaicRect.width}px`);
+      mosaicEl.style.setProperty("--offer-grid-h", `${mosaicRect.height}px`);
+      mosaicEl.querySelectorAll("[data-offer-slice]").forEach((card) => {
+        const inBottomRow = Boolean(card.closest(".offer-mosaic__row-bottom"));
+        if (isMobile && inBottomRow && rowBottom2) {
+          const rowRect = rowBottom2.getBoundingClientRect();
+          const cardRect2 = card.getBoundingClientRect();
+          const gridW = Math.max(rowBottom2.scrollWidth, rowRect.width);
+          const gridH = gridW / OFFER_MOSAIC_ASPECT;
+          const posX2 = cardRect2.left - rowRect.left + rowBottom2.scrollLeft;
+          const posY2 = cardRect2.height * 0.48 - gridH * OFFER_TN_FOCUS_Y;
+          card.style.setProperty("--offer-bg-w", `${gridW}px`);
+          card.style.setProperty("--offer-bg-h", `${gridH}px`);
+          card.style.setProperty("--offer-bg-pos-x", `${-posX2}px`);
+          card.style.setProperty("--offer-bg-pos-y", `${posY2}px`);
           return;
         }
         const cardRect = card.getBoundingClientRect();
-        const scroll = getAccumulatedScroll(card, mosaic);
+        const scroll = getAccumulatedScroll(card, mosaicEl);
         const posX = cardRect.left - mosaicRect.left + scroll.x;
         const posY = cardRect.top - mosaicRect.top + scroll.y;
-        card.style.setProperty("--offer-bg-w", `${gridW}px`);
-        card.style.setProperty("--offer-bg-h", `${gridH}px`);
+        card.style.setProperty("--offer-bg-w", `${mosaicRect.width}px`);
+        card.style.setProperty("--offer-bg-h", `${mosaicRect.height}px`);
         card.style.setProperty("--offer-bg-pos-x", `${-posX}px`);
         card.style.setProperty("--offer-bg-pos-y", `${-posY}px`);
       });
@@ -3473,12 +6384,12 @@ function useOfferSectionAnimation(mosaicRef, bottomCardRefs) {
     const measured = measureBottomRow();
     if (!measured) return;
     const { cards } = measured;
-    const staggerSpan = 0.72;
+    const staggerSpan = 0.32;
     const next = cards.map((_, index) => {
       const start = index / cards.length * staggerSpan;
-      const local = clamp$1((progress - start) / (1 - start + 0.18), 0, 1);
-      const bgRaw = clamp$1(local / 0.58, 0, 1);
-      const textRaw = clamp$1((local - 0.32) / 0.52, 0, 1);
+      const local = clamp$1((progress - start) / (1 - start + 0.12), 0, 1);
+      const bgRaw = clamp$1(local / 0.45, 0, 1);
+      const textRaw = clamp$1((local - 0.12) / 0.4, 0, 1);
       return {
         bg: easeOutCubic(bgRaw),
         text: easeOutCubic(textRaw)
@@ -3587,16 +6498,15 @@ function MetricCard({
       slice,
       bgReveal,
       textReveal: textReveal2,
-      className: ["min-h-[200px] sm:min-h-[220px] lg:min-h-0", className].filter(Boolean).join(" "),
-      children: /* @__PURE__ */ jsxs("div", { className: "flex min-h-0 flex-1 flex-col justify-between gap-6", children: [
-        /* @__PURE__ */ jsx("h3", { className: "font-hero text-[clamp(1.2rem,2.2vw,1.55rem)] font-semibold leading-[1.2] tracking-[-0.03em] text-white", children: title }),
-        /* @__PURE__ */ jsx("p", { className: "text-pretty text-[14px] leading-[1.55] text-white/55 sm:text-[15px] sm:leading-[1.6]", children: text })
+      className: ["min-h-[280px] sm:min-h-[300px] lg:min-h-0", className].filter(Boolean).join(" "),
+      children: /* @__PURE__ */ jsxs("div", { className: "flex min-h-0 flex-1 flex-col justify-between gap-5", children: [
+        /* @__PURE__ */ jsx("h3", { className: "min-h-[2.6em] font-hero text-[clamp(1.2rem,2.2vw,1.55rem)] font-normal uppercase leading-[1.12] tracking-[0.02em] text-white", children: title }),
+        /* @__PURE__ */ jsx("p", { className: "min-h-[4.65em] text-pretty text-[14px] font-normal leading-[1.55] tracking-normal text-white/70 sm:min-h-[4.65em] sm:text-[15px]", children: text })
       ] })
     }
   );
 }
 function FeaturedCard({
-  badge,
   title,
   text,
   linkText,
@@ -3614,16 +6524,15 @@ function FeaturedCard({
         className ?? ""
       ].filter(Boolean).join(" "),
       children: /* @__PURE__ */ jsxs(OfferBlockCard, { slice: 1, className: "h-full lg:min-h-0", children: [
-        /* @__PURE__ */ jsx("div", { className: "text-[13px] font-semibold tracking-[0.14em] text-white/70 sm:text-[14px]", children: badge }),
-        /* @__PURE__ */ jsxs("div", { className: "my-4 max-w-[48ch] flex-1 sm:my-5 lg:my-4", children: [
-          /* @__PURE__ */ jsx("h3", { className: "font-hero text-[clamp(1.35rem,2.8vw,1.85rem)] font-semibold leading-[1.2] tracking-[-0.03em] text-white", children: title }),
-          /* @__PURE__ */ jsx("p", { className: "mt-3 text-[15px] leading-[1.65] text-white/62 sm:mt-3.5 sm:text-[16px] sm:leading-[1.7]", children: text }),
+        /* @__PURE__ */ jsxs("div", { className: "my-0 max-w-[48ch] flex-1 sm:my-1 lg:my-0", children: [
+          /* @__PURE__ */ jsx("h3", { className: "font-hero text-[clamp(1.35rem,2.8vw,1.85rem)] font-normal uppercase leading-[1.12] tracking-[0.02em] text-white", children: title }),
+          /* @__PURE__ */ jsx("p", { className: "mt-3 text-[15px] font-normal leading-[1.55] tracking-normal text-white/72 sm:mt-3.5 sm:text-[16px] sm:leading-[1.6]", children: text }),
           /* @__PURE__ */ jsxs(
             "button",
             {
               type: "button",
               onClick: () => openLeadForm("main_offer"),
-              className: "group mt-5 inline-flex min-h-[2.5rem] items-center gap-1.5 text-[14px] font-medium text-white/85 transition hover:text-[#FFAE66]",
+              className: "group mt-5 inline-flex min-h-[2.5rem] items-center gap-1.5 text-[14px] font-medium tracking-normal text-white/85 transition hover:text-[#FFAE66]",
               children: [
                 linkText,
                 /* @__PURE__ */ jsx(
@@ -3638,7 +6547,7 @@ function FeaturedCard({
             }
           )
         ] }),
-        /* @__PURE__ */ jsx("p", { className: "text-[13px] leading-snug text-white/45 sm:text-[14px]", children: footer })
+        /* @__PURE__ */ jsx("p", { className: "text-[13px] font-normal leading-snug tracking-normal text-white/55 sm:text-[14px]", children: footer })
       ] })
     }
   );
@@ -3666,15 +6575,13 @@ function MainOfferSection() {
             ref: mosaicRef,
             className: "offer-mosaic relative mt-10 flex flex-col gap-2.5 sm:mt-12 sm:gap-4",
             style: {
-              ["--offer-mosaic-image"]: `url("${OFFER_MOSAIC_BG}")`,
-              ["--offer-mobile-bottom-image"]: `url("${OFFER_BOTTOM_MOBILE_BG}")`
+              ["--offer-mosaic-image"]: `url("${OFFER_MOSAIC_BG}")`
             },
             children: [
               /* @__PURE__ */ jsxs("div", { className: "offer-mosaic__row-top grid grid-cols-1 gap-2.5 sm:gap-4", children: [
                 /* @__PURE__ */ jsx("div", { className: "offer-mosaic__cell min-h-[220px] min-w-0 w-full sm:min-h-[240px] lg:col-span-8 lg:min-h-0", children: /* @__PURE__ */ jsx(
                   FeaturedCard,
                   {
-                    badge: copy.offer.featured.badge,
                     title: copy.offer.featured.title,
                     text: copy.offer.featured.text,
                     linkText: copy.offer.featured.linkText,
@@ -3715,7 +6622,7 @@ function MainOfferSection() {
                       ...item,
                       bgReveal: cardReveals[i]?.bg ?? 0,
                       textReveal: cardReveals[i]?.text ?? 0,
-                      className: "h-full lg:min-h-0"
+                      className: "h-full min-h-[21rem] sm:min-h-[21rem] lg:min-h-0"
                     }
                   )
                 },
@@ -3797,11 +6704,64 @@ const AI_MODELS = MODEL_DEFS.map((model, index) => {
   };
 });
 const AI_MODEL_COUNT = AI_MODELS.length;
-function cx$b(...a) {
+function cx$9(...a) {
   return a.filter(Boolean).join(" ");
 }
 function TivonixGlowBorder({ className, children }) {
-  return /* @__PURE__ */ jsx("div", { className: cx$b("tivonix-glow-border", className), children: /* @__PURE__ */ jsx("div", { className: "tivonix-glow-border__content relative min-h-0 flex-1", children }) });
+  return /* @__PURE__ */ jsx("div", { className: cx$9("tivonix-glow-border", className), children: /* @__PURE__ */ jsx("div", { className: "tivonix-glow-border__content relative min-h-0 flex-1", children }) });
+}
+function cx$8(...a) {
+  return a.filter(Boolean).join(" ");
+}
+function ScrollFingerHint({
+  visible,
+  label,
+  variant = "light",
+  bare: _bare = false,
+  onActivate,
+  className,
+  style
+}) {
+  const isDark = variant === "dark";
+  const ink = isDark ? "#1a1a1a" : "#ffffff";
+  const accent = "#ff6b2c";
+  const Tag = onActivate ? "button" : "div";
+  return /* @__PURE__ */ jsxs(
+    Tag,
+    {
+      type: onActivate ? "button" : void 0,
+      onClick: onActivate,
+      className: cx$8(
+        "scroll-finger-hint",
+        visible && "scroll-finger-hint--visible",
+        isDark && "scroll-finger-hint--dark",
+        className
+      ),
+      style,
+      "aria-hidden": !visible,
+      "aria-label": onActivate ? label ?? "Scroll down" : void 0,
+      tabIndex: onActivate && visible ? 0 : -1,
+      children: [
+        /* @__PURE__ */ jsx("span", { className: "scroll-finger-hint__icon", "aria-hidden": true, children: /* @__PURE__ */ jsxs("svg", { viewBox: "0 0 28 44", width: "28", height: "44", fill: "none", children: [
+          /* @__PURE__ */ jsx(
+            "rect",
+            {
+              x: "2",
+              y: "1",
+              width: "24",
+              height: "40",
+              rx: "12",
+              stroke: ink,
+              strokeWidth: "2"
+            }
+          ),
+          /* @__PURE__ */ jsx("rect", { x: "12", y: "8", width: "4", height: "12", rx: "2", stroke: ink, strokeWidth: "1.5", opacity: "0.55" }),
+          /* @__PURE__ */ jsx("circle", { className: "scroll-finger-hint__wheel", cx: "14", cy: "11", r: "2", fill: accent })
+        ] }) }),
+        label ? /* @__PURE__ */ jsx("span", { className: "scroll-finger-hint__label", children: label }) : null
+      ]
+    }
+  );
 }
 const ANIM_PIN_VH = 235;
 const DRIFT_RUNWAY_VH = 32;
@@ -3817,11 +6777,11 @@ const HUB_START = 0.36;
 const TYPE_START = 0.895;
 const TYPE_END = 1;
 const AI_MARK_PHASE_END = 0.18;
-function clamp01$3(v) {
+function clamp01$2(v) {
   return Math.min(1, Math.max(0, v));
 }
 function smoothstep(t) {
-  const x = clamp01$3(t);
+  const x = clamp01$2(t);
   return x * x * (3 - 2 * x);
 }
 function lerp(a, b, t) {
@@ -3859,7 +6819,7 @@ function hubReveal(progress) {
   return smoothstep((progress - HUB_START) / 0.1);
 }
 function rowReady(drop) {
-  return smoothstep(clamp01$3((drop - 0.94) / 0.06));
+  return smoothstep(clamp01$2((drop - 0.94) / 0.06));
 }
 function typewriterLength(progress, length, drop) {
   const ready = rowReady(drop);
@@ -3952,16 +6912,16 @@ function AiPremiumSection() {
       trackTop = window.scrollY + rect.top;
       animPinHeight = animPin.offsetHeight;
       trackHeight = track.offsetHeight;
-      animScrollable = Math.max(1, animPinHeight - window.innerHeight);
+      animScrollable = Math.max(1, animPinHeight - getStableViewportHeight());
       driftScrollable = Math.max(1, trackHeight - animPinHeight);
-      tailPx = DRIFT_RUNWAY_VH / 100 * window.innerHeight;
+      tailPx = DRIFT_RUNWAY_VH / 100 * getStableViewportHeight();
       headerSpacer = Number.parseFloat(
         getComputedStyle(document.documentElement).getPropertyValue("--tivonix-header-spacer")
       ) || 92;
     };
     const applyFrame = () => {
       const scrollY = window.scrollY;
-      const viewport = window.innerHeight;
+      const viewport = getStableViewportHeight();
       const scrollInTrack = scrollY - trackTop;
       if (scrollInTrack < -viewport || scrollInTrack > trackHeight + viewport) {
         if (showHintRef.current) {
@@ -3972,8 +6932,8 @@ function AiPremiumSection() {
       }
       const rectTop = sectionRef.current?.getBoundingClientRect().top ?? trackTop - scrollY;
       const scrollable = Math.max(1, trackHeight - viewport);
-      const pinProgress = reducedMotion ? tgWebView || scrollInTrack > animScrollable * 0.2 ? 1 : 0 : clamp01$3(scrollInTrack / animScrollable);
-      const drift = reducedMotion ? 0 : clamp01$3((scrollInTrack - animScrollable) / driftScrollable);
+      const pinProgress = reducedMotion ? tgWebView || scrollInTrack > animScrollable * 0.2 ? 1 : 0 : clamp01$2(scrollInTrack / animScrollable);
+      const drift = reducedMotion ? 0 : clamp01$2((scrollInTrack - animScrollable) / driftScrollable);
       const isEntered = rectTop < viewport * 0.85;
       const approach = rectTop < viewport * 0.92 ? sectionApproach(rectTop, viewport, headerSpacer) : scrollInTrack > 0 ? 1 : 0;
       const progress = pinProgress;
@@ -3986,7 +6946,8 @@ function AiPremiumSection() {
       const textOpacity = textReveal(progress, drop) * (1 - hubFade);
       const hubOpacity = hub * (1 - hubFade);
       const targetExitScroll = rowExitScroll(drift);
-      const smoothRate = reducedMotion ? 1 : scrollY === lastScrollY ? 0.1 : 0.18;
+      const isScrolling = scrollY !== lastScrollY;
+      const smoothRate = reducedMotion || !isScrolling ? 1 : 0.18;
       smoothExitScroll += (targetExitScroll - smoothExitScroll) * smoothRate;
       const exitScroll = smoothExitScroll;
       const auroraStrength = 1;
@@ -3995,7 +6956,9 @@ function AiPremiumSection() {
       const nextHint = !reducedMotion && inAnimPin && rectTop <= 48 && progress < 0.28;
       if (nextHint !== showHintRef.current) {
         showHintRef.current = nextHint;
-        setShowScrollHint(nextHint);
+        if (isScrolling || !nextHint) {
+          setShowScrollHint(nextHint);
+        }
       }
       lastScrollY = scrollY;
       if (expand !== lastExpand) {
@@ -4059,7 +7022,7 @@ function AiPremiumSection() {
         if (stripActive) {
           const maxScroll = Math.max(0, phoneStrip.scrollWidth - phoneStrip.clientWidth);
           const animSettled = smoothstep((progress - 0.97) / 0.03);
-          const scrollT = clamp01$3(animSettled * 0.15 + exitScroll * 0.85);
+          const scrollT = clamp01$2(animSettled * 0.15 + exitScroll * 0.85);
           const targetScroll = scrollT * maxScroll;
           if (Math.abs(phoneStrip.scrollLeft - targetScroll) > 0.5) {
             phoneStrip.scrollLeft = targetScroll;
@@ -4183,7 +7146,7 @@ function AiPremiumSection() {
           img.style.opacity = imgOpacity;
         }
       });
-      return Math.abs(smoothExitScroll - targetExitScroll) > 15e-4;
+      return isScrolling && Math.abs(smoothExitScroll - targetExitScroll) > 15e-4;
     };
     const update = () => {
       const continueSmoothing = applyFrame();
@@ -4192,7 +7155,10 @@ function AiPremiumSection() {
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
     };
+    let lastW = window.innerWidth;
     const onResize = () => {
+      if (Math.abs(window.innerWidth - lastW) < 10) return;
+      lastW = window.innerWidth;
       lastScrollY = -1;
       smoothExitScroll = 0;
       measure();
@@ -4431,778 +7397,12 @@ function usePrefersReducedMotion() {
   }, []);
   return reduced;
 }
-const PLAN_CATALOG = {
-  start: {
-    id: "start",
-    name: "Start",
-    tagline: {
-      ru: "Лендинг + заявки + Telegram",
-      en: "Landing page + leads + Telegram"
-    },
-    telegramPayload: "plan_start",
-    adminSource: "Start (/plans)",
-    ctaAction: "telegram"
-  },
-  growth: {
-    id: "growth",
-    name: "Growth",
-    tagline: {
-      ru: "Система заявок + Telegram + мини-CRM",
-      en: "Lead system + Telegram + mini-CRM"
-    },
-    telegramPayload: "plan_growth",
-    adminSource: "Growth (/plans)",
-    ctaAction: "telegram"
-  },
-  product: {
-    id: "product",
-    name: "Product",
-    tagline: {
-      ru: "Веб-сервис, кабинет, админка, оплата",
-      en: "Web service, client area, admin, payments"
-    },
-    telegramPayload: "plan_product",
-    adminSource: "Product (/plans)",
-    ctaAction: "telegram"
-  },
-  custom: {
-    id: "custom",
-    name: "Custom",
-    tagline: {
-      ru: "Автоматизация, AI и индивидуальное решение",
-      en: "Automation, AI and a custom build"
-    },
-    telegramPayload: "plan_custom",
-    adminSource: "Custom (/plans)",
-    ctaAction: "telegram"
-  },
-  help: {
-    id: "help",
-    name: "Help",
-    tagline: {
-      ru: "Подбор подходящего формата запуска",
-      en: "Finding the right launch format"
-    },
-    telegramPayload: "plan_help",
-    adminSource: "Help (/plans)",
-    ctaAction: "telegram"
-  }
-};
-({
-  start: PLAN_CATALOG.start.telegramPayload,
-  growth: PLAN_CATALOG.growth.telegramPayload,
-  product: PLAN_CATALOG.product.telegramPayload,
-  custom: PLAN_CATALOG.custom.telegramPayload
-});
-PLAN_CATALOG.help.telegramPayload;
-const PARTNER_AGENCY_TELEGRAM_PAYLOAD = "partner_agency";
-function getPlanCtaAction(planId) {
-  return PLAN_CATALOG[planId].ctaAction;
-}
-({
-  ...Object.fromEntries(
-    Object.values(PLAN_CATALOG).map((entry) => [entry.telegramPayload, entry.adminSource])
-  )
-});
-const PLAN_IDS = ["start", "growth", "product", "custom"];
-const COMPARISON_GROUPS = [
-  {
-    id: "core",
-    rows: [
-      { id: "landing", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "responsive", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "form", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "contactButtons", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "telegramNotify", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "emailNotify", values: { start: { kind: "option" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
-    ]
-  },
-  {
-    id: "crm",
-    rows: [
-      { id: "leadStorage", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "leadTable", values: { start: { kind: "option" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "miniCrm", values: { start: { kind: "no" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "statuses", values: { start: { kind: "no" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "history", values: { start: { kind: "no" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "roles", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
-    ]
-  },
-  {
-    id: "product",
-    rows: [
-      { id: "cabinet", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "admin", values: { start: { kind: "no" }, growth: { kind: "basic" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "auth", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "database", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "booking", values: { start: { kind: "option" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "payments", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
-    ]
-  },
-  {
-    id: "automation",
-    rows: [
-      { id: "autoNotify", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "integrations", values: { start: { kind: "no" }, growth: { kind: "basic" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "aiBot", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "option" }, custom: { kind: "yes" } } },
-      { id: "aiLeads", values: { start: { kind: "no" }, growth: { kind: "no" }, product: { kind: "option" }, custom: { kind: "yes" } } },
-      { id: "documents", values: { start: { kind: "no" }, growth: { kind: "no" }, product: { kind: "option" }, custom: { kind: "yes" } } },
-      { id: "customFlows", values: { start: { kind: "no" }, growth: { kind: "option" }, product: { kind: "yes" }, custom: { kind: "yes" } } }
-    ]
-  },
-  {
-    id: "launch",
-    rows: [
-      { id: "domain", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "deploy", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "guide", values: { start: { kind: "yes" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      { id: "testing", values: { start: { kind: "basic" }, growth: { kind: "yes" }, product: { kind: "yes" }, custom: { kind: "yes" } } },
-      {
-        id: "support",
-        values: {
-          start: { kind: "text", textKey: "support7" },
-          growth: { kind: "text", textKey: "support14" },
-          product: { kind: "text", textKey: "support30" },
-          custom: { kind: "text", textKey: "supportCustom" }
-        }
-      }
-    ]
-  }
-];
-const PLANS = [
-  { id: "start", ctaAction: getPlanCtaAction("start") },
-  { id: "growth", badgeKey: "popular", highlight: true, ctaAction: getPlanCtaAction("growth") },
-  { id: "product", badgeKey: "product", ctaAction: getPlanCtaAction("product") },
-  { id: "custom", ctaAction: getPlanCtaAction("custom") }
-];
-const LAUNCH_DISCOUNT_PERCENT = 10;
-const PLAN_PRICE_USD = {
-  start: 400,
-  growth: 900,
-  product: 2e3
-};
-function planPriceStrings(fromLabel, usd) {
-  const discounted = Math.round(usd * (1 - LAUNCH_DISCOUNT_PERCENT / 100));
-  return {
-    price: `${fromLabel} $${discounted}`,
-    priceOriginal: `${fromLabel} $${usd}`
-  };
-}
-function planPagePrice(lang, planId) {
-  const copy = pricingCopy(lang);
-  const p = copy.plans[planId];
-  return p.price !== "индивидуально" && p.price !== "custom" ? p.price : void 0;
-}
-const COPY_RU = {
-  title: "Планы запуска",
-  subtitle: "Понятные тарифы под вашу задачу — от первых заявок до полноценного веб-сервиса",
-  includesLabel: "Что входит",
-  launchDiscount: {
-    percent: "10%",
-    note: "* Скидка — мы только начинаем: первые проекты запускаем по сниженной цене."
-  },
-  afterSelect: {
-    title: "Что будет после выбора плана",
-    steps: [
-      "Вы выбираете подходящий план",
-      "Мы уточняем задачу и объём",
-      "Предлагаем понятный вариант запуска",
-      "После согласования начинаем работу"
-    ],
-    note: "Цены указаны «от», потому что итог зависит от экранов, логики, интеграций и сроков. Оплата происходит после обсуждения и согласования задачи."
-  },
-  compareTitle: "Сравнение тарифов",
-  expandAll: "Развернуть всё",
-  collapseAll: "Свернуть",
-  cell: {
-    yes: "Да",
-    no: "—",
-    option: "Опция",
-    basic: "Базово"
-  },
-  cellText: {
-    support7: "7 дней",
-    support14: "14 дней",
-    support30: "30 дней",
-    supportCustom: "По договорённости"
-  },
-  badges: {
-    popular: "Чаще выбирают",
-    product: "Для веб-сервиса"
-  },
-  plans: {
-    start: {
-      name: "Start",
-      tagline: "Для быстрого запуска заявок",
-      ...planPriceStrings("от", PLAN_PRICE_USD.start),
-      desc: "Когда нужно быстро запустить страницу под рекламу, Instagram или Telegram и начать собирать заявки в одном месте.",
-      includes: [
-        "лендинг или страница услуги",
-        "форма заявки",
-        "кнопки связи",
-        "уведомления в Telegram/email",
-        "адаптация под телефон",
-        "базовая аналитика",
-        "запуск на домене"
-      ],
-      cta: "Обсудить запуск",
-      ctaHint: "Откроется Telegram-бот, займёт около 2 минут.",
-      compactCta: "Обсудить Start"
-    },
-    growth: {
-      name: "Growth",
-      tagline: "Система заявок для бизнеса",
-      ...planPriceStrings("от", PLAN_PRICE_USD.growth),
-      desc: "Когда заявок становится больше, они приходят из разных каналов и команде нужен порядок: статусы, ответственные, таблица или mini-CRM.",
-      includes: [
-        "сайт или несколько страниц",
-        "форма заявки",
-        "Telegram-уведомления",
-        "таблица или мини-CRM",
-        "статусы заявок",
-        "базовая админка",
-        "подключение аналитики",
-        "помощь с запуском"
-      ],
-      cta: "Рассчитать систему",
-      ctaHint: "Откроется короткая форма. План уже будет выбран.",
-      compactCta: "Оставить заявку"
-    },
-    product: {
-      name: "Product",
-      tagline: "Веб-сервис под ключ",
-      ...planPriceStrings("от", PLAN_PRICE_USD.product),
-      desc: "Когда нужен не просто сайт, а рабочий веб-сервис: пользователи, личные кабинеты, роли, база данных и админ-панель.",
-      includes: [
-        "личный кабинет",
-        "админ-панель",
-        "регистрация и авторизация",
-        "роли пользователей",
-        "заявки, статусы, уведомления",
-        "база данных",
-        "интеграции",
-        "оплата",
-        "адаптивный интерфейс",
-        "подготовка к запуску"
-      ],
-      cta: "Обсудить продукт",
-      ctaHint: "Откроется короткая форма. Опишете продукт — мы оценим объём.",
-      compactCta: "Описать продукт"
-    },
-    custom: {
-      name: "Custom",
-      tagline: "Автоматизация и AI-решения",
-      price: "индивидуально",
-      desc: "Когда задача не помещается в готовый тариф: AI-бот, сложная CRM, автоматизация документов, интеграции или внутренняя система.",
-      includes: [
-        "AI-боты и ассистенты",
-        "автоматизация заявок",
-        "интеграции с сервисами",
-        "обработка данных и документов",
-        "личные кабинеты",
-        "сложные роли и сценарии",
-        "кастомная CRM",
-        "поддержка и развитие"
-      ],
-      cta: "Запросить план",
-      ctaHint: "Откроется Telegram-бот для обсуждения нестандартной задачи.",
-      compactCta: "Обсудить Custom"
-    }
-  },
-  faq: {
-    title: "Частые вопросы о тарифах",
-    items: [
-      {
-        id: "price-from",
-        q: "Что значит цена «от»?",
-        a: "Это минимальная стоимость запуска. Итог зависит от количества экранов, логики, интеграций, личного кабинета, CRM и сроков."
-      },
-      {
-        id: "pay-now",
-        q: "Нужно ли платить сразу?",
-        a: "Нет. Сначала мы обсуждаем задачу, уточняем объём и только потом согласуем стоимость и этапы работы."
-      },
-      {
-        id: "which-plan",
-        q: "Какой план выбрать, если я не понимаю?",
-        a: "Можно выбрать Growth или просто написать нам. Мы разберём задачу и подскажем, нужен сайт, бот, CRM, кабинет или кастомная автоматизация."
-      },
-      {
-        id: "start-expand",
-        q: "Можно начать со Start, а потом расширить?",
-        a: "Да. Часто лучше запустить простую версию, проверить заявки, а потом добавить CRM, статусы, кабинет или интеграции."
-      },
-      {
-        id: "growth-includes",
-        q: "Что входит в Growth?",
-        a: "Growth подходит, когда нужно не просто принять заявку, а навести порядок: формы, Telegram-уведомления, статусы, таблица или mini-CRM, понятный процесс обработки."
-      },
-      {
-        id: "when-product",
-        q: "Когда нужен Product?",
-        a: "Product нужен, если это уже не просто сайт, а веб-сервис: пользователи, личные кабинеты, роли, база данных, оплата, админ-панель."
-      },
-      {
-        id: "when-custom",
-        q: "Когда выбирать Custom?",
-        a: "Custom подходит для нестандартных задач: AI-боты, сложные CRM, автоматизация документов, интеграции, внутренние панели и процессы под вашу команду."
-      }
-    ]
-  },
-  groups: {
-    core: "Основное",
-    crm: "Заявки и CRM",
-    product: "Продуктовая логика",
-    automation: "Автоматизация и AI",
-    launch: "Запуск и поддержка"
-  },
-  features: {
-    landing: "Лендинг / страница",
-    responsive: "Адаптив под телефон",
-    form: "Форма заявки",
-    contactButtons: "Кнопки связи",
-    telegramNotify: "Telegram-уведомления",
-    emailNotify: "Email-уведомления",
-    leadStorage: "Хранение заявок",
-    leadTable: "Таблица заявок",
-    miniCrm: "Мини-CRM",
-    statuses: "Статусы заявок",
-    history: "История обработки",
-    roles: "Роли сотрудников",
-    cabinet: "Личный кабинет",
-    admin: "Админ-панель",
-    auth: "Авторизация",
-    database: "База данных",
-    booking: "Онлайн-запись",
-    payments: "Оплата",
-    autoNotify: "Автоуведомления",
-    integrations: "Интеграции",
-    aiBot: "AI-бот",
-    aiLeads: "AI-обработка заявок",
-    documents: "Обработка документов",
-    customFlows: "Кастомные сценарии",
-    domain: "Помощь с доменом",
-    deploy: "Деплой",
-    guide: "Базовая инструкция",
-    testing: "Тестирование сценариев",
-    support: "Поддержка после запуска"
-  },
-  footer: {
-    valueTitle: "Платите только за",
-    valueTitleHighlight: "нужный объём запуска",
-    valueAside: "Не за лишние модули, которыми пока не пользуетесь",
-    valueLead: "Сначала запускаем то, что помогает получать и обрабатывать заявки. Когда бизнесу становится тесно — добавляем CRM, кабинет, оплату, интеграции или автоматизацию.",
-    helpTitle: "Не уверены, какой план выбрать?",
-    helpLead: "Опишите задачу своими словами — подскажем, с чего лучше начать: Start, Growth, Product или Custom.",
-    helpCta: "Написать в Telegram",
-    helpModalCta: "Оставить заявку",
-    planScopeCaption: "Объём запуска по планам",
-    chips: {
-      start: ["Лендинг", "Форма", "Telegram"],
-      growth: ["Мини-CRM", "Статусы", "Админка"],
-      product: ["Кабинет", "Оплата", "Роли"],
-      custom: ["AI-боты", "Интеграции", "CRM"]
-    },
-    shortDesc: {
-      start: "Быстрый запуск страницы и заявок",
-      growth: "Система заявок для команды",
-      product: "Полноценный веб-сервис",
-      custom: "Индивидуальная автоматизация"
-    }
-  }
-};
-const COPY_EN = {
-  title: "Launch plans",
-  subtitle: "Clear plans for your task — from first leads to a full web service",
-  includesLabel: "What's included",
-  launchDiscount: {
-    percent: "10%",
-    note: "* Launch discount — we're just getting started: early projects at a reduced rate."
-  },
-  afterSelect: {
-    title: "What happens after you choose a plan",
-    steps: [
-      "You pick the plan that fits",
-      "We clarify the task and scope",
-      "We propose a clear launch option",
-      "After agreement, we start work"
-    ],
-    note: "Prices are shown “from” because the final cost depends on screens, logic, integrations and timeline. Payment happens after we discuss and agree on the scope."
-  },
-  compareTitle: "Compare plans",
-  expandAll: "Expand all",
-  collapseAll: "Collapse",
-  cell: {
-    yes: "Yes",
-    no: "—",
-    option: "Optional",
-    basic: "Basic"
-  },
-  cellText: {
-    support7: "7 days",
-    support14: "14 days",
-    support30: "30 days",
-    supportCustom: "By agreement"
-  },
-  badges: {
-    popular: "Most popular",
-    product: "For web products"
-  },
-  plans: {
-    start: {
-      name: "Start",
-      tagline: "Fast lead capture launch",
-      ...planPriceStrings("from", PLAN_PRICE_USD.start),
-      desc: "When you need a page for ads, Instagram or Telegram — and want to collect inquiries in one place quickly.",
-      includes: [
-        "landing or service page",
-        "lead form",
-        "contact buttons",
-        "Telegram/email alerts",
-        "mobile-friendly layout",
-        "basic analytics",
-        "domain launch"
-      ],
-      cta: "Discuss launch",
-      ctaHint: "Opens our Telegram bot — takes about 2 minutes.",
-      compactCta: "Discuss Start"
-    },
-    growth: {
-      name: "Growth",
-      tagline: "Lead system for business",
-      ...planPriceStrings("from", PLAN_PRICE_USD.growth),
-      desc: "When leads grow and come from multiple channels — your team needs order: statuses, owners, a sheet or mini-CRM.",
-      includes: [
-        "site or multiple pages",
-        "lead form",
-        "Telegram alerts",
-        "sheet or mini-CRM",
-        "lead statuses",
-        "basic admin",
-        "analytics setup",
-        "launch assistance"
-      ],
-      cta: "Get a quote",
-      ctaHint: "Opens a short form. The Growth plan will already be selected.",
-      compactCta: "Submit request"
-    },
-    product: {
-      name: "Product",
-      tagline: "Full web service",
-      ...planPriceStrings("from", PLAN_PRICE_USD.product),
-      desc: "When you need more than a website — a working web service with users, client areas, roles, a database and admin panel.",
-      includes: [
-        "client area",
-        "admin panel",
-        "sign-up and auth",
-        "user roles",
-        "leads, statuses, alerts",
-        "database",
-        "integrations",
-        "payments",
-        "responsive UI",
-        "launch preparation"
-      ],
-      cta: "Discuss product",
-      ctaHint: "Opens a short form. Describe the product — we'll estimate scope.",
-      compactCta: "Describe product"
-    },
-    custom: {
-      name: "Custom",
-      tagline: "Automation & AI",
-      price: "custom",
-      desc: "When the task doesn't fit a ready plan: AI bots, complex CRM, document automation, integrations or an internal system.",
-      includes: [
-        "AI bots and assistants",
-        "lead automation",
-        "service integrations",
-        "data and document processing",
-        "client areas",
-        "complex roles and flows",
-        "custom CRM",
-        "support and evolution"
-      ],
-      cta: "Request a plan",
-      ctaHint: "Opens our Telegram bot to discuss a non-standard task.",
-      compactCta: "Discuss Custom"
-    }
-  },
-  faq: {
-    title: "Pricing FAQ",
-    items: [
-      {
-        id: "price-from",
-        q: "What does “from” mean?",
-        a: "It's the minimum launch cost. The final price depends on screens, logic, integrations, client area, CRM and timeline."
-      },
-      {
-        id: "pay-now",
-        q: "Do I pay right away?",
-        a: "No. We discuss the task, clarify scope, then agree on cost and stages before any payment."
-      },
-      {
-        id: "which-plan",
-        q: "Which plan if I'm not sure?",
-        a: "Pick Growth or message us. We'll review your task and tell you if you need a site, bot, CRM, client area or custom automation."
-      },
-      {
-        id: "start-expand",
-        q: "Can I start with Start and expand later?",
-        a: "Yes. Often it's better to launch a simple version, test leads, then add CRM, statuses, client area or integrations."
-      },
-      {
-        id: "growth-includes",
-        q: "What's in Growth?",
-        a: "Growth is for when you need order, not just a form: alerts, statuses, a sheet or mini-CRM and a clear processing flow."
-      },
-      {
-        id: "when-product",
-        q: "When do I need Product?",
-        a: "Product is for a real web service: users, client areas, roles, database, payments and admin panel."
-      },
-      {
-        id: "when-custom",
-        q: "When to choose Custom?",
-        a: "Custom fits non-standard work: AI bots, complex CRM, document automation, integrations and internal tools for your team."
-      }
-    ]
-  },
-  groups: {
-    core: "Core",
-    crm: "Leads & CRM",
-    product: "Product logic",
-    automation: "Automation & AI",
-    launch: "Launch & support"
-  },
-  features: {
-    landing: "Landing / page",
-    responsive: "Mobile layout",
-    form: "Lead form",
-    contactButtons: "Contact buttons",
-    telegramNotify: "Telegram alerts",
-    emailNotify: "Email alerts",
-    leadStorage: "Lead storage",
-    leadTable: "Lead table",
-    miniCrm: "Mini-CRM",
-    statuses: "Lead statuses",
-    history: "Processing history",
-    roles: "Staff roles",
-    cabinet: "Client area",
-    admin: "Admin panel",
-    auth: "Authentication",
-    database: "Database",
-    booking: "Online booking",
-    payments: "Payments",
-    autoNotify: "Auto alerts",
-    integrations: "Integrations",
-    aiBot: "AI bot",
-    aiLeads: "AI lead processing",
-    documents: "Document processing",
-    customFlows: "Custom scenarios",
-    domain: "Domain help",
-    deploy: "Deploy",
-    guide: "Basic guide",
-    testing: "Scenario testing",
-    support: "Post-launch support"
-  },
-  footer: {
-    valueTitle: "Pay only for",
-    valueTitleHighlight: "the launch scope you need",
-    valueAside: "Not for modules you don't use yet",
-    valueLead: "We launch what helps you capture and process leads first. When the business outgrows it — we add CRM, client area, payments, integrations or automation.",
-    helpTitle: "Not sure which plan to pick?",
-    helpLead: "Describe your task in your own words — we'll suggest whether to start with Start, Growth, Product or Custom.",
-    helpCta: "Message on Telegram",
-    helpModalCta: "Submit request",
-    planScopeCaption: "Launch scope by plan",
-    chips: {
-      start: ["Landing", "Form", "Telegram"],
-      growth: ["Mini-CRM", "Statuses", "Admin"],
-      product: ["Client area", "Payments", "Roles"],
-      custom: ["AI bots", "Integrations", "CRM"]
-    },
-    shortDesc: {
-      start: "Fast page and lead launch",
-      growth: "Lead system for your team",
-      product: "Full web service",
-      custom: "Custom automation"
-    }
-  }
-};
-function pricingCopy(lang) {
-  return lang === "ru" ? COPY_RU : COPY_EN;
-}
-const COMPARE_GLOBE = "/images/pain-bg-4.webp";
-function clamp01$2(v) {
-  return Math.min(1, Math.max(0, v));
-}
-function useCompareGlobeScale(panelRef) {
-  const [scale, setScale] = useState(1.04);
-  useEffect(() => {
-    const el = panelRef.current;
-    if (!el || typeof window === "undefined") return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
-      setScale(1.1);
-      return;
-    }
-    let raf = 0;
-    const update = () => {
-      const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const total = Math.max(1, rect.height + vh * 0.5);
-      const scrolled = vh * 0.8 - rect.top;
-      const progress = clamp01$2(scrolled / total);
-      setScale(1.04 + progress * 0.3);
-    };
-    const schedule = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(update);
-    };
-    schedule();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-    };
-  }, [panelRef]);
-  return scale;
-}
-function chaosChannelIcon(channel) {
-  const key = channel.toLowerCase();
-  if (key.includes("instagram")) return { Icon: SiInstagram, color: "#E4405F" };
-  if (key.includes("telegram")) return { Icon: SiTelegram, color: "#2AABEE" };
-  if (key.includes("whatsapp")) return { Icon: SiWhatsapp, color: "#25D366" };
-  if (key.includes("звонок") || key.includes("call")) return { Icon: Phone, color: "#FF9A3D" };
-  if (key.includes("email") || key.includes("почт")) return { Icon: Mail, color: "#93C5FD" };
-  return { Icon: Globe, color: "#FFAE66" };
-}
-function CompareCrmHover({
-  title,
-  sidebar,
-  leadsTitle,
-  leads
-}) {
-  return /* @__PURE__ */ jsxs("div", { className: "compare-mini-crm", children: [
-    /* @__PURE__ */ jsxs("div", { className: "compare-mini-crm__topbar", children: [
-      /* @__PURE__ */ jsx("span", { className: "compare-mini-crm__logo", children: title }),
-      /* @__PURE__ */ jsx("span", { className: "compare-mini-crm__live", "aria-hidden": true })
-    ] }),
-    /* @__PURE__ */ jsxs("div", { className: "compare-mini-crm__layout", children: [
-      /* @__PURE__ */ jsx("nav", { className: "compare-mini-crm__sidebar", "aria-label": title, children: sidebar.map((item) => /* @__PURE__ */ jsxs(
-        "div",
-        {
-          className: `compare-mini-crm__nav${item.active ? " compare-mini-crm__nav--active" : ""}`,
-          children: [
-            /* @__PURE__ */ jsx("span", { children: item.label }),
-            item.count ? /* @__PURE__ */ jsx("span", { className: "compare-mini-crm__nav-count", children: item.count }) : null
-          ]
-        },
-        item.label
-      )) }),
-      /* @__PURE__ */ jsxs("div", { className: "compare-mini-crm__main", children: [
-        /* @__PURE__ */ jsxs("div", { className: "compare-mini-crm__main-head", children: [
-          /* @__PURE__ */ jsx("span", { children: leadsTitle }),
-          /* @__PURE__ */ jsx("span", { className: "compare-mini-crm__main-count", children: leads.length })
-        ] }),
-        /* @__PURE__ */ jsx("div", { className: "compare-mini-crm__leads", children: leads.map((lead) => /* @__PURE__ */ jsxs("article", { className: "compare-mini-crm__lead", children: [
-          /* @__PURE__ */ jsxs("div", { className: "compare-mini-crm__lead-top", children: [
-            /* @__PURE__ */ jsx("span", { className: "compare-mini-crm__lead-name", children: lead.name }),
-            /* @__PURE__ */ jsx("span", { className: "compare-mini-crm__lead-time", children: lead.time })
-          ] }),
-          /* @__PURE__ */ jsx("p", { className: "compare-mini-crm__lead-preview", children: lead.preview }),
-          /* @__PURE__ */ jsxs("div", { className: "compare-mini-crm__lead-meta", children: [
-            /* @__PURE__ */ jsx("span", { className: "compare-mini-crm__lead-source", children: lead.source }),
-            /* @__PURE__ */ jsx("span", { className: `compare-mini-crm__status compare-mini-crm__status--${lead.tone}`, children: lead.status })
-          ] })
-        ] }, `${lead.name}-${lead.preview}`)) })
-      ] })
-    ] })
-  ] });
-}
-function ComparePlansHover({
-  title,
-  plans,
-  badges,
-  moreLabel
-}) {
-  const highlightId = "growth";
-  return /* @__PURE__ */ jsxs("div", { className: "compare-mini-plans", children: [
-    /* @__PURE__ */ jsx("p", { className: "compare-mini-plans__title", children: title }),
-    /* @__PURE__ */ jsx("div", { className: "compare-mini-plans__list", children: PLAN_IDS.map((id) => {
-      const plan = plans[id];
-      const isHighlight = id === highlightId;
-      const badge = id === "growth" ? badges.popular : id === "product" ? badges.product : null;
-      return /* @__PURE__ */ jsxs(
-        "article",
-        {
-          className: `compare-mini-plans__item${isHighlight ? " compare-mini-plans__item--highlight" : ""}`,
-          children: [
-            /* @__PURE__ */ jsxs("div", { className: "compare-mini-plans__item-head", children: [
-              /* @__PURE__ */ jsxs("div", { className: "compare-mini-plans__item-names", children: [
-                /* @__PURE__ */ jsx("span", { className: "compare-mini-plans__name", children: plan.name }),
-                badge ? /* @__PURE__ */ jsx("span", { className: "compare-mini-plans__badge", children: badge }) : null
-              ] }),
-              /* @__PURE__ */ jsx("span", { className: "compare-mini-plans__price", children: plan.price })
-            ] }),
-            /* @__PURE__ */ jsx("p", { className: "compare-mini-plans__tagline", children: plan.tagline })
-          ]
-        },
-        id
-      );
-    }) }),
-    /* @__PURE__ */ jsxs(Link, { to: "/plans", className: "compare-mini-plans__more group", children: [
-      moreLabel,
-      /* @__PURE__ */ jsx(
-        ArrowUpRight,
-        {
-          size: 14,
-          className: "transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5",
-          "aria-hidden": true
-        }
-      )
-    ] })
-  ] });
-}
-function CompareChaosMessage({ msg }) {
-  const { Icon: Icon2, color } = chaosChannelIcon(msg.channel);
-  return /* @__PURE__ */ jsxs("div", { className: "compare-chaos-msg", children: [
-    /* @__PURE__ */ jsx("span", { className: "compare-chaos-msg__icon", style: { color }, children: /* @__PURE__ */ jsx(Icon2, { size: 13, "aria-hidden": true }) }),
-    /* @__PURE__ */ jsxs("div", { className: "compare-chaos-msg__body", children: [
-      /* @__PURE__ */ jsxs("div", { className: "compare-chaos-msg__head", children: [
-        /* @__PURE__ */ jsx("span", { className: "compare-chaos-msg__channel", children: msg.channel }),
-        /* @__PURE__ */ jsx("span", { className: "compare-chaos-msg__time", children: msg.time })
-      ] }),
-      /* @__PURE__ */ jsx("p", { className: "compare-chaos-msg__text", children: msg.text })
-    ] })
-  ] });
-}
-function CompareChaosHover({ messages, active }) {
-  const renderGroup = (suffix) => messages.map((msg) => /* @__PURE__ */ jsx(CompareChaosMessage, { msg }, `${suffix}-${msg.channel}-${msg.text}`));
-  return /* @__PURE__ */ jsx(
-    "div",
-    {
-      className: `compare-chaos-stream${active ? " compare-chaos-stream--live" : ""}`,
-      "aria-hidden": true,
-      children: /* @__PURE__ */ jsxs("div", { className: "compare-chaos-stream__track", children: [
-        /* @__PURE__ */ jsx("div", { className: "compare-chaos-stream__group", children: renderGroup("a") }),
-        /* @__PURE__ */ jsx("div", { className: "compare-chaos-stream__group", children: renderGroup("b") })
-      ] })
-    }
-  );
-}
+const COMPARE_SYSTEM_BG = "/images/ff11.webp";
 function ComparisonSection() {
   const { lang } = useLang();
   const copy = landingCopy(lang);
   const pricing = pricingCopy(lang);
-  const crm = copy.compare.hover.crm;
-  const [leftHover, setLeftHover] = useState(false);
-  const [rightHover, setRightHover] = useState(false);
-  const [pricingHover, setPricingHover] = useState(false);
-  const centerPanelRef = useRef(null);
-  const globeScale = useCompareGlobeScale(centerPanelRef);
+  const isRu = lang === "ru";
   return /* @__PURE__ */ jsx(
     Section,
     {
@@ -5210,808 +7410,383 @@ function ComparisonSection() {
       className: "compare-section-lift scroll-mt-[var(--tivonix-header-spacer)] bg-black !pb-8 !pt-6 sm:!pb-10 sm:!pt-8 lg:!pb-12 lg:!pt-10",
       children: /* @__PURE__ */ jsxs(Container, { children: [
         /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[46rem] text-center", children: [
-          /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.65rem,4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white text-balance", children: copy.compare.title }),
-          copy.compare.subtitle ? /* @__PURE__ */ jsx("p", { className: "mx-auto mt-3 max-w-[40rem] text-[15px] leading-[1.6] text-white/42 sm:text-[16px]", children: copy.compare.subtitle }) : null
+          /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.65rem,3.8vw,2.4rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white text-balance", children: copy.compare.title }),
+          copy.compare.subtitle ? /* @__PURE__ */ jsx("p", { className: "mx-auto mt-3 max-w-[40rem] font-sans text-[15px] font-medium leading-[1.55] tracking-normal text-white/48 sm:text-[16px]", children: copy.compare.subtitle }) : null
         ] }),
-        /* @__PURE__ */ jsxs("div", { className: "compare-split mt-5 sm:mt-6", children: [
-          /* @__PURE__ */ jsxs(
-            "div",
-            {
-              className: `compare-split__left compare-split__panel${leftHover ? " compare-split__panel--hovered" : ""}`,
-              onMouseEnter: () => setLeftHover(true),
-              onMouseLeave: () => setLeftHover(false),
-              role: "group",
-              "aria-label": copy.compare.regular.title,
-              children: [
-                /* @__PURE__ */ jsxs("div", { className: "compare-split__default compare-split__left-inner", children: [
-                  /* @__PURE__ */ jsx("p", { className: "compare-split__headline font-hero text-[clamp(1.5rem,3.2vw,2.35rem)] font-semibold leading-[1.1] tracking-[-0.03em] text-white", children: copy.compare.regular.headline }),
-                  /* @__PURE__ */ jsx("p", { className: "mt-2 text-[12px] font-semibold uppercase tracking-[0.16em] text-white/35", children: copy.compare.regular.title }),
-                  /* @__PURE__ */ jsx("div", { className: "compare-blocks-grid mt-6", children: copy.compare.regular.items.map((item) => /* @__PURE__ */ jsx("div", { className: "compare-block compare-block--muted", children: item }, item)) }),
-                  /* @__PURE__ */ jsx("div", { className: "compare-blocks-grid mt-3", children: copy.compare.chaosTags.map((tag) => /* @__PURE__ */ jsx("div", { className: "compare-block compare-block--warn", children: tag }, tag)) })
+        /* @__PURE__ */ jsx("div", { className: "compare-split-wrap compare-split-wrap--static mt-6 sm:mt-7", children: /* @__PURE__ */ jsxs("div", { className: "compare-split", children: [
+          /* @__PURE__ */ jsx("article", { className: "compare-split__left compare-split__panel", "aria-label": copy.compare.regular.title, children: /* @__PURE__ */ jsxs("div", { className: "compare-split__left-inner", children: [
+            /* @__PURE__ */ jsx("p", { className: "compare-split__label text-white/40", children: copy.compare.regular.title }),
+            /* @__PURE__ */ jsx("h3", { className: "compare-split__headline", children: copy.compare.regular.headline }),
+            /* @__PURE__ */ jsx("div", { className: "compare-manual", "aria-label": isRu ? "Хаос после формы" : "Chaos after the form", children: /* @__PURE__ */ jsxs("div", { className: "compare-manual__chaos", children: [
+              /* @__PURE__ */ jsx("div", { className: "compare-manual__wires", "aria-hidden": true, children: /* @__PURE__ */ jsxs("svg", { viewBox: "0 0 100 100", preserveAspectRatio: "none", children: [
+                /* @__PURE__ */ jsx("path", { d: "M22 18 C34 14, 42 16, 48 20" }),
+                /* @__PURE__ */ jsx("path", { d: "M68 18 C78 22, 84 28, 88 34" }),
+                /* @__PURE__ */ jsx("path", { d: "M18 28 C14 40, 14 48, 18 56" }),
+                /* @__PURE__ */ jsx("path", { d: "M28 58 C40 62, 48 58, 54 54" }),
+                /* @__PURE__ */ jsx("path", { d: "M62 52 C72 56, 80 58, 86 60" }),
+                /* @__PURE__ */ jsx("path", { d: "M22 66 C30 74, 36 80, 42 84" }),
+                /* @__PURE__ */ jsx("path", { d: "M58 68 C66 76, 72 82, 78 86" }),
+                /* @__PURE__ */ jsx("path", { d: "M52 28 C50 36, 48 42, 50 48" }),
+                /* @__PURE__ */ jsx("path", { d: "M88 42 C82 52, 76 62, 72 70" })
+              ] }) }),
+              /* @__PURE__ */ jsxs("div", { className: "compare-manual__chips", children: [
+                /* @__PURE__ */ jsx("span", { className: "compare-manual__chip compare-manual__chip--ok compare-manual__chip--a", children: copy.compare.regular.items[0] }),
+                /* @__PURE__ */ jsxs("span", { className: "compare-manual__chip compare-manual__chip--warn compare-manual__chip--b", children: [
+                  /* @__PURE__ */ jsx("span", { className: "compare-manual__x", "aria-hidden": true, children: "×" }),
+                  copy.compare.chaosTags[0]
                 ] }),
-                /* @__PURE__ */ jsx("div", { className: "compare-split__hover compare-split__hover--chaos", children: /* @__PURE__ */ jsx(CompareChaosHover, { messages: copy.compare.hover.chaosMessages, active: leftHover }) })
-              ]
-            }
-          ),
-          /* @__PURE__ */ jsxs(
-            "div",
-            {
-              ref: centerPanelRef,
-              className: `compare-split__right compare-split__panel${rightHover ? " compare-split__panel--hovered" : ""}${globeScale > 1.12 ? " compare-split__right--zoomed" : ""}`,
-              onMouseEnter: () => setRightHover(true),
-              onMouseLeave: () => setRightHover(false),
-              role: "group",
-              "aria-label": copy.compare.tivonix.title,
-              children: [
-                /* @__PURE__ */ jsxs(
-                  "div",
-                  {
-                    className: "compare-split__right-media",
-                    style: { transform: `scale(${globeScale})` },
-                    "aria-hidden": true,
-                    children: [
-                      /* @__PURE__ */ jsx(
-                        "img",
-                        {
-                          src: COMPARE_GLOBE,
-                          alt: "",
-                          className: "compare-split__globe",
-                          loading: "lazy",
-                          decoding: "async"
-                        }
-                      ),
-                      /* @__PURE__ */ jsx("div", { className: "compare-split__right-overlay" })
-                    ]
-                  }
-                ),
-                /* @__PURE__ */ jsxs("div", { className: "compare-split__default compare-split__right-inner", children: [
-                  /* @__PURE__ */ jsx("p", { className: "compare-split__headline font-hero text-[clamp(1.5rem,3.2vw,2.35rem)] font-semibold leading-[1.1] tracking-[-0.03em] text-white", children: copy.compare.tivonix.headline }),
-                  /* @__PURE__ */ jsx("p", { className: "mt-2 text-[12px] font-semibold uppercase tracking-[0.16em] text-white/72", children: copy.compare.tivonix.title }),
-                  /* @__PURE__ */ jsx("ul", { className: "mt-6 hidden space-y-2.5 text-left sm:block", children: copy.compare.tivonix.items.map((item) => /* @__PURE__ */ jsxs("li", { className: "flex items-start gap-2.5 text-[14px] text-white/92 sm:text-[15px]", children: [
-                    /* @__PURE__ */ jsx(Check, { size: 14, className: "mt-0.5 shrink-0 text-white", strokeWidth: 2.5, "aria-hidden": true }),
-                    /* @__PURE__ */ jsx("span", { children: item })
-                  ] }, item)) }),
-                  /* @__PURE__ */ jsxs("div", { className: "compare-split__badge mt-5 sm:mt-6", children: [
-                    /* @__PURE__ */ jsx(Check, { size: 14, strokeWidth: 2.5, "aria-hidden": true, className: "shrink-0" }),
-                    /* @__PURE__ */ jsx("span", { className: "whitespace-nowrap leading-none", children: copy.compare.tivonix.badge })
-                  ] }),
-                  /* @__PURE__ */ jsx("ul", { className: "compare-split__mobile-list mt-6 space-y-2.5 text-left sm:mt-5 sm:hidden", children: copy.compare.tivonix.items.slice(0, 4).map((item) => /* @__PURE__ */ jsxs("li", { className: "flex items-start gap-2 text-[13px] text-white/90", children: [
-                    /* @__PURE__ */ jsx(Check, { size: 13, className: "mt-0.5 shrink-0", strokeWidth: 2.5, "aria-hidden": true }),
-                    /* @__PURE__ */ jsx("span", { children: item })
-                  ] }, item)) })
+                /* @__PURE__ */ jsx("span", { className: "compare-manual__chip compare-manual__chip--ok compare-manual__chip--c", children: copy.compare.regular.items[1] }),
+                /* @__PURE__ */ jsxs("span", { className: "compare-manual__chip compare-manual__chip--warn compare-manual__chip--d", children: [
+                  /* @__PURE__ */ jsx("span", { className: "compare-manual__x", "aria-hidden": true, children: "×" }),
+                  copy.compare.chaosTags[1]
                 ] }),
-                /* @__PURE__ */ jsx("div", { className: "compare-split__hover compare-split__hover--crm", children: /* @__PURE__ */ jsx(
-                  CompareCrmHover,
-                  {
-                    title: crm.title,
-                    sidebar: crm.sidebar,
-                    leadsTitle: crm.leadsTitle,
-                    leads: crm.leads
-                  }
-                ) })
-              ]
-            }
-          ),
-          /* @__PURE__ */ jsxs(
-            "div",
+                /* @__PURE__ */ jsx("span", { className: "compare-manual__chip compare-manual__chip--ok compare-manual__chip--e", children: copy.compare.regular.items[2] }),
+                /* @__PURE__ */ jsxs("span", { className: "compare-manual__chip compare-manual__chip--warn compare-manual__chip--f", children: [
+                  /* @__PURE__ */ jsx("span", { className: "compare-manual__x", "aria-hidden": true, children: "×" }),
+                  copy.compare.chaosTags[2]
+                ] }),
+                /* @__PURE__ */ jsx("span", { className: "compare-manual__chip compare-manual__chip--ok compare-manual__chip--g", children: copy.compare.regular.items[3] }),
+                /* @__PURE__ */ jsxs("span", { className: "compare-manual__chip compare-manual__chip--warn compare-manual__chip--h", children: [
+                  /* @__PURE__ */ jsx("span", { className: "compare-manual__x", "aria-hidden": true, children: "×" }),
+                  copy.compare.chaosTags[3]
+                ] })
+              ] })
+            ] }) })
+          ] }) }),
+          /* @__PURE__ */ jsxs("article", { className: "compare-split__right compare-split__panel", "aria-label": copy.compare.tivonix.title, children: [
+            /* @__PURE__ */ jsxs("div", { className: "compare-split__right-media", style: { transform: "scale(1.04)" }, "aria-hidden": true, children: [
+              /* @__PURE__ */ jsx(
+                "img",
+                {
+                  src: COMPARE_SYSTEM_BG,
+                  alt: "",
+                  className: "compare-split__globe",
+                  loading: "lazy",
+                  decoding: "async"
+                }
+              ),
+              /* @__PURE__ */ jsx("div", { className: "compare-split__right-overlay" })
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "compare-split__right-inner", children: [
+              /* @__PURE__ */ jsx("p", { className: "compare-split__label text-white/75", children: copy.compare.tivonix.title }),
+              /* @__PURE__ */ jsx("h3", { className: "compare-split__headline", children: copy.compare.tivonix.headline }),
+              /* @__PURE__ */ jsx("ul", { className: "compare-system-list", children: copy.compare.tivonix.items.map((item, index) => /* @__PURE__ */ jsxs("li", { children: [
+                /* @__PURE__ */ jsx(Check, { size: 16, className: "shrink-0 text-white", strokeWidth: 2.5, "aria-hidden": true }),
+                /* @__PURE__ */ jsx("span", { className: "compare-system-list__text", children: item }),
+                index === 1 ? /* @__PURE__ */ jsxs("span", { className: "compare-system-list__icons", "aria-hidden": true, children: [
+                  /* @__PURE__ */ jsx("img", { src: "/images/icons/telegram.svg", alt: "", className: "compare-system-list__icon" }),
+                  /* @__PURE__ */ jsx("img", { src: "/images/icons/gmail.svg", alt: "", className: "compare-system-list__icon" })
+                ] }) : null,
+                index === 2 ? /* @__PURE__ */ jsx("span", { className: "compare-system-list__icons", "aria-hidden": true, children: /* @__PURE__ */ jsx("img", { src: "/images/icons/excel.svg", alt: "", className: "compare-system-list__icon" }) }) : null,
+                index === 5 ? /* @__PURE__ */ jsx("span", { className: "compare-system-list__icons", "aria-hidden": true, children: /* @__PURE__ */ jsx("img", { src: "/images/icons/google-ads.svg", alt: "", className: "compare-system-list__icon" }) }) : null
+              ] }, item)) }),
+              /* @__PURE__ */ jsx("div", { className: "compare-split__badge mt-auto pt-6", children: copy.compare.tivonix.badge })
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx(
+            "article",
             {
-              id: "services",
-              className: `compare-split__pricing compare-split__panel scroll-mt-[var(--tivonix-header-spacer)]${pricingHover ? " compare-split__panel--hovered" : ""}`,
-              onMouseEnter: () => setPricingHover(true),
-              onMouseLeave: () => setPricingHover(false),
-              role: "group",
+              className: "compare-split__pricing compare-split__panel scroll-mt-[var(--tivonix-header-spacer)]",
               "aria-label": copy.pricingTeaser.title,
-              children: [
-                /* @__PURE__ */ jsxs("div", { className: "compare-split__default compare-split__pricing-inner", children: [
-                  /* @__PURE__ */ jsx("p", { className: "compare-split__eyebrow", children: copy.pricingTeaser.eyebrow }),
-                  /* @__PURE__ */ jsx("h3", { className: "compare-split__headline mt-3 font-hero text-[clamp(1.35rem,2.6vw,2rem)] font-semibold leading-[1.1] tracking-[-0.03em] text-white", children: copy.pricingTeaser.title }),
-                  /* @__PURE__ */ jsx("ul", { className: "compare-pricing-teaser mt-5", children: PLAN_IDS.map((id) => /* @__PURE__ */ jsxs("li", { className: "compare-pricing-teaser__row", children: [
-                    /* @__PURE__ */ jsx("span", { className: "compare-pricing-teaser__name", children: pricing.plans[id].name }),
-                    /* @__PURE__ */ jsx("span", { className: "compare-pricing-teaser__price", children: pricing.plans[id].price })
-                  ] }, id)) }),
-                  /* @__PURE__ */ jsxs("p", { className: "compare-pricing-teaser__more mt-5", children: [
-                    copy.pricingTeaser.more,
-                    /* @__PURE__ */ jsx(ArrowUpRight, { size: 15, className: "inline-block", "aria-hidden": true })
-                  ] })
-                ] }),
-                /* @__PURE__ */ jsx("div", { className: "compare-split__hover compare-split__hover--plans", children: /* @__PURE__ */ jsx(
-                  ComparePlansHover,
-                  {
-                    title: pricing.title,
-                    plans: pricing.plans,
-                    badges: pricing.badges,
-                    moreLabel: copy.pricingTeaser.more
-                  }
-                ) })
-              ]
+              children: /* @__PURE__ */ jsxs("div", { className: "compare-split__pricing-inner", children: [
+                /* @__PURE__ */ jsx("p", { className: "compare-split__eyebrow compare-split__label", children: copy.pricingTeaser.eyebrow }),
+                /* @__PURE__ */ jsx("h3", { className: "compare-split__headline", children: copy.pricingTeaser.title }),
+                /* @__PURE__ */ jsx("div", { className: "compare-plans-teaser mt-5", children: PLAN_IDS.map((id) => {
+                  const plan = pricing.plans[id];
+                  const badge = id === "growth" ? pricing.badges.popular : id === "product" ? pricing.badges.product : null;
+                  return /* @__PURE__ */ jsxs(
+                    "div",
+                    {
+                      className: `compare-plans-teaser__item${id === "growth" ? " compare-plans-teaser__item--highlight" : id === "product" ? " compare-plans-teaser__item--accent" : ""}`,
+                      children: [
+                        /* @__PURE__ */ jsxs("div", { className: "compare-plans-teaser__head", children: [
+                          /* @__PURE__ */ jsxs("div", { className: "compare-plans-teaser__names", children: [
+                            /* @__PURE__ */ jsx("span", { className: "compare-plans-teaser__name", children: plan.name }),
+                            badge ? /* @__PURE__ */ jsx("span", { className: "compare-plans-teaser__badge", children: badge }) : null
+                          ] }),
+                          /* @__PURE__ */ jsx("span", { className: "compare-plans-teaser__price", children: plan.price })
+                        ] }),
+                        /* @__PURE__ */ jsx("p", { className: "compare-plans-teaser__tagline", children: plan.tagline })
+                      ]
+                    },
+                    id
+                  );
+                }) })
+              ] })
             }
           )
-        ] })
+        ] }) }),
+        /* @__PURE__ */ jsx("div", { className: "mt-8 flex justify-center", children: /* @__PURE__ */ jsx(
+          LeadCTAButton,
+          {
+            source: "compare",
+            variant: "primary",
+            size: "lg",
+            onClick: () => trackEvent("service_cta_click", { section: "compare" }),
+            children: "cta" in copy.compare ? copy.compare.cta : isRu ? "Разобрать мой процесс" : "Map my process"
+          }
+        ) })
       ] })
     }
   );
 }
-function cx$a(...a) {
-  return a.filter(Boolean).join(" ");
-}
-function pillItemClass(active, compact) {
-  return cx$a(
-    "relative flex items-center rounded-full border-0 font-bold uppercase tracking-[0.12em] outline-none select-none transition duration-[260ms]",
-    "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
-    compact ? "px-3 h-9 text-[9.5px] tracking-[0.1em]" : "px-4 h-10 text-[10px]",
-    active ? "bg-[#2c2c2c] text-white" : "bg-transparent text-white/55 hover:bg-white/[0.04] hover:text-white/85"
-  );
-}
-function PillActionItemView({
-  item,
-  active,
-  compact,
-  onSelect
-}) {
-  const className = pillItemClass(active, compact);
-  if (item.to) {
-    return /* @__PURE__ */ jsx(
-      Link,
-      {
-        to: item.to,
-        onClick: () => onSelect(item.id),
-        className,
-        "aria-current": active ? "page" : void 0,
-        "data-active": active ? "" : void 0,
-        children: /* @__PURE__ */ jsx("span", { className: "leading-none", children: item.label })
-      }
-    );
+const PLANS_IMG$2 = `/images/${encodeURIComponent("планы")}`;
+const GRID_PLANS = [
+  {
+    id: "start",
+    img: `${PLANS_IMG$2}/1.webp`,
+    footRu: "Быстрый старт под рекламу",
+    footEn: "Fast launch for ads"
+  },
+  {
+    id: "growth",
+    img: `${PLANS_IMG$2}/2.webp`,
+    footRu: "Чаще всего выбирают",
+    footEn: "Most chosen plan"
+  },
+  {
+    id: "product",
+    img: `${PLANS_IMG$2}/3.webp`,
+    footRu: "Для веб-сервиса",
+    footEn: "For a web service"
+  },
+  {
+    id: "custom",
+    img: `${PLANS_IMG$2}/4.webp`,
+    footRu: "Под вашу логику",
+    footEn: "Built around your logic"
   }
-  if (item.href) {
-    return /* @__PURE__ */ jsx(
-      "a",
-      {
-        href: item.href,
-        target: "_blank",
-        rel: "noopener noreferrer",
-        onClick: () => onSelect(item.id),
-        className,
-        "data-active": active ? "" : void 0,
-        children: /* @__PURE__ */ jsx("span", { className: "leading-none", children: item.label })
-      }
-    );
-  }
-  return /* @__PURE__ */ jsx(
-    "button",
-    {
-      type: "button",
-      onClick: () => {
-        item.onClick?.();
-        onSelect(item.id);
-      },
-      className,
-      "data-active": active ? "" : void 0,
-      children: /* @__PURE__ */ jsx("span", { className: "leading-none", children: item.label })
-    }
-  );
-}
-function PillActionBar({
-  items,
-  activeId,
-  onActiveChange,
-  compact = true,
-  className,
-  ariaLabel
-}) {
-  const handleSelect = (id) => {
-    onActiveChange(id);
-    items.find((item) => item.id === id)?.onClick?.();
-  };
-  return /* @__PURE__ */ jsx(
-    "nav",
-    {
-      className: cx$a(
-        "relative inline-flex max-w-full items-center gap-0.5 overflow-x-auto rounded-full border-0 bg-[#141414] p-1",
-        className
-      ),
-      "aria-label": ariaLabel,
-      children: items.map((item) => /* @__PURE__ */ jsx(
-        PillActionItemView,
-        {
-          item,
-          active: item.id === activeId,
-          compact,
-          onSelect: handleSelect
-        },
-        item.id
-      ))
-    }
-  );
-}
-const UPC_DOMAIN = "https://upc.watch/";
-const PAYCLIP_DOMAIN = "https://usepayclip.com/";
-const LABELOS_DOMAIN = "https://labelos.digital/";
-const LOGOVO_DOMAIN = "https://www.logovo24.by/";
-const HEADMIND_DOMAIN = "https://headmind.ru/";
-const SLOTTY_DOMAIN = "https://slotty.of.by/book";
-const SPLITON_DOMAIN = "https://spliton.io/app";
-const TIVONIXPANEL_DOMAIN = "https://tivonixpanel-production.up.railway.app/login";
-const PUBLIC_PROJECT_IDS = [
-  "tivonixpanel",
-  "spliton",
-  "slotty",
-  "headmind",
-  "logovo"
 ];
-const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/r${i + 1}.webp`);
-const SPLITON_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/spliton/g${i + 1}.webp`);
-const TIVONIXPANEL_GALLERY = [
-  "/images/project-priew/tivonixpanel/1.png",
-  "/images/project-priew/tivonixpanel/2.png",
-  "/images/project-priew/tivonixpanel/3.png"
-];
-function buildAllProjects(isRu) {
-  return [
-    // 0) TIVONIX PANEL — партнёрская панель
-    {
-      id: "tivonixpanel",
-      title: "Tivonix Panel",
-      subtitleRu: "Партнёрская панель TIVONIX: сделки, статусы, проекты и выплаты — один кабинет вместо хаоса в чатах и таблицах.",
-      subtitleEn: "TIVONIX partner panel: deals, statuses, projects and payouts — one dashboard instead of chaos in chats and spreadsheets.",
-      detailsRu: "Формат: партнёрская панель / SaaS-кабинет\n\nЗачем это\nПартнёрство редко разваливается из‑за оффера. Оно сыпется, когда **никто не видит картину**: где заявка, на каком этапе сделка, когда выплата. Пока правда живёт в Telegram и Excel — каждый день начинается с «напомни» и скринов в полночь.\n\nМы собрали **кабинет, в который заходят сами**: регистрация, вход, статусы, проекты и выплаты в одном месте. Не слайд «как будет», а инструмент, который уже ведёт деньги и доверие.\n\nКак работает\nПартнёр регистрируется, выбирает модель — **Referral** или **White-label** — и после модерации получает доступ в кабинет.\nДальше цикл простой: передал задачу → видит статус → понимает следующий шаг → отслеживает выплату. Одна панель вместо чатов, таблиц и «напомни, пожалуйста».\n\nЧто внутри\nЭто полноценный **кабинет партнёрской сети**, не лендинг. Слева тёмный сайдбар: главная, клиенты, партнёры, сделки, выплаты, отчёты, настройки, юр. профили, заявки партнёров и журнал действий.\n\nНа **главной** — живые KPI: клиенты, партнёры, закрытые сделки, сумма продаж, начисленные комиссии и «к выплате», плюс графики по дням и месяцам, воронка по статусам, топ партнёров, источников и услуг. Данные обновляются в реальном времени.\n\nВ **клиентах** — база компаний и контактов, которых партнёры передают в работу: поиск, вкладки статусов (на проверке / одобрено / в работе / закрыт / дубли), фильтры по партнёру, услуге, источнику, бюджету и дате, добавление клиента и выгрузка в Excel.\n\nВ **партнёрах** — сеть целиком: активность, клиенты, сделки, продажи, комиссия и баланс. Отдельно — заявки на вход (Referral / White-label) и модерация. **Выплаты** и комиссии живут в панели, без сторонних таблиц. UI собран под ежедневную работу, а не под презентацию.\n\nЧто сделали\nРазработка TIVONIX — **1 неделя**. Спроектировали структуру под реальный партнёрский процесс, собрали регистрацию, логин и сделки, довели UI (сетка, статусы, **пустые состояния**) и выкатили в продакшен на Railway.\n\nИтог\nЖивая панель, куда партнёры **заходят сами** — ведут сделки и видят выплаты. Не презентация «как будет», а продукт, который уже в работе.\n",
-      detailsEn: "Format: partner panel / SaaS dashboard\n\nWhy it matters\nPartnerships rarely die on the offer. They die when **nobody shares the same picture**: where’s the request, what stage is the deal, when’s the payout. While truth lives in chats and spreadsheets, every day starts with “remind me” and midnight screenshots.\n\nWe built a **cabinet people actually open**: registration, login, statuses, projects and payouts in one place. Not a “how it will look” slide — a tool that already moves money and trust.\n\nHow it works\nA partner signs up, picks **Referral** or **White-label**, and gets access after moderation.\nThen the loop is simple: submit a task → see the status → know the next step → track the payout. One cabinet instead of chats, spreadsheets and “please remind me”.\n\nWhat’s inside\nA full **partner-network cabinet**, not a landing page. Dark sidebar on the left: home, clients, partners, deals, payouts, reports, settings, legal profiles, partner applications and an activity log.\n\n**Home** shows live KPIs: clients, partners, closed deals, sales total, accrued commissions and “to be paid”, plus charts by day and month, a status funnel, top partners, sources and services. Data updates in real time.\n\n**Clients** is the database of companies and contacts partners hand over: search, status tabs (under review / approved / in work / closed / duplicates), filters by partner, service, source, budget and date, add-client and Excel export.\n\n**Partners** is the whole network: activity, clients, deals, sales, commission and balance. Separately — join requests (Referral / White-label) and moderation. **Payouts** and commissions live in the panel, no side spreadsheets. UI built for daily work, not for a deck.\n\nWhat we delivered\nTIVONIX build — **1 week**. Designed the partner workflow, shipped registration, login and deals, polished UI (grid, statuses, **empty states**) and went live on Railway.\n\nOutcome\nA live panel partners **actually open** — they run deals and see payouts. Not a “how it will look” demo, but a product already in use.\n",
-      domain: TIVONIXPANEL_DOMAIN,
-      status: "live",
-      tags: ["SaaS", "Admin Panel", "Partners", "Dashboard", "UI/UX"],
-      cover: "/images/project-priew/tivonixpanel/prew.png",
-      gallery: TIVONIXPANEL_GALLERY,
-      outcomes: [
-        isRu ? "**Кабинет** с логином и онбордингом" : "**Dashboard** with login and onboarding",
-        isRu ? "Сделки, проекты и **выплаты** в одном месте" : "Deals, projects and **payouts** in one place",
-        isRu ? "Модели **Referral** и **White-label**" : "**Referral** and **White-label** models",
-        isRu ? "Продукт **в продакшене** на Railway" : "Product **live** on Railway",
-        isRu ? "Собрали за **1 неделю**" : "Shipped in **1 week**"
-      ],
-      stack: ["React", "TypeScript", "Node.js", "PostgreSQL", "Railway"],
-      testimonial: {
-        name: isRu ? "Артём К." : "Artem K.",
-        role: isRu ? "Один из основателей TIVONIX" : "Co-founder, TIVONIX",
-        text: isRu ? "Панель закрыла то, из‑за чего раньше всё сыпалось: статусы жили в чатах, выплаты — в таблицах. Сейчас открыл кабинет — и сразу видно, где сделка и что дальше. Рабочий инструмент, без лишнего." : "The panel fixed what kept breaking: statuses lived in chats, payouts in spreadsheets. Now you open the dashboard and see where the deal is and what’s next. A real tool, no fluff."
-      }
-    },
-    // 1) LABEL0S — 3 days
-    {
-      id: "labelos",
-      title: "LabelOS",
-      subtitleRu: "SaaS для музыкальных лейблов: отчёты, рассылка, шаблоны и контроль выплат.",
-      subtitleEn: "SaaS for music labels: reporting, email delivery, templates and payout control.",
-      detailsRu: "Срок: 3 дня\n\nЦель\n• Быстро собрать внятный промо-лендинг продукта и зафиксировать ценностное предложение.\n\nЧто сделали\n• Сформировали структуру и блоки: Hero → проблемы → решение → возможности → сценарии → CTA\n• Привели типографику к премиум-стилю: иерархия, ритм, воздух, читабельность\n• Собрали адаптивную вёрстку (mobile-first) и аккуратные интерактивные состояния\n• Оптимизировали загрузку: lazy-графика, корректные размеры, аккуратные фоны\n\nОсобенности\n• Чёткий фокус на конверсию: короткие формулировки, сильный CTA, логичная структура\n• Минимум “воды” — только то, что отвечает на вопросы клиента\n",
-      detailsEn: "Timeline: 3 days\n\nGoal\n• Build a clear promo landing and solidify the value proposition fast.\n\nWhat we did\n• Designed the page structure: Hero → pain points → solution → features → flows → CTA\n• Refined premium typography: hierarchy, rhythm, spacing, readability\n• Built responsive layout (mobile-first) with clean interactive states\n• Improved loading: lazy assets, correct sizing, polished background layers\n\nHighlights\n• Conversion-first copy and structure\n• No fluff — only what answers buyer questions\n",
-      domain: LABELOS_DOMAIN,
-      status: "live",
-      tags: ["SaaS", "Landing", "UI/UX", "React", "Tailwind"],
-      cover: "/images/project-priew/labelo.webp",
-      outcomes: [
-        isRu ? "Готовый промо-лендинг за 3 дня" : "Promo landing delivered in 3 days",
-        isRu ? "Чёткая структура под конверсию" : "Conversion-focused structure",
-        isRu ? "Адаптив + оптимизация загрузки" : "Responsive + optimized loading"
-      ],
-      stack: ["React", "Tailwind", "Vite"]
-    },
-    // 1b) LOGOVO — сеть шиномонтажа · https://www.logovo24.by/
-    {
-      id: "logovo",
-      title: "LOGOVO",
-      subtitleRu: "Сайт сети шиномонтажа LOGOVO в Минске: Figma → Next.js, 4 филиала, запись, карта, B2B — под ключ за 1 600 BYN, команда TIVONIX.",
-      subtitleEn: "Website for LOGOVO tire network in Minsk: Figma → Next.js, 4 branches, booking, map, B2B — turnkey for 1,600 BYN by TIVONIX.",
-      detailsRu: "Зачем это\nШиномонтаж выбирают не в кресле — **с дороги, одной рукой, пока мигает индикатор**. Если адрес, часы и «записаться» прячутся на трёх экранах — клиент уедет к тому, кто ответил быстрее.\n\nЗаказчик — **ООО «Логово»** (сеть шиномонтажа в Минске, УНП 193616584): **4 филиала**, два работают **24/7**, безнал для автопарков и такси, полный контур услуг — от шиномонтажа и правки дисков до хранения и кондиционера. Бюджет проекта — **1 600 BYN** ([[≈ 42 800 ₽]] / [[≈ 560 $]]). Сайт собрала **команда TIVONIX** под ключ — не шаблон и не «отдали архив».\n\nКак работает\nЧеловек с телефона открывает **logovo24.by** → услуга → филиал на карте / режим → **записаться** или **позвонить**. Автопарк идёт в B2B: безнал, единый прайс, документы на четырёх точках — без переписки «пришлите счёт».\n\nЧто внутри\nВесь продукт сделали мы: **дизайн в Figma** (структура, mobile-first, CTA «с дороги»), потом разработка на **Next.js 16 + TypeScript + Tailwind v4** — статический экспорт под shared-хостинг. Не конструктор: ручная вёрстка, Leaflet-карта с геолокацией «найти меня», калькулятор «комплекс 4 колёса», до/после, отзывы, скидки, кейсы, FAQ, SEO (schema AutoRepair, sitemap, OG).\n\n**11 услуг** с отдельными страницами и прайсом: шиномонтаж, грузовой, правка и покраска дисков, аргон, прокол, вулканизация, балансировка, проточка, хранение, кондиционер. **4 адреса** (Лещинского и Логойский тракт — 24/7; Гурского и Дзержинского — дневной режим). B2B-блок: такси / логистика / флоты, бейдж **75+ клиентов**. Запись: форма → mailto на сеть. Sticky-бар на мобиле: позвонить / записаться.\n\nВизуал — светлая система **LOGOVO × Awesomic**: canvas `#f4f4f5`, ember-оранжевый `#ff5a00` только на CTA и бейджах 24/7, тёмные obsidian-блоки для контраста, крупные pill-кнопки, radius карточек 36px. Mobile-first — основной трафик с дороги.\n\nЗапуск под ключ\nПомогли с **доменом logovo24.by**, **сами** подняли хостинг (**hoster.by** / cPanel), выгрузили статику `out/`, настроили прод. Полный цикл: идея → Figma → код → деплой.\n\nИтог\nНе «сайт за тысячу». **Рабочий инструмент сети LOGOVO** за [[≈ 560 $]]: запись, карта, B2B, дизайн и прод на **logovo24.by** — сделала команда TIVONIX.\n",
-      detailsEn: "Why it matters\nTire service isn’t chosen from a couch — it’s chosen **from the road, one-handed, while a warning light blinks**. If address, hours and “book” hide across three screens, the client drives to whoever answers faster.\n\nClient — **LOGOVO LLC** (Minsk tire network, UNP 193616584): **4 branches**, two open **24/7**, fleet billing for taxi and logistics, full service loop — fitting, wheel repair/paint, storage, A/C and more. Project budget — **1,600 BYN** ([[≈ 42,800 ₽]] / [[≈ $560]]). Built **turnkey by the TIVONIX team** — not a template, not “here’s a zip”.\n\nHow it works\nSomeone opens **logovo24.by** on a phone → service → branch on the map / hours → **book** or **call**. Fleets go to B2B: invoices, unified pricing, docs across four locations — no “send the contract” threads.\n\nWhat’s inside\nWe built the whole product: **Figma design** (structure, mobile-first, on-the-road CTAs), then **Next.js 16 + TypeScript + Tailwind v4** — static export for shared hosting. No page builder: handmade layout, Leaflet map with “find me” geolocation, “4 wheels package” calculator, before/after, reviews, discounts, cases, FAQ, SEO (AutoRepair schema, sitemap, OG).\n\n**11 services** with dedicated pages and pricing: fitting, commercial, wheel repair/paint, argon, puncture, vulcanizing, balancing, brake disc machining, storage, A/C. **4 addresses** (Leshchinskogo and Logoyskiy trakt — 24/7; Gurskogo and Dzerzhinskogo — daytime). B2B block: taxi / logistics / fleets, **75+ clients** badge. Booking: form → mailto to the network. Sticky mobile bar: call / book.\n\nVisual system — light **LOGOVO × Awesomic**: canvas `#f4f4f5`, ember orange `#ff5a00` only on CTAs and 24/7 badges, dark obsidian blocks for contrast, large pill buttons, 36px card radius. Mobile-first — most traffic comes from the road.\n\nTurnkey launch\nWe helped with the **logovo24.by** domain, **set up hosting ourselves** (**hoster.by** / cPanel), shipped the `out/` static build, wired production. Full cycle: idea → Figma → code → deploy.\n\nOutcome\nNot a “thousand-buck site”. A **working tool for the LOGOVO network** for [[≈ $560]]: booking, map, B2B, design and prod on **logovo24.by** — by the TIVONIX team.\n",
-      domain: LOGOVO_DOMAIN,
-      status: "live",
-      tags: ["Website", "Next.js", "Local Business", "Booking", "B2B", "Figma"],
-      cover: "/images/project-priew/logovo.webp",
-      outcomes: [
-        isRu ? "Бюджет **1 600 BYN** ([[≈ 42 800 ₽]] / [[≈ 560 $]])" : "Budget **1,600 BYN** ([[≈ 42,800 ₽]] / [[≈ $560]])",
-        isRu ? "**TIVONIX** под ключ: Figma → Next.js → hoster.by" : "**TIVONIX** turnkey: Figma → Next.js → hoster.by",
-        isRu ? "**4 филиала** · два **24/7** · 11 услуг · B2B" : "**4 branches** · two **24/7** · 11 services · B2B",
-        isRu ? "Карта Leaflet · запись · калькулятор · SEO" : "Leaflet map · booking · calculator · SEO"
-      ],
-      stack: ["Next.js", "TypeScript", "Tailwind", "Leaflet", "Figma", "hoster.by"],
-      testimonial: {
-        name: isRu ? "ООО «Логово»" : "LOGOVO LLC",
-        role: isRu ? "Сеть шиномонтажа · Минск · 4 филиала" : "Tire-service network · Minsk · 4 branches",
-        text: isRu ? "Нужен был сайт, с которого клиент с дороги сразу пишет или звонит — без квеста по адресам. Команда TIVONIX собрала дизайн, разработку, домен и хостинг под ключ. Четыре точки, запись и безнал для автопарков — всё на месте, сайт в бою." : "We needed a site where a client on the road can book or call right away — no address scavenger hunt. TIVONIX shipped design, build, domain and hosting turnkey. Four locations, booking and fleet billing — all live, site in production."
-      }
-    },
-    // 2) UPC — SaaS MVP (client: ИП Безбородых И.В.) · https://upc.watch/
-    {
-      id: "upc",
-      title: "UPC",
-      subtitleRu: "SaaS MVP: подключаешь трек к TikTok, делишься ссылкой — монетизируешь просмотры, когда ролик набирает охват.",
-      subtitleEn: "SaaS MVP: attach your sound on TikTok, share a link — monetize views as the clip gains traction.",
-      detailsRu: "Продукт: SaaS / MVP (не одностраничный лендинг)\n\nИдея\n• Артист или правообладатель подключает трек к ролику в TikTok и получает ссылку на отслеживание\n• Доход завязан на просмотрах и охвате: чем устойчивее набирает видео, тем сильнее монетизация сценария\n\nЗаказчик\n• ИП Безбородых И.В.\nКонтакт/представитель\n• Виктор Безбородых — Founder & CEO MIN.ECO (music distribution ecosystem)\n\nЧто сделали\n• Собрали продуктовый интерфейс и логику сценария «трек → ссылка → метрики»\n• Премиум-подача UI: сетка, типографика, анимации без перегруза\n• Адаптив, микровзаимодействия, скорость загрузки\n• Backend на Supabase/Postgres под учёт, интеграции и рост функциональности\n\nРезультат\n• Живой MVP на upc.watch с понятным циклом монетизации для коротких видео\n",
-      detailsEn: "Product: SaaS / MVP (not a single-page marketing-only site)\n\nConcept\n• The rights holder connects a track to a TikTok video and gets a tracking link\n• Revenue ties to views and reach — stronger traction means a stronger monetization path\n\nClient\n• IE Bezborodykh I.V.\n• INN 261709192509\n• OGRNIP 325200000025627\nContact/rep\n• Viktor Bezborodykh — Founder & CEO of MIN.ECO (music distribution ecosystem)\n\nWhat we did\n• Product UI and flows: track → link → metrics\n• Premium UI craft: grid, typography, motion without clutter\n• Responsive layout, micro-interactions, fast loading\n• Supabase/Postgres backend for data, integrations and feature growth\n\nOutcome\n• Live MVP at upc.watch with a clear short-video monetization loop\n",
-      domain: UPC_DOMAIN,
-      status: "live",
-      tags: ["SaaS", "MVP", "React", "TypeScript", "Supabase"],
-      cover: "/images/project-priew/upcwatc.webp",
-      outcomes: [
-        isRu ? "MVP с циклом трек → ссылка → монетизация просмотров" : "MVP loop: track → link → view-based monetization",
-        isRu ? "Премиум UI + стабильная скорость" : "Premium UI + solid performance",
-        isRu ? "База Supabase/Postgres под масштаб продукта" : "Supabase/Postgres foundation to scale the product"
-      ],
-      stack: [
-        "React",
-        "TypeScript",
-        "Vite",
-        "Tailwind",
-        "Supabase",
-        "PostgreSQL"
-      ],
-      testimonial: {
-        name: isRu ? "Виктор Безбородых" : "Viktor Bezborodykh",
-        role: isRu ? "Founder & CEO MIN.ECO" : "Founder & CEO, MIN.ECO",
-        text: isRu ? "Сделали быстро, аккуратно и с правильным ощущением премиума. Отдельно — за скорость и структуру." : "Fast, clean delivery with a premium feel. Great performance and structure."
-      }
-    },
-    // 3) PAYCLIP — 2 weeks (client: ИП Безбородых И.В.)
-    {
-      id: "payclip",
-      title: "PayClip",
-      subtitleRu: "Платёжный продукт: лендинг под конверсию + онбординг. Быстро доводит до действия.",
-      subtitleEn: "Payment product: conversion landing + onboarding.",
-      detailsRu: "Срок: 2 недели\n\nЗаказчик\n• ИП Безбородых И.В.\nКонтакт/представитель\n• Виктор Безбородых — Founder & CEO MIN.ECO\n\nЦель\n• Сделать продуктовую посадочную + онбординг, чтобы быстрее доводить пользователя до действия.\n\nЧто сделали за 2 недели\n• Спроектировали структуру под лиды: оффер → доверие → сценарии → CTA\n• Собрали чистый UI: сетка, отступы, контраст, типографика\n• Протянули ключевые пользовательские сценарии (онбординг/первые шаги)\n• Добавили состояния/валидации/микровзаимодействия\n• Сделали адаптив и проверили кроссбраузерность\n\nРезультат\n• Понятная посадочная + онбординг, меньше вопросов у пользователей, выше конверсия в контакт\n",
-      detailsEn: "Timeline: 2 weeks\n\nClient\n• IE Bezborodykh I.V.\n• INN 261709192509\n• OGRNIP 325200000025627\nContact/rep\n• Viktor Bezborodykh — Founder & CEO, MIN.ECO\n\nGoal\n• Build a product landing + onboarding to move users to action faster.\n\nWhat we delivered in 2 weeks\n• Lead-oriented structure: offer → trust → flows → CTA\n• Clean UI: grid, spacing, contrast, typography\n• Core user flows (onboarding / first steps)\n• States, validation, micro-interactions\n• Responsive layout + cross-browser checks\n\nResult\n• Clear landing + onboarding, fewer user questions, better conversion to contact\n",
-      domain: PAYCLIP_DOMAIN,
-      status: "live",
-      tags: ["Fintech", "Landing", "Onboarding", "UI/UX", "Conversion"],
-      cover: "/images/project-priew/payslip.webp",
-      outcomes: [
-        isRu ? "Сделано за 2 недели" : "Delivered in 2 weeks",
-        isRu ? "Структура под конверсию" : "Conversion-driven structure",
-        isRu ? "Онбординг и сценарии" : "Onboarding and user flows"
-      ],
-      stack: ["React", "TypeScript", "Tailwind", "API"],
-      testimonial: {
-        name: isRu ? "Виктор Безбородых" : "Viktor Bezborodykh",
-        role: isRu ? "Founder & CEO MIN.ECO" : "Founder & CEO, MIN.ECO",
-        text: isRu ? "Коммуникация — по делу, быстро вносят правки, результатом довольны." : "Clear communication, fast iterations, happy with the result."
-      }
-    },
-    // 4) HEADMIND — корпоративный сайт на WordPress
-    {
-      id: "headmind",
-      title: "Headmind",
-      subtitleRu: "Корпоративный сайт ООО «Хэдмайнд»: Figma → WordPress + Elementor, хостинг и домен headmind.ru — бюджет 100 000 ₽.",
-      subtitleEn: "Corporate site for Headmind: Figma → WordPress + Elementor, hosting and domain headmind.ru — budget 100,000 ₽.",
-      detailsRu: "Зачем это\nООО «Хэдмайнд» — консалтинг по трансформации бизнеса: стратегия, цифровизация, оргдизайн, производство, контракты. В B2B часто **теряют сделку на первом касании**, если сайт говорит «обо всём и ни о чём». Нужен был сайт, который спокойно шлют в первом сообщении.\n\nЗаказчик — **Евгений Беликов**, основатель и генеральный директор ООО «Хэдмайнд» (соучредитель — Виталий Петровский). Бюджет — **100 000 ₽** ([[≈ 1 280 $]]). Прод: **headmind.ru**.\n\nКак работает\nПосетитель проходит короткий маршрут: **услуги** → **подход / экспертиза** → **команда** → **контакт / заявка**. На каждом шаге понятно, кто вы и чем сильны. CTA стоит там, где человек уже готов написать.\n\nЧто внутри\nСначала **макеты в Figma**: несколько визуальных вариантов на выбор — пока заказчику не «зашло». Потом дизайн и сборка на **WordPress + Elementor**: услуги (трансформация, цифровизация, HR, производство, контракты, продажи), команда, доверие, формы заявки.\n\nПод ключ: подобрали и подключили **хостинг**, купили/привязали **домен headmind.ru**, выкатили в прод, настроили админку WordPress, чтобы контент правили сами. Стек не «с нуля на React» — осознанный выбор: быстрый запуск, удобное редактирование, спокойный B2B-сайт.\n\nЧто сделали\nFigma (выборка вариантов) → дизайн → WordPress/Elementor → хостинг + домен → живой **headmind.ru**. Упаковали экспертизу в маршрут до заявки.\n\nИтог\nНе шаблон «поставьте логотип». **Корпоративный сайт под ключ** для Евгения Беликова / ООО «Хэдмайнд»: 100 000 ₽, Figma → WP, домен и хостинг — можно открыть и проверить самому.\n",
-      detailsEn: "Why it matters\nHeadmind is a business-transformation consultancy: strategy, digitalization, org design, production, contracts. In B2B you often **lose the deal on first contact** if the site says everything and nothing. They needed a site you can send in the first message.\n\nClient — **Evgeniy Belikov**, founder and CEO of Headmind (co-founder — Vitaliy Petrovsky). Budget — **100,000 ₽** ([[≈ $1,280]]). Live: **headmind.ru**.\n\nHow it works\nA visitor follows a short path: **services** → **approach / expertise** → **team** → **contact / lead**. At every step it’s clear who you are and why you’re strong. CTAs sit where people are already ready to write.\n\nWhat’s inside\nFirst **Figma mockups**: several visual directions until the client picked a favourite. Then design and build on **WordPress + Elementor**: services (transformation, digitalization, HR, production, contracts, sales), team, trust, lead forms.\n\nTurnkey: hosting set up, **domain headmind.ru** connected, shipped to production, WordPress admin ready so they can edit content themselves. Not a custom React build on purpose — fast launch, easy editing, a calm B2B site.\n\nWhat we delivered\nFigma (variant selection) → design → WordPress/Elementor → hosting + domain → live **headmind.ru**. Expertise packaged into a path to a lead.\n\nOutcome\nNot a “drop your logo” template. A **turnkey corporate site** for Evgeniy Belikov / Headmind: 100,000 ₽, Figma → WP, domain and hosting — open it and check yourself.\n",
-      domain: HEADMIND_DOMAIN,
-      status: "live",
-      tags: ["B2B", "WordPress", "Elementor", "Figma", "Corporate"],
-      cover: "/images/project-priew/headmind.webp",
-      outcomes: [
-        isRu ? "Заказчик **Евгений Беликов** · бюджет [[≈ 1 280 $]]" : "Client **Evgeniy Belikov** · budget [[≈ $1,280]]",
-        isRu ? "**Figma** (варианты) → **WordPress + Elementor**" : "**Figma** (variants) → **WordPress + Elementor**",
-        isRu ? "Хостинг + домен **headmind.ru** под ключ" : "Hosting + domain **headmind.ru** turnkey",
-        isRu ? "Маршрут услуг → команда → **заявка**" : "Path: services → team → **lead**"
-      ],
-      stack: ["Figma", "WordPress", "Elementor", "Hosting", "Domain"],
-      testimonial: {
-        name: isRu ? "Евгений Беликов" : "Evgeniy Belikov",
-        role: isRu ? "Основатель и гендиректор, ООО «Хэдмайнд»" : "Founder & CEO, Headmind",
-        text: isRu ? "Сначала показали несколько макетов в Figma — выбрали тот, что зашёл. Потом собрали на WordPress, подключили хостинг и домен. Клиентам стало понятнее, кто мы — сайт спокойно отправляем на первом касании." : "They showed several Figma directions first — we picked the one that clicked. Then WordPress, hosting and domain. Clients finally get who we are — we send the site on first contact without hesitation."
-      }
-    },
-    // 7) SLOTTY — маркетплейс онлайн-записи к мастерам
-    {
-      id: "slotty",
-      title: "Slotty",
-      subtitleRu: "Полный маркетплейс записи к мастерам: каталог с фильтрами и картой, Telegram Mini App, кабинет мастера (SaaS Free/Pro), platform-admin, bePaid — на Railway, домен slotty.of.by.",
-      subtitleEn: "Full booking marketplace for masters: filtered catalog + map, Telegram Mini App, master SaaS cabinet (Free/Pro), platform admin, bePaid — on Railway, domain slotty.of.by.",
-      detailsRu: "Зачем это\nЗапись к мастеру до сих пор часто живёт в **Direct и WhatsApp**: «есть на завтра?», «а через час?», «ой, забыла напомнить». Клиент устаёт писать. Мастер устаёт отвечать. Слоты пропадают в тишине чата.\n\nНужен был не черновик и не «кнопка записаться», а **полный маркетплейс**: каталог с жёсткой фильтрацией, карта, путь клиента, SaaS-кабинет мастера, роли, platform-admin, оплаты, уведомления и прод. Заказчик — **Виктория Д.** Бюджет — 230 000 ₽ ([[≈ 2 940 $]]). Срок — **3 недели**.\n\nКак работает\nКлиент открывает **slotty.of.by** (сайт или Telegram Mini App) → каталог → фильтры / карта → мастер → услуга → **свободный слот** → подтверждение. Код записи, напоминания в Telegram и email — без звонков.\nМастер в кабинете ведёт профиль, портфолио, адрес, услуги, акции, расписание, заявки и клиентов; тариф Free или Pro.\nPlatform-admin модерирует мастеров, записи, биллинг, платежи bePaid, рассылки и журнал — платформой можно рулить уже сейчас.\n\nЧто внутри\nЭто **крупная разработка**, не лендинг с формой. Фронт: React + TypeScript + Vite + Tailwind. Бэкенд: Express API, PostgreSQL (**88 миграций**), JWT-сессии. Прод: **два сервиса на Railway** (web + api), домен **slotty.of.by** — подсказали, где купить домен, подняли хостинг, привязали DNS и выкатили в бой. Плюс Telegram Bot / Mini App, Google Auth, email (Resend), карты (Leaflet / OSM, опционально Яндекс), платежи **bePaid** (BYN), Sentry, SEO-prerender.\n\nМаркетплейс для клиента: **6 категорий** (маникюр, барберы, брови/ресницы, массаж, фитнес, тату). Каталог — не «список карточек», а полноценный поиск: все / популярные / акции / новинки, текстовый поиск, **карта с геосортировкой**.\n\nФильтры: сортировка (рекомендации, популярность, ближайший слот, расстояние, рейтинг, цена ↑↓, отзывы); дата (сегодня / завтра / неделя / выходные / точный день); время суток и слайдер часов; визит в салоне или на дому; длительность; цена в BYN; рейтинг от 4.5 / 4.7 / 4.9; число отзывов; только верифицированные; только с акциями; только с онлайн-записью. Запись: дата → слот → комментарий → референс-фото → успех с кодом **SL-…**. Профиль клиента: записи, избранное, уведомления, настройки, отзыв после визита.\n\nКабинет мастера — отдельный SaaS: сегодня / заявки / расписание / услуги (каталог, цены, пакеты, акции) / профиль и портфолио / клиенты / репутация / биллинг / уведомления (десятки типов событий). Онбординг в **8 шагов**: категории → профиль → адрес на карте → услуги → доверие → превью → тариф. Тарифы: Free (лимиты) / Pro / trial 7 дней — оплата bePaid или ручной перевод.\n\nPlatform-admin: обзор, заявки (категории, удаления, спонсорство, жалобы), поддержка, статус системы, пользователи, мастера, услуги, записи (в т.ч. проблемные отмены), биллинг и промокоды, платежи bePaid, рассылки, аудит. Роли: **client / master / platform_admin**. Auth: email, Google, Telegram — с телефона и с компьютера.\n\nСложные куски, которые обычно «ломают» сроки: concurrent booking и слоты, pending expiry, auto-complete, споры по записи; entitlements Free/Pro; очередь уведомлений; multi-identity auth; серверный каталог с 20+ параметрами фильтра и Pro-boost в рекомендациях.\n\nЧто сделали\nДизайн + разработка под ключ: маркетплейс, кабинеты, админка, интеграции, домен и хостинг. Продукт на **slotty.of.by** — **скоро запуск к настоящим клиентам и мастерам**.\n\nИтог\nНе демо «посмотрите идею». **Полный маркетплейс записи** с фильтрами, картой, Mini App, SaaS мастера и platform-admin. Виктория Д., [[≈ 2 940 $]], 3 недели — и живой прод, куда можно зайти и проверить самому.\n",
-      detailsEn: "Why it matters\nBooking a master still often lives in **DMs and WhatsApp**: “free tomorrow?”, “in an hour?”, “oops, forgot to remind”. Clients get tired of typing. Masters get tired of answering. Slots vanish into chat silence.\n\nThis wasn’t a draft or a “book now” button. It needed a **full marketplace**: filtered catalog, map, client path, master SaaS cabinet, roles, platform admin, payments, notifications and production. Client — **Victoria D.** Budget — 230,000 ₽ ([[≈ $2,940]]). Timeline — **3 weeks**.\n\nHow it works\nClient opens **slotty.of.by** (web or Telegram Mini App) → catalog → filters / map → master → service → **open slot** → confirm. Booking code, Telegram + email reminders — no calls.\nMasters run profile, portfolio, address, services, promos, schedule, requests and clients; Free or Pro plan.\nPlatform admin moderates masters, bookings, billing, bePaid payments, broadcasts and audit — the platform is operable now.\n\nWhat’s inside\nA **large build**, not a landing with a form. Frontend: React + TypeScript + Vite + Tailwind. Backend: Express API, PostgreSQL (**88 migrations**), JWT sessions. Production: **two Railway services** (web + api), domain **slotty.of.by** — we advised where to buy the domain, set up hosting, pointed DNS and shipped live. Plus Telegram Bot / Mini App, Google Auth, email (Resend), maps (Leaflet / OSM, optional Yandex), **bePaid** (BYN), Sentry, SEO prerender.\n\nClient marketplace: **6 categories** (manicure, barbers, brows/lashes, massage, fitness, tattoo). Catalog isn’t a flat card list — full search: all / popular / promos / new, text search, **map with geo sort**.\n\nFilters: sort (recommended, popular, soonest, distance, rating, price ↑↓, reviews); date (today / tomorrow / week / weekend / exact day); time of day + hour slider; studio or at-home; duration; BYN price; rating from 4.5 / 4.7 / 4.9; review count; verified only; promos only; online booking only. Booking: date → slot → comment → reference photos → success with code **SL-…**. Client profile: appointments, favorites, notifications, settings, post-visit review.\n\nMaster cabinet is a separate SaaS: today / requests / schedule / services (catalog, prices, bundles, promos) / profile & portfolio / clients / reputation / billing / notifications (dozens of event types). **8-step** onboarding: categories → profile → map address → services → trust → preview → plan. Plans: Free (limits) / Pro / 7-day trial — bePaid or manual transfer.\n\nPlatform admin: overview, requests (category changes, deletions, sponsorship, reports), support, system status, users, masters, services, bookings (incl. problem cancellations), billing & promo codes, bePaid payments, broadcasts, audit. Roles: **client / master / platform_admin**. Auth: email, Google, Telegram — phone or desktop.\n\nHard pieces that usually blow timelines: concurrent booking & slots, pending expiry, auto-complete, booking disputes; Free/Pro entitlements; notification job queue; multi-identity auth; server catalog with 20+ filter params and Pro boost in recommendations.\n\nWhat we delivered\nDesign + turnkey build: marketplace, cabinets, admin, integrations, domain and hosting. Live on **slotty.of.by** — **soon launching to real clients and masters**.\n\nOutcome\nNot a “look at the idea” demo. A **full booking marketplace** with filters, map, Mini App, master SaaS and platform admin. Victoria D., [[≈ $2,940]], 3 weeks — and a live prod you can open and check yourself.\n",
-      domain: SLOTTY_DOMAIN,
-      status: "live",
-      tags: ["Marketplace", "Booking", "Beauty", "SaaS", "Telegram", "Admin Panel"],
-      cover: "/images/project-priew/slotty.webp",
-      gallery: SLOTTY_GALLERY,
-      outcomes: [
-        isRu ? "**Полный маркетплейс** за 3 недели — не MVP" : "**Full marketplace** in 3 weeks — not an MVP",
-        isRu ? "Каталог с **фильтрами + карта** · Mini App · Free/Pro" : "Catalog with **filters + map** · Mini App · Free/Pro",
-        isRu ? "Домен **slotty.of.by** · хостинг Railway (web + api)" : "Domain **slotty.of.by** · Railway hosting (web + api)",
-        isRu ? "Виктория Д. · [[≈ 2 940 $]] · скоро запуск к живым клиентам" : "Victoria D. · [[≈ $2,940]] · soon launching to live clients"
-      ],
-      stack: [
-        "React",
-        "TypeScript",
-        "Vite",
-        "Express",
-        "PostgreSQL",
-        "Railway",
-        "Telegram Mini App",
-        "Google Auth",
-        "bePaid",
-        "Leaflet",
-        "Resend"
-      ],
-      testimonial: {
-        name: isRu ? "Виктория Д." : "Victoria D.",
-        role: isRu ? "Заказчик Slotty" : "Slotty client",
-        text: isRu ? "Нужна была не «демо-запись», а нормальный маркетплейс с фильтрами, кабинетом мастера и админкой. Собрали быстро, по делу — за три недели получили продукт на своём домене, с которым можно идти к реальным клиентам." : "I needed a real marketplace with filters, a master cabinet and admin — not a booking demo. They shipped fast and clean: in three weeks we had a product on our own domain, ready for real clients."
-      }
-    },
-    // 8) SPLITON — финтех-платформа для музыкальных активов
-    {
-      id: "spliton",
-      title: "Spliton",
-      subtitleRu: "Финтех-платформа для долей в музыке: каталог, первичный и вторичный рынок, кошелёк USDT, ledger, compliance и operator portal — продукт с инвестором и живым сопровождением.",
-      subtitleEn: "Fintech platform for music shares: catalog, primary & secondary market, USDT wallet, ledger, compliance and operator portal — investor-backed product with ongoing support.",
-      detailsRu: "Зачем это\nМузыкальные активы — не лендинг с кнопкой «купить». Здесь **реальные деньги**, роли, согласия, депозиты и выводы должны сходиться без дыр: confirm → processing → result. Один сбой на выплате или consent — и доверие кончается быстрее любого релиза.\n\nНужна была не «админка на коленке», а **полноценная биржа долей**: кабинет инвестора, operator portal, ledger, treasury, KYC/AML, споры, публичный trust center. Мы собрали это end-to-end — и **до сих пор сопровождаем** продукт в бою.\n\nКак работает\nИнвестор регистрируется, проходит согласия и при необходимости KYC, пополняет баланс в **USDT (TRC20)**.\nДальше: выбирает релиз в каталоге → изучает data room → покупает доли (UNT) на первичке → видит позиции и начисления в кабинете → при желании торгует на **вторичном рынке** (стакан, лимитные заявки) → выводит средства через проверку treasury.\nОператор ведёт депозиты, выводы, compliance, релизы, рефералов, споры и публичный статус системы — всё из admin-портала.\n\nЧто внутри\nЭто **крупный продукт в одном репозитории**, не одностраничный сайт. Клиентская часть на Next.js, сервер на NestJS, база PostgreSQL через Prisma, автотесты на критичные денежные сценарии.\n\nКабинет инвестора: каталог релизов, покупка долей, портфель и метрики, кошелёк (пополнение, вывод, история, выписки), **вторичный рынок со сложным биржевым стаканом** и лимитными заявками, калькулятор, новости, поддержка и центр споров, реферальная и партнёрская программы, VIP.\n\nПубличная часть: лендинг продукта, **центр доверия** (учёт операций, статус сервисов, документы), страница статуса системы, комиссии, юридические тексты, справочный центр.\n\nПортал оператора — отдельная **огромная админ-панель** для команды платформы: не пара экранов, а десятки разделов управления. Главный обзор, задачи операторов, пользователи и роли, треки и раунды, артисты, лейблы, жанры.\n\nФинансы: кошельки, пополнения, **выплаты**, позиции, доход и доход платформы, казначейство, платёжные реквизиты. Рынок: вторичный рынок, сделки, подозрительные операции. Операции: поддержка, споры, комплаенс, KYC, юридические тексты, рефералы и партнёры.\n\nАналитика с **графиками**: финансы, пользователи, треки, рынок, доход, риски, операции. Плюс отчёты и выгрузки, новости, справочный центр, статус системы, уведомления, журнал аудита действий сотрудников. Роли: супер-админ, бухгалтер, контент, поддержка, комплаенс, бизнес-аналитик.\n\nФинансовое ядро: внутренний учёт операций с двойной записью, сверки, комиссии платформы, автоматизация депозитов в сети TRON, политика горячего и холодного кошелька, регламенты инцидентов. Интерфейс на acid lime `#b7f500` — как в живом продукте.\n\nЯзыки: интерфейс полностью на **четырёх языках** — русский, английский, испанский, португальский.\n\nЧто сделали\nСпроектировали и собрали весь контур: дизайн, фронтенд, бэкенд, база, комплаенс, автотесты и продакшен-операции. Продукт запущен, в него зашёл инвестор на [[200 000 $]], платформа в работе — **TIVONIX продолжает поддержку и развитие**.\n\nИтог\nНе демо и не презентация. **Живая финтех-платформа** с кабинетом инвестора, сложной биржей долей и огромной админкой под выплаты, графики и операционное управление. Сопровождаем до сих пор.\n",
-      detailsEn: "Why it matters\nMusic assets aren’t a landing page with a buy button. **Real money**, roles, consents, deposits and withdrawals have to lock without holes: confirm → processing → result. One payout or consent failure — and trust dies faster than any release.\n\nThis wasn’t a “quick admin”. It needed a **full share exchange**: investor cabinet, operator portal, ledger, treasury, KYC/AML, disputes, public trust center. We built it end-to-end — and **still support** it in production.\n\nHow it works\nAn investor signs up, accepts policies, completes KYC when required, and tops up in **USDT (TRC20)**.\nThen: pick a release in the catalog → review the data room → buy shares (UNT) on primary → track positions and accruals → optionally trade on the **secondary market** (order book, limit orders) → withdraw through treasury checks.\nOperators run deposits, withdrawals, compliance, releases, referrals, disputes and public system status — all from the admin portal.\n\nWhat’s inside\nA **large product in one repository**, not a single-page site. Client app on Next.js, server on NestJS, PostgreSQL via Prisma, automated tests on critical money flows.\n\nInvestor cabinet: release catalog, share purchase, portfolio and metrics, wallet (deposit, withdraw, history, statements), **secondary market with a complex order book** and limit orders, calculator, news, support and dispute center, referral and partner programs, VIP.\n\nPublic surface: product landing, **trust center** (operations ledger, service status, documents), system status page, fees, legal pages, help center.\n\nThe operator portal is a **huge admin panel** for the platform team: not a few screens, but dozens of management sections. Executive overview, operator tasks, users and roles, tracks and rounds, artists, labels, genres.\n\nFinance: wallets, deposits, **payouts**, holdings, revenue and platform revenue, treasury, payment requisites. Market: secondary market, trades, suspicious activity. Operations: support, disputes, compliance, KYC, legal texts, referrals and partners.\n\nAnalytics with **charts**: finance, users, tracks, market, revenue, risk, operations. Plus reports and exports, news, help center, system status, notifications, staff audit log. Roles: super admin, accountant, content, support, compliance, business analyst.\n\nFinancial core: internal double-entry operations ledger, reconciliation, platform fees, TRON deposit automation, hot/cold wallet policy, incident runbooks. Interface on acid lime `#b7f500` — matching the live product.\n\nLanguages: the interface is fully localized in **four languages** — Russian, English, Spanish, Portuguese.\n\nWhat we delivered\nDesigned and shipped the full loop: design, frontend, backend, database, compliance, automated tests and production ops. The product is live, backed by an investor at [[$200,000]], and **TIVONIX still supports and evolves** it.\n\nOutcome\nNot a demo and not a deck. A **live fintech platform** with an investor cabinet, a complex share exchange and a huge admin for payouts, charts and day-to-day operations. Still supported.\n",
-      domain: SPLITON_DOMAIN,
-      status: "live",
-      tags: [
-        "FinTech",
-        "Marketplace",
-        "SaaS",
-        "MusicTech",
-        "React",
-        "Next.js",
-        "Node.js",
-        "PostgreSQL",
-        "UI/UX",
-        "Admin Panel",
-        "Compliance"
-      ],
-      cover: "/images/project-priew/spliton.webp",
-      gallery: SPLITON_GALLERY,
-      outcomes: [
-        isRu ? "Полный финтех-контур: кабинет + биржа долей + портал оператора" : "Full fintech loop: cabinet + share exchange + operator portal",
-        isRu ? "Огромная админка: выплаты, казначейство, графики, комплаенс" : "Huge admin: payouts, treasury, charts, compliance",
-        isRu ? "Учёт операций, KYC, центр доверия, USDT TRC20" : "Operations ledger, KYC, trust center, USDT TRC20",
-        isRu ? "Инвестор [[200 000 $]] · продукт в продакшене" : "Investor [[$200,000]] · live in production",
-        isRu ? "**TIVONIX сопровождает** платформу до сих пор" : "**TIVONIX still supports** the platform",
-        isRu ? "4 языка: русский, английский, испанский, португальский" : "4 languages: Russian, English, Spanish, Portuguese",
-        isRu ? "Сложный биржевой стакан на вторичном рынке" : "Complex order book on the secondary market"
-      ],
-      stack: [
-        "Next.js",
-        "React",
-        "TypeScript",
-        "Tailwind",
-        "NestJS",
-        "PostgreSQL",
-        "Supabase",
-        "Prisma",
-        "Playwright",
-        "i18n"
-      ],
-      testimonial: {
-        name: isRu ? "Виктор Безбородых" : "Viktor Bezborodykh",
-        role: isRu ? "Основатель MIN.ECO" : "Founder & CEO, MIN.ECO",
-        text: isRu ? "Spliton — тяжёлый продукт: биржа долей, кошелёк, выплаты и огромная админка. Собрали целиком, довели до продакшена и не бросили на поддержке. С нами спокойно масштабировать дальше." : "Spliton is a heavy product: share exchange, wallet, payouts and a huge admin. They shipped the full stack to production and stayed on support. Easy to keep scaling with them."
-      }
-    }
-  ];
-}
-function buildProjects(isRu) {
-  const all = buildAllProjects(isRu);
-  return PUBLIC_PROJECT_IDS.map((id) => all.find((p) => p.id === id)).filter(
-    (p) => Boolean(p)
-  );
-}
-function findProjectBySlug(slug, isRu) {
-  if (!slug) return void 0;
-  return buildProjects(isRu).find((p) => p.id === slug);
-}
+const ENTERPRISE_IMG = `${PLANS_IMG$2}/5.webp`;
+const PLAN_TAGS = {
+  start: { ru: "Заявки", en: "Leads" },
+  growth: { ru: "Система", en: "System" },
+  product: { ru: "Продукт", en: "Product" },
+  custom: { ru: "Масштаб", en: "Scale" }
+};
 function clamp01$1(v) {
   return Math.min(1, Math.max(0, v));
 }
-function useCaseCoverPan(blockRef) {
-  const [coverX, setCoverX] = useState(36);
+function usePlanPhotoScale(sectionRef) {
+  const [scale, setScale] = useState(1.04);
   useEffect(() => {
-    const el = blockRef.current;
+    const el = sectionRef.current;
     if (!el || typeof window === "undefined") return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      setScale(1.12);
+      return;
+    }
+    let raf = 0;
+    let lastScale = 1.04;
     const update = () => {
       const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const total = Math.max(1, rect.height + vh * 0.35);
-      const scrolled = vh * 0.82 - rect.top;
+      const vh = getStableViewportHeight();
+      const total = Math.max(1, rect.height + vh * 0.45);
+      const scrolled = vh * 0.75 - rect.top;
       const progress = clamp01$1(scrolled / total);
-      const wide = window.innerWidth >= 1024;
-      const start = wide ? 38 : 30;
-      const end = wide ? 74 : 58;
-      const target = reduced ? wide ? 58 : 46 : start + (end - start) * progress;
-      setCoverX(target);
+      const next = 1.04 + progress * 0.28;
+      if (Math.abs(next - lastScale) < 4e-3) return;
+      lastScale = next;
+      setScale(next);
     };
-    let raf = 0;
     const schedule = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(update);
     };
     schedule();
     window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
     };
-  }, [blockRef]);
-  return coverX;
+  }, [sectionRef]);
+  return scale;
 }
-function CasesSection() {
-  const { lang } = useLang();
-  const copy = landingCopy(lang);
-  const leadCopy = leadFormCopy(lang);
-  const { openLeadForm } = useLeadForm();
-  const isRu = lang === "ru";
-  const [activeTab, setActiveTab] = useState("view");
-  const caseBlockRef = useRef(null);
-  const coverX = useCaseCoverPan(caseBlockRef);
-  const featured = buildProjects(isRu).find((p) => p.id === "tivonixpanel");
-  if (!featured) return null;
-  const subtitle = isRu ? featured.subtitleRu : featured.subtitleEn;
-  const caseCopy = copy.cases.tivonixpanel;
-  const caseTabs = useMemo(() => {
-    const tabs = [
-      {
-        id: "view",
-        label: copy.cases.viewCase,
-        to: `/projects/${featured.id}`
-      }
-    ];
-    if (featured.domain) {
-      tabs.push({
-        id: "product",
-        label: copy.cases.openProduct,
-        href: featured.domain
-      });
-    }
-    tabs.push({
-      id: "cta",
-      label: leadCopy.ctaProjects,
-      onClick: () => openLeadForm("cases")
-    });
-    return tabs;
-  }, [
-    copy.cases.openProduct,
-    copy.cases.viewCase,
-    featured.domain,
-    featured.id,
-    leadCopy.ctaProjects,
-    openLeadForm
-  ]);
-  return /* @__PURE__ */ jsx(Section, { id: "cases", className: "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs(Reveal$1, { className: "case-split", children: [
-    /* @__PURE__ */ jsxs("div", { className: "case-split__visual", children: [
-      /* @__PURE__ */ jsx(
-        "img",
-        {
-          src: featured.cover ?? "/images/project-priew/tivonixpanel/prew.png",
-          alt: featured.title,
-          loading: "lazy",
-          decoding: "async",
-          className: "case-split__img",
-          style: { objectPosition: `${coverX}% 58%` }
-        }
-      ),
-      /* @__PURE__ */ jsx("div", { className: "case-split__visual-overlay", "aria-hidden": true })
-    ] }),
-    /* @__PURE__ */ jsxs("div", { ref: caseBlockRef, className: "case-split__grid", children: [
-      /* @__PURE__ */ jsx("div", { className: "case-split__visual-gap", "aria-hidden": true }),
-      /* @__PURE__ */ jsxs("div", { className: "case-split__content", children: [
-        /* @__PURE__ */ jsx("span", { className: "case-split__badge", children: copy.cases.badge }),
-        /* @__PURE__ */ jsx("h2", { className: "mt-4 font-hero text-[clamp(1.75rem,4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white", children: featured.title }),
-        /* @__PURE__ */ jsx("p", { className: "mt-3 text-[14px] leading-relaxed text-white/48 sm:text-[15px]", children: subtitle }),
-        /* @__PURE__ */ jsxs("div", { className: "mt-6 space-y-3 text-[13.5px] leading-relaxed text-white/62", children: [
-          /* @__PURE__ */ jsxs("p", { children: [
-            /* @__PURE__ */ jsx("span", { className: "font-medium text-white/78", children: isRu ? "Задача:" : "Need:" }),
-            " ",
-            caseCopy.need
-          ] }),
-          /* @__PURE__ */ jsxs("p", { children: [
-            /* @__PURE__ */ jsx("span", { className: "font-medium text-white/78", children: isRu ? "Сделали:" : "Built:" }),
-            " ",
-            caseCopy.done
-          ] })
-        ] }),
-        /* @__PURE__ */ jsx("div", { className: "case-split__chips mt-5 flex flex-wrap gap-2", children: caseCopy.modules.map((m) => /* @__PURE__ */ jsx("span", { className: "case-split__chip", children: m }, m)) })
-      ] })
-    ] }),
-    /* @__PURE__ */ jsx("div", { className: "case-split__tabs", children: /* @__PURE__ */ jsx(
-      PillActionBar,
-      {
-        items: caseTabs,
-        activeId: activeTab,
-        onActiveChange: setActiveTab,
-        className: "case-split__tab-bar",
-        ariaLabel: isRu ? "Действия с кейсом" : "Case actions"
-      }
-    ) })
-  ] }) }) });
+function FeatureIcon() {
+  return /* @__PURE__ */ jsx(Check, { className: "home-plan-card__check h-3.5 w-3.5", strokeWidth: 2.25, "aria-hidden": true });
 }
-const ORANGE_DIM = [0.12, 0.04, 0.01];
-const ORANGE_BASE = [0.2, 0.07, 0.01];
-const ORANGE_ARC = [1, 0.52, 0.18];
-const THETA = 0.18;
-const PHI_SPEED = 85e-5;
-const MARKER_ELEVATION = 0.06;
-const MAX_RENDER_SIDE = 720;
-const PIN_COLORS = {
-  masters: [1, 0.52, 0.18],
-  studios: [1, 0.38, 0.22],
-  autoservice: [1, 0.68, 0.12],
-  schools: [1, 0.45, 0.55],
-  startups: [1, 0.32, 0.08],
-  agencies: [1, 0.58, 0.32]
-};
-const ARCS = [
-  { from: [55.75, 37.62], to: [51.5, -0.12] },
-  { from: [40.71, -74.01], to: [25.2, 55.27] },
-  { from: [1.35, 103.82], to: [48.85, 2.35] }
-];
-function GlobeFallback() {
-  return /* @__PURE__ */ jsx("div", { className: "tivonix-globe-fallback", "aria-hidden": true, children: /* @__PURE__ */ jsxs("svg", { viewBox: "0 0 400 400", className: "tivonix-globe-fallback__svg", children: [
-    /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("pattern", { id: "tivonix-globe-dots", width: "10", height: "10", patternUnits: "userSpaceOnUse", children: /* @__PURE__ */ jsx("circle", { cx: "5", cy: "5", r: "1.1", fill: "rgba(255,122,26,0.72)" }) }) }),
-    /* @__PURE__ */ jsx("circle", { cx: "200", cy: "200", r: "132", fill: "rgba(8,4,0,0.94)" }),
-    /* @__PURE__ */ jsx("circle", { cx: "200", cy: "200", r: "132", fill: "url(#tivonix-globe-dots)", opacity: "0.9" })
+function HomePlanPrice({ price, priceOriginal }) {
+  const match = price.match(/^(от|from)\s+(.+)$/i);
+  const from = match?.[1];
+  const amount = match?.[2];
+  const hasOriginal = Boolean(priceOriginal);
+  return /* @__PURE__ */ jsx("div", { className: "home-plan-card__price-block", children: /* @__PURE__ */ jsxs("div", { className: "home-plan-card__price", children: [
+    /* @__PURE__ */ jsx(
+      "p",
+      {
+        className: ["home-plan-card__price-old", hasOriginal ? "" : "is-empty"].filter(Boolean).join(" "),
+        "aria-hidden": !hasOriginal,
+        children: priceOriginal ?? " "
+      }
+    ),
+    from && amount ? /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsx("span", { className: "home-plan-card__price-from", children: from }),
+      /* @__PURE__ */ jsx("span", { className: "home-plan-card__price-amount", children: amount })
+    ] }) : /* @__PURE__ */ jsx("span", { className: "home-plan-card__price-amount home-plan-card__price-amount--solo", children: price })
   ] }) });
 }
-function prefersGlobeFallback() {
-  if (typeof window === "undefined") return true;
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return true;
-  const probe = document.createElement("canvas");
-  const gl = probe.getContext("webgl") ?? probe.getContext("webgl2");
-  return !gl;
-}
-function renderSize(rect) {
-  const layoutW = Math.max(1, rect.width);
-  const layoutH = Math.max(1, rect.height);
-  const scale = Math.min(1, MAX_RENDER_SIDE / Math.max(layoutW, layoutH));
-  return {
-    width: Math.max(1, Math.round(layoutW * scale)),
-    height: Math.max(1, Math.round(layoutH * scale))
-  };
-}
-function TivonixGlobeCanvas({ pins }) {
-  const wrapRef = useRef(null);
-  const hostRef = useRef(null);
-  const pinsRef = useRef(pins);
-  const [fallback] = useState(prefersGlobeFallback);
-  const pinsKey = useMemo(
-    () => pins.map((pin) => `${pin.id}:${pin.lat}:${pin.lng}`).join("|"),
-    [pins]
-  );
-  pinsRef.current = pins;
-  useLayoutEffect(() => {
-    if (fallback || typeof window === "undefined") return;
-    const wrap = wrapRef.current;
-    const host = hostRef.current;
-    if (!wrap || !host) return;
-    const canvas = document.createElement("canvas");
-    canvas.className = "tivonix-globe-canvas";
-    canvas.setAttribute("aria-hidden", "true");
-    host.replaceChildren(canvas);
-    let width = 0;
-    let height = 0;
-    let phi = 0.9;
-    let frame = 0;
-    let visible = true;
-    let globe = null;
-    const dpr = Math.min(window.devicePixelRatio ?? 1, 1.5);
-    const buildMarkers = () => pinsRef.current.map((pin) => ({
-      location: [pin.lat, pin.lng],
-      size: 0.05,
-      color: PIN_COLORS[pin.id] ?? ORANGE_ARC
-    }));
-    const buildOptions = (w, h) => ({
-      devicePixelRatio: dpr,
-      width: w,
-      height: h,
-      phi,
-      theta: THETA,
-      dark: 1,
-      diffuse: 1.22,
-      mapSamples: 1e4,
-      mapBrightness: window.innerWidth < 640 ? 13.5 : 11,
-      mapBaseBrightness: 0.015,
-      baseColor: ORANGE_BASE,
-      markerColor: ORANGE_ARC,
-      glowColor: ORANGE_DIM,
-      markers: buildMarkers(),
-      arcs: ARCS,
-      arcColor: ORANGE_ARC,
-      arcWidth: 0.4,
-      arcHeight: 0.18,
-      markerElevation: MARKER_ELEVATION,
-      scale: 1,
-      offset: [0, 0]
-    });
-    const resize = () => {
-      const { width: nextW, height: nextH } = renderSize(wrap.getBoundingClientRect());
-      if (nextW === width && nextH === height) return;
-      width = nextW;
-      height = nextH;
-      if (globe) {
-        globe.update(buildOptions(width, height));
-        return;
-      }
-      globe = createGlobe(canvas, buildOptions(width, height));
-    };
-    const render2 = () => {
-      if (visible) {
-        phi += PHI_SPEED;
-        globe?.update({ phi });
-      }
-      frame = requestAnimationFrame(render2);
-    };
-    let resizeTimer = 0;
-    const ro = new ResizeObserver(() => {
-      window.clearTimeout(resizeTimer);
-      resizeTimer = window.setTimeout(resize, 120);
-    });
-    ro.observe(wrap);
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        visible = Boolean(entry?.isIntersecting);
-      },
-      { threshold: 0.01, rootMargin: "64px" }
-    );
-    io.observe(wrap);
-    resize();
-    frame = requestAnimationFrame(render2);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.clearTimeout(resizeTimer);
-      ro.disconnect();
-      io.disconnect();
-      globe?.destroy();
-      host.replaceChildren();
-    };
-  }, [fallback, pinsKey]);
-  if (fallback) {
-    return /* @__PURE__ */ jsx(GlobeFallback, {});
-  }
-  return /* @__PURE__ */ jsx("div", { ref: wrapRef, className: "tivonix-globe-canvas-wrap", children: /* @__PURE__ */ jsx("div", { ref: hostRef, className: "tivonix-globe-cobe-host", "aria-hidden": true }) });
-}
-const COPIES = 4;
-function AudienceMarquee({ items }) {
-  if (!items.length) return null;
-  const sequence = Array.from(
-    { length: COPIES },
-    (_, copyIndex) => items.map((item, itemIndex) => ({
-      id: `${copyIndex}-${itemIndex}`,
-      label: item
-    }))
-  ).flat();
-  return /* @__PURE__ */ jsx("div", { className: "tivonix-audience__marquee", "aria-hidden": true, children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__marquee-track", children: sequence.map(({ id, label }) => /* @__PURE__ */ jsxs("span", { className: "tivonix-audience__marquee-item", children: [
-    /* @__PURE__ */ jsx("span", { className: "tivonix-audience__marquee-text", children: label }),
-    /* @__PURE__ */ jsx("span", { className: "tivonix-audience__marquee-sep", children: "·" })
-  ] }, id)) }) });
-}
-const PILLAR_ICONS = [Globe2, MapPin, Maximize2];
-function TivonixAudienceSection() {
+function HomePricingSection() {
   const { lang } = useLang();
-  const copy = landingCopy(lang);
+  const isRu = lang === "ru";
+  const pricing = pricingCopy(lang);
+  const extra = homeExtraCopy(lang);
+  const { openLeadForm } = useLeadForm();
+  const sectionRef = useRef(null);
+  const photoScale = usePlanPhotoScale(sectionRef);
+  const custom = pricing.plans.custom;
+  const photoStyle = { "--plan-photo-scale": String(photoScale) };
   return /* @__PURE__ */ jsx(
     Section,
     {
-      id: "audience",
-      className: "tivonix-audience scroll-mt-[var(--tivonix-header-spacer)] bg-black !py-0",
-      children: /* @__PURE__ */ jsxs("div", { className: "tivonix-audience__frame", children: [
-        /* @__PURE__ */ jsxs(Container, { className: "relative z-[1] pt-14 sm:pt-16 lg:pt-20", children: [
-          /* @__PURE__ */ jsx(Reveal$1, { children: /* @__PURE__ */ jsxs("header", { className: "tivonix-audience__head", children: [
-            /* @__PURE__ */ jsx("h2", { className: "tivonix-audience__title", children: copy.audience.title }),
-            /* @__PURE__ */ jsx("p", { className: "tivonix-audience__subtitle", children: copy.audience.subtitle })
-          ] }) }),
-          /* @__PURE__ */ jsx(Reveal$1, { delay: 80, children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__hero", children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__globe-clip", children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__globe-inner", children: /* @__PURE__ */ jsx(TivonixGlobeCanvas, { pins: copy.audience.pins }) }) }) }) })
+      id: "pricing",
+      ref: sectionRef,
+      className: "scroll-mt-[var(--tivonix-header-spacer)] !py-12 sm:!py-16 lg:!py-20",
+      style: photoStyle,
+      children: /* @__PURE__ */ jsxs(Container, { children: [
+        /* @__PURE__ */ jsxs(Reveal$1, { className: "mx-auto max-w-[40rem] text-center", children: [
+          /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.65rem,3.8vw,2.4rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white text-balance", children: extra.homePricing.title }),
+          /* @__PURE__ */ jsx("p", { className: "mx-auto mt-3 max-w-[38rem] font-sans text-[14.5px] font-medium leading-[1.55] text-white/62", children: extra.homePricing.note })
         ] }),
-        /* @__PURE__ */ jsx(Reveal$1, { delay: 100, children: /* @__PURE__ */ jsx(AudienceMarquee, { items: copy.audience.marquee }) }),
-        /* @__PURE__ */ jsx(Reveal$1, { delay: 120, children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__pillars-wrap", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsx("div", { className: "tivonix-audience__pillars", children: copy.audience.pillars.map((pillar, index) => {
-          const Icon2 = PILLAR_ICONS[index] ?? Globe2;
-          return /* @__PURE__ */ jsxs("article", { className: "tivonix-audience__pillar", children: [
-            /* @__PURE__ */ jsx(Icon2, { className: "tivonix-audience__pillar-icon", strokeWidth: 1.5, "aria-hidden": true }),
-            /* @__PURE__ */ jsx("h3", { className: "tivonix-audience__pillar-title", children: pillar.title }),
-            /* @__PURE__ */ jsx("p", { className: "tivonix-audience__pillar-text", children: pillar.text })
-          ] }, pillar.title);
-        }) }) }) }) })
+        /* @__PURE__ */ jsx("div", { className: "home-plan-grid mt-10", children: GRID_PLANS.map(({ id, img, footRu, footEn }, i) => {
+          const plan = pricing.plans[id];
+          const popular = id === "growth";
+          const tag = PLAN_TAGS[id][isRu ? "ru" : "en"];
+          const isCustom = id === "custom";
+          return /* @__PURE__ */ jsx(Reveal$1, { delay: i * 45, className: "home-plan-grid__cell", children: /* @__PURE__ */ jsxs(
+            "article",
+            {
+              className: [
+                "home-plan-card",
+                popular ? "home-plan-card--popular" : ""
+              ].join(" "),
+              children: [
+                /* @__PURE__ */ jsx("div", { className: "home-plan-card__media", "aria-hidden": true, children: /* @__PURE__ */ jsx(
+                  "img",
+                  {
+                    src: img,
+                    alt: "",
+                    className: "home-plan-card__bg",
+                    loading: "lazy",
+                    decoding: "async"
+                  }
+                ) }),
+                /* @__PURE__ */ jsx("div", { className: "home-plan-card__veil", "aria-hidden": true }),
+                /* @__PURE__ */ jsxs("div", { className: "home-plan-card__body", children: [
+                  /* @__PURE__ */ jsxs("div", { className: "home-plan-card__main", children: [
+                    /* @__PURE__ */ jsxs("div", { className: "home-plan-card__head", children: [
+                      /* @__PURE__ */ jsxs("div", { className: "home-plan-card__tag-row", children: [
+                        /* @__PURE__ */ jsx("span", { className: "home-plan-card__tag", children: tag }),
+                        popular ? /* @__PURE__ */ jsx("span", { className: "home-plan-card__new", children: pricing.badges.popular }) : /* @__PURE__ */ jsx("span", { className: "home-plan-card__new is-empty", "aria-hidden": true, children: " " })
+                      ] }),
+                      /* @__PURE__ */ jsx("h3", { className: "home-plan-card__name", children: plan.name }),
+                      /* @__PURE__ */ jsx(HomePlanPrice, { price: plan.price, priceOriginal: plan.priceOriginal }),
+                      /* @__PURE__ */ jsx("p", { className: "home-plan-card__unit", children: plan.tagline })
+                    ] }),
+                    /* @__PURE__ */ jsxs("div", { className: "home-plan-card__actions", children: [
+                      /* @__PURE__ */ jsxs(
+                        Link,
+                        {
+                          to: "/plans",
+                          className: "home-plan-card__cta group",
+                          onClick: () => trackEvent("pricing_cta_click", {
+                            plan: id,
+                            source: "home_more"
+                          }),
+                          children: [
+                            extra.homePricing.more,
+                            /* @__PURE__ */ jsx(
+                              ArrowUpRight,
+                              {
+                                className: "h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5",
+                                "aria-hidden": true
+                              }
+                            )
+                          ]
+                        }
+                      ),
+                      /* @__PURE__ */ jsx("p", { className: "home-plan-card__fine", children: isCustom ? isRu ? "Оценка после брифа" : "Quote after a brief" : isRu ? `Скидка ${LAUNCH_DISCOUNT_PERCENT}% на запуск` : `${LAUNCH_DISCOUNT_PERCENT}% launch discount` }),
+                      /* @__PURE__ */ jsx(
+                        "button",
+                        {
+                          type: "button",
+                          className: "home-plan-card__process",
+                          onClick: () => {
+                            trackEvent("pricing_cta_click", {
+                              plan: id,
+                              source: "home"
+                            });
+                            openLeadForm("pricing", { planId: id });
+                          },
+                          children: isRu ? "Разобрать мой процесс" : "Map my process"
+                        }
+                      )
+                    ] })
+                  ] }),
+                  /* @__PURE__ */ jsxs("div", { className: "home-plan-card__details", children: [
+                    /* @__PURE__ */ jsx("p", { className: "home-plan-card__desc", children: plan.desc }),
+                    /* @__PURE__ */ jsx("ul", { className: "home-plan-card__list", children: plan.includes.slice(0, 6).map((item) => /* @__PURE__ */ jsxs("li", { children: [
+                      /* @__PURE__ */ jsx(FeatureIcon, {}),
+                      /* @__PURE__ */ jsx("span", { children: item })
+                    ] }, item)) }),
+                    /* @__PURE__ */ jsxs("p", { className: "home-plan-card__foot", children: [
+                      /* @__PURE__ */ jsx(Check, { className: "h-3 w-3", strokeWidth: 3, "aria-hidden": true }),
+                      isRu ? footRu : footEn
+                    ] })
+                  ] })
+                ] })
+              ]
+            }
+          ) }, id);
+        }) }),
+        /* @__PURE__ */ jsx(Reveal$1, { delay: 200, className: "mt-3", children: /* @__PURE__ */ jsxs("article", { className: "home-plan-enterprise", children: [
+          /* @__PURE__ */ jsx("div", { className: "home-plan-enterprise__media", "aria-hidden": true, children: /* @__PURE__ */ jsx(
+            "img",
+            {
+              src: ENTERPRISE_IMG,
+              alt: "",
+              className: "home-plan-enterprise__bg",
+              loading: "lazy",
+              decoding: "async"
+            }
+          ) }),
+          /* @__PURE__ */ jsx("div", { className: "home-plan-card__veil home-plan-card__veil--wide", "aria-hidden": true }),
+          /* @__PURE__ */ jsxs("div", { className: "home-plan-enterprise__inner", children: [
+            /* @__PURE__ */ jsxs("div", { className: "home-plan-enterprise__copy", children: [
+              /* @__PURE__ */ jsx("span", { className: "home-plan-card__tag", children: PLAN_TAGS.custom[isRu ? "ru" : "en"] }),
+              /* @__PURE__ */ jsx("h3", { className: "home-plan-enterprise__name", children: custom.name }),
+              /* @__PURE__ */ jsx("p", { className: "home-plan-enterprise__desc", children: custom.desc })
+            ] }),
+            /* @__PURE__ */ jsx("ul", { className: "home-plan-enterprise__list", children: custom.includes.map((item) => /* @__PURE__ */ jsxs("li", { children: [
+              /* @__PURE__ */ jsx(FeatureIcon, {}),
+              /* @__PURE__ */ jsx("span", { children: item })
+            ] }, item)) }),
+            /* @__PURE__ */ jsx("div", { className: "home-plan-enterprise__action", children: /* @__PURE__ */ jsxs(
+              "button",
+              {
+                type: "button",
+                onClick: () => {
+                  trackEvent("pricing_cta_click", {
+                    plan: "custom",
+                    source: "home_enterprise"
+                  });
+                  openLeadForm("pricing", { planId: "custom" });
+                },
+                className: "home-plan-card__cta group",
+                children: [
+                  extra.homePricing.ctas.custom,
+                  /* @__PURE__ */ jsx(
+                    ArrowUpRight,
+                    {
+                      className: "h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5",
+                      "aria-hidden": true
+                    }
+                  )
+                ]
+              }
+            ) })
+          ] })
+        ] }) })
       ] })
     }
   );
@@ -6070,604 +7845,442 @@ function ProcessTimelineSection() {
     }
   );
 }
-const LOGO_ICON = "/images/tivonix-logo-icon.webp";
-const PAGE_SIZE = 6;
-const ORANGE$1 = "#FF9A3D";
-const PRIMARY_CATS = ["start", "price", "process", "dev", "support"];
-const SECONDARY_CATS = [];
-const s$2 = (v) => v;
-const CAT_LABELS = {
-  start: { ru: "Старт", en: "Start" },
-  price: { ru: "Стоимость", en: "Pricing" },
-  time: { ru: "Сроки", en: "Timeline" },
-  process: { ru: "Процесс", en: "Process" },
-  design: { ru: "Дизайн", en: "Design" },
-  dev: { ru: "Разработка", en: "Development" },
-  content: { ru: "Контент", en: "Content" },
-  seo: { ru: "SEO", en: "SEO" },
-  tech: { ru: "Тех.часть", en: "Tech" },
-  support: { ru: "Поддержка", en: "Support" },
-  fix: { ru: "Правки", en: "Edits" }
-};
-const TEASER_TEXTS = {
-  start: {
-    ru: "Можно начать без ТЗ — просто опишите задачу своими словами.",
-    en: "You can start without a brief — just describe the task in your own words."
-  },
-  price: {
-    ru: "Стоимость зависит от задачи — после разбора предложим вариант.",
-    en: "Cost depends on the task — after a review we'll suggest an option."
-  },
-  time: {
-    ru: "Сроки зависят от объёма и согласований.",
-    en: "Timeline depends on scope and approvals."
-  },
-  process: {
-    ru: "Делаем не только сайты — боты, CRM, кабинеты, автоматизацию.",
-    en: "We don't only build websites — bots, CRM, client areas, automation."
-  },
-  design: {
-    ru: "Дизайн под ваш бренд и задачу.",
-    en: "Design aligned with your brand and task."
-  },
-  dev: {
-    ru: "Telegram, email, CRM, таблицы — подключаем под ваш процесс.",
-    en: "Telegram, email, CRM, sheets — wired to your workflow."
-  },
-  content: {
-    ru: "Поможем собрать тексты и структуру, если нужно.",
-    en: "We can help with copy and structure if needed."
-  },
-  seo: {
-    ru: "Базовая SEO-разметка на уровне лендинга.",
-    en: "Basic SEO markup at the landing level."
-  },
-  tech: {
-    ru: "Адаптив, скорость и техчасть проекта.",
-    en: "Responsive layout, speed and the tech side."
-  },
-  support: {
-    ru: "После запуска можно проверить работу и дорастить продукт.",
-    en: "After launch we can verify everything and grow the product."
-  },
-  fix: {
-    ru: "Мелкие правки после запуска — обсуждаем отдельно.",
-    en: "Small edits after launch — we discuss them separately."
-  }
-};
-const FAQ_ITEMS = [
-  {
-    id: "start-unclear",
-    cat: "start",
-    q: {
-      ru: "С чего начать, если я не понимаю, что именно мне нужно?",
-      en: "Where do I start if I'm not sure what I need?"
-    },
-    a: {
-      ru: "Можно просто описать задачу своими словами. Мы разберёмся, что лучше подойдёт: сайт, бот, CRM, личный кабинет или простая автоматизация.",
-      en: "Just describe the task in your own words. We'll figure out what fits best: a website, bot, CRM, client area or simple automation."
-    }
-  },
-  {
-    id: "process-not-only-sites",
-    cat: "process",
-    q: { ru: "Вы делаете только сайты?", en: "Do you only build websites?" },
-    a: {
-      ru: "Нет. Мы делаем сайты, Telegram-ботов, CRM, админ-панели, личные кабинеты, интеграции и веб-сервисы под конкретную задачу бизнеса.",
-      en: "No. We build websites, Telegram bots, CRMs, admin panels, client areas, integrations and web services for a specific business task."
-    }
-  },
-  {
-    id: "start-mvp",
-    cat: "start",
-    q: { ru: "Можно сделать небольшой проект, а не большую систему?", en: "Can we start small instead of a big system?" },
-    a: {
-      ru: "Да. Часто лучше начать с простой версии: форма заявки, бот, таблица, мини-CRM или лендинг. Потом это можно развивать.",
-      en: "Yes. Often it's better to start simple: a lead form, bot, sheet, mini-CRM or landing page. You can grow it later."
-    }
-  },
-  {
-    id: "price-cost",
-    cat: "price",
-    q: { ru: "Сколько стоит проект?", en: "How much does a project cost?" },
-    a: {
-      ru: "Стоимость зависит от задачи, количества экранов, логики, интеграций и сроков. После короткого разбора мы предложим понятный вариант запуска.",
-      en: "Cost depends on the task, number of screens, logic, integrations and timeline. After a short review we'll suggest a clear launch option."
-    }
-  },
-  {
-    id: "start-no-brief",
-    cat: "start",
-    q: { ru: "Нужно ли мне готовое техническое задание?", en: "Do I need a ready technical brief?" },
-    a: {
-      ru: "Нет. Если ТЗ нет, мы поможем собрать требования и объясним, что нужно сделать на первом этапе.",
-      en: "No. If you don't have a brief, we'll help gather requirements and explain what to do at the first stage."
-    }
-  },
-  {
-    id: "dev-integrations",
-    cat: "dev",
-    q: {
-      ru: "Можно подключить Telegram, email, CRM или таблицы?",
-      en: "Can you connect Telegram, email, CRM or spreadsheets?"
-    },
-    a: {
-      ru: "Да. Мы можем сделать так, чтобы заявки приходили в Telegram, email, CRM, Google Sheets, Supabase или другую систему, с которой работает команда.",
-      en: "Yes. We can route leads to Telegram, email, CRM, Google Sheets, Supabase or another system your team already uses."
-    }
-  },
-  {
-    id: "support-after",
-    cat: "support",
-    q: { ru: "Вы помогаете после запуска?", en: "Do you help after launch?" },
-    a: {
-      ru: "Да. После запуска можно проверить работу, исправить мелкие моменты и дальше развивать продукт.",
-      en: "Yes. After launch we can verify everything, fix small issues and keep growing the product."
-    }
-  },
-  {
-    id: "start-for-whom",
-    cat: "start",
-    q: { ru: "Для кого TIVONIX?", en: "Who is TIVONIX for?" },
-    a: {
-      ru: "Для бизнеса, которому нужен не просто красивый сайт, а рабочая система: заявки, записи, статусы, клиенты, оплата, кабинет или автоматизация.",
-      en: "For businesses that need more than a pretty website — a working system: leads, bookings, statuses, clients, payments, client area or automation."
-    }
-  },
-  {
-    id: "time-launch",
-    cat: "time",
-    q: { ru: "Сколько занимает запуск?", en: "How long does launch take?" },
-    a: {
-      ru: "Простой лендинг или бот — обычно от нескольких дней до 2–4 недель. Полноценный сервис — дольше. Срок зависит от объёма, интеграций и скорости согласований.",
-      en: "A simple landing or bot is usually a few days to 2–4 weeks. A full service takes longer. Timeline depends on scope, integrations and approval speed."
-    }
-  },
-  {
-    id: "start-domain",
-    cat: "start",
-    q: { ru: "Помогаете с доменом и запуском?", en: "Do you help with domain and launch?" },
-    a: {
-      ru: "Да. Поможем с доменом, хостингом, деплоем и базовой настройкой — чтобы продукт реально заработал.",
-      en: "Yes. We help with domain, hosting, deploy and basic setup — so the product actually goes live."
-    }
-  }
-];
-function cx$9(...a) {
-  return a.filter(Boolean).join(" ");
-}
-function Icon({ name }) {
-  const common = "h-4 w-4 shrink-0";
-  switch (name) {
-    case "search":
-      return /* @__PURE__ */ jsxs("svg", { className: common, viewBox: "0 0 24 24", fill: "none", "aria-hidden": "true", children: [
-        /* @__PURE__ */ jsx("path", { d: "M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z", stroke: "currentColor", strokeWidth: "1.8" }),
-        /* @__PURE__ */ jsx("path", { d: "M16.2 16.2 21 21", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round" })
-      ] });
-    case "copy":
-      return /* @__PURE__ */ jsxs("svg", { className: common, viewBox: "0 0 24 24", fill: "none", "aria-hidden": "true", children: [
-        /* @__PURE__ */ jsx("path", { d: "M9 9h10v10H9V9Z", stroke: "currentColor", strokeWidth: "1.8", strokeLinejoin: "round" }),
-        /* @__PURE__ */ jsx(
-          "path",
-          {
-            d: "M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1",
-            stroke: "currentColor",
-            strokeWidth: "1.8",
-            strokeLinecap: "round"
-          }
-        )
-      ] });
-    case "chev":
-      return /* @__PURE__ */ jsx("svg", { className: common, viewBox: "0 0 24 24", fill: "none", "aria-hidden": "true", children: /* @__PURE__ */ jsx("path", { d: "m8.5 10 3.5 3.5L15.5 10", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) });
-  }
-}
-function toDomId(id) {
-  return `faq-${id}`;
-}
-function buildFaqJsonLd(items) {
+const LOGO$1 = "/images/tivonix-logo-white.webp";
+const LOGO_COLORS = ["#ffffff", "#FF9A3D", "#FF5C00"];
+function hexToRgb(hex) {
+  const h = hex.replace("#", "");
   return {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: items.map((x) => ({
-      "@type": "Question",
-      name: x.q,
-      acceptedAnswer: { "@type": "Answer", text: x.a }
-    }))
+    r: parseInt(h.slice(0, 2), 16),
+    g: parseInt(h.slice(2, 4), 16),
+    b: parseInt(h.slice(4, 6), 16)
   };
 }
-function FAQSection() {
+function mixColors(progress) {
+  const n = LOGO_COLORS.length - 1;
+  const scaled = Math.min(1, Math.max(0, progress)) * n;
+  const i = Math.min(n - 1, Math.floor(scaled));
+  const t = scaled - i;
+  const a = hexToRgb(LOGO_COLORS[i]);
+  const b = hexToRgb(LOGO_COLORS[i + 1]);
+  return `rgb(${Math.round(a.r + (b.r - a.r) * t)}, ${Math.round(a.g + (b.g - a.g) * t)}, ${Math.round(a.b + (b.b - a.b) * t)})`;
+}
+function splitWords$1(text) {
+  return text.split(/(\s+)/).filter(Boolean);
+}
+function FounderSection() {
   const { lang } = useLang();
-  const isRu = lang === "ru";
-  const l = isRu ? "ru" : "en";
-  const [query, setQuery] = useState("");
-  const [openId, setOpenId] = useState(null);
-  const [copied, setCopied] = useState(null);
-  const [catFilter, setCatFilter] = useState("all");
-  const [page, setPage] = useState(1);
-  const [showAllCats, setShowAllCats] = useState(false);
-  const rootRef = useRef(null);
-  const localizedItems = useMemo(() => {
-    return FAQ_ITEMS.map((item) => ({
-      id: item.id,
-      cat: item.cat,
-      q: item.q[l],
-      a: item.a[l],
-      catLabel: CAT_LABELS[item.cat][l]
-    }));
-  }, [l]);
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    let list = localizedItems;
-    if (catFilter !== "all") list = list.filter((x) => x.cat === catFilter);
-    if (!q) return list;
-    return list.filter((x) => `${x.q} ${x.a} ${x.catLabel}`.toLowerCase().includes(q));
-  }, [query, catFilter, localizedItems]);
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const showPagination = filtered.length > 0 && totalPages > 1;
-  const compactResults = filtered.length <= 1;
-  const items = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE;
-    return filtered.slice(start, start + PAGE_SIZE);
-  }, [filtered, page]);
+  const about = aboutCopy(lang);
+  const team = homeExtraCopy(lang).team;
+  const sectionRef = useRef(null);
+  const storyRef = useRef(null);
+  const logoRef = useRef(null);
+  const storyText = about.story.paragraphs.join(" ");
+  const words = useMemo(() => splitWords$1(storyText), [storyText]);
   useEffect(() => {
-    setPage(1);
-    setOpenId(null);
-  }, [query, catFilter, l]);
-  useEffect(() => {
-    setPage((p) => Math.min(Math.max(1, p), totalPages));
-  }, [totalPages]);
-  const resetDisabled = query.trim() === "" && catFilter === "all" && page === 1;
-  async function copy(text, id) {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(id);
-      window.setTimeout(() => setCopied((v) => v === id ? null : v), 900);
-    } catch {
+    const section = sectionRef.current;
+    const story = storyRef.current;
+    const logo = logoRef.current;
+    if (!section || !story || typeof window === "undefined") return;
+    const wordEls = Array.from(story.querySelectorAll(".landing-story__word"));
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      wordEls.forEach((w) => {
+        w.style.setProperty("--w", "1");
+      });
+      if (logo) logo.style.backgroundColor = mixColors(0.5);
+      return;
     }
-  }
-  const title = isRu ? "Частые вопросы" : "FAQ";
-  const placeholder = isRu ? "Поиск по вопросам…" : "Search questions…";
-  const resetLabel = isRu ? "Сбросить" : "Reset";
-  const allLabel = isRu ? "Все" : "All";
-  const moreCatsLabel = isRu ? "Ещё" : "More";
-  const lessCatsLabel = isRu ? "Свернуть" : "Less";
-  const btnShow = isRu ? "Показать ответ" : "Show answer";
-  const btnHide = isRu ? "Скрыть ответ" : "Hide answer";
-  const btnCopy = isRu ? "Скопировать ответ" : "Copy answer";
-  const btnCopied = isRu ? "Скопировано" : "Copied";
-  const popularLabel = isRu ? "Частый вопрос" : "Popular";
-  const prevLabel = isRu ? "Назад" : "Prev";
-  const nextLabel = isRu ? "Дальше" : "Next";
-  const pageLabel = isRu ? "Страница" : "Page";
-  const jsonLd = useMemo(() => buildFaqJsonLd(localizedItems), [localizedItems]);
-  return /* @__PURE__ */ jsxs(Section, { id: "faq", className: "faq-section relative isolate !py-0 bg-black", children: [
-    /* @__PURE__ */ jsx("style", { children: `
-        @keyframes faqAnswerIn {
-          from { opacity: 0; transform: translateY(6px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .faq-answer-open { animation: faqAnswerIn .20s ease-out; }
-        /* Свёрнутый ответ: в DOM для SEO, визуально скрыт через max-height/opacity */
-        .faq-answer-collapsed {
-          max-height: 0;
-          opacity: 0;
-          overflow: hidden;
-          pointer-events: none;
-          transition: max-height 0.25s ease, opacity 0.2s ease;
-        }
-        .faq-answer-expanded {
-          max-height: 420px;
-          opacity: 1;
-          overflow: visible;
-          transition: max-height 0.3s ease, opacity 0.2s ease;
-        }
-
-        /* mobile perf: меньше blur/тяжёлых эффектов */
-        @media (max-width: 640px){
-          .faq-card-bg{ backdrop-filter: blur(8px) !important; }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .faq-answer-open{ animation: none; }
-          .faq-answer-collapsed, .faq-answer-expanded{ transition: none; }
-        }
-      ` }),
-    /* @__PURE__ */ jsx("script", { type: "application/ld+json", dangerouslySetInnerHTML: { __html: JSON.stringify(jsonLd) } }),
-    /* @__PURE__ */ jsxs(Container, { className: "faq-section__content relative z-[1] pt-16 sm:pt-20 pb-16 sm:pb-20", children: [
-      /* @__PURE__ */ jsxs("div", { ref: rootRef, className: "relative mx-auto max-w-2xl text-center", children: [
-        /* @__PURE__ */ jsx("h2", { className: "mt-5 font-display text-[30px] leading-[34px] sm:text-[40px] sm:leading-[44px] font-extrabold tracking-tight text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)]", children: title }),
-        /* @__PURE__ */ jsx("div", { className: "mt-6", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[720px]", children: [
-          /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2.5 sm:gap-3", children: [
-            /* @__PURE__ */ jsxs("div", { className: "faq-search-wrap relative", children: [
-              /* @__PURE__ */ jsx("label", { className: "sr-only", htmlFor: "faq-search", children: placeholder }),
-              /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute left-3 top-1/2 z-[2] -translate-y-1/2", children: /* @__PURE__ */ jsx("span", { style: s$2({ color: ORANGE$1 }), children: /* @__PURE__ */ jsx(Icon, { name: "search" }) }) }),
-              /* @__PURE__ */ jsx(
-                "input",
+    let active = false;
+    let raf = 0;
+    let lastLogo = -1;
+    const update = () => {
+      raf = 0;
+      if (!active) return;
+      const vh = getStableViewportHeight();
+      const sRect = section.getBoundingClientRect();
+      const raw = Math.min(1, Math.max(0, (vh * 0.75 - sRect.top) / (sRect.height + vh * 0.35)));
+      const logoKey = Math.round(raw * 40);
+      if (logo && logoKey !== lastLogo) {
+        lastLogo = logoKey;
+        logo.style.backgroundColor = mixColors(raw);
+      }
+      const whiteLine = vh * 0.62;
+      const grayLine = vh * 0.98;
+      const span = grayLine - whiteLine || 1;
+      for (let i = 0; i < wordEls.length; i++) {
+        const y = wordEls[i].getBoundingClientRect().top + wordEls[i].offsetHeight * 0.35;
+        const t = Math.min(1, Math.max(0, (grayLine - y) / span));
+        wordEls[i].style.setProperty("--w", (Math.round(t * 25) / 25).toFixed(2));
+      }
+    };
+    const schedule = () => {
+      if (raf || !active) return;
+      raf = requestAnimationFrame(update);
+    };
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        active = entry.isIntersecting;
+        if (active) schedule();
+      },
+      { root: null, rootMargin: "15% 0px", threshold: 0 }
+    );
+    io.observe(section);
+    active = true;
+    schedule();
+    requestAnimationFrame(() => schedule());
+    window.addEventListener("scroll", schedule, { passive: true });
+    return () => {
+      active = false;
+      io.disconnect();
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", schedule);
+    };
+  }, [words]);
+  return /* @__PURE__ */ jsx(
+    Section,
+    {
+      ref: sectionRef,
+      id: "about",
+      className: "landing-story-section scroll-mt-[var(--tivonix-header-spacer)] !py-16 sm:!py-24",
+      children: /* @__PURE__ */ jsxs(Container, { children: [
+        /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[42rem] text-center", children: [
+          /* @__PURE__ */ jsx(
+            Link,
+            {
+              to: lang === "en" ? "/en" : "/",
+              className: "mb-8 inline-flex justify-center sm:mb-10",
+              "aria-label": "TIVONIX",
+              children: /* @__PURE__ */ jsx(
+                "span",
                 {
-                  id: "faq-search",
-                  value: query,
-                  onChange: (e) => setQuery(e.target.value),
-                  placeholder,
-                  inputMode: "search",
-                  className: "faq-search-input"
+                  ref: logoRef,
+                  className: "landing-story-section__logo",
+                  role: "img",
+                  "aria-label": "TIVONIX",
+                  style: {
+                    backgroundColor: LOGO_COLORS[0],
+                    WebkitMaskImage: `url(${LOGO$1})`,
+                    maskImage: `url(${LOGO$1})`
+                  }
                 }
               )
-            ] }),
-            /* @__PURE__ */ jsx(
-              "button",
-              {
-                type: "button",
-                disabled: resetDisabled,
-                onClick: () => {
-                  setQuery("");
-                  setOpenId(null);
-                  setCatFilter("all");
-                  setPage(1);
-                  setShowAllCats(false);
-                },
-                "aria-disabled": resetDisabled,
-                className: cx$9(
-                  "h-11 shrink-0 whitespace-nowrap px-3.5 sm:h-12 sm:px-4 rounded-full border-0",
-                  "bg-[#1c1c1f]",
-                  resetDisabled ? "text-white/35 cursor-not-allowed opacity-70" : "text-white/80 hover:text-white hover:bg-[#262626] transition",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/15"
-                ),
-                children: resetLabel
-              }
-            )
-          ] }),
-          /* @__PURE__ */ jsx("div", { className: "mt-3", children: /* @__PURE__ */ jsxs(
-            "div",
+            }
+          ),
+          /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.85rem,5vw,3.1rem)] font-semibold uppercase leading-[1.05] tracking-[-0.04em] text-white text-balance", children: about.hero.title }),
+          /* @__PURE__ */ jsx("div", { className: "mt-8 flex justify-center", children: /* @__PURE__ */ jsxs(
+            Link,
             {
-              className: cx$9(
-                "flex items-center justify-start sm:justify-center gap-2",
-                "overflow-x-auto sm:overflow-visible",
-                "no-scrollbar py-1"
-              ),
-              role: "tablist",
-              "aria-label": isRu ? "Категории вопросов" : "FAQ categories",
+              to: aboutPath(lang),
+              className: "group inline-flex items-center gap-1.5 rounded-full bg-[#FF9A3D] px-7 py-3.5 text-[14px] font-semibold uppercase tracking-[0.04em] text-black transition hover:bg-[#ff8a1a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
               children: [
+                team.cta,
                 /* @__PURE__ */ jsx(
-                  "button",
+                  ArrowUpRight,
                   {
-                    type: "button",
-                    role: "tab",
-                    "aria-selected": catFilter === "all",
-                    "aria-pressed": catFilter === "all",
-                    onClick: () => setCatFilter("all"),
-                    className: cx$9(
-                      "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-xs font-medium transition",
-                      catFilter === "all" ? "bg-[#3a3a3d] text-white" : "bg-[#1c1c1f] text-white/78 hover:bg-[#262626] hover:text-white/92",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/15"
-                    ),
-                    children: allLabel
-                  }
-                ),
-                (showAllCats ? [...PRIMARY_CATS, ...SECONDARY_CATS] : PRIMARY_CATS).map((c) => {
-                  const active = c === catFilter;
-                  const label = CAT_LABELS[c][l];
-                  return /* @__PURE__ */ jsx(
-                    "button",
-                    {
-                      type: "button",
-                      role: "tab",
-                      "aria-selected": active,
-                      "aria-pressed": active,
-                      onClick: () => setCatFilter(c),
-                      className: cx$9(
-                        "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-xs font-medium transition",
-                        active ? "bg-[#3a3a3d] text-white" : "bg-[#1c1c1f] text-white/78 hover:bg-[#262626] hover:text-white/92",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/15"
-                      ),
-                      children: label
-                    },
-                    c
-                  );
-                }),
-                /* @__PURE__ */ jsx(
-                  "button",
-                  {
-                    type: "button",
-                    onClick: () => setShowAllCats((v) => !v),
-                    className: cx$9(
-                      "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-xs font-semibold transition",
-                      "bg-[#1c1c1f] text-white/80 hover:bg-[#262626] hover:text-white",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/15"
-                    ),
-                    "aria-expanded": showAllCats,
-                    "aria-label": showAllCats ? lessCatsLabel : moreCatsLabel,
-                    children: /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5", children: [
-                      showAllCats ? lessCatsLabel : moreCatsLabel,
-                      /* @__PURE__ */ jsx("span", { className: cx$9("transition", showAllCats ? "rotate-180" : ""), children: /* @__PURE__ */ jsx(Icon, { name: "chev" }) })
-                    ] })
+                    className: "h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5",
+                    "aria-hidden": true
                   }
                 )
               ]
             }
           ) }),
-          /* @__PURE__ */ jsx("div", { className: "mt-2 text-[12px] text-white/68", children: filtered.length === 0 ? isRu ? "Ничего не найдено — попробуйте другой запрос." : "No results — try a different query." : isRu ? `Найдено: ${filtered.length}` : `Found: ${filtered.length}` })
-        ] }) })
-      ] }),
-      /* @__PURE__ */ jsx(
-        "div",
-        {
-          className: cx$9(
-            "mt-7 grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
-            compactResults && "min-h-[18rem] sm:min-h-[20rem]"
-          ),
-          children: items.map((f) => {
-            const isOpen = openId === f.id;
-            const domId = toDomId(f.id);
-            const teaser = TEASER_TEXTS[f.cat][l];
-            return /* @__PURE__ */ jsx(
-              "article",
-              {
-                className: cx$9(
-                  "group relative overflow-hidden rounded-[20px]",
-                  "border-0",
-                  "bg-[#1c1c1f] faq-card-bg backdrop-blur-[10px]",
-                  "shadow-[0_8px_24px_rgba(0,0,0,0.28)]"
-                ),
-                style: { contentVisibility: "auto", containIntrinsicSize: "360px 320px", contain: "layout paint style" },
-                children: /* @__PURE__ */ jsxs("div", { className: "relative z-[2] p-5 flex flex-col", children: [
-                  /* @__PURE__ */ jsx("header", { className: "flex items-start justify-between gap-3", children: /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-                    /* @__PURE__ */ jsx("h3", { className: "text-[14px] font-semibold text-white/92 leading-snug", children: f.q }),
-                    /* @__PURE__ */ jsx("div", { className: "mt-1 text-[12px] text-white/55", children: f.catLabel })
-                  ] }) }),
-                  /* @__PURE__ */ jsx("div", { className: "mt-4", children: /* @__PURE__ */ jsxs(
-                    "button",
-                    {
-                      type: "button",
-                      onClick: () => setOpenId((v) => v === f.id ? null : f.id),
-                      "aria-expanded": isOpen,
-                      "aria-controls": domId,
-                      "aria-label": isOpen ? btnHide : `${btnShow}: ${f.q}`,
-                      className: cx$9(
-                        "w-full flex items-center gap-2 rounded-[12px]",
-                        "border-0 bg-white/[0.07] px-3 py-2",
-                        "text-left text-[12px] text-white/80 hover:bg-white/[0.10] transition",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                      ),
-                      children: [
-                        /* @__PURE__ */ jsx(
-                          "img",
-                          {
-                            src: LOGO_ICON,
-                            alt: "",
-                            className: "h-4 w-4 object-contain",
-                            draggable: false,
-                            loading: "lazy",
-                            decoding: "async"
-                          }
-                        ),
-                        isOpen ? btnHide : btnShow
-                      ]
-                    }
-                  ) }),
-                  /* @__PURE__ */ jsxs(
-                    "div",
-                    {
-                      id: domId,
-                      className: cx$9(
-                        "mt-3 rounded-[14px] border-0 bg-black/45 px-4 py-3",
-                        "text-[13px] leading-relaxed text-white/78",
-                        isOpen ? "faq-answer-expanded faq-answer-open" : "faq-answer-collapsed"
-                      ),
-                      "aria-hidden": !isOpen,
-                      children: [
-                        f.a,
-                        /* @__PURE__ */ jsx("div", { className: "mt-3", children: /* @__PURE__ */ jsxs(
-                          "button",
-                          {
-                            type: "button",
-                            onClick: () => copy(f.a, f.id),
-                            className: cx$9(
-                              "inline-flex items-center gap-2 rounded-[12px]",
-                              "border-0 bg-white/[0.07] px-3 py-2",
-                              "text-[12px] text-white/80 hover:bg-white/[0.10] transition",
-                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                            ),
-                            children: [
-                              /* @__PURE__ */ jsx("span", { style: s$2({ color: ORANGE$1 }), children: /* @__PURE__ */ jsx(Icon, { name: "copy" }) }),
-                              copied === f.id ? btnCopied : btnCopy
-                            ]
-                          }
-                        ) })
-                      ]
-                    }
-                  ),
-                  !isOpen && /* @__PURE__ */ jsxs("div", { className: "mt-4 pt-3", children: [
-                    /* @__PURE__ */ jsx("div", { className: "h-px w-full rounded-full bg-gradient-to-r from-white/0 via-white/18 to-white/0" }),
-                    /* @__PURE__ */ jsxs("div", { className: "mt-2 flex items-center justify-between gap-2 text-[11.5px] text-white/62", children: [
-                      /* @__PURE__ */ jsx("span", { className: "line-clamp-2", children: teaser }),
-                      /* @__PURE__ */ jsxs("span", { className: "flex items-center gap-1 whitespace-nowrap", style: s$2({ color: ORANGE$1 }), children: [
-                        /* @__PURE__ */ jsx("span", { className: "inline-block h-1.5 w-1.5 rounded-full bg-current" }),
-                        /* @__PURE__ */ jsx("span", { children: popularLabel })
-                      ] })
-                    ] })
-                  ] })
-                ] })
-              },
-              f.id
-            );
-          })
-        }
-      ),
-      showPagination ? /* @__PURE__ */ jsx("div", { className: "relative mt-10 flex justify-center", children: /* @__PURE__ */ jsxs("div", { className: "w-full max-w-[560px]", children: [
-        /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between gap-3 sm:hidden", children: [
-          /* @__PURE__ */ jsx(
-            "button",
-            {
-              type: "button",
-              onClick: () => setPage((p) => Math.max(1, p - 1)),
-              disabled: page <= 1,
-              className: cx$9(
-                "h-11 px-4 rounded-[14px] border-0 bg-white/[0.06]",
-                page <= 1 ? "text-white/35 cursor-not-allowed" : "text-white/80 hover:bg-white/[0.10]",
-                "transition",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-              ),
-              children: prevLabel
-            }
-          ),
-          /* @__PURE__ */ jsxs("div", { className: "text-[12.5px] text-white/70", children: [
-            pageLabel,
-            " ",
-            page,
-            " / ",
-            totalPages
-          ] }),
-          /* @__PURE__ */ jsx(
-            "button",
-            {
-              type: "button",
-              onClick: () => setPage((p) => Math.min(totalPages, p + 1)),
-              disabled: page >= totalPages,
-              className: cx$9(
-                "h-11 px-4 rounded-[14px] border-0 bg-white/[0.06]",
-                page >= totalPages ? "text-white/35 cursor-not-allowed" : "text-white/80 hover:bg-white/[0.10]",
-                "transition",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-              ),
-              children: nextLabel
-            }
-          )
+          /* @__PURE__ */ jsx("div", { className: "landing-story-section__rule mx-auto mt-12 max-w-[28rem]", "aria-hidden": true })
         ] }),
-        /* @__PURE__ */ jsx("div", { className: "hidden sm:flex flex-wrap items-center justify-center gap-6", children: Array.from({ length: totalPages }).map((_, i) => {
-          const n = i + 1;
-          const active = n === page;
-          const label = n < 10 ? `0${n}` : String(n);
-          return /* @__PURE__ */ jsx(
-            "button",
-            {
-              type: "button",
-              onClick: () => setPage(n),
-              "aria-current": active ? "page" : void 0,
-              className: cx$9(
-                "border-0 bg-transparent p-0 select-none",
-                "text-[14px] font-semibold tabular-nums tracking-tight",
-                "transition-colors duration-200",
-                active ? "text-[#FF9840]" : "text-white/40 hover:text-white/70",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/18 focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:rounded-sm"
-              ),
-              children: label
-            },
-            n
-          );
-        }) })
-      ] }) }) : /* @__PURE__ */ jsx("div", { className: "mt-10 sm:mt-12", "aria-hidden": "true" })
+        /* @__PURE__ */ jsx("div", { ref: storyRef, className: "landing-story mx-auto mt-12 w-full max-w-[68rem]", lang, children: /* @__PURE__ */ jsx("p", { className: "landing-story__p", children: words.map(
+          (token, wi) => /^\s+$/.test(token) ? /* @__PURE__ */ jsx("span", { children: " " }, wi) : /* @__PURE__ */ jsx("span", { className: "landing-story__word", children: token }, wi)
+        ) }) })
+      ] })
+    }
+  );
+}
+const PLANS_IMG$1 = `/images/${encodeURIComponent("планы")}`;
+const PLAN_PHOTOS = [1, 2, 3, 4, 5].map((n) => `${PLANS_IMG$1}/${n}.png`);
+const SPEED_PX_PER_SEC = 38;
+function initialsFromName(name) {
+  const parts = name.replace(/[«»""]/g, "").split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
+}
+function TestimonialCard({
+  project,
+  photo,
+  viewCase,
+  ownProduct
+}) {
+  const t = project.testimonial;
+  const showCase = isPublicProjectId(project.id);
+  const isOwn = project.id === "tivonixpanel";
+  const cardStyle = { "--card-photo": `url("${photo}")` };
+  return /* @__PURE__ */ jsxs("article", { className: "home-testimonials__card", style: cardStyle, children: [
+    /* @__PURE__ */ jsx("div", { className: "home-testimonials__card-bg", "aria-hidden": true }),
+    /* @__PURE__ */ jsx("div", { className: "home-testimonials__card-veil", "aria-hidden": true }),
+    /* @__PURE__ */ jsxs("div", { className: "home-testimonials__card-body", children: [
+      /* @__PURE__ */ jsx("span", { className: "home-testimonials__avatar", "aria-hidden": true, children: initialsFromName(t.name) }),
+      /* @__PURE__ */ jsxs("div", { className: "home-testimonials__content", children: [
+        /* @__PURE__ */ jsxs("div", { className: "home-testimonials__meta", children: [
+          /* @__PURE__ */ jsx("p", { className: "home-testimonials__name", children: t.name }),
+          /* @__PURE__ */ jsx("p", { className: "home-testimonials__role", children: t.role })
+        ] }),
+        /* @__PURE__ */ jsx("p", { className: "home-testimonials__text", children: t.text }),
+        /* @__PURE__ */ jsx("div", { className: "home-testimonials__foot", children: isOwn ? /* @__PURE__ */ jsx("span", { className: "home-testimonials__muted", children: ownProduct }) : showCase ? /* @__PURE__ */ jsxs(Link, { to: `/projects/${project.id}`, className: "home-testimonials__case", children: [
+          viewCase,
+          ": ",
+          project.title
+        ] }) : /* @__PURE__ */ jsx("span", { className: "home-testimonials__muted", children: project.title }) })
+      ] })
     ] })
   ] });
 }
-const TG_BOT_BASE_URL = "https://t.me/tivonixtech_leads_bot";
-const TG_CHANNEL_URL = "https://t.me/TIVONIX";
-const TG_BOT_URL = buildTelegramBotUrl("calc");
-function buildTelegramBotUrl(startPayload) {
-  if (!startPayload) return TG_BOT_BASE_URL;
-  return `${TG_BOT_BASE_URL}?start=${encodeURIComponent(startPayload)}`;
+function HomeTestimonialsSection() {
+  const { lang } = useLang();
+  const copy = homeExtraCopy(lang);
+  const items = projectsWithTestimonials(lang === "ru");
+  const marqueeRef = useRef(null);
+  const trackRef = useRef(null);
+  const [holding, setHolding] = useState(false);
+  const holdingRef = useRef(false);
+  const inViewRef = useRef(true);
+  const reducedRef = useRef(false);
+  useEffect(() => {
+    holdingRef.current = holding;
+  }, [holding]);
+  useEffect(() => {
+    const scroller = marqueeRef.current;
+    const track = trackRef.current;
+    if (!scroller || !track || typeof window === "undefined") return;
+    reducedRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedRef.current) return;
+    let raf = 0;
+    let lastTs = 0;
+    let halfWidth = 0;
+    const measure = () => {
+      halfWidth = track.scrollWidth / 2;
+    };
+    const loop = (ts) => {
+      raf = requestAnimationFrame(loop);
+      if (!lastTs) lastTs = ts;
+      const dt = Math.min(0.05, (ts - lastTs) / 1e3);
+      lastTs = ts;
+      if (holdingRef.current || !inViewRef.current) return;
+      if (halfWidth <= 0) measure();
+      if (halfWidth <= 0) return;
+      scroller.scrollLeft += SPEED_PX_PER_SEC * dt;
+      if (scroller.scrollLeft >= halfWidth) {
+        scroller.scrollLeft -= halfWidth;
+      }
+    };
+    measure();
+    raf = requestAnimationFrame(loop);
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
+    ro?.observe(track);
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        inViewRef.current = Boolean(entry?.isIntersecting);
+      },
+      { rootMargin: "10% 0px" }
+    );
+    io.observe(scroller);
+    const onScroll = () => {
+      if (halfWidth <= 0) return;
+      if (scroller.scrollLeft >= halfWidth) {
+        scroller.scrollLeft -= halfWidth;
+      } else if (scroller.scrollLeft <= 0) {
+        scroller.scrollLeft += halfWidth;
+      }
+    };
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      ro?.disconnect();
+      io.disconnect();
+      scroller.removeEventListener("scroll", onScroll);
+    };
+  }, [items.length]);
+  if (items.length === 0) return null;
+  const sequence = [...items, ...items];
+  const pause = (e) => {
+    setHolding(true);
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+    }
+  };
+  const resume = () => setHolding(false);
+  return /* @__PURE__ */ jsxs(
+    Section,
+    {
+      id: "testimonials",
+      className: "home-testimonials scroll-mt-[var(--tivonix-header-spacer)] !py-12 sm:!py-16",
+      children: [
+        /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsx(Reveal$1, { className: "mx-auto max-w-[36rem] text-center", children: /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.65rem,3.8vw,2.4rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white", children: copy.testimonials.title }) }) }),
+        /* @__PURE__ */ jsx(
+          "div",
+          {
+            ref: marqueeRef,
+            className: [
+              "home-testimonials__marquee mt-10",
+              holding ? "is-holding" : ""
+            ].filter(Boolean).join(" "),
+            "aria-label": copy.testimonials.title,
+            onPointerDown: pause,
+            onPointerUp: resume,
+            onPointerCancel: resume,
+            onLostPointerCapture: resume,
+            children: /* @__PURE__ */ jsx("div", { ref: trackRef, className: "home-testimonials__track", children: sequence.map((project, i) => /* @__PURE__ */ jsx(
+              TestimonialCard,
+              {
+                project,
+                photo: PLAN_PHOTOS[i % PLAN_PHOTOS.length],
+                viewCase: copy.testimonials.viewCase,
+                ownProduct: copy.testimonials.ownProduct
+              },
+              `${project.id}-${i}`
+            )) })
+          }
+        )
+      ]
+    }
+  );
 }
-const PARTNER_AGENCY_TELEGRAM_URL = buildTelegramBotUrl(PARTNER_AGENCY_TELEGRAM_PAYLOAD);
-function cx$8(...a) {
+const FAQ_ITEMS = [
+  {
+    id: "price",
+    q: { ru: "Сколько стоит разработка?", en: "How much does development cost?" },
+    a: {
+      ru: "Стоимость зависит от экранов, ролей, интеграций и бизнес-логики. После разбора задачи отправляем предварительный план, срок и диапазон стоимости. До старта фиксируем объём.",
+      en: "Cost depends on screens, roles, integrations and business logic. After reviewing the task we send a preliminary plan, timeline and cost range. Scope is locked before we start."
+    }
+  },
+  {
+    id: "time",
+    q: { ru: "Сколько занимает запуск?", en: "How long does a launch take?" },
+    a: {
+      ru: "Start — от 7 рабочих дней, Growth — от 2 недель, Product — от 4 недель. Срок зависит от объёма и скорости согласований.",
+      en: "Start — from 7 business days, Growth — from 2 weeks, Product — from 4 weeks. Timeline depends on scope and how fast decisions are made."
+    }
+  },
+  {
+    id: "pay",
+    q: { ru: "Как проходит оплата?", en: "How does payment work?" },
+    a: {
+      ru: "Работаем по этапам. Сначала согласуем объём и стоимость этапа, затем оплата и старт. Полный сложный SaaS не входит автоматически в базовый Product.",
+      en: "We work in stages. First we agree on stage scope and cost, then payment and start. A full complex SaaS is not automatically included in the base Product plan."
+    }
+  },
+  {
+    id: "small",
+    q: { ru: "Можно ли начать с небольшой версии?", en: "Can we start with a small version?" },
+    a: {
+      ru: "Да. Часто лучше начать с лендинга, бота, формы и уведомлений, а потом добавить CRM, кабинет или интеграции.",
+      en: "Yes. Often it’s better to start with a landing page, bot, form and alerts, then add CRM, a portal or integrations."
+    }
+  },
+  {
+    id: "source",
+    q: { ru: "Кто получает исходники и доступы?", en: "Who gets the source code and access?" },
+    a: {
+      ru: "Исходный код и доступы передаются клиенту. Условия передачи фиксируем до старта этапа.",
+      en: "Source code and access are handed over to the client. Handover terms are fixed before the stage starts."
+    }
+  },
+  {
+    id: "after",
+    q: { ru: "Что происходит после запуска?", en: "What happens after launch?" },
+    a: {
+      ru: "Проверяем ключевые сценарии, передаём инструкции. Выявленные ошибки исправляем в рамках согласованной гарантии. Дальнейшая поддержка обсуждается отдельно.",
+      en: "We check key flows and hand over instructions. Issues found are fixed within the agreed warranty. Ongoing support is discussed separately."
+    }
+  },
+  {
+    id: "existing",
+    q: { ru: "Работаете ли вы с существующим проектом?", en: "Do you work with an existing project?" },
+    a: {
+      ru: "Да. Можем доработать сайт, подключить Telegram, CRM, статусы, кабинет или автоматизацию к уже запущенному продукту.",
+      en: "Yes. We can extend a site, connect Telegram, CRM, statuses, a portal or automation to a product already live."
+    }
+  },
+  {
+    id: "start",
+    q: { ru: "Как начать работу?", en: "How do we start?" },
+    a: {
+      ru: "Опишите задачу в форме на сайте. Мы разберём её и ответим в течение рабочего дня с планом и диапазоном стоимости. Созвон не обязателен.",
+      en: "Describe the task in the site form. We’ll review it and reply within a business day with a plan and cost range. A call is optional."
+    }
+  }
+];
+function FaqRow({
+  item,
+  open,
+  onToggle,
+  lang
+}) {
+  const panelId = useId();
+  const buttonId = useId();
+  const q = lang === "ru" ? item.q.ru : item.q.en;
+  const a = lang === "ru" ? item.a.ru : item.a.en;
+  return /* @__PURE__ */ jsxs("div", { className: `home-faq__item${open ? " is-open" : ""}`, children: [
+    /* @__PURE__ */ jsx("h3", { className: "m-0", children: /* @__PURE__ */ jsxs(
+      "button",
+      {
+        type: "button",
+        id: buttonId,
+        "aria-expanded": open,
+        "aria-controls": panelId,
+        onClick: onToggle,
+        className: "home-faq__trigger",
+        children: [
+          /* @__PURE__ */ jsx("span", { className: "home-faq__q", children: q }),
+          /* @__PURE__ */ jsx(
+            ChevronDown,
+            {
+              className: `home-faq__chevron h-5 w-5 shrink-0${open ? " is-open" : ""}`,
+              strokeWidth: 2,
+              "aria-hidden": true
+            }
+          )
+        ]
+      }
+    ) }),
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        id: panelId,
+        role: "region",
+        "aria-labelledby": buttonId,
+        hidden: !open,
+        className: "home-faq__panel",
+        children: open ? /* @__PURE__ */ jsx("p", { className: "home-faq__a", children: a }) : null
+      }
+    )
+  ] });
+}
+function FAQSection() {
+  const { lang } = useLang();
+  const [openId, setOpenId] = useState(FAQ_ITEMS[0]?.id ?? null);
+  const title = lang === "ru" ? "Частые вопросы" : "FAQ";
+  return /* @__PURE__ */ jsx(
+    Section,
+    {
+      id: "faq",
+      className: "home-faq scroll-mt-[var(--tivonix-header-spacer)] !py-12 sm:!py-16",
+      children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[44rem]", children: [
+        /* @__PURE__ */ jsx("h2", { className: "text-center font-hero text-[clamp(1.65rem,3.8vw,2.4rem)] font-semibold tracking-[-0.03em] text-white", children: title }),
+        /* @__PURE__ */ jsx("div", { className: "home-faq__list mt-8 sm:mt-10", children: FAQ_ITEMS.map((item) => /* @__PURE__ */ jsx(
+          FaqRow,
+          {
+            item,
+            lang,
+            open: openId === item.id,
+            onToggle: () => setOpenId((prev) => prev === item.id ? null : item.id)
+          },
+          item.id
+        )) })
+      ] }) })
+    }
+  );
+}
+function cx$7(...a) {
   return a.filter(Boolean).join(" ");
 }
 function TelegramLink({
@@ -6692,106 +8305,22 @@ function TelegramLink({
 }
 function ctaClass(variant, size, className) {
   const isSquare = variant === "plain";
-  return cx$8(
-    "inline-flex items-center justify-center font-bold tracking-[-0.015em] transition duration-200",
+  return cx$7(
+    "inline-flex items-center justify-center font-sans font-medium tracking-normal transition duration-200",
     isSquare ? "rounded-none shadow-none" : "rounded-full",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
     "active:scale-[0.98]",
     size === "lg" ? "h-12 px-8 text-[15px] sm:h-[52px] sm:px-9 sm:text-[16px]" : "h-11 px-7 text-[14px] sm:px-8",
     (variant === "primary" || variant === "cream") && "tivonix-cta-primary",
     variant === "secondary" && "tivonix-cta-secondary",
     variant === "ghost" && "text-white/75 hover:text-white",
-    variant === "plain" && "border-0 bg-transparent font-semibold text-white/88 hover:bg-white/[0.04] hover:text-white",
-    variant === "white" && "border-0 bg-white font-bold text-black shadow-none hover:bg-white/92",
+    variant === "plain" && "border-0 bg-transparent font-medium text-white/88 hover:bg-white/[0.04] hover:text-white",
+    variant === "white" && "border-0 bg-white font-medium text-[#070607] shadow-none hover:bg-white/92",
     className
   );
 }
-function trackHotjarEvent(name) {
-  if (typeof window === "undefined") return;
-  if (typeof window.hj !== "function") return;
-  if (!name) return;
-  try {
-    window.hj("event", name);
-  } catch {
-  }
-}
-const HOTJAR_MASK_CLASS = "hj-masked";
-const HOTJAR_SUPPRESS_ATTR = { "data-hj-suppress": "" };
-const CTA_SOURCE_KEY = "tivonix_cta_source";
-function setCtaSource(source) {
-  try {
-    sessionStorage.setItem(CTA_SOURCE_KEY, source);
-  } catch {
-  }
-}
-function getCtaSource() {
-  try {
-    const v = sessionStorage.getItem(CTA_SOURCE_KEY);
-    if (v) return v;
-  } catch {
-  }
-  return "unknown";
-}
-function scrub(props) {
-  if (!props) return void 0;
-  const out = {};
-  for (const [k, v] of Object.entries(props)) {
-    const key = k.toLowerCase();
-    if (key.includes("email") || key.includes("phone") || key.includes("telegram") || key.includes("name") || key.includes("task") || key.includes("contact") || key.includes("message") || key.includes("detail")) {
-      continue;
-    }
-    if (typeof v === "string" && v.length > 80) continue;
-    out[k] = v;
-  }
-  return out;
-}
-function trackEvent(name, props) {
-  const safe = scrub(props);
-  trackHotjarEvent(name);
-  trackPartnersEvent(name, safe);
-}
-function trackCtaPrimaryClick(source) {
-  setCtaSource(source);
-  trackEvent("cta_primary_click", { source });
-}
-function trackLeadFormOpen(source) {
-  setCtaSource(source);
-  trackEvent("lead_form_open", { source });
-}
-function trackLeadFormStart() {
-  trackEvent("lead_form_start");
-}
-function trackLeadFormValidationError(field) {
-  trackEvent("lead_form_validation_error", field ? { field } : void 0);
-}
-function trackLeadFormSubmit(source) {
-  trackEvent("lead_form_submit", { source });
-}
-function trackLeadFormSuccess(source) {
-  trackEvent("lead_form_success", { source });
-}
-function trackLeadFormServerError() {
-  trackEvent("lead_form_server_error");
-}
-function trackLeadFormAbandon(source) {
-  trackEvent("lead_form_abandon", { source });
-}
-function trackTelegramDirectClick() {
-  trackEvent("telegram_direct_click");
-}
-function trackTelegramBotClick() {
-  trackEvent("telegram_bot_click");
-}
-function trackEmailClick() {
-  trackEvent("email_click");
-}
-function trackProjectView(slug) {
-  trackEvent("project_view", { slug: slug.slice(0, 40) });
-}
-function trackPricingView() {
-  trackEvent("pricing_view");
-}
-const FINAL_CTA_BG = `/images/${encodeURI("как рабоает")}/future.webp`;
+const FINAL_CTA_VIDEO = "/images/hero-bg.mp4";
+const FINAL_CTA_POSTER = "/images/hero-bg-poster.webp";
 function clamp01(v) {
   return Math.min(1, Math.max(0, v));
 }
@@ -6806,13 +8335,17 @@ function useSectionScrollScale(sectionRef) {
       return;
     }
     let raf = 0;
+    let lastScale = 1.05;
     const update = () => {
       const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight;
+      const vh = getStableViewportHeight();
       const total = rect.height + vh;
       const scrolled = vh - rect.top;
       const progress = clamp01(scrolled / total);
-      setScale(1.08 + progress * 0.44);
+      const next = 1.08 + progress * 0.44;
+      if (Math.abs(next - lastScale) < 4e-3) return;
+      lastScale = next;
+      setScale(next);
     };
     const schedule = () => {
       cancelAnimationFrame(raf);
@@ -6820,11 +8353,9 @@ function useSectionScrollScale(sectionRef) {
     };
     schedule();
     window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
     };
   }, [sectionRef]);
   return scale;
@@ -6832,13 +8363,14 @@ function useSectionScrollScale(sectionRef) {
 function FinalCTASection() {
   const { lang } = useLang();
   const copy = landingCopy(lang);
-  const leadCopy = leadFormCopy(lang);
   const cardRef = useRef(null);
+  const videoRef = useRef(null);
   const bgScale = useSectionScrollScale(cardRef);
   const bgStyle = {
     transform: `translate3d(-50%, -50%, 0) scale(${bgScale})`
   };
-  return /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsx(
+  useKeepVideoPlaying(videoRef);
+  return /* @__PURE__ */ jsx(
     Section,
     {
       id: "contact",
@@ -6847,44 +8379,50 @@ function FinalCTASection() {
         "div",
         {
           ref: cardRef,
-          className: "final-cta-card relative overflow-hidden rounded-[28px] px-6 py-12 text-center sm:rounded-[32px] sm:px-10 sm:py-14 lg:px-16 lg:py-16",
+          className: "final-cta-card relative overflow-hidden rounded-[28px] px-6 py-12 text-center sm:rounded-[40px] sm:px-10 sm:py-14 lg:px-16 lg:py-16",
           children: [
             /* @__PURE__ */ jsxs("div", { className: "final-cta-card__bg", "aria-hidden": true, children: [
               /* @__PURE__ */ jsx(
-                "img",
+                "video",
                 {
-                  src: FINAL_CTA_BG,
-                  alt: "",
-                  className: "final-cta-card__bg-img",
+                  ref: videoRef,
+                  className: "final-cta-card__bg-img pointer-events-none",
                   style: bgStyle,
-                  loading: "lazy",
-                  decoding: "async",
-                  draggable: false
+                  src: FINAL_CTA_VIDEO,
+                  poster: FINAL_CTA_POSTER,
+                  autoPlay: true,
+                  muted: true,
+                  loop: true,
+                  playsInline: true,
+                  preload: "auto",
+                  controls: false,
+                  disablePictureInPicture: true
                 }
               ),
               /* @__PURE__ */ jsx("div", { className: "final-cta-card__bg-overlay" })
             ] }),
-            /* @__PURE__ */ jsx("h2", { className: "relative z-[1] mx-auto max-w-[20ch] font-hero text-[clamp(1.75rem,4.5vw,2.85rem)] font-semibold leading-[1.06] tracking-[-0.03em] text-white text-balance", children: copy.finalCta.title }),
-            /* @__PURE__ */ jsxs("div", { className: "final-cta-card__actions relative z-[1] mt-6 flex flex-col items-center justify-center gap-3 sm:mt-7 sm:flex-row sm:gap-4", children: [
-              /* @__PURE__ */ jsx("div", { className: "projects-cta-glow final-cta-glow w-full max-w-[280px] sm:w-auto sm:min-w-[220px]", children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx("h2", { className: "relative z-[1] mx-auto max-w-[22ch] font-hero text-[clamp(1.75rem,4.5vw,2.85rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white text-balance", children: copy.finalCta.title }),
+            /* @__PURE__ */ jsx("p", { className: "relative z-[1] mx-auto mt-4 max-w-[36rem] font-sans text-[15px] font-medium leading-[1.55] text-white/78 sm:text-[16px]", children: copy.finalCta.subtitle }),
+            /* @__PURE__ */ jsxs("div", { className: "final-cta-card__actions relative z-[1] mt-7 flex flex-col items-stretch justify-center gap-3 sm:mt-8 sm:flex-row sm:items-center sm:justify-center sm:gap-3", children: [
+              /* @__PURE__ */ jsx(
                 LeadCTAButton,
                 {
                   source: "final_cta",
                   variant: "white",
                   size: "lg",
-                  className: "projects-cta-glow__btn final-cta-glow__btn w-full",
-                  children: leadCopy.ctaDiscuss
+                  className: "final-cta-btn",
+                  children: copy.finalCta.ctaPrimary
                 }
-              ) }),
+              ),
               /* @__PURE__ */ jsx(
                 TelegramLink,
                 {
                   variant: "white",
                   size: "lg",
                   href: TG_CHANNEL_URL,
-                  className: "final-cta-btn final-cta-btn--secondary w-full max-w-[280px] sm:w-auto sm:min-w-[220px]",
+                  className: "final-cta-btn final-cta-btn--black",
                   onClick: () => trackTelegramDirectClick(),
-                  children: "@TIVONIX"
+                  children: copy.finalCta.ctaSecondary
                 }
               )
             ] })
@@ -6892,54 +8430,49 @@ function FinalCTASection() {
         }
       ) })
     }
-  ) });
+  );
 }
-function cx$7(...a) {
+function cx$6(...a) {
   return a.filter(Boolean).join(" ");
 }
 const LOGO_LOCKUP_PNG = "/images/tivonix-logo-lockup.webp";
 const FOOTER_BG = `/images/${encodeURI("как рабоает")}/${encodeURI("футер.webp")}`;
-const ACCENT = "#FF6B2C";
+const SELL_IMG = "/images/footer-sell.webp";
 const FOOTER_PAGES = [
   { to: "/", label: { ru: "Главная", en: "Home" } },
   { to: "/plans", label: { ru: "Тарифы", en: "Pricing" } },
-  { to: "/avtomatizaciya-biznesa", label: { ru: "Автоматизация", en: "Automation" } },
-  { to: "/sozdanie-sajtov", label: { ru: "Создание сайтов", en: "Website development" } },
+  { to: "/about", label: { ru: "О компании", en: "About" } },
   { to: "/contacts", label: { ru: "Контакты", en: "Contacts" } }
 ];
-const FOOTER_HOME = [
-  { to: "/#pain", label: { ru: "Почему теряются заявки", en: "Why leads get lost" } },
-  { to: "/#offer", label: { ru: "Что мы делаем", en: "What we build" } },
+const FOOTER_SERVICES = [
+  { to: "/sozdanie-sajtov", label: { ru: "Создание сайтов", en: "Website development" } },
+  { to: "/avtomatizaciya-biznesa", label: { ru: "Автоматизация", en: "Automation" } },
   { to: "/#ai", label: { ru: "AI в продуктах", en: "AI in products" } },
-  { to: "/#compare", label: { ru: "Как работает система", en: "How the system works" } },
-  { to: "/#cases", label: { ru: "Проекты", en: "Projects" } },
-  { to: "/#audience", label: { ru: "Кому помогаем", en: "Who we help" } },
-  { to: "/#process", label: { ru: "Как проходит работа", en: "How we work" } },
-  { to: "/#faq", label: { ru: "Частые вопросы", en: "FAQ" } }
+  { to: "/#process", label: { ru: "Как мы работаем", en: "How we work" } }
 ];
-const FOOTER_GMAIL_URL = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent("tivoonix@gmail.com")}&su=${encodeURIComponent("Проект (SaaS/MVP)")}`;
+const FOOTER_GMAIL_URL = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(CONTACT_EMAIL)}&su=${encodeURIComponent("Проект (SaaS/MVP)")}`;
 const FOOTER_CONNECT = [
-  { href: TG_CHANNEL_URL, label: "Telegram" },
-  { href: "https://www.instagram.com/tivonix.tech/", label: "Instagram" },
-  { href: FOOTER_GMAIL_URL, label: "Gmail" }
+  { href: TG_CHANNEL_URL, label: "Telegram", kind: "tg" },
+  { href: "https://www.instagram.com/tivonix.tech/", label: "Instagram", kind: "ig" },
+  { href: FOOTER_GMAIL_URL, label: "Gmail", kind: "mail" }
 ];
 const DOCS = {
   ru: [
     {
       href: "/doc/Политика_обработки_ПД_Tivonix_RU.pdf",
-      label: "Политика",
+      label: "Политика обработки ПД",
       aria: "Политика обработки и защиты персональных данных (PDF)"
     },
     {
       href: "/doc/Согласие_на_обработку_ПД_Tivonix_RU.pdf",
-      label: "Согласие",
+      label: "Согласие на обработку ПД",
       aria: "Согласие на обработку персональных данных (PDF)"
     }
   ],
   en: [
     {
       href: "/doc/Privacy_Policy_Tivonix_EN.pdf",
-      label: "Privacy",
+      label: "Privacy Policy",
       aria: "Privacy Policy (PDF)"
     },
     {
@@ -6964,7 +8497,8 @@ function ExternalLink({
   href,
   children,
   newTab,
-  "aria-label": ariaLabel
+  "aria-label": ariaLabel,
+  className
 }) {
   const isHttp = href.startsWith("http");
   const openInNewTab = newTab ?? isHttp;
@@ -6975,7 +8509,7 @@ function ExternalLink({
       target: openInNewTab ? "_blank" : void 0,
       rel: openInNewTab ? "noopener noreferrer" : void 0,
       "aria-label": ariaLabel,
-      className: "site-footer__link",
+      className: cx$6("site-footer__link", className),
       children
     }
   );
@@ -6993,7 +8527,8 @@ function ColNav({
 function SocialIconLink({
   href,
   label,
-  children
+  children,
+  className
 }) {
   return /* @__PURE__ */ jsx(
     "a",
@@ -7002,82 +8537,66 @@ function SocialIconLink({
       target: "_blank",
       rel: "noopener noreferrer",
       "aria-label": label,
-      className: "site-footer__social-link",
+      className: cx$6("site-footer__social-link", className),
       children
     }
   );
 }
 function IconTelegram({ className }) {
-  return /* @__PURE__ */ jsxs("svg", { className, viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: [
-    /* @__PURE__ */ jsx(
-      "path",
-      {
-        d: "M21.8 4.6c.2-.8-.6-1.5-1.4-1.2L3.4 10c-1 .4-1 1.8 0 2.2l4.5 1.7 1.7 4.9c.3.9 1.5 1 2 .2l2.6-4.2 4.7 3.6c.7.5 1.7.1 1.9-.8L21.8 4.6Z",
-        stroke: "currentColor",
-        strokeWidth: "1.6",
-        strokeLinejoin: "round"
-      }
-    ),
-    /* @__PURE__ */ jsx("path", { d: "M8 13.8 19.6 6.4", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round" })
-  ] });
+  return /* @__PURE__ */ jsx("svg", { className, viewBox: "0 0 24 24", fill: "currentColor", "aria-hidden": true, children: /* @__PURE__ */ jsx("path", { d: "M21.2 3.4c.55-.22 1.1.3.95.86L19.05 19.4c-.14.55-.72.82-1.2.52l-4.35-2.7-2.35 2.25c-.4.38-1.05.14-1.15-.4l-.55-4.55 9.05-8.15c.18-.16-.04-.42-.25-.3L6.9 13.05l-4.35-1.35c-.58-.18-.58-1 .02-1.15L21.2 3.4Z" }) });
 }
 function IconInstagram$1({ className }) {
-  return /* @__PURE__ */ jsxs("svg", { className, viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: [
-    /* @__PURE__ */ jsx("rect", { x: "2.5", y: "2.5", width: "19", height: "19", rx: "5", stroke: "currentColor", strokeWidth: "1.55" }),
-    /* @__PURE__ */ jsx("circle", { cx: "12", cy: "12", r: "4.25", stroke: "currentColor", strokeWidth: "1.55" }),
-    /* @__PURE__ */ jsx("circle", { cx: "17.5", cy: "6.5", r: "1.35", fill: "currentColor" })
+  return /* @__PURE__ */ jsxs("svg", { className, viewBox: "0 0 24 24", fill: "currentColor", "aria-hidden": true, children: [
+    /* @__PURE__ */ jsx("path", { d: "M12 7.2A4.8 4.8 0 1 0 12 16.8 4.8 4.8 0 0 0 12 7.2Zm0 7.7a2.9 2.9 0 1 1 0-5.8 2.9 2.9 0 0 1 0 5.8Z" }),
+    /* @__PURE__ */ jsx("circle", { cx: "17.35", cy: "6.7", r: "1.15" }),
+    /* @__PURE__ */ jsx("path", { d: "M16.7 2H7.3A5.3 5.3 0 0 0 2 7.3v9.4A5.3 5.3 0 0 0 7.3 22h9.4A5.3 5.3 0 0 0 22 16.7V7.3A5.3 5.3 0 0 0 16.7 2Zm3.4 14.7a3.45 3.45 0 0 1-3.4 3.4H7.3a3.45 3.45 0 0 1-3.4-3.4V7.3A3.45 3.45 0 0 1 7.3 3.9h9.4a3.45 3.45 0 0 1 3.4 3.4v9.4Z" })
   ] });
 }
 function IconMail$1({ className }) {
-  return /* @__PURE__ */ jsxs("svg", { className, viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: [
-    /* @__PURE__ */ jsx(
-      "path",
-      {
-        d: "M4.5 7.5v9a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-11a2 2 0 0 0-2 2Z",
-        stroke: "currentColor",
-        strokeWidth: "1.65",
-        opacity: "0.95"
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      "path",
-      {
-        d: "M6 8.5 12 12.5l6-4",
-        stroke: "currentColor",
-        strokeWidth: "1.65",
-        strokeLinecap: "round",
-        strokeLinejoin: "round"
-      }
-    )
-  ] });
+  return /* @__PURE__ */ jsx("svg", { className, viewBox: "0 0 24 24", fill: "currentColor", "aria-hidden": true, children: /* @__PURE__ */ jsx("path", { d: "M20.2 4.5H3.8A2.3 2.3 0 0 0 1.5 6.8v10.4a2.3 2.3 0 0 0 2.3 2.3h16.4a2.3 2.3 0 0 0 2.3-2.3V6.8a2.3 2.3 0 0 0-2.3-2.3Zm.4 2.55v.2l-8.05 5.35a.95.95 0 0 1-1.1 0L3.4 7.25v-.2c0-.22.18-.4.4-.4h16.4c.22 0 .4.18.4.4Zm0 10.15c0 .22-.18.4-.4.4H3.8a.4.4 0 0 1-.4-.4V9.2l7.45 4.95a2.85 2.85 0 0 0 3.3 0L20.6 9.2v8Z" }) });
 }
 function Footer() {
   const { lang } = useLang();
   const isRu = lang === "ru";
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const sellRef = useRef(null);
+  const sellWordRef = useRef(null);
   const t = (v) => isRu ? v.ru : v.en;
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const apply = () => {
-      setReducedMotion(!!motionMq.matches);
+    const sell = sellRef.current;
+    const word = sellWordRef.current;
+    if (!sell || !word) return;
+    const fit = () => {
+      const total = sell.clientWidth;
+      if (total < 64) return;
+      const maxWidth = total * 0.94;
+      word.style.width = "auto";
+      word.style.transform = "none";
+      word.style.letterSpacing = "-0.02em";
+      let lo = 20;
+      let hi = Math.min(480, maxWidth * 0.52);
+      for (let i = 0; i < 20; i += 1) {
+        const mid = (lo + hi) / 2;
+        word.style.fontSize = `${mid}px`;
+        if (word.scrollWidth <= maxWidth) lo = mid;
+        else hi = mid;
+      }
+      word.style.fontSize = `${lo * 0.97}px`;
     };
-    apply();
-    motionMq.addEventListener?.("change", apply);
-    return () => {
-      motionMq.removeEventListener?.("change", apply);
-    };
+    const ro = new ResizeObserver(fit);
+    ro.observe(sell);
+    fit();
+    void document.fonts?.ready?.then(fit);
+    return () => ro.disconnect();
   }, []);
   const docs = isRu ? DOCS.ru : DOCS.en;
-  const projects = buildProjects(isRu);
-  const tagline = isRu ? "Сайты, боты и CRM — чтобы заявки не терялись" : "Websites, bots and CRM — so leads don't get lost";
-  return /* @__PURE__ */ jsxs(
+  const projects = buildProjects(isRu).slice(0, 5);
+  const year = (/* @__PURE__ */ new Date()).getFullYear();
+  return /* @__PURE__ */ jsx(
     "footer",
     {
       id: "site-footer",
       className: "site-footer font-sans text-white antialiased selection:bg-[color:var(--accent)]/25",
-      style: { ["--accent"]: ACCENT },
-      children: [
+      children: /* @__PURE__ */ jsx(Container, { className: "site-footer__shell", children: /* @__PURE__ */ jsxs("div", { className: "site-footer__panel", children: [
         /* @__PURE__ */ jsxs("div", { className: "site-footer__bg", "aria-hidden": true, children: [
           /* @__PURE__ */ jsx(
             "img",
@@ -7092,68 +8611,110 @@ function Footer() {
           ),
           /* @__PURE__ */ jsx("div", { className: "site-footer__bg-fade" })
         ] }),
-        /* @__PURE__ */ jsx(Container, { className: "site-footer__shell", children: /* @__PURE__ */ jsxs("div", { className: "site-footer__panel", children: [
-          /* @__PURE__ */ jsx("div", { className: "site-footer__bar", children: /* @__PURE__ */ jsx(
-            Link,
-            {
-              to: "/",
-              className: "site-footer__logo focus:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-[#121212] rounded-lg",
-              "aria-label": isRu ? "Наверх" : "Back to top",
-              children: /* @__PURE__ */ jsx(
-                "img",
-                {
-                  src: LOGO_LOCKUP_PNG,
-                  onError: imgFallback(LOGO_LOCKUP_PNG),
-                  alt: "Tivonix",
-                  className: "block h-9 w-auto sm:h-10",
-                  draggable: false,
-                  loading: "lazy",
-                  decoding: "async"
-                }
-              )
-            }
-          ) }),
-          /* @__PURE__ */ jsxs("div", { className: "site-footer__grid", children: [
-            /* @__PURE__ */ jsx(ColNav, { id: "footer-pages", title: isRu ? "Страницы" : "Pages", children: FOOTER_PAGES.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: i.to, children: t(i.label) }) }, i.to)) }),
-            /* @__PURE__ */ jsx(ColNav, { id: "footer-home", title: isRu ? "На главной" : "Homepage", children: FOOTER_HOME.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: i.to, children: t(i.label) }) }, i.to)) }),
-            /* @__PURE__ */ jsx(ColNav, { id: "footer-connect", title: isRu ? "Связь" : "Connect", children: FOOTER_CONNECT.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(ExternalLink, { href: i.href, children: i.label }) }, i.href)) }),
-            /* @__PURE__ */ jsxs(ColNav, { id: "footer-work", title: isRu ? "Кейсы" : "Cases", children: [
-              /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: "/projects", children: isRu ? "Все проекты" : "All projects" }) }),
-              projects.map((p) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: `/projects/${p.id}`, children: p.title }) }, p.id))
-            ] })
-          ] }),
-          /* @__PURE__ */ jsxs("div", { className: "site-footer__legal", children: [
-            /* @__PURE__ */ jsxs("div", { className: "site-footer__brand", children: [
+        /* @__PURE__ */ jsxs("div", { className: "site-footer__content", children: [
+          /* @__PURE__ */ jsxs("div", { className: "site-footer__main", children: [
+            /* @__PURE__ */ jsxs("aside", { className: "site-footer__touch", children: [
               /* @__PURE__ */ jsx(
-                "p",
+                Link,
                 {
-                  className: cx$7(
-                    "ai-premium-ai-mark__text site-footer__rainbow",
-                    !reducedMotion && "ai-premium-ai-mark__text--animated"
-                  ),
-                  children: "tivonix & AI"
+                  to: "/",
+                  className: "site-footer__logo focus:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg",
+                  "aria-label": isRu ? "На главную" : "Home",
+                  children: /* @__PURE__ */ jsx(
+                    "img",
+                    {
+                      src: LOGO_LOCKUP_PNG,
+                      onError: imgFallback(LOGO_LOCKUP_PNG),
+                      alt: "Tivonix",
+                      className: "block h-8 w-auto sm:h-9",
+                      draggable: false,
+                      loading: "lazy",
+                      decoding: "async"
+                    }
+                  )
                 }
               ),
-              /* @__PURE__ */ jsx("p", { className: "site-footer__tagline", children: tagline })
-            ] }),
-            /* @__PURE__ */ jsxs("div", { className: "site-footer__legal-end", children: [
+              /* @__PURE__ */ jsx("h2", { className: "site-footer__touch-title", children: isRu ? "Связаться" : "Get in touch" }),
+              /* @__PURE__ */ jsx("p", { className: "site-footer__touch-lead", children: isRu ? "Ваш техпартнёр по сайтам, ботам и CRM" : "Your tech partner for sites, bots and CRM" }),
+              /* @__PURE__ */ jsxs("a", { href: FOOTER_GMAIL_URL, target: "_blank", rel: "noopener noreferrer", className: "site-footer__touch-row", children: [
+                /* @__PURE__ */ jsx(Mail, { className: "site-footer__touch-row-icon", strokeWidth: 2, "aria-hidden": true }),
+                /* @__PURE__ */ jsx("span", { children: CONTACT_EMAIL })
+              ] }),
               /* @__PURE__ */ jsxs(
+                "a",
+                {
+                  href: TG_CHANNEL_URL,
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  className: "site-footer__touch-row",
+                  children: [
+                    /* @__PURE__ */ jsx(IconTelegram, { className: "site-footer__touch-row-icon" }),
+                    /* @__PURE__ */ jsx("span", { children: "Telegram" })
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsx("div", { className: "site-footer__actions", children: /* @__PURE__ */ jsx(LeadCTAButton, { source: "footer", variant: "primary", className: "site-footer__action-btn", children: isRu ? "Обсудить проект" : "Discuss a project" }) }),
+              /* @__PURE__ */ jsx(
                 "nav",
                 {
                   className: "site-footer__social",
                   "aria-label": isRu ? "Соцсети и почта" : "Social and email",
-                  children: [
-                    /* @__PURE__ */ jsx(SocialIconLink, { href: FOOTER_CONNECT[0].href, label: FOOTER_CONNECT[0].label, children: /* @__PURE__ */ jsx(IconTelegram, { className: "site-footer__social-icon" }) }),
-                    /* @__PURE__ */ jsx(SocialIconLink, { href: FOOTER_CONNECT[1].href, label: FOOTER_CONNECT[1].label, children: /* @__PURE__ */ jsx(IconInstagram$1, { className: "site-footer__social-icon" }) }),
-                    /* @__PURE__ */ jsx(SocialIconLink, { href: FOOTER_CONNECT[2].href, label: FOOTER_CONNECT[2].label, children: /* @__PURE__ */ jsx(IconMail$1, { className: "site-footer__social-icon" }) })
-                  ]
+                  children: FOOTER_CONNECT.map((item) => /* @__PURE__ */ jsx(
+                    SocialIconLink,
+                    {
+                      href: item.href,
+                      label: item.label,
+                      className: `site-footer__social-link--${item.kind}`,
+                      children: item.kind === "tg" ? /* @__PURE__ */ jsx(IconTelegram, { className: "site-footer__social-icon" }) : item.kind === "ig" ? /* @__PURE__ */ jsx(IconInstagram$1, { className: "site-footer__social-icon" }) : /* @__PURE__ */ jsx(IconMail$1, { className: "site-footer__social-icon" })
+                    },
+                    item.href
+                  ))
                 }
-              ),
-              /* @__PURE__ */ jsx("nav", { className: "site-footer__legal-nav", "aria-label": isRu ? "Документы" : "Legal", children: docs.map((d) => /* @__PURE__ */ jsx(ExternalLink, { href: d.href, newTab: true, "aria-label": d.aria, children: d.label }, d.href)) })
+              )
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "site-footer__grid", children: [
+              /* @__PURE__ */ jsx(ColNav, { id: "footer-pages", title: isRu ? "Компания" : "Company", children: FOOTER_PAGES.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: i.to, children: t(i.label) }) }, i.to)) }),
+              /* @__PURE__ */ jsx(ColNav, { id: "footer-services", title: isRu ? "Услуги" : "Services", children: FOOTER_SERVICES.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: i.to, children: t(i.label) }) }, i.to)) }),
+              /* @__PURE__ */ jsxs(ColNav, { id: "footer-work", title: isRu ? "Кейсы" : "Cases", children: [
+                /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: "/projects", children: isRu ? "Все проекты" : "All projects" }) }),
+                projects.map((p) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: `/projects/${p.id}`, children: p.title }) }, p.id))
+              ] })
             ] })
-          ] })
-        ] }) })
-      ]
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "site-footer__bottom", children: [
+            /* @__PURE__ */ jsx("div", { className: "site-footer__bottom-start", children: /* @__PURE__ */ jsxs("p", { className: "site-footer__copy", children: [
+              "TIVONIX © ",
+              year,
+              /* @__PURE__ */ jsx("span", { className: "site-footer__copy-sep", "aria-hidden": true, children: "|" }),
+              isRu ? "Все права защищены" : "All rights reserved"
+            ] }) }),
+            /* @__PURE__ */ jsx("nav", { className: "site-footer__legal-nav", "aria-label": isRu ? "Документы" : "Legal", children: docs.map((d) => /* @__PURE__ */ jsx(ExternalLink, { href: d.href, newTab: true, "aria-label": d.aria, children: d.label }, d.href)) })
+          ] }),
+          /* @__PURE__ */ jsxs(
+            "div",
+            {
+              ref: sellRef,
+              className: "site-footer__sell",
+              style: {
+                ["--footer-sell-img"]: `url(${JSON.stringify(SELL_IMG)})`
+              },
+              children: [
+                /* @__PURE__ */ jsx("p", { className: "site-footer__sell-kicker", children: isRu ? "Ваш техпартнёр" : "Your tech partner" }),
+                /* @__PURE__ */ jsx("p", { className: "site-footer__sell-word", ref: sellWordRef, "aria-label": "TIVONIX", children: "tivonix" })
+              ]
+            }
+          )
+        ] })
+      ] }) })
+    }
+  );
+}
+function JsonLd({ data }) {
+  return /* @__PURE__ */ jsx(
+    "script",
+    {
+      type: "application/ld+json",
+      dangerouslySetInnerHTML: { __html: JSON.stringify(data) }
     }
   );
 }
@@ -7173,34 +8734,36 @@ function SEO({
 }) {
   const canonicalUrl = canonicalPath.startsWith("http") ? canonicalPath : `${CANONICAL_ORIGIN$1}${canonicalPath.startsWith("/") ? "" : "/"}${canonicalPath}`;
   const ogLocaleAlt = ogLocalePrimary === "ru_RU" ? "en_US" : "ru_RU";
-  return /* @__PURE__ */ jsxs(Helmet, { children: [
-    /* @__PURE__ */ jsx("title", { children: title }),
-    /* @__PURE__ */ jsx("meta", { name: "description", content: description }),
-    /* @__PURE__ */ jsx("link", { rel: "canonical", href: canonicalUrl }),
-    /* @__PURE__ */ jsx("meta", { property: "og:type", content: ogType }),
-    /* @__PURE__ */ jsx("meta", { property: "og:site_name", content: "TIVONIX" }),
-    /* @__PURE__ */ jsx("meta", { property: "og:locale", content: ogLocalePrimary }),
-    /* @__PURE__ */ jsx("meta", { property: "og:locale:alternate", content: ogLocaleAlt }),
-    /* @__PURE__ */ jsx("meta", { property: "og:title", content: title }),
-    /* @__PURE__ */ jsx("meta", { property: "og:description", content: description }),
-    /* @__PURE__ */ jsx("meta", { property: "og:url", content: canonicalUrl }),
-    /* @__PURE__ */ jsx("meta", { property: "og:image", content: ogImage }),
-    /* @__PURE__ */ jsx("meta", { property: "og:image:width", content: OG_IMAGE_WIDTH }),
-    /* @__PURE__ */ jsx("meta", { property: "og:image:height", content: OG_IMAGE_HEIGHT }),
-    /* @__PURE__ */ jsx(
-      "meta",
-      {
-        property: "og:image:type",
-        content: ogImage.endsWith(".webp") ? "image/webp" : ogImage.endsWith(".png") ? "image/png" : "image/jpeg"
-      }
-    ),
-    /* @__PURE__ */ jsx("meta", { property: "og:image:alt", content: OG_IMAGE_ALT }),
-    /* @__PURE__ */ jsx("meta", { name: "twitter:card", content: "summary_large_image" }),
-    /* @__PURE__ */ jsx("meta", { name: "twitter:title", content: title }),
-    /* @__PURE__ */ jsx("meta", { name: "twitter:description", content: description }),
-    /* @__PURE__ */ jsx("meta", { name: "twitter:image", content: ogImage }),
-    /* @__PURE__ */ jsx("meta", { name: "twitter:image:alt", content: OG_IMAGE_ALT }),
-    schemaJsonLd != null && /* @__PURE__ */ jsx("script", { type: "application/ld+json", children: JSON.stringify(schemaJsonLd) })
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsxs(Helmet, { children: [
+      /* @__PURE__ */ jsx("title", { children: title }),
+      /* @__PURE__ */ jsx("meta", { name: "description", content: description }),
+      /* @__PURE__ */ jsx("link", { rel: "canonical", href: canonicalUrl }),
+      /* @__PURE__ */ jsx("meta", { property: "og:type", content: ogType }),
+      /* @__PURE__ */ jsx("meta", { property: "og:site_name", content: "TIVONIX" }),
+      /* @__PURE__ */ jsx("meta", { property: "og:locale", content: ogLocalePrimary }),
+      /* @__PURE__ */ jsx("meta", { property: "og:locale:alternate", content: ogLocaleAlt }),
+      /* @__PURE__ */ jsx("meta", { property: "og:title", content: title }),
+      /* @__PURE__ */ jsx("meta", { property: "og:description", content: description }),
+      /* @__PURE__ */ jsx("meta", { property: "og:url", content: canonicalUrl }),
+      /* @__PURE__ */ jsx("meta", { property: "og:image", content: ogImage }),
+      /* @__PURE__ */ jsx("meta", { property: "og:image:width", content: OG_IMAGE_WIDTH }),
+      /* @__PURE__ */ jsx("meta", { property: "og:image:height", content: OG_IMAGE_HEIGHT }),
+      /* @__PURE__ */ jsx(
+        "meta",
+        {
+          property: "og:image:type",
+          content: ogImage.endsWith(".webp") ? "image/webp" : ogImage.endsWith(".png") ? "image/png" : "image/jpeg"
+        }
+      ),
+      /* @__PURE__ */ jsx("meta", { property: "og:image:alt", content: OG_IMAGE_ALT }),
+      /* @__PURE__ */ jsx("meta", { name: "twitter:card", content: "summary_large_image" }),
+      /* @__PURE__ */ jsx("meta", { name: "twitter:title", content: title }),
+      /* @__PURE__ */ jsx("meta", { name: "twitter:description", content: description }),
+      /* @__PURE__ */ jsx("meta", { name: "twitter:image", content: ogImage }),
+      /* @__PURE__ */ jsx("meta", { name: "twitter:image:alt", content: OG_IMAGE_ALT })
+    ] }),
+    schemaJsonLd != null ? /* @__PURE__ */ jsx(JsonLd, { data: schemaJsonLd }) : null
   ] });
 }
 function buildHomePageSchema({ pageTitle, pageDescription }) {
@@ -7418,12 +8981,12 @@ function LandingPage() {
     pageTitle: seo.title,
     pageDescription: seo.description
   });
-  return /* @__PURE__ */ jsxs("div", { className: "min-h-screen overflow-x-clip bg-black", children: [
+  return /* @__PURE__ */ jsxs("div", { className: "landing-caldera min-h-screen overflow-x-clip bg-black", children: [
     /* @__PURE__ */ jsx(
       SEO,
       {
-        title: isEnPath ? "TIVONIX — websites, bots and web services for business" : seo.title,
-        description: isEnPath ? "We build websites, Telegram bots, CRMs, client portals and lead automation — tailored to your business workflow." : seo.description,
+        title: seo.title,
+        description: seo.description,
         canonicalPath,
         schemaJsonLd,
         ogLocalePrimary: lang === "en" ? "en_US" : "ru_RU",
@@ -7434,13 +8997,15 @@ function LandingPage() {
     /* @__PURE__ */ jsx(Header, {}),
     /* @__PURE__ */ jsxs("main", { children: [
       /* @__PURE__ */ jsx("div", { id: "hero", children: /* @__PURE__ */ jsx(Hero, {}) }),
+      /* @__PURE__ */ jsx(FeaturedProjectsSection, {}),
       /* @__PURE__ */ jsx(LandingPainSection, {}),
       /* @__PURE__ */ jsx(MainOfferSection, {}),
       /* @__PURE__ */ jsx(AiPremiumSection, {}),
       /* @__PURE__ */ jsx(ComparisonSection, {}),
-      /* @__PURE__ */ jsx("div", { id: "new-case", children: /* @__PURE__ */ jsx(CasesSection, {}) }),
-      /* @__PURE__ */ jsx(TivonixAudienceSection, {}),
+      /* @__PURE__ */ jsx(HomePricingSection, {}),
       /* @__PURE__ */ jsx(ProcessTimelineSection, {}),
+      /* @__PURE__ */ jsx(FounderSection, {}),
+      /* @__PURE__ */ jsx(HomeTestimonialsSection, {}),
       /* @__PURE__ */ jsx(FAQSection, {})
     ] }),
     /* @__PURE__ */ jsx(FinalCTASection, {}),
@@ -7448,7 +9013,7 @@ function LandingPage() {
   ] });
 }
 const HERO_IMG = "/images/hero.webp";
-function cx$6(...a) {
+function cx$5(...a) {
   return a.filter(Boolean).join(" ");
 }
 const s$1 = (v) => v;
@@ -7458,7 +9023,7 @@ function projectPreviewSrc(p) {
 const PREVIEW_SPECS = {
   card: { maxH: 240, aspect: 16 / 9 },
   detail: { maxH: 360, aspect: 16 / 9 },
-  thumb: { maxH: 180, aspect: 3 / 2 },
+  thumb: { maxH: 200, aspect: 16 / 9 },
   grid: { maxH: 9999, aspect: 16 / 9, fullWidth: true }
 };
 const ZOOM_STEPS = [1, 1.5, 2.25];
@@ -7470,7 +9035,7 @@ function ProjectPreviewFrame({
   return /* @__PURE__ */ jsx(
     "div",
     {
-      className: cx$6(
+      className: cx$5(
         "relative overflow-hidden",
         fullWidth ? "w-full rounded-xl" : "mx-auto w-full rounded-2xl",
         "border-0 bg-[#141416]"
@@ -7487,10 +9052,7 @@ function ProjectPreviewFrame({
         {
           src,
           alt: "",
-          className: cx$6(
-            "block h-full w-full",
-            variant === "grid" ? "object-cover object-center" : "object-contain"
-          ),
+          className: "absolute inset-0 block h-full w-full object-cover object-top",
           draggable: false,
           loading: "lazy",
           decoding: "async"
@@ -7563,7 +9125,7 @@ function GalleryLightbox({
     /* @__PURE__ */ jsxs(
       "div",
       {
-        className: cx$6(
+        className: cx$5(
           "fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-6",
           "transition-opacity duration-200",
           visible ? "opacity-100" : "opacity-0"
@@ -7584,7 +9146,7 @@ function GalleryLightbox({
           /* @__PURE__ */ jsxs(
             "div",
             {
-              className: cx$6(
+              className: cx$5(
                 "relative z-[1] flex max-h-[min(92dvh,920px)] w-full max-w-[min(96vw,1120px)] flex-col",
                 "transition-transform duration-200",
                 visible ? "scale-100" : "scale-[0.97]"
@@ -7634,7 +9196,7 @@ function GalleryLightbox({
                     "div",
                     {
                       ref: stageRef,
-                      className: cx$6(
+                      className: cx$5(
                         "max-h-[min(84dvh,860px)] overflow-auto rounded-2xl bg-black",
                         "overscroll-contain",
                         zoom > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in"
@@ -7691,7 +9253,7 @@ function ProjectGalleryStrip({
     /* @__PURE__ */ jsx(
       "div",
       {
-        className: cx$6(
+        className: cx$5(
           "flex gap-3 overflow-x-auto pb-1",
           "snap-x snap-mandatory scroll-smooth",
           "no-scrollbar"
@@ -7752,7 +9314,7 @@ function ExternalIcon$1({ className }) {
     }
   );
 }
-const filterPillClass = (active) => cx$6(
+const filterPillClass = (active) => cx$5(
   "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-[13px] font-medium transition",
   active ? "bg-[#3a3a3d] text-white" : "bg-[#1c1c1f] text-white/78 hover:bg-[#262626] hover:text-white/92"
 );
@@ -7774,13 +9336,13 @@ function ProjectGridCard({ p, isRu }) {
     ),
     /* @__PURE__ */ jsxs("div", { className: "mt-3 flex items-start justify-between gap-3", children: [
       /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-        /* @__PURE__ */ jsx("p", { className: "text-[11px] font-semibold uppercase tracking-[0.12em] text-white/40", children: productType }),
+        /* @__PURE__ */ jsx("p", { className: "text-[11px] font-medium uppercase tracking-[0.12em] text-white/40", children: productType }),
         /* @__PURE__ */ jsx(
           Link,
           {
             to: `/projects/${p.id}`,
             className: "block min-w-0 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45",
-            children: /* @__PURE__ */ jsx("h2", { className: "mt-1 truncate text-[15px] font-[700] tracking-[-0.02em] text-white/[0.92] transition group-hover:text-white", children: p.title })
+            children: /* @__PURE__ */ jsx("h2", { className: "mt-1 truncate font-sans text-[15px] font-medium tracking-normal text-white/[0.92] transition group-hover:text-white", children: p.title })
           }
         ),
         /* @__PURE__ */ jsx("p", { className: "mt-1.5 line-clamp-2 text-[12.5px] leading-snug text-white/52", children: subtitle }),
@@ -7788,15 +9350,15 @@ function ProjectGridCard({ p, isRu }) {
         p.stack?.length ? /* @__PURE__ */ jsx("p", { className: "mt-1.5 truncate text-[11px] text-white/35", children: (p.stack ?? []).slice(0, 4).join(" · ") }) : null,
         domainClean && !wip ? /* @__PURE__ */ jsx("p", { className: "mt-1 truncate text-[12px] text-white/40", children: domainClean }) : /* @__PURE__ */ jsx("p", { className: "mt-1 text-[12px] text-white/40", children: isRu ? "В разработке" : "In progress" })
       ] }),
-      wip ? /* @__PURE__ */ jsx("span", { className: "shrink-0 rounded-full bg-[#1c1c1f] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-white/48", children: "WIP" }) : p.domain ? /* @__PURE__ */ jsx(
+      wip ? /* @__PURE__ */ jsx("span", { className: "shrink-0 rounded-full bg-[#1c1c1f] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-white/48", children: "WIP" }) : p.domain ? /* @__PURE__ */ jsx(
         "a",
         {
           href: p.domain,
           target: "_blank",
           rel: "noopener noreferrer",
-          className: cx$6(
+          className: cx$5(
             "shrink-0 inline-flex items-center gap-1 rounded-full",
-            "bg-[#1c1c1f] px-2.5 py-1 text-[11px] font-[600] text-white/58",
+            "bg-[#1c1c1f] px-2.5 py-1 text-[11px] font-medium text-white/58",
             "transition hover:bg-[#262626] hover:text-white/85"
           ),
           "aria-label": isRu ? `Открыть ${p.title}` : `Open ${p.title}`,
@@ -7840,11 +9402,11 @@ function ProjectsPage() {
     ),
     /* @__PURE__ */ jsx(Header, {}),
     /* @__PURE__ */ jsx("main", { children: /* @__PURE__ */ jsx(Section, { className: "projects-page scroll-mt-[var(--tivonix-header-spacer)] !pb-20 !pt-[calc(var(--tivonix-header-spacer)+1.75rem)] sm:!pt-[calc(var(--tivonix-header-spacer)+2.25rem)]", children: /* @__PURE__ */ jsxs(Container, { className: "max-w-[1180px]", children: [
-      /* @__PURE__ */ jsx("header", { className: "mx-auto max-w-[720px] text-center", children: /* @__PURE__ */ jsx("h1", { className: "font-display text-[clamp(2rem,5vw,3.25rem)] font-extrabold leading-[1.05] tracking-[-0.04em] text-white", children: heroTitle }) }),
+      /* @__PURE__ */ jsx("header", { className: "mx-auto max-w-[720px] text-center", children: /* @__PURE__ */ jsx("h1", { className: "font-hero text-[clamp(1.85rem,4.5vw,2.75rem)] font-normal uppercase leading-[1.02] tracking-[0.02em] text-white", children: heroTitle }) }),
       /* @__PURE__ */ jsx("div", { className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs(
         "div",
         {
-          className: cx$6(
+          className: cx$5(
             "flex gap-2 overflow-x-auto pb-1 no-scrollbar",
             "justify-start sm:flex-wrap sm:justify-center"
           ),
@@ -8312,8 +9874,8 @@ const HEADER_H = 72;
 const CANONICAL_ORIGIN = "https://tivonix.tech";
 const BULLET_RE = /^[•\-]\s*/;
 const LEAD_META_RE = /^(Формат|Срок|Format|Timeline|Продукт|Product)\s*:/i;
-const BODY = "text-[17px] font-[400] leading-[1.55] tracking-[0.005em] text-[#c3c3cc] sm:text-[18px]";
-const H2 = "font-hero text-[clamp(1.75rem,3.2vw,2.5rem)] font-[600] tracking-[-0.03em] leading-[1.1] text-[#ededf3]";
+const BODY = "font-sans text-[16px] font-medium leading-[1.55] tracking-normal text-[#c3c3cc] sm:text-[17px]";
+const H2 = "font-hero text-[clamp(1.55rem,2.8vw,2.1rem)] font-normal uppercase tracking-[0.02em] leading-[1.05] text-[#ededf3]";
 function clipMetaDescription(text, max = 158) {
   const t = text.replace(/\s+/g, " ").trim();
   if (t.length <= max) return t;
@@ -8399,13 +9961,13 @@ function CaseBrandIntro({
   return /* @__PURE__ */ jsxs("header", { children: [
     /* @__PURE__ */ jsxs("div", { className: "flex items-start justify-between gap-6", children: [
       /* @__PURE__ */ jsxs("div", { className: "min-w-0 flex-1", children: [
-        /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(2.25rem,5vw,3.5rem)] font-[600] tracking-[-0.035em] leading-[1.02] text-[#ededf3]", children: title }),
+        /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.85rem,4vw,2.75rem)] font-normal uppercase tracking-[0.02em] leading-[1.05] text-[#ededf3]", children: title }),
         /* @__PURE__ */ jsx("p", { className: "mt-3 text-[17px] font-[400] leading-snug text-[#c3c3cc] sm:text-[18px]", children: mood })
       ] }),
       logo ? /* @__PURE__ */ jsx(
         "div",
         {
-          className: cx$6(
+          className: cx$5(
             "shrink-0 overflow-hidden rounded-[14px] bg-black sm:rounded-[16px]",
             logoFit === "contain" ? "h-[4.5rem] w-14 sm:h-[5.25rem] sm:w-16" : "h-14 w-14 sm:h-16 sm:w-16"
           ),
@@ -8414,7 +9976,7 @@ function CaseBrandIntro({
             {
               src: logo,
               alt: "",
-              className: cx$6(
+              className: cx$5(
                 "h-full w-full object-center",
                 logoFit === "contain" ? "object-contain" : "object-cover"
               ),
@@ -8425,7 +9987,7 @@ function CaseBrandIntro({
         }
       ) : null
     ] }),
-    /* @__PURE__ */ jsx("div", { className: cx$6("mt-8 max-w-[42rem] space-y-4", BODY), children: story.split(/\n\n+/).map((para, idx) => /* @__PURE__ */ jsx("p", { children: /* @__PURE__ */ jsx(RichText, { text: para }) }, idx)) }),
+    /* @__PURE__ */ jsx("div", { className: cx$5("mt-8 max-w-[42rem] space-y-4", BODY), children: story.split(/\n\n+/).map((para, idx) => /* @__PURE__ */ jsx("p", { children: /* @__PURE__ */ jsx(RichText, { text: para }) }, idx)) }),
     domain && !wip ? /* @__PURE__ */ jsxs(
       "a",
       {
@@ -8485,13 +10047,13 @@ function PaletteSwatch({
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1400);
   };
-  return /* @__PURE__ */ jsxs("div", { className: cx$6("min-w-0", wide && "max-w-xl"), children: [
+  return /* @__PURE__ */ jsxs("div", { className: cx$5("min-w-0", wide && "max-w-xl"), children: [
     /* @__PURE__ */ jsxs(
       "button",
       {
         type: "button",
         onClick: onCopy,
-        className: cx$6(
+        className: cx$5(
           "group relative w-full overflow-hidden rounded-2xl ring-1 ring-white/[0.06]",
           "outline-none transition focus-visible:ring-2 focus-visible:ring-[#FF6B2C]/55",
           wide ? "h-16 sm:h-[72px]" : "h-14 sm:h-16"
@@ -8503,7 +10065,7 @@ function PaletteSwatch({
           /* @__PURE__ */ jsx(
             "span",
             {
-              className: cx$6(
+              className: cx$5(
                 "pointer-events-none absolute inset-0 rounded-2xl",
                 isLight ? "ring-1 ring-inset ring-black/10" : "ring-1 ring-inset ring-white/[0.04]"
               ),
@@ -8513,7 +10075,7 @@ function PaletteSwatch({
           /* @__PURE__ */ jsxs(
             "span",
             {
-              className: cx$6(
+              className: cx$5(
                 "absolute right-3 top-1/2 z-[1] -translate-y-1/2",
                 "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1",
                 "text-[11px] font-[600] tracking-normal backdrop-blur-sm",
@@ -8529,7 +10091,7 @@ function PaletteSwatch({
         ]
       }
     ),
-    /* @__PURE__ */ jsx("p", { className: "mt-3 text-[15px] font-[600] tracking-[-0.01em] text-[#ededf3] sm:text-[16px]", children: swatch.name }),
+    /* @__PURE__ */ jsx("p", { className: "mt-3 text-[15px] font-medium tracking-normal text-[#ededf3] sm:text-[16px]", children: swatch.name }),
     /* @__PURE__ */ jsx(
       "button",
       {
@@ -8684,7 +10246,7 @@ function CaseDetailBody({
             className: "mb-16 scroll-mt-28 border-t border-white/[0.06] pt-10 sm:mb-[72px] sm:pt-12",
             children: [
               /* @__PURE__ */ jsx("h2", { className: H2, children: block.title }),
-              block.paragraphs?.length ? /* @__PURE__ */ jsx("div", { className: cx$6("mt-5 max-w-[42rem] space-y-4", isOutcome && "text-[#ededf3]"), children: block.paragraphs.map((p, idx) => /* @__PURE__ */ jsx("p", { className: BODY, children: /* @__PURE__ */ jsx(RichText, { text: p }) }, idx)) }) : null,
+              block.paragraphs?.length ? /* @__PURE__ */ jsx("div", { className: cx$5("mt-5 max-w-[42rem] space-y-4", isOutcome && "text-[#ededf3]"), children: block.paragraphs.map((p, idx) => /* @__PURE__ */ jsx("p", { className: BODY, children: /* @__PURE__ */ jsx(RichText, { text: p }) }, idx)) }) : null,
               block.bullets?.length ? /* @__PURE__ */ jsx(FeatureGrid, { items: block.bullets }) : null
             ]
           },
@@ -8702,7 +10264,7 @@ function OutcomesBlock({
   return /* @__PURE__ */ jsxs("section", { id: "outcomes", className: "mt-4 scroll-mt-28 sm:mt-6", children: [
     /* @__PURE__ */ jsx("h2", { className: H2, children: isRu ? "Что получили" : "Outcomes" }),
     /* @__PURE__ */ jsx("ol", { className: "mt-8 list-none space-y-0 divide-y divide-white/[0.06]", children: items.map((item, idx) => /* @__PURE__ */ jsxs("li", { className: "flex gap-5 py-5 first:pt-0 last:pb-0 sm:gap-8", children: [
-      /* @__PURE__ */ jsx("span", { className: "font-hero w-8 shrink-0 text-[20px] font-[600] tabular-nums tracking-[-0.03em] text-[#8a8a8e]", children: String(idx + 1).padStart(2, "0") }),
+      /* @__PURE__ */ jsx("span", { className: "font-hero w-8 shrink-0 text-[18px] font-normal tabular-nums tracking-[0.02em] text-[#8a8a8e]", children: String(idx + 1).padStart(2, "0") }),
       /* @__PURE__ */ jsx("p", { className: "min-w-0 text-[17px] font-[400] leading-[1.45] text-[#c3c3cc] sm:text-[18px]", children: /* @__PURE__ */ jsx(RichText, { text: item }) })
     ] }, `${idx}-${item.slice(0, 32)}`)) })
   ] });
@@ -8722,7 +10284,7 @@ function MoreLikeThis({
       "h2",
       {
         id: "more-like-this",
-        className: "mb-8 font-hero text-[clamp(1.5rem,2.8vw,2rem)] font-[600] tracking-[-0.03em] text-[#ededf3] sm:mb-10",
+        className: "mb-8 font-hero text-[clamp(1.35rem,2.4vw,1.75rem)] font-normal uppercase tracking-[0.02em] text-[#ededf3] sm:mb-10",
         children: title
       }
     ),
@@ -8747,7 +10309,7 @@ function MoreProjectCard({ project, isRu }) {
     /* @__PURE__ */ jsxs("div", { className: "mt-4 flex items-start gap-3", children: [
       /* @__PURE__ */ jsx("div", { className: "mt-0.5 grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-[#1c1c1f]", children: /* @__PURE__ */ jsx("img", { src: cover, alt: "", className: "h-full w-full object-cover", draggable: false }) }),
       /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-        /* @__PURE__ */ jsx("p", { className: "text-[16px] font-[600] tracking-normal text-[#ededf3] transition group-hover:text-white", children: project.title }),
+        /* @__PURE__ */ jsx("p", { className: "text-[15px] font-medium tracking-normal text-[#ededf3] transition group-hover:text-white", children: project.title }),
         /* @__PURE__ */ jsx("p", { className: "mt-1 line-clamp-2 text-[13px] leading-[1.45] tracking-normal text-[#8a8a8e]", children: subtitle })
       ] })
     ] })
@@ -8854,7 +10416,7 @@ function ProjectDetailPage() {
                   {
                     src: coverSrc,
                     alt: `${project.title} — ${isRu ? "обложка кейса" : "case cover"}`,
-                    className: "absolute inset-0 h-full w-full object-cover object-center",
+                    className: "absolute inset-0 h-full w-full object-cover object-top",
                     draggable: false,
                     decoding: "async",
                     fetchPriority: "high"
@@ -8864,8 +10426,8 @@ function ProjectDetailPage() {
               ] }),
               /* @__PURE__ */ jsxs("div", { className: "order-1 min-w-0 lg:order-2 lg:pt-1", children: [
                 /* @__PURE__ */ jsxs("header", { className: "space-y-4", children: [
-                  /* @__PURE__ */ jsx("h1", { className: "font-hero text-[clamp(2.15rem,5vw,3.35rem)] font-[600] tracking-[-0.035em] leading-[1.02] text-[#ededf3]", children: project.title }),
-                  /* @__PURE__ */ jsx("p", { className: cx$6("max-w-[36ch]", BODY), children: mood ?? subtitle }),
+                  /* @__PURE__ */ jsx("h1", { className: "font-hero text-[clamp(1.85rem,4.2vw,2.75rem)] font-normal uppercase tracking-[0.02em] leading-[1.02] text-[#ededf3]", children: project.title }),
+                  /* @__PURE__ */ jsx("p", { className: cx$5("max-w-[36ch]", BODY), children: mood ?? subtitle }),
                   mood ? /* @__PURE__ */ jsx("p", { className: "max-w-[40ch] text-[14px] leading-relaxed text-[#8a8a8e]", children: subtitle }) : null
                 ] }),
                 /* @__PURE__ */ jsxs("dl", { className: "mt-8", children: [
@@ -8886,7 +10448,7 @@ function ProjectDetailPage() {
                     /* @__PURE__ */ jsx(
                       "span",
                       {
-                        className: cx$6(
+                        className: cx$5(
                           "h-1.5 w-1.5 shrink-0 rounded-full",
                           wip ? "bg-amber-400/90" : "bg-emerald-400/90"
                         )
@@ -8905,16 +10467,16 @@ function ProjectDetailPage() {
                       href: project.domain,
                       target: "_blank",
                       rel: "noopener noreferrer",
-                      className: "inline-flex h-[52px] w-full items-center justify-center rounded-full bg-[#FF6B2C] px-6 text-[15px] font-[600] tracking-normal text-white transition hover:bg-[#ff7d45]",
+                      className: "inline-flex h-[52px] w-full items-center justify-center rounded-full bg-[#FF6B2C] px-6 text-[15px] font-medium tracking-normal text-white transition hover:bg-[#ff7d45]",
                       children: openSiteLabel
                     }
-                  ) : /* @__PURE__ */ jsx("div", { className: "inline-flex h-[52px] w-full items-center justify-center rounded-full bg-[#1c1c1f] px-6 text-[15px] font-[600] tracking-normal text-[#8a8a8e]", children: websiteSoonLabel }),
+                  ) : /* @__PURE__ */ jsx("div", { className: "inline-flex h-[52px] w-full items-center justify-center rounded-full bg-[#1c1c1f] px-6 text-[15px] font-medium tracking-normal text-[#8a8a8e]", children: websiteSoonLabel }),
                   /* @__PURE__ */ jsx(
                     LeadCTAButton,
                     {
                       source: "project_page",
                       variant: "plain",
-                      className: "!h-auto !min-h-0 w-full !rounded-none !border-0 !bg-transparent !px-0 !py-1 !text-[15px] !font-[600] !tracking-normal !text-[#ededf3] hover:!bg-transparent hover:!text-white/75",
+                      className: "!h-auto !min-h-0 w-full !rounded-none !border-0 !bg-transparent !px-0 !py-1 !text-[15px] !font-medium !tracking-normal !text-[#ededf3] hover:!bg-transparent hover:!text-white/75",
                       children: leadFormCopy(lang).ctaDiscuss
                     }
                   ),
@@ -9005,7 +10567,7 @@ function ProjectDetailPage() {
                       "”"
                     ] }),
                     /* @__PURE__ */ jsxs("figcaption", { className: "mt-5 text-[13px] tracking-normal text-[#8a8a8e]", children: [
-                      /* @__PURE__ */ jsx("span", { className: "font-[600] text-[#ededf3]", children: project.testimonial.name }),
+                      /* @__PURE__ */ jsx("span", { className: "font-medium text-[#ededf3]", children: project.testimonial.name }),
                       /* @__PURE__ */ jsx("span", { className: "mx-1.5 text-white/20", children: "·" }),
                       project.testimonial.role
                     ] })
@@ -9022,7 +10584,7 @@ function ProjectDetailPage() {
 }
 const ORANGE = "#FF9A3D";
 const ORANGE2 = "#FF6A1A";
-function cx$5(...a) {
+function cx$4(...a) {
   return a.filter(Boolean).join(" ");
 }
 function clamp(n, a, b) {
@@ -9104,7 +10666,7 @@ function LangChip({ item }) {
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$5(
+      className: cx$4(
         "select-none",
         "inline-flex max-w-[11rem] items-center gap-2 sm:gap-2.5",
         "rounded-full px-3 py-1.5 sm:px-3.5 sm:py-2",
@@ -9132,7 +10694,7 @@ function OrbitRing(props) {
     marginLeft: -radius,
     marginTop: -radius
   });
-  const animStyle2 = s({ animationDuration: `${duration}s` });
+  const animStyle = s({ animationDuration: `${duration}s` });
   return /* @__PURE__ */ jsxs(
     "div",
     {
@@ -9142,12 +10704,12 @@ function OrbitRing(props) {
       children: [
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-full border border-white/8 opacity-60" }),
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-full border border-[#FF9A3D]/10 opacity-80 [mask-image:radial-gradient(transparent_52%,black_64%)] [-webkit-mask-image:radial-gradient(transparent_52%,black_64%)]" }),
-        /* @__PURE__ */ jsx("div", { className: cx$5("absolute inset-0 will-change-transform", reverse ? "orbit-rev" : "orbit"), style: animStyle2, children: items.map((it, i) => {
+        /* @__PURE__ */ jsx("div", { className: cx$4("absolute inset-0 will-change-transform", reverse ? "orbit-rev" : "orbit"), style: animStyle, children: items.map((it, i) => {
           const ang = offsetDeg + i * step + (i % 2 ? 8 : -5);
           const posStyle = s({
             transform: `translate(-50%,-50%) rotate(${ang}deg) translateX(${radius}px) rotate(${-ang}deg)`
           });
-          return /* @__PURE__ */ jsx("div", { className: "absolute left-1/2 top-1/2", style: posStyle, children: /* @__PURE__ */ jsx("div", { className: cx$5(reverse ? "counter-rev" : "counter"), style: animStyle2, children: /* @__PURE__ */ jsx(LangChip, { item: it }) }) }, `${it.label}-${i}`);
+          return /* @__PURE__ */ jsx("div", { className: "absolute left-1/2 top-1/2", style: posStyle, children: /* @__PURE__ */ jsx("div", { className: cx$4(reverse ? "counter-rev" : "counter"), style: animStyle, children: /* @__PURE__ */ jsx(LangChip, { item: it }) }) }, `${it.label}-${i}`);
         }) })
       ]
     }
@@ -9194,7 +10756,7 @@ function SunContacts({ size }) {
   const title = isRu ? "Контакты" : "Contacts";
   const leadCopy = leadFormCopy(lang);
   const botCta = isRu ? "Telegram-бот" : "Telegram bot";
-  const contactRowClass = cx$5(
+  const contactRowClass = cx$4(
     "group inline-flex w-full items-center gap-3.5 rounded-xl px-4 py-2.5",
     "bg-white/[0.055] hover:bg-white/[0.085] transition duration-200",
     "shadow-[0_10px_40px_rgba(0,0,0,0.28)]",
@@ -9208,6 +10770,8 @@ function SunContacts({ size }) {
     /* @__PURE__ */ jsx("div", { className: "absolute inset-0 grid place-items-center p-6", children: /* @__PURE__ */ jsxs("div", { className: "w-full max-w-[280px] text-center", children: [
       /* @__PURE__ */ jsx("div", { className: "text-[11px] tracking-[0.22em] text-white/45", children: "TIVONIX" }),
       /* @__PURE__ */ jsx("h1", { className: "mt-2 text-[22px] sm:text-[24px] font-[820] tracking-tight text-white/92 leading-[1.1]", children: title }),
+      /* @__PURE__ */ jsx("p", { className: "mt-2 text-[12.5px] leading-snug text-white/50", children: isRu ? "Данила Титовец · ответ в течение рабочего дня" : "Danila Titovets · reply within a business day" }),
+      /* @__PURE__ */ jsx("p", { className: "mt-1.5 text-[12px] leading-snug text-white/40", children: isRu ? "Опишите задачу — пришлём план, срок и диапазон стоимости." : "Describe the task — we’ll send a plan, timeline and cost range." }),
       /* @__PURE__ */ jsxs("div", { className: "mt-6", children: [
         /* @__PURE__ */ jsxs("div", { className: "grid gap-2 relative z-20 pointer-events-auto text-left", children: [
           /* @__PURE__ */ jsxs(
@@ -9218,7 +10782,7 @@ function SunContacts({ size }) {
               rel: "noopener noreferrer",
               className: contactRowClass,
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx$5(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconTG, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$4(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconTG, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Telegram" })
               ]
             }
@@ -9229,9 +10793,9 @@ function SunContacts({ size }) {
               href: "https://mail.google.com/mail/?view=cm&fs=1&to=tivoonix@gmail.com&su=%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82%20(SaaS%2FMVP)",
               target: "_blank",
               rel: "noopener noreferrer",
-              className: cx$5(contactRowClass, "hidden sm:inline-flex"),
+              className: cx$4(contactRowClass, "hidden sm:inline-flex"),
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx$5(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconMail, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$4(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconMail, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Email" })
               ]
             }
@@ -9244,7 +10808,7 @@ function SunContacts({ size }) {
               rel: "noopener noreferrer",
               className: contactRowClass,
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx$5(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconInstagram, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$4(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconInstagram, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Instagram" })
               ]
             }
@@ -9266,7 +10830,7 @@ function SunContacts({ size }) {
               href: TG_BOT_URL,
               target: "_blank",
               rel: "noopener noreferrer",
-              className: cx$5(
+              className: cx$4(
                 "inline-flex h-10 w-full items-center justify-center rounded-xl px-5",
                 "text-[13px] font-[700] text-white/80 whitespace-nowrap",
                 "border border-white/15 bg-white/[0.05] hover:bg-white/[0.09] transition duration-200",
@@ -9904,7 +11468,7 @@ function AutomationEcosystemMap({
         }
       ),
       /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-0 z-[4]", children: resolvedIcons.map((item, index) => {
-        const Icon2 = item.Icon;
+        const Icon = item.Icon;
         return /* @__PURE__ */ jsx(
           "div",
           {
@@ -9916,7 +11480,7 @@ function AutomationEcosystemMap({
               "--duration": `${6.6 + index % 5 * 0.45}s`,
               "--delay": `${item.delay}s`
             },
-            children: /* @__PURE__ */ jsx(Icon2, { size: item.iconSize, color: item.color, "aria-hidden": true })
+            children: /* @__PURE__ */ jsx(Icon, { size: item.iconSize, color: item.color, "aria-hidden": true })
           },
           `int-${index}`
         );
@@ -10832,7 +12396,7 @@ function AutomationHero({ t }) {
 }
 function WhyBenefitCardSmoke({
   seed,
-  icon: Icon2,
+  icon: Icon,
   iconColor
 }) {
   const ax = 48 + seed % 3 * 10;
@@ -10850,7 +12414,7 @@ function WhyBenefitCardSmoke({
           boxShadow: `0 18px 52px rgb(0 0 0 / 0.5), 0 0 48px ${iconColor}`
         },
         children: /* @__PURE__ */ jsx(
-          Icon2,
+          Icon,
           {
             className: "h-[68px] w-[68px] sm:h-20 sm:w-20",
             style: { color: iconColor },
@@ -11377,42 +12941,39 @@ function AutomationBusinessPage() {
     /* @__PURE__ */ jsx(Footer, {})
   ] }) });
 }
-function cx$4(...parts) {
+function cx$3(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function PricingFAQSection() {
   const { lang } = useLang();
   const copy = pricingCopy(lang);
-  const [openId, setOpenId] = useState(copy.faq.items[0]?.id ?? null);
-  return /* @__PURE__ */ jsx(Reveal$1, { delay: 160, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs("div", { className: "pricing-faq border border-white/[0.1] bg-black", children: [
-    /* @__PURE__ */ jsx("div", { className: "border-b border-white/[0.08] px-4 py-4 sm:px-5", children: /* @__PURE__ */ jsx("h3", { className: "font-hero text-[1.15rem] font-semibold tracking-[-0.02em] text-white sm:text-[1.25rem]", children: copy.faq.title }) }),
+  const [openId, setOpenId] = useState(null);
+  return /* @__PURE__ */ jsx(Reveal$1, { delay: 160, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs("div", { className: "pricing-faq", children: [
+    /* @__PURE__ */ jsx("div", { className: "pricing-faq__head", children: /* @__PURE__ */ jsx("h3", { className: "font-hero text-[clamp(1.35rem,2.8vw,1.75rem)] font-normal uppercase tracking-[0.02em] text-white", children: copy.faq.title }) }),
     /* @__PURE__ */ jsx("div", { children: copy.faq.items.map((item) => {
       const open = openId === item.id;
       return /* @__PURE__ */ jsxs(
         "div",
         {
-          className: cx$4(
-            "border-b border-white/[0.08] last:border-b-0",
-            open && "bg-white/[0.035]"
-          ),
+          className: cx$3("pricing-faq__item", open && "pricing-faq__item--open"),
           children: [
             /* @__PURE__ */ jsxs(
               "button",
               {
                 type: "button",
                 onClick: () => setOpenId((prev) => prev === item.id ? null : item.id),
-                className: cx$4(
-                  "flex w-full items-center justify-between gap-4 px-4 text-left sm:px-5",
-                  open ? "pb-3 pt-4" : "py-4"
+                className: cx$3(
+                  "flex w-full items-center justify-between gap-4 px-5 text-left sm:px-8",
+                  open ? "pb-3 pt-5" : "py-5"
                 ),
                 "aria-expanded": open,
                 children: [
                   /* @__PURE__ */ jsx(
                     "span",
                     {
-                      className: cx$4(
-                        "text-[14px] font-semibold",
-                        open ? "text-white" : "text-white/92"
+                      className: cx$3(
+                        "font-sans text-[14px] font-medium sm:text-[15px]",
+                        open ? "text-white" : "text-white/88"
                       ),
                       children: item.q
                     }
@@ -11421,9 +12982,9 @@ function PricingFAQSection() {
                     ChevronDown,
                     {
                       size: 16,
-                      className: cx$4(
+                      className: cx$3(
                         "shrink-0 transition",
-                        open ? "rotate-180 text-[#FF9A3D]" : "text-white/45"
+                        open ? "rotate-180 text-[var(--color-ember)]" : "text-white/45"
                       ),
                       "aria-hidden": true
                     }
@@ -11431,7 +12992,7 @@ function PricingFAQSection() {
                 ]
               }
             ),
-            open ? /* @__PURE__ */ jsx("div", { className: "px-4 pb-5 sm:px-5", children: /* @__PURE__ */ jsx("p", { className: "max-w-[62ch] border-l-2 border-[#FF9A3D]/55 pl-3.5 text-[14px] leading-[1.7] text-white/82", children: item.a }) }) : null
+            open ? /* @__PURE__ */ jsx("div", { className: "px-5 pb-6 sm:px-8", children: /* @__PURE__ */ jsx("p", { className: "pricing-faq__answer max-w-[62ch] font-sans text-[14px] font-medium leading-[1.7] text-white/72", children: item.a }) }) : null
           ]
         },
         item.id
@@ -11446,7 +13007,7 @@ const SCOPE_LEVEL = {
   custom: 8
 };
 const SEGMENTS = 8;
-function cx$3(...parts) {
+function cx$2(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function PricingPlanScopeGrid({ onPlanAction }) {
@@ -11464,7 +13025,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
         {
           type: "button",
           onClick: () => onPlanAction(planId),
-          className: cx$3(
+          className: cx$2(
             "pricing-plan-scope__col",
             isGrowth && "pricing-plan-scope__col--growth"
           ),
@@ -11473,9 +13034,9 @@ function PricingPlanScopeGrid({ onPlanAction }) {
               /* @__PURE__ */ jsx(
                 "span",
                 {
-                  className: cx$3(
-                    "pricing-plan-scope__name font-hero font-semibold tracking-[-0.02em]",
-                    isGrowth ? "text-[#FF9A3D]" : "text-white"
+                  className: cx$2(
+                    "pricing-plan-scope__name font-hero font-normal uppercase tracking-[0.02em]",
+                    isGrowth ? "text-[var(--color-ember)]" : "text-white"
                   ),
                   children: planCopy.name
                 }
@@ -11483,30 +13044,22 @@ function PricingPlanScopeGrid({ onPlanAction }) {
               /* @__PURE__ */ jsx(
                 "span",
                 {
-                  className: cx$3(
-                    "pricing-plan-scope__price-old text-[10px] font-medium line-through",
+                  className: cx$2(
+                    "pricing-plan-scope__price-old font-sans text-[10px] font-medium line-through",
                     planCopy.priceOriginal ? "text-white/35" : "text-transparent"
                   ),
                   "aria-hidden": !planCopy.priceOriginal,
                   children: planCopy.priceOriginal ?? " "
                 }
               ),
-              /* @__PURE__ */ jsx(
-                "span",
-                {
-                  className: cx$3(
-                    "pricing-plan-scope__price font-hero text-[13px] font-semibold text-[#FF9A3D]"
-                  ),
-                  children: planCopy.price
-                }
-              )
+              /* @__PURE__ */ jsx("span", { className: "pricing-plan-scope__price font-hero text-[13px] font-normal tracking-[0.02em] text-[var(--color-ember)] normal-case", children: planCopy.price })
             ] }),
             /* @__PURE__ */ jsx("div", { className: "pricing-plan-scope__bars", "aria-hidden": true, children: Array.from({ length: SEGMENTS }).map((_, index) => {
               const on = index < filled;
               return /* @__PURE__ */ jsx(
                 "span",
                 {
-                  className: cx$3("pricing-plan-scope__bar", on && "pricing-plan-scope__bar--on")
+                  className: cx$2("pricing-plan-scope__bar", on && "pricing-plan-scope__bar--on")
                 },
                 index
               );
@@ -11519,7 +13072,15 @@ function PricingPlanScopeGrid({ onPlanAction }) {
   ] });
 }
 const COMPARE_LOGO = "/images/tivonix-logo-white.webp";
-function cx$2(...parts) {
+const EMBER = "#fc5000";
+const PLANS_IMG = `/images/${encodeURIComponent("планы")}`;
+const PLAN_IMAGES = {
+  start: `${PLANS_IMG}/1.webp`,
+  growth: `${PLANS_IMG}/2.webp`,
+  product: `${PLANS_IMG}/3.webp`,
+  custom: `${PLANS_IMG}/4.webp`
+};
+function cx$1(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function PlanCtaButton({
@@ -11534,13 +13095,10 @@ function PlanCtaButton({
     {
       type: "button",
       onClick,
-      className: cx$2(
-        "inline-flex w-full items-center justify-center rounded-full border-0 font-bold tracking-[-0.015em] transition duration-200",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-        "active:scale-[0.98]",
-        compact ? "h-9 text-[12px] sm:h-10 sm:text-[13px]" : "h-11 px-7 text-[14px]",
-        featured ? "bg-[#FF9A3D] text-black hover:bg-[#FFB05C]" : "bg-white text-black hover:bg-white/92",
-        className
+      className: ctaClass$1(
+        featured ? "primary" : "white",
+        compact ? "md" : "md",
+        cx$1("w-full", compact && "h-9 text-[12px] sm:h-10 sm:text-[13px]", className)
       ),
       children
     }
@@ -11552,13 +13110,13 @@ function ComparisonValue({
   textLabels
 }) {
   if (cell.kind === "yes") {
-    return /* @__PURE__ */ jsx("span", { className: "inline-flex items-center justify-center text-[#FF9A3D]", "aria-label": labels.yes, children: /* @__PURE__ */ jsx(Check, { size: 15, strokeWidth: 2.25, "aria-hidden": true }) });
+    return /* @__PURE__ */ jsx("span", { className: "inline-flex items-center justify-center text-[var(--color-ember)]", "aria-label": labels.yes, children: /* @__PURE__ */ jsx(Check, { size: 15, strokeWidth: 2.25, "aria-hidden": true }) });
   }
   if (cell.kind === "no") {
     return /* @__PURE__ */ jsx("span", { className: "text-white/28", "aria-label": labels.no, children: /* @__PURE__ */ jsx(Minus, { size: 15, strokeWidth: 1.75, "aria-hidden": true }) });
   }
   const label = cell.kind === "text" && cell.textKey ? textLabels[cell.textKey] : labels[cell.kind];
-  return /* @__PURE__ */ jsx("span", { className: "text-[11px] font-medium text-white/50 sm:text-[12px]", children: label });
+  return /* @__PURE__ */ jsx("span", { className: "font-sans text-[11px] font-medium text-white/50 sm:text-[12px]", children: label });
 }
 function ComparePlanHead({
   planId,
@@ -11574,7 +13132,7 @@ function ComparePlanHead({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$2(
+      className: cx$1(
         layout === "column" ? "pricing-compare__plan-head" : "pricing-compare__mobile-plan",
         featured && "pricing-compare__plan-head--featured"
       ),
@@ -11582,10 +13140,10 @@ function ComparePlanHead({
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: cx$2(
-              "pricing-compare__plan-name font-hero font-semibold tracking-[-0.02em]",
+            className: cx$1(
+              "pricing-compare__plan-name font-hero font-normal uppercase tracking-[0.02em]",
               layout === "column" ? "text-[15px] sm:text-[16px]" : "text-[14px]",
-              featured ? "text-[#FF9A3D]" : "text-white"
+              featured ? "text-[var(--color-ember)]" : "text-white"
             ),
             children: name
           }
@@ -11593,8 +13151,8 @@ function ComparePlanHead({
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: cx$2(
-              "pricing-compare__plan-original text-[11px] font-medium",
+            className: cx$1(
+              "pricing-compare__plan-original font-sans text-[11px] font-medium",
               priceOriginal ? "text-white/35 line-through" : "text-transparent"
             ),
             "aria-hidden": !priceOriginal,
@@ -11604,10 +13162,10 @@ function ComparePlanHead({
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: cx$2(
-              "pricing-compare__plan-price font-hero font-semibold leading-none tracking-[-0.02em]",
+            className: cx$1(
+              "pricing-compare__plan-price font-hero font-normal leading-none tracking-[0.02em] normal-case",
               layout === "column" ? "text-[14px] sm:text-[15px]" : "text-[13px]",
-              isCustom ? "text-white" : "text-[#FF9A3D]"
+              isCustom ? "text-white" : "text-[var(--color-ember)]"
             ),
             children: price
           }
@@ -11619,37 +13177,43 @@ function ComparePlanHead({
 }
 function PlanPrice({ price, priceOriginal }) {
   const hasOriginal = Boolean(priceOriginal);
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx(
-      "p",
-      {
-        className: cx$2(
-          "pricing-plan-card__price-original text-[13px] font-medium leading-[1.125]",
-          hasOriginal ? "text-white/38 line-through" : "text-transparent"
+  const match = price.match(/^(от|from)\s+(.+)$/i);
+  const from = match?.[1];
+  const amount = match?.[2];
+  return /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__price-block", children: /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: cx$1(
+        "pricing-plan-card__price-value",
+        from && amount ? "pricing-plan-card__price-value--stack" : "pricing-plan-card__price-value--solo"
+      ),
+      children: [
+        /* @__PURE__ */ jsx(
+          "p",
+          {
+            className: cx$1(
+              "pricing-plan-card__price-original",
+              hasOriginal ? "is-visible" : "is-empty"
+            ),
+            "aria-hidden": !hasOriginal,
+            children: priceOriginal ?? " "
+          }
         ),
-        "aria-hidden": !hasOriginal,
-        children: priceOriginal ?? " "
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      "p",
-      {
-        className: cx$2(
-          "pricing-plan-card__price-value mt-1 font-hero text-[clamp(1.65rem,2.2vw,2rem)] font-semibold leading-[1.05] tracking-[-0.03em]",
-          hasOriginal ? "text-[#FF9A3D]" : "text-white"
-        ),
-        children: price
-      }
-    )
-  ] });
+        from && amount ? /* @__PURE__ */ jsxs(Fragment, { children: [
+          /* @__PURE__ */ jsx("span", { className: "pricing-plan-card__price-from", children: from }),
+          /* @__PURE__ */ jsx("span", { className: "pricing-plan-card__price-amount", children: amount })
+        ] }) : /* @__PURE__ */ jsx("span", { className: "pricing-plan-card__price-amount pricing-plan-card__price-amount--solo", children: price })
+      ]
+    }
+  ) });
 }
 function CompactPlanPrice({ price, priceOriginal }) {
   if (!priceOriginal) {
-    return /* @__PURE__ */ jsx("p", { className: "mt-4 font-hero text-[1.45rem] font-semibold tracking-[-0.03em] text-white", children: price });
+    return /* @__PURE__ */ jsx("p", { className: "mt-4 font-hero text-[1.55rem] font-normal tracking-[0.02em] text-white normal-case", children: price });
   }
   return /* @__PURE__ */ jsxs("div", { className: "mt-4", children: [
-    /* @__PURE__ */ jsx("p", { className: "text-[12px] font-medium text-white/38 line-through", children: priceOriginal }),
-    /* @__PURE__ */ jsx("p", { className: "mt-0.5 font-hero text-[1.45rem] font-semibold tracking-[-0.03em] text-[#FF9A3D]", children: price })
+    /* @__PURE__ */ jsx("p", { className: "font-sans text-[12px] font-semibold text-white/75 line-through", children: priceOriginal }),
+    /* @__PURE__ */ jsx("p", { className: "mt-0.5 font-hero text-[1.55rem] font-normal tracking-[0.02em] text-white normal-case", children: price })
   ] });
 }
 function PlanCard({
@@ -11668,46 +13232,56 @@ function PlanCard({
   return /* @__PURE__ */ jsxs(
     "article",
     {
-      className: cx$2(
-        "pricing-plan-card flex h-full flex-col",
+      className: cx$1(
+        "pricing-plan-card",
         highlight && "pricing-plan-card--highlight",
         planId === "growth" && "pricing-plan-card--growth",
         planId === "product" && "pricing-plan-card--product"
       ),
       children: [
-        /* @__PURE__ */ jsxs("div", { className: "pricing-plan-card__body flex flex-col p-5 sm:p-6", children: [
+        /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__media", "aria-hidden": true, children: /* @__PURE__ */ jsx(
+          "img",
+          {
+            src: PLAN_IMAGES[planId],
+            alt: "",
+            className: "pricing-plan-card__bg",
+            loading: "lazy",
+            decoding: "async"
+          }
+        ) }),
+        /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__veil", "aria-hidden": true }),
+        /* @__PURE__ */ jsxs("div", { className: "pricing-plan-card__body", children: [
           /* @__PURE__ */ jsxs("div", { className: "pricing-plan-card__head", children: [
-            /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__badge-slot", children: badge ? /* @__PURE__ */ jsx("span", { className: "inline-flex w-fit whitespace-nowrap rounded-full bg-[#FF9A3D]/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#FF9A3D]", children: badge }) : null }),
+            /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__badge-slot", children: badge ? /* @__PURE__ */ jsx("span", { className: "pricing-plan-card__badge", children: badge }) : /* @__PURE__ */ jsx("span", { className: "pricing-plan-card__badge is-empty", "aria-hidden": true, children: " " }) }),
             /* @__PURE__ */ jsx(
               "h3",
               {
-                className: cx$2(
-                  "pricing-plan-card__name font-hero text-[1.35rem] font-semibold leading-[1.15] tracking-[-0.03em]",
-                  planId === "growth" ? "text-[#FF9A3D]" : "text-white"
+                className: cx$1(
+                  "pricing-plan-card__name"
                 ),
                 children: name
               }
             ),
-            /* @__PURE__ */ jsx(
-              "p",
-              {
-                className: cx$2(
-                  "pricing-plan-card__tagline mt-1 text-[13px] leading-[1.35]",
-                  planId === "growth" ? "text-[#FF9A3D]/80" : "text-white/48"
-                ),
-                children: tagline
-              }
-            ),
-            /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__price-slot", children: /* @__PURE__ */ jsx(PlanPrice, { price, priceOriginal }) }),
-            /* @__PURE__ */ jsx("p", { className: "pricing-plan-card__desc mt-4 text-[13px] leading-[1.6] text-white/52", children: desc })
+            /* @__PURE__ */ jsx("p", { className: "pricing-plan-card__tagline", children: tagline }),
+            /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__price-slot", children: /* @__PURE__ */ jsx(PlanPrice, { price, priceOriginal }) })
           ] }),
-          /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__includes", children: /* @__PURE__ */ jsx("ul", { className: "pricing-plan-card__includes-list space-y-2", children: includes.map((item) => /* @__PURE__ */ jsxs("li", { className: "pricing-plan-card__includes-item flex items-start gap-2.5 text-[12.5px] leading-[1.5] text-white/68", children: [
-            /* @__PURE__ */ jsx(Check, { size: 13, className: "mt-0.5 shrink-0 text-[#FF9A3D]", strokeWidth: 2.25, "aria-hidden": true }),
-            /* @__PURE__ */ jsx("span", { children: item })
-          ] }, item)) }) }),
-          /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__spacer flex-1", "aria-hidden": true })
-        ] }),
-        /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__footer border-t border-white/[0.08] p-5 sm:p-6", children: /* @__PURE__ */ jsx(PlanCtaButton, { featured: planId === "growth", onClick: onCta, children: cta }) })
+          /* @__PURE__ */ jsxs("div", { className: "pricing-plan-card__details", children: [
+            /* @__PURE__ */ jsx("p", { className: "pricing-plan-card__desc", children: desc }),
+            /* @__PURE__ */ jsx("ul", { className: "pricing-plan-card__includes-list", children: includes.map((item) => /* @__PURE__ */ jsxs("li", { className: "pricing-plan-card__includes-item", children: [
+              /* @__PURE__ */ jsx(
+                Check,
+                {
+                  size: 13,
+                  className: "pricing-plan-card__check",
+                  strokeWidth: 2.25,
+                  "aria-hidden": true
+                }
+              ),
+              /* @__PURE__ */ jsx("span", { children: item })
+            ] }, item)) }),
+            /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__footer", children: /* @__PURE__ */ jsx(PlanCtaButton, { featured: planId === "growth", onClick: onCta, children: cta }) })
+          ] })
+        ] })
       ]
     }
   );
@@ -11726,28 +13300,21 @@ function CompactPlanCard({
   return /* @__PURE__ */ jsxs(
     "article",
     {
-      className: cx$2(
+      className: cx$1(
         "pricing-footer-card flex h-full flex-col",
         highlight && "pricing-footer-card--highlight",
         planId === "growth" && "pricing-footer-card--growth"
       ),
       children: [
-        /* @__PURE__ */ jsxs("div", { className: "pricing-footer-card__body flex flex-col p-5 sm:p-6", children: [
+        /* @__PURE__ */ jsxs("div", { className: "pricing-footer-card__body flex flex-col p-6 sm:p-8", children: [
           /* @__PURE__ */ jsxs("div", { className: "pricing-footer-card__head", children: [
-            /* @__PURE__ */ jsx("h4", { className: "font-hero text-[1.1rem] font-semibold tracking-[-0.02em] text-white", children: name }),
-            /* @__PURE__ */ jsx("p", { className: "mt-1.5 text-[12.5px] leading-relaxed text-white/48", children: shortDesc }),
+            /* @__PURE__ */ jsx("h4", { className: "font-hero text-[1.25rem] font-normal uppercase tracking-[0.02em] text-white", children: name }),
+            /* @__PURE__ */ jsx("p", { className: "mt-1.5 font-sans text-[12.5px] font-medium leading-relaxed text-white/48", children: shortDesc }),
             /* @__PURE__ */ jsx("div", { className: "pricing-footer-card__price-slot", children: /* @__PURE__ */ jsx(CompactPlanPrice, { price, priceOriginal }) })
           ] }),
-          /* @__PURE__ */ jsx("div", { className: "pricing-footer-card__chips mt-auto pt-4", children: /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-2", children: chips.map((chip) => /* @__PURE__ */ jsx(
-            "span",
-            {
-              className: "rounded-full border border-white/[0.12] bg-white/[0.03] px-2.5 py-1 text-[10px] font-medium text-white/58",
-              children: chip
-            },
-            chip
-          )) }) })
+          /* @__PURE__ */ jsx("div", { className: "pricing-footer-card__chips mt-auto pt-4", children: /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-2", children: chips.map((chip) => /* @__PURE__ */ jsx("span", { className: "pricing-footer-card__chip", children: chip }, chip)) }) })
         ] }),
-        /* @__PURE__ */ jsx("div", { className: "pricing-footer-card__footer border-t border-white/[0.08] p-5 sm:p-6", children: /* @__PURE__ */ jsx(PlanCtaButton, { featured: planId === "growth", compact: true, onClick: onCta, children: compactCta }) })
+        /* @__PURE__ */ jsx("div", { className: "pricing-footer-card__footer !pt-0 p-6 sm:p-8", children: /* @__PURE__ */ jsx(PlanCtaButton, { featured: planId === "growth", compact: true, onClick: onCta, children: compactCta }) })
       ]
     }
   );
@@ -11780,16 +13347,23 @@ function PricingPlansSection({ className }) {
     Section,
     {
       id: "pricing",
-      className: cx$2(
+      className: cx$1(
         "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-10 sm:py-20 lg:py-24",
         className
       ),
       children: /* @__PURE__ */ jsxs(Container, { children: [
         /* @__PURE__ */ jsxs(Reveal$1, { className: "mx-auto max-w-[48rem] text-center", children: [
-          /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.85rem,4.2vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white", children: copy.title }),
-          /* @__PURE__ */ jsxs("div", { className: "mx-auto mt-3 flex flex-wrap items-baseline justify-center gap-x-2.5 gap-y-1 sm:mt-4", children: [
-            /* @__PURE__ */ jsx("span", { className: "font-hero shrink-0 text-[clamp(1.85rem,3.8vw,2.5rem)] font-bold leading-none tracking-[-0.03em] text-[#FF9A3D]", children: copy.launchDiscount.percent }),
-            /* @__PURE__ */ jsx("span", { className: "max-w-[42ch] text-center text-[11px] leading-snug text-[#FF9A3D]/72 sm:text-left sm:text-[12px]", children: copy.launchDiscount.note })
+          /* @__PURE__ */ jsx("h1", { className: "font-hero text-[clamp(2rem,5vw,3.25rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white text-balance", children: copy.title }),
+          /* @__PURE__ */ jsxs("div", { className: "mx-auto mt-4 flex flex-wrap items-baseline justify-center gap-x-2.5 gap-y-1 sm:mt-5", children: [
+            /* @__PURE__ */ jsx(
+              "span",
+              {
+                className: "font-hero shrink-0 text-[clamp(1.85rem,3.8vw,2.5rem)] font-normal uppercase leading-none tracking-[0.02em]",
+                style: { color: EMBER },
+                children: copy.launchDiscount.percent
+              }
+            ),
+            /* @__PURE__ */ jsx("span", { className: "max-w-[42ch] text-center font-sans text-[12px] font-medium leading-snug text-[var(--color-ember)]/75 sm:text-left sm:text-[13px]", children: copy.launchDiscount.note })
           ] })
         ] }),
         /* @__PURE__ */ jsx(Reveal$1, { delay: 80, className: "pricing-plans-grid mt-10 sm:mt-12", children: PLANS.map((plan) => {
@@ -11814,7 +13388,7 @@ function PricingPlansSection({ className }) {
         }) }),
         /* @__PURE__ */ jsx(Reveal$1, { delay: 120, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs("div", { className: "pricing-compare", children: [
           /* @__PURE__ */ jsxs("div", { className: "pricing-compare__intro", children: [
-            /* @__PURE__ */ jsx("h3", { className: "font-hero text-[clamp(1.35rem,2.8vw,1.85rem)] font-semibold tracking-[-0.03em] text-white", children: copy.compareTitle }),
+            /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.5rem,3vw,2.1rem)] font-normal uppercase tracking-[0.02em] text-white", children: copy.compareTitle }),
             /* @__PURE__ */ jsx(
               "button",
               {
@@ -11883,7 +13457,7 @@ function PricingPlansSection({ className }) {
                 PLAN_IDS.map((planId) => /* @__PURE__ */ jsx(
                   "div",
                   {
-                    className: cx$2(
+                    className: cx$1(
                       "pricing-compare__plan-col",
                       planId === "growth" && "pricing-compare__plan-col--growth"
                     ),
@@ -11916,7 +13490,7 @@ function PricingPlansSection({ className }) {
                       ChevronDown,
                       {
                         size: 16,
-                        className: cx$2("text-white/45 transition", open && "rotate-180"),
+                        className: cx$1("text-white/45 transition", open && "rotate-180"),
                         "aria-hidden": true
                       }
                     )
@@ -11942,13 +13516,13 @@ function PricingPlansSection({ className }) {
         ] }) }),
         /* @__PURE__ */ jsx(Reveal$1, { delay: 150, className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs("div", { className: "pricing-value-band", children: [
           /* @__PURE__ */ jsxs("div", { className: "pricing-value-band__copy", children: [
-            /* @__PURE__ */ jsxs("h3", { className: "font-hero text-[clamp(1.35rem,2.8vw,2rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-white", children: [
+            /* @__PURE__ */ jsxs("h3", { className: "font-hero text-[clamp(1.5rem,3vw,2.25rem)] font-normal uppercase leading-[1.05] tracking-[0.02em] text-white", children: [
               copy.footer.valueTitle,
               " ",
               /* @__PURE__ */ jsx("span", { className: "pricing-value-band__highlight", children: copy.footer.valueTitleHighlight })
             ] }),
-            /* @__PURE__ */ jsx("p", { className: "mt-2 text-[12px] text-white/38", children: copy.footer.valueAside }),
-            /* @__PURE__ */ jsx("p", { className: "mt-5 max-w-[38ch] text-[14px] leading-[1.65] text-white/50", children: copy.footer.valueLead })
+            /* @__PURE__ */ jsx("p", { className: "mt-2 font-sans text-[12px] font-medium text-white/38", children: copy.footer.valueAside }),
+            /* @__PURE__ */ jsx("p", { className: "mt-5 max-w-[38ch] font-sans text-[14px] font-medium leading-[1.65] text-white/50", children: copy.footer.valueLead })
           ] }),
           /* @__PURE__ */ jsx(PricingPlanScopeGrid, { onPlanAction: handlePlanCta })
         ] }) }),
@@ -11986,20 +13560,24 @@ function PricingPlansSection({ className }) {
 }
 function PricingPage() {
   const { lang } = useLang();
+  const { pathname } = useLocation();
+  const isEnPath = pathname === "/en/plans";
   useEffect(() => {
     trackPricingView();
   }, []);
   const title = lang === "ru" ? "Планы запуска — TIVONIX" : "Launch plans — TIVONIX";
   const description = lang === "ru" ? "Тарифы TIVONIX: Start, Growth, Product и Custom — от лендинга с заявками до веб-сервиса с CRM, оплатой и автоматизацией." : "TIVONIX plans: Start, Growth, Product and Custom — from a lead page to a full web service with CRM, payments and automation.";
   const schemaJsonLd = buildPricingPageSchema({ pageTitle: title, pageDescription: description, lang });
-  return /* @__PURE__ */ jsxs("div", { className: "min-h-screen overflow-x-clip bg-[var(--bg)]", children: [
+  const canonicalPath = isEnPath ? "/en/plans" : "/plans";
+  return /* @__PURE__ */ jsxs("div", { className: "landing-caldera plans-caldera min-h-screen overflow-x-clip bg-black", children: [
     /* @__PURE__ */ jsx(
       SEO,
       {
         title,
         description,
-        canonicalPath: "/plans",
+        canonicalPath,
         ogLocalePrimary: lang === "en" ? "en_US" : "ru_RU",
+        hreflang: true,
         schemaJsonLd
       }
     ),
@@ -12007,6 +13585,505 @@ function PricingPage() {
     /* @__PURE__ */ jsx(Header, {}),
     /* @__PURE__ */ jsx("main", { children: /* @__PURE__ */ jsx(PricingPlansSection, { className: "!pt-[calc(var(--tivonix-header-spacer)+1rem)] sm:!pt-[calc(var(--tivonix-header-spacer)+1.5rem)]" }) }),
     /* @__PURE__ */ jsx(Footer, {})
+  ] });
+}
+const LOGO = "/images/tivonix-logo-white.webp";
+const JOIN_BG = "/images/1.png";
+const AVATAR = "/favicon-192.png";
+function splitWords(text) {
+  return text.split(/(\s+)/).filter(Boolean);
+}
+function WhyIcon({ kind }) {
+  const common = {
+    viewBox: "0 0 72 72",
+    className: "about-why__icon",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.35,
+    "aria-hidden": true
+  };
+  if (kind === "experience") {
+    return /* @__PURE__ */ jsxs("svg", { ...common, children: [
+      /* @__PURE__ */ jsx("circle", { cx: "36", cy: "36", r: "5.5" }),
+      /* @__PURE__ */ jsx("circle", { cx: "36", cy: "36", r: "14" }),
+      /* @__PURE__ */ jsx("circle", { cx: "36", cy: "36", r: "23", opacity: "0.75" }),
+      /* @__PURE__ */ jsx("circle", { cx: "36", cy: "36", r: "31", opacity: "0.4" })
+    ] });
+  }
+  if (kind === "expertise") {
+    return /* @__PURE__ */ jsxs("svg", { ...common, children: [
+      /* @__PURE__ */ jsx("circle", { cx: "26", cy: "34", r: "13" }),
+      /* @__PURE__ */ jsx("circle", { cx: "46", cy: "34", r: "13" }),
+      /* @__PURE__ */ jsx("circle", { cx: "36", cy: "46", r: "13" })
+    ] });
+  }
+  if (kind === "innovation") {
+    return /* @__PURE__ */ jsxs("svg", { ...common, children: [
+      /* @__PURE__ */ jsx("circle", { cx: "36", cy: "36", r: "28", opacity: "0.45" }),
+      /* @__PURE__ */ jsx("ellipse", { cx: "36", cy: "36", rx: "12", ry: "28" }),
+      /* @__PURE__ */ jsx("path", { d: "M10 36h52M14 24h44M14 48h44", strokeLinecap: "round", opacity: "0.85" })
+    ] });
+  }
+  return /* @__PURE__ */ jsxs("svg", { ...common, children: [
+    /* @__PURE__ */ jsx("circle", { cx: "36", cy: "18", r: "4.5" }),
+    /* @__PURE__ */ jsx("circle", { cx: "20", cy: "32", r: "4.5" }),
+    /* @__PURE__ */ jsx("circle", { cx: "52", cy: "32", r: "4.5" }),
+    /* @__PURE__ */ jsx("circle", { cx: "24", cy: "50", r: "4" }),
+    /* @__PURE__ */ jsx("circle", { cx: "48", cy: "50", r: "4" }),
+    /* @__PURE__ */ jsx("circle", { cx: "36", cy: "36", r: "3.5" }),
+    /* @__PURE__ */ jsx("path", { d: "M36 22.5V32.5M24 35l8 3M48 35l-8 3M28 47l5-7M44 47l-5-7", opacity: "0.55" })
+  ] });
+}
+function AboutPage() {
+  const { lang } = useLang();
+  const copy = aboutCopy(lang);
+  const heroRef = useRef(null);
+  const storyRef = useRef(null);
+  const peopleRef = useRef(null);
+  const footerRef = useRef(null);
+  const footerTrackRef = useRef(null);
+  const footerRunnerRef = useRef(null);
+  const lineCount = copy.hero.titleLines.length;
+  const storyText = useMemo(() => copy.story.paragraphs.join(" "), [copy.story.paragraphs]);
+  const storyWords = useMemo(() => splitWords(storyText), [storyText]);
+  useEffect(() => {
+    const box = footerRef.current;
+    const track = footerTrackRef.current;
+    const runner = footerRunnerRef.current;
+    if (!box || !track || !runner || typeof window === "undefined") return;
+    const sync = () => {
+      const w = box.clientWidth;
+      const h = box.clientHeight;
+      const inset = 1;
+      const rw = Math.max(0, w - inset * 2);
+      const rh = Math.max(0, h - inset * 2);
+      const styles = getComputedStyle(box);
+      const parsedRadius = Number.parseFloat(styles.borderTopLeftRadius) || 24;
+      const radius = Math.min(parsedRadius - inset, rw / 2, rh / 2);
+      for (const node of [track, runner]) {
+        node.setAttribute("x", String(inset));
+        node.setAttribute("y", String(inset));
+        node.setAttribute("width", String(rw));
+        node.setAttribute("height", String(rh));
+        node.setAttribute("rx", String(Math.max(0, radius)));
+        node.setAttribute("ry", String(Math.max(0, radius)));
+      }
+    };
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(box);
+    window.addEventListener("resize", sync);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", sync);
+    };
+  }, []);
+  useEffect(() => {
+    const el = heroRef.current;
+    if (!el || typeof window === "undefined") return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      el.style.setProperty("--hero-p", "1");
+      el.dataset.cta = "1";
+      return;
+    }
+    let raf = 0;
+    const update = () => {
+      const rect = el.getBoundingClientRect();
+      const travel = Math.max(1, el.offsetHeight - window.innerHeight);
+      const scrolled = Math.min(travel, Math.max(0, -rect.top));
+      const p = Math.min(1, Math.max(0, scrolled / travel));
+      el.style.setProperty("--hero-p", p.toFixed(4));
+      el.dataset.cta = p > 0.88 ? "1" : "0";
+    };
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(update);
+    };
+    schedule();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
+  }, []);
+  useEffect(() => {
+    const story = storyRef.current;
+    if (!story || typeof window === "undefined") return;
+    const wordEls = Array.from(story.querySelectorAll(".about-story__word"));
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      wordEls.forEach((w) => w.style.setProperty("--w", "1"));
+      return;
+    }
+    let active = false;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      if (!active) return;
+      const vh = window.innerHeight;
+      const whiteLine = vh * 0.55;
+      const grayLine = vh * 0.96;
+      const span = grayLine - whiteLine || 1;
+      for (let i = 0; i < wordEls.length; i++) {
+        const y = wordEls[i].getBoundingClientRect().top + wordEls[i].offsetHeight * 0.35;
+        const t = Math.min(1, Math.max(0, (grayLine - y) / span));
+        wordEls[i].style.setProperty("--w", (Math.round(t * 28) / 28).toFixed(2));
+      }
+    };
+    const schedule = () => {
+      if (raf || !active) return;
+      raf = requestAnimationFrame(update);
+    };
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        active = entry.isIntersecting;
+        if (active) schedule();
+      },
+      { root: null, rootMargin: "12% 0px", threshold: 0 }
+    );
+    io.observe(story);
+    active = true;
+    schedule();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      active = false;
+      io.disconnect();
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
+  }, [storyWords]);
+  useEffect(() => {
+    const el = peopleRef.current;
+    if (!el || typeof window === "undefined") return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mobile = window.matchMedia("(max-width: 899px)");
+    if (reduced) {
+      el.style.setProperty("--spread", "1");
+      el.dataset.formed = "1";
+      return;
+    }
+    let raf = 0;
+    const update = () => {
+      if (mobile.matches) {
+        el.style.setProperty("--spread", "1");
+        el.dataset.formed = "1";
+        return;
+      }
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const start = vh * 0.92;
+      const end = vh * 0.08;
+      const t = Math.min(1, Math.max(0, (start - rect.top) / (start - end)));
+      const eased = t * t * (3 - 2 * t);
+      el.style.setProperty("--spread", eased.toFixed(3));
+      el.dataset.formed = eased > 0.55 ? "1" : "0";
+    };
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(update);
+    };
+    schedule();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    mobile.addEventListener("change", schedule);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      mobile.removeEventListener("change", schedule);
+    };
+  }, []);
+  return /* @__PURE__ */ jsxs("div", { className: "about-caldera min-h-screen", children: [
+    /* @__PURE__ */ jsx(
+      SEO,
+      {
+        title: copy.seo.title,
+        description: copy.seo.description,
+        canonicalPath: lang === "en" ? "/en/about" : "/about",
+        ogLocalePrimary: lang === "en" ? "en_US" : "ru_RU",
+        hreflang: true
+      }
+    ),
+    /* @__PURE__ */ jsx(Header, {}),
+    /* @__PURE__ */ jsx("div", { className: "about-caldera__mesh", "aria-hidden": true, children: /* @__PURE__ */ jsxs("svg", { className: "about-caldera__mesh-svg", viewBox: "0 0 100 100", preserveAspectRatio: "none", children: [
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsxs("linearGradient", { id: "aboutPageGlow", x1: "0%", y1: "0%", x2: "0%", y2: "100%", children: [
+        /* @__PURE__ */ jsx("stop", { offset: "0%", stopColor: "#fc5000" }),
+        /* @__PURE__ */ jsx("stop", { offset: "50%", stopColor: "#ff7a33" }),
+        /* @__PURE__ */ jsx("stop", { offset: "100%", stopColor: "#fc5000" })
+      ] }) }),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          className: "about-caldera__mesh-track",
+          vectorEffect: "non-scaling-stroke",
+          d: "M 6 0 V 18 C 6 22 4 24 8 28 C 14 34 4 38 8 44 C 12 50 5 54 7 62 C 9 70 4 74 7 82 C 8 86 6 88 6 90"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          className: "about-caldera__mesh-track",
+          vectorEffect: "non-scaling-stroke",
+          d: "M 94 0 V 16 C 94 20 96 24 92 28 C 86 34 96 38 92 44 C 88 50 95 54 93 62 C 91 70 96 74 93 82 C 92 86 94 88 94 90"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          className: "about-caldera__mesh-track about-caldera__mesh-track--soft",
+          vectorEffect: "non-scaling-stroke",
+          d: "M 0 22 H 28 C 36 22 40 18 50 18 C 60 18 64 22 72 22 H 100"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          className: "about-caldera__mesh-track about-caldera__mesh-track--soft",
+          vectorEffect: "non-scaling-stroke",
+          d: "M 0 48 H 22 C 32 48 38 54 50 54 C 62 54 68 48 78 48 H 100"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          className: "about-caldera__mesh-track about-caldera__mesh-track--soft",
+          vectorEffect: "non-scaling-stroke",
+          d: "M 0 74 H 26 C 34 74 40 70 50 70 C 60 70 66 74 74 74 H 100"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          className: "about-caldera__mesh-runner",
+          vectorEffect: "non-scaling-stroke",
+          pathLength: "1",
+          d: "M 6 0 V 18 C 6 22 4 24 8 28 C 14 34 4 38 8 44 C 12 50 5 54 7 62 C 9 70 4 74 7 82 C 8 86 6 88 6 90"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          className: "about-caldera__mesh-runner about-caldera__mesh-runner--delay",
+          vectorEffect: "non-scaling-stroke",
+          pathLength: "1",
+          d: "M 94 0 V 16 C 94 20 96 24 92 28 C 86 34 96 38 92 44 C 88 50 95 54 93 62 C 91 70 96 74 93 82 C 92 86 94 88 94 90"
+        }
+      )
+    ] }) }),
+    /* @__PURE__ */ jsxs("main", { className: "overflow-x-clip", children: [
+      /* @__PURE__ */ jsx(
+        "section",
+        {
+          ref: heroRef,
+          className: "about-hero about-hero--lines relative",
+          style: { ["--hero-lines"]: lineCount },
+          children: /* @__PURE__ */ jsxs("div", { className: "about-hero__pin", children: [
+            /* @__PURE__ */ jsx("div", { className: "about-hero__rail", "aria-hidden": true, children: /* @__PURE__ */ jsxs(
+              "svg",
+              {
+                className: "about-hero__svg",
+                viewBox: "0 0 1440 320",
+                preserveAspectRatio: "none",
+                children: [
+                  /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsxs("linearGradient", { id: "aboutHeroGlow", x1: "0%", y1: "0%", x2: "100%", y2: "0%", children: [
+                    /* @__PURE__ */ jsx("stop", { offset: "0%", stopColor: "#fc5000" }),
+                    /* @__PURE__ */ jsx("stop", { offset: "50%", stopColor: "#ff7a33" }),
+                    /* @__PURE__ */ jsx("stop", { offset: "100%", stopColor: "#fc5000" })
+                  ] }) }),
+                  /* @__PURE__ */ jsx(
+                    "path",
+                    {
+                      className: "about-hero__track",
+                      d: "M -20 200 H 360 C 480 200 540 90 720 90 C 900 90 960 200 1080 200 H 1460"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "path",
+                    {
+                      className: "about-hero__runner",
+                      pathLength: "1",
+                      d: "M -20 200 H 360 C 480 200 540 90 720 90 C 900 90 960 200 1080 200 H 1460"
+                    }
+                  )
+                ]
+              }
+            ) }),
+            /* @__PURE__ */ jsxs(Container, { className: "relative z-[2] text-center", children: [
+              /* @__PURE__ */ jsx("p", { className: "about-caldera__tag mx-auto mb-6", children: lang === "en" ? "Our story" : "Наша история" }),
+              /* @__PURE__ */ jsx(
+                "div",
+                {
+                  className: "about-hero__logo mx-auto mb-7 sm:mb-8",
+                  role: "img",
+                  "aria-label": "TIVONIX",
+                  style: {
+                    backgroundColor: "var(--caldera-ember)",
+                    WebkitMaskImage: `url(${LOGO})`,
+                    maskImage: `url(${LOGO})`
+                  }
+                }
+              ),
+              /* @__PURE__ */ jsxs("h1", { className: "about-caldera__display about-hero__title mx-auto", children: [
+                /* @__PURE__ */ jsx("span", { className: "sr-only", children: copy.hero.title }),
+                copy.hero.titleLines.map((line, i) => /* @__PURE__ */ jsx(
+                  "span",
+                  {
+                    className: "about-hero__line",
+                    style: { ["--i"]: i },
+                    "aria-hidden": true,
+                    children: line
+                  },
+                  line
+                ))
+              ] }),
+              /* @__PURE__ */ jsx("div", { className: "about-hero__cta mt-8 flex justify-center", children: /* @__PURE__ */ jsx(
+                LeadCTAButton,
+                {
+                  source: "founder",
+                  variant: "primary",
+                  size: "lg",
+                  className: "about-caldera__btn",
+                  onClick: () => trackEvent("service_cta_click", { section: "about_hero" }),
+                  children: /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5", children: [
+                    copy.hero.cta,
+                    /* @__PURE__ */ jsx(ArrowUpRight, { className: "h-4 w-4", "aria-hidden": true })
+                  ] })
+                }
+              ) })
+            ] })
+          ] })
+        }
+      ),
+      /* @__PURE__ */ jsx("section", { className: "about-caldera__section about-story-section pt-0", children: /* @__PURE__ */ jsx(Container, { className: "relative z-[2]", children: /* @__PURE__ */ jsx("div", { ref: storyRef, className: "about-story", lang, children: /* @__PURE__ */ jsx("p", { className: "about-story__text", children: storyWords.map(
+        (token, i) => /^\s+$/.test(token) ? /* @__PURE__ */ jsx("span", { children: " " }, `s-${i}`) : /* @__PURE__ */ jsx("span", { className: "about-story__word", children: token }, `w-${i}`)
+      ) }) }) }) }),
+      /* @__PURE__ */ jsx("section", { className: "about-caldera__section", children: /* @__PURE__ */ jsxs(Container, { children: [
+        /* @__PURE__ */ jsx("div", { className: "about-caldera__trio", children: [copy.mission, copy.vision, copy.values].map((block) => /* @__PURE__ */ jsxs("article", { className: "about-caldera__card", children: [
+          /* @__PURE__ */ jsx("span", { className: "about-caldera__sulfur", children: block.label }),
+          /* @__PURE__ */ jsx("h2", { className: "about-caldera__h", children: block.title }),
+          /* @__PURE__ */ jsx("p", { className: "about-caldera__body", children: block.text })
+        ] }, block.label)) }),
+        /* @__PURE__ */ jsx("ul", { className: "about-values", children: copy.values.items.map((item) => /* @__PURE__ */ jsxs("li", { className: "about-values__item", children: [
+          /* @__PURE__ */ jsx("p", { className: "about-caldera__h about-caldera__h--sm", children: item.title }),
+          /* @__PURE__ */ jsx("p", { className: "about-caldera__body about-caldera__body--sm", children: item.text })
+        ] }, item.title)) })
+      ] }) }),
+      /* @__PURE__ */ jsx("section", { className: "about-why-section about-caldera__section", children: /* @__PURE__ */ jsxs(Container, { children: [
+        /* @__PURE__ */ jsxs("div", { className: "about-why__head", children: [
+          /* @__PURE__ */ jsx("h2", { className: "about-caldera__display about-caldera__display--section", children: copy.why.title }),
+          /* @__PURE__ */ jsx("p", { className: "about-caldera__body about-why__lead", children: copy.why.text })
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "about-why", children: copy.why.items.map((item) => /* @__PURE__ */ jsxs("article", { className: "about-why__item", children: [
+          /* @__PURE__ */ jsx("div", { className: "about-why__icon-wrap", children: /* @__PURE__ */ jsx(WhyIcon, { kind: item.key }) }),
+          /* @__PURE__ */ jsx("h3", { className: "about-caldera__h about-caldera__h--sm", children: item.title }),
+          /* @__PURE__ */ jsx("p", { className: "about-caldera__body about-caldera__body--sm", children: item.text })
+        ] }, item.key)) }),
+        /* @__PURE__ */ jsx("div", { className: "mt-14 flex justify-center sm:mt-16", children: /* @__PURE__ */ jsx(
+          LeadCTAButton,
+          {
+            source: "founder",
+            variant: "primary",
+            size: "lg",
+            className: "about-caldera__btn",
+            onClick: () => trackEvent("service_cta_click", { section: "about_why" }),
+            children: /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5", children: [
+              copy.why.cta,
+              /* @__PURE__ */ jsx(ArrowUpRight, { className: "h-4 w-4", "aria-hidden": true })
+            ] })
+          }
+        ) })
+      ] }) }),
+      /* @__PURE__ */ jsx(
+        "section",
+        {
+          ref: peopleRef,
+          className: "about-people about-caldera__section about-caldera__section--last",
+          style: { ["--spread"]: 0 },
+          children: /* @__PURE__ */ jsxs(Container, { children: [
+            /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[40rem] text-center", children: [
+              /* @__PURE__ */ jsx("h2", { className: "about-caldera__display about-caldera__display--section about-caldera__display--center", children: copy.people.title }),
+              /* @__PURE__ */ jsx("p", { className: "about-caldera__body mt-4", children: copy.people.text })
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "about-people__stage mt-12 sm:mt-14", children: [
+              /* @__PURE__ */ jsx("ul", { className: "about-people__side about-people__side--left", children: copy.people.members.slice(0, 3).map((m, i) => /* @__PURE__ */ jsxs("li", { className: "about-people__item", style: { ["--i"]: i }, children: [
+                /* @__PURE__ */ jsx("div", { className: "about-people__avatar", "aria-hidden": true, children: /* @__PURE__ */ jsx("img", { src: AVATAR, alt: "", width: 96, height: 96, draggable: false }) }),
+                /* @__PURE__ */ jsx("p", { className: "about-people__name", children: m.name }),
+                /* @__PURE__ */ jsx("p", { className: "about-people__role", children: m.role })
+              ] }, m.id)) }),
+              /* @__PURE__ */ jsx("div", { className: "about-people__shot", children: /* @__PURE__ */ jsxs("div", { className: "about-join", children: [
+                /* @__PURE__ */ jsx(
+                  "img",
+                  {
+                    src: JOIN_BG,
+                    alt: "",
+                    className: "about-join__bg",
+                    loading: "lazy",
+                    decoding: "async",
+                    draggable: false
+                  }
+                ),
+                /* @__PURE__ */ jsx("div", { className: "about-join__shade", "aria-hidden": true }),
+                /* @__PURE__ */ jsx("div", { className: "about-join__cta relative z-[4] flex min-h-[inherit] items-end justify-center pb-6 pt-36 sm:pb-8 sm:pt-44", children: /* @__PURE__ */ jsx(
+                  LeadCTAButton,
+                  {
+                    source: "founder",
+                    variant: "white",
+                    size: "lg",
+                    className: "about-caldera__btn about-caldera__btn--chalk",
+                    onClick: () => trackEvent("service_cta_click", { section: "about_join" }),
+                    children: /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5", children: [
+                      copy.join.cta,
+                      /* @__PURE__ */ jsx(ArrowUpRight, { className: "h-4 w-4", "aria-hidden": true })
+                    ] })
+                  }
+                ) })
+              ] }) }),
+              /* @__PURE__ */ jsx("ul", { className: "about-people__side about-people__side--right", children: copy.people.members.slice(3, 6).map((m, i) => /* @__PURE__ */ jsxs("li", { className: "about-people__item", style: { ["--i"]: i }, children: [
+                /* @__PURE__ */ jsx("div", { className: "about-people__avatar", "aria-hidden": true, children: /* @__PURE__ */ jsx("img", { src: AVATAR, alt: "", width: 96, height: 96, draggable: false }) }),
+                /* @__PURE__ */ jsx("p", { className: "about-people__name", children: m.name }),
+                /* @__PURE__ */ jsx("p", { className: "about-people__role", children: m.role })
+              ] }, m.id)) })
+            ] })
+          ] })
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "about-footer-wrap", children: [
+      /* @__PURE__ */ jsxs("div", { className: "about-footer__leads", "aria-hidden": true, children: [
+        /* @__PURE__ */ jsx("span", { className: "about-footer__lead about-footer__lead--l" }),
+        /* @__PURE__ */ jsx("span", { className: "about-footer__lead about-footer__lead--r" })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "about-footer", ref: footerRef, children: [
+        /* @__PURE__ */ jsxs("svg", { className: "about-footer__frame", "aria-hidden": true, children: [
+          /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsxs("linearGradient", { id: "aboutFooterGlow", x1: "0%", y1: "0%", x2: "100%", y2: "100%", children: [
+            /* @__PURE__ */ jsx("stop", { offset: "0%", stopColor: "#fc5000" }),
+            /* @__PURE__ */ jsx("stop", { offset: "50%", stopColor: "#ff7a33" }),
+            /* @__PURE__ */ jsx("stop", { offset: "100%", stopColor: "#fc5000" })
+          ] }) }),
+          /* @__PURE__ */ jsx("rect", { ref: footerTrackRef, className: "about-footer__track", x: "1", y: "1", width: "0", height: "0", rx: "39", ry: "39" }),
+          /* @__PURE__ */ jsx(
+            "rect",
+            {
+              ref: footerRunnerRef,
+              className: "about-footer__runner",
+              pathLength: "1",
+              x: "1",
+              y: "1",
+              width: "0",
+              height: "0",
+              rx: "39",
+              ry: "39"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "about-footer__clip", children: /* @__PURE__ */ jsx(Footer, {}) })
+      ] })
+    ] })
   ] });
 }
 const RU = {
@@ -12593,11 +14670,11 @@ function buildPartnersSchema(copy, lang, pathname) {
     ]
   };
 }
-function cx$1(...parts) {
+function cx(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function Shell({ children, className }) {
-  return /* @__PURE__ */ jsx("div", { className: cx$1(LANDING_SHELL_CLASS, className), children });
+  return /* @__PURE__ */ jsx("div", { className: cx(LANDING_SHELL_CLASS, className), children });
 }
 function Reveal({ children, className }) {
   const ref = useRef(null);
@@ -12625,7 +14702,7 @@ function Reveal({ children, className }) {
     "div",
     {
       ref,
-      className: cx$1(
+      className: cx(
         className,
         visible ? "translate-y-0 opacity-100 motion-safe:transition-[opacity,transform] motion-safe:duration-500 motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]" : "translate-y-3 opacity-0"
       ),
@@ -13029,7 +15106,7 @@ function CapabilitiesBanner() {
                 "aria-selected": on,
                 "aria-label": item.title,
                 onClick: () => scrollToSlide(i),
-                className: cx$1(
+                className: cx(
                   "relative flex h-8 min-w-[2.4rem] items-center justify-center rounded-full border-0 px-2.5",
                   "font-partners text-[11px] font-bold tabular-nums tracking-[0.08em] outline-none select-none transition duration-200",
                   "focus-visible:ring-2 focus-visible:ring-[#ff6b2c]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
@@ -16365,7 +18442,7 @@ function PartnersPage() {
                     setLang(value);
                     navigate(partnersPath(value), { replace: true });
                   },
-                  className: cx$1(
+                  className: cx(
                     "rounded-full px-3 py-1.5 transition",
                     lang === value ? "bg-white text-[#ff6b2c]" : "text-white hover:bg-white/15"
                   ),
@@ -17058,6 +19135,9 @@ function AppRoutes() {
       /* @__PURE__ */ jsx(Route, { path: "/projects/:slug", element: /* @__PURE__ */ jsx(ProjectDetailPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/en/projects/:slug", element: /* @__PURE__ */ jsx(ProjectDetailPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/plans", element: /* @__PURE__ */ jsx(PricingPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/en/plans", element: /* @__PURE__ */ jsx(PricingPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/about", element: /* @__PURE__ */ jsx(AboutPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/en/about", element: /* @__PURE__ */ jsx(AboutPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/contacts", element: /* @__PURE__ */ jsx(ContactsPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/en/contacts", element: /* @__PURE__ */ jsx(ContactsPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/sozdanie-sajtov", element: /* @__PURE__ */ jsx(WebsiteCreationPage, {}) }),
@@ -17070,828 +19150,160 @@ function AppRoutes() {
     ] })
   ] });
 }
-function readUtm(param) {
-  if (typeof window === "undefined") return "";
+const CONSENT_KEY = "tivonix_analytics_consent";
+function getAnalyticsConsent() {
+  if (typeof window === "undefined") return "pending";
   try {
-    return new URL(window.location.href).searchParams.get(param) || "";
+    const v = localStorage.getItem(CONSENT_KEY);
+    if (v === "accepted" || v === "rejected") return v;
   } catch {
-    return "";
   }
+  return "pending";
 }
-function buildLeadMeta(ctaSource, plan) {
-  const source = ctaSource || getCtaSource();
-  return {
-    url: typeof window !== "undefined" ? window.location.href : "",
-    page: typeof window !== "undefined" ? window.location.pathname : "",
-    ctaSource: source,
-    referrer: typeof document !== "undefined" ? document.referrer || "" : "",
-    utmSource: readUtm("utm_source"),
-    utmMedium: readUtm("utm_medium"),
-    utmCampaign: readUtm("utm_campaign"),
-    datetime: (/* @__PURE__ */ new Date()).toISOString(),
-    planId: plan?.id,
-    planName: plan?.name
+function setAnalyticsConsent(state) {
+  try {
+    localStorage.setItem(CONSENT_KEY, state);
+  } catch {
+  }
+  window.dispatchEvent(new CustomEvent("tivonix-consent", { detail: state }));
+}
+function onConsentChange(cb) {
+  const handler = (e) => {
+    const detail = e.detail;
+    cb(detail);
   };
+  window.addEventListener("tivonix-consent", handler);
+  return () => window.removeEventListener("tivonix-consent", handler);
 }
-const DRAFT_KEY = "tivonix_lead_draft_v1";
-function loadLeadDraft() {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = sessionStorage.getItem(DRAFT_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
-function saveLeadDraft(fields) {
-  if (typeof window === "undefined") return;
-  try {
-    const { company_fax_url: _honeypot, ...rest } = fields;
-    void _honeypot;
-    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(rest));
-  } catch {
-  }
-}
-function clearLeadDraft() {
-  if (typeof window === "undefined") return;
-  try {
-    sessionStorage.removeItem(DRAFT_KEY);
-  } catch {
-  }
-}
-function suggestedBudgetForPlan(planId) {
-  switch (planId) {
-    case "start":
-      return "500_1500";
-    case "growth":
-      return "1500_5000";
-    case "product":
-      return "from_5000";
-    case "custom":
-      return "unknown";
-    default:
-      return "";
-  }
-}
-function validateLeadFields(fields) {
-  if (!fields.contact.trim() || fields.contact.trim().length < 3) {
-    return { ok: false, field: "contact", messageKey: "contact" };
-  }
-  if (!fields.task.trim() || fields.task.trim().length < 5) {
-    return { ok: false, field: "task", messageKey: "task" };
-  }
-  if (!fields.consent) {
-    return { ok: false, field: "consent", messageKey: "consent" };
-  }
-  return { ok: true };
-}
-async function submitLead(body, signal) {
-  try {
-    const res = await fetch("/api/leads", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-      signal
-    });
-    const data = await res.json().catch(() => ({}));
-    if (res.ok && data.ok) {
-      return {
-        ok: true,
-        emailSent: data.emailSent,
-        telegramSent: data.telegramSent
-      };
-    }
-    return {
-      ok: false,
-      error: data.error || `http_${res.status}`,
-      fallback: data.fallback || res.status >= 500
-    };
-  } catch {
-    return { ok: false, error: "network_error", fallback: true };
-  }
-}
-const CONTACT_EMAIL = "tivoonix@gmail.com";
-const TELEGRAM_DIRECT_URL = "https://t.me/TIVONIX";
-function cx(...a) {
-  return a.filter(Boolean).join(" ");
-}
-const BRAND_CTA = "linear-gradient(90deg, #FFD7B0 0%, #FF9A3D 45%, #FF6A1A 100%)";
-const ORANGE_LINE = "linear-gradient(90deg, rgba(255,160,70,0) 0%, rgba(255,120,40,0.95) 18%, rgba(255,198,120,1) 50%, rgba(255,120,40,0.95) 82%, rgba(255,160,70,0) 100%)";
-const FRAME = "linear-gradient(135deg, rgba(255,154,61,0.55), rgba(255,255,255,0.12) 38%, rgba(143,168,200,0.28) 72%, rgba(255,154,61,0.35))";
-const emptyForm = () => ({
-  name: "",
-  contact: "",
-  task: "",
-  budget: "",
-  consent: false,
-  company_fax_url: ""
-});
-function LeadFormModal({
-  open,
-  onClose,
-  source,
-  planId = null
-}) {
+const PRIVACY_RU = "/doc/Политика_обработки_ПД_Tivonix_RU.pdf";
+const PRIVACY_EN = "/doc/Privacy_Policy_Tivonix_EN.pdf";
+function ConsentBanner() {
   const { lang } = useLang();
-  const copy = leadFormCopy(lang);
-  const pricing = pricingCopy(lang);
-  const titleId = useId();
-  const descId = useId();
-  const dialogRef = useRef(null);
-  const contactRef = useRef(null);
-  const taskRef = useRef(null);
-  const consentRef = useRef(null);
-  const startedRef = useRef(false);
-  const successRef = useRef(false);
-  const submittingRef = useRef(false);
-  const [activePlanId, setActivePlanId] = useState(planId);
-  const [mounted, setMounted] = useState(open);
+  const { isOpen: leadFormOpen } = useLeadForm();
+  const isRu = lang === "ru";
   const [visible, setVisible] = useState(false);
-  const [form, setForm] = useState(emptyForm);
-  const [status, setStatus] = useState("idle");
-  const [fieldError, setFieldError] = useState("");
-  const [errorField, setErrorField] = useState(
-    null
-  );
-  const [serverError, setServerError] = useState(false);
-  const planName = activePlanId ? pricing.plans[activePlanId].name : null;
-  const planPrice = activePlanId ? planPagePrice(lang, activePlanId) : null;
   useEffect(() => {
-    if (open) {
-      setMounted(true);
-      setStatus("idle");
-      setFieldError("");
-      setErrorField(null);
-      setServerError(false);
-      startedRef.current = false;
-      successRef.current = false;
-      setActivePlanId(planId);
-      const draft = loadLeadDraft();
-      const suggested = suggestedBudgetForPlan(planId);
-      setForm({
-        ...emptyForm(),
-        ...draft,
-        company_fax_url: "",
-        budget: draft?.budget || suggested || "",
-        consent: draft?.consent === true
-      });
-      requestAnimationFrame(() => setVisible(true));
-    } else {
-      setVisible(false);
-      const t = window.setTimeout(() => setMounted(false), 220);
-      return () => window.clearTimeout(t);
-    }
-  }, [open, planId]);
-  useEffect(() => {
-    if (!open || status === "success") return;
-    saveLeadDraft(form);
-  }, [form, open, status]);
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.documentElement.style.overflow;
-    document.documentElement.style.overflow = "hidden";
-    return () => {
-      document.documentElement.style.overflow = prev;
+    const sync = () => {
+      setVisible(getAnalyticsConsent() === "pending");
     };
-  }, [open]);
-  useEffect(() => {
-    if (!open) return;
-    const t = window.setTimeout(() => contactRef.current?.focus(), 120);
-    return () => window.clearTimeout(t);
-  }, [open]);
-  useEffect(() => {
-    if (!open) return;
-    const root = dialogRef.current;
-    if (!root) return;
-    const onKey = (e) => {
-      if (e.key === "Escape" && status !== "loading") {
-        e.preventDefault();
-        handleClose();
-        return;
-      }
-      if (e.key !== "Tab") return;
-      const focusable = root.querySelectorAll(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      );
-      const list = Array.from(focusable).filter((el) => el.offsetParent !== null);
-      if (list.length === 0) return;
-      const first = list[0];
-      const last = list[list.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, status, source, form]);
-  const handleClose = () => {
-    if (status === "loading") return;
-    if (!successRef.current && (form.contact || form.task || form.name)) {
-      trackLeadFormAbandon(source);
+    sync();
+    if (getAnalyticsConsent() === "accepted") {
+      initHotjar();
     }
-    onClose();
-  };
-  const update = (k, v) => {
-    if (!startedRef.current && (k === "contact" || k === "task" || k === "name")) {
-      startedRef.current = true;
-      trackLeadFormStart();
-    }
-    setFieldError("");
-    setErrorField(null);
-    setForm((p) => ({ ...p, [k]: v }));
-  };
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    if (submittingRef.current || status === "loading") return;
-    const v = validateLeadFields(form);
-    if (!v.ok) {
-      trackLeadFormValidationError(v.field);
-      setErrorField(v.field ?? null);
-      if (v.messageKey === "contact") {
-        setFieldError(copy.errors.contact);
-        contactRef.current?.focus();
-      } else if (v.messageKey === "task") {
-        setFieldError(copy.errors.task);
-        taskRef.current?.focus();
-      } else {
-        setFieldError(copy.errors.consent);
-        consentRef.current?.focus();
-      }
-      return;
-    }
-    submittingRef.current = true;
-    setStatus("loading");
-    setServerError(false);
-    trackLeadFormSubmit(source);
-    const result = await submitLead({
-      name: form.name.trim(),
-      contact: form.contact.trim(),
-      task: form.task.trim(),
-      budget: form.budget,
-      consent: form.consent,
-      company_fax_url: form.company_fax_url,
-      lang,
-      planId: activePlanId || void 0,
-      meta: buildLeadMeta(source, {
-        id: activePlanId || void 0,
-        name: planName || void 0
-      })
+    return onConsentChange((state) => {
+      if (state === "accepted") initHotjar();
+      setVisible(state === "pending");
     });
-    submittingRef.current = false;
-    if (result.ok) {
-      successRef.current = true;
-      clearLeadDraft();
-      setForm(emptyForm());
-      setStatus("success");
-      trackLeadFormSuccess(source);
-      return;
-    }
-    trackLeadFormServerError();
-    setServerError(true);
-    setStatus("error");
+  }, []);
+  if (!visible || leadFormOpen) return null;
+  const accept = () => {
+    setAnalyticsConsent("accepted");
+    initHotjar();
+    setVisible(false);
   };
-  if (!mounted && !open) return null;
-  if (typeof document === "undefined") return null;
-  const budgetOptions = copy.budgets.filter((b) => b.id !== "");
-  const inputBase = cx(
-    "w-full h-12 rounded-2xl px-4",
-    "border-0 bg-white/[0.07] text-white placeholder:text-white/35",
-    "outline-none ring-1 ring-white/10 focus:bg-white/[0.10] focus:ring-white/22",
-    "backdrop-blur-xl text-[13.5px] transition",
-    HOTJAR_MASK_CLASS
-  );
-  const labelClass = "mb-1.5 block text-[11.5px] font-semibold tracking-wide text-white/65";
-  const node = /* @__PURE__ */ jsxs(
+  const decline = () => {
+    setAnalyticsConsent("rejected");
+    setVisible(false);
+  };
+  const privacyHref = isRu ? PRIVACY_RU : PRIVACY_EN;
+  return /* @__PURE__ */ jsx(
     "div",
     {
-      className: cx(
-        "fixed inset-0 z-[220]",
-        "flex items-end justify-center sm:items-center",
-        "px-0 sm:px-5 py-0 sm:py-5"
-      ),
-      "aria-hidden": !open,
-      children: [
-        /* @__PURE__ */ jsx("style", { children: `
-        .lead-modal-scroll {
-          overflow-y: auto;
-          overflow-x: hidden;
-          -webkit-overflow-scrolling: touch;
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255,154,61,.7) rgba(255,255,255,.06);
+      className: "pointer-events-none fixed inset-x-0 bottom-0 z-[90] flex justify-start p-4 sm:p-6",
+      style: {
+        paddingBottom: "max(1rem, env(safe-area-inset-bottom))"
+      },
+      children: /* @__PURE__ */ jsxs(
+        "div",
+        {
+          role: "dialog",
+          "aria-label": isRu ? "Согласие на cookies аналитики" : "Analytics cookies consent",
+          className: "pointer-events-auto w-full max-w-[26rem] rounded-[2rem] border border-white/[0.08] bg-[#141414] p-7 shadow-[0_24px_64px_rgba(0,0,0,0.55)] sm:p-8",
+          children: [
+            /* @__PURE__ */ jsx("p", { className: "text-[15px] leading-[1.55] text-white/70", children: isRu ? /* @__PURE__ */ jsxs(Fragment, { children: [
+              "Мы используем cookies, чтобы сайт работал лучше.",
+              " ",
+              /* @__PURE__ */ jsx(
+                "a",
+                {
+                  href: privacyHref,
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  className: "text-white/85 underline decoration-white/35 underline-offset-[3px] transition hover:text-white hover:decoration-white/60",
+                  children: "Политика cookies"
+                }
+              )
+            ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+              "We use cookies to make this site work better.",
+              " ",
+              /* @__PURE__ */ jsx(
+                "a",
+                {
+                  href: privacyHref,
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  className: "text-white/85 underline decoration-white/35 underline-offset-[3px] transition hover:text-white hover:decoration-white/60",
+                  children: "Cookie Policy"
+                }
+              )
+            ] }) }),
+            /* @__PURE__ */ jsxs("div", { className: "mt-7 flex flex-wrap items-center gap-2.5", children: [
+              /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: accept,
+                  className: "inline-flex h-11 items-center justify-center rounded-full bg-white px-6 text-[14px] font-semibold tracking-[-0.01em] text-[#111] transition hover:bg-white/92 active:bg-white/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/55",
+                  children: isRu ? "Принять" : "Accept"
+                }
+              ),
+              /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: decline,
+                  className: "inline-flex h-11 items-center justify-center rounded-full border border-white/25 bg-transparent px-6 text-[14px] font-semibold tracking-[-0.01em] text-white/85 transition hover:border-white/40 hover:bg-white/[0.04] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/55",
+                  children: isRu ? "Отклонить" : "Reject"
+                }
+              )
+            ] })
+          ]
         }
-        .lead-modal-scroll::-webkit-scrollbar { width: 6px; }
-        .lead-modal-scroll::-webkit-scrollbar-track {
-          background: rgba(255,255,255,.06);
-          border-radius: 999px;
-        }
-        .lead-modal-scroll::-webkit-scrollbar-thumb {
-          background: linear-gradient(180deg, #FFD7B0, #FF9A3D, #FF6A1A);
-          border-radius: 999px;
-        }
-      ` }),
-        /* @__PURE__ */ jsx(
-          "div",
-          {
-            className: "absolute inset-0 bg-black/72 backdrop-blur-[14px] transition-opacity duration-200 cursor-pointer",
-            style: { opacity: open && visible ? 1 : 0 },
-            onClick: handleClose,
-            "aria-hidden": "true"
-          }
-        ),
-        /* @__PURE__ */ jsx(
-          "div",
-          {
-            className: "relative w-full max-w-none sm:max-w-[640px] lg:max-w-[720px] transition-[transform,opacity] duration-220 ease-out",
-            style: {
-              opacity: open && visible ? 1 : 0,
-              transform: open && visible ? "translateY(0) scale(1)" : "translateY(18px) scale(0.98)",
-              pointerEvents: open ? "auto" : "none"
-            },
-            role: "dialog",
-            "aria-modal": "true",
-            "aria-labelledby": titleId,
-            "aria-describedby": descId,
-            ref: dialogRef,
-            onMouseDown: (e) => e.stopPropagation(),
-            children: /* @__PURE__ */ jsx(
-              "div",
-              {
-                className: "rounded-t-[28px] p-[1px] shadow-[0_32px_120px_rgba(0,0,0,0.72)] sm:rounded-[28px]",
-                style: { background: FRAME },
-                children: /* @__PURE__ */ jsxs(
-                  "div",
-                  {
-                    className: "relative flex max-h-[min(94dvh,780px)] flex-col overflow-hidden rounded-t-[27px] bg-black/50 backdrop-blur-2xl sm:rounded-[27px]",
-                    children: [
-                      /* @__PURE__ */ jsx(
-                        "div",
-                        {
-                          "aria-hidden": true,
-                          className: "pointer-events-none absolute inset-0 opacity-80",
-                          style: {
-                            backgroundImage: "url(/images/121.webp)",
-                            backgroundSize: "cover",
-                            backgroundPosition: "center",
-                            filter: "blur(22px)",
-                            transform: "scale(1.08)"
-                          }
-                        }
-                      ),
-                      /* @__PURE__ */ jsx(
-                        "div",
-                        {
-                          "aria-hidden": true,
-                          className: "pointer-events-none absolute inset-0",
-                          style: {
-                            backgroundImage: "radial-gradient(720px 380px at 16% 0%, rgba(255,154,61,0.20), transparent 58%),radial-gradient(640px 420px at 92% 28%, rgba(143,168,200,0.16), transparent 60%),radial-gradient(520px 360px at 50% 110%, rgba(255,106,26,0.12), transparent 55%)"
-                          }
-                        }
-                      ),
-                      /* @__PURE__ */ jsx(
-                        "div",
-                        {
-                          "aria-hidden": true,
-                          className: "pointer-events-none absolute inset-0 opacity-[0.18]",
-                          style: {
-                            backgroundImage: "radial-gradient(rgba(255,255,255,0.22) 1px, transparent 1px)",
-                            backgroundSize: "18px 18px",
-                            maskImage: "radial-gradient(closest-side at 50% 35%, black, transparent 80%)",
-                            WebkitMaskImage: "radial-gradient(closest-side at 50% 35%, black, transparent 80%)"
-                          }
-                        }
-                      ),
-                      /* @__PURE__ */ jsxs("div", { className: "relative z-10 shrink-0 px-5 pt-4 sm:px-7 sm:pt-5", children: [
-                        /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between gap-3", children: [
-                          /* @__PURE__ */ jsxs("div", { className: "flex min-w-0 items-center gap-3", children: [
-                            /* @__PURE__ */ jsx("div", { className: "grid h-10 w-10 place-items-center overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-white/12 backdrop-blur-xl sm:hidden", children: /* @__PURE__ */ jsx(
-                              "img",
-                              {
-                                src: "/images/tivonix-logo-icon.webp",
-                                alt: "",
-                                className: "h-6 w-6 opacity-90",
-                                draggable: false
-                              }
-                            ) }),
-                            /* @__PURE__ */ jsx(
-                              "img",
-                              {
-                                src: "/images/tivonix-logo-lockup.webp",
-                                alt: "TIVONIX",
-                                draggable: false,
-                                className: "hidden h-9 w-auto opacity-90 sm:block"
-                              }
-                            ),
-                            /* @__PURE__ */ jsxs("div", { className: "min-w-0 sm:ml-1", children: [
-                              /* @__PURE__ */ jsx(
-                                "h2",
-                                {
-                                  id: titleId,
-                                  className: "truncate text-[17px] font-extrabold tracking-tight text-white sm:text-[19px]",
-                                  children: copy.title
-                                }
-                              ),
-                              /* @__PURE__ */ jsx("p", { id: descId, className: "mt-0.5 truncate text-[12px] text-white/55 sm:text-[12.5px]", children: copy.subtitle })
-                            ] })
-                          ] }),
-                          /* @__PURE__ */ jsx(
-                            "button",
-                            {
-                              type: "button",
-                              onClick: handleClose,
-                              disabled: status === "loading",
-                              className: "group grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white/[0.06] text-[#FFB36A] ring-1 ring-white/12 transition hover:bg-white/[0.12] hover:ring-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50 disabled:opacity-50",
-                              "aria-label": copy.close,
-                              children: /* @__PURE__ */ jsxs(
-                                "svg",
-                                {
-                                  width: "15",
-                                  height: "15",
-                                  viewBox: "0 0 24 24",
-                                  fill: "none",
-                                  className: "transition-transform duration-200 group-hover:rotate-90",
-                                  "aria-hidden": true,
-                                  children: [
-                                    /* @__PURE__ */ jsx("path", { d: "M6 6L18 18", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round" }),
-                                    /* @__PURE__ */ jsx("path", { d: "M18 6L6 18", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round" })
-                                  ]
-                                }
-                              )
-                            }
-                          )
-                        ] }),
-                        /* @__PURE__ */ jsxs("div", { className: "pointer-events-none mt-4 h-4", children: [
-                          /* @__PURE__ */ jsx("div", { className: "mx-auto h-[2px] w-full rounded-full opacity-95", style: { background: ORANGE_LINE } }),
-                          /* @__PURE__ */ jsx("div", { className: "mx-auto mt-[-2px] h-5 w-full opacity-35 blur-xl", style: { background: ORANGE_LINE } })
-                        ] })
-                      ] }),
-                      /* @__PURE__ */ jsx("div", { className: "lead-modal-scroll relative z-10 min-h-0 flex-1 px-5 pb-2 pt-1 sm:px-7", children: status === "success" ? /* @__PURE__ */ jsxs("div", { className: "flex min-h-[280px] flex-col items-center justify-center gap-5 py-10 text-center", children: [
-                        /* @__PURE__ */ jsx(
-                          "div",
-                          {
-                            className: "grid h-14 w-14 place-items-center rounded-full",
-                            style: {
-                              background: "linear-gradient(145deg, rgba(255,215,176,0.25), rgba(255,106,26,0.2))",
-                              boxShadow: "0 0 40px rgba(255,154,61,0.25)"
-                            },
-                            children: /* @__PURE__ */ jsx("svg", { width: "26", height: "26", viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: /* @__PURE__ */ jsx(
-                              "path",
-                              {
-                                d: "M5.5 12.6c2 1.6 3.3 3.2 4.2 5.1 2.6-4.8 5.8-8.2 10-11.2",
-                                stroke: "#FF9A3D",
-                                strokeWidth: "2.4",
-                                strokeLinecap: "round",
-                                strokeLinejoin: "round"
-                              }
-                            ) })
-                          }
-                        ),
-                        /* @__PURE__ */ jsx("p", { className: "max-w-[34ch] text-[15px] leading-relaxed text-white/90 sm:text-[16px]", children: copy.success }),
-                        /* @__PURE__ */ jsx(
-                          "button",
-                          {
-                            type: "button",
-                            onClick: onClose,
-                            className: "inline-flex h-11 items-center justify-center rounded-full bg-white px-8 text-[14px] font-bold text-black transition hover:bg-white/92",
-                            children: copy.close
-                          }
-                        )
-                      ] }) : /* @__PURE__ */ jsxs("form", { id: "lead-form", onSubmit, noValidate: true, className: "space-y-4 pb-2", children: [
-                        /* @__PURE__ */ jsxs("div", { className: "absolute -left-[9999px] top-auto h-0 w-0 overflow-hidden", "aria-hidden": true, children: [
-                          /* @__PURE__ */ jsx("label", { htmlFor: "lead-company-fax", children: "Company fax" }),
-                          /* @__PURE__ */ jsx(
-                            "input",
-                            {
-                              id: "lead-company-fax",
-                              name: "company_fax_url",
-                              type: "text",
-                              tabIndex: -1,
-                              autoComplete: "off",
-                              value: form.company_fax_url,
-                              onChange: (e) => update("company_fax_url", e.target.value)
-                            }
-                          )
-                        ] }),
-                        activePlanId && planName ? /* @__PURE__ */ jsxs("div", { className: "flex items-start justify-between gap-3 rounded-2xl bg-white/[0.05] px-4 py-3 ring-1 ring-[#FF9A3D]/25", children: [
-                          /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-                            /* @__PURE__ */ jsx("p", { className: "text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[#FFB36A]/80", children: copy.selectedPlan }),
-                            /* @__PURE__ */ jsxs("p", { className: "mt-1 text-[15px] font-bold tracking-tight text-white", children: [
-                              planName,
-                              planPrice ? /* @__PURE__ */ jsx("span", { className: "ml-2 text-[13px] font-semibold text-white/55", children: planPrice }) : null
-                            ] }),
-                            /* @__PURE__ */ jsx("p", { className: "mt-1 text-[12px] text-white/45", children: copy.planHint })
-                          ] }),
-                          /* @__PURE__ */ jsx(
-                            "button",
-                            {
-                              type: "button",
-                              onClick: () => setActivePlanId(null),
-                              className: "shrink-0 text-[11.5px] font-medium text-white/40 underline decoration-white/15 underline-offset-2 transition hover:text-white/70",
-                              children: copy.clearPlan
-                            }
-                          )
-                        ] }) : null,
-                        /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4", children: [
-                          /* @__PURE__ */ jsxs("div", { children: [
-                            /* @__PURE__ */ jsxs("label", { htmlFor: "lead-name", className: labelClass, children: [
-                              copy.name,
-                              " ",
-                              /* @__PURE__ */ jsxs("span", { className: "font-normal text-white/35", children: [
-                                "(",
-                                copy.nameOptional,
-                                ")"
-                              ] })
-                            ] }),
-                            /* @__PURE__ */ jsx(
-                              "input",
-                              {
-                                id: "lead-name",
-                                name: "name",
-                                type: "text",
-                                autoComplete: "name",
-                                className: inputBase,
-                                value: form.name,
-                                onChange: (e) => update("name", e.target.value),
-                                disabled: status === "loading",
-                                ...HOTJAR_SUPPRESS_ATTR
-                              }
-                            )
-                          ] }),
-                          /* @__PURE__ */ jsxs("div", { children: [
-                            /* @__PURE__ */ jsxs("label", { htmlFor: "lead-contact", className: labelClass, children: [
-                              copy.contact,
-                              " *",
-                              " ",
-                              /* @__PURE__ */ jsxs("span", { className: "font-normal text-white/35", children: [
-                                "— ",
-                                copy.contactHint
-                              ] })
-                            ] }),
-                            /* @__PURE__ */ jsx(
-                              "input",
-                              {
-                                ref: contactRef,
-                                id: "lead-contact",
-                                name: "contact",
-                                type: "text",
-                                required: true,
-                                autoComplete: "email",
-                                inputMode: "email",
-                                placeholder: copy.contactPh,
-                                className: cx(
-                                  inputBase,
-                                  errorField === "contact" && "ring-[#FF9A3D]/55 focus:ring-[#FF9A3D]/70"
-                                ),
-                                value: form.contact,
-                                onChange: (e) => update("contact", e.target.value),
-                                disabled: status === "loading",
-                                "aria-invalid": errorField === "contact",
-                                "aria-describedby": fieldError ? "lead-field-error" : void 0,
-                                ...HOTJAR_SUPPRESS_ATTR
-                              }
-                            )
-                          ] })
-                        ] }),
-                        /* @__PURE__ */ jsxs("div", { children: [
-                          /* @__PURE__ */ jsxs("label", { htmlFor: "lead-task", className: labelClass, children: [
-                            copy.task,
-                            " *"
-                          ] }),
-                          /* @__PURE__ */ jsx(
-                            "textarea",
-                            {
-                              ref: taskRef,
-                              id: "lead-task",
-                              name: "task",
-                              required: true,
-                              rows: 4,
-                              placeholder: activePlanId && planName ? lang === "ru" ? `Что важно по плану ${planName}? Сроки, примеры, пожелания…` : `What matters for the ${planName} plan? Timeline, examples, notes…` : copy.taskPh,
-                              className: cx(
-                                "min-h-[108px] w-full resize-none rounded-2xl px-4 py-3 text-[13.5px]",
-                                "border-0 bg-white/[0.07] text-white placeholder:text-white/35",
-                                "outline-none ring-1 ring-white/10 focus:bg-white/[0.10] focus:ring-white/22",
-                                "backdrop-blur-xl transition",
-                                HOTJAR_MASK_CLASS,
-                                errorField === "task" && "ring-[#FF9A3D]/55 focus:ring-[#FF9A3D]/70"
-                              ),
-                              value: form.task,
-                              onChange: (e) => update("task", e.target.value),
-                              disabled: status === "loading",
-                              "aria-invalid": errorField === "task",
-                              ...HOTJAR_SUPPRESS_ATTR
-                            }
-                          )
-                        ] }),
-                        /* @__PURE__ */ jsxs("div", { children: [
-                          /* @__PURE__ */ jsxs("div", { className: labelClass, children: [
-                            copy.budget,
-                            " ",
-                            /* @__PURE__ */ jsxs("span", { className: "font-normal text-white/35", children: [
-                              "(",
-                              copy.budgetOptional,
-                              ")"
-                            ] })
-                          ] }),
-                          /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-2", role: "group", "aria-label": copy.budget, children: budgetOptions.map((b) => {
-                            const active = form.budget === b.id;
-                            return /* @__PURE__ */ jsx(
-                              "button",
-                              {
-                                type: "button",
-                                disabled: status === "loading",
-                                onClick: () => update("budget", active ? "" : b.id),
-                                className: cx(
-                                  "h-9 rounded-full px-3.5 text-[12px] font-semibold transition",
-                                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45",
-                                  active ? "bg-white text-black" : "bg-white/[0.06] text-white/70 ring-1 ring-white/10 hover:bg-white/[0.10] hover:text-white"
-                                ),
-                                children: b.label
-                              },
-                              b.id
-                            );
-                          }) })
-                        ] }),
-                        /* @__PURE__ */ jsxs(
-                          "label",
-                          {
-                            className: cx(
-                              "flex cursor-pointer items-start gap-3 rounded-2xl bg-white/[0.04] px-4 py-3.5 ring-1 ring-white/8",
-                              errorField === "consent" && "ring-[#FF9A3D]/55"
-                            ),
-                            children: [
-                              /* @__PURE__ */ jsx(
-                                "input",
-                                {
-                                  ref: consentRef,
-                                  type: "checkbox",
-                                  checked: form.consent,
-                                  onChange: (e) => update("consent", e.target.checked),
-                                  disabled: status === "loading",
-                                  className: "mt-0.5 h-4 w-4 shrink-0 accent-[#FF9A3D]",
-                                  "aria-required": "true"
-                                }
-                              ),
-                              /* @__PURE__ */ jsxs("span", { className: "text-[12.5px] leading-relaxed text-white/72", children: [
-                                copy.consent,
-                                " ",
-                                /* @__PURE__ */ jsx(
-                                  "a",
-                                  {
-                                    href: copy.privacyHref,
-                                    target: "_blank",
-                                    rel: "noopener noreferrer",
-                                    className: "font-semibold text-[#FFB36A] underline decoration-[#FF9A3D]/35 underline-offset-2 hover:text-[#FFD7B0]",
-                                    children: copy.privacyLabel
-                                  }
-                                )
-                              ] })
-                            ]
-                          }
-                        ),
-                        fieldError ? /* @__PURE__ */ jsx("p", { id: "lead-field-error", role: "alert", className: "text-[12.5px] text-[#FFB36A]", children: fieldError }) : null,
-                        serverError ? /* @__PURE__ */ jsxs(
-                          "div",
-                          {
-                            role: "alert",
-                            className: "rounded-2xl bg-[#FF9A3D]/10 px-4 py-3.5 text-[12.5px] text-white/88 ring-1 ring-[#FF9A3D]/30",
-                            children: [
-                              /* @__PURE__ */ jsx("p", { className: "font-semibold", children: copy.errorTitle }),
-                              /* @__PURE__ */ jsx("p", { className: "mt-1 text-white/60", children: copy.errorBody }),
-                              /* @__PURE__ */ jsxs("div", { className: "mt-3 flex flex-col gap-2 sm:flex-row", children: [
-                                /* @__PURE__ */ jsx(
-                                  "a",
-                                  {
-                                    href: `mailto:${CONTACT_EMAIL}`,
-                                    onClick: () => trackEmailClick(),
-                                    className: "inline-flex h-10 items-center justify-center rounded-full bg-white px-4 text-[13px] font-bold text-black",
-                                    children: copy.fallbackEmail
-                                  }
-                                ),
-                                /* @__PURE__ */ jsx(
-                                  "a",
-                                  {
-                                    href: TELEGRAM_DIRECT_URL,
-                                    target: "_blank",
-                                    rel: "noopener noreferrer",
-                                    onClick: () => trackTelegramDirectClick(),
-                                    className: "inline-flex h-10 items-center justify-center rounded-full bg-white/[0.06] px-4 text-[13px] font-semibold text-white ring-1 ring-white/15",
-                                    children: copy.fallbackTelegram
-                                  }
-                                )
-                              ] })
-                            ]
-                          }
-                        ) : null
-                      ] }) }),
-                      status !== "success" ? /* @__PURE__ */ jsxs("div", { className: "relative z-10 shrink-0 bg-black/35 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl sm:px-7 sm:pb-5", children: [
-                        /* @__PURE__ */ jsx(
-                          "div",
-                          {
-                            "aria-hidden": true,
-                            className: "mb-3 h-px w-full opacity-60",
-                            style: {
-                              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent)"
-                            }
-                          }
-                        ),
-                        /* @__PURE__ */ jsx(
-                          "button",
-                          {
-                            type: "submit",
-                            form: "lead-form",
-                            disabled: status === "loading",
-                            className: cx(
-                              "flex h-12 w-full items-center justify-center rounded-full text-[15px] font-bold text-black",
-                              "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
-                              "hover:brightness-[1.04] active:brightness-[0.96]",
-                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50",
-                              status === "loading" && "cursor-not-allowed opacity-70"
-                            ),
-                            style: { background: BRAND_CTA },
-                            children: status === "loading" ? copy.sending : copy.send
-                          }
-                        ),
-                        /* @__PURE__ */ jsxs("div", { className: "mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-[11.5px] text-white/40", children: [
-                          /* @__PURE__ */ jsx(
-                            "a",
-                            {
-                              href: TELEGRAM_DIRECT_URL,
-                              target: "_blank",
-                              rel: "noopener noreferrer",
-                              onClick: () => trackTelegramDirectClick(),
-                              className: "transition hover:text-white/75",
-                              children: "@TIVONIX"
-                            }
-                          ),
-                          /* @__PURE__ */ jsx("span", { "aria-hidden": true, className: "text-white/18", children: "·" }),
-                          /* @__PURE__ */ jsx(
-                            "a",
-                            {
-                              href: TG_BOT_URL,
-                              target: "_blank",
-                              rel: "noopener noreferrer",
-                              onClick: () => trackTelegramBotClick(),
-                              className: "transition hover:text-white/75",
-                              children: copy.altBot
-                            }
-                          ),
-                          /* @__PURE__ */ jsx("span", { "aria-hidden": true, className: "text-white/18", children: "·" }),
-                          /* @__PURE__ */ jsx(
-                            "a",
-                            {
-                              href: `mailto:${CONTACT_EMAIL}`,
-                              onClick: () => trackEmailClick(),
-                              className: "transition hover:text-white/75",
-                              children: CONTACT_EMAIL
-                            }
-                          )
-                        ] })
-                      ] }) : null
-                    ]
-                  }
-                )
-              }
-            )
-          }
-        )
-      ]
+      )
     }
   );
-  return createPortal(node, document.body);
 }
-function LeadFormProvider({ children }) {
-  const [open, setOpen] = useState(false);
-  const [source, setSource] = useState("unknown");
-  const [planId, setPlanId] = useState(null);
-  const openLeadForm = useCallback((ctaSource, options) => {
-    trackCtaPrimaryClick(ctaSource);
-    trackLeadFormOpen(ctaSource);
-    setSource(ctaSource);
-    setPlanId(options?.planId ?? null);
-    setOpen(true);
-  }, []);
-  const closeLeadForm = useCallback(() => {
-    setOpen(false);
-  }, []);
-  const value = useMemo(
-    () => ({ openLeadForm, closeLeadForm, isOpen: open, source, planId }),
-    [openLeadForm, closeLeadForm, open, source, planId]
-  );
-  return /* @__PURE__ */ jsxs(LeadFormContext.Provider, { value, children: [
-    children,
-    /* @__PURE__ */ jsx(
-      LeadFormModal,
-      {
-        open,
-        source,
-        planId,
-        onClose: closeLeadForm
+function ScrollDepthTracker() {
+  const fired50 = useRef(false);
+  const fired90 = useRef(false);
+  useEffect(() => {
+    fired50.current = false;
+    fired90.current = false;
+    const onScroll = () => {
+      const doc = document.documentElement;
+      const scrollable = doc.scrollHeight - window.innerHeight;
+      if (scrollable <= 0) return;
+      const pct = window.scrollY / scrollable * 100;
+      if (!fired50.current && pct >= 50) {
+        fired50.current = true;
+        trackEvent("scroll_50");
       }
-    )
+      if (!fired90.current && pct >= 90) {
+        fired90.current = true;
+        trackEvent("scroll_90");
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  return null;
+}
+function AppShell() {
+  return /* @__PURE__ */ jsxs(LeadFormProvider, { children: [
+    /* @__PURE__ */ jsx(AppRoutes, {}),
+    /* @__PURE__ */ jsx(ConsentBanner, {}),
+    /* @__PURE__ */ jsx(ScrollDepthTracker, {})
   ] });
 }
 function langFromUrl(url) {
@@ -17907,7 +19319,7 @@ function render(url) {
   const helmetContext = {};
   const initialLang = langFromUrl(url);
   const appHtml = renderToString(
-    /* @__PURE__ */ jsx(React.StrictMode, { children: /* @__PURE__ */ jsx(HelmetProvider, { context: helmetContext, children: /* @__PURE__ */ jsx(LangProvider, { initialLang, children: /* @__PURE__ */ jsx(MemoryRouter, { initialEntries: [url], children: /* @__PURE__ */ jsx(LeadFormProvider, { children: /* @__PURE__ */ jsx(AppRoutes, {}) }) }) }) }) })
+    /* @__PURE__ */ jsx(HelmetProvider, { context: helmetContext, children: /* @__PURE__ */ jsx(LangProvider, { initialLang, children: /* @__PURE__ */ jsx(MemoryRouter, { initialEntries: [url], children: /* @__PURE__ */ jsx(AppShell, {}) }) }) })
   );
   const { helmet } = helmetContext;
   const headTags = [

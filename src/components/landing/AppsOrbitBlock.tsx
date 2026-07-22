@@ -63,12 +63,12 @@ const COPY = {
   },
   en: {
     eyebrow: "FROM IDEA TO LAUNCH",
-    h: "We'll help you understand\nwhat your business actually needs",
+    h: "We’ll help you understand\nwhat your business actually needs",
     p:
-      "Landing page, Telegram bot, CRM, client portal or automation — we'll match the solution to your task, not push unnecessary development.\n\n" +
-      "First we'll map where leads, time or money are being lost. Then we'll propose a clear plan: what to build now, what can wait, and how to reach a working result faster.",
+      "Landing page, Telegram bot, CRM, client portal or automation — we’ll match the solution to your task, not push unnecessary development.\n\n" +
+      "First we’ll map where leads, time or money are being lost. Then we’ll propose a clear plan: what to build now, what can wait, and how to reach a working result faster.",
     pCompact:
-      "We'll match the solution to your task — without extra scope. We'll find where you lose leads and outline a clear launch plan.",
+      "We’ll match the solution to your task — without extra scope. We’ll find where you lose leads and outline a clear launch plan.",
     trust: "We reply within a day • First consultation is free",
     tg: "Write on Telegram",
     emailBtnLabel: "Open in Gmail",
@@ -127,7 +127,7 @@ function buildMailBody(lang: Lang) {
 
   return (
     "Hi!\n\n" +
-    "I'd like to get an estimate.\n\n" +
+    "I’d like to get an estimate.\n\n" +
     "1) What we’re building (1–2 sentences):\n- \n\n" +
     "2) Key features:\n- \n- \n- \n\n" +
     "3) Do you have design/spec/prototype:\n- \n\n" +

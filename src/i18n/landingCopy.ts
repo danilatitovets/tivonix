@@ -487,14 +487,14 @@ const COPY_RU = {
 const COPY_EN = {
   hero: {
     eyebrow: "WEBSITES · CRM · BOTS · WEB APPS",
-    titleLines: ["We build sites and systems", "where leads don't get lost"],
-    titleHighlight: "leads don't get lost",
+    titleLines: ["We build sites and systems", "where leads do not get lost"],
+    titleHighlight: "leads do not get lost",
     scrollStages: [
       {
-        headline: "We build sites and systems where leads don't get lost",
-        headlineLines: ["We build sites and systems", "where leads don't get lost"],
+        headline: "We build sites and systems where leads do not get lost",
+        headlineLines: ["We build sites and systems", "where leads do not get lost"],
         headlineBefore: "We build sites and systems",
-        headlineAccent: "where leads don't get lost",
+        headlineAccent: "where leads do not get lost",
         headlineAfter: "",
         lead: "We develop landing pages, Telegram bots, CRMs, client portals and MVPs — and connect them into one process: from first inquiry to payment and result.",
       },
@@ -504,7 +504,7 @@ const COPY_EN = {
         headlineBefore: "The form was submitted.",
         headlineAccent: "What happens next?",
         headlineAfter: "",
-        lead: "When inquiries live in chats, inboxes and spreadsheets, the team replies late, forgets clients and doesn't know the next step.",
+        lead: "When inquiries live in chats, inboxes and spreadsheets, the team replies late, forgets clients and does not know the next step.",
       },
       {
         headline: "One lead. One clear process",
@@ -526,7 +526,7 @@ const COPY_EN = {
     flowDisplayChips: ["Landing", "Form", "Telegram"],
     flowAnalysis: {
       headline: "Task reviewed",
-      lead: "The landing captures traffic, the form saves contact details, Telegram alerts your team — the lead doesn't sit in a chat thread.",
+      lead: "The landing captures traffic, the form saves contact details, Telegram alerts your team — the lead doesn’t sit in a chat thread.",
       routeLabel: "Route:",
       routeText: "site → form → Telegram → CRM.",
       modulesLabel: "Stack:",
@@ -622,7 +622,7 @@ const COPY_EN = {
     title: "While leads live in chats — the process breaks",
     titleLines: ["While leads live in chats", "the process breaks"],
     subtitle:
-      "When inquiries live in chats, inboxes and spreadsheets, the team replies late, forgets clients and doesn't know the next step.",
+      "When inquiries live in chats, inboxes and spreadsheets, the team replies late, forgets clients and doesn’t know the next step.",
     hoverCta: "How we fix it",
     items: [
       {
@@ -633,7 +633,7 @@ const COPY_EN = {
       {
         title: "Reply came too late",
         text: "The manager saw it in the evening. By then the client already went to whoever answered faster.",
-        solution: "Instant Telegram or email alerts — leads don't wait in threads.",
+        solution: "Instant Telegram or email alerts — leads don’t wait in threads.",
       },
       {
         title: "Status unknown",
@@ -679,7 +679,7 @@ const COPY_EN = {
       },
     ],
     ctaBar: {
-      title: "We'll build a system where leads don't get lost — or a first product version.",
+      title: "We’ll build a system where leads don’t get lost — or a first product version.",
       primary: "Get an estimate",
       secondary: "Estimate the project",
     },
@@ -731,7 +731,7 @@ const COPY_EN = {
   },
   compare: {
     title: "Typical website vs TIVONIX system",
-    subtitle: "The difference isn't a prettier page — it's what happens after the form is submitted.",
+    subtitle: "The difference isn’t a prettier page — it’s what happens after the form is submitted.",
     regular: {
       title: "Typical website",
       headline: "Form submitted — then manual work",
@@ -747,7 +747,7 @@ const COPY_EN = {
     tivonix: {
       title: "TIVONIX system",
       headline: "Lead under control",
-      badge: "Lead doesn't sit in chat — the team sees the next step",
+      badge: "Lead doesn’t sit in chat — the team sees the next step",
       items: [
         "Lead arrives in the right channel",
         "A record is created automatically",
@@ -801,7 +801,7 @@ const COPY_EN = {
       "Businesses that need more than a pretty site — a working system: leads, bookings, statuses, payments or a client area.",
     callouts: {
       left: {
-        text: "Leads reach the manager in under a minute — not buried in chats or tomorrow's spreadsheet.",
+        text: "Leads reach the manager in under a minute — not buried in chats or tomorrow’s spreadsheet.",
       },
       right: {
         text: "Instagram, Telegram, website and calls — every channel in one flow.",
@@ -834,7 +834,7 @@ const COPY_EN = {
       },
       {
         title: "Fast response",
-        text: "Telegram alerts, statuses — clients don't wait and leave.",
+        text: "Telegram alerts, statuses — clients don’t wait and leave.",
       },
       {
         title: "Growth without chaos",
@@ -850,7 +850,7 @@ const COPY_EN = {
       { title: "Experts and consultants", desc: "Leads from landing straight to Telegram and CRM" },
       { title: "Startups and MVPs", desc: "Fast product launch with the modules you need — nothing extra" },
       { title: "Agencies and teams", desc: "Ad landing pages with a working lead funnel" },
-      { title: "Small business", desc: "When leads are handled manually — and that's already getting in the way" },
+      { title: "Small business", desc: "When leads are handled manually — and that’s already getting in the way" },
     ],
   },
   process: {
@@ -903,10 +903,10 @@ const COPY_EN = {
   finalCta: {
     title: "Tell us what you need to launch",
     subtitle:
-      "Describe the task in your own words. We'll review it and send a preliminary plan, timeline and cost range.",
+      "Describe the task in your own words. We’ll review it and send a preliminary plan, timeline and cost range.",
     ctaPrimary: "Get an estimate",
     ctaSecondary: "Message on Telegram",
-    micro: "We reply within a business day. A call is optional. We don't share contacts with third parties.",
+    micro: "We reply within a business day. A call is optional. We don’t share contacts with third parties.",
   },
   packages: {
     sectionTitle: "Three directions for your task",

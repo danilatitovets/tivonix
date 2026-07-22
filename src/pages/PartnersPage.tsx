@@ -1237,7 +1237,7 @@ export default function PartnersPage() {
   }, []);
 
   return (
-    <div className="min-h-screen overflow-x-clip bg-partners-cream font-partners text-partners-charcoal antialiased">
+    <div className="min-h-screen bg-partners-cream font-partners text-partners-charcoal antialiased">
       <Helmet>
         <link
           href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600&family=Inter:wght@400;500;600&display=swap"
@@ -3963,7 +3963,7 @@ export default function PartnersPage() {
       </Helmet>
       <Header />
 
-      <main>
+      <main className="overflow-x-clip">
         {/* Hero */}
         <section
           ref={heroRef}

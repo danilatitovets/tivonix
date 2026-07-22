@@ -6,10 +6,7 @@ import {
   trackTelegramBotClick,
   trackTelegramDirectClick,
 } from "./lib/analytics";
-import { AppRoutes } from "./AppRoutes";
-import { LeadFormProvider } from "./components/leads/LeadFormProvider";
-import ConsentBanner from "./components/ConsentBanner";
-import ScrollDepthTracker from "./components/ScrollDepthTracker";
+import { AppShell } from "./AppShell";
 
 function closestAnchor(el: EventTarget | null): HTMLAnchorElement | null {
   let e = el as HTMLElement | null;
@@ -93,11 +90,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <LeadFormProvider>
-        <AppRoutes />
-        <ConsentBanner />
-        <ScrollDepthTracker />
-      </LeadFormProvider>
+      <AppShell />
     </BrowserRouter>
   );
 }

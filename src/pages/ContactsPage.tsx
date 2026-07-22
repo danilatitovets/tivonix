@@ -266,7 +266,7 @@ function SunContacts({ size }: { size: number }) {
               <p className="mt-1.5 text-[12px] leading-snug text-white/40">
                 {isRu
                   ? "Опишите задачу — пришлём план, срок и диапазон стоимости."
-                  : "Describe the task — we'll send a plan, timeline and cost range."}
+                  : "Describe the task — we\u2019ll send a plan, timeline and cost range."}
               </p>
 
               <div className="mt-6">

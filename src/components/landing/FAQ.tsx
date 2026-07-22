@@ -41,7 +41,7 @@ const FAQ_ITEMS: FaqItem[] = [
     q: { ru: "Можно ли начать с небольшой версии?", en: "Can we start with a small version?" },
     a: {
       ru: "Да. Часто лучше начать с лендинга, бота, формы и уведомлений, а потом добавить CRM, кабинет или интеграции.",
-      en: "Yes. Often it's better to start with a landing page, bot, form and alerts, then add CRM, a portal or integrations.",
+      en: "Yes. Often it’s better to start with a landing page, bot, form and alerts, then add CRM, a portal or integrations.",
     },
   },
   {
@@ -73,7 +73,7 @@ const FAQ_ITEMS: FaqItem[] = [
     q: { ru: "Как начать работу?", en: "How do we start?" },
     a: {
       ru: "Опишите задачу в форме на сайте. Мы разберём её и ответим в течение рабочего дня с планом и диапазоном стоимости. Созвон не обязателен.",
-      en: "Describe the task in the site form. We'll review it and reply within a business day with a plan and cost range. A call is optional.",
+      en: "Describe the task in the site form. We’ll review it and reply within a business day with a plan and cost range. A call is optional.",
     },
   },
 ];

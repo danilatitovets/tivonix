@@ -129,7 +129,7 @@ function TelegramVisual({ isRu }: { isRu: boolean }) {
   const calm = useCalmPainMotion();
   const message = isRu
     ? "Здравствуйте, хочу записаться на консультацию…"
-    : "Hi, I'd like to book a consultation…";
+    : "Hi, I’d like to book a consultation…";
 
   const stages = isRu
     ? [
@@ -140,7 +140,7 @@ function TelegramVisual({ isRu }: { isRu: boolean }) {
         { time: "неделю назад", status: "вы забыли?", late: true },
       ]
     : [
-        { time: "now", status: "Manager hasn't seen it", late: false },
+        { time: "now", status: "Manager hasn’t seen it", late: false },
         { time: "23 min", status: "Nobody replied", late: false },
         { time: "4 hours", status: "Still no reply", late: true },
         { time: "a day ago", status: "Client is still waiting", late: true },
@@ -620,7 +620,7 @@ function AdminVisual({ isRu }: { isRu: boolean }) {
         {
           kind: "memory" as const,
           title: "Memory",
-          lines: ["«think I replied»", "«will write tomorrow»", "«don't remember»"],
+          lines: ["«think I replied»", "«will write tomorrow»", "«don’t remember»"],
         },
         {
           kind: "chats" as const,

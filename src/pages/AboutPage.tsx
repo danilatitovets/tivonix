@@ -213,15 +213,10 @@ export default function AboutPage() {
 
     let raf = 0;
     const update = () => {
-      if (mobile.matches) {
-        el.style.setProperty("--spread", "1");
-        el.dataset.formed = "1";
-        return;
-      }
       const rect = el.getBoundingClientRect();
       const vh = window.innerHeight;
-      const start = vh * 0.92;
-      const end = vh * 0.08;
+      const start = vh * (mobile.matches ? 0.9 : 0.92);
+      const end = vh * (mobile.matches ? 0.18 : 0.08);
       const t = Math.min(1, Math.max(0, (start - rect.top) / (start - end)));
       const eased = t * t * (3 - 2 * t);
       el.style.setProperty("--spread", eased.toFixed(3));
@@ -387,7 +382,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="about-caldera__section about-story-section pt-0">
+        <section className="about-caldera__section about-story-section scroll-mt-[var(--tivonix-header-spacer)] pt-0">
           <Container className="relative z-[2]">
             <div ref={storyRef} className="about-story" lang={lang}>
               <p className="about-story__text">
@@ -405,7 +400,7 @@ export default function AboutPage() {
           </Container>
         </section>
 
-        <section className="about-caldera__section">
+        <section className="about-caldera__section scroll-mt-[var(--tivonix-header-spacer)]">
           <Container>
             <div className="about-caldera__trio">
               {[copy.mission, copy.vision, copy.values].map((block) => (
@@ -428,7 +423,7 @@ export default function AboutPage() {
           </Container>
         </section>
 
-        <section className="about-why-section about-caldera__section">
+        <section className="about-why-section about-caldera__section scroll-mt-[var(--tivonix-header-spacer)]">
           <Container>
             <div className="about-why__head">
               <h2 className="about-caldera__display about-caldera__display--section">
@@ -468,7 +463,7 @@ export default function AboutPage() {
 
         <section
           ref={peopleRef}
-          className="about-people about-caldera__section about-caldera__section--last"
+          className="about-people about-caldera__section about-caldera__section--last scroll-mt-[var(--tivonix-header-spacer)]"
           style={{ ["--spread" as string]: 0 }}
         >
           <Container>

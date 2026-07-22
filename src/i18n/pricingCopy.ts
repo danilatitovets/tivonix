@@ -43,7 +43,7 @@ export function formatPlanHighlightsForTelegram(planId: PlanId, lang: Lang = "ru
   const copy = pricingCopy(lang);
   const planName = copy.plans[planId].name;
   const title =
-    lang === "ru" ? `✨ Что входит в ${planName}` : `✨ What's included in ${planName}`;
+    lang === "ru" ? `✨ Что входит в ${planName}` : `✨ What\u2019s included in ${planName}`;
   const sections: string[] = [];
 
   for (const group of COMPARISON_GROUPS) {
@@ -353,7 +353,7 @@ const COPY_RU = {
 const COPY_EN = {
   title: "Launch plans",
   subtitle: "Clear plans for your task — from first leads to a full web service",
-  includesLabel: "What's included",
+  includesLabel: "What’s included",
   launchDiscount: {
     percent: "10%",
     note: "* Launch discount: early projects ship at a reduced rate from the base price.",
@@ -444,14 +444,14 @@ const COPY_EN = {
         "launch preparation",
       ],
       cta: "Discuss product",
-      ctaHint: "Opens a short form. Describe the product — we'll estimate scope.",
+      ctaHint: "Opens a short form. Describe the product — we’ll estimate scope.",
       compactCta: "Describe product",
     },
     custom: {
       name: "Custom",
       tagline: "Automation & AI",
       price: "custom",
-      desc: "When the task doesn't fit a ready plan: AI bots, complex CRM, document automation, integrations or an internal system.",
+      desc: "When the task doesn’t fit a ready plan: AI bots, complex CRM, document automation, integrations or an internal system.",
       includes: [
         "AI bots and assistants",
         "lead automation",
@@ -473,7 +473,7 @@ const COPY_EN = {
       {
         id: "price-from",
         q: "What does “from” mean?",
-        a: "It's the minimum launch cost. The final price depends on screens, logic, integrations, client area, CRM and timeline.",
+        a: "It’s the minimum launch cost. The final price depends on screens, logic, integrations, client area, CRM and timeline.",
       },
       {
         id: "pay-now",
@@ -482,17 +482,17 @@ const COPY_EN = {
       },
       {
         id: "which-plan",
-        q: "Which plan if I'm not sure?",
-        a: "Pick Growth or message us. We'll review your task and tell you if you need a site, bot, CRM, client area or custom automation.",
+        q: "Which plan if I’m not sure?",
+        a: "Pick Growth or message us. We’ll review your task and tell you if you need a site, bot, CRM, client area or custom automation.",
       },
       {
         id: "start-expand",
         q: "Can I start with Start and expand later?",
-        a: "Yes. Often it's better to launch a simple version, test leads, then add CRM, statuses, client area or integrations.",
+        a: "Yes. Often it’s better to launch a simple version, test leads, then add CRM, statuses, client area or integrations.",
       },
       {
         id: "growth-includes",
-        q: "What's in Growth?",
+        q: "What’s in Growth?",
         a: "Growth is for when you need order, not just a form: alerts, statuses, a sheet or mini-CRM and a clear processing flow.",
       },
       {
@@ -548,12 +548,12 @@ const COPY_EN = {
   footer: {
     valueTitle: "Pay only for",
     valueTitleHighlight: "the launch scope you need",
-    valueAside: "Not for modules you don't use yet",
+    valueAside: "Not for modules you don’t use yet",
     valueLead:
       "We launch what helps you capture and process leads first. When the business outgrows it — we add CRM, client area, payments, integrations or automation.",
     helpTitle: "Not sure which plan to pick?",
     helpLead:
-      "Describe your task in your own words — we'll suggest whether to start with Start, Growth, Product or Custom.",
+      "Describe your task in your own words — we’ll suggest whether to start with Start, Growth, Product or Custom.",
     helpCta: "Message on Telegram",
     helpModalCta: "Submit request",
     planScopeCaption: "Launch scope by plan",

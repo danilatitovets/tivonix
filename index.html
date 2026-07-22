@@ -20,6 +20,57 @@
   </head>
 
   <body style="margin: 0; background-color: #000;">
+    <script>
+      (function () {
+        try {
+          var path = (location.pathname || "/").replace(/\/+$/, "") || "/";
+          var lang = "ru";
+          if (path === "/en" || path.indexOf("/en/") === 0) {
+            lang = "en";
+          } else if (path === "/ru" || path.indexOf("/ru/") === 0 || path === "/partners") {
+            lang = "ru";
+          } else if (
+            path === "/" ||
+            path === "/plans" ||
+            path === "/about" ||
+            path === "/projects" ||
+            path === "/contacts"
+          ) {
+            lang = "ru";
+            try {
+              var stored = localStorage.getItem("tivonix_lang");
+              if (stored === "en") {
+                var target = path === "/" ? "/en" : "/en" + path;
+                location.replace(target + location.search + location.hash);
+                return;
+              }
+            } catch (e2) {
+              /* ignore */
+            }
+          } else {
+            var qp = new URLSearchParams(location.search).get("lang");
+            if (qp === "en" || qp === "ru") {
+              lang = qp;
+            } else {
+              try {
+                var storedOther = localStorage.getItem("tivonix_lang");
+                if (storedOther === "en" || storedOther === "ru") {
+                  lang = storedOther;
+                }
+              } catch (e3) {
+                /* ignore */
+              }
+            }
+          }
+
+          document.documentElement.lang = lang;
+          document.documentElement.dataset.lang = lang;
+          window.__TIVONIX_LANG__ = lang;
+        } catch (e) {
+          /* ignore */
+        }
+      })();
+    </script>
     <div id="root"></div>
 
     <script type="module" src="/src/main.tsx"></script>
