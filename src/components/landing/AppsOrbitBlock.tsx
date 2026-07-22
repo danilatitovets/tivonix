@@ -11,14 +11,16 @@ import React,
 import Container from "../ui/Container";
 import Section from "../ui/Section";
 import { useLang, type Lang } from "../../i18n/LangProvider";
+import { TG_CHANNEL_URL } from "../../constants/links";
+import { CONTACT_EMAIL } from "../../lib/leads";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
 
 const IMG = "/images/gen.webp";
-const TG_URL = "https://t.me/TIVONIX";
-const EMAIL = "tivoonix@gmail.com";
+const TG_URL = TG_CHANNEL_URL;
+const EMAIL = CONTACT_EMAIL;
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);

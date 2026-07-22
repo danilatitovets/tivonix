@@ -32,15 +32,12 @@ const FOOTER_SERVICES = [
   { to: "/#process", label: { ru: "Как мы работаем", en: "How we work" } },
 ] as const;
 
-const FOOTER_GMAIL_URL =
-  "https://mail.google.com/mail/?view=cm&fs=1" +
-  `&to=${encodeURIComponent(CONTACT_EMAIL)}` +
-  `&su=${encodeURIComponent("Проект (SaaS/MVP)")}`;
+const FOOTER_MAILTO_URL = `mailto:${CONTACT_EMAIL}`;
 
 const FOOTER_CONNECT = [
   { href: TG_CHANNEL_URL, label: "Telegram", kind: "tg" as const },
   { href: "https://www.instagram.com/tivonix.tech/", label: "Instagram", kind: "ig" as const },
-  { href: FOOTER_GMAIL_URL, label: "Gmail", kind: "mail" as const },
+  { href: FOOTER_MAILTO_URL, label: "Gmail", kind: "mail" as const },
 ] as const;
 
 const DOCS = {
@@ -146,11 +143,13 @@ function SocialIconLink({
   children: React.ReactNode;
   className?: string;
 }) {
+  const openInNewTab = /^https?:/i.test(href);
+
   return (
     <a
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
+      target={openInNewTab ? "_blank" : undefined}
+      rel={openInNewTab ? "noopener noreferrer" : undefined}
       aria-label={label}
       className={cx("site-footer__social-link", className)}
     >
@@ -280,7 +279,7 @@ function Footer() {
                   {isRu ? "Ваш техпартнёр по сайтам, ботам и CRM" : "Your tech partner for sites, bots and CRM"}
                 </p>
 
-                <a href={FOOTER_GMAIL_URL} target="_blank" rel="noopener noreferrer" className="site-footer__touch-row">
+                <a href={FOOTER_MAILTO_URL} className="site-footer__touch-row">
                   <Mail className="site-footer__touch-row-icon" strokeWidth={2} aria-hidden />
                   <span>{CONTACT_EMAIL}</span>
                 </a>

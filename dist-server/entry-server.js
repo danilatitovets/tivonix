@@ -380,7 +380,7 @@ function LangPathSync() {
     if (clean === "/en" || clean.startsWith("/en/")) next = "en";
     else if (clean === "/ru" || clean.startsWith("/ru/")) next = "ru";
     else if (clean === "/partners") next = "ru";
-    else if (clean === "/" || clean === "/plans" || clean === "/about" || clean === "/projects" || clean === "/contacts") {
+    else if (clean === "/" || clean === "/plans" || clean === "/about" || clean === "/projects" || clean === "/contacts" || /^\/projects\//.test(clean)) {
       next = "ru";
     }
     if (next && next !== lang) setLang(next);
@@ -643,6 +643,51 @@ const COPY_EN$4 = {
   planHint: "Request for this plan — add details below.",
   formNote: "We reply within a business day. A call is optional. We don’t share contacts with third parties."
 };
+const EN_ROUTE_MAP = {
+  "/": "/en",
+  "/projects": "/en/projects",
+  "/contacts": "/en/contacts",
+  "/plans": "/en/plans",
+  "/about": "/en/about"
+};
+const RU_ROUTE_MAP = {
+  "/en": "/",
+  "/en/projects": "/projects",
+  "/en/contacts": "/contacts",
+  "/en/plans": "/plans",
+  "/en/about": "/about"
+};
+function stripLangPrefix(pathname) {
+  const p = pathname.replace(/\/+$/, "") || "/";
+  if (p === "/en") return "/";
+  if (p.startsWith("/en/")) return p.slice(3) || "/";
+  return p;
+}
+function pathForLang(pathname, lang) {
+  const clean = pathname.replace(/\/+$/, "") || "/";
+  if (clean === "/partners" || clean === "/ru/partners") {
+    return lang === "en" ? "/en/partners" : "/ru/partners";
+  }
+  if (clean === "/en/partners") {
+    return lang === "en" ? "/en/partners" : "/ru/partners";
+  }
+  const mRu = clean.match(/^\/projects\/([^/]+)$/);
+  if (mRu) {
+    return lang === "en" ? `/en/projects/${mRu[1]}` : `/projects/${mRu[1]}`;
+  }
+  const mEn = clean.match(/^\/en\/projects\/([^/]+)$/);
+  if (mEn) {
+    return lang === "en" ? `/en/projects/${mEn[1]}` : `/projects/${mEn[1]}`;
+  }
+  if (lang === "en") {
+    if (EN_ROUTE_MAP[clean]) return EN_ROUTE_MAP[clean];
+    if (clean.startsWith("/en")) return clean;
+    return clean;
+  }
+  if (RU_ROUTE_MAP[clean]) return RU_ROUTE_MAP[clean];
+  if (clean.startsWith("/en/")) return stripLangPrefix(clean);
+  return clean;
+}
 function readUtm(param) {
   if (typeof window === "undefined") return "";
   try {
@@ -1744,7 +1789,7 @@ function LeadFormModal({
                               /* @__PURE__ */ jsx(
                                 "a",
                                 {
-                                  href: "/projects/spliton",
+                                  href: pathForLang("/projects/spliton", lang),
                                   className: "inline-flex h-11 items-center justify-center rounded-full border border-white/15 px-5 text-[13.5px] font-medium text-white/85 transition hover:border-white/30 hover:text-white",
                                   onClick: onClose,
                                   children: copy.successCase
@@ -1753,7 +1798,7 @@ function LeadFormModal({
                               /* @__PURE__ */ jsx(
                                 "a",
                                 {
-                                  href: "/",
+                                  href: lang === "en" ? "/en" : "/",
                                   className: "inline-flex h-11 items-center justify-center rounded-full bg-white px-5 text-[13.5px] font-bold text-black transition hover:bg-white/92",
                                   onClick: onClose,
                                   children: copy.successHome
@@ -2369,51 +2414,6 @@ function LeadCTAButton({
     }
   );
 }
-const EN_ROUTE_MAP = {
-  "/": "/en",
-  "/projects": "/en/projects",
-  "/contacts": "/en/contacts",
-  "/plans": "/en/plans",
-  "/about": "/en/about"
-};
-const RU_ROUTE_MAP = {
-  "/en": "/",
-  "/en/projects": "/projects",
-  "/en/contacts": "/contacts",
-  "/en/plans": "/plans",
-  "/en/about": "/about"
-};
-function stripLangPrefix(pathname) {
-  const p = pathname.replace(/\/+$/, "") || "/";
-  if (p === "/en") return "/";
-  if (p.startsWith("/en/")) return p.slice(3) || "/";
-  return p;
-}
-function pathForLang(pathname, lang) {
-  const clean = pathname.replace(/\/+$/, "") || "/";
-  if (clean === "/partners" || clean === "/ru/partners") {
-    return lang === "en" ? "/en/partners" : "/ru/partners";
-  }
-  if (clean === "/en/partners") {
-    return lang === "en" ? "/en/partners" : "/ru/partners";
-  }
-  const mRu = clean.match(/^\/projects\/([^/]+)$/);
-  if (mRu) {
-    return lang === "en" ? `/en/projects/${mRu[1]}` : `/projects/${mRu[1]}`;
-  }
-  const mEn = clean.match(/^\/en\/projects\/([^/]+)$/);
-  if (mEn) {
-    return lang === "en" ? `/en/projects/${mEn[1]}` : `/projects/${mEn[1]}`;
-  }
-  if (lang === "en") {
-    if (EN_ROUTE_MAP[clean]) return EN_ROUTE_MAP[clean];
-    if (clean.startsWith("/en")) return clean;
-    return clean;
-  }
-  if (RU_ROUTE_MAP[clean]) return RU_ROUTE_MAP[clean];
-  if (clean.startsWith("/en/")) return stripLangPrefix(clean);
-  return clean;
-}
 const ORANGE_PILL = "bg-gradient-to-r from-[#FFD7B0] via-[#FF9A3D] to-[#FF6A1A] shadow-[0_6px_20px_rgba(255,107,44,0.2)]";
 function cx$d(...a) {
   return a.filter(Boolean).join(" ");
@@ -2699,11 +2699,12 @@ function Header() {
     mo.observe(el, { attributes: true, attributeFilter: ["data-partners-caps"] });
     return () => mo.disconnect();
   }, [location.pathname]);
-  const hideHeader = (footerInView || partnersCapsLock) && !open;
+  const hideHeader = (footerInView || partnersCapsLock && !isMobile) && !open;
   const isPartners = isPartnersPath(location.pathname);
   const logoSrc = isPartners ? LOGO_BLACK : heroInView ? LOGO_WHITE : LOGO_DEFAULT;
-  const isHome = location.pathname === "/";
-  const needsSpacer = isMobile && !isHome;
+  const isHome = location.pathname === "/" || location.pathname === "/en";
+  const isAbout = location.pathname === "/about" || location.pathname === "/en/about";
+  const needsSpacer = isMobile && !isHome && !isAbout;
   const { lang } = useLang();
   const isRu = lang === "ru";
   const burgerRef = useRef(null);
@@ -2775,17 +2776,21 @@ function Header() {
     }
     return key;
   };
+  const homePath = lang === "en" ? "/en" : "/";
   const navTo = (it) => {
     if (it.key === "partners") return partnersPath(lang);
     if (it.key === "about") return aboutPath(lang);
-    return it.to ?? "/";
+    if (it.key === "services") return `${homePath}#offer`;
+    return pathForLang(it.to ?? "/", lang);
   };
   const activeKey = useMemo(() => {
-    if (location.pathname === "/plans") return "plans";
-    if (location.pathname === "/projects" || location.pathname.startsWith("/projects/"))
+    const p = location.pathname;
+    if (p === "/plans" || p === "/en/plans") return "plans";
+    if (p === "/projects" || p.startsWith("/projects/") || p === "/en/projects" || p.startsWith("/en/projects/")) {
       return "projects";
-    if (location.pathname === "/about" || location.pathname === "/en/about") return "about";
-    if (isPartnersPath(location.pathname)) return "partners";
+    }
+    if (p === "/about" || p === "/en/about") return "about";
+    if (isPartnersPath(p)) return "partners";
     return null;
   }, [location.pathname]);
   const tabsItems = useMemo(
@@ -2817,22 +2822,22 @@ function Header() {
         if (el) el.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
       };
       if (location.pathname !== "/" && location.pathname !== "/en") {
-        navigate(lang === "en" ? "/en" : "/");
+        navigate(homePath);
         window.setTimeout(go, 80);
       } else {
         go();
       }
       return;
     }
-    if (to === "/") {
+    if (to === "/" || to === "/en") {
       e.preventDefault();
-      if (location.pathname !== "/") navigate("/");
+      if (location.pathname !== homePath) navigate(homePath);
       window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
     }
   };
   const goHome = () => {
     setOpen(false);
-    if (location.pathname !== "/") navigate("/");
+    if (location.pathname !== homePath) navigate(homePath);
     window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
   };
   const ariaHome = isRu ? "На главную" : "Go to home";
@@ -2847,6 +2852,186 @@ function Header() {
     setOpen(false);
     requestAnimationFrame(() => burgerRef.current?.focus({ preventScroll: true }));
   };
+  const [menuPortalReady, setMenuPortalReady] = useState(false);
+  useEffect(() => {
+    setMenuPortalReady(true);
+  }, []);
+  const mobileMenu = menuPortalReady ? /* @__PURE__ */ jsx(
+    "div",
+    {
+      id: "mobile-header-menu",
+      className: cx$c(
+        "xl:hidden fixed inset-0 z-[200]",
+        open ? "pointer-events-auto" : "pointer-events-none"
+      ),
+      "aria-hidden": !open,
+      children: /* @__PURE__ */ jsxs(
+        "div",
+        {
+          className: cx$c(
+            "mobile-menu-panel absolute inset-0 flex min-h-[100dvh] flex-col overflow-hidden bg-[#161313]",
+            "transition-[opacity,transform,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+            open ? "visible translate-y-0 opacity-100" : "invisible -translate-y-4 opacity-0"
+          ),
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": isRu ? "Меню" : "Menu",
+          children: [
+            /* @__PURE__ */ jsxs("div", { className: "relative flex items-center justify-between px-4 pb-4 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5", children: [
+              /* @__PURE__ */ jsx(
+                Link,
+                {
+                  to: "/",
+                  onClick: (e) => {
+                    e.preventDefault();
+                    goHome();
+                  },
+                  className: "flex items-center outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70 rounded-xl",
+                  "aria-label": ariaHome,
+                  children: /* @__PURE__ */ jsx(
+                    "img",
+                    {
+                      src: heroInView ? LOGO_WHITE : LOGO_DEFAULT,
+                      alt: "TIVONIX",
+                      className: "h-7 w-auto object-contain opacity-95",
+                      draggable: false,
+                      decoding: "async"
+                    }
+                  )
+                }
+              ),
+              /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: closeMenu,
+                  className: cx$c(
+                    "grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-xl border-0",
+                    "bg-white/[0.04] text-white/72 transition hover:bg-white/[0.08] active:scale-95",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
+                  ),
+                  "aria-label": isRu ? "Закрыть меню" : "Close menu",
+                  children: /* @__PURE__ */ jsxs(
+                    "svg",
+                    {
+                      width: "22",
+                      height: "22",
+                      viewBox: "0 0 24 24",
+                      fill: "none",
+                      className: "transition-transform duration-200 ease-out",
+                      "aria-hidden": true,
+                      children: [
+                        /* @__PURE__ */ jsx(
+                          "path",
+                          {
+                            d: "M4 7H20",
+                            stroke: "#FF9A3D",
+                            strokeWidth: "2",
+                            strokeLinecap: "round",
+                            style: {
+                              transformOrigin: "12px 7px",
+                              transform: "translateY(5px) rotate(45deg)",
+                              transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)"
+                            }
+                          }
+                        ),
+                        /* @__PURE__ */ jsx(
+                          "path",
+                          {
+                            d: "M4 12H20",
+                            stroke: "#FF9A3D",
+                            strokeWidth: "2",
+                            strokeLinecap: "round",
+                            style: {
+                              opacity: 0,
+                              transition: reducedMotion ? "none" : "opacity 0.18s ease-out"
+                            }
+                          }
+                        ),
+                        /* @__PURE__ */ jsx(
+                          "path",
+                          {
+                            d: "M4 17H20",
+                            stroke: "#FF9A3D",
+                            strokeWidth: "2",
+                            strokeLinecap: "round",
+                            style: {
+                              transformOrigin: "12px 17px",
+                              transform: "translateY(-5px) rotate(-45deg)",
+                              transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)"
+                            }
+                          }
+                        )
+                      ]
+                    }
+                  )
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2 pb-5 sm:px-3", children: [
+              /* @__PURE__ */ jsx("nav", { className: "mt-1 flex flex-col", "aria-label": isRu ? "Навигация" : "Navigation", children: mobileNavItems.map((item) => /* @__PURE__ */ jsxs(
+                Link,
+                {
+                  to: item.to,
+                  className: cx$c(
+                    "flex items-center justify-between border-b border-white/[0.08] px-3 py-4 text-[15px] font-medium text-white/92",
+                    "transition-colors hover:bg-white/[0.03] active:bg-white/[0.02]",
+                    activeKey === item.key && "text-[#FFAE66]"
+                  ),
+                  onClick: (e) => {
+                    onNav(item.to, item.hash)(e);
+                    closeMenu();
+                  },
+                  children: [
+                    /* @__PURE__ */ jsx("span", { className: "capitalize", children: item.label }),
+                    /* @__PURE__ */ jsx("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", className: "shrink-0 text-white/32", "aria-hidden": true, children: /* @__PURE__ */ jsx("path", { d: "M9 18l6-6-6-6", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) })
+                  ]
+                },
+                item.key
+              )) }),
+              /* @__PURE__ */ jsxs("div", { className: "mt-auto flex flex-col gap-2 px-2 pt-6 pb-[max(1rem,env(safe-area-inset-bottom))]", children: [
+                onPartners ? /* @__PURE__ */ jsx(
+                  "a",
+                  {
+                    href: ctaHref,
+                    onClick: () => {
+                      onPartnersCtaClick?.();
+                      setOpen(false);
+                    },
+                    className: "inline-flex h-12 w-full items-center justify-center rounded-xl border border-white/[0.08] px-6 text-[14px] font-bold text-white no-underline transition hover:bg-white/[0.03]",
+                    children: ctaTop
+                  }
+                ) : /* @__PURE__ */ jsx(
+                  LeadCTAButton,
+                  {
+                    source: "header",
+                    variant: "white",
+                    className: "h-12 w-full text-[14px]",
+                    "aria-label": leadCopy.ctaDiscuss,
+                    onClick: () => setOpen(false),
+                    children: leadCopy.ctaDiscuss
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  Link,
+                  {
+                    to: onPartners ? `${partnersPath(lang)}#partner-formats` : pathForLang("/plans", lang),
+                    className: cx$c(
+                      "inline-flex h-12 items-center justify-center rounded-full px-6 font-sans text-[14px] font-medium text-white",
+                      "bg-[#070607] transition hover:bg-[#1a1a1a]",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                    ),
+                    onClick: () => setOpen(false),
+                    children: onPartners ? isRu ? "Форматы" : "Formats" : isRu ? "Планы" : "Plans"
+                  }
+                )
+              ] })
+            ] })
+          ]
+        }
+      )
+    }
+  ) : null;
   return /* @__PURE__ */ jsxs(Fragment, { children: [
     /* @__PURE__ */ jsx(
       "div",
@@ -3037,182 +3222,7 @@ function Header() {
         ) }) })
       }
     ),
-    /* @__PURE__ */ jsx(
-      "div",
-      {
-        id: "mobile-header-menu",
-        className: cx$c(
-          "xl:hidden fixed inset-0 z-[200]",
-          open ? "pointer-events-auto" : "pointer-events-none"
-        ),
-        "aria-hidden": !open,
-        children: /* @__PURE__ */ jsxs(
-          "div",
-          {
-            className: cx$c(
-              "mobile-menu-panel absolute inset-0 flex min-h-[100dvh] flex-col overflow-hidden bg-[#161313]",
-              "transition-[opacity,transform,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
-              open ? "visible translate-y-0 opacity-100" : "invisible -translate-y-4 opacity-0"
-            ),
-            role: "dialog",
-            "aria-modal": "true",
-            "aria-label": isRu ? "Меню" : "Menu",
-            children: [
-              /* @__PURE__ */ jsxs("div", { className: "relative flex items-center justify-between px-4 pb-4 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5", children: [
-                /* @__PURE__ */ jsx(
-                  Link,
-                  {
-                    to: "/",
-                    onClick: (e) => {
-                      e.preventDefault();
-                      goHome();
-                    },
-                    className: "flex items-center outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70 rounded-xl",
-                    "aria-label": ariaHome,
-                    children: /* @__PURE__ */ jsx(
-                      "img",
-                      {
-                        src: heroInView ? LOGO_WHITE : LOGO_DEFAULT,
-                        alt: "TIVONIX",
-                        className: "h-7 w-auto object-contain opacity-95",
-                        draggable: false,
-                        decoding: "async"
-                      }
-                    )
-                  }
-                ),
-                /* @__PURE__ */ jsx(
-                  "button",
-                  {
-                    type: "button",
-                    onClick: closeMenu,
-                    className: cx$c(
-                      "grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-xl border-0",
-                      "bg-white/[0.04] text-white/72 transition hover:bg-white/[0.08] active:scale-95",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
-                    ),
-                    "aria-label": isRu ? "Закрыть меню" : "Close menu",
-                    children: /* @__PURE__ */ jsxs(
-                      "svg",
-                      {
-                        width: "22",
-                        height: "22",
-                        viewBox: "0 0 24 24",
-                        fill: "none",
-                        className: "transition-transform duration-200 ease-out",
-                        "aria-hidden": true,
-                        children: [
-                          /* @__PURE__ */ jsx(
-                            "path",
-                            {
-                              d: "M4 7H20",
-                              stroke: "#FF9A3D",
-                              strokeWidth: "2",
-                              strokeLinecap: "round",
-                              style: {
-                                transformOrigin: "12px 7px",
-                                transform: "translateY(5px) rotate(45deg)",
-                                transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)"
-                              }
-                            }
-                          ),
-                          /* @__PURE__ */ jsx(
-                            "path",
-                            {
-                              d: "M4 12H20",
-                              stroke: "#FF9A3D",
-                              strokeWidth: "2",
-                              strokeLinecap: "round",
-                              style: {
-                                opacity: 0,
-                                transition: reducedMotion ? "none" : "opacity 0.18s ease-out"
-                              }
-                            }
-                          ),
-                          /* @__PURE__ */ jsx(
-                            "path",
-                            {
-                              d: "M4 17H20",
-                              stroke: "#FF9A3D",
-                              strokeWidth: "2",
-                              strokeLinecap: "round",
-                              style: {
-                                transformOrigin: "12px 17px",
-                                transform: "translateY(-5px) rotate(-45deg)",
-                                transition: reducedMotion ? "none" : "transform 0.28s cubic-bezier(0.33, 1, 0.68, 1)"
-                              }
-                            }
-                          )
-                        ]
-                      }
-                    )
-                  }
-                )
-              ] }),
-              /* @__PURE__ */ jsxs("div", { className: "relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2 pb-5 sm:px-3", children: [
-                /* @__PURE__ */ jsx("nav", { className: "mt-1 flex flex-col", "aria-label": isRu ? "Навигация" : "Navigation", children: mobileNavItems.map((item) => /* @__PURE__ */ jsxs(
-                  Link,
-                  {
-                    to: item.to,
-                    className: cx$c(
-                      "flex items-center justify-between border-b border-white/[0.08] px-3 py-4 text-[15px] font-medium text-white/92",
-                      "transition-colors hover:bg-white/[0.03] active:bg-white/[0.02]",
-                      activeKey === item.key && "text-[#FFAE66]"
-                    ),
-                    onClick: (e) => {
-                      onNav(item.to, item.hash)(e);
-                      closeMenu();
-                    },
-                    children: [
-                      /* @__PURE__ */ jsx("span", { className: "capitalize", children: item.label }),
-                      /* @__PURE__ */ jsx("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", className: "shrink-0 text-white/32", "aria-hidden": true, children: /* @__PURE__ */ jsx("path", { d: "M9 18l6-6-6-6", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) })
-                    ]
-                  },
-                  item.key
-                )) }),
-                /* @__PURE__ */ jsxs("div", { className: "mt-auto flex flex-col gap-2 px-2 pt-6 pb-[max(1rem,env(safe-area-inset-bottom))]", children: [
-                  onPartners ? /* @__PURE__ */ jsx(
-                    "a",
-                    {
-                      href: ctaHref,
-                      onClick: () => {
-                        onPartnersCtaClick?.();
-                        setOpen(false);
-                      },
-                      className: "inline-flex h-12 w-full items-center justify-center rounded-xl border border-white/[0.08] px-6 text-[14px] font-bold text-white no-underline transition hover:bg-white/[0.03]",
-                      children: ctaTop
-                    }
-                  ) : /* @__PURE__ */ jsx(
-                    LeadCTAButton,
-                    {
-                      source: "header",
-                      variant: "white",
-                      className: "h-12 w-full text-[14px]",
-                      "aria-label": leadCopy.ctaDiscuss,
-                      onClick: () => setOpen(false),
-                      children: leadCopy.ctaDiscuss
-                    }
-                  ),
-                  /* @__PURE__ */ jsx(
-                    Link,
-                    {
-                      to: onPartners ? `${partnersPath(lang)}#partner-formats` : "/plans",
-                      className: cx$c(
-                        "inline-flex h-12 items-center justify-center rounded-full px-6 font-sans text-[14px] font-medium text-white",
-                        "bg-[#070607] transition hover:bg-[#1a1a1a]",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
-                      ),
-                      onClick: () => setOpen(false),
-                      children: onPartners ? isRu ? "Форматы" : "Formats" : isRu ? "Планы" : "Plans"
-                    }
-                  )
-                ] })
-              ] })
-            ]
-          }
-        )
-      }
-    )
+    menuPortalReady && mobileMenu ? createPortal(mobileMenu, document.body) : null
   ] });
 }
 const Section = React.forwardRef(
@@ -4320,9 +4330,15 @@ function useHeroScrollProgress(trackRef) {
   }, [trackRef]);
   return progress;
 }
-function HeroHeadline({ stage }) {
+function HeroHeadline({
+  stage,
+  as: Tag = "h1"
+}) {
   const lines = stage.headlineLines && stage.headlineLines.length > 0 ? stage.headlineLines : [stage.headline];
-  return /* @__PURE__ */ jsx("h1", { className: cx$b(HERO_SCROLL_HEADLINE_CLASS, "hero-scroll-headline mx-auto text-center"), children: lines.map((line, i) => /* @__PURE__ */ jsx("span", { className: "hero-scroll-headline__line block", children: line }, `${line}-${i}`)) });
+  return /* @__PURE__ */ jsx(Tag, { className: cx$b(HERO_SCROLL_HEADLINE_CLASS, "hero-scroll-headline mx-auto text-center"), children: lines.map((line, i) => /* @__PURE__ */ jsxs("span", { className: "hero-scroll-headline__line block", children: [
+    i > 0 ? " " : null,
+    line
+  ] }, `${line}-${i}`)) });
 }
 function HeroCard({
   progress,
@@ -4331,6 +4347,7 @@ function HeroCard({
   ctaSecondary,
   micro
 }) {
+  const { lang } = useLang();
   const textOpacity = useMemo(() => textOpacities(progress), [progress]);
   const activeStage = textOpacity[2] > 0.5 ? 2 : textOpacity[1] > 0.5 ? 1 : 0;
   const videoRef = useRef(null);
@@ -4395,7 +4412,7 @@ function HeroCard({
                     },
                     "aria-hidden": i !== activeStage,
                     children: [
-                      /* @__PURE__ */ jsx(HeroHeadline, { stage }),
+                      /* @__PURE__ */ jsx(HeroHeadline, { stage, as: i === 0 ? "h1" : "h2" }),
                       /* @__PURE__ */ jsx("p", { className: "pointer-events-none mt-4 max-w-[38rem] px-2 text-[14px] font-medium leading-[1.55] text-white/72 sm:mt-5 sm:text-[15px]", children: stage.lead })
                     ]
                   },
@@ -4416,7 +4433,7 @@ function HeroCard({
                 /* @__PURE__ */ jsx(
                   Link,
                   {
-                    to: "/projects",
+                    to: pathForLang("/projects", lang),
                     className: "inline-flex min-h-[44px] items-center justify-center rounded-full border border-white/20 bg-white/[0.04] px-6 text-[13px] font-semibold text-white/82 transition hover:border-white/35 hover:bg-white/[0.08] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/55",
                     children: ctaSecondary
                   }
@@ -5015,7 +5032,7 @@ const PUBLIC_PROJECT_IDS = [
   "headmind",
   "logovo"
 ];
-const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/r${i + 1}.webp`);
+const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/${i + 1}.webp`);
 const SPLITON_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/spliton/g${i + 1}.webp`);
 const TIVONIXPANEL_GALLERY = [
   "/images/project-priew/tivonixpanel/1.webp",
@@ -5318,6 +5335,7 @@ function FeaturedCaseSlide({
   if (!project) return null;
   const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
   const cover = project.cover ?? "";
+  const href = pathForLang(`/projects/${project.id}`, isRu ? "ru" : "en");
   return /* @__PURE__ */ jsxs(
     "article",
     {
@@ -5349,7 +5367,7 @@ function FeaturedCaseSlide({
             /* @__PURE__ */ jsx("h3", { className: "mt-4 font-hero text-[clamp(1.75rem,4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white", children: /* @__PURE__ */ jsx(
               Link,
               {
-                to: `/projects/${project.id}`,
+                to: href,
                 tabIndex: active ? 0 : -1,
                 onClick: () => trackEvent("project_open", {
                   project: project.id,
@@ -6213,7 +6231,10 @@ function LandingPainSection() {
           "h2",
           {
             className: `${LANDING_HEADLINE_CLASS} text-center leading-[1.08] sm:leading-[0.98]`,
-            children: copy.pain.titleLines.map((line) => /* @__PURE__ */ jsx("span", { className: "block", children: line }, line))
+            children: copy.pain.titleLines.map((line, i) => /* @__PURE__ */ jsxs("span", { className: "block", children: [
+              i > 0 ? " " : null,
+              line
+            ] }, line))
           }
         ) }),
         /* @__PURE__ */ jsxs("div", { className: "mt-5 grid grid-cols-1 gap-3.5 sm:mt-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-12 lg:items-stretch", children: [
@@ -6275,7 +6296,7 @@ const TOP_ENTER_DURATION_MS = 420;
 const REVEAL_DELAY_MS = 60;
 const REVEAL_DURATION_MS = 1100;
 const OFFER_MOBILE_MAX_WIDTH = 1023;
-function clamp$1(value, min, max) {
+function clamp$2(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 function easeOutCubic(t) {
@@ -6387,9 +6408,9 @@ function useOfferSectionAnimation(mosaicRef, bottomCardRefs) {
     const staggerSpan = 0.32;
     const next = cards.map((_, index) => {
       const start = index / cards.length * staggerSpan;
-      const local = clamp$1((progress - start) / (1 - start + 0.12), 0, 1);
-      const bgRaw = clamp$1(local / 0.45, 0, 1);
-      const textRaw = clamp$1((local - 0.12) / 0.4, 0, 1);
+      const local = clamp$2((progress - start) / (1 - start + 0.12), 0, 1);
+      const bgRaw = clamp$2(local / 0.45, 0, 1);
+      const textRaw = clamp$2((local - 0.12) / 0.4, 0, 1);
       return {
         bg: easeOutCubic(bgRaw),
         text: easeOutCubic(textRaw)
@@ -6422,7 +6443,7 @@ function useOfferSectionAnimation(mosaicRef, bottomCardRefs) {
           updateCardReveals(0);
           const revealStart = performance.now();
           const tick = (now) => {
-            const raw = clamp$1((now - revealStart) / REVEAL_DURATION_MS, 0, 1);
+            const raw = clamp$2((now - revealStart) / REVEAL_DURATION_MS, 0, 1);
             updateCardReveals(easeOutCubic(raw));
             if (raw < 1) {
               requestAnimationFrame(tick);
@@ -6439,7 +6460,7 @@ function useOfferSectionAnimation(mosaicRef, bottomCardRefs) {
   useEffect(() => {
     if (!topVisible[0]) return;
     const onResize = () => {
-      const progress = cardReveals.every((c) => c.bg >= 1 && c.text >= 1) ? 1 : clamp$1(cardReveals.reduce((max, c) => Math.max(max, c.bg), 0), 0, 1);
+      const progress = cardReveals.every((c) => c.bg >= 1 && c.text >= 1) ? 1 : clamp$2(cardReveals.reduce((max, c) => Math.max(max, c.bg), 0), 0, 1);
       updateCardReveals(progress);
     };
     window.addEventListener("resize", onResize);
@@ -7687,7 +7708,7 @@ function HomePricingSection() {
                       /* @__PURE__ */ jsxs(
                         Link,
                         {
-                          to: "/plans",
+                          to: pathForLang("/plans", lang),
                           className: "home-plan-card__cta group",
                           onClick: () => trackEvent("pricing_cta_click", {
                             plan: id,
@@ -8006,7 +8027,8 @@ function TestimonialCard({
   project,
   photo,
   viewCase,
-  ownProduct
+  ownProduct,
+  lang
 }) {
   const t = project.testimonial;
   const showCase = isPublicProjectId(project.id);
@@ -8023,7 +8045,7 @@ function TestimonialCard({
           /* @__PURE__ */ jsx("p", { className: "home-testimonials__role", children: t.role })
         ] }),
         /* @__PURE__ */ jsx("p", { className: "home-testimonials__text", children: t.text }),
-        /* @__PURE__ */ jsx("div", { className: "home-testimonials__foot", children: isOwn ? /* @__PURE__ */ jsx("span", { className: "home-testimonials__muted", children: ownProduct }) : showCase ? /* @__PURE__ */ jsxs(Link, { to: `/projects/${project.id}`, className: "home-testimonials__case", children: [
+        /* @__PURE__ */ jsx("div", { className: "home-testimonials__foot", children: isOwn ? /* @__PURE__ */ jsx("span", { className: "home-testimonials__muted", children: ownProduct }) : showCase ? /* @__PURE__ */ jsxs(Link, { to: pathForLang(`/projects/${project.id}`, lang), className: "home-testimonials__case", children: [
           viewCase,
           ": ",
           project.title
@@ -8133,7 +8155,8 @@ function HomeTestimonialsSection() {
                 project,
                 photo: PLAN_PHOTOS[i % PLAN_PHOTOS.length],
                 viewCase: copy.testimonials.viewCase,
-                ownProduct: copy.testimonials.ownProduct
+                ownProduct: copy.testimonials.ownProduct,
+                lang
               },
               `${project.id}-${i}`
             )) })
@@ -8450,11 +8473,11 @@ const FOOTER_SERVICES = [
   { to: "/#ai", label: { ru: "AI в продуктах", en: "AI in products" } },
   { to: "/#process", label: { ru: "Как мы работаем", en: "How we work" } }
 ];
-const FOOTER_GMAIL_URL = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(CONTACT_EMAIL)}&su=${encodeURIComponent("Проект (SaaS/MVP)")}`;
+const FOOTER_MAILTO_URL = `mailto:${CONTACT_EMAIL}`;
 const FOOTER_CONNECT = [
   { href: TG_CHANNEL_URL, label: "Telegram", kind: "tg" },
   { href: "https://www.instagram.com/tivonix.tech/", label: "Instagram", kind: "ig" },
-  { href: FOOTER_GMAIL_URL, label: "Gmail", kind: "mail" }
+  { href: FOOTER_MAILTO_URL, label: "Gmail", kind: "mail" }
 ];
 const DOCS = {
   ru: [
@@ -8530,12 +8553,13 @@ function SocialIconLink({
   children,
   className
 }) {
+  const openInNewTab = /^https?:/i.test(href);
   return /* @__PURE__ */ jsx(
     "a",
     {
       href,
-      target: "_blank",
-      rel: "noopener noreferrer",
+      target: openInNewTab ? "_blank" : void 0,
+      rel: openInNewTab ? "noopener noreferrer" : void 0,
       "aria-label": label,
       className: cx$6("site-footer__social-link", className),
       children
@@ -8636,7 +8660,7 @@ function Footer() {
               ),
               /* @__PURE__ */ jsx("h2", { className: "site-footer__touch-title", children: isRu ? "Связаться" : "Get in touch" }),
               /* @__PURE__ */ jsx("p", { className: "site-footer__touch-lead", children: isRu ? "Ваш техпартнёр по сайтам, ботам и CRM" : "Your tech partner for sites, bots and CRM" }),
-              /* @__PURE__ */ jsxs("a", { href: FOOTER_GMAIL_URL, target: "_blank", rel: "noopener noreferrer", className: "site-footer__touch-row", children: [
+              /* @__PURE__ */ jsxs("a", { href: FOOTER_MAILTO_URL, className: "site-footer__touch-row", children: [
                 /* @__PURE__ */ jsx(Mail, { className: "site-footer__touch-row-icon", strokeWidth: 2, "aria-hidden": true }),
                 /* @__PURE__ */ jsx("span", { children: CONTACT_EMAIL })
               ] }),
@@ -8673,11 +8697,17 @@ function Footer() {
               )
             ] }),
             /* @__PURE__ */ jsxs("div", { className: "site-footer__grid", children: [
-              /* @__PURE__ */ jsx(ColNav, { id: "footer-pages", title: isRu ? "Компания" : "Company", children: FOOTER_PAGES.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: i.to, children: t(i.label) }) }, i.to)) }),
-              /* @__PURE__ */ jsx(ColNav, { id: "footer-services", title: isRu ? "Услуги" : "Services", children: FOOTER_SERVICES.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: i.to, children: t(i.label) }) }, i.to)) }),
+              /* @__PURE__ */ jsx(ColNav, { id: "footer-pages", title: isRu ? "Компания" : "Company", children: FOOTER_PAGES.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: pathForLang(i.to, lang), children: t(i.label) }) }, i.to)) }),
+              /* @__PURE__ */ jsx(ColNav, { id: "footer-services", title: isRu ? "Услуги" : "Services", children: FOOTER_SERVICES.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(
+                FooterLink,
+                {
+                  to: i.to.startsWith("/#") ? `${lang === "en" ? "/en" : "/"}${i.to.slice(1)}` : pathForLang(i.to, lang),
+                  children: t(i.label)
+                }
+              ) }, i.to)) }),
               /* @__PURE__ */ jsxs(ColNav, { id: "footer-work", title: isRu ? "Кейсы" : "Cases", children: [
-                /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: "/projects", children: isRu ? "Все проекты" : "All projects" }) }),
-                projects.map((p) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: `/projects/${p.id}`, children: p.title }) }, p.id))
+                /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: pathForLang("/projects", lang), children: isRu ? "Все проекты" : "All projects" }) }),
+                projects.map((p) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: pathForLang(`/projects/${p.id}`, lang), children: p.title }) }, p.id))
               ] })
             ] })
           ] }),
@@ -8709,15 +8739,6 @@ function Footer() {
     }
   );
 }
-function JsonLd({ data }) {
-  return /* @__PURE__ */ jsx(
-    "script",
-    {
-      type: "application/ld+json",
-      dangerouslySetInnerHTML: { __html: JSON.stringify(data) }
-    }
-  );
-}
 const CANONICAL_ORIGIN$1 = "https://tivonix.tech";
 const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN$1}/images/og-social.jpg`;
 const OG_IMAGE_WIDTH = "1200";
@@ -8734,37 +8755,35 @@ function SEO({
 }) {
   const canonicalUrl = canonicalPath.startsWith("http") ? canonicalPath : `${CANONICAL_ORIGIN$1}${canonicalPath.startsWith("/") ? "" : "/"}${canonicalPath}`;
   const ogLocaleAlt = ogLocalePrimary === "ru_RU" ? "en_US" : "ru_RU";
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsxs(Helmet, { children: [
-      /* @__PURE__ */ jsx("title", { children: title }),
-      /* @__PURE__ */ jsx("meta", { name: "description", content: description }),
-      /* @__PURE__ */ jsx("link", { rel: "canonical", href: canonicalUrl }),
-      /* @__PURE__ */ jsx("meta", { property: "og:type", content: ogType }),
-      /* @__PURE__ */ jsx("meta", { property: "og:site_name", content: "TIVONIX" }),
-      /* @__PURE__ */ jsx("meta", { property: "og:locale", content: ogLocalePrimary }),
-      /* @__PURE__ */ jsx("meta", { property: "og:locale:alternate", content: ogLocaleAlt }),
-      /* @__PURE__ */ jsx("meta", { property: "og:title", content: title }),
-      /* @__PURE__ */ jsx("meta", { property: "og:description", content: description }),
-      /* @__PURE__ */ jsx("meta", { property: "og:url", content: canonicalUrl }),
-      /* @__PURE__ */ jsx("meta", { property: "og:image", content: ogImage }),
-      /* @__PURE__ */ jsx("meta", { property: "og:image:width", content: OG_IMAGE_WIDTH }),
-      /* @__PURE__ */ jsx("meta", { property: "og:image:height", content: OG_IMAGE_HEIGHT }),
-      /* @__PURE__ */ jsx(
-        "meta",
-        {
-          property: "og:image:type",
-          content: ogImage.endsWith(".webp") ? "image/webp" : ogImage.endsWith(".png") ? "image/png" : "image/jpeg"
-        }
-      ),
-      /* @__PURE__ */ jsx("meta", { property: "og:image:alt", content: OG_IMAGE_ALT }),
-      /* @__PURE__ */ jsx("meta", { name: "twitter:card", content: "summary_large_image" }),
-      /* @__PURE__ */ jsx("meta", { name: "twitter:title", content: title }),
-      /* @__PURE__ */ jsx("meta", { name: "twitter:description", content: description }),
-      /* @__PURE__ */ jsx("meta", { name: "twitter:image", content: ogImage }),
-      /* @__PURE__ */ jsx("meta", { name: "twitter:image:alt", content: OG_IMAGE_ALT })
-    ] }),
-    schemaJsonLd != null ? /* @__PURE__ */ jsx(JsonLd, { data: schemaJsonLd }) : null
-  ] });
+  return /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsxs(Helmet, { children: [
+    /* @__PURE__ */ jsx("title", { children: title }),
+    /* @__PURE__ */ jsx("meta", { name: "description", content: description }),
+    /* @__PURE__ */ jsx("link", { rel: "canonical", href: canonicalUrl }),
+    /* @__PURE__ */ jsx("meta", { property: "og:type", content: ogType }),
+    /* @__PURE__ */ jsx("meta", { property: "og:site_name", content: "TIVONIX" }),
+    /* @__PURE__ */ jsx("meta", { property: "og:locale", content: ogLocalePrimary }),
+    /* @__PURE__ */ jsx("meta", { property: "og:locale:alternate", content: ogLocaleAlt }),
+    /* @__PURE__ */ jsx("meta", { property: "og:title", content: title }),
+    /* @__PURE__ */ jsx("meta", { property: "og:description", content: description }),
+    /* @__PURE__ */ jsx("meta", { property: "og:url", content: canonicalUrl }),
+    /* @__PURE__ */ jsx("meta", { property: "og:image", content: ogImage }),
+    /* @__PURE__ */ jsx("meta", { property: "og:image:width", content: OG_IMAGE_WIDTH }),
+    /* @__PURE__ */ jsx("meta", { property: "og:image:height", content: OG_IMAGE_HEIGHT }),
+    /* @__PURE__ */ jsx(
+      "meta",
+      {
+        property: "og:image:type",
+        content: ogImage.endsWith(".webp") ? "image/webp" : ogImage.endsWith(".png") ? "image/png" : "image/jpeg"
+      }
+    ),
+    /* @__PURE__ */ jsx("meta", { property: "og:image:alt", content: OG_IMAGE_ALT }),
+    /* @__PURE__ */ jsx("meta", { name: "twitter:card", content: "summary_large_image" }),
+    /* @__PURE__ */ jsx("meta", { name: "twitter:title", content: title }),
+    /* @__PURE__ */ jsx("meta", { name: "twitter:description", content: description }),
+    /* @__PURE__ */ jsx("meta", { name: "twitter:image", content: ogImage }),
+    /* @__PURE__ */ jsx("meta", { name: "twitter:image:alt", content: OG_IMAGE_ALT }),
+    schemaJsonLd != null ? /* @__PURE__ */ jsx("script", { type: "application/ld+json", children: JSON.stringify(schemaJsonLd) }) : null
+  ] }) });
 }
 function buildHomePageSchema({ pageTitle, pageDescription }) {
   return {
@@ -9026,7 +9045,17 @@ const PREVIEW_SPECS = {
   thumb: { maxH: 200, aspect: 16 / 9 },
   grid: { maxH: 9999, aspect: 16 / 9, fullWidth: true }
 };
-const ZOOM_STEPS = [1, 1.5, 2.25];
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 3.5;
+const ZOOM_STEP = 0.45;
+function clamp$1(n, min, max) {
+  return Math.min(max, Math.max(min, n));
+}
+function touchDistance(a, b) {
+  const dx = a.clientX - b.clientX;
+  const dy = a.clientY - b.clientY;
+  return Math.hypot(dx, dy);
+}
 function ProjectPreviewFrame({
   src,
   variant = "card"
@@ -9070,14 +9099,29 @@ function GalleryLightbox({
 }) {
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
-  const [zoomIdx, setZoomIdx] = useState(0);
+  const [scale, setScale] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [tall, setTall] = useState(false);
   const stageRef = useRef(null);
   const closeLabel = isRu ? "Закрыть" : "Close";
   const prevLabel = isRu ? "Предыдущий" : "Previous";
   const nextLabel = isRu ? "Следующий" : "Next";
-  const zoom = ZOOM_STEPS[zoomIdx] ?? 1;
+  const zoomInLabel = isRu ? "Приблизить" : "Zoom in";
+  const zoomOutLabel = isRu ? "Отдалить" : "Zoom out";
   const src = images[index];
   const multi = images.length > 1;
+  const zoomed = scale > 1.02;
+  const pinchRef = useRef(null);
+  const panRef = useRef(null);
+  const swipeRef = useRef(null);
+  const lastTapRef = useRef(0);
+  const resetView = useCallback(() => {
+    setScale(1);
+    setOffset({ x: 0, y: 0 });
+    pinchRef.current = null;
+    panRef.current = null;
+    swipeRef.current = null;
+  }, []);
   useEffect(() => {
     setMounted(true);
     const id = requestAnimationFrame(() => setVisible(true));
@@ -9094,9 +9138,10 @@ function GalleryLightbox({
     };
   }, []);
   useEffect(() => {
-    setZoomIdx(0);
-    stageRef.current?.scrollTo({ left: 0, top: 0 });
-  }, [index]);
+    resetView();
+    setTall(false);
+    stageRef.current?.scrollTo({ top: 0, left: 0 });
+  }, [index, resetView]);
   const requestClose = useCallback(() => {
     setVisible(false);
     window.setTimeout(onClose, 180);
@@ -9109,24 +9154,127 @@ function GalleryLightbox({
     },
     [images.length, index, multi, onIndexChange]
   );
+  const bumpZoom = useCallback((delta) => {
+    setScale((s2) => {
+      const next = clamp$1(Number((s2 + delta).toFixed(2)), ZOOM_MIN, ZOOM_MAX);
+      if (next <= ZOOM_MIN) setOffset({ x: 0, y: 0 });
+      return next;
+    });
+  }, []);
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape") requestClose();
-      if (e.key === "ArrowLeft") go(-1);
-      if (e.key === "ArrowRight") go(1);
-      if (e.key === "+" || e.key === "=") setZoomIdx((z) => Math.min(z + 1, ZOOM_STEPS.length - 1));
-      if (e.key === "-" || e.key === "_") setZoomIdx((z) => Math.max(z - 1, 0));
+      if (e.key === "ArrowLeft" && !zoomed) go(-1);
+      if (e.key === "ArrowRight" && !zoomed) go(1);
+      if (e.key === "+" || e.key === "=") bumpZoom(ZOOM_STEP);
+      if (e.key === "-" || e.key === "_") bumpZoom(-ZOOM_STEP);
+      if (e.key === "0") resetView();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [go, requestClose]);
+  }, [bumpZoom, go, requestClose, resetView, zoomed]);
+  const onWheel = (e) => {
+    if (!e.ctrlKey && !e.metaKey && !zoomed) return;
+    e.preventDefault();
+    const dir = e.deltaY > 0 ? -ZOOM_STEP * 0.55 : ZOOM_STEP * 0.55;
+    bumpZoom(dir);
+  };
+  const onTouchStart = (e) => {
+    if (e.touches.length === 2) {
+      const a = e.touches[0];
+      const b = e.touches[1];
+      if (!a || !b) return;
+      pinchRef.current = { startDist: touchDistance(a, b), startScale: scale };
+      panRef.current = null;
+      swipeRef.current = null;
+      return;
+    }
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      if (!t) return;
+      if (zoomed) {
+        panRef.current = { x: t.clientX, y: t.clientY, ox: offset.x, oy: offset.y };
+        swipeRef.current = null;
+      } else {
+        swipeRef.current = { x: t.clientX, y: t.clientY };
+        panRef.current = null;
+      }
+    }
+  };
+  const onTouchMove = (e) => {
+    if (e.touches.length === 2 && pinchRef.current) {
+      const a = e.touches[0];
+      const b = e.touches[1];
+      if (!a || !b) return;
+      e.preventDefault();
+      const dist = touchDistance(a, b);
+      const next = clamp$1(
+        pinchRef.current.startScale * (dist / Math.max(1, pinchRef.current.startDist)),
+        ZOOM_MIN,
+        ZOOM_MAX
+      );
+      setScale(next);
+      if (next <= ZOOM_MIN) setOffset({ x: 0, y: 0 });
+      return;
+    }
+    if (e.touches.length === 1 && panRef.current && zoomed) {
+      const t = e.touches[0];
+      if (!t) return;
+      e.preventDefault();
+      const dx = t.clientX - panRef.current.x;
+      const dy = t.clientY - panRef.current.y;
+      const limit = 180 * scale;
+      setOffset({
+        x: clamp$1(panRef.current.ox + dx, -limit, limit),
+        y: clamp$1(panRef.current.oy + dy, -limit, limit)
+      });
+    }
+  };
+  const onTouchEnd = (e) => {
+    if (pinchRef.current && e.touches.length < 2) {
+      pinchRef.current = null;
+      if (scale < 1.08) resetView();
+    }
+    if (panRef.current && e.touches.length === 0) panRef.current = null;
+    if (swipeRef.current && e.changedTouches[0] && !zoomed && e.touches.length === 0) {
+      const t = e.changedTouches[0];
+      const dx = t.clientX - swipeRef.current.x;
+      const dy = t.clientY - swipeRef.current.y;
+      const moved = Math.hypot(dx, dy);
+      swipeRef.current = null;
+      if (Math.abs(dx) > 56 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+        go(dx < 0 ? 1 : -1);
+        return;
+      }
+      if (moved < 14) {
+        const now = Date.now();
+        if (now - lastTapRef.current < 300) {
+          lastTapRef.current = 0;
+          setScale(2.2);
+          setOffset({ x: 0, y: 0 });
+        } else {
+          lastTapRef.current = now;
+        }
+      }
+      return;
+    }
+    if (zoomed && e.touches.length === 0 && e.changedTouches.length === 1) {
+      const now = Date.now();
+      if (now - lastTapRef.current < 300) {
+        lastTapRef.current = 0;
+        resetView();
+      } else {
+        lastTapRef.current = now;
+      }
+    }
+  };
   if (!mounted || typeof document === "undefined") return null;
   return createPortal(
     /* @__PURE__ */ jsxs(
       "div",
       {
         className: cx$5(
-          "fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-6",
+          "fixed inset-0 z-[210] flex items-center justify-center p-2 pt-[max(0.5rem,env(safe-area-inset-top))] sm:p-6",
           "transition-opacity duration-200",
           visible ? "opacity-100" : "opacity-0"
         ),
@@ -9147,35 +9295,63 @@ function GalleryLightbox({
             "div",
             {
               className: cx$5(
-                "relative z-[1] flex max-h-[min(92dvh,920px)] w-full max-w-[min(96vw,1120px)] flex-col",
+                "relative z-[1] flex h-[min(94dvh,960px)] w-full max-w-[min(100vw,1200px)] flex-col",
                 "transition-transform duration-200",
                 visible ? "scale-100" : "scale-[0.97]"
               ),
               children: [
-                /* @__PURE__ */ jsxs("div", { className: "mb-2 flex items-center justify-between gap-3 px-0.5", children: [
-                  /* @__PURE__ */ jsxs("p", { className: "text-[12px] font-medium tabular-nums text-white/40", children: [
+                /* @__PURE__ */ jsxs("div", { className: "mb-2.5 flex items-center justify-between gap-2", children: [
+                  /* @__PURE__ */ jsxs("p", { className: "rounded-full bg-white/[0.12] px-3 py-1.5 text-[12px] font-semibold tabular-nums text-white/90 ring-1 ring-white/15", children: [
                     index + 1,
                     " / ",
-                    images.length
+                    images.length,
+                    /* @__PURE__ */ jsxs("span", { className: "ml-2 text-white/70", children: [
+                      Math.round(scale * 100),
+                      "%"
+                    ] })
                   ] }),
-                  /* @__PURE__ */ jsx(
-                    "button",
-                    {
-                      type: "button",
-                      className: "grid h-9 w-9 place-items-center rounded-full text-white/45 transition hover:bg-white/[0.06] hover:text-white/75",
-                      "aria-label": closeLabel,
-                      onClick: requestClose,
-                      children: "✕"
-                    }
-                  )
-                ] }),
-                /* @__PURE__ */ jsxs("div", { className: "relative min-h-0 flex-1", children: [
-                  multi ? /* @__PURE__ */ jsxs(Fragment, { children: [
+                  /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1 rounded-full bg-white/[0.14] p-1 ring-1 ring-white/20 backdrop-blur-md", children: [
                     /* @__PURE__ */ jsx(
                       "button",
                       {
                         type: "button",
-                        className: "absolute left-0 top-1/2 z-[2] hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full text-white/35 transition hover:bg-white/[0.06] hover:text-white/70 sm:grid",
+                        className: "grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-full bg-white/15 text-[20px] font-semibold text-white transition hover:bg-white/25 disabled:opacity-35",
+                        "aria-label": zoomOutLabel,
+                        disabled: scale <= ZOOM_MIN,
+                        onClick: () => bumpZoom(-ZOOM_STEP),
+                        children: "−"
+                      }
+                    ),
+                    /* @__PURE__ */ jsx(
+                      "button",
+                      {
+                        type: "button",
+                        className: "grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-full bg-white/15 text-[20px] font-semibold text-white transition hover:bg-white/25 disabled:opacity-35",
+                        "aria-label": zoomInLabel,
+                        disabled: scale >= ZOOM_MAX,
+                        onClick: () => bumpZoom(ZOOM_STEP),
+                        children: "+"
+                      }
+                    ),
+                    /* @__PURE__ */ jsx(
+                      "button",
+                      {
+                        type: "button",
+                        className: "grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-full bg-white text-[16px] font-bold text-black transition hover:bg-white/90",
+                        "aria-label": closeLabel,
+                        onClick: requestClose,
+                        children: "✕"
+                      }
+                    )
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "relative min-h-0 flex-1", children: [
+                  multi && !zoomed ? /* @__PURE__ */ jsxs(Fragment, { children: [
+                    /* @__PURE__ */ jsx(
+                      "button",
+                      {
+                        type: "button",
+                        className: "absolute left-1 top-1/2 z-[2] grid h-11 w-11 min-h-[44px] min-w-[44px] -translate-y-1/2 place-items-center rounded-full bg-white/20 text-[22px] font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm transition hover:bg-white/30 sm:left-0",
                         "aria-label": prevLabel,
                         onClick: () => go(-1),
                         children: "‹"
@@ -9185,7 +9361,7 @@ function GalleryLightbox({
                       "button",
                       {
                         type: "button",
-                        className: "absolute right-0 top-1/2 z-[2] hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full text-white/35 transition hover:bg-white/[0.06] hover:text-white/70 sm:grid",
+                        className: "absolute right-1 top-1/2 z-[2] grid h-11 w-11 min-h-[44px] min-w-[44px] -translate-y-1/2 place-items-center rounded-full bg-white/20 text-[22px] font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm transition hover:bg-white/30 sm:right-0",
                         "aria-label": nextLabel,
                         onClick: () => go(1),
                         children: "›"
@@ -9197,32 +9373,45 @@ function GalleryLightbox({
                     {
                       ref: stageRef,
                       className: cx$5(
-                        "max-h-[min(84dvh,860px)] overflow-auto rounded-2xl bg-black",
-                        "overscroll-contain",
-                        zoom > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in"
+                        "h-full rounded-2xl bg-black overscroll-contain",
+                        zoomed ? "overflow-hidden touch-none cursor-grab active:cursor-grabbing" : "overflow-auto cursor-zoom-in"
                       ),
-                      onDoubleClick: () => setZoomIdx((z) => z >= ZOOM_STEPS.length - 1 ? 0 : Math.min(z + 1, ZOOM_STEPS.length - 1)),
+                      onWheel,
+                      onTouchStart,
+                      onTouchMove,
+                      onTouchEnd,
+                      onDoubleClick: (e) => {
+                        e.preventDefault();
+                        if (zoomed) resetView();
+                        else setScale(2.2);
+                      },
                       children: /* @__PURE__ */ jsx(
                         "div",
                         {
-                          className: "grid place-items-center p-0 sm:p-1",
-                          style: {
-                            width: `${zoom * 100}%`,
-                            minHeight: zoom > 1 ? void 0 : "min(84dvh, 860px)",
-                            minWidth: "100%"
-                          },
+                          className: cx$5(
+                            "flex w-full justify-center",
+                            zoomed || !tall ? "min-h-full items-center" : "items-start"
+                          ),
                           children: /* @__PURE__ */ jsx(
                             "img",
                             {
                               src,
                               alt: "",
-                              className: "block h-auto max-w-full select-none rounded-xl object-contain",
+                              className: cx$5(
+                                "block select-none transition-transform duration-100 will-change-transform",
+                                // Long pages: full width + vertical scroll. Wide UI: fit in viewport.
+                                tall && !zoomed ? "h-auto w-full max-w-full" : "max-h-full w-auto max-w-full object-contain"
+                              ),
                               style: {
-                                maxHeight: zoom === 1 ? "min(80dvh, 820px)" : "none",
-                                width: zoom === 1 ? "auto" : `${100 / zoom}%`
+                                transform: `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${scale})`,
+                                transformOrigin: tall ? "top center" : "center center"
                               },
                               draggable: false,
-                              decoding: "async"
+                              decoding: "async",
+                              onLoad: (e) => {
+                                const el = e.currentTarget;
+                                setTall(el.naturalHeight / Math.max(1, el.naturalWidth) > 1.35);
+                              }
                             }
                           )
                         }
@@ -9230,7 +9419,7 @@ function GalleryLightbox({
                     }
                   )
                 ] }),
-                /* @__PURE__ */ jsx("p", { className: "mt-2 text-center text-[11px] text-white/25", children: isRu ? "Двойной клик — увеличить · Esc — закрыть · ← → листать" : "Double-click to zoom · Esc to close · ← → to browse" })
+                /* @__PURE__ */ jsx("p", { className: "mt-2 px-1 text-center text-[11px] leading-snug text-white/55", children: isRu ? tall ? "Скролл вниз по длинному экрану · пинч / +/− — масштаб · свайп — листать" : "Пинч или +/− — масштаб · свайп — листать · двойной тап — крупнее" : tall ? "Scroll long screens · pinch / +/− to zoom · swipe to browse" : "Pinch or +/− to zoom · swipe to browse · double-tap to enlarge" })
               ]
             }
           )
@@ -9248,30 +9437,60 @@ function ProjectGalleryStrip({
   if (!images.length) return null;
   const label = isRu ? "Скриншоты проекта" : "Project screenshots";
   const openLabel = isRu ? "Открыть скриншот" : "Open screenshot";
-  return /* @__PURE__ */ jsxs("div", { className: "mt-5", children: [
-    /* @__PURE__ */ jsx("p", { className: "mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/38", children: label }),
-    /* @__PURE__ */ jsx(
-      "div",
-      {
-        className: cx$5(
-          "flex gap-3 overflow-x-auto pb-1",
-          "snap-x snap-mandatory scroll-smooth",
-          "no-scrollbar"
-        ),
-        role: "list",
-        "aria-label": label,
-        children: images.map((src, i) => /* @__PURE__ */ jsx("div", { role: "listitem", className: "shrink-0 snap-center", children: /* @__PURE__ */ jsx(
-          "button",
-          {
-            type: "button",
-            className: "group block cursor-zoom-in rounded-2xl outline-none transition hover:opacity-95 focus-visible:ring-2 focus-visible:ring-white/35",
-            "aria-label": `${openLabel} ${i + 1}`,
-            onClick: () => setActive(i),
-            children: /* @__PURE__ */ jsx(ProjectPreviewFrame, { src, variant: "thumb" })
-          }
-        ) }, src))
-      }
-    ),
+  return /* @__PURE__ */ jsxs("div", { className: "mt-4 sm:mt-5", children: [
+    /* @__PURE__ */ jsx("p", { className: "mb-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/38 sm:mb-3", children: label }),
+    /* @__PURE__ */ jsxs("div", { className: "relative -mx-6 sm:mx-0", children: [
+      /* @__PURE__ */ jsxs(
+        "div",
+        {
+          className: cx$5(
+            "flex gap-2.5 overflow-x-auto px-6 pb-1 sm:gap-3 sm:px-0",
+            "snap-x snap-mandatory scroll-smooth",
+            "no-scrollbar"
+          ),
+          role: "list",
+          "aria-label": label,
+          children: [
+            images.map((src, i) => /* @__PURE__ */ jsx(
+              "div",
+              {
+                role: "listitem",
+                className: "w-[min(72vw,16rem)] shrink-0 snap-start sm:w-[13.75rem] lg:w-[15rem]",
+                children: /* @__PURE__ */ jsx(
+                  "button",
+                  {
+                    type: "button",
+                    className: "group block w-full cursor-zoom-in rounded-xl outline-none transition hover:opacity-95 focus-visible:ring-2 focus-visible:ring-white/35 sm:rounded-2xl",
+                    "aria-label": `${openLabel} ${i + 1}`,
+                    onClick: () => setActive(i),
+                    children: /* @__PURE__ */ jsx("div", { className: "relative aspect-video w-full overflow-hidden rounded-xl bg-[#1c1c1f] ring-1 ring-white/[0.06] sm:rounded-2xl", children: /* @__PURE__ */ jsx(
+                      "img",
+                      {
+                        src,
+                        alt: "",
+                        className: "absolute inset-0 h-full w-full object-cover object-top",
+                        draggable: false,
+                        loading: "lazy",
+                        decoding: "async"
+                      }
+                    ) })
+                  }
+                )
+              },
+              src
+            )),
+            /* @__PURE__ */ jsx("div", { className: "w-2 shrink-0 sm:hidden", "aria-hidden": true })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: "pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#0a0a0b] to-transparent sm:hidden",
+          "aria-hidden": true
+        }
+      )
+    ] }),
     active !== null ? /* @__PURE__ */ jsx(
       GalleryLightbox,
       {
@@ -9318,17 +9537,18 @@ const filterPillClass = (active) => cx$5(
   "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-[13px] font-medium transition",
   active ? "bg-[#3a3a3d] text-white" : "bg-[#1c1c1f] text-white/78 hover:bg-[#262626] hover:text-white/92"
 );
-function ProjectGridCard({ p, isRu }) {
+function ProjectGridCard({ p, isRu, lang }) {
   const wip = p.status === "wip";
   const domainClean = p.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "");
   const productType = p.tags[0] ?? (isRu ? "Проект" : "Project");
   const subtitle = isRu ? p.subtitleRu : p.subtitleEn;
   const role = isRu ? "Роль TIVONIX: дизайн и разработка" : "TIVONIX role: design & development";
+  const href = pathForLang(`/projects/${p.id}`, lang);
   return /* @__PURE__ */ jsxs("article", { className: "group min-w-0", children: [
     /* @__PURE__ */ jsx(
       Link,
       {
-        to: `/projects/${p.id}`,
+        to: href,
         className: "block min-w-0 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
         "aria-label": isRu ? `Кейс ${p.title}` : `Case study ${p.title}`,
         children: /* @__PURE__ */ jsx("div", { className: "overflow-hidden rounded-xl bg-[#1c1c1f] transition duration-300 group-hover:bg-[#262626]", children: /* @__PURE__ */ jsx(ProjectPreviewFrame, { src: projectPreviewSrc(p), variant: "grid" }) })
@@ -9340,7 +9560,7 @@ function ProjectGridCard({ p, isRu }) {
         /* @__PURE__ */ jsx(
           Link,
           {
-            to: `/projects/${p.id}`,
+            to: href,
             className: "block min-w-0 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45",
             children: /* @__PURE__ */ jsx("h2", { className: "mt-1 truncate font-sans text-[15px] font-medium tracking-normal text-white/[0.92] transition group-hover:text-white", children: p.title })
           }
@@ -9439,7 +9659,7 @@ function ProjectsPage() {
           ]
         }
       ) }),
-      filtered.length ? /* @__PURE__ */ jsx("div", { className: "mt-10 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3", children: filtered.map((p) => /* @__PURE__ */ jsx(ProjectGridCard, { p, isRu }, p.id)) }) : /* @__PURE__ */ jsx("p", { className: "mt-12 text-center text-[15px] text-white/45", children: emptyLabel }),
+      filtered.length ? /* @__PURE__ */ jsx("div", { className: "mt-10 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3", children: filtered.map((p) => /* @__PURE__ */ jsx(ProjectGridCard, { p, isRu, lang }, p.id)) }) : /* @__PURE__ */ jsx("p", { className: "mt-12 text-center text-[15px] text-white/45", children: emptyLabel }),
       /* @__PURE__ */ jsx("div", { className: "mt-16 flex flex-col items-center gap-3 text-center", children: /* @__PURE__ */ jsx(LeadCTAButton, { source: "projects", variant: "white", size: "lg", children: leadCopy.ctaProjects }) })
     ] }) }) }),
     /* @__PURE__ */ jsx(Footer, {})
@@ -9930,19 +10150,38 @@ function RichText({ text }) {
   }) });
 }
 function SpecRow({ label, children }) {
-  return /* @__PURE__ */ jsxs("div", { className: "grid gap-2 border-t border-white/[0.06] py-5 first:border-t-0 first:pt-0 last:pb-0 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-8 sm:items-start", children: [
-    /* @__PURE__ */ jsx("dt", { className: "text-[13px] font-[500] tracking-normal text-[#8a8a8e]", children: label }),
-    /* @__PURE__ */ jsx("dd", { className: "min-w-0 text-[15px] font-[400] leading-[1.45] tracking-normal text-[#ededf3]", children })
+  return /* @__PURE__ */ jsxs("div", { className: "grid gap-1.5 border-t border-white/[0.06] py-3.5 first:border-t-0 first:pt-0 last:pb-0 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-8 sm:py-5 sm:items-start", children: [
+    /* @__PURE__ */ jsx("dt", { className: "text-[12px] font-[500] tracking-normal text-[#8a8a8e] sm:text-[13px]", children: label }),
+    /* @__PURE__ */ jsx("dd", { className: "min-w-0 text-[14px] font-[400] leading-[1.45] tracking-normal text-[#ededf3] sm:text-[15px]", children })
   ] });
 }
 function Pill({ children }) {
-  return /* @__PURE__ */ jsx("span", { className: "inline-flex items-center rounded-full bg-[#1c1c1f] px-3.5 py-1.5 text-[12px] font-[500] tracking-normal text-[#c3c3cc]", children });
+  return /* @__PURE__ */ jsx("span", { className: "inline-flex items-center rounded-full bg-[#1c1c1f] px-2.5 py-1 text-[11px] font-[500] tracking-normal text-[#c3c3cc] sm:px-3.5 sm:py-1.5 sm:text-[12px]", children });
+}
+function formatDomainLabel(domainClean) {
+  const slash = domainClean.indexOf("/");
+  const host = slash >= 0 ? domainClean.slice(0, slash) : domainClean;
+  const path = slash >= 0 ? domainClean.slice(slash) : "";
+  const pathSuffix = path === "/login" || path === "/" ? "" : path;
+  if (host.length <= 32) return host + pathSuffix;
+  const railway = host.match(/^([^.]+)\.(?:up\.)?railway\.app$/i);
+  if (railway) {
+    let slug = railway[1].replace(/-(production|prod|staging|dev)$/i, "");
+    if (slug.length > 18) slug = `${slug.slice(0, 16)}…`;
+    return `${slug}.railway.app${pathSuffix}`;
+  }
+  const parts = host.split(".");
+  if (parts.length >= 3) {
+    const head = parts[0].length > 16 ? `${parts[0].slice(0, 14)}…` : parts[0];
+    return `${head}.${parts.slice(-2).join(".")}${pathSuffix}`;
+  }
+  return `${host.slice(0, 28)}…${pathSuffix}`;
 }
 function FeatureGrid({ items }) {
-  return /* @__PURE__ */ jsx("ul", { className: "mt-7 grid list-none gap-3 sm:grid-cols-2 sm:gap-4", children: items.map((item, idx) => /* @__PURE__ */ jsx(
+  return /* @__PURE__ */ jsx("ul", { className: "mt-5 grid list-none gap-2.5 sm:mt-7 sm:grid-cols-2 sm:gap-4", children: items.map((item, idx) => /* @__PURE__ */ jsx(
     "li",
     {
-      className: "rounded-[12px] bg-[#1c1c1f] px-5 py-4 text-[15px] font-[400] leading-[1.45] text-[#c3c3cc] sm:text-[16px]",
+      className: "rounded-[12px] bg-[#1c1c1f] px-4 py-3.5 text-[14px] font-[400] leading-[1.45] text-[#c3c3cc] sm:px-5 sm:py-4 sm:text-[16px]",
       children: /* @__PURE__ */ jsx(RichText, { text: item })
     },
     `${idx}-${item.slice(0, 40)}`
@@ -9958,46 +10197,56 @@ function CaseBrandIntro({
   domainClean,
   wip
 }) {
+  const storyParas = story.split(/\n\n+/).map((para, idx) => /* @__PURE__ */ jsx("p", { children: /* @__PURE__ */ jsx(RichText, { text: para }) }, idx));
+  const renderLogo = (size) => logo ? /* @__PURE__ */ jsx(
+    "div",
+    {
+      className: cx$5(
+        "overflow-hidden bg-black",
+        size === "desktop" ? cx$5(
+          "shrink-0 rounded-[16px]",
+          logoFit === "contain" ? "h-[5.25rem] w-16" : "h-16 w-16"
+        ) : cx$5(
+          "mb-4 rounded-[12px] lg:hidden",
+          logoFit === "contain" ? "h-12 w-10" : "h-11 w-11"
+        )
+      ),
+      children: /* @__PURE__ */ jsx(
+        "img",
+        {
+          src: logo,
+          alt: "",
+          className: cx$5(
+            "h-full w-full object-center",
+            logoFit === "contain" ? "object-contain" : "object-cover"
+          ),
+          draggable: false,
+          decoding: "async"
+        }
+      )
+    }
+  ) : null;
   return /* @__PURE__ */ jsxs("header", { children: [
-    /* @__PURE__ */ jsxs("div", { className: "flex items-start justify-between gap-6", children: [
+    /* @__PURE__ */ jsxs("div", { className: "hidden items-start justify-between gap-6 lg:flex", children: [
       /* @__PURE__ */ jsxs("div", { className: "min-w-0 flex-1", children: [
         /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.85rem,4vw,2.75rem)] font-normal uppercase tracking-[0.02em] leading-[1.05] text-[#ededf3]", children: title }),
-        /* @__PURE__ */ jsx("p", { className: "mt-3 text-[17px] font-[400] leading-snug text-[#c3c3cc] sm:text-[18px]", children: mood })
+        /* @__PURE__ */ jsx("p", { className: "mt-3 text-[18px] font-[400] leading-snug text-[#c3c3cc]", children: mood })
       ] }),
-      logo ? /* @__PURE__ */ jsx(
-        "div",
-        {
-          className: cx$5(
-            "shrink-0 overflow-hidden rounded-[14px] bg-black sm:rounded-[16px]",
-            logoFit === "contain" ? "h-[4.5rem] w-14 sm:h-[5.25rem] sm:w-16" : "h-14 w-14 sm:h-16 sm:w-16"
-          ),
-          children: /* @__PURE__ */ jsx(
-            "img",
-            {
-              src: logo,
-              alt: "",
-              className: cx$5(
-                "h-full w-full object-center",
-                logoFit === "contain" ? "object-contain" : "object-cover"
-              ),
-              draggable: false,
-              decoding: "async"
-            }
-          )
-        }
-      ) : null
+      renderLogo("desktop")
     ] }),
-    /* @__PURE__ */ jsx("div", { className: cx$5("mt-8 max-w-[42rem] space-y-4", BODY), children: story.split(/\n\n+/).map((para, idx) => /* @__PURE__ */ jsx("p", { children: /* @__PURE__ */ jsx(RichText, { text: para }) }, idx)) }),
+    renderLogo("mobile"),
+    /* @__PURE__ */ jsx("div", { className: cx$5("max-w-[42rem] space-y-3.5 sm:space-y-4 lg:mt-8", BODY), children: storyParas }),
     domain && !wip ? /* @__PURE__ */ jsxs(
       "a",
       {
         href: domain,
         target: "_blank",
         rel: "noopener noreferrer",
-        className: "mt-8 inline-flex max-w-full items-center gap-2 text-[15px] font-[500] text-[#c3c3cc] transition hover:text-white",
+        className: "mt-5 inline-flex max-w-full items-center gap-2 text-[14px] font-[500] text-[#c3c3cc] transition hover:text-white sm:mt-8 sm:text-[15px]",
+        title: domainClean,
         children: [
           /* @__PURE__ */ jsx(ExternalIcon, { className: "shrink-0 text-[#8a8a8e]" }),
-          /* @__PURE__ */ jsx("span", { className: "truncate", children: domain.startsWith("http") ? domain : `https://${domainClean}` })
+          /* @__PURE__ */ jsx("span", { className: "truncate", children: formatDomainLabel(domainClean) })
         ]
       }
     ) : null
@@ -10009,15 +10258,15 @@ function ColorPalette({
 }) {
   const brand = swatches.filter((s2) => s2.group === "brand");
   const neutrals = swatches.filter((s2) => s2.group === "neutral");
-  return /* @__PURE__ */ jsxs("section", { className: "mb-16 scroll-mt-28 sm:mb-[72px]", "aria-labelledby": "case-palette", children: [
+  return /* @__PURE__ */ jsxs("section", { className: "mb-12 scroll-mt-28 sm:mb-[72px]", "aria-labelledby": "case-palette", children: [
     /* @__PURE__ */ jsx("h2", { id: "case-palette", className: H2, children: isRu ? "Палитра" : "Color Palette" }),
-    brand.length ? /* @__PURE__ */ jsxs("div", { className: "mt-10", children: [
+    brand.length ? /* @__PURE__ */ jsxs("div", { className: "mt-7 sm:mt-10", children: [
       /* @__PURE__ */ jsx("p", { className: "text-[13px] font-[500] text-[#8a8a8e]", children: isRu ? "Бренд" : "Brand" }),
-      /* @__PURE__ */ jsx("div", { className: "mt-4 space-y-8", children: brand.map((sw) => /* @__PURE__ */ jsx(PaletteSwatch, { swatch: sw, isRu, wide: true }, sw.hex + sw.name)) })
+      /* @__PURE__ */ jsx("div", { className: "mt-3 space-y-6 sm:mt-4 sm:space-y-8", children: brand.map((sw) => /* @__PURE__ */ jsx(PaletteSwatch, { swatch: sw, isRu, wide: true }, sw.hex + sw.name)) })
     ] }) : null,
-    neutrals.length ? /* @__PURE__ */ jsxs("div", { className: "mt-12", children: [
+    neutrals.length ? /* @__PURE__ */ jsxs("div", { className: "mt-9 sm:mt-12", children: [
       /* @__PURE__ */ jsx("p", { className: "text-[13px] font-[500] text-[#8a8a8e]", children: isRu ? "Нейтрали" : "Neutrals" }),
-      /* @__PURE__ */ jsx("div", { className: "mt-4 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-4", children: neutrals.map((sw) => /* @__PURE__ */ jsx(PaletteSwatch, { swatch: sw, isRu }, sw.hex + sw.name)) })
+      /* @__PURE__ */ jsx("div", { className: "mt-3 grid grid-cols-1 gap-x-6 gap-y-6 sm:mt-4 sm:grid-cols-2 sm:gap-y-8 lg:grid-cols-4", children: neutrals.map((sw) => /* @__PURE__ */ jsx(PaletteSwatch, { swatch: sw, isRu }, sw.hex + sw.name)) })
     ] }) : null
   ] });
 }
@@ -10079,7 +10328,7 @@ function PaletteSwatch({
                 "absolute right-3 top-1/2 z-[1] -translate-y-1/2",
                 "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1",
                 "text-[11px] font-[600] tracking-normal backdrop-blur-sm",
-                "opacity-0 transition duration-150 group-hover:opacity-100 group-focus-visible:opacity-100",
+                "opacity-100 transition duration-150 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-visible:opacity-100",
                 isLight ? "bg-black/55 text-white" : "bg-white/90 text-[#171719]"
               ),
               children: [
@@ -10243,7 +10492,7 @@ function CaseDetailBody({
         /* @__PURE__ */ jsxs(
           "section",
           {
-            className: "mb-16 scroll-mt-28 border-t border-white/[0.06] pt-10 sm:mb-[72px] sm:pt-12",
+            className: "mb-12 scroll-mt-28 border-t border-white/[0.06] pt-8 sm:mb-[72px] sm:pt-12",
             children: [
               /* @__PURE__ */ jsx("h2", { className: H2, children: block.title }),
               block.paragraphs?.length ? /* @__PURE__ */ jsx("div", { className: cx$5("mt-5 max-w-[42rem] space-y-4", isOutcome && "text-[#ededf3]"), children: block.paragraphs.map((p, idx) => /* @__PURE__ */ jsx("p", { className: BODY, children: /* @__PURE__ */ jsx(RichText, { text: p }) }, idx)) }) : null,
@@ -10263,38 +10512,40 @@ function OutcomesBlock({
 }) {
   return /* @__PURE__ */ jsxs("section", { id: "outcomes", className: "mt-4 scroll-mt-28 sm:mt-6", children: [
     /* @__PURE__ */ jsx("h2", { className: H2, children: isRu ? "Что получили" : "Outcomes" }),
-    /* @__PURE__ */ jsx("ol", { className: "mt-8 list-none space-y-0 divide-y divide-white/[0.06]", children: items.map((item, idx) => /* @__PURE__ */ jsxs("li", { className: "flex gap-5 py-5 first:pt-0 last:pb-0 sm:gap-8", children: [
-      /* @__PURE__ */ jsx("span", { className: "font-hero w-8 shrink-0 text-[18px] font-normal tabular-nums tracking-[0.02em] text-[#8a8a8e]", children: String(idx + 1).padStart(2, "0") }),
-      /* @__PURE__ */ jsx("p", { className: "min-w-0 text-[17px] font-[400] leading-[1.45] text-[#c3c3cc] sm:text-[18px]", children: /* @__PURE__ */ jsx(RichText, { text: item }) })
+    /* @__PURE__ */ jsx("ol", { className: "mt-6 list-none space-y-0 divide-y divide-white/[0.06] sm:mt-8", children: items.map((item, idx) => /* @__PURE__ */ jsxs("li", { className: "flex gap-4 py-4 first:pt-0 last:pb-0 sm:gap-8 sm:py-5", children: [
+      /* @__PURE__ */ jsx("span", { className: "font-hero w-7 shrink-0 text-[16px] font-normal tabular-nums tracking-[0.02em] text-[#8a8a8e] sm:w-8 sm:text-[18px]", children: String(idx + 1).padStart(2, "0") }),
+      /* @__PURE__ */ jsx("p", { className: "min-w-0 text-[15px] font-[400] leading-[1.45] text-[#c3c3cc] sm:text-[18px]", children: /* @__PURE__ */ jsx(RichText, { text: item }) })
     ] }, `${idx}-${item.slice(0, 32)}`)) })
   ] });
 }
 function MoreLikeThis({
   currentId,
-  isRu
+  lang
 }) {
+  const isRu = lang === "ru";
   const others = useMemo(
     () => buildProjects(isRu).filter((p) => p.id !== currentId).slice(0, 4),
     [currentId, isRu]
   );
   if (!others.length) return null;
   const title = isRu ? "Ещё проекты" : "More like this";
-  return /* @__PURE__ */ jsxs("section", { className: "mt-[72px] sm:mt-24", "aria-labelledby": "more-like-this", children: [
+  return /* @__PURE__ */ jsxs("section", { className: "mt-14 sm:mt-24", "aria-labelledby": "more-like-this", children: [
     /* @__PURE__ */ jsx(
       "h2",
       {
         id: "more-like-this",
-        className: "mb-8 font-hero text-[clamp(1.35rem,2.4vw,1.75rem)] font-normal uppercase tracking-[0.02em] text-[#ededf3] sm:mb-10",
+        className: "mb-6 font-hero text-[clamp(1.35rem,2.4vw,1.75rem)] font-normal uppercase tracking-[0.02em] text-[#ededf3] sm:mb-10",
         children: title
       }
     ),
-    /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 gap-10 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-12", children: others.map((p) => /* @__PURE__ */ jsx(MoreProjectCard, { project: p, isRu }, p.id)) })
+    /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 gap-10 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-12", children: others.map((p) => /* @__PURE__ */ jsx(MoreProjectCard, { project: p, lang }, p.id)) })
   ] });
 }
-function MoreProjectCard({ project, isRu }) {
+function MoreProjectCard({ project, lang }) {
+  const isRu = lang === "ru";
   const cover = projectPreviewSrc(project);
   const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
-  return /* @__PURE__ */ jsxs(Link, { to: `/projects/${project.id}`, className: "group block min-w-0 outline-none", children: [
+  return /* @__PURE__ */ jsxs(Link, { to: pathForLang(`/projects/${project.id}`, lang), className: "group block min-w-0 outline-none", children: [
     /* @__PURE__ */ jsx("div", { className: "relative aspect-[16/10] w-full overflow-hidden rounded-[12px] bg-[#141416]", children: /* @__PURE__ */ jsx(
       "img",
       {
@@ -10336,8 +10587,8 @@ function ProjectDetailPage() {
   const roleLabel = isRu ? "Роль TIVONIX" : "TIVONIX role";
   const roleValue = isRu ? "Дизайн и разработка под ключ" : "End-to-end design and development";
   const detailsLabel = isRu ? "Подробнее" : "Details";
-  if (!slug) return /* @__PURE__ */ jsx(Navigate, { to: "/projects", replace: true });
-  if (!project) return /* @__PURE__ */ jsx(Navigate, { to: "/projects", replace: true });
+  if (!slug) return /* @__PURE__ */ jsx(Navigate, { to: pathForLang("/projects", lang), replace: true });
+  if (!project) return /* @__PURE__ */ jsx(Navigate, { to: pathForLang("/projects", lang), replace: true });
   const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
   const details = isRu ? project.detailsRu : project.detailsEn;
   const mood = caseSystem ? isRu ? caseSystem.moodRu : caseSystem.moodEn : null;
@@ -10397,11 +10648,11 @@ function ProjectDetailPage() {
         ] }),
         /* @__PURE__ */ jsxs("div", { className: "relative z-10", children: [
           /* @__PURE__ */ jsx(Header, {}),
-          /* @__PURE__ */ jsx("main", { className: "pt-[calc(var(--headerH)+24px)] pb-28 sm:pt-[calc(var(--headerH)+32px)] sm:pb-36", children: /* @__PURE__ */ jsxs(Container, { children: [
-            /* @__PURE__ */ jsx("div", { className: "mt-8 flex flex-col gap-1 sm:mt-10 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4", children: /* @__PURE__ */ jsxs(
+          /* @__PURE__ */ jsx("main", { className: "pt-[calc(var(--headerH)+16px)] pb-20 sm:pt-[calc(var(--headerH)+32px)] sm:pb-36", children: /* @__PURE__ */ jsxs(Container, { children: [
+            /* @__PURE__ */ jsx("div", { className: "mt-4 flex flex-col gap-1 sm:mt-10 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4", children: /* @__PURE__ */ jsxs(
               Link,
               {
-                to: "/projects",
+                to: pathForLang("/projects", lang),
                 className: "inline-flex w-fit items-center gap-2 text-[13px] font-[500] tracking-normal text-[#8a8a8e] transition hover:text-[#ededf3]",
                 children: [
                   /* @__PURE__ */ jsx("span", { "aria-hidden": true, children: "←" }),
@@ -10409,8 +10660,8 @@ function ProjectDetailPage() {
                 ]
               }
             ) }),
-            /* @__PURE__ */ jsxs("div", { className: "mt-8 grid grid-cols-1 items-start gap-10 lg:mt-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.88fr)] lg:gap-14 xl:gap-16", children: [
-              /* @__PURE__ */ jsxs("div", { className: "order-2 min-w-0 lg:order-1", children: [
+            /* @__PURE__ */ jsxs("div", { className: "mt-6 grid grid-cols-1 items-start gap-8 sm:mt-8 sm:gap-10 lg:mt-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.88fr)] lg:gap-14 xl:gap-16", children: [
+              /* @__PURE__ */ jsxs("div", { className: "order-1 min-w-0", children: [
                 /* @__PURE__ */ jsx("figure", { className: "relative w-full overflow-hidden rounded-[12px] bg-[#141416]", children: /* @__PURE__ */ jsx("div", { className: "relative aspect-[16/10] w-full", children: /* @__PURE__ */ jsx(
                   "img",
                   {
@@ -10422,15 +10673,15 @@ function ProjectDetailPage() {
                     fetchPriority: "high"
                   }
                 ) }) }),
-                project.gallery?.length ? /* @__PURE__ */ jsx("div", { className: "mt-8", children: /* @__PURE__ */ jsx(ProjectGalleryStrip, { images: project.gallery, isRu }) }) : null
+                project.gallery?.length ? /* @__PURE__ */ jsx("div", { className: "mt-5 sm:mt-8", children: /* @__PURE__ */ jsx(ProjectGalleryStrip, { images: project.gallery, isRu }) }) : null
               ] }),
-              /* @__PURE__ */ jsxs("div", { className: "order-1 min-w-0 lg:order-2 lg:pt-1", children: [
-                /* @__PURE__ */ jsxs("header", { className: "space-y-4", children: [
+              /* @__PURE__ */ jsxs("div", { className: "order-2 min-w-0 lg:pt-1", children: [
+                /* @__PURE__ */ jsxs("header", { className: "space-y-3 sm:space-y-4", children: [
                   /* @__PURE__ */ jsx("h1", { className: "font-hero text-[clamp(1.85rem,4.2vw,2.75rem)] font-normal uppercase tracking-[0.02em] leading-[1.02] text-[#ededf3]", children: project.title }),
                   /* @__PURE__ */ jsx("p", { className: cx$5("max-w-[36ch]", BODY), children: mood ?? subtitle }),
-                  mood ? /* @__PURE__ */ jsx("p", { className: "max-w-[40ch] text-[14px] leading-relaxed text-[#8a8a8e]", children: subtitle }) : null
+                  mood ? /* @__PURE__ */ jsx("p", { className: "max-w-[40ch] text-[13px] leading-relaxed text-[#8a8a8e] sm:text-[14px]", children: subtitle }) : null
                 ] }),
-                /* @__PURE__ */ jsxs("dl", { className: "mt-8", children: [
+                /* @__PURE__ */ jsxs("dl", { className: "mt-6 sm:mt-8", children: [
                   /* @__PURE__ */ jsx(SpecRow, { label: domainLabel, children: project.domain && !wip ? /* @__PURE__ */ jsxs(
                     "a",
                     {
@@ -10439,7 +10690,7 @@ function ProjectDetailPage() {
                       rel: "noopener noreferrer",
                       className: "inline-flex max-w-full items-center gap-2 transition hover:text-white",
                       children: [
-                        /* @__PURE__ */ jsx("span", { className: "truncate", children: domainClean }),
+                        /* @__PURE__ */ jsx("span", { className: "truncate", children: formatDomainLabel(domainClean) }),
                         /* @__PURE__ */ jsx(ExternalIcon, { className: "shrink-0 text-[#8a8a8e]" })
                       ]
                     }
@@ -10457,30 +10708,30 @@ function ProjectDetailPage() {
                     wip ? wipLabel : liveLabel
                   ] }) }),
                   /* @__PURE__ */ jsx(SpecRow, { label: roleLabel, children: roleValue }),
-                  /* @__PURE__ */ jsx(SpecRow, { label: tagsLabel, children: /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-2", children: project.tags.map((tag) => /* @__PURE__ */ jsx(Pill, { children: tag }, tag)) }) }),
-                  project.stack?.length ? /* @__PURE__ */ jsx(SpecRow, { label: stackLabel, children: /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-2", children: project.stack.map((tech) => /* @__PURE__ */ jsx(Pill, { children: tech }, tech)) }) }) : null
+                  /* @__PURE__ */ jsx(SpecRow, { label: tagsLabel, children: /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-1.5 sm:gap-2", children: project.tags.map((tag) => /* @__PURE__ */ jsx(Pill, { children: tag }, tag)) }) }),
+                  project.stack?.length ? /* @__PURE__ */ jsx(SpecRow, { label: stackLabel, children: /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-1.5 sm:gap-2", children: project.stack.map((tech) => /* @__PURE__ */ jsx(Pill, { children: tech }, tech)) }) }) : null
                 ] }),
-                /* @__PURE__ */ jsxs("div", { className: "mt-10 flex flex-col gap-4", children: [
+                /* @__PURE__ */ jsxs("div", { className: "mt-8 flex flex-col gap-3 sm:mt-10 sm:gap-4", children: [
                   project.domain && !wip ? /* @__PURE__ */ jsx(
                     "a",
                     {
                       href: project.domain,
                       target: "_blank",
                       rel: "noopener noreferrer",
-                      className: "inline-flex h-[52px] w-full items-center justify-center rounded-full bg-[#FF6B2C] px-6 text-[15px] font-medium tracking-normal text-white transition hover:bg-[#ff7d45]",
+                      className: "inline-flex h-12 w-full items-center justify-center rounded-full bg-[#FF6B2C] px-6 text-[15px] font-medium tracking-normal text-white transition hover:bg-[#ff7d45] sm:h-[52px]",
                       children: openSiteLabel
                     }
-                  ) : /* @__PURE__ */ jsx("div", { className: "inline-flex h-[52px] w-full items-center justify-center rounded-full bg-[#1c1c1f] px-6 text-[15px] font-medium tracking-normal text-[#8a8a8e]", children: websiteSoonLabel }),
+                  ) : /* @__PURE__ */ jsx("div", { className: "inline-flex h-12 w-full items-center justify-center rounded-full bg-[#1c1c1f] px-6 text-[15px] font-medium tracking-normal text-[#8a8a8e] sm:h-[52px]", children: websiteSoonLabel }),
                   /* @__PURE__ */ jsx(
                     LeadCTAButton,
                     {
                       source: "project_page",
                       variant: "plain",
-                      className: "!h-auto !min-h-0 w-full !rounded-none !border-0 !bg-transparent !px-0 !py-1 !text-[15px] !font-medium !tracking-normal !text-[#ededf3] hover:!bg-transparent hover:!text-white/75",
+                      className: "!h-12 w-full !rounded-full !border !border-white/15 !bg-transparent !px-6 !text-[15px] !font-medium !tracking-normal !text-[#ededf3] hover:!border-white/25 hover:!bg-white/[0.03] hover:!text-white sm:!h-auto sm:!min-h-0 sm:!rounded-none sm:!border-0 sm:!px-0 sm:!py-1 sm:hover:!bg-transparent sm:hover:!text-white/75",
                       children: leadFormCopy(lang).ctaDiscuss
                     }
                   ),
-                  /* @__PURE__ */ jsx("p", { className: "text-left text-[13px] leading-relaxed tracking-normal text-[#8a8a8e]", children: isRu ? /* @__PURE__ */ jsxs(Fragment, { children: [
+                  /* @__PURE__ */ jsx("p", { className: "text-left text-[12px] leading-relaxed tracking-normal text-[#8a8a8e] sm:text-[13px]", children: isRu ? /* @__PURE__ */ jsxs(Fragment, { children: [
                     "Напиши: ",
                     /* @__PURE__ */ jsx("span", { className: "text-[#c3c3cc]", children: "что делаем" }),
                     ",",
@@ -10507,14 +10758,14 @@ function ProjectDetailPage() {
             /* @__PURE__ */ jsxs(
               "article",
               {
-                className: "mt-16 max-w-[52rem] sm:mt-[72px] lg:mt-24",
+                className: "mt-12 max-w-[52rem] sm:mt-[72px] lg:mt-24",
                 itemScope: true,
                 itemType: "https://schema.org/CreativeWork",
                 children: [
                   /* @__PURE__ */ jsx("meta", { itemProp: "name", content: project.title }),
                   /* @__PURE__ */ jsx("meta", { itemProp: "description", content: subtitle }),
                   /* @__PURE__ */ jsx("link", { itemProp: "url", href: `${CANONICAL_ORIGIN}/projects/${project.id}` }),
-                  /* @__PURE__ */ jsx("div", { className: "mb-10 border-b border-white/[0.06] pb-10 sm:mb-12 sm:pb-12", children: caseSystem ? /* @__PURE__ */ jsx(
+                  /* @__PURE__ */ jsx("div", { className: "mb-8 border-b border-white/[0.06] pb-8 sm:mb-12 sm:pb-12", children: caseSystem ? /* @__PURE__ */ jsx(
                     CaseBrandIntro,
                     {
                       title: project.title,
@@ -10539,13 +10790,13 @@ function ProjectDetailPage() {
                     }
                   ),
                   project.outcomes?.length ? /* @__PURE__ */ jsx(OutcomesBlock, { items: project.outcomes, isRu }) : null,
-                  project.testimonial ? /* @__PURE__ */ jsxs("figure", { className: "mt-16 max-w-[42rem] border-t border-white/[0.06] pt-10 sm:mt-[72px] sm:pt-12", children: [
+                  project.testimonial ? /* @__PURE__ */ jsxs("figure", { className: "mt-12 max-w-[42rem] border-t border-white/[0.06] pt-8 sm:mt-[72px] sm:pt-12", children: [
                     /* @__PURE__ */ jsx("p", { className: "text-[13px] font-[500] tracking-normal text-[#8a8a8e]", children: isRu ? "Отзыв · 5 из 5" : "Review · 5 of 5" }),
                     project.testimonial.textAr ? /* @__PURE__ */ jsxs(Fragment, { children: [
                       /* @__PURE__ */ jsxs(
                         "blockquote",
                         {
-                          className: "mt-4 text-[18px] font-[400] leading-[1.7] tracking-[0.005em] text-[#c3c3cc] sm:text-[20px]",
+                          className: "mt-3 text-[16px] font-[400] leading-[1.65] tracking-[0.005em] text-[#c3c3cc] sm:mt-4 sm:text-[20px] sm:leading-[1.7]",
                           dir: "rtl",
                           lang: "ar",
                           children: [
@@ -10555,18 +10806,18 @@ function ProjectDetailPage() {
                           ]
                         }
                       ),
-                      /* @__PURE__ */ jsx("p", { className: "mt-5 text-[12px] font-[500] tracking-normal text-[#8a8a8e]", children: isRu ? "Расшифровка" : "Translation" }),
-                      /* @__PURE__ */ jsxs("blockquote", { className: "mt-2 text-[16px] font-[400] leading-[1.5] tracking-[0.005em] text-[#a8a8b0] sm:text-[17px]", children: [
+                      /* @__PURE__ */ jsx("p", { className: "mt-4 text-[12px] font-[500] tracking-normal text-[#8a8a8e] sm:mt-5", children: isRu ? "Расшифровка" : "Translation" }),
+                      /* @__PURE__ */ jsxs("blockquote", { className: "mt-2 text-[15px] font-[400] leading-[1.5] tracking-[0.005em] text-[#a8a8b0] sm:text-[17px]", children: [
                         "“",
                         project.testimonial.text,
                         "”"
                       ] })
-                    ] }) : /* @__PURE__ */ jsxs("blockquote", { className: "mt-4 text-[18px] font-[400] leading-[1.5] tracking-[0.005em] text-[#c3c3cc] sm:text-[20px]", children: [
+                    ] }) : /* @__PURE__ */ jsxs("blockquote", { className: "mt-3 text-[16px] font-[400] leading-[1.5] tracking-[0.005em] text-[#c3c3cc] sm:mt-4 sm:text-[20px]", children: [
                       "“",
                       project.testimonial.text,
                       "”"
                     ] }),
-                    /* @__PURE__ */ jsxs("figcaption", { className: "mt-5 text-[13px] tracking-normal text-[#8a8a8e]", children: [
+                    /* @__PURE__ */ jsxs("figcaption", { className: "mt-4 text-[13px] tracking-normal text-[#8a8a8e] sm:mt-5", children: [
                       /* @__PURE__ */ jsx("span", { className: "font-medium text-[#ededf3]", children: project.testimonial.name }),
                       /* @__PURE__ */ jsx("span", { className: "mx-1.5 text-white/20", children: "·" }),
                       project.testimonial.role
@@ -10575,7 +10826,7 @@ function ProjectDetailPage() {
                 ]
               }
             ),
-            /* @__PURE__ */ jsx(MoreLikeThis, { currentId: project.id, isRu })
+            /* @__PURE__ */ jsx(MoreLikeThis, { currentId: project.id, lang })
           ] }) })
         ] })
       ]
@@ -12315,13 +12566,17 @@ function DotList({
   )) });
 }
 function AutomationHero({ t }) {
+  const { lang } = useLang();
   const [b1, b2, b3] = t.hero.badges;
   const { openLeadForm } = useLeadForm();
   return /* @__PURE__ */ jsx(Section, { className: "relative overflow-x-hidden overflow-y-visible pb-16 pt-0 sm:pb-20", children: /* @__PURE__ */ jsx("div", { className: "relative z-10", children: /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-7xl", children: [
     /* @__PURE__ */ jsxs("div", { className: "relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 overflow-x-hidden px-4 py-8 text-center sm:px-8 sm:py-10", children: [
       /* @__PURE__ */ jsxs("h1", { className: `relative z-10 mt-5 ${automationTypo.h1}`, children: [
         /* @__PURE__ */ jsx("span", { className: "block", children: t.hero.h1Line1 }),
-        /* @__PURE__ */ jsx("span", { className: "block", children: t.hero.h1Line2 })
+        /* @__PURE__ */ jsxs("span", { className: "block", children: [
+          " ",
+          t.hero.h1Line2
+        ] })
       ] }),
       /* @__PURE__ */ jsx("p", { className: "relative z-10 mx-auto mt-8 max-w-[40rem] text-[17px] font-medium leading-[1.55] text-white/85 sm:text-[19px] sm:leading-[1.6] lg:text-[20px]", children: t.hero.subtitle }),
       /* @__PURE__ */ jsxs("div", { className: "relative z-10 mx-auto mt-5 flex flex-wrap justify-center gap-2.5", children: [
@@ -12385,7 +12640,7 @@ function AutomationHero({ t }) {
         /* @__PURE__ */ jsx(
           Link,
           {
-            to: "/projects",
+            to: pathForLang("/projects", lang),
             className: "inline-flex h-[56px] items-center justify-center rounded-2xl bg-white/[0.08] px-7 text-[16px] font-[780] text-white/90 transition hover:bg-white/[0.13] active:translate-y-px sm:h-[60px] sm:px-8 sm:text-[17px]",
             children: t.hero.ctaCases
           }
@@ -12469,7 +12724,10 @@ function WhyAutomation({ t }) {
     /* @__PURE__ */ jsx(Container, { children: /* @__PURE__ */ jsxs("div", { className: "relative z-10 mx-auto flex max-w-4xl flex-col items-center py-2 text-center sm:py-4", children: [
       /* @__PURE__ */ jsxs("h2", { className: automationTypo.h2, children: [
         /* @__PURE__ */ jsx("span", { className: "block", children: t.why.h2Line1 }),
-        /* @__PURE__ */ jsx("span", { className: "block", children: t.why.h2Line2 })
+        /* @__PURE__ */ jsxs("span", { className: "block", children: [
+          " ",
+          t.why.h2Line2
+        ] })
       ] }),
       /* @__PURE__ */ jsx("p", { className: "mt-6 max-w-[48rem] text-[19px] leading-[1.64] text-white/84 sm:text-[22px] sm:leading-[1.58]", children: t.why.subtitle })
     ] }) }),
@@ -13769,15 +14027,10 @@ function AboutPage() {
     }
     let raf = 0;
     const update = () => {
-      if (mobile.matches) {
-        el.style.setProperty("--spread", "1");
-        el.dataset.formed = "1";
-        return;
-      }
       const rect = el.getBoundingClientRect();
       const vh = window.innerHeight;
-      const start = vh * 0.92;
-      const end = vh * 0.08;
+      const start = vh * (mobile.matches ? 0.9 : 0.92);
+      const end = vh * (mobile.matches ? 0.18 : 0.08);
       const t = Math.min(1, Math.max(0, (start - rect.top) / (start - end)));
       const eased = t * t * (3 - 2 * t);
       el.style.setProperty("--spread", eased.toFixed(3));
@@ -13959,10 +14212,10 @@ function AboutPage() {
           ] })
         }
       ),
-      /* @__PURE__ */ jsx("section", { className: "about-caldera__section about-story-section pt-0", children: /* @__PURE__ */ jsx(Container, { className: "relative z-[2]", children: /* @__PURE__ */ jsx("div", { ref: storyRef, className: "about-story", lang, children: /* @__PURE__ */ jsx("p", { className: "about-story__text", children: storyWords.map(
+      /* @__PURE__ */ jsx("section", { className: "about-caldera__section about-story-section scroll-mt-[var(--tivonix-header-spacer)] pt-0", children: /* @__PURE__ */ jsx(Container, { className: "relative z-[2]", children: /* @__PURE__ */ jsx("div", { ref: storyRef, className: "about-story", lang, children: /* @__PURE__ */ jsx("p", { className: "about-story__text", children: storyWords.map(
         (token, i) => /^\s+$/.test(token) ? /* @__PURE__ */ jsx("span", { children: " " }, `s-${i}`) : /* @__PURE__ */ jsx("span", { className: "about-story__word", children: token }, `w-${i}`)
       ) }) }) }) }),
-      /* @__PURE__ */ jsx("section", { className: "about-caldera__section", children: /* @__PURE__ */ jsxs(Container, { children: [
+      /* @__PURE__ */ jsx("section", { className: "about-caldera__section scroll-mt-[var(--tivonix-header-spacer)]", children: /* @__PURE__ */ jsxs(Container, { children: [
         /* @__PURE__ */ jsx("div", { className: "about-caldera__trio", children: [copy.mission, copy.vision, copy.values].map((block) => /* @__PURE__ */ jsxs("article", { className: "about-caldera__card", children: [
           /* @__PURE__ */ jsx("span", { className: "about-caldera__sulfur", children: block.label }),
           /* @__PURE__ */ jsx("h2", { className: "about-caldera__h", children: block.title }),
@@ -13973,7 +14226,7 @@ function AboutPage() {
           /* @__PURE__ */ jsx("p", { className: "about-caldera__body about-caldera__body--sm", children: item.text })
         ] }, item.title)) })
       ] }) }),
-      /* @__PURE__ */ jsx("section", { className: "about-why-section about-caldera__section", children: /* @__PURE__ */ jsxs(Container, { children: [
+      /* @__PURE__ */ jsx("section", { className: "about-why-section about-caldera__section scroll-mt-[var(--tivonix-header-spacer)]", children: /* @__PURE__ */ jsxs(Container, { children: [
         /* @__PURE__ */ jsxs("div", { className: "about-why__head", children: [
           /* @__PURE__ */ jsx("h2", { className: "about-caldera__display about-caldera__display--section", children: copy.why.title }),
           /* @__PURE__ */ jsx("p", { className: "about-caldera__body about-why__lead", children: copy.why.text })
@@ -14002,7 +14255,7 @@ function AboutPage() {
         "section",
         {
           ref: peopleRef,
-          className: "about-people about-caldera__section about-caldera__section--last",
+          className: "about-people about-caldera__section about-caldera__section--last scroll-mt-[var(--tivonix-header-spacer)]",
           style: { ["--spread"]: 0 },
           children: /* @__PURE__ */ jsxs(Container, { children: [
             /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[40rem] text-center", children: [
@@ -15423,7 +15676,7 @@ function PartnersFooter() {
     ] }) }),
     /* @__PURE__ */ jsxs(Shell, { className: "partners-footer__shell", children: [
       /* @__PURE__ */ jsxs("div", { className: "partners-footer__bar", children: [
-        /* @__PURE__ */ jsxs(Link, { to: "/", className: "partners-footer__logo", "aria-label": copy.footer.homeAria, children: [
+        /* @__PURE__ */ jsxs(Link, { to: lang === "en" ? "/en" : "/", className: "partners-footer__logo", "aria-label": copy.footer.homeAria, children: [
           /* @__PURE__ */ jsx("img", { src: TIVONIX_MARK, alt: "", width: 28, height: 28, decoding: "async" }),
           /* @__PURE__ */ jsx("span", { children: "TIVONIX Partners" })
         ] }),
@@ -15437,8 +15690,8 @@ function PartnersFooter() {
               children: copy.footer.login
             }
           ),
-          /* @__PURE__ */ jsx(Link, { to: "/projects", children: copy.footer.projects }),
-          /* @__PURE__ */ jsx(Link, { to: "/contacts", children: copy.footer.contacts }),
+          /* @__PURE__ */ jsx(Link, { to: pathForLang("/projects", lang), children: copy.footer.projects }),
+          /* @__PURE__ */ jsx(Link, { to: pathForLang("/contacts", lang), children: copy.footer.contacts }),
           /* @__PURE__ */ jsx(
             "a",
             {
@@ -15676,7 +15929,7 @@ function PartnersPage() {
       if (raf) window.cancelAnimationFrame(raf);
     };
   }, []);
-  return /* @__PURE__ */ jsxs("div", { className: "min-h-screen overflow-x-clip bg-partners-cream font-partners text-partners-charcoal antialiased", children: [
+  return /* @__PURE__ */ jsxs("div", { className: "min-h-screen bg-partners-cream font-partners text-partners-charcoal antialiased", children: [
     /* @__PURE__ */ jsxs(Helmet, { children: [
       /* @__PURE__ */ jsx(
         "link",
@@ -18407,7 +18660,7 @@ function PartnersPage() {
       /* @__PURE__ */ jsx("link", { rel: "alternate", hrefLang: "x-default", href: partnersHreflangUrl("/partners") })
     ] }),
     /* @__PURE__ */ jsx(Header, {}),
-    /* @__PURE__ */ jsxs("main", { children: [
+    /* @__PURE__ */ jsxs("main", { className: "overflow-x-clip", children: [
       /* @__PURE__ */ jsxs(
         "section",
         {
@@ -18917,7 +19170,7 @@ function PartnersPage() {
                     /* @__PURE__ */ jsx("div", { className: "mt-5", children: /* @__PURE__ */ jsx(
                       Link,
                       {
-                        to: `/projects/${c.id}`,
+                        to: pathForLang(`/projects/${c.id}`, lang),
                         className: "inline-flex min-h-[2.5rem] items-center justify-center rounded-partners-btn bg-[#ff6b2c] px-4 py-2 font-partners text-[14px] font-semibold tracking-[-0.01em] text-white no-underline transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff6b2c]",
                         children: copy.cases.view
                       }
@@ -18927,7 +19180,7 @@ function PartnersPage() {
               },
               c.id
             )) }),
-            /* @__PURE__ */ jsx("div", { className: "mt-8 text-center", children: /* @__PURE__ */ jsx(SandPill, { href: "/projects", children: copy.cases.all }) })
+            /* @__PURE__ */ jsx("div", { className: "mt-8 text-center", children: /* @__PURE__ */ jsx(SandPill, { href: pathForLang("/projects", lang), children: copy.cases.all }) })
           ] })
         }
       ),
