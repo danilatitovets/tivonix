@@ -463,7 +463,7 @@ export function ProjectGalleryStrip({
             <div
               key={src}
               role="listitem"
-              className="w-[min(68vw,15rem)] shrink-0 snap-start sm:w-auto"
+              className="w-[min(72vw,16rem)] shrink-0 snap-start sm:w-[13.75rem] lg:w-[15rem]"
             >
               <button
                 type="button"
@@ -471,7 +471,7 @@ export function ProjectGalleryStrip({
                 aria-label={`${openLabel} ${i + 1}`}
                 onClick={() => setActive(i)}
               >
-                <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-[#141416] sm:hidden">
+                <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-[#1c1c1f] ring-1 ring-white/[0.06] sm:rounded-2xl">
                   <img
                     src={src}
                     alt=""
@@ -480,9 +480,6 @@ export function ProjectGalleryStrip({
                     loading="lazy"
                     decoding="async"
                   />
-                </div>
-                <div className="hidden sm:block">
-                  <ProjectPreviewFrame src={src} variant="thumb" />
                 </div>
               </button>
             </div>
