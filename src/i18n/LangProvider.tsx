@@ -543,7 +543,8 @@ export function LangPathSync() {
       clean === "/plans" ||
       clean === "/about" ||
       clean === "/projects" ||
-      clean === "/contacts"
+      clean === "/contacts" ||
+      /^\/projects\//.test(clean)
     ) {
       next = "ru";
     }

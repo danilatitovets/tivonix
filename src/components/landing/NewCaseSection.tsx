@@ -4,6 +4,7 @@ import Container from "../ui/Container";
 import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
 import { buildProjects } from "../../data/projectsCatalog";
+import { pathForLang } from "../../lib/localePaths";
 
 const HeroWebGLBg = lazy(() => import("./HeroWebGLBg"));
 
@@ -244,7 +245,7 @@ export default function NewCaseSection() {
 
                   <div className="mt-6 flex flex-wrap items-center gap-3">
                     <Link
-                      to={`/projects/${featured.id}`}
+                      to={pathForLang(`/projects/${featured.id}`, lang)}
                       className="inline-flex h-11 items-center justify-center rounded-full bg-white px-5 text-[14px] font-semibold text-black transition hover:bg-white/95"
                     >
                       {copy.cta}

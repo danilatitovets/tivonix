@@ -23,6 +23,7 @@ import {
   partnerPanelLoginUrl,
   partnerPanelRegisterUrl,
 } from "../lib/partnerPanel";
+import { pathForLang } from "../lib/localePaths";
 
 /** Gmail compose — как в Footer/Contacts (mailto перехватывается ads-трекингом) */
 const PARTNERS_GMAIL_URL =
@@ -959,7 +960,7 @@ function PartnersFooter() {
 
       <Shell className="partners-footer__shell">
         <div className="partners-footer__bar">
-          <Link to="/" className="partners-footer__logo" aria-label={copy.footer.homeAria}>
+          <Link to={lang === "en" ? "/en" : "/"} className="partners-footer__logo" aria-label={copy.footer.homeAria}>
             <img src={TIVONIX_MARK} alt="" width={28} height={28} decoding="async" />
             <span>TIVONIX Partners</span>
           </Link>
@@ -971,8 +972,8 @@ function PartnersFooter() {
             >
               {copy.footer.login}
             </a>
-            <Link to="/projects">{copy.footer.projects}</Link>
-            <Link to="/contacts">{copy.footer.contacts}</Link>
+            <Link to={pathForLang("/projects", lang)}>{copy.footer.projects}</Link>
+            <Link to={pathForLang("/contacts", lang)}>{copy.footer.contacts}</Link>
             <a
               href={PARTNER_AGENCY_TELEGRAM_URL}
               target="_blank"
@@ -4604,7 +4605,7 @@ export default function PartnersPage() {
                     </div>
                     <div className="mt-5">
                       <Link
-                        to={`/projects/${c.id}`}
+                        to={pathForLang(`/projects/${c.id}`, lang)}
                         className="inline-flex min-h-[2.5rem] items-center justify-center rounded-partners-btn bg-[#ff6b2c] px-4 py-2 font-partners text-[14px] font-semibold tracking-[-0.01em] text-white no-underline transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff6b2c]"
                       >
                         {copy.cases.view}
@@ -4616,7 +4617,7 @@ export default function PartnersPage() {
             </Reveal>
 
             <div className="mt-8 text-center">
-              <SandPill href="/projects">{copy.cases.all}</SandPill>
+              <SandPill href={pathForLang("/projects", lang)}>{copy.cases.all}</SandPill>
             </div>
           </Shell>
         </section>

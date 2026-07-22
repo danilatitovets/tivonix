@@ -13,6 +13,8 @@ import { LeadCTAButton } from "../components/leads/LeadCTAButton";
 import { leadFormCopy } from "../i18n/leadFormCopy";
 import { trackProjectView } from "../lib/analytics";
 import { useEffect } from "react";
+import { pathForLang } from "../lib/localePaths";
+import type { Lang } from "../i18n/LangProvider";
 
 const ALL_FILTER = "all";
 
@@ -53,17 +55,18 @@ const filterPillClass = (active: boolean) =>
       : "bg-[#1c1c1f] text-white/78 hover:bg-[#262626] hover:text-white/92"
   );
 
-function ProjectGridCard({ p, isRu }: { p: Project; isRu: boolean }) {
+function ProjectGridCard({ p, isRu, lang }: { p: Project; isRu: boolean; lang: Lang }) {
   const wip = p.status === "wip";
   const domainClean = p.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "");
   const productType = p.tags[0] ?? (isRu ? "Проект" : "Project");
   const subtitle = isRu ? p.subtitleRu : p.subtitleEn;
   const role = isRu ? "Роль TIVONIX: дизайн и разработка" : "TIVONIX role: design & development";
+  const href = pathForLang(`/projects/${p.id}`, lang);
 
   return (
     <article className="group min-w-0">
       <Link
-        to={`/projects/${p.id}`}
+        to={href}
         className="block min-w-0 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
         aria-label={isRu ? `Кейс ${p.title}` : `Case study ${p.title}`}
       >
@@ -78,7 +81,7 @@ function ProjectGridCard({ p, isRu }: { p: Project; isRu: boolean }) {
             {productType}
           </p>
           <Link
-            to={`/projects/${p.id}`}
+            to={href}
             className="block min-w-0 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45"
           >
             <h2 className="mt-1 truncate font-sans text-[15px] font-medium tracking-normal text-white/[0.92] transition group-hover:text-white">
@@ -212,7 +215,7 @@ export default function ProjectsPage() {
             {filtered.length ? (
               <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
                 {filtered.map((p) => (
-                  <ProjectGridCard key={p.id} p={p} isRu={isRu} />
+                  <ProjectGridCard key={p.id} p={p} isRu={isRu} lang={lang} />
                 ))}
               </div>
             ) : (

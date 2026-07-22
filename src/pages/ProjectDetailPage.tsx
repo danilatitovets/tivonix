@@ -13,6 +13,8 @@ import { LeadCTAButton } from "../components/leads/LeadCTAButton";
 import { leadFormCopy } from "../i18n/leadFormCopy";
 import { trackProjectView } from "../lib/analytics";
 import { buildProjectCaseSchema } from "../lib/schema";
+import { pathForLang } from "../lib/localePaths";
+import type { Lang } from "../i18n/LangProvider";
 
 const HEADER_H = 72;
 const CANONICAL_ORIGIN = "https://tivonix.tech";
@@ -589,11 +591,12 @@ function OutcomesBlock({
 
 function MoreLikeThis({
   currentId,
-  isRu,
+  lang,
 }: {
   currentId: string;
-  isRu: boolean;
+  lang: Lang;
 }) {
+  const isRu = lang === "ru";
   const others = useMemo(
     () => buildProjects(isRu).filter((p) => p.id !== currentId).slice(0, 4),
     [currentId, isRu]
@@ -614,19 +617,20 @@ function MoreLikeThis({
 
       <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-12">
         {others.map((p) => (
-          <MoreProjectCard key={p.id} project={p} isRu={isRu} />
+          <MoreProjectCard key={p.id} project={p} lang={lang} />
         ))}
       </div>
     </section>
   );
 }
 
-function MoreProjectCard({ project, isRu }: { project: Project; isRu: boolean }) {
+function MoreProjectCard({ project, lang }: { project: Project; lang: Lang }) {
+  const isRu = lang === "ru";
   const cover = projectPreviewSrc(project);
   const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
 
   return (
-    <Link to={`/projects/${project.id}`} className="group block min-w-0 outline-none">
+    <Link to={pathForLang(`/projects/${project.id}`, lang)} className="group block min-w-0 outline-none">
       <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[12px] bg-[#141416]">
         <img
           src={cover}
@@ -681,8 +685,8 @@ export default function ProjectDetailPage() {
     : "End-to-end design and development";
   const detailsLabel = isRu ? "Подробнее" : "Details";
 
-  if (!slug) return <Navigate to="/projects" replace />;
-  if (!project) return <Navigate to="/projects" replace />;
+  if (!slug) return <Navigate to={pathForLang("/projects", lang)} replace />;
+  if (!project) return <Navigate to={pathForLang("/projects", lang)} replace />;
 
   const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
   const details = isRu ? project.detailsRu : project.detailsEn;
@@ -748,7 +752,7 @@ export default function ProjectDetailPage() {
           <Container>
             <div className="mt-4 flex flex-col gap-1 sm:mt-10 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
               <Link
-                to="/projects"
+                to={pathForLang("/projects", lang)}
                 className="inline-flex w-fit items-center gap-2 text-[13px] font-[500] tracking-normal text-[#8a8a8e] transition hover:text-[#ededf3]"
               >
                 <span aria-hidden>←</span>
@@ -960,7 +964,7 @@ export default function ProjectDetailPage() {
               ) : null}
             </article>
 
-            <MoreLikeThis currentId={project.id} isRu={isRu} />
+            <MoreLikeThis currentId={project.id} lang={lang} />
           </Container>
         </main>
       </div>

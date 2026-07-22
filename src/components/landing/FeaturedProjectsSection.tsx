@@ -8,6 +8,7 @@ import { homeExtraCopy } from "../../i18n/homeExtraCopy";
 import { findProjectBySlug } from "../../data/projectsCatalog";
 import { trackEvent } from "../../lib/analytics";
 import { useInView } from "../../hooks/useInView";
+import { pathForLang } from "../../lib/localePaths";
 
 const AUTO_MS = 5500;
 
@@ -33,6 +34,7 @@ function FeaturedCaseSlide({
 
   const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
   const cover = project.cover ?? "";
+  const href = pathForLang(`/projects/${project.id}`, isRu ? "ru" : "en");
 
   return (
     <article
@@ -67,7 +69,7 @@ function FeaturedCaseSlide({
 
           <h3 className="mt-4 font-hero text-[clamp(1.75rem,4vw,2.75rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-white">
             <Link
-              to={`/projects/${project.id}`}
+              to={href}
               tabIndex={active ? 0 : -1}
               onClick={() =>
                 trackEvent("project_open", {

@@ -11,6 +11,7 @@ import type { PlanId } from "../../lib/pricingData";
 import { useLeadForm } from "../leads/useLeadForm";
 import { trackEvent } from "../../lib/analytics";
 import { getStableViewportHeight } from "../../lib/stableViewport";
+import { pathForLang } from "../../lib/localePaths";
 
 const PLANS_IMG = `/images/${encodeURIComponent("планы")}`;
 
@@ -209,7 +210,7 @@ export default function HomePricingSection() {
 
                       <div className="home-plan-card__actions">
                         <Link
-                          to="/plans"
+                          to={pathForLang("/plans", lang)}
                           className="home-plan-card__cta group"
                           onClick={() =>
                             trackEvent("pricing_cta_click", {

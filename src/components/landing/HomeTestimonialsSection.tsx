@@ -11,6 +11,8 @@ import {
   projectsWithTestimonials,
   type Project,
 } from "../../data/projectsCatalog";
+import { pathForLang } from "../../lib/localePaths";
+import type { Lang } from "../../i18n/LangProvider";
 
 /** Same photos as home pricing cards */
 const PLANS_IMG = `/images/${encodeURIComponent("планы")}`;
@@ -29,11 +31,13 @@ function TestimonialCard({
   photo,
   viewCase,
   ownProduct,
+  lang,
 }: {
   project: Project;
   photo: string;
   viewCase: string;
   ownProduct: string;
+  lang: Lang;
 }) {
   const t = project.testimonial!;
   const showCase = isPublicProjectId(project.id);
@@ -58,7 +62,7 @@ function TestimonialCard({
             {isOwn ? (
               <span className="home-testimonials__muted">{ownProduct}</span>
             ) : showCase ? (
-              <Link to={`/projects/${project.id}`} className="home-testimonials__case">
+              <Link to={pathForLang(`/projects/${project.id}`, lang)} className="home-testimonials__case">
                 {viewCase}: {project.title}
               </Link>
             ) : (
@@ -201,6 +205,7 @@ export default function HomeTestimonialsSection() {
               photo={PLAN_PHOTOS[i % PLAN_PHOTOS.length]}
               viewCase={copy.testimonials.viewCase}
               ownProduct={copy.testimonials.ownProduct}
+              lang={lang}
             />
           ))}
         </div>

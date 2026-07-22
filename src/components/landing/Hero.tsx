@@ -8,6 +8,7 @@ import { isTelegramWebView } from "../../lib/telegramWebView";
 import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
 import { getStableViewportHeight } from "../../lib/stableViewport";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
+import { pathForLang } from "../../lib/localePaths";
 
 const HERO_VIDEO = "/images/hero-bg.mp4";
 const HERO_POSTER = "/images/hero-bg-poster.webp";
@@ -140,6 +141,7 @@ function HeroCard({
   ctaSecondary: string;
   micro: string;
 }) {
+  const { lang } = useLang();
   const textOpacity = useMemo(() => textOpacities(progress), [progress]);
   const activeStage = textOpacity[2] > 0.5 ? 2 : textOpacity[1] > 0.5 ? 1 : 0;
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -218,7 +220,7 @@ function HeroCard({
               {ctaPrimary}
             </LeadCTAButton>
             <Link
-              to="/projects"
+              to={pathForLang("/projects", lang)}
               className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-white/20 bg-white/[0.04] px-6 text-[13px] font-semibold text-white/82 transition hover:border-white/35 hover:bg-white/[0.08] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/55"
             >
               {ctaSecondary}

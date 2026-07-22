@@ -11,6 +11,7 @@ import { trackPartnersEvent } from "../../lib/ads";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
 import { leadFormCopy } from "../../i18n/leadFormCopy";
 import LangToggle from "./LangToggle";
+import { pathForLang } from "../../lib/localePaths";
 
 // Десктоп-режим (бургер скрыт, показывается полоса навигации) с xl (>=1280).
 
@@ -312,18 +313,28 @@ export default function Header() {
     return key;
   };
 
+  const homePath = lang === "en" ? "/en" : "/";
+
   const navTo = (it: NavItem) => {
     if (it.key === "partners") return partnersPath(lang);
     if (it.key === "about") return aboutPath(lang);
-    return it.to ?? "/";
+    if (it.key === "services") return `${homePath}#offer`;
+    return pathForLang(it.to ?? "/", lang);
   };
 
   const activeKey: NavKey | null = useMemo(() => {
-    if (location.pathname === "/plans") return "plans";
-    if (location.pathname === "/projects" || location.pathname.startsWith("/projects/"))
+    const p = location.pathname;
+    if (p === "/plans" || p === "/en/plans") return "plans";
+    if (
+      p === "/projects" ||
+      p.startsWith("/projects/") ||
+      p === "/en/projects" ||
+      p.startsWith("/en/projects/")
+    ) {
       return "projects";
-    if (location.pathname === "/about" || location.pathname === "/en/about") return "about";
-    if (isPartnersPath(location.pathname)) return "partners";
+    }
+    if (p === "/about" || p === "/en/about") return "about";
+    if (isPartnersPath(p)) return "partners";
     return null;
   }, [location.pathname]);
 
@@ -360,23 +371,23 @@ export default function Header() {
         if (el) el.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
       };
       if (location.pathname !== "/" && location.pathname !== "/en") {
-        navigate(lang === "en" ? "/en" : "/");
+        navigate(homePath);
         window.setTimeout(go, 80);
       } else {
         go();
       }
       return;
     }
-    if (to === "/") {
+    if (to === "/" || to === "/en") {
       e.preventDefault();
-      if (location.pathname !== "/") navigate("/");
+      if (location.pathname !== homePath) navigate(homePath);
       window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
     }
   };
 
   const goHome = () => {
     setOpen(false);
-    if (location.pathname !== "/") navigate("/");
+    if (location.pathname !== homePath) navigate(homePath);
     window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
   };
 
@@ -550,7 +561,7 @@ export default function Header() {
                 </LeadCTAButton>
               )}
               <Link
-                to={onPartners ? `${partnersPath(lang)}#partner-formats` : "/plans"}
+                to={onPartners ? `${partnersPath(lang)}#partner-formats` : pathForLang("/plans", lang)}
                 className={cx(
                   "inline-flex h-12 items-center justify-center rounded-full px-6 font-sans text-[14px] font-medium text-white",
                   "bg-[#070607] transition hover:bg-[#1a1a1a]",

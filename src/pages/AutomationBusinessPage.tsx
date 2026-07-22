@@ -40,6 +40,7 @@ import {
 } from "../i18n/automationPageCopy";
 import { automationTypo } from "../i18n/automationTypography";
 import { useLang } from "../i18n/LangProvider";
+import { pathForLang } from "../lib/localePaths";
 import { TG_BOT_URL } from "../constants/links";
 
 const AUTOMATION_HERO_IMG = "/images/avtomatizaciya-biznesa/hero.webp";
@@ -223,6 +224,7 @@ function DotList({
 }
 
 function AutomationHero({ t }: { t: AutomationPageCopy }) {
+  const { lang } = useLang();
   const [b1, b2, b3] = t.hero.badges;
   const { openLeadForm } = useLeadForm();
 
@@ -296,7 +298,7 @@ function AutomationHero({ t }: { t: AutomationPageCopy }) {
                   </button>
 
                   <Link
-                    to="/projects"
+                    to={pathForLang("/projects", lang)}
                     className="inline-flex h-[56px] items-center justify-center rounded-2xl bg-white/[0.08] px-7 text-[16px] font-[780] text-white/90 transition hover:bg-white/[0.13] active:translate-y-px sm:h-[60px] sm:px-8 sm:text-[17px]"
                   >
                     {t.hero.ctaCases}

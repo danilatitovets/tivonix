@@ -8,6 +8,7 @@ import { buildProjects } from "../../data/projectsCatalog";
 import { TG_CHANNEL_URL } from "../../constants/links";
 import { CONTACT_EMAIL } from "../../lib/leads";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
+import { pathForLang } from "../../lib/localePaths";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -327,7 +328,7 @@ function Footer() {
                 <ColNav id="footer-pages" title={isRu ? "Компания" : "Company"}>
                   {FOOTER_PAGES.map((i) => (
                     <li key={i.to}>
-                      <FooterLink to={i.to}>{t(i.label)}</FooterLink>
+                      <FooterLink to={pathForLang(i.to, lang)}>{t(i.label)}</FooterLink>
                     </li>
                   ))}
                 </ColNav>
@@ -335,18 +336,28 @@ function Footer() {
                 <ColNav id="footer-services" title={isRu ? "Услуги" : "Services"}>
                   {FOOTER_SERVICES.map((i) => (
                     <li key={i.to}>
-                      <FooterLink to={i.to}>{t(i.label)}</FooterLink>
+                      <FooterLink
+                        to={
+                          i.to.startsWith("/#")
+                            ? `${lang === "en" ? "/en" : "/"}${i.to.slice(1)}`
+                            : pathForLang(i.to, lang)
+                        }
+                      >
+                        {t(i.label)}
+                      </FooterLink>
                     </li>
                   ))}
                 </ColNav>
 
                 <ColNav id="footer-work" title={isRu ? "Кейсы" : "Cases"}>
                   <li>
-                    <FooterLink to="/projects">{isRu ? "Все проекты" : "All projects"}</FooterLink>
+                    <FooterLink to={pathForLang("/projects", lang)}>
+                      {isRu ? "Все проекты" : "All projects"}
+                    </FooterLink>
                   </li>
                   {projects.map((p) => (
                     <li key={p.id}>
-                      <FooterLink to={`/projects/${p.id}`}>{p.title}</FooterLink>
+                      <FooterLink to={pathForLang(`/projects/${p.id}`, lang)}>{p.title}</FooterLink>
                     </li>
                   ))}
                 </ColNav>

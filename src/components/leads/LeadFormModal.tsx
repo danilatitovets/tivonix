@@ -9,6 +9,7 @@ import {
 import { createPortal } from "react-dom";
 import { useLang } from "../../i18n/LangProvider";
 import { leadFormCopy } from "../../i18n/leadFormCopy";
+import { pathForLang } from "../../lib/localePaths";
 import type { CtaSource } from "../../lib/analytics";
 import {
   trackEmailClick,
@@ -469,14 +470,14 @@ export default function LeadFormModal({
                   </p>
                   <div className="mt-2 flex flex-col items-center gap-2.5 sm:flex-row">
                     <a
-                      href="/projects/spliton"
+                      href={pathForLang("/projects/spliton", lang)}
                       className="inline-flex h-11 items-center justify-center rounded-full border border-white/15 px-5 text-[13.5px] font-medium text-white/85 transition hover:border-white/30 hover:text-white"
                       onClick={onClose}
                     >
                       {copy.successCase}
                     </a>
                     <a
-                      href="/"
+                      href={lang === "en" ? "/en" : "/"}
                       className="inline-flex h-11 items-center justify-center rounded-full bg-white px-5 text-[13.5px] font-bold text-black transition hover:bg-white/92"
                       onClick={onClose}
                     >
