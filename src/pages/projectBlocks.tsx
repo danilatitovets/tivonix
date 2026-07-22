@@ -292,7 +292,7 @@ function GalleryLightbox({
   return createPortal(
     <div
       className={cx(
-        "fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-6",
+        "fixed inset-0 z-[210] flex items-center justify-center p-2 pt-[max(0.5rem,env(safe-area-inset-top))] sm:p-6",
         "transition-opacity duration-200",
         visible ? "opacity-100" : "opacity-0"
       )}
@@ -302,27 +302,27 @@ function GalleryLightbox({
     >
       <button
         type="button"
-        className="absolute inset-0 bg-black/95"
+        className="absolute inset-0 bg-black"
         aria-label={closeLabel}
         onClick={requestClose}
       />
 
       <div
         className={cx(
-          "relative z-[1] flex h-[min(96dvh,960px)] w-full max-w-[min(100vw,1200px)] flex-col",
+          "relative z-[1] flex h-[min(94dvh,960px)] w-full max-w-[min(100vw,1200px)] flex-col",
           "transition-transform duration-200",
           visible ? "scale-100" : "scale-[0.97]"
         )}
       >
-        <div className="mb-2 flex items-center justify-between gap-2 px-1">
-          <p className="text-[12px] font-medium tabular-nums text-white/40">
+        <div className="mb-2.5 flex items-center justify-between gap-2">
+          <p className="rounded-full bg-white/[0.12] px-3 py-1.5 text-[12px] font-semibold tabular-nums text-white/90 ring-1 ring-white/15">
             {index + 1} / {images.length}
-            <span className="ml-2 text-white/25">{Math.round(scale * 100)}%</span>
+            <span className="ml-2 text-white/70">{Math.round(scale * 100)}%</span>
           </p>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 rounded-full bg-white/[0.14] p-1 ring-1 ring-white/20 backdrop-blur-md">
             <button
               type="button"
-              className="grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-full bg-white/[0.06] text-[18px] text-white/70 transition hover:bg-white/[0.1] hover:text-white disabled:opacity-30"
+              className="grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-full bg-white/15 text-[20px] font-semibold text-white transition hover:bg-white/25 disabled:opacity-35"
               aria-label={zoomOutLabel}
               disabled={scale <= ZOOM_MIN}
               onClick={() => bumpZoom(-ZOOM_STEP)}
@@ -331,7 +331,7 @@ function GalleryLightbox({
             </button>
             <button
               type="button"
-              className="grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-full bg-white/[0.06] text-[18px] text-white/70 transition hover:bg-white/[0.1] hover:text-white disabled:opacity-30"
+              className="grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-full bg-white/15 text-[20px] font-semibold text-white transition hover:bg-white/25 disabled:opacity-35"
               aria-label={zoomInLabel}
               disabled={scale >= ZOOM_MAX}
               onClick={() => bumpZoom(ZOOM_STEP)}
@@ -340,7 +340,7 @@ function GalleryLightbox({
             </button>
             <button
               type="button"
-              className="grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-full text-white/45 transition hover:bg-white/[0.06] hover:text-white/75"
+              className="grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-full bg-white text-[16px] font-bold text-black transition hover:bg-white/90"
               aria-label={closeLabel}
               onClick={requestClose}
             >
@@ -354,7 +354,7 @@ function GalleryLightbox({
             <>
               <button
                 type="button"
-                className="absolute left-1 top-1/2 z-[2] grid h-10 w-10 min-h-[44px] min-w-[44px] -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white/75 transition hover:bg-black/60 hover:text-white sm:left-0"
+                className="absolute left-1 top-1/2 z-[2] grid h-11 w-11 min-h-[44px] min-w-[44px] -translate-y-1/2 place-items-center rounded-full bg-white/20 text-[22px] font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm transition hover:bg-white/30 sm:left-0"
                 aria-label={prevLabel}
                 onClick={() => go(-1)}
               >
@@ -362,7 +362,7 @@ function GalleryLightbox({
               </button>
               <button
                 type="button"
-                className="absolute right-1 top-1/2 z-[2] grid h-10 w-10 min-h-[44px] min-w-[44px] -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white/75 transition hover:bg-black/60 hover:text-white sm:right-0"
+                className="absolute right-1 top-1/2 z-[2] grid h-11 w-11 min-h-[44px] min-w-[44px] -translate-y-1/2 place-items-center rounded-full bg-white/20 text-[22px] font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm transition hover:bg-white/30 sm:right-0"
                 aria-label={nextLabel}
                 onClick={() => go(1)}
               >
@@ -416,7 +416,7 @@ function GalleryLightbox({
           </div>
         </div>
 
-        <p className="mt-2 px-1 text-center text-[11px] leading-snug text-white/28">
+        <p className="mt-2 px-1 text-center text-[11px] leading-snug text-white/55">
           {isRu
             ? tall
               ? "Скролл вниз по длинному экрану · пинч / +/− — масштаб · свайп — листать"
