@@ -507,6 +507,7 @@ export function LangProvider({
     syncHtmlLang(l);
   };
 
+  // Sync <html lang/data-lang> after mount — never during the hydrate render.
   useEffect(() => {
     try {
       localStorage.setItem(LANG_STORAGE_KEY, lang);

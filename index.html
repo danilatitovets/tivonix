@@ -63,8 +63,8 @@
             }
           }
 
-          document.documentElement.lang = lang;
-          document.documentElement.dataset.lang = lang;
+          // Do not mutate <html lang|data-lang> here — prerender already set them
+          // to match SSR, and changing attributes before hydrateRoot causes #418.
           window.__TIVONIX_LANG__ = lang;
         } catch (e) {
           /* ignore */

@@ -404,8 +404,14 @@ export default function Header() {
     requestAnimationFrame(() => burgerRef.current?.focus({ preventScroll: true }));
   };
 
-  const mobileMenu =
-    typeof document !== "undefined" ? (
+  // Portal only after mount — SSR has no document.body target, and rendering the
+  // menu on the first client pass (typeof document !== "undefined") caused #418.
+  const [menuPortalReady, setMenuPortalReady] = useState(false);
+  useEffect(() => {
+    setMenuPortalReady(true);
+  }, []);
+
+  const mobileMenu = menuPortalReady ? (
       <div
         id="mobile-header-menu"
         className={cx(
@@ -752,7 +758,7 @@ export default function Header() {
         </div>
       </header>
 
-      {mobileMenu ? createPortal(mobileMenu, document.body) : null}
+      {menuPortalReady && mobileMenu ? createPortal(mobileMenu, document.body) : null}
     </>
   );
 }

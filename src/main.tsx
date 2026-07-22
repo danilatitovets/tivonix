@@ -7,9 +7,6 @@ import { markTelegramWebView } from "./lib/telegramWebView";
 import { bindStableViewport } from "./lib/stableViewport";
 import "./index.css";
 
-markTelegramWebView();
-bindStableViewport();
-
 const root = document.getElementById("root");
 
 const initialLang = readBootstrapLang();
@@ -29,3 +26,10 @@ if (root) {
     createRoot(root).render(app);
   }
 }
+
+// Mutate <html> only AFTER hydrateRoot so server HTML attributes stay intact
+// during the first client render (lang / data-lang / style.--app-vh).
+queueMicrotask(() => {
+  markTelegramWebView();
+  bindStableViewport();
+});

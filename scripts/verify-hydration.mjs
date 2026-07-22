@@ -30,6 +30,8 @@ for (const route of routes) {
     });
 
     page.on("pageerror", (err) => {
+      // Benign browser warning — not a React hydration failure.
+      if (/ResizeObserver loop/i.test(err.message)) return;
       issues.push(`[pageerror] ${err.message}`);
     });
 

@@ -1,6 +1,5 @@
 // src/components/SEO.tsx
 import { Helmet } from "react-helmet-async";
-import { JsonLd } from "./JsonLd";
 
 const CANONICAL_ORIGIN = "https://tivonix.tech";
 export const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN}/images/og-social.jpg`;
@@ -62,8 +61,10 @@ export function SEO({
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={ogImage} />
         <meta name="twitter:image:alt" content={OG_IMAGE_ALT} />
+        {schemaJsonLd != null ? (
+          <script type="application/ld+json">{JSON.stringify(schemaJsonLd)}</script>
+        ) : null}
       </Helmet>
-      {schemaJsonLd != null ? <JsonLd data={schemaJsonLd} /> : null}
     </>
   );
 }
