@@ -1,73 +1,107 @@
-# React + TypeScript + Vite
+# TIVONIX
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Official website for **TIVONIX** — a product development studio building web platforms, CRM systems, Telegram bots, and AI-assisted business automation.
 
-Currently, two official plugins are available:
+**Live:** [www.tivonix.tech](https://www.tivonix.tech)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## Purpose
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+TIVONIX presents the studio, services, pricing, case studies, and lead intake. The site is a marketing and conversion surface connected to email/Telegram lead delivery — not a placeholder landing page.
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Main features
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Marketing pages: home, services, projects, pricing, partners, contacts
+- Case study pages for shipped products
+- Lead forms with server-side delivery (email + optional Telegram notify)
+- Cookie consent–gated analytics (Hotjar / ads IDs when configured)
+- SSR prerender pipeline for SEO-critical HTML
+- SEO checks and lead-path verification scripts
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Architecture
+
+- **Frontend:** React + TypeScript + Vite (SPA with SSR prerender)
+- **Routing:** React Router
+- **Styling:** Tailwind CSS
+- **Serverless API:** Vercel functions under `api/` (lead intake, rate limiting, delivery)
+- **Telegram:** Grammy-based bot webhook support for lead notifications
+- **Deploy:** Vercel
+
+```
+Browser (React SPA)
+   ↓ form submit
+Vercel /api/leads  →  Resend email  (+ optional Telegram)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Stack
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Area | Technologies |
+| --- | --- |
+| UI | React 19, TypeScript, Vite, Tailwind CSS |
+| SEO | react-helmet-async, prerender scripts, Playwright checks |
+| API | Vercel Node functions |
+| Messaging | Grammy (Telegram), Resend (email) |
+| Visual | Three.js / React Three Fiber (select surfaces) |
+
+---
+
+## Security & data
+
+- Lead delivery secrets (`RESEND_API_KEY`, Telegram tokens) stay on the server — never exposed as `VITE_*`
+- Rate limiting on lead endpoints
+- Analytics/Hotjar load only after consent where configured
+- `.env` is gitignored; use `.env.example` as the template
+
+---
+
+## Local setup
+
+```bash
+npm install
+cp .env.example .env
+npm run dev
 ```
+
+### Environment variables (from `.env.example`)
+
+| Variable | Role |
+| --- | --- |
+| `VITE_SITE_URL` | Canonical site URL |
+| `VITE_GOOGLE_ADS_ID` / `VITE_GOOGLE_ADS_CONVERSION_LABEL` | Optional ads tracking |
+| `VITE_PARTNER_PANEL_URL` | Partner panel link |
+| `VITE_HOTJAR_ID` / `VITE_HOTJAR_SV` / `VITE_HOTJAR_FORCE` | Optional Hotjar |
+| `LEADS_EMAIL_TO` / `LEADS_EMAIL_FROM` | Lead inbox + verified sender |
+| `RESEND_API_KEY` | Email delivery |
+| `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` | Optional lead alerts |
+
+Do not commit real secrets.
+
+---
+
+## Scripts
+
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Vite development server |
+| `npm run build` | Client + SSR build, prerender, SEO check |
+| `npm run build:client` | Client bundle only |
+| `npm run build:server` | SSR bundle only |
+| `npm run preview` | Preview production build |
+| `npm run typecheck` | TypeScript check |
+| `npm run lint` | ESLint |
+| `npm run check:seo` | SEO verification |
+| `npm run check:leads` / `npm test` | Lead path checks |
+| `npm run verify:hydration` | Hydration verification |
+
+---
+
+## Status
+
+**Active production website** for TIVONIX (`www.tivonix.tech`). Content and lead pipeline are maintained as part of studio operations.
