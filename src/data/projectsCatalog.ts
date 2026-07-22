@@ -44,7 +44,7 @@ export const PUBLIC_PROJECT_IDS = [
   "logovo",
 ] as const;
 
-const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/r${i + 1}.webp`);
+const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/${i + 1}.webp`);
 const SPLITON_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/spliton/g${i + 1}.webp`);
 const TIVONIXPANEL_GALLERY = [
   "/images/project-priew/tivonixpanel/1.webp",

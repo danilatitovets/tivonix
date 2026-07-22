@@ -95,9 +95,9 @@ function RichText({ text }: { text: string }) {
 
 function SpecRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid gap-2 border-t border-white/[0.06] py-5 first:border-t-0 first:pt-0 last:pb-0 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-8 sm:items-start">
-      <dt className="text-[13px] font-[500] tracking-normal text-[#8a8a8e]">{label}</dt>
-      <dd className="min-w-0 text-[15px] font-[400] leading-[1.45] tracking-normal text-[#ededf3]">
+    <div className="grid gap-1.5 border-t border-white/[0.06] py-3.5 first:border-t-0 first:pt-0 last:pb-0 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-8 sm:py-5 sm:items-start">
+      <dt className="text-[12px] font-[500] tracking-normal text-[#8a8a8e] sm:text-[13px]">{label}</dt>
+      <dd className="min-w-0 text-[14px] font-[400] leading-[1.45] tracking-normal text-[#ededf3] sm:text-[15px]">
         {children}
       </dd>
     </div>
@@ -106,19 +106,44 @@ function SpecRow({ label, children }: { label: string; children: React.ReactNode
 
 function Pill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center rounded-full bg-[#1c1c1f] px-3.5 py-1.5 text-[12px] font-[500] tracking-normal text-[#c3c3cc]">
+    <span className="inline-flex items-center rounded-full bg-[#1c1c1f] px-2.5 py-1 text-[11px] font-[500] tracking-normal text-[#c3c3cc] sm:px-3.5 sm:py-1.5 sm:text-[12px]">
       {children}
     </span>
   );
 }
 
+/** Shorten long hosts (e.g. Railway) for narrow screens — full URL stays in href. */
+function formatDomainLabel(domainClean: string): string {
+  const slash = domainClean.indexOf("/");
+  const host = slash >= 0 ? domainClean.slice(0, slash) : domainClean;
+  const path = slash >= 0 ? domainClean.slice(slash) : "";
+  const pathSuffix = path === "/login" || path === "/" ? "" : path;
+
+  if (host.length <= 32) return host + pathSuffix;
+
+  const railway = host.match(/^([^.]+)\.(?:up\.)?railway\.app$/i);
+  if (railway) {
+    let slug = railway[1].replace(/-(production|prod|staging|dev)$/i, "");
+    if (slug.length > 18) slug = `${slug.slice(0, 16)}…`;
+    return `${slug}.railway.app${pathSuffix}`;
+  }
+
+  const parts = host.split(".");
+  if (parts.length >= 3) {
+    const head = parts[0].length > 16 ? `${parts[0].slice(0, 14)}…` : parts[0];
+    return `${head}.${parts.slice(-2).join(".")}${pathSuffix}`;
+  }
+
+  return `${host.slice(0, 28)}…${pathSuffix}`;
+}
+
 function FeatureGrid({ items }: { items: string[] }) {
   return (
-    <ul className="mt-7 grid list-none gap-3 sm:grid-cols-2 sm:gap-4">
+    <ul className="mt-5 grid list-none gap-2.5 sm:mt-7 sm:grid-cols-2 sm:gap-4">
       {items.map((item, idx) => (
         <li
           key={`${idx}-${item.slice(0, 40)}`}
-          className="rounded-[12px] bg-[#1c1c1f] px-5 py-4 text-[15px] font-[400] leading-[1.45] text-[#c3c3cc] sm:text-[16px]"
+          className="rounded-[12px] bg-[#1c1c1f] px-4 py-3.5 text-[14px] font-[400] leading-[1.45] text-[#c3c3cc] sm:px-5 sm:py-4 sm:text-[16px]"
         >
           <RichText text={item} />
         </li>
@@ -146,46 +171,58 @@ function CaseBrandIntro({
   domainClean: string;
   wip: boolean;
 }) {
+  const storyParas = story.split(/\n\n+/).map((para, idx) => (
+    <p key={idx}>
+      <RichText text={para} />
+    </p>
+  ));
+
+  const renderLogo = (size: "mobile" | "desktop") =>
+    logo ? (
+      <div
+        className={cx(
+          "overflow-hidden bg-black",
+          size === "desktop"
+            ? cx(
+                "shrink-0 rounded-[16px]",
+                logoFit === "contain" ? "h-[5.25rem] w-16" : "h-16 w-16"
+              )
+            : cx(
+                "mb-4 rounded-[12px] lg:hidden",
+                logoFit === "contain" ? "h-12 w-10" : "h-11 w-11"
+              )
+        )}
+      >
+        <img
+          src={logo}
+          alt=""
+          className={cx(
+            "h-full w-full object-center",
+            logoFit === "contain" ? "object-contain" : "object-cover"
+          )}
+          draggable={false}
+          decoding="async"
+        />
+      </div>
+    ) : null;
+
   return (
     <header>
-      <div className="flex items-start justify-between gap-6">
+      {/* Desktop: title + mood + logo. Mobile skips mood (already in hero). */}
+      <div className="hidden items-start justify-between gap-6 lg:flex">
         <div className="min-w-0 flex-1">
           <h2 className="font-hero text-[clamp(1.85rem,4vw,2.75rem)] font-normal uppercase tracking-[0.02em] leading-[1.05] text-[#ededf3]">
             {title}
           </h2>
-          <p className="mt-3 text-[17px] font-[400] leading-snug text-[#c3c3cc] sm:text-[18px]">
-            {mood}
-          </p>
+          <p className="mt-3 text-[18px] font-[400] leading-snug text-[#c3c3cc]">{mood}</p>
         </div>
-        {logo ? (
-          <div
-            className={cx(
-              "shrink-0 overflow-hidden rounded-[14px] bg-black sm:rounded-[16px]",
-              logoFit === "contain"
-                ? "h-[4.5rem] w-14 sm:h-[5.25rem] sm:w-16"
-                : "h-14 w-14 sm:h-16 sm:w-16"
-            )}
-          >
-            <img
-              src={logo}
-              alt=""
-              className={cx(
-                "h-full w-full object-center",
-                logoFit === "contain" ? "object-contain" : "object-cover"
-              )}
-              draggable={false}
-              decoding="async"
-            />
-          </div>
-        ) : null}
+        {renderLogo("desktop")}
       </div>
 
-      <div className={cx("mt-8 max-w-[42rem] space-y-4", BODY)}>
-        {story.split(/\n\n+/).map((para, idx) => (
-          <p key={idx}>
-            <RichText text={para} />
-          </p>
-        ))}
+      {renderLogo("mobile")}
+
+      <div className={cx("max-w-[42rem] space-y-3.5 sm:space-y-4 lg:mt-8", BODY)}>
+        {storyParas}
       </div>
 
       {domain && !wip ? (
@@ -193,12 +230,11 @@ function CaseBrandIntro({
           href={domain}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-8 inline-flex max-w-full items-center gap-2 text-[15px] font-[500] text-[#c3c3cc] transition hover:text-white"
+          className="mt-5 inline-flex max-w-full items-center gap-2 text-[14px] font-[500] text-[#c3c3cc] transition hover:text-white sm:mt-8 sm:text-[15px]"
+          title={domainClean}
         >
           <ExternalIcon className="shrink-0 text-[#8a8a8e]" />
-          <span className="truncate">
-            {domain.startsWith("http") ? domain : `https://${domainClean}`}
-          </span>
+          <span className="truncate">{formatDomainLabel(domainClean)}</span>
         </a>
       ) : null}
     </header>
@@ -216,17 +252,17 @@ function ColorPalette({
   const neutrals = swatches.filter((s) => s.group === "neutral");
 
   return (
-    <section className="mb-16 scroll-mt-28 sm:mb-[72px]" aria-labelledby="case-palette">
+    <section className="mb-12 scroll-mt-28 sm:mb-[72px]" aria-labelledby="case-palette">
       <h2 id="case-palette" className={H2}>
         {isRu ? "Палитра" : "Color Palette"}
       </h2>
 
       {brand.length ? (
-        <div className="mt-10">
+        <div className="mt-7 sm:mt-10">
           <p className="text-[13px] font-[500] text-[#8a8a8e]">
             {isRu ? "Бренд" : "Brand"}
           </p>
-          <div className="mt-4 space-y-8">
+          <div className="mt-3 space-y-6 sm:mt-4 sm:space-y-8">
             {brand.map((sw) => (
               <PaletteSwatch key={sw.hex + sw.name} swatch={sw} isRu={isRu} wide />
             ))}
@@ -235,11 +271,11 @@ function ColorPalette({
       ) : null}
 
       {neutrals.length ? (
-        <div className="mt-12">
+        <div className="mt-9 sm:mt-12">
           <p className="text-[13px] font-[500] text-[#8a8a8e]">
             {isRu ? "Нейтрали" : "Neutrals"}
           </p>
-          <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-6 sm:mt-4 sm:grid-cols-2 sm:gap-y-8 lg:grid-cols-4">
             {neutrals.map((sw) => (
               <PaletteSwatch key={sw.hex + sw.name} swatch={sw} isRu={isRu} />
             ))}
@@ -308,7 +344,7 @@ function PaletteSwatch({
             "absolute right-3 top-1/2 z-[1] -translate-y-1/2",
             "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1",
             "text-[11px] font-[600] tracking-normal backdrop-blur-sm",
-            "opacity-0 transition duration-150 group-hover:opacity-100 group-focus-visible:opacity-100",
+            "opacity-100 transition duration-150 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-visible:opacity-100",
             isLight
               ? "bg-black/55 text-white"
               : "bg-white/90 text-[#171719]"
@@ -504,7 +540,7 @@ function CaseDetailBody({
       nodes.push(
         <section
           key={`section-${contentIndex}`}
-          className="mb-16 scroll-mt-28 border-t border-white/[0.06] pt-10 sm:mb-[72px] sm:pt-12"
+          className="mb-12 scroll-mt-28 border-t border-white/[0.06] pt-8 sm:mb-[72px] sm:pt-12"
         >
           <h2 className={H2}>{block.title}</h2>
           {block.paragraphs?.length ? (
@@ -535,13 +571,13 @@ function OutcomesBlock({
   return (
     <section id="outcomes" className="mt-4 scroll-mt-28 sm:mt-6">
       <h2 className={H2}>{isRu ? "Что получили" : "Outcomes"}</h2>
-      <ol className="mt-8 list-none space-y-0 divide-y divide-white/[0.06]">
+      <ol className="mt-6 list-none space-y-0 divide-y divide-white/[0.06] sm:mt-8">
         {items.map((item, idx) => (
-          <li key={`${idx}-${item.slice(0, 32)}`} className="flex gap-5 py-5 first:pt-0 last:pb-0 sm:gap-8">
-            <span className="font-hero w-8 shrink-0 text-[18px] font-normal tabular-nums tracking-[0.02em] text-[#8a8a8e]">
+          <li key={`${idx}-${item.slice(0, 32)}`} className="flex gap-4 py-4 first:pt-0 last:pb-0 sm:gap-8 sm:py-5">
+            <span className="font-hero w-7 shrink-0 text-[16px] font-normal tabular-nums tracking-[0.02em] text-[#8a8a8e] sm:w-8 sm:text-[18px]">
               {String(idx + 1).padStart(2, "0")}
             </span>
-            <p className="min-w-0 text-[17px] font-[400] leading-[1.45] text-[#c3c3cc] sm:text-[18px]">
+            <p className="min-w-0 text-[15px] font-[400] leading-[1.45] text-[#c3c3cc] sm:text-[18px]">
               <RichText text={item} />
             </p>
           </li>
@@ -568,10 +604,10 @@ function MoreLikeThis({
   const title = isRu ? "Ещё проекты" : "More like this";
 
   return (
-    <section className="mt-[72px] sm:mt-24" aria-labelledby="more-like-this">
+    <section className="mt-14 sm:mt-24" aria-labelledby="more-like-this">
       <h2
         id="more-like-this"
-        className="mb-8 font-hero text-[clamp(1.35rem,2.4vw,1.75rem)] font-normal uppercase tracking-[0.02em] text-[#ededf3] sm:mb-10"
+        className="mb-6 font-hero text-[clamp(1.35rem,2.4vw,1.75rem)] font-normal uppercase tracking-[0.02em] text-[#ededf3] sm:mb-10"
       >
         {title}
       </h2>
@@ -708,9 +744,9 @@ export default function ProjectDetailPage() {
       <div className="relative z-10">
         <Header />
 
-        <main className="pt-[calc(var(--headerH)+24px)] pb-28 sm:pt-[calc(var(--headerH)+32px)] sm:pb-36">
+        <main className="pt-[calc(var(--headerH)+16px)] pb-20 sm:pt-[calc(var(--headerH)+32px)] sm:pb-36">
           <Container>
-            <div className="mt-8 flex flex-col gap-1 sm:mt-10 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+            <div className="mt-4 flex flex-col gap-1 sm:mt-10 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
               <Link
                 to="/projects"
                 className="inline-flex w-fit items-center gap-2 text-[13px] font-[500] tracking-normal text-[#8a8a8e] transition hover:text-[#ededf3]"
@@ -720,8 +756,8 @@ export default function ProjectDetailPage() {
               </Link>
             </div>
 
-            <div className="mt-8 grid grid-cols-1 items-start gap-10 lg:mt-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.88fr)] lg:gap-14 xl:gap-16">
-              <div className="order-2 min-w-0 lg:order-1">
+            <div className="mt-6 grid grid-cols-1 items-start gap-8 sm:mt-8 sm:gap-10 lg:mt-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.88fr)] lg:gap-14 xl:gap-16">
+              <div className="order-1 min-w-0">
                 <figure className="relative w-full overflow-hidden rounded-[12px] bg-[#141416]">
                   <div className="relative aspect-[16/10] w-full">
                     <img
@@ -736,24 +772,24 @@ export default function ProjectDetailPage() {
                 </figure>
 
                 {project.gallery?.length ? (
-                  <div className="mt-8">
+                  <div className="mt-5 sm:mt-8">
                     <ProjectGalleryStrip images={project.gallery} isRu={isRu} />
                   </div>
                 ) : null}
               </div>
 
-              <div className="order-1 min-w-0 lg:order-2 lg:pt-1">
-                <header className="space-y-4">
+              <div className="order-2 min-w-0 lg:pt-1">
+                <header className="space-y-3 sm:space-y-4">
                   <h1 className="font-hero text-[clamp(1.85rem,4.2vw,2.75rem)] font-normal uppercase tracking-[0.02em] leading-[1.02] text-[#ededf3]">
                     {project.title}
                   </h1>
                   <p className={cx("max-w-[36ch]", BODY)}>{mood ?? subtitle}</p>
                   {mood ? (
-                    <p className="max-w-[40ch] text-[14px] leading-relaxed text-[#8a8a8e]">{subtitle}</p>
+                    <p className="max-w-[40ch] text-[13px] leading-relaxed text-[#8a8a8e] sm:text-[14px]">{subtitle}</p>
                   ) : null}
                 </header>
 
-                <dl className="mt-8">
+                <dl className="mt-6 sm:mt-8">
                   <SpecRow label={domainLabel}>
                     {project.domain && !wip ? (
                       <a
@@ -762,7 +798,7 @@ export default function ProjectDetailPage() {
                         rel="noopener noreferrer"
                         className="inline-flex max-w-full items-center gap-2 transition hover:text-white"
                       >
-                        <span className="truncate">{domainClean}</span>
+                        <span className="truncate">{formatDomainLabel(domainClean)}</span>
                         <ExternalIcon className="shrink-0 text-[#8a8a8e]" />
                       </a>
                     ) : (
@@ -785,7 +821,7 @@ export default function ProjectDetailPage() {
                   <SpecRow label={roleLabel}>{roleValue}</SpecRow>
 
                   <SpecRow label={tagsLabel}>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2">
                       {project.tags.map((tag) => (
                         <Pill key={tag}>{tag}</Pill>
                       ))}
@@ -794,7 +830,7 @@ export default function ProjectDetailPage() {
 
                   {project.stack?.length ? (
                     <SpecRow label={stackLabel}>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         {project.stack.map((tech) => (
                           <Pill key={tech}>{tech}</Pill>
                         ))}
@@ -803,18 +839,18 @@ export default function ProjectDetailPage() {
                   ) : null}
                 </dl>
 
-                <div className="mt-10 flex flex-col gap-4">
+                <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:gap-4">
                   {project.domain && !wip ? (
                     <a
                       href={project.domain}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex h-[52px] w-full items-center justify-center rounded-full bg-[#FF6B2C] px-6 text-[15px] font-medium tracking-normal text-white transition hover:bg-[#ff7d45]"
+                      className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[#FF6B2C] px-6 text-[15px] font-medium tracking-normal text-white transition hover:bg-[#ff7d45] sm:h-[52px]"
                     >
                       {openSiteLabel}
                     </a>
                   ) : (
-                    <div className="inline-flex h-[52px] w-full items-center justify-center rounded-full bg-[#1c1c1f] px-6 text-[15px] font-medium tracking-normal text-[#8a8a8e]">
+                    <div className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[#1c1c1f] px-6 text-[15px] font-medium tracking-normal text-[#8a8a8e] sm:h-[52px]">
                       {websiteSoonLabel}
                     </div>
                   )}
@@ -822,12 +858,12 @@ export default function ProjectDetailPage() {
                   <LeadCTAButton
                     source="project_page"
                     variant="plain"
-                    className="!h-auto !min-h-0 w-full !rounded-none !border-0 !bg-transparent !px-0 !py-1 !text-[15px] !font-medium !tracking-normal !text-[#ededf3] hover:!bg-transparent hover:!text-white/75"
+                    className="!h-12 w-full !rounded-full !border !border-white/15 !bg-transparent !px-6 !text-[15px] !font-medium !tracking-normal !text-[#ededf3] hover:!border-white/25 hover:!bg-white/[0.03] hover:!text-white sm:!h-auto sm:!min-h-0 sm:!rounded-none sm:!border-0 sm:!px-0 sm:!py-1 sm:hover:!bg-transparent sm:hover:!text-white/75"
                   >
                     {leadFormCopy(lang).ctaDiscuss}
                   </LeadCTAButton>
 
-                  <p className="text-left text-[13px] leading-relaxed tracking-normal text-[#8a8a8e]">
+                  <p className="text-left text-[12px] leading-relaxed tracking-normal text-[#8a8a8e] sm:text-[13px]">
                     {isRu ? (
                       <>
                         Напиши: <span className="text-[#c3c3cc]">что делаем</span>,{" "}
@@ -847,7 +883,7 @@ export default function ProjectDetailPage() {
             </div>
 
             <article
-              className="mt-16 max-w-[52rem] sm:mt-[72px] lg:mt-24"
+              className="mt-12 max-w-[52rem] sm:mt-[72px] lg:mt-24"
               itemScope
               itemType="https://schema.org/CreativeWork"
             >
@@ -855,7 +891,7 @@ export default function ProjectDetailPage() {
               <meta itemProp="description" content={subtitle} />
               <link itemProp="url" href={`${CANONICAL_ORIGIN}/projects/${project.id}`} />
 
-              <div className="mb-10 border-b border-white/[0.06] pb-10 sm:mb-12 sm:pb-12">
+              <div className="mb-8 border-b border-white/[0.06] pb-8 sm:mb-12 sm:pb-12">
                 {caseSystem ? (
                   <CaseBrandIntro
                     title={project.title}
@@ -890,32 +926,32 @@ export default function ProjectDetailPage() {
               ) : null}
 
               {project.testimonial ? (
-                <figure className="mt-16 max-w-[42rem] border-t border-white/[0.06] pt-10 sm:mt-[72px] sm:pt-12">
+                <figure className="mt-12 max-w-[42rem] border-t border-white/[0.06] pt-8 sm:mt-[72px] sm:pt-12">
                   <p className="text-[13px] font-[500] tracking-normal text-[#8a8a8e]">
                     {isRu ? "Отзыв · 5 из 5" : "Review · 5 of 5"}
                   </p>
                   {project.testimonial.textAr ? (
                     <>
                       <blockquote
-                        className="mt-4 text-[18px] font-[400] leading-[1.7] tracking-[0.005em] text-[#c3c3cc] sm:text-[20px]"
+                        className="mt-3 text-[16px] font-[400] leading-[1.65] tracking-[0.005em] text-[#c3c3cc] sm:mt-4 sm:text-[20px] sm:leading-[1.7]"
                         dir="rtl"
                         lang="ar"
                       >
                         “{project.testimonial.textAr}”
                       </blockquote>
-                      <p className="mt-5 text-[12px] font-[500] tracking-normal text-[#8a8a8e]">
+                      <p className="mt-4 text-[12px] font-[500] tracking-normal text-[#8a8a8e] sm:mt-5">
                         {isRu ? "Расшифровка" : "Translation"}
                       </p>
-                      <blockquote className="mt-2 text-[16px] font-[400] leading-[1.5] tracking-[0.005em] text-[#a8a8b0] sm:text-[17px]">
+                      <blockquote className="mt-2 text-[15px] font-[400] leading-[1.5] tracking-[0.005em] text-[#a8a8b0] sm:text-[17px]">
                         “{project.testimonial.text}”
                       </blockquote>
                     </>
                   ) : (
-                    <blockquote className="mt-4 text-[18px] font-[400] leading-[1.5] tracking-[0.005em] text-[#c3c3cc] sm:text-[20px]">
+                    <blockquote className="mt-3 text-[16px] font-[400] leading-[1.5] tracking-[0.005em] text-[#c3c3cc] sm:mt-4 sm:text-[20px]">
                       “{project.testimonial.text}”
                     </blockquote>
                   )}
-                  <figcaption className="mt-5 text-[13px] tracking-normal text-[#8a8a8e]">
+                  <figcaption className="mt-4 text-[13px] tracking-normal text-[#8a8a8e] sm:mt-5">
                     <span className="font-medium text-[#ededf3]">{project.testimonial.name}</span>
                     <span className="mx-1.5 text-white/20">·</span>
                     {project.testimonial.role}
