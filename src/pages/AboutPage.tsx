@@ -339,7 +339,7 @@ export default function AboutPage() {
 
             <Container className="relative z-[2] text-center">
               <p className="about-caldera__tag mx-auto mb-6">
-                {lang === "en" ? "Our story" : "Наша история"}
+                {lang === "zh" ? "我们的故事" : lang === "en" ? "Our story" : "Наша история"}
               </p>
               <div
                 className="about-hero__logo mx-auto mb-7 sm:mb-8"

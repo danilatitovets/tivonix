@@ -22,8 +22,12 @@ export default function LandingPage() {
   const { dict, lang } = useLang();
   const { pathname } = useLocation();
   const seo = homePageSeoFromDict(dict);
-  const isEnPath = pathname === "/en" || pathname.startsWith("/en/");
-  const canonicalPath = isEnPath ? "/en" : "/";
+  const canonicalPath =
+    pathname === "/zh" || pathname.startsWith("/zh/")
+      ? "/zh"
+      : pathname === "/en" || pathname.startsWith("/en/")
+        ? "/en"
+        : "/";
   const schemaJsonLd = buildHomePageSchema({
     pageTitle: seo.title,
     pageDescription: seo.description,
@@ -36,7 +40,7 @@ export default function LandingPage() {
         description={seo.description}
         canonicalPath={canonicalPath}
         schemaJsonLd={schemaJsonLd}
-        ogLocalePrimary={lang === "en" ? "en_US" : "ru_RU"}
+        ogLocalePrimary={lang === "zh" ? "zh_CN" : lang === "en" ? "en_US" : "ru_RU"}
         hreflang
       />
       <div id="top" />

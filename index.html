@@ -27,6 +27,8 @@
           var lang = "ru";
           if (path === "/en" || path.indexOf("/en/") === 0) {
             lang = "en";
+          } else if (path === "/zh" || path.indexOf("/zh/") === 0) {
+            lang = "zh";
           } else if (path === "/ru" || path.indexOf("/ru/") === 0 || path === "/partners") {
             lang = "ru";
           } else if (
@@ -39,8 +41,8 @@
             lang = "ru";
             try {
               var stored = localStorage.getItem("tivonix_lang");
-              if (stored === "en") {
-                var target = path === "/" ? "/en" : "/en" + path;
+              if (stored === "en" || stored === "zh") {
+                var target = path === "/" ? "/" + stored : "/" + stored + path;
                 location.replace(target + location.search + location.hash);
                 return;
               }
@@ -49,12 +51,12 @@
             }
           } else {
             var qp = new URLSearchParams(location.search).get("lang");
-            if (qp === "en" || qp === "ru") {
+            if (qp === "en" || qp === "ru" || qp === "zh") {
               lang = qp;
             } else {
               try {
                 var storedOther = localStorage.getItem("tivonix_lang");
-                if (storedOther === "en" || storedOther === "ru") {
+                if (storedOther === "en" || storedOther === "ru" || storedOther === "zh") {
                   lang = storedOther;
                 }
               } catch (e3) {

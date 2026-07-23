@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Container from "../ui/Container";
 import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
-import { buildProjects } from "../../data/projectsCatalog";
+import { buildProjects, projectSubtitle } from "../../data/projectsCatalog";
 import { pathForLang } from "../../lib/localePaths";
 
 const HeroWebGLBg = lazy(() => import("./HeroWebGLBg"));
@@ -109,7 +109,7 @@ export default function NewCaseSection() {
   const [coverZoom, setCoverZoom] = useState(1);
 
   const featured = buildProjects(isRu).find((p) => p.id === "tivonixpanel");
-  const subtitle = featured ? (isRu ? featured.subtitleRu : featured.subtitleEn) : "";
+  const subtitle = featured ? projectSubtitle(featured, lang) : "";
   const cover = featured?.cover ?? `/images/${encodeURI("обложки")}/tivonixpanel.webp`;
   const domain =
     featured?.domain?.replace(/^https?:\/\//, "") ?? "tivonixpanel-production.up.railway.app/login";

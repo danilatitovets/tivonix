@@ -5,10 +5,11 @@ import Section from "../ui/Section";
 import Reveal from "../ui/Reveal";
 import { useLang } from "../../i18n/LangProvider";
 import { homeExtraCopy } from "../../i18n/homeExtraCopy";
-import { findProjectBySlug } from "../../data/projectsCatalog";
+import { findProjectBySlug, projectSubtitle } from "../../data/projectsCatalog";
 import { trackEvent } from "../../lib/analytics";
 import { useInView } from "../../hooks/useInView";
 import { pathForLang } from "../../lib/localePaths";
+import type { Lang } from "../../i18n/LangProvider";
 
 const AUTO_MS = 5500;
 
@@ -20,21 +21,21 @@ type FeaturedItem = ReturnType<typeof homeExtraCopy>["featured"]["items"][number
 
 function FeaturedCaseSlide({
   item,
-  isRu,
+  lang,
   copy,
   active,
 }: {
   item: FeaturedItem;
-  isRu: boolean;
+  lang: Lang;
   copy: ReturnType<typeof homeExtraCopy>;
   active: boolean;
 }) {
-  const project = findProjectBySlug(item.id, isRu);
+  const project = findProjectBySlug(item.id, lang === "ru");
   if (!project) return null;
 
-  const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
+  const subtitle = projectSubtitle(project, lang);
   const cover = project.cover ?? "";
-  const href = pathForLang(`/projects/${project.id}`, isRu ? "ru" : "en");
+  const href = pathForLang(`/projects/${project.id}`, lang);
 
   return (
     <article
@@ -220,7 +221,7 @@ export default function FeaturedProjectsSection() {
                 <FeaturedCaseSlide
                   key={slide.id}
                   item={slide}
-                  isRu={isRu}
+                  lang={lang}
                   copy={copy}
                   active={i === index}
                 />

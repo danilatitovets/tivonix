@@ -477,7 +477,7 @@ export default function LeadFormModal({
                       {copy.successCase}
                     </a>
                     <a
-                      href={lang === "en" ? "/en" : "/"}
+                      href={lang === "en" ? "/en" : lang === "zh" ? "/zh" : "/"}
                       className="inline-flex h-11 items-center justify-center rounded-full bg-white px-5 text-[13.5px] font-bold text-black transition hover:bg-white/92"
                       onClick={onClose}
                     >

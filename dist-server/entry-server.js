@@ -7,15 +7,19 @@ import { createPortal } from "react-dom";
 import { Check, ArrowUpRight, ChevronDown, Mail, Bot, Zap, LayoutDashboard, Users, TrendingUp, ShieldCheck, ChevronLeft, ChevronRight, FolderOpen, Plus, Minus } from "lucide-react";
 import { SiTelegram, SiGmail, SiHubspot, SiGooglesheets, SiWhatsapp, SiNotion, SiGooglecalendar, SiClickup, SiStripe, SiGoogledocs, SiGoogleanalytics, SiZapier } from "react-icons/si";
 import { FiBell } from "react-icons/fi";
+function isLang(v) {
+  return v === "ru" || v === "en" || v === "zh";
+}
 function detectLangFromUrl() {
   if (typeof window === "undefined") return "ru";
   try {
     const qp = new URL(window.location.href).searchParams.get("lang");
-    if (qp === "ru" || qp === "en") return qp;
+    if (isLang(qp)) return qp;
   } catch {
   }
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
   if (path === "/en" || path.startsWith("/en/")) return "en";
+  if (path === "/zh" || path.startsWith("/zh/")) return "zh";
   if (path === "/ru" || path.startsWith("/ru/")) return "ru";
   if (path === "/partners") return "ru";
   return "ru";
@@ -24,10 +28,27 @@ function readBootstrapLang(fallback) {
   if (typeof window === "undefined") return fallback ?? "ru";
   const urlLang = detectLangFromUrl();
   const boot = window.__TIVONIX_LANG__;
-  if (boot === "ru" || boot === "en") {
+  if (isLang(boot)) {
     return boot === urlLang ? boot : urlLang;
   }
   return fallback ?? urlLang;
+}
+function t3(lang, ru2, en2, zh2) {
+  if (lang === "zh") return zh2;
+  return lang === "ru" ? ru2 : en2;
+}
+function htmlLangAttr(lang) {
+  if (lang === "zh") return "zh-CN";
+  return lang;
+}
+function ogLocaleFor(lang) {
+  if (lang === "zh") return "zh_CN";
+  return lang === "en" ? "en_US" : "ru_RU";
+}
+function localizedHome(lang) {
+  if (lang === "en") return "/en";
+  if (lang === "zh") return "/zh";
+  return "/";
 }
 const LANG_STORAGE_KEY = "tivonix_lang";
 const DICT = {
@@ -330,6 +351,156 @@ const DICT = {
         }
       ]
     }
+  },
+  zh: {
+    header: {
+      nav: {
+        contacts: "联系方式",
+        projects: "项目案例",
+        faq: "常见问题"
+      },
+      start: "开始合作",
+      menu: "菜单",
+      home: "返回首页",
+      language: "语言"
+    },
+    hero: {
+      eyebrow: "TIVONIX • 网站、机器人、CRM",
+      titleLine1: "网站、",
+      titleLine2Prefix: "机器人",
+      titleLine2Premium: "与 Web 服务",
+      titleLine3: "帮助企业",
+      titleLine4: "稳定获取线索",
+      subtitle: "梳理需求、给出方案并端到端交付：落地页、Telegram 机器人、客户后台、CRM 或业务流程自动化。",
+      note: "工作日内回复 • 首次咨询免费",
+      emailPlaceholder: "工作邮箱",
+      btnDemo: "沟通项目",
+      btnTelegram: "通过 Telegram 联系",
+      btnAutomation: "了解我们做什么",
+      statLabel: "今日线索",
+      leadsAria: "示例进线线索",
+      leads: [
+        { title: "TIVONIX Bot", source: "新线索：需要广告落地页报价", time: "刚刚", channel: "telegram" },
+        { title: "maria_beauty", source: "您好，想咨询一下服务", time: "1 分钟", channel: "instagram" },
+        { title: "Anna", source: "周六可以预约美甲吗？", time: "2 分钟", channel: "whatsapp" },
+        { title: "商务方案", source: "已发送开发方案，请查看附件", time: "3 分钟", channel: "gmail" },
+        { title: "网站表单", source: "Ivan · 广告落地页 · +1 555 123-4567", time: "4 分钟", channel: "website" },
+        { title: "广告 · 线索", source: "新线索：美业门店自动化", time: "6 分钟", channel: "facebook" },
+        { title: "消息", source: "想了解线索自动化，价格如何？", time: "7 分钟", channel: "vk" },
+        { title: "新联系人", source: "BuildCo LLC — 已在 CRM 提交咨询", time: "9 分钟", channel: "hubspot" },
+        { title: "项目简报", source: "Notion 简报已填写，可以查看", time: "11 分钟", channel: "notion" },
+        { title: "客户会议", source: "明天 15:00 · 讨论 MVP", time: "13 分钟", channel: "calendar" },
+        { title: "TIVONIX Bot", source: "机器人线索：Telegram + CRM 对接", time: "14 分钟", channel: "telegram" },
+        { title: "studio_pro", source: "带在线预约的网站多少钱？", time: "15 分钟", channel: "instagram" },
+        { title: "Dmitry", source: "需要门店客户在线预约", time: "16 分钟", channel: "whatsapp" },
+        { title: "网站表单", source: "新线索：落地页 + Telegram 通知", time: "18 分钟", channel: "website" }
+      ]
+    },
+    curtain: {
+      title: "开发流程 — 按步骤推进",
+      statusDone: "已完成",
+      statusInProgress: "进行中…",
+      steps: [
+        "我们是 TIVONIX。产品工作室：设计 + 开发。",
+        "明确目标与范围：SaaS / MVP、周期与优先级。",
+        "原型与 UI：结构、页面、状态，对标顶级 SaaS 视觉。",
+        "开发：用户后台、管理面板、角色、表格与筛选。",
+        "集成：支付、通知、邮件、分析、CRM。",
+        "质量：测试、性能、安全与清晰架构。",
+        "上线：部署、域名/SSL、监控与文档。",
+        "上线后：支持、迭代与产品增长。"
+      ]
+    },
+    whyUs: {
+      badge: "技术栈 • 技术 • 产品",
+      titleTop: "我们使用的",
+      titleBottom: "技术与工具",
+      description: "面向 SaaS 与产品的完整技术栈：前端、后端、数据库、UI 体系与性能优化。外观专业，结构可扩展。",
+      footerBadge: "STACK READY • SaaS / MVP",
+      techs: {
+        react: { label: "React", sub: "产品 UI、组件与架构" },
+        ts: { label: "TypeScript", sub: "类型安全与可扩展性" },
+        js: { label: "JavaScript", sub: "逻辑、动画与集成" },
+        node: { label: "Node.js", sub: "API、服务与后台任务" },
+        express: { label: "Express", sub: "路由、中间件与鉴权" },
+        supabase: { label: "Supabase", sub: "Postgres、RLS、Storage、Auth" },
+        postgres: { label: "PostgreSQL", sub: "表结构、索引与查询" },
+        tailwind: { label: "Tailwind CSS", sub: "UI 体系、设计令牌与高效布局" },
+        saas: { label: "SaaS UI / UX", sub: "玻璃质感、栅格、细节与高级排版" },
+        perf: { label: "Performance", sub: "优化、懒加载与体验速度" }
+      }
+    },
+    newCase: {
+      label: "最新案例",
+      title: "NEW",
+      live: "已上线",
+      cta: "查看案例",
+      ctaExternal: "打开面板"
+    },
+    orbit: {
+      badge: "ADMIN PANEL • SaaS",
+      titlePrefix: "为产品打造的",
+      titleHighlight: "管理后台",
+      description: "角色与权限、带筛选的数据表、状态/审核、仪表盘与集成 — 结构清晰，便于扩展。",
+      bullets: [
+        { title: "角色与权限", desc: "用户、权限、审计" },
+        { title: "表格与管理", desc: "搜索、筛选、导出" },
+        { title: "分析与流程", desc: "仪表盘、状态、结算" }
+      ],
+      primaryCta: "沟通项目",
+      secondaryCta: "案例",
+      footnote: "MVP / 客户后台 / 管理面板 / 集成",
+      chat: {
+        clientLabel: "客户 • 确认需求",
+        clientSubtitle: "SaaS + 管理后台",
+        msgClient1: "你好！我们在做 SaaS。你们能做用户与数据管理的后台吗？",
+        msgMe1: "可以 ✅ 我会做后台：角色/权限、表格（搜索/筛选）、状态、审核、分析，并对接 API 与基础安全。",
+        msgClient2: "很好。能加仪表盘和操作记录吗？",
+        inputPlaceholder: "输入消息…",
+        quickCallTitle: "快速通话",
+        quickCallDuration: "15 分钟",
+        quickCallHint: "点击开始通话"
+      }
+    },
+    benefits: {
+      badge: "阶段",
+      titlePrefix: "一个区块，一个重点。",
+      titleHighlight: "核心优势",
+      rowLabel: "优势",
+      rowMeta: "UI • 代码 • 速度 • 扩展",
+      items: [
+        {
+          title: "快速 MVP",
+          desc: "先交付产品核心：优先级、周期与上线逻辑，不做冗余。",
+          badge: "1–3 周"
+        },
+        {
+          title: "高级 UI",
+          desc: "栅格、排版、状态与细节 — 对标顶级 SaaS。",
+          badge: "即看即专业"
+        },
+        {
+          title: "安全与角色",
+          desc: "角色/权限、API 防护、基础安全实践与数据管控。",
+          badge: "Auth / RLS"
+        },
+        {
+          title: "系统集成",
+          desc: "支付、邮件、通知、分析、CRM — 稳定对接。",
+          badge: "webhooks"
+        },
+        {
+          title: "清晰架构",
+          desc: "组件、类型、API 分层与可扩展结构 — 一个月后也不会变成乱码堆。",
+          badge: "可扩展"
+        },
+        {
+          title: "上线之后",
+          desc: "部署、域名/SSL、监控、缺陷修复，以及基于指标的迭代计划。",
+          badge: "持续支持"
+        }
+      ]
+    }
   }
 };
 const LangContext = createContext(null);
@@ -338,7 +509,7 @@ function detectLang() {
 }
 function syncHtmlLang(lang) {
   if (typeof document === "undefined") return;
-  document.documentElement.lang = lang;
+  document.documentElement.lang = htmlLangAttr(lang);
   document.documentElement.dataset.lang = lang;
 }
 function LangProvider({
@@ -378,6 +549,7 @@ function LangPathSync() {
     let next = null;
     const clean = pathname.replace(/\/+$/, "") || "/";
     if (clean === "/en" || clean.startsWith("/en/")) next = "en";
+    else if (clean === "/zh" || clean.startsWith("/zh/")) next = "zh";
     else if (clean === "/ru" || clean.startsWith("/ru/")) next = "ru";
     else if (clean === "/partners") next = "ru";
     else if (clean === "/" || clean === "/plans" || clean === "/about" || clean === "/projects" || clean === "/contacts" || /^\/projects\//.test(clean)) {
@@ -393,11 +565,16 @@ function useLang() {
   return ctx;
 }
 function homePageSeoFromDict(dict) {
-  const isRu = dict.header.home === "На главную";
-  if (isRu) {
+  if (dict.header.home === "На главную") {
     return {
       title: "TIVONIX — сайты, CRM, боты и веб-продукты для бизнеса",
       description: "Разрабатываем лендинги, Telegram-ботов, CRM, личные кабинеты, SaaS и MVP — и связываем их в единый процесс: от первого обращения до оплаты."
+    };
+  }
+  if (dict.header.home === "返回首页") {
+    return {
+      title: "TIVONIX — 面向企业的网站、CRM、机器人与 Web 产品",
+      description: "白俄罗斯技术团队 TIVONIX：落地页、Telegram 机器人、CRM、客户后台、SaaS 与 MVP，打通从首次咨询到成交的完整流程，助力进入白俄罗斯与欧亚经济联盟市场。"
     };
   }
   return {
@@ -534,8 +711,8 @@ function trackPricingView() {
   trackEvent("pricing_view");
 }
 function leadFormCopy(lang) {
-  const isRu = lang === "ru";
-  return isRu ? COPY_RU$4 : COPY_EN$4;
+  if (lang === "zh") return COPY_ZH$4;
+  return lang === "ru" ? COPY_RU$4 : COPY_EN$4;
 }
 const BUDGET_RU = [
   { id: "", label: "Не выбран" },
@@ -552,6 +729,14 @@ const BUDGET_EN = [
   { id: "1500_5000", label: "$1,500–5,000" },
   { id: "from_5000", label: "from $5,000" },
   { id: "unknown", label: "not sure yet" }
+];
+const BUDGET_ZH = [
+  { id: "", label: "未选择" },
+  { id: "under_500", label: "低于 $500" },
+  { id: "500_1500", label: "$500–1,500" },
+  { id: "1500_5000", label: "$1,500–5,000" },
+  { id: "from_5000", label: "$5,000 起" },
+  { id: "unknown", label: "暂时不确定" }
 ];
 const COPY_RU$4 = {
   title: "Расскажите, что нужно запустить",
@@ -643,50 +828,94 @@ const COPY_EN$4 = {
   planHint: "Request for this plan — add details below.",
   formNote: "We reply within a business day. A call is optional. We don’t share contacts with third parties."
 };
-const EN_ROUTE_MAP = {
-  "/": "/en",
-  "/projects": "/en/projects",
-  "/contacts": "/en/contacts",
-  "/plans": "/en/plans",
-  "/about": "/en/about"
+const COPY_ZH$4 = {
+  title: "告诉我们您要启动什么",
+  subtitle: "用自己的话描述需求。我们会梳理任务，并发送初步方案、周期与费用区间。",
+  name: "姓名",
+  nameOptional: "选填",
+  contact: "Telegram、邮箱或其他联系方式",
+  contactHint: "邮箱、Telegram 或电话",
+  contactPh: "邮箱、@username 或电话",
+  task: "需求描述",
+  taskPh: "您需要做什么？",
+  budget: "大致预算",
+  budgetOptional: "选填",
+  budgets: BUDGET_ZH,
+  consent: "我同意个人信息处理政策",
+  privacyLabel: "隐私政策",
+  privacyHref: "/doc/Privacy_Policy_Tivonix_EN.pdf",
+  send: "获取初步评估",
+  sending: "提交中…",
+  close: "关闭",
+  cancel: "取消",
+  errors: {
+    contact: "请填写邮箱、Telegram 或电话。",
+    task: "请简要描述需求（至少几个字）。",
+    consent: "需要同意隐私政策。"
+  },
+  successTitle: "已收到您的需求",
+  success: "我们将评估任务，并在一个工作日内通过您预留的联系方式回复。",
+  successCase: "查看类似案例",
+  successHome: "返回首页",
+  errorTitle: "提交失败",
+  errorBody: "您也可以直接联系我们：",
+  fallbackEmail: "发送邮件至 tivoonix@gmail.com",
+  fallbackTelegram: "打开聊天 @TIVONIX",
+  altTelegram: "或通过 Telegram 联系",
+  altBot: "Telegram 机器人",
+  altEmail: "邮箱",
+  sticky: "获取评估",
+  ctaDiscuss: "评估项目",
+  ctaEstimate: "获取项目评估",
+  ctaProjects: "有类似需求？一起来谈",
+  selectedPlan: "已选方案",
+  clearPlan: "不选方案",
+  planHint: "按该套餐提交 — 可在下方补充细节。",
+  formNote: "我们会在一个工作日内回复。通话非必须。联系方式不会提供给第三方。"
 };
-const RU_ROUTE_MAP = {
-  "/en": "/",
-  "/en/projects": "/projects",
-  "/en/contacts": "/contacts",
-  "/en/plans": "/plans",
-  "/en/about": "/about"
-};
+const LOCALIZED_BASES = ["/", "/projects", "/contacts", "/plans", "/about"];
+function withPrefix(lang, base) {
+  if (lang === "ru") return base === "/" ? "/" : base;
+  const prefix = `/${lang}`;
+  return base === "/" ? prefix : `${prefix}${base}`;
+}
 function stripLangPrefix(pathname) {
   const p = pathname.replace(/\/+$/, "") || "/";
-  if (p === "/en") return "/";
+  if (p === "/en" || p === "/zh" || p === "/ru") return "/";
   if (p.startsWith("/en/")) return p.slice(3) || "/";
+  if (p.startsWith("/zh/")) return p.slice(3) || "/";
+  if (p.startsWith("/ru/")) return p.slice(3) || "/";
   return p;
 }
 function pathForLang(pathname, lang) {
   const clean = pathname.replace(/\/+$/, "") || "/";
-  if (clean === "/partners" || clean === "/ru/partners") {
-    return lang === "en" ? "/en/partners" : "/ru/partners";
-  }
-  if (clean === "/en/partners") {
-    return lang === "en" ? "/en/partners" : "/ru/partners";
+  if (clean === "/partners" || clean === "/ru/partners" || clean === "/en/partners" || clean === "/zh/partners") {
+    if (lang === "en") return "/en/partners";
+    if (lang === "zh") return "/zh/partners";
+    return "/ru/partners";
   }
   const mRu = clean.match(/^\/projects\/([^/]+)$/);
-  if (mRu) {
-    return lang === "en" ? `/en/projects/${mRu[1]}` : `/projects/${mRu[1]}`;
-  }
+  if (mRu) return withPrefix(lang, `/projects/${mRu[1]}`);
   const mEn = clean.match(/^\/en\/projects\/([^/]+)$/);
-  if (mEn) {
-    return lang === "en" ? `/en/projects/${mEn[1]}` : `/projects/${mEn[1]}`;
+  if (mEn) return withPrefix(lang, `/projects/${mEn[1]}`);
+  const mZh = clean.match(/^\/zh\/projects\/([^/]+)$/);
+  if (mZh) return withPrefix(lang, `/projects/${mZh[1]}`);
+  const base = stripLangPrefix(clean);
+  if (LOCALIZED_BASES.includes(base)) {
+    return withPrefix(lang, base);
   }
-  if (lang === "en") {
-    if (EN_ROUTE_MAP[clean]) return EN_ROUTE_MAP[clean];
-    if (clean.startsWith("/en")) return clean;
-    return clean;
-  }
-  if (RU_ROUTE_MAP[clean]) return RU_ROUTE_MAP[clean];
-  if (clean.startsWith("/en/")) return stripLangPrefix(clean);
-  return clean;
+  if (lang === "en" && clean.startsWith("/en")) return clean;
+  if (lang === "zh" && clean.startsWith("/zh")) return clean;
+  return base;
+}
+function hreflangPair(canonicalPath) {
+  const origin = "https://tivonix.tech";
+  const clean = canonicalPath.replace(/\/+$/, "") || "/";
+  const base = stripLangPrefix(clean.startsWith("http") ? new URL(clean).pathname : clean);
+  const ru2 = base === "/" ? `${origin}/` : `${origin}${base}`;
+  const en2 = base === "/" ? `${origin}/en` : `${origin}/en${base}`;
+  const zh2 = base === "/" ? `${origin}/zh` : `${origin}/zh${base}`;
+  return { ru: ru2, en: en2, zh: zh2, xDefault: ru2 };
 }
 function readUtm(param) {
   if (typeof window === "undefined") return "";
@@ -797,7 +1026,8 @@ const PLAN_CATALOG = {
     name: "Start",
     tagline: {
       ru: "Лендинг + заявки + Telegram",
-      en: "Landing page + leads + Telegram"
+      en: "Landing page + leads + Telegram",
+      zh: "落地页 + 线索 + Telegram"
     },
     telegramPayload: "plan_start",
     adminSource: "Start (/plans)",
@@ -808,7 +1038,8 @@ const PLAN_CATALOG = {
     name: "Growth",
     tagline: {
       ru: "Система заявок + Telegram + мини-CRM",
-      en: "Lead system + Telegram + mini-CRM"
+      en: "Lead system + Telegram + mini-CRM",
+      zh: "线索系统 + Telegram + 迷你 CRM"
     },
     telegramPayload: "plan_growth",
     adminSource: "Growth (/plans)",
@@ -819,7 +1050,8 @@ const PLAN_CATALOG = {
     name: "Product",
     tagline: {
       ru: "Веб-сервис, кабинет, админка, оплата",
-      en: "Web service, client area, admin, payments"
+      en: "Web service, client area, admin, payments",
+      zh: "Web 服务、客户后台、管理端、支付"
     },
     telegramPayload: "plan_product",
     adminSource: "Product (/plans)",
@@ -830,7 +1062,8 @@ const PLAN_CATALOG = {
     name: "Custom",
     tagline: {
       ru: "Автоматизация, AI и индивидуальное решение",
-      en: "Automation, AI and a custom build"
+      en: "Automation, AI and a custom build",
+      zh: "自动化、AI 与定制方案"
     },
     telegramPayload: "plan_custom",
     adminSource: "Custom (/plans)",
@@ -841,7 +1074,8 @@ const PLAN_CATALOG = {
     name: "Help",
     tagline: {
       ru: "Подбор подходящего формата запуска",
-      en: "Finding the right launch format"
+      en: "Finding the right launch format",
+      zh: "选择合适的启动形式"
     },
     telegramPayload: "plan_help",
     adminSource: "Help (/plans)",
@@ -1392,7 +1626,226 @@ const COPY_EN$3 = {
     }
   }
 };
+const COPY_ZH$3 = {
+  title: "启动方案",
+  subtitle: "对应需求的清晰方案 — 从首批线索到完整 Web 服务",
+  includesLabel: "包含内容",
+  launchDiscount: {
+    percent: "10%",
+    note: "* 启动优惠：早期项目按基础价折扣交付。"
+  },
+  afterSelect: {
+    title: "选定方案后会发生什么",
+    steps: [
+      "选择适合的方案",
+      "明确需求与范围",
+      "给出清晰的启动方案",
+      "确认后开工"
+    ],
+    note: "价格显示为「起」是因为最终费用取决于页面、逻辑、集成与周期。讨论并确认范围后再付款。"
+  },
+  compareTitle: "对比方案",
+  expandAll: "全部展开",
+  collapseAll: "收起",
+  cell: {
+    yes: "是",
+    no: "—",
+    option: "可选",
+    basic: "基础"
+  },
+  cellText: {
+    support7: "7天",
+    support14: "14天",
+    support30: "30天",
+    supportCustom: "按约定"
+  },
+  badges: {
+    popular: "最受欢迎",
+    product: "面向 Web 产品"
+  },
+  plans: {
+    start: {
+      name: "Start",
+      tagline: "快速启动获客",
+      ...planPriceStrings("起", PLAN_PRICE_USD.start),
+      desc: "当您需要广告、Instagram 或 Telegram 页面 — 并希望快速把咨询汇入一处。",
+      includes: [
+        "落地页或服务页",
+        "线索表单",
+        "联系按钮",
+        "Telegram/邮件通知",
+        "移动端友好布局",
+        "基础分析",
+        "域名上线"
+      ],
+      cta: "沟通启动",
+      ctaHint: "打开我们的 Telegram 机器人 — 约 2 分钟。",
+      compactCta: "沟通 Start"
+    },
+    growth: {
+      name: "Growth",
+      tagline: "面向业务的线索系统",
+      ...planPriceStrings("起", PLAN_PRICE_USD.growth),
+      desc: "当线索增长且来自多渠道 — 团队需要秩序：状态、负责人、表格或迷你 CRM。",
+      includes: [
+        "网站或多页面",
+        "线索表单",
+        "Telegram 通知",
+        "表格或迷你 CRM",
+        "线索状态",
+        "基础管理",
+        "分析配置",
+        "上线协助"
+      ],
+      cta: "获取报价",
+      ctaHint: "打开简短表单，Growth 方案已预选。",
+      compactCta: "提交需求"
+    },
+    product: {
+      name: "Product",
+      tagline: "完整 Web 服务",
+      ...planPriceStrings("起", PLAN_PRICE_USD.product),
+      desc: "当您需要的不只是网站 — 而是带用户、客户后台、角色、数据库与管理后台的 Web 服务。",
+      includes: [
+        "客户后台",
+        "管理后台",
+        "注册和授权",
+        "用户角色",
+        "线索、状态、通知",
+        "database",
+        "集成",
+        "payments",
+        "响应式 UI",
+        "上线准备"
+      ],
+      cta: "沟通产品",
+      ctaHint: "打开简短表单。描述产品 — 我们评估范围。",
+      compactCta: "描述产品"
+    },
+    custom: {
+      name: "Custom",
+      tagline: "自动化与 AI",
+      price: "custom",
+      desc: "当需求不适合现成方案：AI 机器人、复杂 CRM、文档自动化、集成或内部系统。",
+      includes: [
+        "AI 机器人与助手",
+        "线索自动化",
+        "服务集成",
+        "数据和文档处理",
+        "客户后台",
+        "复杂角色与流程",
+        "定制 CRM",
+        "支持与持续迭代"
+      ],
+      cta: "申请方案",
+      ctaHint: "打开我们的 Telegram 机器人讨论非标需求。",
+      compactCta: "沟通 Custom"
+    }
+  },
+  faq: {
+    title: "价格常见问题",
+    items: [
+      {
+        id: "price-from",
+        q: "“起”是什么意思？",
+        a: "这是最低启动成本。最终价格取决于页面、逻辑、集成、客户后台、CRM 与周期。"
+      },
+      {
+        id: "pay-now",
+        q: "需要立刻付款吗？",
+        a: "不需要。我们先讨论需求、明确范围，再约定费用与阶段后付款。"
+      },
+      {
+        id: "which-plan",
+        q: "不确定选哪个方案？",
+        a: "选择 Growth 或留言。我们梳理需求，告诉您需要网站、机器人、CRM、客户后台还是定制自动化。"
+      },
+      {
+        id: "start-expand",
+        q: "可以从 Start 开始再扩展吗？",
+        a: "是的。通常更好先上简单版本、验证线索，再加 CRM、状态、客户后台或集成。"
+      },
+      {
+        id: "growth-includes",
+        q: "Growth 包含什么？",
+        a: "Growth 适合需要秩序而不只是表单：通知、状态、表格或迷你 CRM，以及清晰处理流。"
+      },
+      {
+        id: "when-product",
+        q: "何时需要 Product？",
+        a: "Product 面向真正的 Web 服务：用户、客户后台、角色、数据库、支付与管理后台。"
+      },
+      {
+        id: "when-custom",
+        q: "何时选择 Custom？",
+        a: "Custom 适合非标需求：AI 机器人、复杂 CRM、文档自动化、集成与团队内部工具。"
+      }
+    ]
+  },
+  groups: {
+    core: "核心",
+    crm: "线索与 CRM",
+    product: "产品逻辑",
+    automation: "自动化与 AI",
+    launch: "上线与支持"
+  },
+  features: {
+    landing: "落地页 / 页面",
+    responsive: "移动端布局",
+    form: "线索表单",
+    contactButtons: "联系按钮",
+    telegramNotify: "Telegram 通知",
+    emailNotify: "邮件通知",
+    leadStorage: "线索存储",
+    leadTable: "线索表",
+    miniCrm: "迷你 CRM",
+    statuses: "线索状态",
+    history: "处理记录",
+    roles: "员工角色",
+    cabinet: "客户后台",
+    admin: "管理后台",
+    auth: "身份认证",
+    database: "Database",
+    booking: "在线预约",
+    payments: "Payments",
+    autoNotify: "自动通知",
+    integrations: "集成",
+    aiBot: "AI 机器人",
+    aiLeads: "AI 线索处理",
+    documents: "文档处理",
+    customFlows: "定制场景",
+    domain: "域名协助",
+    deploy: "部署",
+    guide: "基础说明",
+    testing: "场景测试",
+    support: "上线后支持"
+  },
+  footer: {
+    valueTitle: "仅支付",
+    valueTitleHighlight: "您需要的启动范围",
+    valueAside: "不为暂时用不到的模块买单",
+    valueLead: "我们先交付帮助获客与处理线索的部分。业务成长后再加 CRM、客户后台、支付、集成或自动化。",
+    helpTitle: "不确定选哪个方案？",
+    helpLead: "用自己的话描述需求 — 我们建议从 Start、Growth、Product 还是 Custom 开始。",
+    helpCta: "通过 Telegram 联系",
+    helpModalCta: "提交需求",
+    planScopeCaption: "按方案划分的启动范围",
+    chips: {
+      start: ["落地页", "表单", "Telegram"],
+      growth: ["迷你 CRM", "状态", "管理"],
+      product: ["客户后台", "Payments", "角色"],
+      custom: ["AI 机器人", "集成", "CRM"]
+    },
+    shortDesc: {
+      start: "快速上线页面与线索",
+      growth: "团队可用的线索系统",
+      product: "完整 Web 服务",
+      custom: "定制自动化"
+    }
+  }
+};
 function pricingCopy(lang) {
+  if (lang === "zh") return COPY_ZH$3;
   return lang === "ru" ? COPY_RU$3 : COPY_EN$3;
 }
 function cx$f(...a) {
@@ -1798,7 +2251,7 @@ function LeadFormModal({
                               /* @__PURE__ */ jsx(
                                 "a",
                                 {
-                                  href: lang === "en" ? "/en" : "/",
+                                  href: lang === "en" ? "/en" : lang === "zh" ? "/zh" : "/",
                                   className: "inline-flex h-11 items-center justify-center rounded-full bg-white px-5 text-[13.5px] font-bold text-black transition hover:bg-white/92",
                                   onClick: onClose,
                                   children: copy.successHome
@@ -2140,13 +2593,16 @@ function Container({
 }
 const PARTNERS_PATH_RU = "/ru/partners";
 const PARTNERS_PATH_EN = "/en/partners";
+const PARTNERS_PATH_ZH = "/zh/partners";
 const PARTNERS_PATH_LEGACY = "/partners";
 function partnersPath(lang) {
-  return lang === "en" ? PARTNERS_PATH_EN : PARTNERS_PATH_RU;
+  if (lang === "en") return PARTNERS_PATH_EN;
+  if (lang === "zh") return PARTNERS_PATH_ZH;
+  return PARTNERS_PATH_RU;
 }
 function isPartnersPath(pathname) {
   const p = pathname.replace(/\/+$/, "") || "/";
-  return p === PARTNERS_PATH_LEGACY || p === PARTNERS_PATH_RU || p === PARTNERS_PATH_EN;
+  return p === PARTNERS_PATH_LEGACY || p === PARTNERS_PATH_RU || p === PARTNERS_PATH_EN || p === PARTNERS_PATH_ZH;
 }
 const PARTNERS_ORIGIN = "https://tivonix.tech";
 function partnersCanonicalUrl(lang, pathname) {
@@ -2154,7 +2610,7 @@ function partnersCanonicalUrl(lang, pathname) {
   if (p === PARTNERS_PATH_LEGACY) {
     return `${PARTNERS_ORIGIN}${PARTNERS_PATH_LEGACY}`;
   }
-  if (p === PARTNERS_PATH_RU || p === PARTNERS_PATH_EN) {
+  if (p === PARTNERS_PATH_RU || p === PARTNERS_PATH_EN || p === PARTNERS_PATH_ZH) {
     return `${PARTNERS_ORIGIN}${p}`;
   }
   return `${PARTNERS_ORIGIN}${partnersPath(lang)}`;
@@ -2348,11 +2804,107 @@ const COPY_EN$2 = {
     cta: "Start the conversation"
   }
 };
+const COPY_ZH$2 = {
+  seo: {
+    title: "关于我们 — TIVONIX",
+    description: "TIVONIX 是白俄罗斯产品团队：网站、线索流程、客户后台与自动化。我们如何起步、使命、价值观，以及为何客户选择与我们合作。"
+  },
+  hero: {
+    title: "线索不再丢失的业务系统",
+    titleLines: ["让线索", "不再", "流失的", "系统"],
+    cta: "沟通您的需求"
+  },
+  story: {
+    paragraphs: [
+      "网站上有表单，但接下来往往是混乱：邮件堆在收件箱、状态只在某个人脑子里、Excel 手工维护，谁也不知道谁接了这条线索。TIVONIX 正是从这种痛点成长起来的——不是从路演 PPT。",
+      "我们为真实业务搭建过从网站到 Telegram、CRM 与客户后台的链路，清楚哪里会断。所以我们不做「好看就交差」的页面，而是交付能跑通的系统。",
+      "如今我们交付获客落地页、mini-CRM、客户后台与 MVP。范围清晰、周期清晰、结果可追责。按任务组队、过程可见，并移交代码与权限。系统留在您这边，而不是锁在别人的账号里。"
+    ]
+  },
+  mission: {
+    label: "使命",
+    title: "自动化围绕客户的琐碎工作",
+    text: "帮助团队停止手工搬线索、丢失上下文——让人去成交与打磨产品，而不是天天找「谁接了那条线索」。"
+  },
+  vision: {
+    label: "愿景",
+    title: "任意规模下清晰的数字化闭环",
+    text: "从本地生意到 Web 产品：从第一次触达到系统中的状态，一条路径走通。不做虚荣功能——只做推动成交与响应速度的部分。"
+  },
+  values: {
+    label: "价值观",
+    title: "速度、清晰、可追责",
+    text: "每个项目都这样推进——从第一条消息到移交权限。",
+    items: [
+      {
+        title: "速度",
+        text: "快速启动、短迭代：前几周就能看到中间成果，而不是只在结尾才见结果。"
+      },
+      {
+        title: "清晰",
+        text: "开工前锁定范围、周期与边界。哪些在内、哪些留到下一阶段，写清楚。"
+      },
+      {
+        title: "可追责",
+        text: "对结果负责：线索流程、状态与关键用户路径在上线前完成校验。"
+      },
+      {
+        title: "透明",
+        text: "移交代码与权限。隐私与系统控制权留在您手中。"
+      }
+    ]
+  },
+  why: {
+    title: "为什么选择 TIVONIX",
+    text: "我们把产品、集成与上线连成一体——让您专注增长，而不是争论「线索去哪了」。",
+    cta: "沟通您的需求",
+    items: [
+      {
+        key: "experience",
+        title: "经验",
+        text: "从 Telegram 获客到金融科技与带后台/支付的市场平台——都是已上线项目。"
+      },
+      {
+        key: "expertise",
+        title: "专长",
+        text: "把难点做简单：路由、角色、状态、集成——不做过度架构。"
+      },
+      {
+        key: "innovation",
+        title: "技术",
+        text: "现代技术栈，在真正省时间的地方用 AI，并自动化客户旅程中的琐事。"
+      },
+      {
+        key: "team",
+        title: "团队",
+        text: "设计、工程、QA 与上线一体协作。按任务组队——不是无名外包作坊。"
+      }
+    ]
+  },
+  people: {
+    title: "我们是谁",
+    text: "真正把项目从想法推到生产的角色。",
+    members: [
+      { id: "danila", initials: "DT", name: "Danila T.", role: "架构与全栈" },
+      { id: "anna", initials: "AK", name: "Anna K.", role: "UI/UX 设计" },
+      { id: "maxim", initials: "MS", name: "Maxim S.", role: "前端" },
+      { id: "igor", initials: "IV", name: "Igor V.", role: "后端" },
+      { id: "elena", initials: "EN", name: "Elena N.", role: "QA 与测试" },
+      { id: "roman", initials: "RP", name: "Roman P.", role: "项目管理" }
+    ]
+  },
+  join: {
+    cta: "开始沟通"
+  }
+};
 function aboutCopy(lang) {
+  if (lang === "zh") return COPY_ZH$2;
   return lang === "en" ? COPY_EN$2 : COPY_RU$2;
 }
 function aboutPath(lang) {
-  return lang === "en" ? "/en/about" : "/about";
+  if (lang === "en") return "/en/about";
+  if (lang === "zh") return "/zh/about";
+  return "/about";
 }
 const DEFAULT_PANEL_ORIGIN = "https://tivonixpanel-production.up.railway.app";
 function partnerPanelOrigin() {
@@ -2418,6 +2970,11 @@ const ORANGE_PILL = "bg-gradient-to-r from-[#FFD7B0] via-[#FF9A3D] to-[#FF6A1A] 
 function cx$d(...a) {
   return a.filter(Boolean).join(" ");
 }
+const LANGS = ["ru", "en", "zh"];
+function langLabel(code) {
+  if (code === "zh") return "中文";
+  return code.toUpperCase();
+}
 function LangToggle({
   compact,
   reducedMotion,
@@ -2434,7 +2991,8 @@ function LangToggle({
       navigate(`${target}${location.search}${location.hash}`, { replace: true });
     }
   };
-  const label = lang === "ru" ? "Выбор языка" : "Language";
+  const label = t3(lang, "Выбор языка", "Language", "选择语言");
+  const activeIndex = Math.max(0, LANGS.indexOf(lang));
   if (isHero) {
     const item = (code) => {
       const active = lang === code;
@@ -2446,11 +3004,11 @@ function LangToggle({
           "aria-checked": active,
           onClick: () => switchLang(code),
           className: cx$d(
-            "relative flex h-10 items-center justify-center rounded-full border-0 px-4 font-bold uppercase tracking-[0.12em] outline-none select-none transition duration-[260ms]",
+            "relative flex h-10 items-center justify-center rounded-full border-0 px-3 font-bold tracking-[0.08em] outline-none select-none transition duration-[260ms]",
             "text-[11px] focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
             active ? "bg-[#2c2c2c] text-white" : "bg-transparent text-white hover:bg-white/[0.06]"
           ),
-          children: /* @__PURE__ */ jsx("span", { className: "leading-none translate-y-[0.5px]", children: code.toUpperCase() })
+          children: /* @__PURE__ */ jsx("span", { className: "leading-none translate-y-[0.5px]", children: langLabel(code) })
         }
       );
     };
@@ -2463,13 +3021,14 @@ function LangToggle({
         "aria-orientation": "horizontal",
         children: [
           item("ru"),
-          item("en")
+          item("en"),
+          item("zh")
         ]
       }
     );
   }
-  const h = compact ? "h-9 w-[5.25rem]" : "h-10 w-[5.75rem]";
-  const text = compact ? "text-[11px]" : "text-xs";
+  const h = compact ? "h-9 w-[7.75rem]" : "h-10 w-[8.5rem]";
+  const text = compact ? "text-[10px]" : "text-[11px]";
   return /* @__PURE__ */ jsxs(
     "div",
     {
@@ -2486,49 +3045,32 @@ function LangToggle({
           {
             "aria-hidden": true,
             className: cx$d(
-              "pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-8px)/2)] rounded-full",
+              "pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-8px)/3)] rounded-full",
               ORANGE_PILL,
               !reducedMotion && "transition-transform duration-200 ease-[cubic-bezier(0.33,1,0.68,1)]"
             ),
             style: {
-              transform: lang === "en" ? "translateX(100%)" : "translateX(0)"
+              transform: `translateX(${activeIndex * 100}%)`
             }
           }
         ),
-        /* @__PURE__ */ jsxs("div", { className: "relative z-10 grid h-full grid-cols-2", children: [
-          /* @__PURE__ */ jsx(
-            "button",
-            {
-              type: "button",
-              role: "radio",
-              "aria-checked": lang === "ru",
-              onClick: () => switchLang("ru"),
-              className: cx$d(
-                "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
-                "focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-                text,
-                lang === "ru" ? "text-[#1A202C]" : "text-white/45 hover:text-white/72"
-              ),
-              children: "RU"
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            "button",
-            {
-              type: "button",
-              role: "radio",
-              "aria-checked": lang === "en",
-              onClick: () => switchLang("en"),
-              className: cx$d(
-                "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
-                "focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-                text,
-                lang === "en" ? "text-[#1A202C]" : "text-white/45 hover:text-white/72"
-              ),
-              children: "EN"
-            }
-          )
-        ] })
+        /* @__PURE__ */ jsx("div", { className: "relative z-10 grid h-full grid-cols-3", children: LANGS.map((code) => /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            role: "radio",
+            "aria-checked": lang === code,
+            onClick: () => switchLang(code),
+            className: cx$d(
+              "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
+              "focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+              text,
+              lang === code ? "text-[#1A202C]" : "text-white/45 hover:text-white/72"
+            ),
+            children: langLabel(code)
+          },
+          code
+        )) })
       ]
     }
   );
@@ -2573,7 +3115,7 @@ function usePrefersReducedMotion$1() {
 function useHomeHeroInView(pathname) {
   const [inView, setInView] = useState(false);
   useEffect(() => {
-    const isHome = pathname === "/" || pathname === "/en";
+    const isHome = pathname === "/" || pathname === "/en" || pathname === "/zh";
     if (!isHome) {
       setInView(false);
       return;
@@ -2776,7 +3318,7 @@ function Header() {
     }
     return key;
   };
-  const homePath = lang === "en" ? "/en" : "/";
+  const homePath = lang === "en" ? "/en" : lang === "zh" ? "/zh" : "/";
   const navTo = (it) => {
     if (it.key === "partners") return partnersPath(lang);
     if (it.key === "about") return aboutPath(lang);
@@ -2785,11 +3327,11 @@ function Header() {
   };
   const activeKey = useMemo(() => {
     const p = location.pathname;
-    if (p === "/plans" || p === "/en/plans") return "plans";
+    if (p === "/plans" || p === "/en/plans" || p === "/zh/plans") return "plans";
     if (p === "/projects" || p.startsWith("/projects/") || p === "/en/projects" || p.startsWith("/en/projects/")) {
       return "projects";
     }
-    if (p === "/about" || p === "/en/about") return "about";
+    if (p === "/about" || p === "/en/about" || p === "/zh/about") return "about";
     if (isPartnersPath(p)) return "partners";
     return null;
   }, [location.pathname]);
@@ -2821,7 +3363,7 @@ function Header() {
         const el = document.getElementById(hash);
         if (el) el.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
       };
-      if (location.pathname !== "/" && location.pathname !== "/en") {
+      if (location.pathname !== "/" && location.pathname !== "/en" && location.pathname !== "/zh") {
         navigate(homePath);
         window.setTimeout(go, 80);
       } else {
@@ -2829,7 +3371,7 @@ function Header() {
       }
       return;
     }
-    if (to === "/" || to === "/en") {
+    if (to === "/" || to === "/en" || to === "/zh") {
       e.preventDefault();
       if (location.pathname !== homePath) navigate(homePath);
       window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
@@ -2840,8 +3382,8 @@ function Header() {
     if (location.pathname !== homePath) navigate(homePath);
     window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
   };
-  const ariaHome = isRu ? "На главную" : "Go to home";
-  const ariaMenu = isRu ? "Меню" : "Menu";
+  const ariaHome = t3(lang, "На главную", "Go to home", "返回首页");
+  const ariaMenu = t3(lang, "Меню", "Menu", "菜单");
   const onPartners = isPartnersPath(location.pathname);
   const leadCopy = leadFormCopy(lang);
   const ctaTop = onPartners ? isRu ? "Войти в панель" : "Log in to panel" : isRu ? "Оценить проект" : "Estimate project";
@@ -2875,7 +3417,7 @@ function Header() {
           ),
           role: "dialog",
           "aria-modal": "true",
-          "aria-label": isRu ? "Меню" : "Menu",
+          "aria-label": t3(lang, "Меню", "Menu", "菜单"),
           children: [
             /* @__PURE__ */ jsxs("div", { className: "relative flex items-center justify-between px-4 pb-4 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5", children: [
               /* @__PURE__ */ jsx(
@@ -2910,7 +3452,7 @@ function Header() {
                     "bg-white/[0.04] text-white/72 transition hover:bg-white/[0.08] active:scale-95",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
                   ),
-                  "aria-label": isRu ? "Закрыть меню" : "Close menu",
+                  "aria-label": t3(lang, "Закрыть меню", "Close menu", "关闭菜单"),
                   children: /* @__PURE__ */ jsxs(
                     "svg",
                     {
@@ -2969,7 +3511,7 @@ function Header() {
               )
             ] }),
             /* @__PURE__ */ jsxs("div", { className: "relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2 pb-5 sm:px-3", children: [
-              /* @__PURE__ */ jsx("nav", { className: "mt-1 flex flex-col", "aria-label": isRu ? "Навигация" : "Navigation", children: mobileNavItems.map((item) => /* @__PURE__ */ jsxs(
+              /* @__PURE__ */ jsx("nav", { className: "mt-1 flex flex-col", "aria-label": t3(lang, "Навигация", "Navigation", "导航"), children: mobileNavItems.map((item) => /* @__PURE__ */ jsxs(
                 Link,
                 {
                   to: item.to,
@@ -3022,7 +3564,7 @@ function Header() {
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
                     ),
                     onClick: () => setOpen(false),
-                    children: onPartners ? isRu ? "Форматы" : "Formats" : isRu ? "Планы" : "Plans"
+                    children: onPartners ? t3(lang, "Форматы", "Formats", "合作形式") : t3(lang, "Планы", "Plans", "方案")
                   }
                 )
               ] })
@@ -3153,7 +3695,7 @@ function Header() {
                       "active:scale-95",
                       open && "bg-[#242424]"
                     ),
-                    "aria-label": open ? isRu ? "Закрыть меню" : "Close menu" : ariaMenu,
+                    "aria-label": open ? t3(lang, "Закрыть меню", "Close menu", "关闭菜单") : ariaMenu,
                     "aria-expanded": open,
                     "aria-controls": "mobile-header-menu",
                     onClick: (e) => {
@@ -3240,8 +3782,8 @@ const Section = React.forwardRef(
   }
 );
 function landingCopy(lang) {
-  const isRu = lang === "ru";
-  return isRu ? COPY_RU$1 : COPY_EN$1;
+  if (lang === "zh") return COPY_ZH$1;
+  return lang === "ru" ? COPY_RU$1 : COPY_EN$1;
 }
 const COPY_RU$1 = {
   hero: {
@@ -4181,6 +4723,475 @@ const COPY_EN$1 = {
     }
   }
 };
+const COPY_ZH$1 = {
+  hero: {
+    eyebrow: "网站 · CRM · 机器人 · Web 应用",
+    titleLines: ["我们打造网站与系统", "线索不会丢失"],
+    titleHighlight: "线索不会丢失",
+    scrollStages: [
+      {
+        headline: "打造线索不丢失的网站与业务系统",
+        headlineLines: ["我们打造网站与系统", "线索不会丢失"],
+        headlineBefore: "我们打造网站与系统",
+        headlineAccent: "线索不会丢失",
+        headlineAfter: "",
+        lead: "我们开发落地页、Telegram 机器人、CRM、客户门户与 MVP — 并连成一体流程：从首次咨询到付款与结果。"
+      },
+      {
+        headline: "表单已提交。接下来会发生什么？",
+        headlineLines: ["表单已提交。", "接下来会发生什么？"],
+        headlineBefore: "表单已提交。",
+        headlineAccent: "接下来会发生什么？",
+        headlineAfter: "",
+        lead: "当咨询散落在聊天、收件箱与表格中，团队回复慢、忘记客户，也不知道下一步。"
+      },
+      {
+        headline: "一条线索。一套清晰流程",
+        headlineLines: ["一条线索。", "一套清晰流程"],
+        headlineBefore: "一条线索。",
+        headlineAccent: "一套清晰流程",
+        headlineAfter: "",
+        lead: "我们连接网站、Telegram、CRM、表格与内部工具，让团队立刻看到客户、状态与下一步。"
+      }
+    ],
+    subtitle: "我们开发落地页、Telegram 机器人、CRM、客户门户与 MVP — 并连成一体流程：从首次咨询到付款与结果。",
+    ctaPrimary: "获取项目评估",
+    ctaSecondary: "查看已上线项目",
+    micro: "工作日内回复 · 分阶段交付 · 移交源代码与权限",
+    flowNodes: ["线索", "处理中", "Telegram", "CRM"],
+    flowNodeHints: ["来自网站", "自动", "通知", "进入 CRM"],
+    flowTelegramBot: "TIVONIX Bot",
+    flowDisplayChips: ["落地页", "表单", "Telegram"],
+    flowAnalysis: {
+      headline: "任务已梳理",
+      lead: "落地页承接流量，表单保存联系方式，Telegram 通知团队 — 线索不会埋在聊天线程里。",
+      routeLabel: "路径：",
+      routeText: "网站 → 表单 → Telegram → CRM。",
+      modulesLabel: "模块："
+    },
+    flowTelegramDetail: {
+      sourceLabel: "来源",
+      sourceValue: "落地页表单",
+      actionLabel: "动作",
+      actionValue: "经理已收到通知 — 线索未丢失"
+    },
+    flowCrmDetail: {
+      summary: "线索进入 CRM。状态与负责人清晰 — 不必翻聊天和表格。"
+    },
+    flowScenarios: [
+      {
+        prompt: "需要投放用落地页",
+        chips: ["落地页", "表单", "Telegram"],
+        notify: "通知已发送到 Telegram",
+        result: {
+          kind: "crm",
+          title: "新线索",
+          lines: [
+            { label: "姓名", value: "Anna" },
+            { label: "服务", value: "落地页" },
+            { label: "状态", value: "新建" }
+          ]
+        }
+      },
+      {
+        prompt: "想要线索用 Telegram 机器人",
+        chips: ["Telegram", "自动化", "通知"],
+        notify: "通知已发送到 Telegram",
+        result: {
+          kind: "telegram",
+          title: "Telegram",
+          lines: [
+            { label: "消息", value: "来自网站的新线索" },
+            { label: "姓名", value: "Anna" },
+            { label: "电话", value: "+1 ••• •• 42" }
+          ]
+        }
+      },
+      {
+        prompt: "需要网站 + Telegram 通知",
+        chips: ["落地页", "表单", "Telegram", "通知"],
+        notify: "通知已发送到 Telegram",
+        result: {
+          kind: "telegram",
+          title: "Telegram",
+          lines: [
+            { label: "消息", value: "来自网站表单的线索" },
+            { label: "姓名", value: "Maria" },
+            { label: "服务", value: "咨询" }
+          ]
+        }
+      },
+      {
+        prompt: "需要客户预约系统",
+        chips: ["表单", "CRM", "通知"],
+        notify: "线索已写入 CRM",
+        result: {
+          kind: "crm",
+          title: "新线索",
+          lines: [
+            { label: "姓名", value: "Elena" },
+            { label: "服务", value: "预约" },
+            { label: "状态", value: "新建" }
+          ]
+        }
+      },
+      {
+        prompt: "想自动化处理线索",
+        chips: ["自动化", "CRM", "Telegram"],
+        notify: "状态已更新",
+        result: {
+          kind: "crm",
+          title: "新线索",
+          lines: [
+            { label: "姓名", value: "Dmitry" },
+            { label: "服务", value: "自动化" },
+            { label: "状态", value: "进行中" }
+          ]
+        }
+      }
+    ],
+    visualStatus: [
+      { main: "正在搭建您的线索系统…", sub: "落地页、表单、Telegram" },
+      { main: "已收到新线索", sub: "通知已发送到 Telegram" },
+      { main: "迷你 CRM 领域的领先者", sub: "状态：进行中" }
+    ]
+  },
+  pain: {
+    title: "线索散落在聊天里 — 流程就会断",
+    titleLines: ["当线索散落在聊天里", "流程就会断裂"],
+    subtitle: "当咨询散落在聊天、收件箱与表格中，团队回复慢、忘记客户，也不知道下一步。",
+    hoverCta: "我们如何解决",
+    items: [
+      {
+        title: "未指定负责人",
+        text: "线索到了，但无人负责 — 直到有人偶然打开聊天。",
+        solution: "自动分配或路由规则：线索立即到达正确负责人。"
+      },
+      {
+        title: "回复太晚",
+        text: "经理晚上才看到。那时客户已经去了回复更快的地方。",
+        solution: "即时 Telegram 或邮件通知 — 线索不等待。"
+      },
+      {
+        title: "状态未知",
+        text: "不清楚谁是新建、谁在等报价、谁在跟进、谁已付款。",
+        solution: "CRM 或表格中的状态：新建 → 跟进中 → 已报价 → 已付款。"
+      },
+      {
+        title: "客户不得不自己催促",
+        text: "客户不得不自我提醒，因为团队丢了跟进线索。",
+        solution: "历史与下一步在系统中可见 — 不必翻聊天考古。"
+      }
+    ]
+  },
+  offer: {
+    title: "服务与产品",
+    featured: {
+      badge: "TIVONIX",
+      title: "不只是落地页 — 还有网站、CRM、机器人与 Web 产品",
+      text: "我们做能获客并服务用户的系统：从广告页到带角色与支付的 SaaS。",
+      linkText: "告诉我们您的需求",
+      footer: "开工前锁定范围 — 按阶段展示成果"
+    },
+    metrics: [
+      {
+        title: "网站与落地页",
+        text: "讲清产品、捕获咨询并交给团队的页面。"
+      },
+      {
+        title: "Telegram 机器人",
+        text: "机器人接线索、提问、通知员工，并向客户展示下一步。"
+      },
+      {
+        title: "CRM 与管理后台",
+        text: "贴合您流程的精简系统：状态、负责人、历史、角色与报表。"
+      },
+      {
+        title: "客户门户",
+        text: "面向客户、伙伴与员工的界面：认证、文档、支付与历史。"
+      },
+      {
+        title: "SaaS、MVP 与自动化",
+        text: "带角色与支付的产品第一版 — 或表单、Telegram、表格与 CRM，无需手工跳转。"
+      }
+    ],
+    ctaBar: {
+      title: "我们会打造线索不丢失的系统 — 或产品第一版。",
+      primary: "获取评估",
+      secondary: "评估项目"
+    }
+  },
+  ai: {
+    ariaLabel: "TIVONIX — 业务产品中的 AI",
+    centerBadge: "TIVONIX AI",
+    headline: "真正省时间的 AI",
+    models: ["OpenAI", "Claude", "Gemini", "Grok"],
+    tags: ["线索分流", "文档", "回复草稿", "CRM", "支持"]
+  },
+  flow: {
+    label: "方案",
+    title: "表单已提交。接下来呢？",
+    titleMuted: "正确路径：线索被保存、团队收到信号、有人负责、状态与下一步清晰 — 不必翻聊天。",
+    steps: [
+      {
+        label: "线索",
+        title: "客户提交需求",
+        desc: "来自网站、机器人、广告或表单"
+      },
+      {
+        label: "通知",
+        title: "团队收到信号",
+        desc: "在 Telegram 或邮件中 — 即时"
+      },
+      {
+        label: "负责人",
+        title: "已指定负责人",
+        desc: "责任人清晰"
+      },
+      {
+        label: "状态",
+        title: "状态保持更新",
+        desc: "新建 → 跟进中 → 已报价 → 已付款"
+      },
+      {
+        label: "支付",
+        title: "成交落到结果",
+        desc: "全程不丢上下文"
+      }
+    ]
+  },
+  pricingTeaser: {
+    eyebrow: "价格",
+    title: "启动方案",
+    more: "了解更多"
+  },
+  compare: {
+    title: "普通网站 vs TIVONIX 系统",
+    subtitle: "差别不在页面更好看 — 而在表单提交之后发生什么。",
+    regular: {
+      title: "普通网站",
+      headline: "表单提交后 — 仍靠手工",
+      items: [
+        "表单已提交",
+        "邮件堆在收件箱",
+        "状态未知",
+        "未指定负责人",
+        "数据靠手工搬运"
+      ]
+    },
+    chaosTags: ["线索丢失", "无状态", "手工 Excel", "第二天再回复"],
+    tivonix: {
+      title: "TIVONIX 系统",
+      headline: "线索可控",
+      badge: "线索不会埋在聊天里 — 团队看得见下一步",
+      items: [
+        "线索进入正确渠道",
+        "自动创建记录",
+        "已指定负责人",
+        "团队能看到状态",
+        "管理层看得到结果"
+      ]
+    },
+    cta: "梳理我的流程"
+  },
+  cases: {
+    badge: "最新案例",
+    cta: "我也想要类似系统",
+    viewCase: "查看案例",
+    openProduct: "打开产品",
+    discussSimilar: "类似需求",
+    spliton: {
+      need: "需要音乐资产投资金融科技平台 — 完整产品，不是落地页",
+      done: "交付发行目录、份额购买、钱包、二级市场、法律同意与管理后台",
+      modules: [
+        "发行目录",
+        "份额购买",
+        "钱包",
+        "二级市场",
+        "法律同意",
+        "管理后台",
+        "i18n RU/EN/ES/PT",
+        "结算"
+      ]
+    },
+    tivonixpanel: {
+      need: "需要合作伙伴面板 — 代理与自由职业者可跟踪成交、状态与结算，告别聊天混乱",
+      done: "交付登录、引导、成交仪表盘、Referral / White-label 模式与项目结算跟踪",
+      modules: [
+        "登录",
+        "引导开通",
+        "仪表盘",
+        "Referral",
+        "White-label",
+        "成交",
+        "项目",
+        "结算"
+      ],
+      ownProduct: "TIVONIX 自有产品"
+    }
+  },
+  audience: {
+    badge: "TIVONIX",
+    title: "我们服务谁",
+    subtitle: "需要的不只是好看官网，而是能跑通业务的系统：线索、预约、状态、支付或客户后台。白俄罗斯技术团队 TIVONIX，助力进入白俄罗斯与 EAEU 市场。",
+    callouts: {
+      left: {
+        text: "线索一分钟内到达经理 — 不会埋在聊天或明天的表格里。"
+      },
+      right: {
+        text: "Instagram、Telegram、网站与电话 — 所有渠道一条链路。"
+      }
+    },
+    pins: [
+      { id: "masters", label: "Masters", lat: 55.75, lng: 37.62 },
+      { id: "studios", label: "Studios", lat: 48.85, lng: 2.35 },
+      { id: "autoservice", label: "汽修店", lat: 40.71, lng: -74.01 },
+      { id: "schools", label: "在线学校", lat: 51.5, lng: -0.12 },
+      { id: "startups", label: "Startups", lat: 1.35, lng: 103.82 },
+      { id: "agencies", label: "Agencies", lat: 25.2, lng: 55.27 }
+    ],
+    marquee: [
+      "Masters",
+      "Studios",
+      "门店",
+      "汽修店",
+      "在线学校",
+      "专家",
+      "Startups",
+      "Agencies",
+      "中小企业",
+      "本地服务"
+    ],
+    pillars: [
+      {
+        title: "任意渠道的线索",
+        text: "广告、即时通讯、网站 — 汇入同一系统。"
+      },
+      {
+        title: "快速响应",
+        text: "Telegram 通知与状态 — 客户不必久等离开。"
+      },
+      {
+        title: "增长而不混乱",
+        text: "线索量上来时 — CRM、管理端与自动化。"
+      }
+    ],
+    ctaPrimary: "沟通项目",
+    ctaSecondary: "看看我们做什么",
+    items: [
+      { title: "门店、工作室与师傅", desc: "预约、线索与提醒，告别手工混乱" },
+      { title: "汽修店与本地服务", desc: "广告线索快速接入，每位客户状态清晰" },
+      { title: "在线学校与课程", desc: "注册、支付、学员区与学习状态" },
+      { title: "专家与顾问", desc: "线索从落地页直达 Telegram 与 CRM" },
+      { title: "初创与 MVP", desc: "按需模块快速上线 — 不多做" },
+      { title: "代理与团队", desc: "带可运转线索漏斗的广告落地页" },
+      { title: "中小企业", desc: "当线索仍靠手工处理 — 且已开始拖累业务" }
+    ]
+  },
+  process: {
+    title: "我们如何协作",
+    steps: [
+      {
+        kind: "bullets",
+        title: "明确需求",
+        items: [
+          "明确用户、核心场景与第一版结果。"
+        ]
+      },
+      {
+        kind: "bullets",
+        title: "锁定范围",
+        items: [
+          "约定功能、阶段、周期、费用与沟通方式。"
+        ]
+      },
+      {
+        kind: "bullets",
+        title: "展示原型或结构",
+        items: [
+          "开发前校验页面逻辑与关键用户路径。"
+        ]
+      },
+      {
+        kind: "bullets",
+        title: "分阶段开发",
+        items: [
+          "每个阶段展示可运行成果并收集反馈。"
+        ]
+      },
+      {
+        kind: "bullets",
+        title: "测试并上线",
+        items: [
+          "检查移动端、表单、角色、集成与核心流程。"
+        ]
+      },
+      {
+        kind: "bullets",
+        title: "移交并持续支持",
+        items: [
+          "移交源代码、权限与说明。上线后在约定保修范围内修复问题。"
+        ]
+      }
+    ]
+  },
+  finalCta: {
+    title: "告诉我们您要启动什么",
+    subtitle: "用自己的话描述需求。我们会梳理并发送初步方案、周期与费用区间。",
+    ctaPrimary: "获取评估",
+    ctaSecondary: "通过 Telegram 联系",
+    micro: "工作日内回复。通话非必须。联系方式不提供给第三方。"
+  },
+  packages: {
+    sectionTitle: "针对需求的三个方向",
+    launch: {
+      title: "广告落地页",
+      subtitle: "落地页 + 表单 + Telegram",
+      forWho: "当您需要从广告、Instagram 或网站快速获取线索。",
+      cta: "评估启动",
+      bullets: [
+        "适合投放的页面",
+        "线索表单",
+        "联系按钮",
+        "Telegram 或邮件通知",
+        "移动端适配",
+        "基础分析",
+        "上线"
+      ]
+    },
+    service: {
+      title: "客户后台与管理端",
+      subtitle: "客户门户 + 团队面板 + 支付",
+      forWho: "当您需要完整 Web 服务：注册、客户后台、状态、支付。",
+      cta: "沟通服务",
+      bullets: [
+        "注册",
+        "客户后台",
+        "管理后台",
+        "用户角色",
+        "线索与状态",
+        "通知",
+        "Payments",
+        "集成"
+      ]
+    },
+    automation: {
+      title: "自动化",
+      subtitle: "减少手工操作",
+      forWho: "当线索、表格、报表与通知仍靠手工处理。",
+      cta: "自动化流程",
+      bullets: [
+        "线索自动化",
+        "对接 Telegram、邮件与表格",
+        "迷你 CRM",
+        "任务状态",
+        "团队通知",
+        "报表",
+        "集成"
+      ]
+    }
+  }
+};
 function isTelegramWebView() {
   if (typeof window === "undefined") return false;
   if (window.TelegramWebviewProxy != null) return true;
@@ -4557,6 +5568,7 @@ function Reveal$1({ children, className, delay = 0 }) {
   );
 }
 function homeExtraCopy(lang) {
+  if (lang === "zh") return COPY_ZH;
   return lang === "ru" ? COPY_RU : COPY_EN;
 }
 const COPY_RU = {
@@ -5017,6 +6029,235 @@ const COPY_EN = {
     label: "Get an estimate"
   }
 };
+const COPY_ZH = {
+  trust: {
+    ariaLabel: "为什么可以信任我们",
+    items: [
+      "上线后支持"
+    ]
+  },
+  featured: {
+    eyebrow: "项目",
+    title: "三个已上线成果",
+    subtitle: "不同类型项目 — 从金融科技平台到本地生意。",
+    viewCase: "查看案例",
+    openLive: "打开线上项目",
+    problem: "问题：",
+    solution: "方案：",
+    resultLabel: "结果：",
+    prev: "上一个案例",
+    next: "下一个案例",
+    items: [
+      {
+        id: "spliton",
+        type: "Web 产品 · 金融科技",
+        problem: "需要音乐份额金融科技平台 — 含资金流、角色与合规的完整产品，不是落地页。",
+        solution: "交付发行目录、门户、KYC、支付、二级市场与运营门户。",
+        result: "已上线金融科技平台：门户、角色、KYC、支付与二级市场。",
+        modules: [
+          "门户",
+          "KYC",
+          "Payments",
+          "二级市场",
+          "管理",
+          "i18n"
+        ]
+      },
+      {
+        id: "slotty",
+        type: "市场平台 · 预约",
+        problem: "需要的不只是「立即预约」落地页 — 而是含目录、时段、师傅后台与支付的预约市场。",
+        solution: "交付带筛选目录 + 地图、Telegram Mini App、Free/Pro 师傅后台、管理端与 bePaid。",
+        result: "slotty.of.by 市场平台：无需电话即可预约，后台与支付一体。",
+        modules: [
+          "目录",
+          "地图",
+          "时段",
+          "师傅后台",
+          "Telegram",
+          "bePaid"
+        ]
+      },
+      {
+        id: "logovo",
+        type: "本地生意",
+        problem: "司机找不到门店或预约路径 — 地址与 CTA 被埋没，线索流失。",
+        solution: "交付网络站：门店、服务、价格、地图与短路径预约/拨打。",
+        result: "轮胎服务网络站：门店、服务、价格与清晰获客路径。",
+        modules: ["门店", "服务", "价格", "地图", "预约", "企业对企业"]
+      }
+    ]
+  },
+  direction: {
+    eyebrow: "方向",
+    title: "您要启动什么？",
+    subtitle: "选择方向 — 我们梳理需求并建议第一步。",
+    leads: {
+      label: "线索",
+      title: "每条线索一条链路",
+      text: "网站、机器人与 CRM — 一条回复路径。",
+      cta: "梳理路径",
+      points: ["网站与落地页", "Telegram 机器人", "迷你 CRM"],
+      stack: [
+        {
+          title: "网站",
+          text: "表单 → 线索即时到达",
+          headline: "用户填写表单",
+          mock: "表单",
+          mockName: "Alex",
+          mockContact: "+1 555 010-2030",
+          mockSubmit: "发送"
+        },
+        {
+          title: "机器人",
+          text: "Telegram 通知",
+          headline: "线索进入机器人",
+          mock: "机器人",
+          mockName: "新线索",
+          mockContact: "亚历克斯·现场",
+          mockSubmit: "刚刚"
+        },
+        {
+          title: "CRM",
+          text: "已指定负责人",
+          headline: "业主捡起它",
+          mock: "crm",
+          mockName: "亚历克斯·现场",
+          mockContact: "Anna",
+          mockSubmit: "进行中"
+        }
+      ]
+    },
+    product: {
+      label: "Product",
+      title: "启动产品",
+      text: "含门户、角色与支付的 MVP。",
+      cta: "沟通 MVP",
+      points: ["客户门户", "角色与权限", "Payments"],
+      stack: [
+        {
+          title: "软件即服务/MVP",
+          text: "首个可运行版本",
+          headline: "交付第一版",
+          mock: "mvp",
+          mockName: "仪表盘",
+          mockContact: "12 项任务",
+          mockSubmit: "已上线"
+        },
+        {
+          title: "门户",
+          text: "角色清晰不乱",
+          headline: "门户中的角色与权限",
+          mock: "cabinet",
+          mockName: "客户",
+          mockContact: "经理",
+          mockSubmit: "管理"
+        },
+        {
+          title: "Payments",
+          text: "含集成",
+          headline: "完成支付对接",
+          mock: "支付",
+          mockName: "支付",
+          mockContact: "$49",
+          mockSubmit: "已付款"
+        }
+      ]
+    }
+  },
+  solution: {
+    outcomes: [
+      "线索不丢失",
+      "已指定负责人",
+      "下一步清晰可见"
+    ]
+  },
+  aiScenarios: {
+    title: "真正省时间的 AI",
+    note: "按任务与数据要求选型 — 不为贴 logo 而加 AI。",
+    items: [
+      {
+        title: "线索分流",
+        text: "AI 识别主题、提取关键字段并把线索路由到正确负责人。"
+      },
+      {
+        title: "文档处理",
+        text: "系统读取文件、提取信息并填入正确字段。"
+      },
+      {
+        title: "经理协助",
+        text: "AI 在企业知识库中检索信息，并起草给客户的回复。"
+      }
+    ]
+  },
+  homePricing: {
+    eyebrow: "价格",
+    title: "清晰起步，没有空泛承诺",
+    note: "价格取决于页面、角色、集成与业务逻辑。开工前锁定范围、阶段与费用。",
+    allPlans: "对比全部方案",
+    more: "详情",
+    ctas: {
+      start: "获取 Start 范围",
+      growth: "评估 Growth",
+      product: "评估 MVP",
+      custom: "沟通 Custom"
+    }
+  },
+  guarantees: {
+    title: "开发前条款清晰",
+    subtitle: "开工前把范围、周期、费用与职责写清楚。",
+    items: [
+      "阶段开始前锁定范围与费用",
+      "工作拆成清晰阶段",
+      "您能看到中间成果",
+      "移交源代码与权限",
+      "机密数据不会公开",
+      "上线前校验关键流程",
+      "支持条款事先约定"
+    ]
+  },
+  founder: {
+    title: "有真人负责项目 — 不是无名工作室",
+    name: "Danila Titovets",
+    role: "TIVONIX 创始人，全栈开发者",
+    bio: "负责架构、开发与上线。按任务引入设计、前端、后端、移动与增长专家。",
+    cta: "联系创始人"
+  },
+  team: {
+    title: "团队为您的项目协作",
+    text: "TIVONIX 是产品团队：设计、工程、QA 与上线一体闭环。按任务组队快速交付 — 把想法变成已上线结果。白俄罗斯技术团队，服务进入白俄罗斯与 EAEU 的企业。",
+    cta: "关于公司",
+    members: [
+      { initials: "DT", name: "Danila T.", role: "架构与全栈" },
+      { initials: "AK", name: "Anna K.", role: "UI/UX 设计" },
+      { initials: "MS", name: "Maxim S.", role: "前端工程" },
+      { initials: "IV", name: "Igor V.", role: "后端工程" },
+      { initials: "EN", name: "Elena N.", role: "QA 与测试" },
+      { initials: "RP", name: "Roman P.", role: "项目管理" }
+    ]
+  },
+  testimonials: {
+    eyebrow: "客户评价",
+    title: "客户怎么说",
+    viewCase: "案例",
+    ownProduct: "TIVONIX 自有产品"
+  },
+  scale: {
+    badge: "已上线系统",
+    title: "交付线索不丢失的产品",
+    seal: "从想法到上线",
+    foot: "网站、Telegram、CRM、门户与 MVP 在同一闭环。锁定范围与周期，再移交代码与权限。",
+    stats: [
+      { value: "7+", label: "已上线项目" },
+      { value: "1周", label: "最快面板上线" },
+      { value: "100%", label: "代码与权限归您" },
+      { value: "BY · RU", label: "交付地区" }
+    ]
+  },
+  mobileSticky: {
+    label: "获取评估"
+  }
+};
 const UPC_DOMAIN = "https://upc.watch/";
 const PAYCLIP_DOMAIN = "https://usepayclip.com/";
 const LABELOS_DOMAIN = "https://labelos.digital/";
@@ -5052,8 +6293,10 @@ function buildAllProjects(isRu) {
       title: "Tivonix Panel",
       subtitleRu: "Партнёрская панель TIVONIX: сделки, статусы, проекты и выплаты — один кабинет вместо хаоса в чатах и таблицах.",
       subtitleEn: "TIVONIX partner panel: deals, statuses, projects and payouts — one dashboard instead of chaos in chats and spreadsheets.",
+      subtitleZh: "TIVONIX 合作伙伴面板：交易、状态、项目和付款 - 一个仪表板，而不是聊天和电子表格中的混乱。",
       detailsRu: "Формат: партнёрская панель / SaaS-кабинет\n\nЗачем это\nПартнёрство редко разваливается из‑за оффера. Оно сыпется, когда **никто не видит картину**: где заявка, на каком этапе сделка, когда выплата. Пока правда живёт в Telegram и Excel — каждый день начинается с «напомни» и скринов в полночь.\n\nМы собрали **кабинет, в который заходят сами**: регистрация, вход, статусы, проекты и выплаты в одном месте. Не слайд «как будет», а инструмент, который уже ведёт деньги и доверие.\n\nКак работает\nПартнёр регистрируется, выбирает модель — **Referral** или **White-label** — и после модерации получает доступ в кабинет.\nДальше цикл простой: передал задачу → видит статус → понимает следующий шаг → отслеживает выплату. Одна панель вместо чатов, таблиц и «напомни, пожалуйста».\n\nЧто внутри\nЭто полноценный **кабинет партнёрской сети**, не лендинг. Слева тёмный сайдбар: главная, клиенты, партнёры, сделки, выплаты, отчёты, настройки, юр. профили, заявки партнёров и журнал действий.\n\nНа **главной** — живые KPI: клиенты, партнёры, закрытые сделки, сумма продаж, начисленные комиссии и «к выплате», плюс графики по дням и месяцам, воронка по статусам, топ партнёров, источников и услуг. Данные обновляются в реальном времени.\n\nВ **клиентах** — база компаний и контактов, которых партнёры передают в работу: поиск, вкладки статусов (на проверке / одобрено / в работе / закрыт / дубли), фильтры по партнёру, услуге, источнику, бюджету и дате, добавление клиента и выгрузка в Excel.\n\nВ **партнёрах** — сеть целиком: активность, клиенты, сделки, продажи, комиссия и баланс. Отдельно — заявки на вход (Referral / White-label) и модерация. **Выплаты** и комиссии живут в панели, без сторонних таблиц. UI собран под ежедневную работу, а не под презентацию.\n\nЧто сделали\nРазработка TIVONIX — **1 неделя**. Спроектировали структуру под реальный партнёрский процесс, собрали регистрацию, логин и сделки, довели UI (сетка, статусы, **пустые состояния**) и выкатили в продакшен на Railway.\n\nИтог\nЖивая панель, куда партнёры **заходят сами** — ведут сделки и видят выплаты. Не презентация «как будет», а продукт, который уже в работе.\n",
       detailsEn: "Format: partner panel / SaaS dashboard\n\nWhy it matters\nPartnerships rarely die on the offer. They die when **nobody shares the same picture**: where’s the request, what stage is the deal, when’s the payout. While truth lives in chats and spreadsheets, every day starts with “remind me” and midnight screenshots.\n\nWe built a **cabinet people actually open**: registration, login, statuses, projects and payouts in one place. Not a “how it will look” slide — a tool that already moves money and trust.\n\nHow it works\nA partner signs up, picks **Referral** or **White-label**, and gets access after moderation.\nThen the loop is simple: submit a task → see the status → know the next step → track the payout. One cabinet instead of chats, spreadsheets and “please remind me”.\n\nWhat’s inside\nA full **partner-network cabinet**, not a landing page. Dark sidebar on the left: home, clients, partners, deals, payouts, reports, settings, legal profiles, partner applications and an activity log.\n\n**Home** shows live KPIs: clients, partners, closed deals, sales total, accrued commissions and “to be paid”, plus charts by day and month, a status funnel, top partners, sources and services. Data updates in real time.\n\n**Clients** is the database of companies and contacts partners hand over: search, status tabs (under review / approved / in work / closed / duplicates), filters by partner, service, source, budget and date, add-client and Excel export.\n\n**Partners** is the whole network: activity, clients, deals, sales, commission and balance. Separately — join requests (Referral / White-label) and moderation. **Payouts** and commissions live in the panel, no side spreadsheets. UI built for daily work, not for a deck.\n\nWhat we delivered\nTIVONIX build — **1 week**. Designed the partner workflow, shipped registration, login and deals, polished UI (grid, statuses, **empty states**) and went live on Railway.\n\nOutcome\nA live panel partners **actually open** — they run deals and see payouts. Not a “how it will look” demo, but a product already in use.\n",
+      detailsZh: "格式：合作伙伴面板/SaaS 仪表板\n\n为什么这很重要\n合作伙伴关系很少会因为这个提议而消亡。当**没有人分享相同的图片**时，他们就会消亡：请求在哪里，交易处于什么阶段，何时付款。虽然真相存在于聊天和电子表格中，但每天都是从“提醒我”和午夜屏幕截图开始的。\n\n我们建立了一个**人们实际打开的内阁**：注册、登录、状态、项目和付款都集中在一个地方。不是一张“看起来如何”的幻灯片——一种已经转移资金和信任的工具。\n\n它是如何运作的\n合作伙伴注册，选择**推荐**或**白标**，并在审核后获得访问权限。\n然后循环很简单：提交任务→查看状态→知道下一步→跟踪支付。一个内阁，而不是聊天、电子表格和“请提醒我”。\n\n里面有什么\n完整的**合作伙伴网络柜**，而不是登陆页面。左侧深色侧边栏：主页、客户、合作伙伴、交易、支出、报告、设置、法律概况、合作伙伴申请和活动日志。\n\n**主页**显示实时 KPI：客户、合作伙伴、已完成的交易、销售总额、应计佣金和“待支付”，以及按日和月列出的图表、状态漏斗、顶级合作伙伴、来源和服务。数据实时更新时间。\n\n**客户**是公司和联系人合作伙伴移交的数据库：搜索、状态选项卡（正在审查/已批准/正在工作/已关闭/重复）、按合作伙伴、服务、来源、预算和日期进行过滤、添加客户和 Excel 导出。\n\n**合作伙伴**是整个网络：活动、客户、交易、销售、佣金和余额。分别 — 加入请求（推荐/白标签）和审核。 **付款**和佣金位于面板中，没有辅助电子表格。 UI 是为日常工作而不是为甲板而构建的。\n\n我们交付了什么\nTIVONIX 构建 — **1 周**。设计合作伙伴工作流程，交付注册、登录和交易，完善 UI（网格、状态、**空状态**）并在 Railway 上上线。\n\n结果\n现场小组合作伙伴**实际上是开放的** - 他们进行交易并查看付款。不是“它看起来如何”演示，而是已经在使用的产品。",
       domain: TIVONIXPANEL_DOMAIN,
       status: "live",
       tags: ["SaaS", "Admin Panel", "Partners", "Dashboard", "UI/UX"],
@@ -5098,8 +6341,10 @@ function buildAllProjects(isRu) {
       title: "LOGOVO",
       subtitleRu: "Сайт сети шиномонтажа LOGOVO в Минске: Figma → Next.js, 4 филиала, запись, карта, B2B — под ключ за 1 600 BYN, команда TIVONIX.",
       subtitleEn: "Website for LOGOVO tire network in Minsk: Figma → Next.js, 4 branches, booking, map, B2B — turnkey for 1,600 BYN by TIVONIX.",
+      subtitleZh: "明斯克 LOGOVO 轮胎网络网站：Figma → Next.js，4 个分支机构，预订，地图，B2B — TIVONIX 交钥匙工程 1,600 BYN。",
       detailsRu: "Зачем это\nШиномонтаж выбирают не в кресле — **с дороги, одной рукой, пока мигает индикатор**. Если адрес, часы и «записаться» прячутся на трёх экранах — клиент уедет к тому, кто ответил быстрее.\n\nЗаказчик — **ООО «Логово»** (сеть шиномонтажа в Минске, УНП 193616584): **4 филиала**, два работают **24/7**, безнал для автопарков и такси, полный контур услуг — от шиномонтажа и правки дисков до хранения и кондиционера. Бюджет проекта — **1 600 BYN** ([[≈ 42 800 ₽]] / [[≈ 560 $]]). Сайт собрала **команда TIVONIX** под ключ — не шаблон и не «отдали архив».\n\nКак работает\nЧеловек с телефона открывает **logovo24.by** → услуга → филиал на карте / режим → **записаться** или **позвонить**. Автопарк идёт в B2B: безнал, единый прайс, документы на четырёх точках — без переписки «пришлите счёт».\n\nЧто внутри\nВесь продукт сделали мы: **дизайн в Figma** (структура, mobile-first, CTA «с дороги»), потом разработка на **Next.js 16 + TypeScript + Tailwind v4** — статический экспорт под shared-хостинг. Не конструктор: ручная вёрстка, Leaflet-карта с геолокацией «найти меня», калькулятор «комплекс 4 колёса», до/после, отзывы, скидки, кейсы, FAQ, SEO (schema AutoRepair, sitemap, OG).\n\n**11 услуг** с отдельными страницами и прайсом: шиномонтаж, грузовой, правка и покраска дисков, аргон, прокол, вулканизация, балансировка, проточка, хранение, кондиционер. **4 адреса** (Лещинского и Логойский тракт — 24/7; Гурского и Дзержинского — дневной режим). B2B-блок: такси / логистика / флоты, бейдж **75+ клиентов**. Запись: форма → mailto на сеть. Sticky-бар на мобиле: позвонить / записаться.\n\nВизуал — светлая система **LOGOVO × Awesomic**: canvas `#f4f4f5`, ember-оранжевый `#ff5a00` только на CTA и бейджах 24/7, тёмные obsidian-блоки для контраста, крупные pill-кнопки, radius карточек 36px. Mobile-first — основной трафик с дороги.\n\nЗапуск под ключ\nПомогли с **доменом logovo24.by**, **сами** подняли хостинг (**hoster.by** / cPanel), выгрузили статику `out/`, настроили прод. Полный цикл: идея → Figma → код → деплой.\n\nИтог\nНе «сайт за тысячу». **Рабочий инструмент сети LOGOVO** за [[≈ 560 $]]: запись, карта, B2B, дизайн и прод на **logovo24.by** — сделала команда TIVONIX.\n",
       detailsEn: "Why it matters\nTire service isn’t chosen from a couch — it’s chosen **from the road, one-handed, while a warning light blinks**. If address, hours and “book” hide across three screens, the client drives to whoever answers faster.\n\nClient — **LOGOVO LLC** (Minsk tire network, UNP 193616584): **4 branches**, two open **24/7**, fleet billing for taxi and logistics, full service loop — fitting, wheel repair/paint, storage, A/C and more. Project budget — **1,600 BYN** ([[≈ 42,800 ₽]] / [[≈ $560]]). Built **turnkey by the TIVONIX team** — not a template, not “here’s a zip”.\n\nHow it works\nSomeone opens **logovo24.by** on a phone → service → branch on the map / hours → **book** or **call**. Fleets go to B2B: invoices, unified pricing, docs across four locations — no “send the contract” threads.\n\nWhat’s inside\nWe built the whole product: **Figma design** (structure, mobile-first, on-the-road CTAs), then **Next.js 16 + TypeScript + Tailwind v4** — static export for shared hosting. No page builder: handmade layout, Leaflet map with “find me” geolocation, “4 wheels package” calculator, before/after, reviews, discounts, cases, FAQ, SEO (AutoRepair schema, sitemap, OG).\n\n**11 services** with dedicated pages and pricing: fitting, commercial, wheel repair/paint, argon, puncture, vulcanizing, balancing, brake disc machining, storage, A/C. **4 addresses** (Leshchinskogo and Logoyskiy trakt — 24/7; Gurskogo and Dzerzhinskogo — daytime). B2B block: taxi / logistics / fleets, **75+ clients** badge. Booking: form → mailto to the network. Sticky mobile bar: call / book.\n\nVisual system — light **LOGOVO × Awesomic**: canvas `#f4f4f5`, ember orange `#ff5a00` only on CTAs and 24/7 badges, dark obsidian blocks for contrast, large pill buttons, 36px card radius. Mobile-first — most traffic comes from the road.\n\nTurnkey launch\nWe helped with the **logovo24.by** domain, **set up hosting ourselves** (**hoster.by** / cPanel), shipped the `out/` static build, wired production. Full cycle: idea → Figma → code → deploy.\n\nOutcome\nNot a “thousand-buck site”. A **working tool for the LOGOVO network** for [[≈ $560]]: booking, map, B2B, design and prod on **logovo24.by** — by the TIVONIX team.\n",
+      detailsZh: "为什么这很重要\n轮胎保养不是在沙发上选择的，而是**在路上单手选择，同时警告灯闪烁**。如果地址、营业时间和“预订”隐藏在三个屏幕上，客户就会开车去找谁回答得更快。\n\n客户 — **LOGOVO LLC**（明斯克轮胎网络，UNP 193616584）：**4 个分支机构**，两个开放 **24/7**，出租车和物流车队计费，全方位服务循环 - 装配、车轮维修/喷漆、存储、空调等。项目预算 — **1,600 BYN** ([[≈ 42,800 ₽]] / [[≈ $560]])。 **由 TIVONIX 团队构建** — 不是模板，也不是“这是一个 zip”。\n\n它是如何运作的\n有人在电话上打开 **logovo24.by** → 服务 → 地图/时间上的分支 → **预订** 或 **致电**。车队转向 B2B：发票、统一定价、跨四个地点的文档 — 没有“发送合同”线程。\n\n里面有什么\n我们构建了整个产品：**Figma 设计**（结构、移动优先、路上 CTA），然后是**Next.js 16 + TypeScript + Tailwind v4** - 用于共享托管的静态导出。无页面构建器：手工布局、带有“找到我”地理位置的传单地图、“4 轮套餐”计算器、之前/之后、评论、折扣、案例、常见问题解答、SEO（自动修复架构、站点地图、OG）。\n\n**11 项服务** 与 ded所示页面和定价：装配、商业、车轮维修/喷漆、氩气、穿刺、硫化、平衡、制动盘加工、存储、空调。 **4 个地址**（Leshchinskogo 和 Logoyskiy trakt — 24/7；Gurskogo 和 Dzerzhinskogo — 白天）。 B2B 区块：出租车/物流/车队，**75+ 客户**徽章。预订：表格→邮寄至网络。粘性移动栏：通话/预订。\n\n视觉系统 - 浅 **LOGOVO × Awesomic**：画布“#f4f4f5”，仅在 CTA 和 24/7 徽章上使用琥珀橙色“#ff5a00”，深色黑曜石块用于对比，大药丸按钮，36px 卡片半径。移动优先——大部分流量来自道路。\n\n交钥匙启动\n我们帮助 **logovo24.by** 域，**设置我们自己的托管**（**hoster.by** / cPanel），运送 `out/` 静态构建、有线生产。完整周期：想法→Figma→代码→部署。\n\n结果\n不是“千元网站”。 **LOGOVO 网络的工作工具**，售价 [[≈ 560 美元]]：在 **logovo24.by** 上进行预订、地图、B2B、设计和产品 — 由 TIVONIX 团队提供。",
       domain: LOGOVO_DOMAIN,
       status: "live",
       tags: ["Website", "Next.js", "Local Business", "Booking", "B2B", "Figma"],
@@ -5178,8 +6423,10 @@ function buildAllProjects(isRu) {
       title: "Headmind",
       subtitleRu: "Корпоративный сайт ООО «Хэдмайнд»: Figma → WordPress + Elementor, хостинг и домен headmind.ru — бюджет 100 000 ₽.",
       subtitleEn: "Corporate site for Headmind: Figma → WordPress + Elementor, hosting and domain headmind.ru — budget 100,000 ₽.",
+      subtitleZh: "Headmind 的公司网站：Figma → WordPress + Elementor，托管和域名 headmind.ru — 预算 100,000 ₽。",
       detailsRu: "Зачем это\nООО «Хэдмайнд» — консалтинг по трансформации бизнеса: стратегия, цифровизация, оргдизайн, производство, контракты. В B2B часто **теряют сделку на первом касании**, если сайт говорит «обо всём и ни о чём». Нужен был сайт, который спокойно шлют в первом сообщении.\n\nЗаказчик — **Евгений Беликов**, основатель и генеральный директор ООО «Хэдмайнд» (соучредитель — Виталий Петровский). Бюджет — **100 000 ₽** ([[≈ 1 280 $]]). Прод: **headmind.ru**.\n\nКак работает\nПосетитель проходит короткий маршрут: **услуги** → **подход / экспертиза** → **команда** → **контакт / заявка**. На каждом шаге понятно, кто вы и чем сильны. CTA стоит там, где человек уже готов написать.\n\nЧто внутри\nСначала **макеты в Figma**: несколько визуальных вариантов на выбор — пока заказчику не «зашло». Потом дизайн и сборка на **WordPress + Elementor**: услуги (трансформация, цифровизация, HR, производство, контракты, продажи), команда, доверие, формы заявки.\n\nПод ключ: подобрали и подключили **хостинг**, купили/привязали **домен headmind.ru**, выкатили в прод, настроили админку WordPress, чтобы контент правили сами. Стек не «с нуля на React» — осознанный выбор: быстрый запуск, удобное редактирование, спокойный B2B-сайт.\n\nЧто сделали\nFigma (выборка вариантов) → дизайн → WordPress/Elementor → хостинг + домен → живой **headmind.ru**. Упаковали экспертизу в маршрут до заявки.\n\nИтог\nНе шаблон «поставьте логотип». **Корпоративный сайт под ключ** для Евгения Беликова / ООО «Хэдмайнд»: 100 000 ₽, Figma → WP, домен и хостинг — можно открыть и проверить самому.\n",
       detailsEn: "Why it matters\nHeadmind is a business-transformation consultancy: strategy, digitalization, org design, production, contracts. In B2B you often **lose the deal on first contact** if the site says everything and nothing. They needed a site you can send in the first message.\n\nClient — **Evgeniy Belikov**, founder and CEO of Headmind (co-founder — Vitaliy Petrovsky). Budget — **100,000 ₽** ([[≈ $1,280]]). Live: **headmind.ru**.\n\nHow it works\nA visitor follows a short path: **services** → **approach / expertise** → **team** → **contact / lead**. At every step it’s clear who you are and why you’re strong. CTAs sit where people are already ready to write.\n\nWhat’s inside\nFirst **Figma mockups**: several visual directions until the client picked a favourite. Then design and build on **WordPress + Elementor**: services (transformation, digitalization, HR, production, contracts, sales), team, trust, lead forms.\n\nTurnkey: hosting set up, **domain headmind.ru** connected, shipped to production, WordPress admin ready so they can edit content themselves. Not a custom React build on purpose — fast launch, easy editing, a calm B2B site.\n\nWhat we delivered\nFigma (variant selection) → design → WordPress/Elementor → hosting + domain → live **headmind.ru**. Expertise packaged into a path to a lead.\n\nOutcome\nNot a “drop your logo” template. A **turnkey corporate site** for Evgeniy Belikov / Headmind: 100,000 ₽, Figma → WP, domain and hosting — open it and check yourself.\n",
+      detailsZh: "为什么这很重要\nHeadadmind 是一家业务转型咨询公司：战略、数字化、组织设计、生产、合同。在 B2B 中，如果网站什么都说了，但什么也没说，你常常**在第一次接触时就失去了交易**。他们需要一个您可以在第一条消息中发送的网站。\n\n客户 — **Evgeniy Belikov**，Headmind 创始人兼首席执行官（联合创始人 — Vitaliy Petrovsky）。预算 — **100,000 ₽** ([[≈ $1,280]])。直播：**headmind.ru**。\n\n它是如何运作的\n访客遵循一条简短的路径：**服务**→**方法/专业知识**→**团队**→**联系人/领导**。每一步都清楚你是谁以及你为何强大。 CTA 位于人们已经准备好写作的地方。\n\n里面有什么\n首先**Figma 模型**：几个视觉方向，直到客户选择了最喜欢的。然后在 **WordPress + Elementor** 上进行设计和构建：服务（转型、数字化、人力资源、生产、合同、销售）、团队、信任、潜在客户表单。\n\n统包：托管设置、**域名 headmind.ru** 连接、交付生产、WordPress 管理员准备就绪，以便他们可以自己编辑内容。不是专门定制的 React 构建——快速启动、轻松编辑、平静的 B2B 网站。\n\n我们交付了什么\nFigma（变体选择）→设计→WordPress/Elementor → 托管 + 域名 → 直播 **headmind.ru**。专业知识融入了通往潜在客户的道路。\n\n结果\n不是“放弃您的徽标”模板。 Evgeniy Belikov / Headadmind 的 **交钥匙企业网站**：100,000 ₽，Figma → WP、域名和托管 - 打开它并自行检查。",
       domain: HEADMIND_DOMAIN,
       status: "live",
       tags: ["B2B", "WordPress", "Elementor", "Figma", "Corporate"],
@@ -5203,8 +6450,10 @@ function buildAllProjects(isRu) {
       title: "Slotty",
       subtitleRu: "Полный маркетплейс записи к мастерам: каталог с фильтрами и картой, Telegram Mini App, кабинет мастера (SaaS Free/Pro), platform-admin, bePaid — на Railway, домен slotty.of.by.",
       subtitleEn: "Full booking marketplace for masters: filtered catalog + map, Telegram Mini App, master SaaS cabinet (Free/Pro), platform admin, bePaid — on Railway, domain slotty.of.by.",
+      subtitleZh: "大师的完整预订市场：过滤目录 + 地图、Telegram Mini App、大师 SaaS 柜（免费/专业版）、平台管理、bePaid — on Railway、域名 slotty.of.by。",
       detailsRu: "Зачем это\nЗапись к мастеру до сих пор часто живёт в **Direct и WhatsApp**: «есть на завтра?», «а через час?», «ой, забыла напомнить». Клиент устаёт писать. Мастер устаёт отвечать. Слоты пропадают в тишине чата.\n\nНужен был не черновик и не «кнопка записаться», а **полный маркетплейс**: каталог с жёсткой фильтрацией, карта, путь клиента, SaaS-кабинет мастера, роли, platform-admin, оплаты, уведомления и прод. Заказчик — **Виктория Д.** Бюджет — 230 000 ₽ ([[≈ 2 940 $]]). Срок — **3 недели**.\n\nКак работает\nКлиент открывает **slotty.of.by** (сайт или Telegram Mini App) → каталог → фильтры / карта → мастер → услуга → **свободный слот** → подтверждение. Код записи, напоминания в Telegram и email — без звонков.\nМастер в кабинете ведёт профиль, портфолио, адрес, услуги, акции, расписание, заявки и клиентов; тариф Free или Pro.\nPlatform-admin модерирует мастеров, записи, биллинг, платежи bePaid, рассылки и журнал — платформой можно рулить уже сейчас.\n\nЧто внутри\nЭто **крупная разработка**, не лендинг с формой. Фронт: React + TypeScript + Vite + Tailwind. Бэкенд: Express API, PostgreSQL (**88 миграций**), JWT-сессии. Прод: **два сервиса на Railway** (web + api), домен **slotty.of.by** — подсказали, где купить домен, подняли хостинг, привязали DNS и выкатили в бой. Плюс Telegram Bot / Mini App, Google Auth, email (Resend), карты (Leaflet / OSM, опционально Яндекс), платежи **bePaid** (BYN), Sentry, SEO-prerender.\n\nМаркетплейс для клиента: **6 категорий** (маникюр, барберы, брови/ресницы, массаж, фитнес, тату). Каталог — не «список карточек», а полноценный поиск: все / популярные / акции / новинки, текстовый поиск, **карта с геосортировкой**.\n\nФильтры: сортировка (рекомендации, популярность, ближайший слот, расстояние, рейтинг, цена ↑↓, отзывы); дата (сегодня / завтра / неделя / выходные / точный день); время суток и слайдер часов; визит в салоне или на дому; длительность; цена в BYN; рейтинг от 4.5 / 4.7 / 4.9; число отзывов; только верифицированные; только с акциями; только с онлайн-записью. Запись: дата → слот → комментарий → референс-фото → успех с кодом **SL-…**. Профиль клиента: записи, избранное, уведомления, настройки, отзыв после визита.\n\nКабинет мастера — отдельный SaaS: сегодня / заявки / расписание / услуги (каталог, цены, пакеты, акции) / профиль и портфолио / клиенты / репутация / биллинг / уведомления (десятки типов событий). Онбординг в **8 шагов**: категории → профиль → адрес на карте → услуги → доверие → превью → тариф. Тарифы: Free (лимиты) / Pro / trial 7 дней — оплата bePaid или ручной перевод.\n\nPlatform-admin: обзор, заявки (категории, удаления, спонсорство, жалобы), поддержка, статус системы, пользователи, мастера, услуги, записи (в т.ч. проблемные отмены), биллинг и промокоды, платежи bePaid, рассылки, аудит. Роли: **client / master / platform_admin**. Auth: email, Google, Telegram — с телефона и с компьютера.\n\nСложные куски, которые обычно «ломают» сроки: concurrent booking и слоты, pending expiry, auto-complete, споры по записи; entitlements Free/Pro; очередь уведомлений; multi-identity auth; серверный каталог с 20+ параметрами фильтра и Pro-boost в рекомендациях.\n\nЧто сделали\nДизайн + разработка под ключ: маркетплейс, кабинеты, админка, интеграции, домен и хостинг. Продукт на **slotty.of.by** — **скоро запуск к настоящим клиентам и мастерам**.\n\nИтог\nНе демо «посмотрите идею». **Полный маркетплейс записи** с фильтрами, картой, Mini App, SaaS мастера и platform-admin. Виктория Д., [[≈ 2 940 $]], 3 недели — и живой прод, куда можно зайти и проверить самому.\n",
       detailsEn: "Why it matters\nBooking a master still often lives in **DMs and WhatsApp**: “free tomorrow?”, “in an hour?”, “oops, forgot to remind”. Clients get tired of typing. Masters get tired of answering. Slots vanish into chat silence.\n\nThis wasn’t a draft or a “book now” button. It needed a **full marketplace**: filtered catalog, map, client path, master SaaS cabinet, roles, platform admin, payments, notifications and production. Client — **Victoria D.** Budget — 230,000 ₽ ([[≈ $2,940]]). Timeline — **3 weeks**.\n\nHow it works\nClient opens **slotty.of.by** (web or Telegram Mini App) → catalog → filters / map → master → service → **open slot** → confirm. Booking code, Telegram + email reminders — no calls.\nMasters run profile, portfolio, address, services, promos, schedule, requests and clients; Free or Pro plan.\nPlatform admin moderates masters, bookings, billing, bePaid payments, broadcasts and audit — the platform is operable now.\n\nWhat’s inside\nA **large build**, not a landing with a form. Frontend: React + TypeScript + Vite + Tailwind. Backend: Express API, PostgreSQL (**88 migrations**), JWT sessions. Production: **two Railway services** (web + api), domain **slotty.of.by** — we advised where to buy the domain, set up hosting, pointed DNS and shipped live. Plus Telegram Bot / Mini App, Google Auth, email (Resend), maps (Leaflet / OSM, optional Yandex), **bePaid** (BYN), Sentry, SEO prerender.\n\nClient marketplace: **6 categories** (manicure, barbers, brows/lashes, massage, fitness, tattoo). Catalog isn’t a flat card list — full search: all / popular / promos / new, text search, **map with geo sort**.\n\nFilters: sort (recommended, popular, soonest, distance, rating, price ↑↓, reviews); date (today / tomorrow / week / weekend / exact day); time of day + hour slider; studio or at-home; duration; BYN price; rating from 4.5 / 4.7 / 4.9; review count; verified only; promos only; online booking only. Booking: date → slot → comment → reference photos → success with code **SL-…**. Client profile: appointments, favorites, notifications, settings, post-visit review.\n\nMaster cabinet is a separate SaaS: today / requests / schedule / services (catalog, prices, bundles, promos) / profile & portfolio / clients / reputation / billing / notifications (dozens of event types). **8-step** onboarding: categories → profile → map address → services → trust → preview → plan. Plans: Free (limits) / Pro / 7-day trial — bePaid or manual transfer.\n\nPlatform admin: overview, requests (category changes, deletions, sponsorship, reports), support, system status, users, masters, services, bookings (incl. problem cancellations), billing & promo codes, bePaid payments, broadcasts, audit. Roles: **client / master / platform_admin**. Auth: email, Google, Telegram — phone or desktop.\n\nHard pieces that usually blow timelines: concurrent booking & slots, pending expiry, auto-complete, booking disputes; Free/Pro entitlements; notification job queue; multi-identity auth; server catalog with 20+ filter params and Pro boost in recommendations.\n\nWhat we delivered\nDesign + turnkey build: marketplace, cabinets, admin, integrations, domain and hosting. Live on **slotty.of.by** — **soon launching to real clients and masters**.\n\nOutcome\nNot a “look at the idea” demo. A **full booking marketplace** with filters, map, Mini App, master SaaS and platform admin. Victoria D., [[≈ $2,940]], 3 weeks — and a live prod you can open and check yourself.\n",
+      detailsZh: "为什么这很重要\n预订大师仍然经常存在于**DM和WhatsApp**中：“明天有空吗？”，“一个小时后？”，“哎呀，忘了提醒”。客户厌倦了打字。大师们厌倦了回答。老虎机消失在聊天的沉默中。\n\n这不是草稿或“立即预订”按钮。它需要一个**完整的市场**：过滤目录、地图、客户路径、主 SaaS 柜、角色、平台管理、支付、通知和生产。客户 — **Victoria D.** 预算 — 230,000 ₽ ([[≈ $2,940]])。时间表 — **3 周**。\n\n它是如何运作的\n客户端打开**slotty.of.by**（网络或Telegram迷你应用程序）→目录→过滤器/地图→主→服务→**打开插槽**→确认。预订代码、电报 + 电子邮件提醒 — 无需致电。\n大师运行简介、投资组合、地址、服务、促销、时间表、请求和客户；免费或专业计划。\n平台管理员负责管理、预订、计费、bePaid 付款、广播和审计——该平台现已可运行。\n\n里面有什么\n**大型建筑**，而不是带有形式的平台。前端：React + TypeScript + Vite + Tailwind。后端：Express API、PostgreSQL（**88 迁移**）、JWT 会话。生产：**两个铁路服务**（Web + API），域名**slotty.of.by** - 我们建议d 在哪里购买域名、设置托管、指向 DNS 并实时发货。加上 Telegram Bot / Mini App、Google Auth、电子邮件（重新发送）、地图（传单 / OSM、可选 Yandex）、**bePaid** (BYN)、Sentry、SEO 预渲染。\n\n客户市场：**6 个类别**（美甲、理发、眉毛/睫毛、按摩、健身、纹身）。目录不是平面卡片列表 - 完整搜索：所有/流行/促销/新，文本搜索，**带地理排序的地图**。\n\n过滤器：排序（推荐、热门、最快、距离、评分、价格↑↓、评论）；日期（今天/明天/周/周末/确切日期）；一天中的时间+小时滑块；工作室或家里；期间; BYN 价格；评分从 4.5 / 4.7 / 4.9 起；评论计数；仅经过验证；仅促销；仅限网上预订。预订：日期→时段→评论→参考照片→使用代码**SL-…**成功。客户资料：约会、收藏夹、通知、设置、访问后回顾。\n\n主柜是一个单独的 SaaS：今天/请求/时间表/服务（目录、价格、捆绑、促销）/配置文件和投资组合/客户/声誉/计费/通知（数十种事件类型）。 **8步**入职：类别→个人资料→地图地址→服务→信任→预览→计划。计划：免费（限制）/ Pro / 7 天试用 — 付费或手动转账。\n\n平台管理：概述、请求（类别更改、删除、赞助、报告）、支持、系统状态、用户、主、服务、预订（包括问题取消）、计费和促销代码、bePaid 付款、广播、审计。角色：**客户端/主控/平台管理员**。身份验证：电子邮件、Google、Telegram - 手机或桌面。\n\n通常会破坏时间线的困难部分：并发预订和时段、待到期、自动完成、预订争议；免费/专业版权利；通知作业队列；多重身份验证；具有 20 多个过滤器参数和专业增强推荐的服务器目录。\n\n我们交付了什么\n设计+交钥匙构建：市场、橱柜、管理、集成、域名和托管。在 **slotty.of.by** 上直播 — **即将向真正的客户和大师推出**。\n\n结果\n不是“看看这个想法”的演示。 **完整的预订市场**，包含过滤器、地图、迷你应用程序、主 SaaS 和平台管理。 Victoria D.，[[≈ $2,940]]，3 周 — 以及您可以自己打开并检查的实时产品。",
       domain: SLOTTY_DOMAIN,
       status: "live",
       tags: ["Marketplace", "Booking", "Beauty", "SaaS", "Telegram", "Admin Panel"],
@@ -5241,8 +6490,10 @@ function buildAllProjects(isRu) {
       title: "Spliton",
       subtitleRu: "Финтех-платформа для долей в музыке: каталог, первичный и вторичный рынок, кошелёк USDT, ledger, compliance и operator portal — продукт с инвестором и живым сопровождением.",
       subtitleEn: "Fintech platform for music shares: catalog, primary & secondary market, USDT wallet, ledger, compliance and operator portal — investor-backed product with ongoing support.",
+      subtitleZh: "音乐股票的金融科技平台：目录、一级和二级市场、USDT 钱包、账本、合规性和运营商门户——投资者支持的产品，并提供持续支持。",
       detailsRu: "Зачем это\nМузыкальные активы — не лендинг с кнопкой «купить». Здесь **реальные деньги**, роли, согласия, депозиты и выводы должны сходиться без дыр: confirm → processing → result. Один сбой на выплате или consent — и доверие кончается быстрее любого релиза.\n\nНужна была не «админка на коленке», а **полноценная биржа долей**: кабинет инвестора, operator portal, ledger, treasury, KYC/AML, споры, публичный trust center. Мы собрали это end-to-end — и **до сих пор сопровождаем** продукт в бою.\n\nКак работает\nИнвестор регистрируется, проходит согласия и при необходимости KYC, пополняет баланс в **USDT (TRC20)**.\nДальше: выбирает релиз в каталоге → изучает data room → покупает доли (UNT) на первичке → видит позиции и начисления в кабинете → при желании торгует на **вторичном рынке** (стакан, лимитные заявки) → выводит средства через проверку treasury.\nОператор ведёт депозиты, выводы, compliance, релизы, рефералов, споры и публичный статус системы — всё из admin-портала.\n\nЧто внутри\nЭто **крупный продукт в одном репозитории**, не одностраничный сайт. Клиентская часть на Next.js, сервер на NestJS, база PostgreSQL через Prisma, автотесты на критичные денежные сценарии.\n\nКабинет инвестора: каталог релизов, покупка долей, портфель и метрики, кошелёк (пополнение, вывод, история, выписки), **вторичный рынок со сложным биржевым стаканом** и лимитными заявками, калькулятор, новости, поддержка и центр споров, реферальная и партнёрская программы, VIP.\n\nПубличная часть: лендинг продукта, **центр доверия** (учёт операций, статус сервисов, документы), страница статуса системы, комиссии, юридические тексты, справочный центр.\n\nПортал оператора — отдельная **огромная админ-панель** для команды платформы: не пара экранов, а десятки разделов управления. Главный обзор, задачи операторов, пользователи и роли, треки и раунды, артисты, лейблы, жанры.\n\nФинансы: кошельки, пополнения, **выплаты**, позиции, доход и доход платформы, казначейство, платёжные реквизиты. Рынок: вторичный рынок, сделки, подозрительные операции. Операции: поддержка, споры, комплаенс, KYC, юридические тексты, рефералы и партнёры.\n\nАналитика с **графиками**: финансы, пользователи, треки, рынок, доход, риски, операции. Плюс отчёты и выгрузки, новости, справочный центр, статус системы, уведомления, журнал аудита действий сотрудников. Роли: супер-админ, бухгалтер, контент, поддержка, комплаенс, бизнес-аналитик.\n\nФинансовое ядро: внутренний учёт операций с двойной записью, сверки, комиссии платформы, автоматизация депозитов в сети TRON, политика горячего и холодного кошелька, регламенты инцидентов. Интерфейс на acid lime `#b7f500` — как в живом продукте.\n\nЯзыки: интерфейс полностью на **четырёх языках** — русский, английский, испанский, португальский.\n\nЧто сделали\nСпроектировали и собрали весь контур: дизайн, фронтенд, бэкенд, база, комплаенс, автотесты и продакшен-операции. Продукт запущен, в него зашёл инвестор на [[200 000 $]], платформа в работе — **TIVONIX продолжает поддержку и развитие**.\n\nИтог\nНе демо и не презентация. **Живая финтех-платформа** с кабинетом инвестора, сложной биржей долей и огромной админкой под выплаты, графики и операционное управление. Сопровождаем до сих пор.\n",
       detailsEn: "Why it matters\nMusic assets aren’t a landing page with a buy button. **Real money**, roles, consents, deposits and withdrawals have to lock without holes: confirm → processing → result. One payout or consent failure — and trust dies faster than any release.\n\nThis wasn’t a “quick admin”. It needed a **full share exchange**: investor cabinet, operator portal, ledger, treasury, KYC/AML, disputes, public trust center. We built it end-to-end — and **still support** it in production.\n\nHow it works\nAn investor signs up, accepts policies, completes KYC when required, and tops up in **USDT (TRC20)**.\nThen: pick a release in the catalog → review the data room → buy shares (UNT) on primary → track positions and accruals → optionally trade on the **secondary market** (order book, limit orders) → withdraw through treasury checks.\nOperators run deposits, withdrawals, compliance, releases, referrals, disputes and public system status — all from the admin portal.\n\nWhat’s inside\nA **large product in one repository**, not a single-page site. Client app on Next.js, server on NestJS, PostgreSQL via Prisma, automated tests on critical money flows.\n\nInvestor cabinet: release catalog, share purchase, portfolio and metrics, wallet (deposit, withdraw, history, statements), **secondary market with a complex order book** and limit orders, calculator, news, support and dispute center, referral and partner programs, VIP.\n\nPublic surface: product landing, **trust center** (operations ledger, service status, documents), system status page, fees, legal pages, help center.\n\nThe operator portal is a **huge admin panel** for the platform team: not a few screens, but dozens of management sections. Executive overview, operator tasks, users and roles, tracks and rounds, artists, labels, genres.\n\nFinance: wallets, deposits, **payouts**, holdings, revenue and platform revenue, treasury, payment requisites. Market: secondary market, trades, suspicious activity. Operations: support, disputes, compliance, KYC, legal texts, referrals and partners.\n\nAnalytics with **charts**: finance, users, tracks, market, revenue, risk, operations. Plus reports and exports, news, help center, system status, notifications, staff audit log. Roles: super admin, accountant, content, support, compliance, business analyst.\n\nFinancial core: internal double-entry operations ledger, reconciliation, platform fees, TRON deposit automation, hot/cold wallet policy, incident runbooks. Interface on acid lime `#b7f500` — matching the live product.\n\nLanguages: the interface is fully localized in **four languages** — Russian, English, Spanish, Portuguese.\n\nWhat we delivered\nDesigned and shipped the full loop: design, frontend, backend, database, compliance, automated tests and production ops. The product is live, backed by an investor at [[$200,000]], and **TIVONIX still supports and evolves** it.\n\nOutcome\nNot a demo and not a deck. A **live fintech platform** with an investor cabinet, a complex share exchange and a huge admin for payouts, charts and day-to-day operations. Still supported.\n",
+      detailsZh: "为什么这很重要\n音乐资产不是带有购买按钮的登陆页面。 **真实货币**，角色、同意、存款和取款必须无漏洞锁定：确认→处理→结果。一旦付款或同意失败，信任就会比任何释放更快地消失。\n\n这不是一个“快速管理”。它需要**完整的股份交换**：投资者内阁、运营商门户、账本、财务、KYC/AML、争议、公共信任中心。我们端到端地构建了它，并且**仍然在生产中支持**它。\n\n它是如何运作的\n投资者注册、接受保单、在需要时完成 KYC，并充值 **USDT (TRC20)**。\n然后：在目录中选择一个版本→审查数据室→在主要市场购买股票（UNT）→跟踪头寸和应计费用→可选择在**二级市场**（订单簿、限价订单）进行交易→通过财务检查提取。\n运营商可以通过管理门户管理存款、取款、合规、发布、推荐、争议和公共系统状态。\n\n里面有什么\n**一个存储库中的大型产品**，而不是单页网站。 Next.js 上的客户端应用程序，NestJS 上的服务器，通过 Prisma 的 PostgreSQL，对关键资金流的自动测试。\n\n投资者柜：发布目录、股份申购、投资tfolio 和指标、钱包（存款、取款、历史记录、报表）、**具有复杂订单簿**和限价订单的二级市场、计算器、新闻、支持和争议中心、推荐和合作伙伴计划、VIP。\n\n公共面：产品登陆、**信任中心**（运营账本、服务状态、文档）、系统状态页面、费用、法律页面、帮助中心。\n\n运营商门户对于平台团队来说是一个**巨大的管理面板**：不是几个屏幕，而是数十个管理部分。执行概述、操作员任务、用户和角色、曲目和回合、艺术家、唱片公司、流派。\n\n金融：钱包、存款、**支出**、持有、收入和平台收入、金库、支付必需品。市场：二级市场、交易、可疑活动。运营：支持、争议、合规、KYC、法律文本、推荐和合作伙伴。\n\n使用**图表**进行分析：财务、用户、轨迹、市场、收入、风险、运营。加上报告和导出、新闻、帮助中心、系统状态、通知、员工审核日志。角色：超级管理员、会计师、内容、支持、合规、业务分析师。\n\n财务核心：内部复式记账操作账本、对账、平台费用、波场充值自动化、热/冷钱包政策、事件操作手册。酸性石灰“#b7f500”上的界面 — 与实时产品匹配。\n\n语言：界面完全本地化为**四种语言**——俄语、英语、西班牙语、葡萄牙语。\n\n我们交付了什么\n设计并交付完整的循环：设计、前端、后端、数据库、合规性、自动化测试和生产操作。该产品已上线，由 [[200,000 美元]] 的投资者支持，**TIVONIX 仍然支持并发展**它。\n\n结果\n不是演示，也不是套牌。一个**实时金融科技平台**，拥有投资者内阁、复杂的股票交易所以及庞大的支付、图表和日常运营管理系统。还是支持的。",
       domain: SPLITON_DOMAIN,
       status: "live",
       tags: [
@@ -5305,6 +6556,14 @@ function findProjectBySlug(slug, isRu) {
   if (!slug) return void 0;
   return buildProjects(isRu).find((p) => p.id === slug);
 }
+function projectSubtitle(p, lang) {
+  if (lang === "zh") return p.subtitleZh ?? p.subtitleEn;
+  return lang === "ru" ? p.subtitleRu : p.subtitleEn;
+}
+function projectDetails(p, lang) {
+  if (lang === "zh") return p.detailsZh ?? p.detailsEn;
+  return lang === "ru" ? p.detailsRu : p.detailsEn;
+}
 function useInView(ref, options) {
   const [inView, setInView] = useState(false);
   useEffect(() => {
@@ -5327,15 +6586,15 @@ function cx$a(...parts) {
 }
 function FeaturedCaseSlide({
   item,
-  isRu,
+  lang,
   copy,
   active
 }) {
-  const project = findProjectBySlug(item.id, isRu);
+  const project = findProjectBySlug(item.id, lang === "ru");
   if (!project) return null;
-  const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
+  const subtitle = projectSubtitle(project, lang);
   const cover = project.cover ?? "";
-  const href = pathForLang(`/projects/${project.id}`, isRu ? "ru" : "en");
+  const href = pathForLang(`/projects/${project.id}`, lang);
   return /* @__PURE__ */ jsxs(
     "article",
     {
@@ -5496,7 +6755,7 @@ function FeaturedProjectsSection() {
                 FeaturedCaseSlide,
                 {
                   item: slide,
-                  isRu,
+                  lang,
                   copy,
                   active: i === index
                 },
@@ -7583,7 +8842,7 @@ const PLAN_TAGS = {
   start: { ru: "Заявки", en: "Leads" },
   growth: { ru: "Система", en: "System" },
   product: { ru: "Продукт", en: "Product" },
-  custom: { ru: "Масштаб", en: "Scale" }
+  custom: { ru: "Масштаб", en: "Scale", zh: "定制" }
 };
 function clamp01$1(v) {
   return Math.min(1, Math.max(0, v));
@@ -7672,7 +8931,7 @@ function HomePricingSection() {
         /* @__PURE__ */ jsx("div", { className: "home-plan-grid mt-10", children: GRID_PLANS.map(({ id, img, footRu, footEn }, i) => {
           const plan = pricing.plans[id];
           const popular = id === "growth";
-          const tag = PLAN_TAGS[id][isRu ? "ru" : "en"];
+          const tag = PLAN_TAGS[id][lang];
           const isCustom = id === "custom";
           return /* @__PURE__ */ jsx(Reveal$1, { delay: i * 45, className: "home-plan-grid__cell", children: /* @__PURE__ */ jsxs(
             "article",
@@ -7739,7 +8998,7 @@ function HomePricingSection() {
                             });
                             openLeadForm("pricing", { planId: id });
                           },
-                          children: isRu ? "Разобрать мой процесс" : "Map my process"
+                          children: lang === "zh" ? "梳理我的流程" : isRu ? "Разобрать мой процесс" : "Map my process"
                         }
                       )
                     ] })
@@ -7774,7 +9033,7 @@ function HomePricingSection() {
           /* @__PURE__ */ jsx("div", { className: "home-plan-card__veil home-plan-card__veil--wide", "aria-hidden": true }),
           /* @__PURE__ */ jsxs("div", { className: "home-plan-enterprise__inner", children: [
             /* @__PURE__ */ jsxs("div", { className: "home-plan-enterprise__copy", children: [
-              /* @__PURE__ */ jsx("span", { className: "home-plan-card__tag", children: PLAN_TAGS.custom[isRu ? "ru" : "en"] }),
+              /* @__PURE__ */ jsx("span", { className: "home-plan-card__tag", children: PLAN_TAGS.custom[lang] }),
               /* @__PURE__ */ jsx("h3", { className: "home-plan-enterprise__name", children: custom.name }),
               /* @__PURE__ */ jsx("p", { className: "home-plan-enterprise__desc", children: custom.desc })
             ] }),
@@ -7968,7 +9227,7 @@ function FounderSection() {
           /* @__PURE__ */ jsx(
             Link,
             {
-              to: lang === "en" ? "/en" : "/",
+              to: lang === "en" ? "/en" : lang === "zh" ? "/zh" : "/",
               className: "mb-8 inline-flex justify-center sm:mb-10",
               "aria-label": "TIVONIX",
               children: /* @__PURE__ */ jsx(
@@ -8169,69 +9428,112 @@ function HomeTestimonialsSection() {
 const FAQ_ITEMS = [
   {
     id: "price",
-    q: { ru: "Сколько стоит разработка?", en: "How much does development cost?" },
+    q: {
+      ru: "Сколько стоит разработка?",
+      en: "How much does development cost?",
+      zh: "开发费用是多少？"
+    },
     a: {
       ru: "Стоимость зависит от экранов, ролей, интеграций и бизнес-логики. После разбора задачи отправляем предварительный план, срок и диапазон стоимости. До старта фиксируем объём.",
-      en: "Cost depends on screens, roles, integrations and business logic. After reviewing the task we send a preliminary plan, timeline and cost range. Scope is locked before we start."
+      en: "Cost depends on screens, roles, integrations and business logic. After reviewing the task we send a preliminary plan, timeline and cost range. Scope is locked before we start.",
+      zh: "费用取决于页面数量、角色、集成与业务逻辑。梳理需求后，我们会发送初步方案、周期与费用区间。开工前锁定范围。"
     }
   },
   {
     id: "time",
-    q: { ru: "Сколько занимает запуск?", en: "How long does a launch take?" },
+    q: {
+      ru: "Сколько занимает запуск?",
+      en: "How long does a launch take?",
+      zh: "上线需要多久？"
+    },
     a: {
       ru: "Start — от 7 рабочих дней, Growth — от 2 недель, Product — от 4 недель. Срок зависит от объёма и скорости согласований.",
-      en: "Start — from 7 business days, Growth — from 2 weeks, Product — from 4 weeks. Timeline depends on scope and how fast decisions are made."
+      en: "Start — from 7 business days, Growth — from 2 weeks, Product — from 4 weeks. Timeline depends on scope and how fast decisions are made.",
+      zh: "Start — 起 7 个工作日，Growth — 起 2 周，Product — 起 4 周。周期取决于范围与确认速度。"
     }
   },
   {
     id: "pay",
-    q: { ru: "Как проходит оплата?", en: "How does payment work?" },
+    q: {
+      ru: "Как проходит оплата?",
+      en: "How does payment work?",
+      zh: "如何付款？"
+    },
     a: {
       ru: "Работаем по этапам. Сначала согласуем объём и стоимость этапа, затем оплата и старт. Полный сложный SaaS не входит автоматически в базовый Product.",
-      en: "We work in stages. First we agree on stage scope and cost, then payment and start. A full complex SaaS is not automatically included in the base Product plan."
+      en: "We work in stages. First we agree on stage scope and cost, then payment and start. A full complex SaaS is not automatically included in the base Product plan.",
+      zh: "按阶段合作。先确认阶段范围与费用，再付款开工。完整复杂 SaaS 不会自动包含在基础 Product 方案中。"
     }
   },
   {
     id: "small",
-    q: { ru: "Можно ли начать с небольшой версии?", en: "Can we start with a small version?" },
+    q: {
+      ru: "Можно ли начать с небольшой версии?",
+      en: "Can we start with a small version?",
+      zh: "可以从小版本开始吗？"
+    },
     a: {
       ru: "Да. Часто лучше начать с лендинга, бота, формы и уведомлений, а потом добавить CRM, кабинет или интеграции.",
-      en: "Yes. Often it’s better to start with a landing page, bot, form and alerts, then add CRM, a portal or integrations."
+      en: "Yes. Often it’s better to start with a landing page, bot, form and alerts, then add CRM, a portal or integrations.",
+      zh: "可以。通常更好先从落地页、机器人、表单与通知开始，再加 CRM、客户后台或集成。"
     }
   },
   {
     id: "source",
-    q: { ru: "Кто получает исходники и доступы?", en: "Who gets the source code and access?" },
+    q: {
+      ru: "Кто получает исходники и доступы?",
+      en: "Who gets the source code and access?",
+      zh: "谁获得源代码与权限？"
+    },
     a: {
       ru: "Исходный код и доступы передаются клиенту. Условия передачи фиксируем до старта этапа.",
-      en: "Source code and access are handed over to the client. Handover terms are fixed before the stage starts."
+      en: "Source code and access are handed over to the client. Handover terms are fixed before the stage starts.",
+      zh: "源代码与权限移交给客户。移交条款在阶段开始前确认。"
     }
   },
   {
     id: "after",
-    q: { ru: "Что происходит после запуска?", en: "What happens after launch?" },
+    q: {
+      ru: "Что происходит после запуска?",
+      en: "What happens after launch?",
+      zh: "上线之后会怎样？"
+    },
     a: {
       ru: "Проверяем ключевые сценарии, передаём инструкции. Выявленные ошибки исправляем в рамках согласованной гарантии. Дальнейшая поддержка обсуждается отдельно.",
-      en: "We check key flows and hand over instructions. Issues found are fixed within the agreed warranty. Ongoing support is discussed separately."
+      en: "We check key flows and hand over instructions. Issues found are fixed within the agreed warranty. Ongoing support is discussed separately.",
+      zh: "我们校验关键流程并移交说明。发现问题在约定保修范围内修复。后续支持另行商议。"
     }
   },
   {
     id: "existing",
-    q: { ru: "Работаете ли вы с существующим проектом?", en: "Do you work with an existing project?" },
+    q: {
+      ru: "Работаете ли вы с существующим проектом?",
+      en: "Do you work with an existing project?",
+      zh: "可以在现有项目上继续吗？"
+    },
     a: {
       ru: "Да. Можем доработать сайт, подключить Telegram, CRM, статусы, кабинет или автоматизацию к уже запущенному продукту.",
-      en: "Yes. We can extend a site, connect Telegram, CRM, statuses, a portal or automation to a product already live."
+      en: "Yes. We can extend a site, connect Telegram, CRM, statuses, a portal or automation to a product already live.",
+      zh: "可以。我们能在已上线产品上扩展网站、对接 Telegram、CRM、状态、客户后台或自动化。"
     }
   },
   {
     id: "start",
-    q: { ru: "Как начать работу?", en: "How do we start?" },
+    q: {
+      ru: "Как начать работу?",
+      en: "How do we start?",
+      zh: "如何开始合作？"
+    },
     a: {
       ru: "Опишите задачу в форме на сайте. Мы разберём её и ответим в течение рабочего дня с планом и диапазоном стоимости. Созвон не обязателен.",
-      en: "Describe the task in the site form. We’ll review it and reply within a business day with a plan and cost range. A call is optional."
+      en: "Describe the task in the site form. We’ll review it and reply within a business day with a plan and cost range. A call is optional.",
+      zh: "在网站表单中描述需求。我们会在一个工作日内回复方案与费用区间。通话非必须。"
     }
   }
 ];
+function pickFaq(lang, map) {
+  return map[lang];
+}
 function FaqRow({
   item,
   open,
@@ -8240,8 +9542,8 @@ function FaqRow({
 }) {
   const panelId = useId();
   const buttonId = useId();
-  const q = lang === "ru" ? item.q.ru : item.q.en;
-  const a = lang === "ru" ? item.a.ru : item.a.en;
+  const q = pickFaq(lang, item.q);
+  const a = pickFaq(lang, item.a);
   return /* @__PURE__ */ jsxs("div", { className: `home-faq__item${open ? " is-open" : ""}`, children: [
     /* @__PURE__ */ jsx("h3", { className: "m-0", children: /* @__PURE__ */ jsxs(
       "button",
@@ -8281,7 +9583,7 @@ function FaqRow({
 function FAQSection() {
   const { lang } = useLang();
   const [openId, setOpenId] = useState(FAQ_ITEMS[0]?.id ?? null);
-  const title = lang === "ru" ? "Частые вопросы" : "FAQ";
+  const title = t3(lang, "Частые вопросы", "FAQ", "常见问题");
   return /* @__PURE__ */ jsx(
     Section,
     {
@@ -8295,7 +9597,7 @@ function FAQSection() {
             item,
             lang,
             open: openId === item.id,
-            onToggle: () => setOpenId((prev) => prev === item.id ? null : item.id)
+            onToggle: () => setOpenId((cur) => cur === item.id ? null : item.id)
           },
           item.id
         )) })
@@ -8462,16 +9764,16 @@ const LOGO_LOCKUP_PNG = "/images/tivonix-logo-lockup.webp";
 const FOOTER_BG = `/images/${encodeURI("как рабоает")}/${encodeURI("футер.webp")}`;
 const SELL_IMG = "/images/footer-sell.webp";
 const FOOTER_PAGES = [
-  { to: "/", label: { ru: "Главная", en: "Home" } },
-  { to: "/plans", label: { ru: "Тарифы", en: "Pricing" } },
-  { to: "/about", label: { ru: "О компании", en: "About" } },
-  { to: "/contacts", label: { ru: "Контакты", en: "Contacts" } }
+  { to: "/", label: { ru: "Главная", en: "Home", zh: "首页" } },
+  { to: "/plans", label: { ru: "Тарифы", en: "Pricing", zh: "方案价格" } },
+  { to: "/about", label: { ru: "О компании", en: "About", zh: "关于我们" } },
+  { to: "/contacts", label: { ru: "Контакты", en: "Contacts", zh: "联系方式" } }
 ];
 const FOOTER_SERVICES = [
-  { to: "/sozdanie-sajtov", label: { ru: "Создание сайтов", en: "Website development" } },
-  { to: "/avtomatizaciya-biznesa", label: { ru: "Автоматизация", en: "Automation" } },
-  { to: "/#ai", label: { ru: "AI в продуктах", en: "AI in products" } },
-  { to: "/#process", label: { ru: "Как мы работаем", en: "How we work" } }
+  { to: "/sozdanie-sajtov", label: { ru: "Создание сайтов", en: "Website development", zh: "网站开发" } },
+  { to: "/avtomatizaciya-biznesa", label: { ru: "Автоматизация", en: "Automation", zh: "业务自动化" } },
+  { to: "/#ai", label: { ru: "AI в продуктах", en: "AI in products", zh: "产品中的 AI" } },
+  { to: "/#process", label: { ru: "Как мы работаем", en: "How we work", zh: "我们如何协作" } }
 ];
 const FOOTER_MAILTO_URL = `mailto:${CONTACT_EMAIL}`;
 const FOOTER_CONNECT = [
@@ -8502,6 +9804,18 @@ const DOCS = {
       href: "/doc/Consent_Tivonix_EN.pdf",
       label: "Consent",
       aria: "Consent to personal data processing (PDF)"
+    }
+  ],
+  zh: [
+    {
+      href: "/doc/Privacy_Policy_Tivonix_EN.pdf",
+      label: "隐私政策",
+      aria: "隐私政策（PDF）"
+    },
+    {
+      href: "/doc/Consent_Tivonix_EN.pdf",
+      label: "同意书",
+      aria: "个人信息处理同意书（PDF）"
     }
   ]
 };
@@ -8584,7 +9898,7 @@ function Footer() {
   const isRu = lang === "ru";
   const sellRef = useRef(null);
   const sellWordRef = useRef(null);
-  const t = (v) => isRu ? v.ru : v.en;
+  const t = (v) => lang === "zh" ? v.zh ?? v.en : isRu ? v.ru : v.en;
   useEffect(() => {
     const sell = sellRef.current;
     const word = sellWordRef.current;
@@ -8612,7 +9926,7 @@ function Footer() {
     void document.fonts?.ready?.then(fit);
     return () => ro.disconnect();
   }, []);
-  const docs = isRu ? DOCS.ru : DOCS.en;
+  const docs = lang === "zh" ? DOCS.zh : isRu ? DOCS.ru : DOCS.en;
   const projects = buildProjects(isRu).slice(0, 5);
   const year = (/* @__PURE__ */ new Date()).getFullYear();
   return /* @__PURE__ */ jsx(
@@ -8643,7 +9957,7 @@ function Footer() {
                 {
                   to: "/",
                   className: "site-footer__logo focus:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg",
-                  "aria-label": isRu ? "На главную" : "Home",
+                  "aria-label": t3(lang, "На главную", "Home", "返回首页"),
                   children: /* @__PURE__ */ jsx(
                     "img",
                     {
@@ -8658,8 +9972,8 @@ function Footer() {
                   )
                 }
               ),
-              /* @__PURE__ */ jsx("h2", { className: "site-footer__touch-title", children: isRu ? "Связаться" : "Get in touch" }),
-              /* @__PURE__ */ jsx("p", { className: "site-footer__touch-lead", children: isRu ? "Ваш техпартнёр по сайтам, ботам и CRM" : "Your tech partner for sites, bots and CRM" }),
+              /* @__PURE__ */ jsx("h2", { className: "site-footer__touch-title", children: t3(lang, "Связаться", "Get in touch", "联系我们") }),
+              /* @__PURE__ */ jsx("p", { className: "site-footer__touch-lead", children: t3(lang, "Ваш техпартнёр по сайтам, ботам и CRM", "Your tech partner for sites, bots and CRM", "您的网站、机器人与 CRM 技术伙伴") }),
               /* @__PURE__ */ jsxs("a", { href: FOOTER_MAILTO_URL, className: "site-footer__touch-row", children: [
                 /* @__PURE__ */ jsx(Mail, { className: "site-footer__touch-row-icon", strokeWidth: 2, "aria-hidden": true }),
                 /* @__PURE__ */ jsx("span", { children: CONTACT_EMAIL })
@@ -8677,12 +9991,12 @@ function Footer() {
                   ]
                 }
               ),
-              /* @__PURE__ */ jsx("div", { className: "site-footer__actions", children: /* @__PURE__ */ jsx(LeadCTAButton, { source: "footer", variant: "primary", className: "site-footer__action-btn", children: isRu ? "Обсудить проект" : "Discuss a project" }) }),
+              /* @__PURE__ */ jsx("div", { className: "site-footer__actions", children: /* @__PURE__ */ jsx(LeadCTAButton, { source: "footer", variant: "primary", className: "site-footer__action-btn", children: t3(lang, "Обсудить проект", "Discuss a project", "沟通项目") }) }),
               /* @__PURE__ */ jsx(
                 "nav",
                 {
                   className: "site-footer__social",
-                  "aria-label": isRu ? "Соцсети и почта" : "Social and email",
+                  "aria-label": t3(lang, "Соцсети и почта", "Social and email", "社交与邮箱"),
                   children: FOOTER_CONNECT.map((item) => /* @__PURE__ */ jsx(
                     SocialIconLink,
                     {
@@ -8697,16 +10011,16 @@ function Footer() {
               )
             ] }),
             /* @__PURE__ */ jsxs("div", { className: "site-footer__grid", children: [
-              /* @__PURE__ */ jsx(ColNav, { id: "footer-pages", title: isRu ? "Компания" : "Company", children: FOOTER_PAGES.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: pathForLang(i.to, lang), children: t(i.label) }) }, i.to)) }),
-              /* @__PURE__ */ jsx(ColNav, { id: "footer-services", title: isRu ? "Услуги" : "Services", children: FOOTER_SERVICES.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(
+              /* @__PURE__ */ jsx(ColNav, { id: "footer-pages", title: t3(lang, "Компания", "Company", "公司"), children: FOOTER_PAGES.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: pathForLang(i.to, lang), children: t(i.label) }) }, i.to)) }),
+              /* @__PURE__ */ jsx(ColNav, { id: "footer-services", title: t3(lang, "Услуги", "Services", "服务"), children: FOOTER_SERVICES.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(
                 FooterLink,
                 {
-                  to: i.to.startsWith("/#") ? `${lang === "en" ? "/en" : "/"}${i.to.slice(1)}` : pathForLang(i.to, lang),
+                  to: i.to.startsWith("/#") ? `${lang === "en" ? "/en" : lang === "zh" ? "/zh" : "/"}${i.to.slice(1)}` : pathForLang(i.to, lang),
                   children: t(i.label)
                 }
               ) }, i.to)) }),
-              /* @__PURE__ */ jsxs(ColNav, { id: "footer-work", title: isRu ? "Кейсы" : "Cases", children: [
-                /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: pathForLang("/projects", lang), children: isRu ? "Все проекты" : "All projects" }) }),
+              /* @__PURE__ */ jsxs(ColNav, { id: "footer-work", title: t3(lang, "Кейсы", "Cases", "案例"), children: [
+                /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: pathForLang("/projects", lang), children: t3(lang, "Все проекты", "All projects", "全部项目") }) }),
                 projects.map((p) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: pathForLang(`/projects/${p.id}`, lang), children: p.title }) }, p.id))
               ] })
             ] })
@@ -8716,9 +10030,9 @@ function Footer() {
               "TIVONIX © ",
               year,
               /* @__PURE__ */ jsx("span", { className: "site-footer__copy-sep", "aria-hidden": true, children: "|" }),
-              isRu ? "Все права защищены" : "All rights reserved"
+              t3(lang, "Все права защищены", "All rights reserved", "版权所有")
             ] }) }),
-            /* @__PURE__ */ jsx("nav", { className: "site-footer__legal-nav", "aria-label": isRu ? "Документы" : "Legal", children: docs.map((d) => /* @__PURE__ */ jsx(ExternalLink, { href: d.href, newTab: true, "aria-label": d.aria, children: d.label }, d.href)) })
+            /* @__PURE__ */ jsx("nav", { className: "site-footer__legal-nav", "aria-label": t3(lang, "Документы", "Legal", "法律文件"), children: docs.map((d) => /* @__PURE__ */ jsx(ExternalLink, { href: d.href, newTab: true, "aria-label": d.aria, children: d.label }, d.href)) })
           ] }),
           /* @__PURE__ */ jsxs(
             "div",
@@ -8729,7 +10043,7 @@ function Footer() {
                 ["--footer-sell-img"]: `url(${JSON.stringify(SELL_IMG)})`
               },
               children: [
-                /* @__PURE__ */ jsx("p", { className: "site-footer__sell-kicker", children: isRu ? "Ваш техпартнёр" : "Your tech partner" }),
+                /* @__PURE__ */ jsx("p", { className: "site-footer__sell-kicker", children: t3(lang, "Ваш техпартнёр", "Your tech partner", "您的技术伙伴") }),
                 /* @__PURE__ */ jsx("p", { className: "site-footer__sell-word", ref: sellWordRef, "aria-label": "TIVONIX", children: "tivonix" })
               ]
             }
@@ -8743,7 +10057,7 @@ const CANONICAL_ORIGIN$1 = "https://tivonix.tech";
 const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN$1}/images/og-social.jpg`;
 const OG_IMAGE_WIDTH = "1200";
 const OG_IMAGE_HEIGHT = "630";
-const OG_IMAGE_ALT = "TIVONIX AI — сайты, боты и автоматизация для бизнеса";
+const OG_IMAGE_ALT = "TIVONIX — websites, bots and automation for business";
 function SEO({
   title,
   description,
@@ -8751,18 +10065,25 @@ function SEO({
   ogImage = DEFAULT_OG_IMAGE,
   ogType = "website",
   schemaJsonLd,
-  ogLocalePrimary = "ru_RU"
+  ogLocalePrimary = "ru_RU",
+  hreflang = false
 }) {
   const canonicalUrl = canonicalPath.startsWith("http") ? canonicalPath : `${CANONICAL_ORIGIN$1}${canonicalPath.startsWith("/") ? "" : "/"}${canonicalPath}`;
-  const ogLocaleAlt = ogLocalePrimary === "ru_RU" ? "en_US" : "ru_RU";
-  return /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsxs(Helmet, { children: [
+  const alts = ogLocalePrimary === "ru_RU" ? ["en_US", "zh_CN"] : ogLocalePrimary === "en_US" ? ["ru_RU", "zh_CN"] : ["ru_RU", "en_US"];
+  const hrefs = hreflang ? hreflangPair(canonicalPath) : null;
+  return /* @__PURE__ */ jsxs(Helmet, { children: [
     /* @__PURE__ */ jsx("title", { children: title }),
     /* @__PURE__ */ jsx("meta", { name: "description", content: description }),
     /* @__PURE__ */ jsx("link", { rel: "canonical", href: canonicalUrl }),
+    hrefs ? /* @__PURE__ */ jsx("link", { rel: "alternate", hrefLang: "ru", href: hrefs.ru }) : null,
+    hrefs ? /* @__PURE__ */ jsx("link", { rel: "alternate", hrefLang: "en", href: hrefs.en }) : null,
+    hrefs ? /* @__PURE__ */ jsx("link", { rel: "alternate", hrefLang: "zh", href: hrefs.zh }) : null,
+    hrefs ? /* @__PURE__ */ jsx("link", { rel: "alternate", hrefLang: "zh-CN", href: hrefs.zh }) : null,
+    hrefs ? /* @__PURE__ */ jsx("link", { rel: "alternate", hrefLang: "x-default", href: hrefs.xDefault }) : null,
     /* @__PURE__ */ jsx("meta", { property: "og:type", content: ogType }),
     /* @__PURE__ */ jsx("meta", { property: "og:site_name", content: "TIVONIX" }),
     /* @__PURE__ */ jsx("meta", { property: "og:locale", content: ogLocalePrimary }),
-    /* @__PURE__ */ jsx("meta", { property: "og:locale:alternate", content: ogLocaleAlt }),
+    alts.map((loc) => /* @__PURE__ */ jsx("meta", { property: "og:locale:alternate", content: loc }, loc)),
     /* @__PURE__ */ jsx("meta", { property: "og:title", content: title }),
     /* @__PURE__ */ jsx("meta", { property: "og:description", content: description }),
     /* @__PURE__ */ jsx("meta", { property: "og:url", content: canonicalUrl }),
@@ -8783,7 +10104,7 @@ function SEO({
     /* @__PURE__ */ jsx("meta", { name: "twitter:image", content: ogImage }),
     /* @__PURE__ */ jsx("meta", { name: "twitter:image:alt", content: OG_IMAGE_ALT }),
     schemaJsonLd != null ? /* @__PURE__ */ jsx("script", { type: "application/ld+json", children: JSON.stringify(schemaJsonLd) }) : null
-  ] }) });
+  ] });
 }
 function buildHomePageSchema({ pageTitle, pageDescription }) {
   return {
@@ -8994,8 +10315,7 @@ function LandingPage() {
   const { dict, lang } = useLang();
   const { pathname } = useLocation();
   const seo = homePageSeoFromDict(dict);
-  const isEnPath = pathname === "/en" || pathname.startsWith("/en/");
-  const canonicalPath = isEnPath ? "/en" : "/";
+  const canonicalPath = pathname === "/zh" || pathname.startsWith("/zh/") ? "/zh" : pathname === "/en" || pathname.startsWith("/en/") ? "/en" : "/";
   const schemaJsonLd = buildHomePageSchema({
     pageTitle: seo.title,
     pageDescription: seo.description
@@ -9008,7 +10328,7 @@ function LandingPage() {
         description: seo.description,
         canonicalPath,
         schemaJsonLd,
-        ogLocalePrimary: lang === "en" ? "en_US" : "ru_RU",
+        ogLocalePrimary: lang === "zh" ? "zh_CN" : lang === "en" ? "en_US" : "ru_RU",
         hreflang: true
       }
     ),
@@ -9541,7 +10861,7 @@ function ProjectGridCard({ p, isRu, lang }) {
   const wip = p.status === "wip";
   const domainClean = p.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "");
   const productType = p.tags[0] ?? (isRu ? "Проект" : "Project");
-  const subtitle = isRu ? p.subtitleRu : p.subtitleEn;
+  const subtitle = projectSubtitle(p, lang);
   const role = isRu ? "Роль TIVONIX: дизайн и разработка" : "TIVONIX role: design & development";
   const href = pathForLang(`/projects/${p.id}`, lang);
   return /* @__PURE__ */ jsxs("article", { className: "group min-w-0", children: [
@@ -9593,6 +10913,7 @@ function ProjectsPage() {
   const { pathname } = useLocation();
   const isRu = lang === "ru";
   const isEnPath = pathname.startsWith("/en");
+  pathname.startsWith("/zh");
   const [activeFilter, setActiveFilter] = useState(ALL_FILTER);
   const leadCopy = leadFormCopy(lang);
   useEffect(() => {
@@ -10460,7 +11781,12 @@ function parseCaseBody(text) {
       para.push(L);
       i++;
     }
-    if (para.length) blocks.push({ type: "prose", paragraphs: para });
+    if (para.length) {
+      blocks.push({ type: "prose", paragraphs: para });
+    } else {
+      blocks.push({ type: "prose", paragraphs: [line] });
+      i++;
+    }
   }
   return blocks;
 }
@@ -10542,9 +11868,8 @@ function MoreLikeThis({
   ] });
 }
 function MoreProjectCard({ project, lang }) {
-  const isRu = lang === "ru";
   const cover = projectPreviewSrc(project);
-  const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
+  const subtitle = projectSubtitle(project, lang);
   return /* @__PURE__ */ jsxs(Link, { to: pathForLang(`/projects/${project.id}`, lang), className: "group block min-w-0 outline-none", children: [
     /* @__PURE__ */ jsx("div", { className: "relative aspect-[16/10] w-full overflow-hidden rounded-[12px] bg-[#141416]", children: /* @__PURE__ */ jsx(
       "img",
@@ -10575,26 +11900,36 @@ function ProjectDetailPage() {
   useEffect(() => {
     if (project?.id) trackProjectView(project.id);
   }, [project?.id]);
-  const backLabel = isRu ? "Все проекты" : "All projects";
-  const stackLabel = isRu ? "Стек" : "Stack";
-  const domainLabel = isRu ? "Домен" : "Domain";
-  const statusLabel = isRu ? "Статус" : "Status";
-  const tagsLabel = isRu ? "Теги" : "Tags";
-  const liveLabel = isRu ? "В продакшене" : "Live";
-  const wipLabel = isRu ? "В разработке" : "In progress";
-  const openSiteLabel = isRu ? "Открыть сайт" : "Open website";
-  const websiteSoonLabel = isRu ? "Сайт скоро" : "Website soon";
-  const roleLabel = isRu ? "Роль TIVONIX" : "TIVONIX role";
-  const roleValue = isRu ? "Дизайн и разработка под ключ" : "End-to-end design and development";
-  const detailsLabel = isRu ? "Подробнее" : "Details";
+  const backLabel = t3(lang, "Все проекты", "All projects", "全部项目");
+  const stackLabel = t3(lang, "Стек", "Stack", "技术栈");
+  const domainLabel = t3(lang, "Домен", "Domain", "域名");
+  const statusLabel = t3(lang, "Статус", "Status", "状态");
+  const tagsLabel = t3(lang, "Теги", "Tags", "标签");
+  const liveLabel = t3(lang, "В продакшене", "Live", "已上线");
+  const wipLabel = t3(lang, "В разработке", "In progress", "开发中");
+  const openSiteLabel = t3(lang, "Открыть сайт", "Open website", "打开网站");
+  const websiteSoonLabel = t3(lang, "Сайт скоро", "Website soon", "网站即将上线");
+  const roleLabel = t3(lang, "Роль TIVONIX", "TIVONIX role", "TIVONIX 角色");
+  const roleValue = t3(
+    lang,
+    "Дизайн и разработка под ключ",
+    "End-to-end design and development",
+    "端到端设计与开发"
+  );
+  const detailsLabel = t3(lang, "Подробнее", "Details", "详情");
   if (!slug) return /* @__PURE__ */ jsx(Navigate, { to: pathForLang("/projects", lang), replace: true });
   if (!project) return /* @__PURE__ */ jsx(Navigate, { to: pathForLang("/projects", lang), replace: true });
-  const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
-  const details = isRu ? project.detailsRu : project.detailsEn;
+  const subtitle = projectSubtitle(project, lang);
+  const details = projectDetails(project, lang);
   const mood = caseSystem ? isRu ? caseSystem.moodRu : caseSystem.moodEn : null;
-  const seoTitle = `${project.title} — ${isRu ? "кейс TIVONIX" : "TIVONIX case study"}`;
+  const seoTitle = `${project.title} — ${t3(lang, "кейс TIVONIX", "TIVONIX case study", "TIVONIX 案例")}`;
   const seoDescription = clipMetaDescription(
-    subtitle + (isRu ? " Студия TIVONIX: веб-разработка, лендинги, продукты и MVP." : " TIVONIX studio: web development, landings, products and MVPs.")
+    subtitle + t3(
+      lang,
+      " Студия TIVONIX: веб-разработка, лендинги, продукты и MVP.",
+      " TIVONIX studio: web development, landings, products and MVPs.",
+      " 白俄罗斯技术团队 TIVONIX：网站开发、落地页、产品与 MVP。"
+    )
   );
   const wip = project.status === "wip";
   const domainClean = project.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "") ?? "";
@@ -10621,10 +11956,10 @@ function ProjectDetailPage() {
           {
             title: seoTitle,
             description: seoDescription,
-            canonicalPath: `/projects/${project.id}`,
+            canonicalPath: pathForLang(`/projects/${project.id}`, lang),
             ogImage: coverAbsolute,
             ogType: "article",
-            ogLocalePrimary: isRu ? "ru_RU" : "en_US",
+            ogLocalePrimary: lang === "zh" ? "zh_CN" : isRu ? "ru_RU" : "en_US",
             schemaJsonLd
           }
         ),
@@ -11102,6 +12437,7 @@ function ContactsPage() {
   const { pathname } = useLocation();
   const isRu = lang === "ru";
   const isEnPath = pathname.startsWith("/en");
+  pathname.startsWith("/zh");
   const { headerH, side, sun, r1, r2, r3 } = useSolarLayoutNoScroll();
   const seoTitle = isRu ? "Контакты TIVONIX — заказать сайт или веб-сервис" : "TIVONIX contacts — order a website or web service";
   const seoDescription = isRu ? "Свяжитесь с TIVONIX, чтобы обсудить создание сайта, лендинга, веб-сервиса, MVP, админки или Telegram-бота." : "Contact TIVONIX to discuss creating a website, landing page, web service, MVP, admin panel, or Telegram bot.";
@@ -11203,7 +12539,7 @@ function WebsiteCreationPage() {
         title,
         description,
         canonicalPath: "/sozdanie-sajtov",
-        ogLocalePrimary: isRu ? "ru_RU" : "en_US"
+        ogLocalePrimary: lang === "zh" ? "zh_CN" : isRu ? "ru_RU" : "en_US"
       }
     ),
     /* @__PURE__ */ jsx(Header, {}),
@@ -12441,7 +13777,270 @@ const en = {
   },
   common: { imageFallback: "Image coming soon" }
 };
+const zh = {
+  seo: {
+    title: "业务自动化 — TIVONIX",
+    description: "流程自动化、CRM、客户门户、管理后台与贴合真实业务流的集成。"
+  },
+  schemaServiceName: "TIVONIX 业务自动化",
+  hero: {
+    h1Line1: "我们自动化工作流",
+    h1Line2: "服务您的业务",
+    subtitle: "我们帮您减少手工、连接工具，并理顺线索、客户、报表与内部流程。",
+    microCtaTelegram: "Telegram",
+    microCtaEmail: "邮箱",
+    microCtaEmailSubject: "业务自动化咨询",
+    badges: ["免费介绍通话", "快速梳理需求", "清晰的启动计划"],
+    ctaDiscuss: "沟通自动化",
+    ctaCases: "查看案例",
+    heroImgAlt: "自动化业务流程示意"
+  },
+  signs: {
+    sectionTitle: "何时该自动化您的流程",
+    sectionLead: "自动化很少是「以后再说」— 当业务陷入混乱、手工过载与失控时就该上。",
+    ariaList: "该上自动化的信号",
+    items: [
+      {
+        number: "01",
+        title: "线索流失",
+        text: "咨询来自多渠道却无法汇入一处 — 有的丢失，有的处理太晚。",
+        image: "1.webp"
+      },
+      {
+        number: "02",
+        title: "客户靠手工跟踪",
+        text: "上下文散落在表格、聊天与笔记里，客户故事支离破碎。",
+        image: "2.webp"
+      },
+      {
+        number: "03",
+        title: "手工复制数据",
+        text: "同一数据在 CRM、表格、邮件与文档间反复录入 — 慢且易错。",
+        image: "3.webp"
+      },
+      {
+        number: "04",
+        title: "没有清晰分析",
+        text: "指标分散在各处；看懂业务只能手工拼报表。",
+        image: "4.webp"
+      },
+      {
+        number: "05",
+        title: "重复的客户问题",
+        text: "团队反复回答同一类消息，而不是去成交与增长。",
+        image: "5.webp"
+      },
+      {
+        number: "06",
+        title: "重复任务过多",
+        text: "状态、通知、提醒、报表与交接仍靠手工，尽管本可自动运行。",
+        image: "6.webp"
+      },
+      {
+        number: "07",
+        title: "现成工具不合适",
+        text: "您的业务有自己的规则；标准产品很少覆盖全流程。",
+        image: "7.webp"
+      }
+    ]
+  },
+  pain: {
+    title: "企业在哪里丢失线索、时间与金钱",
+    lead: "当工作分散在 CRM、表格与即时通讯中，团队靠手工运转，客户从缝隙溜走。",
+    items: [
+      {
+        title: "手工迁移数据",
+        text: "信息在表格、CRM、邮件与聊天间复制 — 造成错误、重复与缺口。",
+        image: "1.webp"
+      },
+      {
+        title: "线索流失",
+        text: "当线索来自多渠道且未统一，部分咨询会丢失或处理太晚。",
+        image: "2.webp"
+      },
+      {
+        title: "没有透明分析",
+        text: "数据分散；看清现状只能靠手工报表。",
+        image: "3.webp"
+      }
+    ]
+  },
+  why: {
+    h2Line1: "我们自动化工作流",
+    h2Line2: "服务您的业务",
+    subtitle: "自动化减少琐事、加快线索处理，并给出清晰过程管控。",
+    benefits: [
+      {
+        title: "减少手工操作",
+        text: "工具间的例行搬运自动化 — 团队少复制粘贴出错。"
+      },
+      {
+        title: "更快处理线索",
+        text: "每条咨询进入同一系统，带状态与通知 — 不会死在聊天线程里。"
+      },
+      {
+        title: "清晰的过程管控",
+        text: "阶段、任务与报表集中一处 — 不再靠临时表格仪表盘。"
+      },
+      {
+        title: "更好的团队体验",
+        text: "角色、权限与流程贴合您的逻辑 — 每人在正确界面工作。"
+      },
+      {
+        title: "有更多时间增长",
+        text: "团队聚焦产品与客户，重复工作在后台运行。"
+      },
+      {
+        title: "更少数据错误",
+        text: "统一处理模型与自动步骤，减少重复与脏数据。"
+      }
+    ]
+  },
+  features: {
+    title: "您可以自动化什么",
+    ariaRegion: "自动化主题",
+    ariaCarousel: "carousel",
+    prev: "上一张",
+    next: "下一张",
+    slides: [
+      {
+        title: "线索获取",
+        text: "把网站、表单、Telegram、邮件及其他来源的线索汇入一处。",
+        image: "1.webp"
+      },
+      {
+        title: "CRM 与销售漏斗",
+        text: "按您的销售方式配置客户、状态、任务与漏斗阶段。",
+        image: "2.webp"
+      },
+      {
+        title: "客户门户",
+        text: "为客户、员工或伙伴打造具备合适功能与角色的门户。",
+        image: "3.webp"
+      },
+      {
+        title: "管理后台",
+        text: "面向线索、用户、订单、内容与运营的内部工具 — 贴合您的流程。",
+        image: "4.webp"
+      },
+      {
+        title: "通知与提醒",
+        text: "在 Telegram、邮件或产品内自动通知。",
+        image: "5.webp"
+      },
+      {
+        title: "报表与分析",
+        text: "面向关键 KPI 的仪表盘与报表。",
+        image: "6.webp"
+      },
+      {
+        title: "支付与文档",
+        text: "支付、状态、确认、文档与支付后逻辑。",
+        image: "7.webp"
+      },
+      {
+        title: "外部集成",
+        text: "连接网站、CRM、Telegram、表格、支付、API 等。",
+        image: "8.webp"
+      }
+    ]
+  },
+  examples: {
+    title: "线索、门户、通知与支付在一条链路。",
+    body: "一套系统连接渠道与线索、状态与客户旅程、门户与管理端、记录与消息 — 无需手工重录或丢失咨询。",
+    srOnly: "贯通的产品流程"
+  },
+  ecosystemLabels: [
+    "Telegram",
+    "邮箱",
+    "CRM",
+    "表格",
+    "WhatsApp",
+    "Notion",
+    "日历",
+    "任务",
+    "Payments",
+    "文档",
+    "报表",
+    "自动化",
+    "通知"
+  ],
+  results: {
+    title: "交付完成后您得到什么",
+    folderLabel: "交付文件夹",
+    folderMeta: (count) => `${count} deliverables after the project`,
+    cta: "看看我们可以为您做什么",
+    items: [
+      "未来系统的清晰结构",
+      "页面与逻辑原型",
+      "服务您流程的 Web 服务或内部工具",
+      "可运营的管理后台",
+      "对接您需要的服务",
+      "通知、状态与自动动作",
+      "上线支持与迭代路径"
+    ]
+  },
+  whyTivonix: {
+    bandTitle: "围绕您业务定制的自动化",
+    points: [
+      {
+        title: "不只是网站——是能跑通的系统",
+        text: "端到端思考：线索、数据、用户、流程、管理、集成，以及上线之后。"
+      },
+      {
+        title: "通俗易懂的说明",
+        text: "不堆砌术语 — 做什么、为什么重要、如何帮到业务。"
+      },
+      {
+        title: "可以从 MVP 开始",
+        text: "第一天不必上完整平台；先交付可运行第一版，再逐步扩展。"
+      },
+      {
+        title: "我们负责全流程",
+        text: "结构、设计、开发、集成、测试与上线 — 同一团队。"
+      }
+    ]
+  },
+  faq: {
+    title: "FAQ",
+    items: [
+      {
+        q: "业务自动化多少钱？",
+        a: "取决于范围：角色、页面、逻辑、集成与场景。短暂梳理后可给出预算区间。"
+      },
+      {
+        q: "开发需要多久？",
+        a: "取决于复杂度。小系统更快交付；大系统需要更多阶段。从 MVP 开始往往最好。"
+      },
+      {
+        q: "可以只自动化一个流程吗？",
+        a: "可以 — 而且常常是理想路径。例如先自动化线索，再加门户、分析或支付。"
+      },
+      {
+        q: "是否对接 Telegram、支付及其他服务？",
+        a: "可以 — Telegram、邮件、支付、CRM、表格、API 等。"
+      },
+      {
+        q: "SaaS 产品还是定制开发？",
+        a: "通用任务可用 SaaS。独特逻辑与流程通常更适合定制。"
+      },
+      {
+        q: "需要完整技术规格书吗？",
+        a: "不需要。通俗描述即可开工 — 我们帮您梳理结构与首个里程碑。"
+      }
+    ]
+  },
+  ctaBlock: {
+    title: "我们会展示适合您的自动化形态",
+    body: "告诉我们业务现状。我们梳理流程、找出自动化机会，并提出清晰路径 — 从简单内部工具到完整 Web 服务。",
+    primary: "预约咨询",
+    secondary: "通过 Telegram 联系",
+    footnote: "通常一天内回复，并给出合理的第一步。"
+  },
+  common: { imageFallback: "图片即将上线" }
+};
 function getAutomationPageCopy(lang) {
+  if (lang === "zh") return zh;
   return lang === "en" ? en : ru;
 }
 const AUTOMATION_SIGNS_IMG_DIR = "/images/avtomatizaciya-biznesa/Когда уже пора";
@@ -13159,7 +14758,7 @@ function AutomationBusinessPage() {
         description: t.seo.description,
         canonicalPath: "/avtomatizaciya-biznesa",
         schemaJsonLd: schema,
-        ogLocalePrimary: lang === "en" ? "en_US" : "ru_RU"
+        ogLocalePrimary: lang === "zh" ? "zh_CN" : lang === "en" ? "en_US" : "ru_RU"
       }
     ),
     /* @__PURE__ */ jsx(Header, {}),
@@ -13820,13 +15419,14 @@ function PricingPage() {
   const { lang } = useLang();
   const { pathname } = useLocation();
   const isEnPath = pathname === "/en/plans";
+  const isZhPath = pathname === "/zh/plans";
   useEffect(() => {
     trackPricingView();
   }, []);
   const title = lang === "ru" ? "Планы запуска — TIVONIX" : "Launch plans — TIVONIX";
   const description = lang === "ru" ? "Тарифы TIVONIX: Start, Growth, Product и Custom — от лендинга с заявками до веб-сервиса с CRM, оплатой и автоматизацией." : "TIVONIX plans: Start, Growth, Product and Custom — from a lead page to a full web service with CRM, payments and automation.";
   const schemaJsonLd = buildPricingPageSchema({ pageTitle: title, pageDescription: description, lang });
-  const canonicalPath = isEnPath ? "/en/plans" : "/plans";
+  const canonicalPath = isZhPath ? "/zh/plans" : isEnPath ? "/en/plans" : "/plans";
   return /* @__PURE__ */ jsxs("div", { className: "landing-caldera plans-caldera min-h-screen overflow-x-clip bg-black", children: [
     /* @__PURE__ */ jsx(
       SEO,
@@ -13834,7 +15434,7 @@ function PricingPage() {
         title,
         description,
         canonicalPath,
-        ogLocalePrimary: lang === "en" ? "en_US" : "ru_RU",
+        ogLocalePrimary: lang === "zh" ? "zh_CN" : lang === "en" ? "en_US" : "ru_RU",
         hreflang: true,
         schemaJsonLd
       }
@@ -14167,7 +15767,7 @@ function AboutPage() {
               }
             ) }),
             /* @__PURE__ */ jsxs(Container, { className: "relative z-[2] text-center", children: [
-              /* @__PURE__ */ jsx("p", { className: "about-caldera__tag mx-auto mb-6", children: lang === "en" ? "Our story" : "Наша история" }),
+              /* @__PURE__ */ jsx("p", { className: "about-caldera__tag mx-auto mb-6", children: lang === "zh" ? "我们的故事" : lang === "en" ? "Our story" : "Наша история" }),
               /* @__PURE__ */ jsx(
                 "div",
                 {
@@ -14859,7 +16459,268 @@ const EN = {
     clientPrice: "Client price"
   }
 };
+const ZH = {
+  seo: {
+    title: "TIVONIX 合作伙伴计划 — Referral 与 White-label",
+    description: "推荐客户或以您的品牌销售开发。TIVONIX 负责范围、构建并交付网站、CRM、门户、机器人与 Web 产品。",
+    serviceName: "TIVONIX Partners — Referral 与 White-label",
+    emailSubject: "TIVONIX Partners — 合作沟通"
+  },
+  hero: {
+    h1: "承接更多开发 — 无需自建 IT 团队",
+    subtitle: "面向代理、自由职业者与工作室：您找客户；TIVONIX 定范围、构建并上线。客户归您 — 选择 Referral 或 White-label 并在面板注册。",
+    cta: "成为合作伙伴",
+    loginCta: "登录面板",
+    trust: "从一个项目开始 • 客户归您 • NDA"
+  },
+  problem: {
+    title: "不要因为客户需要开发就放弃成交",
+    body: [
+      { text: "说你跑" },
+      { text: "广告", pill: true },
+      { text: "," },
+      { text: "design", pill: true },
+      { text: "， 或者" },
+      { text: "growth", pill: true },
+      { text: "。您的客户信任您——现在他们需要" },
+      { text: "网站、CRM、在线预约或客户门户", em: true },
+      { text: "。你不必这样做" },
+      { text: "招聘开发", em: true },
+      { text: "或寻找自由职业者。将工作交给TIVONIX，" },
+      { text: "加入您的加价", em: true },
+      { text: "，并继续拥有这种关系。我们确定范围、构建、测试和" },
+      { text: "上线产品", em: true },
+      { text: "." }
+    ],
+    rolesHeading: "责任归属",
+    roles: [
+      {
+        title: "您",
+        items: [
+          "找到客户",
+          "与业务目标保持一致",
+          "确定最终报价",
+          "仍然是主要联系人",
+          "拥有客户关系"
+        ]
+      },
+      {
+        title: "TIVONIX",
+        items: [
+          "拥有技术范围",
+          "计算合作伙伴价格",
+          "处理设计和开发",
+          "测试并交付项目",
+          "让每个阶段都可见"
+        ]
+      },
+      {
+        title: "对您意味着什么",
+        items: [
+          "无需内部开发人员",
+          "您可以进行更高价值的交易",
+          "客户关系留在您这边",
+          "合作价与客户价之间的差价归您",
+          "您扩展了代理机构的服务阵容"
+        ]
+      }
+    ]
+  },
+  money: {
+    label: "简单示例",
+    body: "TIVONIX 开发报价 $1,500。您以 $2,200 卖给客户。我们交付建设，您管理客户，差额 $700 留在您的代理。",
+    caption: "客户付给您 → 您保留加价 → TIVONIX 收取合作价",
+    flow: ["您已有客户", "由 TIVONIX 交付", "您赚取加价差"],
+    disclaimer: "数字仅为示意。收益只来自真实已付款项目。每个项目单独报价。"
+  },
+  models: {
+    heading: {
+      before: "推荐客户——或者",
+      sell: "销售",
+      middle: "您下的项目",
+      brand: "品牌"
+    },
+    menu: [
+      { title: "24 小时内评估", description: "范围、周期、形式" },
+      { title: "White-label", description: "以您的品牌交付" },
+      { title: "Referral", description: "客户付款后结算" },
+      { title: "合作伙伴面板", description: "状态与结算" }
+    ],
+    allInOne: {
+      title: "一切集中在一处",
+      text: "报价、合作模式、佣金与成交跟踪 — 集中一处。"
+    },
+    quickStart: {
+      pill: "24 小时内评估",
+      title: "快速启动",
+      text: "发送简报 — 获得范围、周期与合作报价。"
+    },
+    status: {
+      title: "状态透明",
+      text: "看清每笔成交状态与结算时间。",
+      steps: [
+        { t: "引入", d: "收到联系信息" },
+        { t: "进行中", d: "建设正在进行中" },
+        { t: "已付款", d: "佣金已计提" }
+      ]
+    },
+    referral: {
+      title: "Referral 合作伙伴",
+      text: "分享联系方式或把 TIVONIX 加入聊天。我们评估、成交并交付。客户归属您。客户为订单付款后计提合作伙伴奖励。",
+      cta: "成为 Referral 合作伙伴",
+      note: "仅在客户付款后发放奖励。"
+    },
+    whiteLabel: {
+      title: "White-label",
+      text: "把开发作为您代理的服务销售。TIVONIX 报出开发成本。您定客户最终价。未经批准我们不联系客户。",
+      cta: "以 White-label 合作",
+      note: "审核申请后约定价格、周期与条款。"
+    },
+    panelHint: "在 TIVONIX 合作伙伴面板完成注册",
+    footnote: "注册免费。仅在已付款项目上结算奖励。"
+  },
+  video: {
+    title: "合作如何运作 — 60 秒看懂",
+    subtitle: "从选择形式到在 TIVONIX 面板中的第一个项目。"
+  },
+  afterReg: {
+    title: "注册之后会发生什么",
+    lead: "从申请到面板权限的短路径。",
+    steps: [
+      { t: "您选择合作形式", d: "推荐或白标签。" },
+      { t: "创建账户", d: "留下联系方式并提交申请。" },
+      { t: "我们审核申请", d: "审核通过后，您接受合作条款。" },
+      { t: "您获得面板权限", d: "推荐客户或创建首个项目并跟踪状态。" }
+    ],
+    disclaimer: "注册不等于自动通过。我们先审核申请并联系合作伙伴。"
+  },
+  capabilities: {
+    heading: "能力",
+    titles: [
+      "网站或问卷",
+      "机器人与自动化",
+      "CRM 或管理后台",
+      "客户门户 / 产品",
+      "集成",
+      "支持与增长"
+    ],
+    h2Before: "从广告着陆页到",
+    h2Pill: "一个完整的",
+    h2After: "Web 产品"
+  },
+  process: {
+    title: "客户归您。交付归我们",
+    lead: "从需求到上线六步清晰 — 没有模糊周期或隐藏角色。",
+    steps: ["需求", "需求梳理", "评估", "对齐确认", "开发", "上线"]
+  },
+  cases: {
+    title: "不是概念图 — 是可运行产品",
+    view: "查看项目",
+    all: "全部项目",
+    texts: {
+      spliton: "音乐资产金融科技平台：发行目录、份额购买、钱包、二级市场、结算与管理系统。",
+      slotty: "在线预约系统：服务、排班、预约、提醒、作品集、订阅与客户门户。"
+    }
+  },
+  examples: {
+    sr: "Referral 与 White-label 示例",
+    referral: {
+      pill: "Referral",
+      title: "Referral 示例",
+      text: "客户已为订单付款。合作伙伴奖励在确认到账后计提 — 不是招募其他伙伴的奖励。"
+    },
+    whiteLabel: {
+      pill: "White-label",
+      title: "White-label 示例",
+      text: "TIVONIX 向代理报出开发成本。代理设定客户价并保留差价。"
+    }
+  },
+  faq: {
+    title: "FAQ",
+    more: "详情",
+    items: [
+      {
+        q: "谁可以成为合作伙伴？",
+        a: "已有或将有开发需求客户的代理、工作室、自由职业者与专家。"
+      },
+      {
+        q: "Referral 与 White-label 有何不同？",
+        a: "Referral — 您移交客户；TIVONIX 跟进成交，付款后发放奖励。White-label — 以您的品牌销售开发，客户价由您自定。"
+      },
+      {
+        q: "谁与客户沟通？",
+        a: "White-label 下客户沟通由您负责。Referral 下我们可按约定形式直接沟通。"
+      },
+      {
+        q: "客户关系是否留在代理？",
+        a: "是的。客户归属您 — TIVONIX 不抢客户关系。"
+      },
+      {
+        q: "Referral 奖励何时发放？",
+        a: "客户为订单付款且确认到账后。奖励只来自真实已付款项目。"
+      },
+      {
+        q: "代理如何通过 White-label 获利？",
+        a: "TIVONIX 给出开发成本。您定最终客户价并保留差价。"
+      },
+      {
+        q: "TIVONIX 可以直接联系客户吗？",
+        a: "White-label — 仅在您批准下联系。Referral 则事先约定联系形式。"
+      },
+      {
+        q: "可以从一个项目开始吗？",
+        a: "可以。用一个试点项目起步很常见。"
+      },
+      {
+        q: "注册之后会发生什么？",
+        a: "申请进入审核（pending）。通过后 — 合作条款与面板权限。"
+      },
+      {
+        q: "在哪里跟踪客户、成交与结算？",
+        a: "在 TIVONIX 合作伙伴面板：成交状态、项目与结算集中一处。"
+      }
+    ]
+  },
+  final: {
+    badge: "准备开始",
+    title: "从一个项目开始",
+    body: "选择形式、注册，并通过合作伙伴面板提交首个任务。",
+    referralCta: "选择 Referral",
+    whiteLabelCta: "选择 White-label",
+    loginLink: "已有账户？登录面板",
+    footnote: "从一个项目开始 • 客户归您 • NDA"
+  },
+  footer: {
+    marquee: "WHITE-LABEL · REFERRAL · 伙伴开发 · 以您的品牌",
+    homeAria: "TIVONIX — 首页",
+    navAria: "页脚导航",
+    formats: "形式",
+    login: "登录面板",
+    askTelegram: "提问",
+    projects: "项目",
+    contacts: "联系方式",
+    channel: "渠道",
+    privacy: "隐私",
+    privacyAria: "隐私政策（PDF）",
+    consent: "同意",
+    consentAria: "个人信息处理同意（PDF）",
+    note: "面向代理的开发：以您的品牌交付网站、CRM、门户与机器人。"
+  },
+  discuss: {
+    label: "提问",
+    ask: "问题走 Telegram — 注册在面板完成"
+  },
+  ui: {
+    client: "客户",
+    you: "您",
+    youPct: "您",
+    estimate: "TIVONIX 报价",
+    markup: "您的加价",
+    clientPrice: "客户报价"
+  }
+};
 function getPartnersCopy(lang) {
+  if (lang === "zh") return ZH;
   return lang === "en" ? EN : RU;
 }
 const PARTNERS_DOCS = {
@@ -14868,6 +16729,10 @@ const PARTNERS_DOCS = {
     consent: "/doc/Согласие_на_обработку_ПД_Tivonix_RU.pdf"
   },
   en: {
+    privacy: "/doc/Privacy_Policy_Tivonix_EN.pdf",
+    consent: "/doc/Consent_Tivonix_EN.pdf"
+  },
+  zh: {
     privacy: "/doc/Privacy_Policy_Tivonix_EN.pdf",
     consent: "/doc/Consent_Tivonix_EN.pdf"
   }
@@ -15676,7 +17541,7 @@ function PartnersFooter() {
     ] }) }),
     /* @__PURE__ */ jsxs(Shell, { className: "partners-footer__shell", children: [
       /* @__PURE__ */ jsxs("div", { className: "partners-footer__bar", children: [
-        /* @__PURE__ */ jsxs(Link, { to: lang === "en" ? "/en" : "/", className: "partners-footer__logo", "aria-label": copy.footer.homeAria, children: [
+        /* @__PURE__ */ jsxs(Link, { to: lang === "en" ? "/en" : lang === "zh" ? "/zh" : "/", className: "partners-footer__logo", "aria-label": copy.footer.homeAria, children: [
           /* @__PURE__ */ jsx("img", { src: TIVONIX_MARK, alt: "", width: 28, height: 28, decoding: "async" }),
           /* @__PURE__ */ jsx("span", { children: "TIVONIX Partners" })
         ] }),
@@ -18650,13 +20515,15 @@ function PartnersPage() {
         title: copy.seo.title,
         description: copy.seo.description,
         canonicalPath: canonicalUrl,
-        ogLocalePrimary: lang === "ru" ? "ru_RU" : "en_US",
+        ogLocalePrimary: lang === "zh" ? "zh_CN" : lang === "ru" ? "ru_RU" : "en_US",
         schemaJsonLd: buildPartnersSchema(copy, lang, location.pathname)
       }
     ),
     /* @__PURE__ */ jsxs(Helmet, { children: [
       /* @__PURE__ */ jsx("link", { rel: "alternate", hrefLang: "ru", href: partnersHreflangUrl(PARTNERS_PATH_RU) }),
       /* @__PURE__ */ jsx("link", { rel: "alternate", hrefLang: "en", href: partnersHreflangUrl(PARTNERS_PATH_EN) }),
+      /* @__PURE__ */ jsx("link", { rel: "alternate", hrefLang: "zh", href: partnersHreflangUrl(PARTNERS_PATH_ZH) }),
+      /* @__PURE__ */ jsx("link", { rel: "alternate", hrefLang: "zh-CN", href: partnersHreflangUrl(PARTNERS_PATH_ZH) }),
       /* @__PURE__ */ jsx("link", { rel: "alternate", hrefLang: "x-default", href: partnersHreflangUrl("/partners") })
     ] }),
     /* @__PURE__ */ jsx(Header, {}),
@@ -18687,7 +20554,7 @@ function PartnersPage() {
               }
             ),
             /* @__PURE__ */ jsx(Shell, { className: "relative z-[2] flex flex-1 flex-col justify-center", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[40rem] text-center", children: [
-              /* @__PURE__ */ jsx("div", { className: "mb-5 flex justify-center", children: /* @__PURE__ */ jsx("div", { className: "inline-flex rounded-full bg-[#ff6b2c] p-1 text-[12px] font-semibold tracking-[0.08em] text-white shadow-sm", children: ["ru", "en"].map((value) => /* @__PURE__ */ jsx(
+              /* @__PURE__ */ jsx("div", { className: "mb-5 flex justify-center", children: /* @__PURE__ */ jsx("div", { className: "inline-flex rounded-full bg-[#ff6b2c] p-1 text-[12px] font-semibold tracking-[0.08em] text-white shadow-sm", children: ["ru", "en", "zh"].map((value) => /* @__PURE__ */ jsx(
                 "button",
                 {
                   type: "button",
@@ -18700,7 +20567,7 @@ function PartnersPage() {
                     lang === value ? "bg-white text-[#ff6b2c]" : "text-white hover:bg-white/15"
                   ),
                   "aria-pressed": lang === value,
-                  children: value.toUpperCase()
+                  children: value === "zh" ? "中文" : value.toUpperCase()
                 },
                 value
               )) }) }),
@@ -19307,18 +21174,26 @@ function PartnersPage() {
 }
 function NotFoundPage() {
   const { lang } = useLang();
-  const isRu = lang === "ru";
-  const title = isRu ? "Страница не найдена — TIVONIX" : "Page not found — TIVONIX";
-  const description = isRu ? "Запрошенная страница не существует. Вернитесь на главную или посмотрите проекты TIVONIX." : "The page you requested does not exist. Return home or explore TIVONIX projects.";
+  const title = t3(
+    lang,
+    "Страница не найдена — TIVONIX",
+    "Page not found — TIVONIX",
+    "页面未找到 — TIVONIX"
+  );
+  const description = t3(
+    lang,
+    "Запрошенная страница не существует. Вернитесь на главную или посмотрите проекты TIVONIX.",
+    "The page you requested does not exist. Return home or explore TIVONIX projects.",
+    "您访问的页面不存在。请返回首页或查看 TIVONIX 项目案例。"
+  );
   return /* @__PURE__ */ jsxs("div", { className: "min-h-screen overflow-x-clip bg-[var(--bg)]", children: [
     /* @__PURE__ */ jsx(
       SEO,
       {
         title,
         description,
-        canonicalPath: isRu ? "/404" : "/en/404",
-        ogLocalePrimary: isRu ? "ru_RU" : "en_US",
-        robots: "noindex,nofollow"
+        canonicalPath: lang === "ru" ? "/404" : `/${lang}/404`,
+        ogLocalePrimary: ogLocaleFor(lang)
       }
     ),
     /* @__PURE__ */ jsx(Header, {}),
@@ -19332,26 +21207,31 @@ function NotFoundPage() {
       ),
       /* @__PURE__ */ jsxs(Container, { className: "relative pt-[calc(var(--tivonix-header-spacer)+2.5rem)] pb-16 sm:pb-20", children: [
         /* @__PURE__ */ jsx("p", { className: "text-[13px] font-semibold tracking-[0.14em] text-[#FF9A3D]/90 uppercase", children: "404" }),
-        /* @__PURE__ */ jsx("h1", { className: "mt-4 max-w-[16ch] text-[clamp(2.1rem,5.5vw,3.6rem)] font-[850] leading-[1.05] tracking-[-0.035em] text-white", children: isRu ? "Страница не найдена" : "Page not found" }),
-        /* @__PURE__ */ jsx("p", { className: "mt-5 max-w-xl text-[16px] leading-7 text-white/70 sm:text-[17px]", children: isRu ? "Ссылка устарела или адрес введён с ошибкой. Можно вернуться на главную, посмотреть проекты или оставить заявку." : "The link may be outdated or mistyped. Go home, browse projects, or send a short brief." }),
+        /* @__PURE__ */ jsx("h1", { className: "mt-4 max-w-[16ch] text-[clamp(2.1rem,5.5vw,3.6rem)] font-[850] leading-[1.05] tracking-[-0.035em] text-white", children: t3(lang, "Страница не найдена", "Page not found", "页面未找到") }),
+        /* @__PURE__ */ jsx("p", { className: "mt-5 max-w-xl text-[16px] leading-7 text-white/70 sm:text-[17px]", children: t3(
+          lang,
+          "Ссылка устарела или адрес введён с ошибкой. Можно вернуться на главную, посмотреть проекты или оставить заявку.",
+          "The link may be outdated or mistyped. Go home, browse projects, or send a short brief.",
+          "链接可能已失效或地址输入有误。可返回首页、浏览项目或提交需求。"
+        ) }),
         /* @__PURE__ */ jsxs("div", { className: "mt-9 flex flex-wrap gap-3", children: [
           /* @__PURE__ */ jsx(
             Link,
             {
-              to: isRu ? "/" : "/en",
+              to: localizedHome(lang),
               className: "inline-flex h-12 items-center justify-center rounded-full bg-white px-7 text-[14px] font-bold text-black transition hover:bg-white/92 sm:px-8 sm:text-[15px]",
-              children: isRu ? "На главную" : "Home"
+              children: t3(lang, "На главную", "Home", "返回首页")
             }
           ),
           /* @__PURE__ */ jsx(
             Link,
             {
-              to: isRu ? "/projects" : "/en/projects",
+              to: pathForLang("/projects", lang),
               className: "inline-flex h-12 items-center justify-center rounded-full bg-white/[0.08] px-7 text-[14px] font-bold text-white/90 ring-1 ring-white/12 transition hover:bg-white/[0.12] sm:px-8 sm:text-[15px]",
-              children: isRu ? "Проекты" : "Projects"
+              children: t3(lang, "Проекты", "Projects", "项目案例")
             }
           ),
-          /* @__PURE__ */ jsx(LeadCTAButton, { source: "final_cta", variant: "primary", size: "lg", children: isRu ? "Оставить заявку" : "Send a brief" })
+          /* @__PURE__ */ jsx(LeadCTAButton, { source: "final_cta", variant: "primary", size: "lg", children: t3(lang, "Оставить заявку", "Send a brief", "提交需求") })
         ] })
       ] })
     ] }),
@@ -19383,22 +21263,30 @@ function AppRoutes() {
     /* @__PURE__ */ jsxs(Routes, { children: [
       /* @__PURE__ */ jsx(Route, { path: "/", element: /* @__PURE__ */ jsx(LandingPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/en", element: /* @__PURE__ */ jsx(LandingPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/zh", element: /* @__PURE__ */ jsx(LandingPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/projects", element: /* @__PURE__ */ jsx(ProjectsPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/en/projects", element: /* @__PURE__ */ jsx(ProjectsPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/zh/projects", element: /* @__PURE__ */ jsx(ProjectsPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/projects/:slug", element: /* @__PURE__ */ jsx(ProjectDetailPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/en/projects/:slug", element: /* @__PURE__ */ jsx(ProjectDetailPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/zh/projects/:slug", element: /* @__PURE__ */ jsx(ProjectDetailPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/plans", element: /* @__PURE__ */ jsx(PricingPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/en/plans", element: /* @__PURE__ */ jsx(PricingPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/zh/plans", element: /* @__PURE__ */ jsx(PricingPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/about", element: /* @__PURE__ */ jsx(AboutPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/en/about", element: /* @__PURE__ */ jsx(AboutPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/zh/about", element: /* @__PURE__ */ jsx(AboutPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/contacts", element: /* @__PURE__ */ jsx(ContactsPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/en/contacts", element: /* @__PURE__ */ jsx(ContactsPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/zh/contacts", element: /* @__PURE__ */ jsx(ContactsPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/sozdanie-sajtov", element: /* @__PURE__ */ jsx(WebsiteCreationPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/avtomatizaciya-biznesa", element: /* @__PURE__ */ jsx(AutomationBusinessPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/partners", element: /* @__PURE__ */ jsx(PartnersPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: PARTNERS_PATH_RU, element: /* @__PURE__ */ jsx(PartnersPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: PARTNERS_PATH_EN, element: /* @__PURE__ */ jsx(PartnersPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: PARTNERS_PATH_ZH, element: /* @__PURE__ */ jsx(PartnersPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/en/*", element: /* @__PURE__ */ jsx(NotFoundPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/zh/*", element: /* @__PURE__ */ jsx(NotFoundPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "*", element: /* @__PURE__ */ jsx(NotFoundPage, {}) })
     ] })
   ] });
@@ -19433,7 +21321,6 @@ const PRIVACY_EN = "/doc/Privacy_Policy_Tivonix_EN.pdf";
 function ConsentBanner() {
   const { lang } = useLang();
   const { isOpen: leadFormOpen } = useLeadForm();
-  const isRu = lang === "ru";
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     const sync = () => {
@@ -19458,7 +21345,8 @@ function ConsentBanner() {
     setAnalyticsConsent("rejected");
     setVisible(false);
   };
-  const privacyHref = isRu ? PRIVACY_RU : PRIVACY_EN;
+  const privacyHref = lang === "ru" ? PRIVACY_RU : PRIVACY_EN;
+  const policyLabel = t3(lang, "Политика cookies", "Cookie Policy", "Cookie 政策");
   return /* @__PURE__ */ jsx(
     "div",
     {
@@ -19470,12 +21358,21 @@ function ConsentBanner() {
         "div",
         {
           role: "dialog",
-          "aria-label": isRu ? "Согласие на cookies аналитики" : "Analytics cookies consent",
+          "aria-label": t3(
+            lang,
+            "Согласие на cookies аналитики",
+            "Analytics cookies consent",
+            "分析类 Cookie 同意"
+          ),
           className: "pointer-events-auto w-full max-w-[26rem] rounded-[2rem] border border-white/[0.08] bg-[#141414] p-7 shadow-[0_24px_64px_rgba(0,0,0,0.55)] sm:p-8",
           children: [
-            /* @__PURE__ */ jsx("p", { className: "text-[15px] leading-[1.55] text-white/70", children: isRu ? /* @__PURE__ */ jsxs(Fragment, { children: [
-              "Мы используем cookies, чтобы сайт работал лучше.",
-              " ",
+            /* @__PURE__ */ jsxs("p", { className: "text-[15px] leading-[1.55] text-white/70", children: [
+              t3(
+                lang,
+                "Мы используем cookies, чтобы сайт работал лучше. ",
+                "We use cookies to make this site work better. ",
+                "我们使用 Cookie 以改善网站体验。"
+              ),
               /* @__PURE__ */ jsx(
                 "a",
                 {
@@ -19483,23 +21380,10 @@ function ConsentBanner() {
                   target: "_blank",
                   rel: "noopener noreferrer",
                   className: "text-white/85 underline decoration-white/35 underline-offset-[3px] transition hover:text-white hover:decoration-white/60",
-                  children: "Политика cookies"
+                  children: policyLabel
                 }
               )
-            ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
-              "We use cookies to make this site work better.",
-              " ",
-              /* @__PURE__ */ jsx(
-                "a",
-                {
-                  href: privacyHref,
-                  target: "_blank",
-                  rel: "noopener noreferrer",
-                  className: "text-white/85 underline decoration-white/35 underline-offset-[3px] transition hover:text-white hover:decoration-white/60",
-                  children: "Cookie Policy"
-                }
-              )
-            ] }) }),
+            ] }),
             /* @__PURE__ */ jsxs("div", { className: "mt-7 flex flex-wrap items-center gap-2.5", children: [
               /* @__PURE__ */ jsx(
                 "button",
@@ -19507,7 +21391,7 @@ function ConsentBanner() {
                   type: "button",
                   onClick: accept,
                   className: "inline-flex h-11 items-center justify-center rounded-full bg-white px-6 text-[14px] font-semibold tracking-[-0.01em] text-[#111] transition hover:bg-white/92 active:bg-white/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/55",
-                  children: isRu ? "Принять" : "Accept"
+                  children: t3(lang, "Принять", "Accept", "接受")
                 }
               ),
               /* @__PURE__ */ jsx(
@@ -19516,7 +21400,7 @@ function ConsentBanner() {
                   type: "button",
                   onClick: decline,
                   className: "inline-flex h-11 items-center justify-center rounded-full border border-white/25 bg-transparent px-6 text-[14px] font-semibold tracking-[-0.01em] text-white/85 transition hover:border-white/40 hover:bg-white/[0.04] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/55",
-                  children: isRu ? "Отклонить" : "Reject"
+                  children: t3(lang, "Отклонить", "Reject", "拒绝")
                 }
               )
             ] })
@@ -19563,6 +21447,7 @@ function langFromUrl(url) {
   try {
     const path = (url.startsWith("http") ? new URL(url).pathname : url.split("?")[0]) || "/";
     if (path === "/en" || path.startsWith("/en/")) return "en";
+    if (path === "/zh" || path.startsWith("/zh/")) return "zh";
     return "ru";
   } catch {
     return "ru";

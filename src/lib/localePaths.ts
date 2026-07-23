@@ -1,118 +1,69 @@
 import type { Lang } from "../i18n/LangProvider";
 
-/** Paths with indexable EN mirrors */
-const EN_ROUTE_MAP: Record<string, string> = {
-  "/": "/en",
-  "/projects": "/en/projects",
-  "/contacts": "/en/contacts",
-  "/plans": "/en/plans",
-  "/about": "/en/about",
-};
+const LOCALIZED_BASES = ["/", "/projects", "/contacts", "/plans", "/about"] as const;
 
-const RU_ROUTE_MAP: Record<string, string> = {
-  "/en": "/",
-  "/en/projects": "/projects",
-  "/en/contacts": "/contacts",
-  "/en/plans": "/plans",
-  "/en/about": "/about",
-};
+function withPrefix(lang: Lang, base: string): string {
+  if (lang === "ru") return base === "/" ? "/" : base;
+  const prefix = `/${lang}`;
+  return base === "/" ? prefix : `${prefix}${base}`;
+}
 
 export function stripLangPrefix(pathname: string): string {
   const p = pathname.replace(/\/+$/, "") || "/";
-  if (p === "/en") return "/";
+  if (p === "/en" || p === "/zh" || p === "/ru") return "/";
   if (p.startsWith("/en/")) return p.slice(3) || "/";
+  if (p.startsWith("/zh/")) return p.slice(3) || "/";
+  if (p.startsWith("/ru/")) return p.slice(3) || "/";
   return p;
 }
 
 export function pathForLang(pathname: string, lang: Lang): string {
   const clean = pathname.replace(/\/+$/, "") || "/";
 
-  // Partners already have dedicated paths
-  if (clean === "/partners" || clean === "/ru/partners") {
-    return lang === "en" ? "/en/partners" : "/ru/partners";
-  }
-  if (clean === "/en/partners") {
-    return lang === "en" ? "/en/partners" : "/ru/partners";
+  if (
+    clean === "/partners" ||
+    clean === "/ru/partners" ||
+    clean === "/en/partners" ||
+    clean === "/zh/partners"
+  ) {
+    if (lang === "en") return "/en/partners";
+    if (lang === "zh") return "/zh/partners";
+    return "/ru/partners";
   }
 
-  // Project detail: /projects/:slug <-> /en/projects/:slug
   const mRu = clean.match(/^\/projects\/([^/]+)$/);
-  if (mRu) {
-    return lang === "en" ? `/en/projects/${mRu[1]}` : `/projects/${mRu[1]}`;
-  }
+  if (mRu) return withPrefix(lang, `/projects/${mRu[1]}`);
+
   const mEn = clean.match(/^\/en\/projects\/([^/]+)$/);
-  if (mEn) {
-    return lang === "en" ? `/en/projects/${mEn[1]}` : `/projects/${mEn[1]}`;
+  if (mEn) return withPrefix(lang, `/projects/${mEn[1]}`);
+
+  const mZh = clean.match(/^\/zh\/projects\/([^/]+)$/);
+  if (mZh) return withPrefix(lang, `/projects/${mZh[1]}`);
+
+  const base = stripLangPrefix(clean);
+
+  if ((LOCALIZED_BASES as readonly string[]).includes(base)) {
+    return withPrefix(lang, base);
   }
 
-  if (lang === "en") {
-    if (EN_ROUTE_MAP[clean]) return EN_ROUTE_MAP[clean];
-    if (clean.startsWith("/en")) return clean;
-    // Other RU pages keep query-lang style via local toggle without dedicated EN URL
-    return clean;
-  }
-
-  if (RU_ROUTE_MAP[clean]) return RU_ROUTE_MAP[clean];
-  if (clean.startsWith("/en/")) return stripLangPrefix(clean);
-  return clean;
+  if (lang === "en" && clean.startsWith("/en")) return clean;
+  if (lang === "zh" && clean.startsWith("/zh")) return clean;
+  return base;
 }
 
 export function hreflangPair(canonicalPath: string): {
   ru: string;
   en: string;
+  zh: string;
   xDefault: string;
 } {
   const origin = "https://tivonix.tech";
   const clean = canonicalPath.replace(/\/+$/, "") || "/";
   const base = stripLangPrefix(clean.startsWith("http") ? new URL(clean).pathname : clean);
 
-  if (base === "/" || base === "") {
-    return {
-      ru: `${origin}/`,
-      en: `${origin}/en`,
-      xDefault: `${origin}/`,
-    };
-  }
-  if (base === "/projects") {
-    return {
-      ru: `${origin}/projects`,
-      en: `${origin}/en/projects`,
-      xDefault: `${origin}/projects`,
-    };
-  }
-  if (base === "/contacts") {
-    return {
-      ru: `${origin}/contacts`,
-      en: `${origin}/en/contacts`,
-      xDefault: `${origin}/contacts`,
-    };
-  }
-  if (base === "/plans") {
-    return {
-      ru: `${origin}/plans`,
-      en: `${origin}/en/plans`,
-      xDefault: `${origin}/plans`,
-    };
-  }
-  if (base === "/about") {
-    return {
-      ru: `${origin}/about`,
-      en: `${origin}/en/about`,
-      xDefault: `${origin}/about`,
-    };
-  }
-  const proj = base.match(/^\/projects\/([^/]+)$/);
-  if (proj) {
-    return {
-      ru: `${origin}/projects/${proj[1]}`,
-      en: `${origin}/en/projects/${proj[1]}`,
-      xDefault: `${origin}/projects/${proj[1]}`,
-    };
-  }
+  const ru = base === "/" ? `${origin}/` : `${origin}${base}`;
+  const en = base === "/" ? `${origin}/en` : `${origin}/en${base}`;
+  const zh = base === "/" ? `${origin}/zh` : `${origin}/zh${base}`;
 
-  return {
-    ru: `${origin}${base}`,
-    en: `${origin}${base}`,
-    xDefault: `${origin}${base}`,
-  };
+  return { ru, en, zh, xDefault: ru };
 }

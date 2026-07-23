@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Container from "../ui/Container";
 import { useLang } from "../../i18n/LangProvider";
+import { t3 } from "../../i18n/pick";
 import { isPartnersPath, partnersPath } from "../../i18n/partnersPaths";
 import { aboutPath } from "../../i18n/aboutCopy";
 import { partnerPanelLoginUrl } from "../../lib/partnerPanel";
@@ -66,7 +67,7 @@ function useHomeHeroInView(pathname: string) {
   const [inView, setInView] = useState(false);
 
   useEffect(() => {
-    const isHome = pathname === "/" || pathname === "/en";
+    const isHome = pathname === "/" || pathname === "/en" || pathname === "/zh";
     if (!isHome) {
       setInView(false);
       return;
@@ -313,7 +314,7 @@ export default function Header() {
     return key;
   };
 
-  const homePath = lang === "en" ? "/en" : "/";
+  const homePath = lang === "en" ? "/en" : lang === "zh" ? "/zh" : "/";
 
   const navTo = (it: NavItem) => {
     if (it.key === "partners") return partnersPath(lang);
@@ -324,7 +325,7 @@ export default function Header() {
 
   const activeKey: NavKey | null = useMemo(() => {
     const p = location.pathname;
-    if (p === "/plans" || p === "/en/plans") return "plans";
+    if (p === "/plans" || p === "/en/plans" || p === "/zh/plans") return "plans";
     if (
       p === "/projects" ||
       p.startsWith("/projects/") ||
@@ -333,7 +334,7 @@ export default function Header() {
     ) {
       return "projects";
     }
-    if (p === "/about" || p === "/en/about") return "about";
+    if (p === "/about" || p === "/en/about" || p === "/zh/about") return "about";
     if (isPartnersPath(p)) return "partners";
     return null;
   }, [location.pathname]);
@@ -370,7 +371,11 @@ export default function Header() {
         const el = document.getElementById(hash);
         if (el) el.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
       };
-      if (location.pathname !== "/" && location.pathname !== "/en") {
+      if (
+        location.pathname !== "/" &&
+        location.pathname !== "/en" &&
+        location.pathname !== "/zh"
+      ) {
         navigate(homePath);
         window.setTimeout(go, 80);
       } else {
@@ -378,7 +383,7 @@ export default function Header() {
       }
       return;
     }
-    if (to === "/" || to === "/en") {
+    if (to === "/" || to === "/en" || to === "/zh") {
       e.preventDefault();
       if (location.pathname !== homePath) navigate(homePath);
       window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
@@ -391,8 +396,8 @@ export default function Header() {
     window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
   };
 
-  const ariaHome = isRu ? "На главную" : "Go to home";
-  const ariaMenu = isRu ? "Меню" : "Menu";
+  const ariaHome = t3(lang, "На главную", "Go to home", "返回首页");
+  const ariaMenu = t3(lang, "Меню", "Menu", "菜单");
 
   const onPartners = isPartnersPath(location.pathname);
   const leadCopy = leadFormCopy(lang);
@@ -439,7 +444,7 @@ export default function Header() {
           )}
           role="dialog"
           aria-modal="true"
-          aria-label={isRu ? "Меню" : "Menu"}
+          aria-label={t3(lang, "Меню", "Menu", "菜单")}
         >
           <div className="relative flex items-center justify-between px-4 pb-4 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5">
             <Link
@@ -467,7 +472,7 @@ export default function Header() {
                 "bg-white/[0.04] text-white/72 transition hover:bg-white/[0.08] active:scale-95",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
               )}
-              aria-label={isRu ? "Закрыть меню" : "Close menu"}
+              aria-label={t3(lang, "Закрыть меню", "Close menu", "关闭菜单")}
             >
               <svg
                 width="22"
@@ -514,7 +519,7 @@ export default function Header() {
           </div>
 
           <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2 pb-5 sm:px-3">
-            <nav className="mt-1 flex flex-col" aria-label={isRu ? "Навигация" : "Navigation"}>
+            <nav className="mt-1 flex flex-col" aria-label={t3(lang, "Навигация", "Navigation", "导航")}>
               {mobileNavItems.map((item) => (
                 <Link
                   key={item.key}
@@ -569,7 +574,7 @@ export default function Header() {
                 )}
                 onClick={() => setOpen(false)}
               >
-                {onPartners ? (isRu ? "Форматы" : "Formats") : isRu ? "Планы" : "Plans"}
+                {onPartners ? t3(lang, "Форматы", "Formats", "合作形式") : t3(lang, "Планы", "Plans", "方案")}
               </Link>
             </div>
           </div>
@@ -713,7 +718,7 @@ export default function Header() {
                       "active:scale-95",
                       open && "bg-[#242424]"
                     )}
-                    aria-label={open ? (isRu ? "Закрыть меню" : "Close menu") : ariaMenu}
+                    aria-label={open ? (t3(lang, "Закрыть меню", "Close menu", "关闭菜单")) : ariaMenu}
                     aria-expanded={open}
                     aria-controls="mobile-header-menu"
                     onClick={(e) => {

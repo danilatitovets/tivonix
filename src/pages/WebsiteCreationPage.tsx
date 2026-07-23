@@ -24,7 +24,7 @@ export default function WebsiteCreationPage() {
         title={title}
         description={description}
         canonicalPath="/sozdanie-sajtov"
-        ogLocalePrimary={isRu ? "ru_RU" : "en_US"}
+        ogLocalePrimary={lang === "zh" ? "zh_CN" : isRu ? "ru_RU" : "en_US"}
       />
       <Header />
       <main>

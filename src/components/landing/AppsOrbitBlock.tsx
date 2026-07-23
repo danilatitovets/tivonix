@@ -156,7 +156,7 @@ function buildGmailUrl(to: string, subject: string, body: string) {
 
 export default function AppsOrbitBlock() {
   const { lang } = useLang();
-  const t = lang === "ru" ? COPY.ru : COPY.en;
+  const t = lang === "zh" ? COPY.zh : lang === "ru" ? COPY.ru : COPY.en;
   const [bgFailed, setBgFailed] = useState(false);
 
   const reducedMotion = usePrefersReducedMotion();

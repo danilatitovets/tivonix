@@ -12,6 +12,7 @@ export default function PricingPage() {
   const { lang } = useLang();
   const { pathname } = useLocation();
   const isEnPath = pathname === "/en/plans";
+  const isZhPath = pathname === "/zh/plans";
 
   useEffect(() => {
     trackPricingView();
@@ -27,7 +28,7 @@ export default function PricingPage() {
       : "TIVONIX plans: Start, Growth, Product and Custom — from a lead page to a full web service with CRM, payments and automation.";
 
   const schemaJsonLd = buildPricingPageSchema({ pageTitle: title, pageDescription: description, lang });
-  const canonicalPath = isEnPath ? "/en/plans" : "/plans";
+  const canonicalPath = isZhPath ? "/zh/plans" : isEnPath ? "/en/plans" : "/plans";
 
   return (
     <div className="landing-caldera plans-caldera min-h-screen overflow-x-clip bg-black">
@@ -35,7 +36,7 @@ export default function PricingPage() {
         title={title}
         description={description}
         canonicalPath={canonicalPath}
-        ogLocalePrimary={lang === "en" ? "en_US" : "ru_RU"}
+        ogLocalePrimary={lang === "zh" ? "zh_CN" : lang === "en" ? "en_US" : "ru_RU"}
         hreflang
         schemaJsonLd={schemaJsonLd}
       />

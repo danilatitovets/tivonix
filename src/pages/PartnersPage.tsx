@@ -10,6 +10,7 @@ import { getPartnersCopy, PARTNERS_DOCS, type PartnersCopy } from "../i18n/partn
 import {
   PARTNERS_PATH_EN,
   PARTNERS_PATH_RU,
+  PARTNERS_PATH_ZH,
   partnersCanonicalUrl,
   partnersHreflangUrl,
   partnersPath,
@@ -53,7 +54,7 @@ const CASES = [
 
 const CAPABILITY_IDS = ["landing", "bot", "crm", "cabinet", "integrations", "support"] as const;
 
-function buildPartnersSchema(copy: PartnersCopy, lang: "ru" | "en", pathname?: string) {
+function buildPartnersSchema(copy: PartnersCopy, lang: "ru" | "en" | "zh", pathname?: string) {
   const url = partnersCanonicalUrl(lang, pathname);
   return {
     "@context": "https://schema.org",
@@ -960,7 +961,7 @@ function PartnersFooter() {
 
       <Shell className="partners-footer__shell">
         <div className="partners-footer__bar">
-          <Link to={lang === "en" ? "/en" : "/"} className="partners-footer__logo" aria-label={copy.footer.homeAria}>
+          <Link to={lang === "en" ? "/en" : lang === "zh" ? "/zh" : "/"} className="partners-footer__logo" aria-label={copy.footer.homeAria}>
             <img src={TIVONIX_MARK} alt="" width={28} height={28} decoding="async" />
             <span>TIVONIX Partners</span>
           </Link>
@@ -3954,12 +3955,14 @@ export default function PartnersPage() {
         title={copy.seo.title}
         description={copy.seo.description}
         canonicalPath={canonicalUrl}
-        ogLocalePrimary={lang === "ru" ? "ru_RU" : "en_US"}
+        ogLocalePrimary={lang === "zh" ? "zh_CN" : lang === "ru" ? "ru_RU" : "en_US"}
         schemaJsonLd={buildPartnersSchema(copy, lang, location.pathname)}
       />
       <Helmet>
         <link rel="alternate" hrefLang="ru" href={partnersHreflangUrl(PARTNERS_PATH_RU)} />
         <link rel="alternate" hrefLang="en" href={partnersHreflangUrl(PARTNERS_PATH_EN)} />
+        <link rel="alternate" hrefLang="zh" href={partnersHreflangUrl(PARTNERS_PATH_ZH)} />
+        <link rel="alternate" hrefLang="zh-CN" href={partnersHreflangUrl(PARTNERS_PATH_ZH)} />
         <link rel="alternate" hrefLang="x-default" href={partnersHreflangUrl("/partners")} />
       </Helmet>
       <Header />
@@ -3990,7 +3993,7 @@ export default function PartnersPage() {
             <div className="mx-auto max-w-[40rem] text-center">
               <div className="mb-5 flex justify-center">
                 <div className="inline-flex rounded-full bg-[#ff6b2c] p-1 text-[12px] font-semibold tracking-[0.08em] text-white shadow-sm">
-                  {(["ru", "en"] as const).map((value) => (
+                  {(["ru", "en", "zh"] as const).map((value) => (
                     <button
                       key={value}
                       type="button"
@@ -4004,7 +4007,7 @@ export default function PartnersPage() {
                       )}
                       aria-pressed={lang === value}
                     >
-                      {value.toUpperCase()}
+                      {value === "zh" ? "中文" : value.toUpperCase()}
                     </button>
                   ))}
                 </div>

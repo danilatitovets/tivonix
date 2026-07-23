@@ -9,6 +9,7 @@ function langFromUrl(url: string): Lang {
   try {
     const path = (url.startsWith("http") ? new URL(url).pathname : url.split("?")[0]) || "/";
     if (path === "/en" || path.startsWith("/en/")) return "en";
+    if (path === "/zh" || path.startsWith("/zh/")) return "zh";
     return "ru";
   } catch {
     return "ru";

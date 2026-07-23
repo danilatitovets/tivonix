@@ -620,7 +620,274 @@ const en: AutomationPageCopy = {
   common: { imageFallback: "Image coming soon" },
 };
 
+const zh: AutomationPageCopy = {
+  seo: {
+    title: "业务自动化 — TIVONIX",
+    description:
+      "流程自动化、CRM、客户门户、管理后台与贴合真实业务流的集成。",
+  },
+  schemaServiceName: "TIVONIX 业务自动化",
+  hero: {
+    h1Line1: "我们自动化工作流",
+    h1Line2: "服务您的业务",
+    subtitle:
+      "我们帮您减少手工、连接工具，并理顺线索、客户、报表与内部流程。",
+    microCtaTelegram: "Telegram",
+    microCtaEmail: "邮箱",
+    microCtaEmailSubject: "业务自动化咨询",
+    badges: ["免费介绍通话", "快速梳理需求", "清晰的启动计划"],
+    ctaDiscuss: "沟通自动化",
+    ctaCases: "查看案例",
+    heroImgAlt: "自动化业务流程示意",
+  },
+  signs: {
+    sectionTitle: "何时该自动化您的流程",
+    sectionLead:
+      "自动化很少是「以后再说」— 当业务陷入混乱、手工过载与失控时就该上。",
+    ariaList: "该上自动化的信号",
+    items: [
+      {
+        number: "01",
+        title: "线索流失",
+        text: "咨询来自多渠道却无法汇入一处 — 有的丢失，有的处理太晚。",
+        image: "1.webp",
+      },
+      {
+        number: "02",
+        title: "客户靠手工跟踪",
+        text: "上下文散落在表格、聊天与笔记里，客户故事支离破碎。",
+        image: "2.webp",
+      },
+      {
+        number: "03",
+        title: "手工复制数据",
+        text: "同一数据在 CRM、表格、邮件与文档间反复录入 — 慢且易错。",
+        image: "3.webp",
+      },
+      {
+        number: "04",
+        title: "没有清晰分析",
+        text: "指标分散在各处；看懂业务只能手工拼报表。",
+        image: "4.webp",
+      },
+      {
+        number: "05",
+        title: "重复的客户问题",
+        text: "团队反复回答同一类消息，而不是去成交与增长。",
+        image: "5.webp",
+      },
+      {
+        number: "06",
+        title: "重复任务过多",
+        text: "状态、通知、提醒、报表与交接仍靠手工，尽管本可自动运行。",
+        image: "6.webp",
+      },
+      {
+        number: "07",
+        title: "现成工具不合适",
+        text: "您的业务有自己的规则；标准产品很少覆盖全流程。",
+        image: "7.webp",
+      },
+    ],
+  },
+  pain: {
+    title: "企业在哪里丢失线索、时间与金钱",
+    lead: "当工作分散在 CRM、表格与即时通讯中，团队靠手工运转，客户从缝隙溜走。",
+    items: [
+      {
+        title: "手工迁移数据",
+        text: "信息在表格、CRM、邮件与聊天间复制 — 造成错误、重复与缺口。",
+        image: "1.webp",
+      },
+      {
+        title: "线索流失",
+        text: "当线索来自多渠道且未统一，部分咨询会丢失或处理太晚。",
+        image: "2.webp",
+      },
+      {
+        title: "没有透明分析",
+        text: "数据分散；看清现状只能靠手工报表。",
+        image: "3.webp",
+      },
+    ],
+  },
+  why: {
+    h2Line1: "我们自动化工作流",
+    h2Line2: "服务您的业务",
+    subtitle: "自动化减少琐事、加快线索处理，并给出清晰过程管控。",
+    benefits: [
+      {
+        title: "减少手工操作",
+        text: "工具间的例行搬运自动化 — 团队少复制粘贴出错。",
+      },
+      {
+        title: "更快处理线索",
+        text: "每条咨询进入同一系统，带状态与通知 — 不会死在聊天线程里。",
+      },
+      {
+        title: "清晰的过程管控",
+        text: "阶段、任务与报表集中一处 — 不再靠临时表格仪表盘。",
+      },
+      {
+        title: "更好的团队体验",
+        text: "角色、权限与流程贴合您的逻辑 — 每人在正确界面工作。",
+      },
+      {
+        title: "有更多时间增长",
+        text: "团队聚焦产品与客户，重复工作在后台运行。",
+      },
+      {
+        title: "更少数据错误",
+        text: "统一处理模型与自动步骤，减少重复与脏数据。",
+      },
+    ],
+  },
+  features: {
+    title: "您可以自动化什么",
+    ariaRegion: "自动化主题",
+    ariaCarousel: "carousel",
+    prev: "上一张",
+    next: "下一张",
+    slides: [
+      {
+        title: "线索获取",
+        text: "把网站、表单、Telegram、邮件及其他来源的线索汇入一处。",
+        image: "1.webp",
+      },
+      {
+        title: "CRM 与销售漏斗",
+        text: "按您的销售方式配置客户、状态、任务与漏斗阶段。",
+        image: "2.webp",
+      },
+      {
+        title: "客户门户",
+        text: "为客户、员工或伙伴打造具备合适功能与角色的门户。",
+        image: "3.webp",
+      },
+      {
+        title: "管理后台",
+        text: "面向线索、用户、订单、内容与运营的内部工具 — 贴合您的流程。",
+        image: "4.webp",
+      },
+      {
+        title: "通知与提醒",
+        text: "在 Telegram、邮件或产品内自动通知。",
+        image: "5.webp",
+      },
+      {
+        title: "报表与分析",
+        text: "面向关键 KPI 的仪表盘与报表。",
+        image: "6.webp",
+      },
+      {
+        title: "支付与文档",
+        text: "支付、状态、确认、文档与支付后逻辑。",
+        image: "7.webp",
+      },
+      {
+        title: "外部集成",
+        text: "连接网站、CRM、Telegram、表格、支付、API 等。",
+        image: "8.webp",
+      },
+    ],
+  },
+  examples: {
+    title: "线索、门户、通知与支付在一条链路。",
+    body: "一套系统连接渠道与线索、状态与客户旅程、门户与管理端、记录与消息 — 无需手工重录或丢失咨询。",
+    srOnly: "贯通的产品流程",
+  },
+  ecosystemLabels: [
+    "Telegram",
+    "邮箱",
+    "CRM",
+    "表格",
+    "WhatsApp",
+    "Notion",
+    "日历",
+    "任务",
+    "Payments",
+    "文档",
+    "报表",
+    "自动化",
+    "通知",
+  ],
+  results: {
+    title: "交付完成后您得到什么",
+    folderLabel: "交付文件夹",
+    folderMeta: (count) => `${count} deliverables after the project`,
+    cta: "看看我们可以为您做什么",
+    items: [
+      "未来系统的清晰结构",
+      "页面与逻辑原型",
+      "服务您流程的 Web 服务或内部工具",
+      "可运营的管理后台",
+      "对接您需要的服务",
+      "通知、状态与自动动作",
+      "上线支持与迭代路径",
+    ],
+  },
+  whyTivonix: {
+    bandTitle: "围绕您业务定制的自动化",
+    points: [
+      {
+        title: "不只是网站——是能跑通的系统",
+        text: "端到端思考：线索、数据、用户、流程、管理、集成，以及上线之后。",
+      },
+      {
+        title: "通俗易懂的说明",
+        text: "不堆砌术语 — 做什么、为什么重要、如何帮到业务。",
+      },
+      {
+        title: "可以从 MVP 开始",
+        text: "第一天不必上完整平台；先交付可运行第一版，再逐步扩展。",
+      },
+      {
+        title: "我们负责全流程",
+        text: "结构、设计、开发、集成、测试与上线 — 同一团队。",
+      },
+    ],
+  },
+  faq: {
+    title: "FAQ",
+    items: [
+      {
+        q: "业务自动化多少钱？",
+        a: "取决于范围：角色、页面、逻辑、集成与场景。短暂梳理后可给出预算区间。",
+      },
+      {
+        q: "开发需要多久？",
+        a: "取决于复杂度。小系统更快交付；大系统需要更多阶段。从 MVP 开始往往最好。",
+      },
+      {
+        q: "可以只自动化一个流程吗？",
+        a: "可以 — 而且常常是理想路径。例如先自动化线索，再加门户、分析或支付。",
+      },
+      {
+        q: "是否对接 Telegram、支付及其他服务？",
+        a: "可以 — Telegram、邮件、支付、CRM、表格、API 等。",
+      },
+      {
+        q: "SaaS 产品还是定制开发？",
+        a: "通用任务可用 SaaS。独特逻辑与流程通常更适合定制。",
+      },
+      {
+        q: "需要完整技术规格书吗？",
+        a: "不需要。通俗描述即可开工 — 我们帮您梳理结构与首个里程碑。",
+      },
+    ],
+  },
+  ctaBlock: {
+    title: "我们会展示适合您的自动化形态",
+    body: "告诉我们业务现状。我们梳理流程、找出自动化机会，并提出清晰路径 — 从简单内部工具到完整 Web 服务。",
+    primary: "预约咨询",
+    secondary: "通过 Telegram 联系",
+    footnote: "通常一天内回复，并给出合理的第一步。",
+  },
+  common: { imageFallback: "图片即将上线" },
+};
+
 export function getAutomationPageCopy(lang: Lang): AutomationPageCopy {
+  if (lang === "zh") return zh;
   return lang === "en" ? en : ru;
 }
 

@@ -354,6 +354,7 @@ export default function ContactsPage() {
   const { pathname } = useLocation();
   const isRu = lang === "ru";
   const isEnPath = pathname.startsWith("/en");
+  const isZhPath = pathname.startsWith("/zh");
   const { headerH, side, sun, r1, r2, r3 } = useSolarLayoutNoScroll();
 
   const seoTitle = isRu

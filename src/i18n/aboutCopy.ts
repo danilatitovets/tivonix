@@ -190,10 +190,108 @@ const COPY_EN = {
   },
 } as const;
 
+const COPY_ZH = {
+  seo: {
+    title: "关于我们 — TIVONIX",
+    description:
+      "TIVONIX 是白俄罗斯产品团队：网站、线索流程、客户后台与自动化。我们如何起步、使命、价值观，以及为何客户选择与我们合作。",
+  },
+  hero: {
+    title: "线索不再丢失的业务系统",
+    titleLines: ["让线索", "不再", "流失的", "系统"],
+    cta: "沟通您的需求",
+  },
+  story: {
+    paragraphs: [
+      "网站上有表单，但接下来往往是混乱：邮件堆在收件箱、状态只在某个人脑子里、Excel 手工维护，谁也不知道谁接了这条线索。TIVONIX 正是从这种痛点成长起来的——不是从路演 PPT。",
+      "我们为真实业务搭建过从网站到 Telegram、CRM 与客户后台的链路，清楚哪里会断。所以我们不做「好看就交差」的页面，而是交付能跑通的系统。",
+      "如今我们交付获客落地页、mini-CRM、客户后台与 MVP。范围清晰、周期清晰、结果可追责。按任务组队、过程可见，并移交代码与权限。系统留在您这边，而不是锁在别人的账号里。",
+    ],
+  },
+  mission: {
+    label: "使命",
+    title: "自动化围绕客户的琐碎工作",
+    text: "帮助团队停止手工搬线索、丢失上下文——让人去成交与打磨产品，而不是天天找「谁接了那条线索」。",
+  },
+  vision: {
+    label: "愿景",
+    title: "任意规模下清晰的数字化闭环",
+    text: "从本地生意到 Web 产品：从第一次触达到系统中的状态，一条路径走通。不做虚荣功能——只做推动成交与响应速度的部分。",
+  },
+  values: {
+    label: "价值观",
+    title: "速度、清晰、可追责",
+    text: "每个项目都这样推进——从第一条消息到移交权限。",
+    items: [
+      {
+        title: "速度",
+        text: "快速启动、短迭代：前几周就能看到中间成果，而不是只在结尾才见结果。",
+      },
+      {
+        title: "清晰",
+        text: "开工前锁定范围、周期与边界。哪些在内、哪些留到下一阶段，写清楚。",
+      },
+      {
+        title: "可追责",
+        text: "对结果负责：线索流程、状态与关键用户路径在上线前完成校验。",
+      },
+      {
+        title: "透明",
+        text: "移交代码与权限。隐私与系统控制权留在您手中。",
+      },
+    ],
+  },
+  why: {
+    title: "为什么选择 TIVONIX",
+    text: "我们把产品、集成与上线连成一体——让您专注增长，而不是争论「线索去哪了」。",
+    cta: "沟通您的需求",
+    items: [
+      {
+        key: "experience",
+        title: "经验",
+        text: "从 Telegram 获客到金融科技与带后台/支付的市场平台——都是已上线项目。",
+      },
+      {
+        key: "expertise",
+        title: "专长",
+        text: "把难点做简单：路由、角色、状态、集成——不做过度架构。",
+      },
+      {
+        key: "innovation",
+        title: "技术",
+        text: "现代技术栈，在真正省时间的地方用 AI，并自动化客户旅程中的琐事。",
+      },
+      {
+        key: "team",
+        title: "团队",
+        text: "设计、工程、QA 与上线一体协作。按任务组队——不是无名外包作坊。",
+      },
+    ],
+  },
+  people: {
+    title: "我们是谁",
+    text: "真正把项目从想法推到生产的角色。",
+    members: [
+      { id: "danila", initials: "DT", name: "Danila T.", role: "架构与全栈" },
+      { id: "anna", initials: "AK", name: "Anna K.", role: "UI/UX 设计" },
+      { id: "maxim", initials: "MS", name: "Maxim S.", role: "前端" },
+      { id: "igor", initials: "IV", name: "Igor V.", role: "后端" },
+      { id: "elena", initials: "EN", name: "Elena N.", role: "QA 与测试" },
+      { id: "roman", initials: "RP", name: "Roman P.", role: "项目管理" },
+    ],
+  },
+  join: {
+    cta: "开始沟通",
+  },
+} as const;
+
 export function aboutCopy(lang: Lang) {
+  if (lang === "zh") return COPY_ZH;
   return lang === "en" ? COPY_EN : COPY_RU;
 }
 
 export function aboutPath(lang: Lang) {
-  return lang === "en" ? "/en/about" : "/about";
+  if (lang === "en") return "/en/about";
+  if (lang === "zh") return "/zh/about";
+  return "/about";
 }

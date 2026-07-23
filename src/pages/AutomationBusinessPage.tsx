@@ -999,7 +999,7 @@ export default function AutomationBusinessPage() {
           description={t.seo.description}
           canonicalPath="/avtomatizaciya-biznesa"
           schemaJsonLd={schema}
-          ogLocalePrimary={lang === "en" ? "en_US" : "ru_RU"}
+          ogLocalePrimary={lang === "zh" ? "zh_CN" : lang === "en" ? "en_US" : "ru_RU"}
         />
 
         <Header />

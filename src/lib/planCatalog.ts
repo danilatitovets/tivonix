@@ -9,7 +9,7 @@ export type PlanCatalogEntry = {
   id: PlanLeadId;
   /** Отображаемое имя (EN; для RU см. pricingCopy) */
   name: string;
-  tagline: { ru: string; en: string };
+  tagline: { ru: string; en: string; zh: string };
   /** Deep link payload (?start=...) */
   telegramPayload: string;
   /** Подпись источника в уведомлении админу */
@@ -28,6 +28,7 @@ export const PLAN_CATALOG: Record<PlanLeadId, PlanCatalogEntry> = {
     tagline: {
       ru: "Лендинг + заявки + Telegram",
       en: "Landing page + leads + Telegram",
+      zh: "落地页 + 线索 + Telegram",
     },
     telegramPayload: "plan_start",
     adminSource: "Start (/plans)",
@@ -39,6 +40,7 @@ export const PLAN_CATALOG: Record<PlanLeadId, PlanCatalogEntry> = {
     tagline: {
       ru: "Система заявок + Telegram + мини-CRM",
       en: "Lead system + Telegram + mini-CRM",
+      zh: "线索系统 + Telegram + 迷你 CRM",
     },
     telegramPayload: "plan_growth",
     adminSource: "Growth (/plans)",
@@ -50,6 +52,7 @@ export const PLAN_CATALOG: Record<PlanLeadId, PlanCatalogEntry> = {
     tagline: {
       ru: "Веб-сервис, кабинет, админка, оплата",
       en: "Web service, client area, admin, payments",
+      zh: "Web 服务、客户后台、管理端、支付",
     },
     telegramPayload: "plan_product",
     adminSource: "Product (/plans)",
@@ -61,6 +64,7 @@ export const PLAN_CATALOG: Record<PlanLeadId, PlanCatalogEntry> = {
     tagline: {
       ru: "Автоматизация, AI и индивидуальное решение",
       en: "Automation, AI and a custom build",
+      zh: "自动化、AI 与定制方案",
     },
     telegramPayload: "plan_custom",
     adminSource: "Custom (/plans)",
@@ -72,6 +76,7 @@ export const PLAN_CATALOG: Record<PlanLeadId, PlanCatalogEntry> = {
     tagline: {
       ru: "Подбор подходящего формата запуска",
       en: "Finding the right launch format",
+      zh: "选择合适的启动形式",
     },
     telegramPayload: "plan_help",
     adminSource: "Help (/plans)",

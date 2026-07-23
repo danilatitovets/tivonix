@@ -615,7 +615,275 @@ const EN: PartnersCopy = {
   },
 };
 
+const ZH: PartnersCopy = {
+  seo: {
+    title: "TIVONIX 合作伙伴计划 — Referral 与 White-label",
+    description:
+      "推荐客户或以您的品牌销售开发。TIVONIX 负责范围、构建并交付网站、CRM、门户、机器人与 Web 产品。",
+    serviceName: "TIVONIX Partners — Referral 与 White-label",
+    emailSubject: "TIVONIX Partners — 合作沟通",
+  },
+  hero: {
+    h1: "承接更多开发 — 无需自建 IT 团队",
+    subtitle:
+      "面向代理、自由职业者与工作室：您找客户；TIVONIX 定范围、构建并上线。客户归您 — 选择 Referral 或 White-label 并在面板注册。",
+    cta: "成为合作伙伴",
+    loginCta: "登录面板",
+    trust: "从一个项目开始 • 客户归您 • NDA",
+  },
+  problem: {
+    title: "不要因为客户需要开发就放弃成交",
+    body: [
+      { text: "说你跑" },
+      { text: "广告", pill: true },
+      { text: "," },
+      { text: "design", pill: true },
+      { text: "， 或者" },
+      { text: "growth", pill: true },
+      { text: "。您的客户信任您——现在他们需要" },
+      { text: "网站、CRM、在线预约或客户门户", em: true },
+      { text: "。你不必这样做" },
+      { text: "招聘开发", em: true },
+      { text: "或寻找自由职业者。将工作交给TIVONIX，" },
+      { text: "加入您的加价", em: true },
+      { text: "，并继续拥有这种关系。我们确定范围、构建、测试和" },
+      { text: "上线产品", em: true },
+      { text: "." },
+    ],
+    rolesHeading: "责任归属",
+    roles: [
+      {
+        title: "您",
+        items: [
+          "找到客户",
+          "与业务目标保持一致",
+          "确定最终报价",
+          "仍然是主要联系人",
+          "拥有客户关系",
+        ],
+      },
+      {
+        title: "TIVONIX",
+        items: [
+          "拥有技术范围",
+          "计算合作伙伴价格",
+          "处理设计和开发",
+          "测试并交付项目",
+          "让每个阶段都可见",
+        ],
+      },
+      {
+        title: "对您意味着什么",
+        items: [
+          "无需内部开发人员",
+          "您可以进行更高价值的交易",
+          "客户关系留在您这边",
+          "合作价与客户价之间的差价归您",
+          "您扩展了代理机构的服务阵容",
+        ],
+      },
+    ],
+  },
+  money: {
+    label: "简单示例",
+    body: "TIVONIX 开发报价 $1,500。您以 $2,200 卖给客户。我们交付建设，您管理客户，差额 $700 留在您的代理。",
+    caption: "客户付给您 → 您保留加价 → TIVONIX 收取合作价",
+    flow: ["您已有客户", "由 TIVONIX 交付", "您赚取加价差"],
+    disclaimer:
+      "数字仅为示意。收益只来自真实已付款项目。每个项目单独报价。",
+  },
+  models: {
+    heading: {
+      before: "推荐客户——或者",
+      sell: "销售",
+      middle: "您下的项目",
+      brand: "品牌",
+    },
+    menu: [
+      { title: "24 小时内评估", description: "范围、周期、形式" },
+      { title: "White-label", description: "以您的品牌交付" },
+      { title: "Referral", description: "客户付款后结算" },
+      { title: "合作伙伴面板", description: "状态与结算" },
+    ],
+    allInOne: {
+      title: "一切集中在一处",
+      text: "报价、合作模式、佣金与成交跟踪 — 集中一处。",
+    },
+    quickStart: {
+      pill: "24 小时内评估",
+      title: "快速启动",
+      text: "发送简报 — 获得范围、周期与合作报价。",
+    },
+    status: {
+      title: "状态透明",
+      text: "看清每笔成交状态与结算时间。",
+      steps: [
+        { t: "引入", d: "收到联系信息" },
+        { t: "进行中", d: "建设正在进行中" },
+        { t: "已付款", d: "佣金已计提" },
+      ],
+    },
+    referral: {
+      title: "Referral 合作伙伴",
+      text: "分享联系方式或把 TIVONIX 加入聊天。我们评估、成交并交付。客户归属您。客户为订单付款后计提合作伙伴奖励。",
+      cta: "成为 Referral 合作伙伴",
+      note: "仅在客户付款后发放奖励。",
+    },
+    whiteLabel: {
+      title: "White-label",
+      text: "把开发作为您代理的服务销售。TIVONIX 报出开发成本。您定客户最终价。未经批准我们不联系客户。",
+      cta: "以 White-label 合作",
+      note: "审核申请后约定价格、周期与条款。",
+    },
+    panelHint: "在 TIVONIX 合作伙伴面板完成注册",
+    footnote: "注册免费。仅在已付款项目上结算奖励。",
+  },
+  video: {
+    title: "合作如何运作 — 60 秒看懂",
+    subtitle: "从选择形式到在 TIVONIX 面板中的第一个项目。",
+  },
+  afterReg: {
+    title: "注册之后会发生什么",
+    lead: "从申请到面板权限的短路径。",
+    steps: [
+      { t: "您选择合作形式", d: "推荐或白标签。" },
+      { t: "创建账户", d: "留下联系方式并提交申请。" },
+      { t: "我们审核申请", d: "审核通过后，您接受合作条款。" },
+      { t: "您获得面板权限", d: "推荐客户或创建首个项目并跟踪状态。" },
+    ],
+    disclaimer:
+      "注册不等于自动通过。我们先审核申请并联系合作伙伴。",
+  },
+  capabilities: {
+    heading: "能力",
+    titles: [
+      "网站或问卷",
+      "机器人与自动化",
+      "CRM 或管理后台",
+      "客户门户 / 产品",
+      "集成",
+      "支持与增长",
+    ],
+    h2Before: "从广告着陆页到",
+    h2Pill: "一个完整的",
+    h2After: "Web 产品",
+  },
+  process: {
+    title: "客户归您。交付归我们",
+    lead: "从需求到上线六步清晰 — 没有模糊周期或隐藏角色。",
+    steps: ["需求", "需求梳理", "评估", "对齐确认", "开发", "上线"],
+  },
+  cases: {
+    title: "不是概念图 — 是可运行产品",
+    view: "查看项目",
+    all: "全部项目",
+    texts: {
+      spliton:
+        "音乐资产金融科技平台：发行目录、份额购买、钱包、二级市场、结算与管理系统。",
+      slotty:
+        "在线预约系统：服务、排班、预约、提醒、作品集、订阅与客户门户。",
+    },
+  },
+  examples: {
+    sr: "Referral 与 White-label 示例",
+    referral: {
+      pill: "Referral",
+      title: "Referral 示例",
+      text: "客户已为订单付款。合作伙伴奖励在确认到账后计提 — 不是招募其他伙伴的奖励。",
+    },
+    whiteLabel: {
+      pill: "White-label",
+      title: "White-label 示例",
+      text: "TIVONIX 向代理报出开发成本。代理设定客户价并保留差价。",
+    },
+  },
+  faq: {
+    title: "FAQ",
+    more: "详情",
+    items: [
+      {
+        q: "谁可以成为合作伙伴？",
+        a: "已有或将有开发需求客户的代理、工作室、自由职业者与专家。",
+      },
+      {
+        q: "Referral 与 White-label 有何不同？",
+        a: "Referral — 您移交客户；TIVONIX 跟进成交，付款后发放奖励。White-label — 以您的品牌销售开发，客户价由您自定。",
+      },
+      {
+        q: "谁与客户沟通？",
+        a: "White-label 下客户沟通由您负责。Referral 下我们可按约定形式直接沟通。",
+      },
+      {
+        q: "客户关系是否留在代理？",
+        a: "是的。客户归属您 — TIVONIX 不抢客户关系。",
+      },
+      {
+        q: "Referral 奖励何时发放？",
+        a: "客户为订单付款且确认到账后。奖励只来自真实已付款项目。",
+      },
+      {
+        q: "代理如何通过 White-label 获利？",
+        a: "TIVONIX 给出开发成本。您定最终客户价并保留差价。",
+      },
+      {
+        q: "TIVONIX 可以直接联系客户吗？",
+        a: "White-label — 仅在您批准下联系。Referral 则事先约定联系形式。",
+      },
+      {
+        q: "可以从一个项目开始吗？",
+        a: "可以。用一个试点项目起步很常见。",
+      },
+      {
+        q: "注册之后会发生什么？",
+        a: "申请进入审核（pending）。通过后 — 合作条款与面板权限。",
+      },
+      {
+        q: "在哪里跟踪客户、成交与结算？",
+        a: "在 TIVONIX 合作伙伴面板：成交状态、项目与结算集中一处。",
+      },
+    ],
+  },
+  final: {
+    badge: "准备开始",
+    title: "从一个项目开始",
+    body: "选择形式、注册，并通过合作伙伴面板提交首个任务。",
+    referralCta: "选择 Referral",
+    whiteLabelCta: "选择 White-label",
+    loginLink: "已有账户？登录面板",
+    footnote: "从一个项目开始 • 客户归您 • NDA",
+  },
+  footer: {
+    marquee: "WHITE-LABEL · REFERRAL · 伙伴开发 · 以您的品牌",
+    homeAria: "TIVONIX — 首页",
+    navAria: "页脚导航",
+    formats: "形式",
+    login: "登录面板",
+    askTelegram: "提问",
+    projects: "项目",
+    contacts: "联系方式",
+    channel: "渠道",
+    privacy: "隐私",
+    privacyAria: "隐私政策（PDF）",
+    consent: "同意",
+    consentAria: "个人信息处理同意（PDF）",
+    note: "面向代理的开发：以您的品牌交付网站、CRM、门户与机器人。",
+  },
+  discuss: {
+    label: "提问",
+    ask: "问题走 Telegram — 注册在面板完成",
+  },
+  ui: {
+    client: "客户",
+    you: "您",
+    youPct: "您",
+    estimate: "TIVONIX 报价",
+    markup: "您的加价",
+    clientPrice: "客户报价",
+  },
+};
+
 export function getPartnersCopy(lang: Lang): PartnersCopy {
+  if (lang === "zh") return ZH;
   return lang === "en" ? EN : RU;
 }
 
@@ -625,6 +893,10 @@ export const PARTNERS_DOCS = {
     consent: "/doc/Согласие_на_обработку_ПД_Tivonix_RU.pdf",
   },
   en: {
+    privacy: "/doc/Privacy_Policy_Tivonix_EN.pdf",
+    consent: "/doc/Consent_Tivonix_EN.pdf",
+  },
+  zh: {
     privacy: "/doc/Privacy_Policy_Tivonix_EN.pdf",
     consent: "/doc/Consent_Tivonix_EN.pdf",
   },
