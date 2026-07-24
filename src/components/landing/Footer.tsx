@@ -9,6 +9,7 @@ import { TG_CHANNEL_URL } from "../../constants/links";
 import { CONTACT_EMAIL } from "../../lib/leads";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
 import { pathForLang } from "../../lib/localePaths";
+import { t3 } from "../../i18n/pick";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -19,28 +20,25 @@ const FOOTER_BG = `/images/${encodeURI("как рабоает")}/${encodeURI("ф
 const SELL_IMG = "/images/footer-sell.webp";
 
 const FOOTER_PAGES = [
-  { to: "/", label: { ru: "Главная", en: "Home" } },
-  { to: "/plans", label: { ru: "Тарифы", en: "Pricing" } },
-  { to: "/about", label: { ru: "О компании", en: "About" } },
-  { to: "/contacts", label: { ru: "Контакты", en: "Contacts" } },
+  { to: "/", label: { ru: "Главная", en: "Home", zh: "首页" } },
+  { to: "/plans", label: { ru: "Тарифы", en: "Pricing", zh: "方案价格" } },
+  { to: "/about", label: { ru: "О компании", en: "About", zh: "关于我们" } },
+  { to: "/contacts", label: { ru: "Контакты", en: "Contacts", zh: "联系方式" } },
 ] as const;
 
 const FOOTER_SERVICES = [
-  { to: "/sozdanie-sajtov", label: { ru: "Создание сайтов", en: "Website development" } },
-  { to: "/avtomatizaciya-biznesa", label: { ru: "Автоматизация", en: "Automation" } },
-  { to: "/#ai", label: { ru: "AI в продуктах", en: "AI in products" } },
-  { to: "/#process", label: { ru: "Как мы работаем", en: "How we work" } },
+  { to: "/sozdanie-sajtov", label: { ru: "Создание сайтов", en: "Website development", zh: "网站开发" } },
+  { to: "/avtomatizaciya-biznesa", label: { ru: "Автоматизация", en: "Automation", zh: "业务自动化" } },
+  { to: "/#ai", label: { ru: "AI в продуктах", en: "AI in products", zh: "产品中的 AI" } },
+  { to: "/#process", label: { ru: "Как мы работаем", en: "How we work", zh: "我们如何协作" } },
 ] as const;
 
-const FOOTER_GMAIL_URL =
-  "https://mail.google.com/mail/?view=cm&fs=1" +
-  `&to=${encodeURIComponent(CONTACT_EMAIL)}` +
-  `&su=${encodeURIComponent("Проект (SaaS/MVP)")}`;
+const FOOTER_MAILTO_URL = `mailto:${CONTACT_EMAIL}`;
 
 const FOOTER_CONNECT = [
   { href: TG_CHANNEL_URL, label: "Telegram", kind: "tg" as const },
   { href: "https://www.instagram.com/tivonix.tech/", label: "Instagram", kind: "ig" as const },
-  { href: FOOTER_GMAIL_URL, label: "Gmail", kind: "mail" as const },
+  { href: FOOTER_MAILTO_URL, label: "Gmail", kind: "mail" as const },
 ] as const;
 
 const DOCS = {
@@ -66,6 +64,18 @@ const DOCS = {
       href: "/doc/Consent_Tivonix_EN.pdf",
       label: "Consent",
       aria: "Consent to personal data processing (PDF)",
+    },
+  ],
+  zh: [
+    {
+      href: "/doc/Privacy_Policy_Tivonix_EN.pdf",
+      label: "隐私政策",
+      aria: "隐私政策（PDF）",
+    },
+    {
+      href: "/doc/Consent_Tivonix_EN.pdf",
+      label: "同意书",
+      aria: "个人信息处理同意书（PDF）",
     },
   ],
 } as const;
@@ -146,11 +156,13 @@ function SocialIconLink({
   children: React.ReactNode;
   className?: string;
 }) {
+  const openInNewTab = /^https?:/i.test(href);
+
   return (
     <a
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
+      target={openInNewTab ? "_blank" : undefined}
+      rel={openInNewTab ? "noopener noreferrer" : undefined}
       aria-label={label}
       className={cx("site-footer__social-link", className)}
     >
@@ -191,7 +203,8 @@ function Footer() {
   const sellRef = useRef<HTMLDivElement>(null);
   const sellWordRef = useRef<HTMLParagraphElement>(null);
 
-  const t = (v: { ru: string; en: string }) => (isRu ? v.ru : v.en);
+  const t = (v: { ru: string; en: string; zh?: string }) =>
+    lang === "zh" ? v.zh ?? v.en : isRu ? v.ru : v.en;
 
   useEffect(() => {
     const sell = sellRef.current;
@@ -230,7 +243,7 @@ function Footer() {
     return () => ro.disconnect();
   }, []);
 
-  const docs = isRu ? DOCS.ru : DOCS.en;
+  const docs = lang === "zh" ? DOCS.zh : isRu ? DOCS.ru : DOCS.en;
   const projects = buildProjects(isRu).slice(0, 5);
   const year = new Date().getFullYear();
 
@@ -259,7 +272,7 @@ function Footer() {
                 <Link
                   to="/"
                   className="site-footer__logo focus:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-lg"
-                  aria-label={isRu ? "На главную" : "Home"}
+                  aria-label={t3(lang, "На главную", "Home", "返回首页")}
                 >
                   <img
                     src={LOGO_LOCKUP_PNG}
@@ -273,14 +286,14 @@ function Footer() {
                 </Link>
 
                 <h2 className="site-footer__touch-title">
-                  {isRu ? "Связаться" : "Get in touch"}
+                  {t3(lang, "Связаться", "Get in touch", "联系我们")}
                 </h2>
 
                 <p className="site-footer__touch-lead">
-                  {isRu ? "Ваш техпартнёр по сайтам, ботам и CRM" : "Your tech partner for sites, bots and CRM"}
+                  {t3(lang, "Ваш техпартнёр по сайтам, ботам и CRM", "Your tech partner for sites, bots and CRM", "您的网站、机器人与 CRM 技术伙伴")}
                 </p>
 
-                <a href={FOOTER_GMAIL_URL} target="_blank" rel="noopener noreferrer" className="site-footer__touch-row">
+                <a href={FOOTER_MAILTO_URL} className="site-footer__touch-row">
                   <Mail className="site-footer__touch-row-icon" strokeWidth={2} aria-hidden />
                   <span>{CONTACT_EMAIL}</span>
                 </a>
@@ -297,13 +310,13 @@ function Footer() {
 
                 <div className="site-footer__actions">
                   <LeadCTAButton source="footer" variant="primary" className="site-footer__action-btn">
-                    {isRu ? "Обсудить проект" : "Discuss a project"}
+                    {t3(lang, "Обсудить проект", "Discuss a project", "沟通项目")}
                   </LeadCTAButton>
                 </div>
 
                 <nav
                   className="site-footer__social"
-                  aria-label={isRu ? "Соцсети и почта" : "Social and email"}
+                  aria-label={t3(lang, "Соцсети и почта", "Social and email", "社交与邮箱")}
                 >
                   {FOOTER_CONNECT.map((item) => (
                     <SocialIconLink
@@ -325,7 +338,7 @@ function Footer() {
               </aside>
 
               <div className="site-footer__grid">
-                <ColNav id="footer-pages" title={isRu ? "Компания" : "Company"}>
+                <ColNav id="footer-pages" title={t3(lang, "Компания", "Company", "公司")}>
                   {FOOTER_PAGES.map((i) => (
                     <li key={i.to}>
                       <FooterLink to={pathForLang(i.to, lang)}>{t(i.label)}</FooterLink>
@@ -333,13 +346,13 @@ function Footer() {
                   ))}
                 </ColNav>
 
-                <ColNav id="footer-services" title={isRu ? "Услуги" : "Services"}>
+                <ColNav id="footer-services" title={t3(lang, "Услуги", "Services", "服务")}>
                   {FOOTER_SERVICES.map((i) => (
                     <li key={i.to}>
                       <FooterLink
                         to={
                           i.to.startsWith("/#")
-                            ? `${lang === "en" ? "/en" : "/"}${i.to.slice(1)}`
+                            ? `${lang === "en" ? "/en" : lang === "zh" ? "/zh" : "/"}${i.to.slice(1)}`
                             : pathForLang(i.to, lang)
                         }
                       >
@@ -349,10 +362,10 @@ function Footer() {
                   ))}
                 </ColNav>
 
-                <ColNav id="footer-work" title={isRu ? "Кейсы" : "Cases"}>
+                <ColNav id="footer-work" title={t3(lang, "Кейсы", "Cases", "案例")}>
                   <li>
                     <FooterLink to={pathForLang("/projects", lang)}>
-                      {isRu ? "Все проекты" : "All projects"}
+                      {t3(lang, "Все проекты", "All projects", "全部项目")}
                     </FooterLink>
                   </li>
                   {projects.map((p) => (
@@ -371,11 +384,11 @@ function Footer() {
                   <span className="site-footer__copy-sep" aria-hidden>
                     |
                   </span>
-                  {isRu ? "Все права защищены" : "All rights reserved"}
+                  {t3(lang, "Все права защищены", "All rights reserved", "版权所有")}
                 </p>
               </div>
 
-              <nav className="site-footer__legal-nav" aria-label={isRu ? "Документы" : "Legal"}>
+              <nav className="site-footer__legal-nav" aria-label={t3(lang, "Документы", "Legal", "法律文件")}>
                 {docs.map((d) => (
                   <ExternalLink key={d.href} href={d.href} newTab aria-label={d.aria}>
                     {d.label}
@@ -392,7 +405,7 @@ function Footer() {
               }}
             >
               <p className="site-footer__sell-kicker">
-                {isRu ? "Ваш техпартнёр" : "Your tech partner"}
+                {t3(lang, "Ваш техпартнёр", "Your tech partner", "您的技术伙伴")}
               </p>
               <p className="site-footer__sell-word" ref={sellWordRef} aria-label="TIVONIX">
                 tivonix

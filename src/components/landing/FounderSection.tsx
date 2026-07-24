@@ -129,7 +129,7 @@ export default function FounderSection() {
       <Container>
         <div className="mx-auto max-w-[42rem] text-center">
           <Link
-            to={lang === "en" ? "/en" : "/"}
+            to={lang === "en" ? "/en" : lang === "zh" ? "/zh" : "/"}
             className="mb-8 inline-flex justify-center sm:mb-10"
             aria-label="TIVONIX"
           >

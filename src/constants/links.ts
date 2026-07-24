@@ -9,7 +9,7 @@ import type { PlanId } from "../lib/pricingData";
 /** Базовая ссылка на Telegram-бота для заявок */
 export const TG_BOT_BASE_URL = "https://t.me/tivonixtech_leads_bot";
 
-/** Старый канал/чат TIVONIX — для соцсетей в футере и т.п. */
+/** Официальный Telegram-контакт для CTA (@TIVONIX). Канал @TIVONIXX — не используем в ссылках сайта. */
 export const TG_CHANNEL_URL = "https://t.me/TIVONIX";
 
 /** Deep link по умолчанию (калькулятор / квиз бота) */

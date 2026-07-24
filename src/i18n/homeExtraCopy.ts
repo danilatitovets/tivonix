@@ -2,6 +2,7 @@ import type { Lang } from "./LangProvider";
 
 /** Copy for new / rewritten home sections (RU + EN). */
 export function homeExtraCopy(lang: Lang) {
+  if (lang === "zh") return COPY_ZH;
   return lang === "ru" ? COPY_RU : COPY_EN;
 }
 
@@ -480,5 +481,244 @@ const COPY_EN = {
   },
   mobileSticky: {
     label: "Get an estimate",
+  },
+} as const;
+
+const COPY_ZH = {
+  trust: {
+    ariaLabel: "为什么可以信任我们",
+    items: [
+      "上线后支持",
+    ],
+  },
+  featured: {
+    eyebrow: "项目",
+    title: "三个已上线成果",
+    subtitle: "不同类型项目 — 从金融科技平台到本地生意。",
+    viewCase: "查看案例",
+    openLive: "打开线上项目",
+    problem: "问题：",
+    solution: "方案：",
+    resultLabel: "结果：",
+    prev: "上一个案例",
+    next: "下一个案例",
+    items: [
+      {
+        id: "spliton",
+        type: "Web 产品 · 金融科技",
+        problem:
+          "需要音乐份额金融科技平台 — 含资金流、角色与合规的完整产品，不是落地页。",
+        solution:
+          "交付发行目录、门户、KYC、支付、二级市场与运营门户。",
+        result:
+          "已上线金融科技平台：门户、角色、KYC、支付与二级市场。",
+        modules: [
+          "门户",
+          "KYC",
+          "Payments",
+          "二级市场",
+          "管理",
+          "i18n",
+        ],
+      },
+      {
+        id: "slotty",
+        type: "市场平台 · 预约",
+        problem:
+          "需要的不只是「立即预约」落地页 — 而是含目录、时段、师傅后台与支付的预约市场。",
+        solution:
+          "交付带筛选目录 + 地图、Telegram Mini App、Free/Pro 师傅后台、管理端与 bePaid。",
+        result:
+          "slotty.of.by 市场平台：无需电话即可预约，后台与支付一体。",
+        modules: [
+          "目录",
+          "地图",
+          "时段",
+          "师傅后台",
+          "Telegram",
+          "bePaid",
+        ],
+      },
+      {
+        id: "logovo",
+        type: "本地生意",
+        problem:
+          "司机找不到门店或预约路径 — 地址与 CTA 被埋没，线索流失。",
+        solution:
+          "交付网络站：门店、服务、价格、地图与短路径预约/拨打。",
+        result:
+          "轮胎服务网络站：门店、服务、价格与清晰获客路径。",
+        modules: ["门店", "服务", "价格", "地图", "预约", "企业对企业"],
+      },
+    ],
+  },
+  direction: {
+    eyebrow: "方向",
+    title: "您要启动什么？",
+    subtitle: "选择方向 — 我们梳理需求并建议第一步。",
+    leads: {
+      label: "线索",
+      title: "每条线索一条链路",
+      text: "网站、机器人与 CRM — 一条回复路径。",
+      cta: "梳理路径",
+      points: ["网站与落地页", "Telegram 机器人", "迷你 CRM"],
+      stack: [
+        {
+          title: "网站",
+          text: "表单 → 线索即时到达",
+          headline: "用户填写表单",
+          mock: "表单" as const,
+          mockName: "Alex",
+          mockContact: "+1 555 010-2030",
+          mockSubmit: "发送",
+        },
+        {
+          title: "机器人",
+          text: "Telegram 通知",
+          headline: "线索进入机器人",
+          mock: "机器人" as const,
+          mockName: "新线索",
+          mockContact: "亚历克斯·现场",
+          mockSubmit: "刚刚",
+        },
+        {
+          title: "CRM",
+          text: "已指定负责人",
+          headline: "业主捡起它",
+          mock: "crm" as const,
+          mockName: "亚历克斯·现场",
+          mockContact: "Anna",
+          mockSubmit: "进行中",
+        },
+      ],
+    },
+    product: {
+      label: "Product",
+      title: "启动产品",
+      text: "含门户、角色与支付的 MVP。",
+      cta: "沟通 MVP",
+      points: ["客户门户", "角色与权限", "Payments"],
+      stack: [
+        {
+          title: "软件即服务/MVP",
+          text: "首个可运行版本",
+          headline: "交付第一版",
+          mock: "mvp" as const,
+          mockName: "仪表盘",
+          mockContact: "12 项任务",
+          mockSubmit: "已上线",
+        },
+        {
+          title: "门户",
+          text: "角色清晰不乱",
+          headline: "门户中的角色与权限",
+          mock: "cabinet" as const,
+          mockName: "客户",
+          mockContact: "经理",
+          mockSubmit: "管理",
+        },
+        {
+          title: "Payments",
+          text: "含集成",
+          headline: "完成支付对接",
+          mock: "支付" as const,
+          mockName: "支付",
+          mockContact: "$49",
+          mockSubmit: "已付款",
+        },
+      ],
+    },
+  },
+  solution: {
+    outcomes: [
+      "线索不丢失",
+      "已指定负责人",
+      "下一步清晰可见",
+    ],
+  },
+  aiScenarios: {
+    title: "真正省时间的 AI",
+    note: "按任务与数据要求选型 — 不为贴 logo 而加 AI。",
+    items: [
+      {
+        title: "线索分流",
+        text: "AI 识别主题、提取关键字段并把线索路由到正确负责人。",
+      },
+      {
+        title: "文档处理",
+        text: "系统读取文件、提取信息并填入正确字段。",
+      },
+      {
+        title: "经理协助",
+        text: "AI 在企业知识库中检索信息，并起草给客户的回复。",
+      },
+    ],
+  },
+  homePricing: {
+    eyebrow: "价格",
+    title: "清晰起步，没有空泛承诺",
+    note: "价格取决于页面、角色、集成与业务逻辑。开工前锁定范围、阶段与费用。",
+    allPlans: "对比全部方案",
+    more: "详情",
+    ctas: {
+      start: "获取 Start 范围",
+      growth: "评估 Growth",
+      product: "评估 MVP",
+      custom: "沟通 Custom",
+    },
+  },
+  guarantees: {
+    title: "开发前条款清晰",
+    subtitle: "开工前把范围、周期、费用与职责写清楚。",
+    items: [
+      "阶段开始前锁定范围与费用",
+      "工作拆成清晰阶段",
+      "您能看到中间成果",
+      "移交源代码与权限",
+      "机密数据不会公开",
+      "上线前校验关键流程",
+      "支持条款事先约定",
+    ],
+  },
+  founder: {
+    title: "有真人负责项目 — 不是无名工作室",
+    name: "Danila Titovets",
+    role: "TIVONIX 创始人，全栈开发者",
+    bio: "负责架构、开发与上线。按任务引入设计、前端、后端、移动与增长专家。",
+    cta: "联系创始人",
+  },
+  team: {
+    title: "团队为您的项目协作",
+    text: "TIVONIX 是产品团队：设计、工程、QA 与上线一体闭环。按任务组队快速交付 — 把想法变成已上线结果。白俄罗斯技术团队，服务进入白俄罗斯与 EAEU 的企业。",
+    cta: "关于公司",
+    members: [
+      { initials: "DT", name: "Danila T.", role: "架构与全栈" },
+      { initials: "AK", name: "Anna K.", role: "UI/UX 设计" },
+      { initials: "MS", name: "Maxim S.", role: "前端工程" },
+      { initials: "IV", name: "Igor V.", role: "后端工程" },
+      { initials: "EN", name: "Elena N.", role: "QA 与测试" },
+      { initials: "RP", name: "Roman P.", role: "项目管理" },
+    ],
+  },
+  testimonials: {
+    eyebrow: "客户评价",
+    title: "客户怎么说",
+    viewCase: "案例",
+    ownProduct: "TIVONIX 自有产品",
+  },
+  scale: {
+    badge: "已上线系统",
+    title: "交付线索不丢失的产品",
+    seal: "从想法到上线",
+    foot: "网站、Telegram、CRM、门户与 MVP 在同一闭环。锁定范围与周期，再移交代码与权限。",
+    stats: [
+      { value: "7+", label: "已上线项目" },
+      { value: "1周", label: "最快面板上线" },
+      { value: "100%", label: "代码与权限归您" },
+      { value: "BY · RU", label: "交付地区" },
+    ],
+  },
+  mobileSticky: {
+    label: "获取评估",
   },
 } as const;

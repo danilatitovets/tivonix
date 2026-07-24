@@ -9,8 +9,9 @@ import {
 } from "react";
 import { useLocation } from "react-router-dom";
 import { detectLangFromUrl, readBootstrapLang } from "../lib/readBootstrapLang";
+import { htmlLangAttr } from "./pick";
 
-export type Lang = "ru" | "en";
+export type Lang = "ru" | "en" | "zh";
 
 const LANG_STORAGE_KEY = "tivonix_lang";
 
@@ -457,6 +458,162 @@ const DICT: Record<Lang, Dictionary> = {
       ],
     },
   },
+
+  zh: {
+    header: {
+      nav: {
+        contacts: "联系方式",
+        projects: "项目案例",
+        faq: "常见问题",
+      },
+      start: "开始合作",
+      menu: "菜单",
+      home: "返回首页",
+      language: "语言",
+    },
+    hero: {
+      eyebrow: "TIVONIX • 网站、机器人、CRM",
+      titleLine1: "网站、",
+      titleLine2Prefix: "机器人",
+      titleLine2Premium: "与 Web 服务",
+      titleLine3: "帮助企业",
+      titleLine4: "稳定获取线索",
+      subtitle:
+        "梳理需求、给出方案并端到端交付：落地页、Telegram 机器人、客户后台、CRM 或业务流程自动化。",
+      note: "工作日内回复 • 首次咨询免费",
+      emailPlaceholder: "工作邮箱",
+      btnDemo: "沟通项目",
+      btnTelegram: "通过 Telegram 联系",
+      btnAutomation: "了解我们做什么",
+      statLabel: "今日线索",
+      leadsAria: "示例进线线索",
+      leads: [
+        { title: "TIVONIX Bot", source: "新线索：需要广告落地页报价", time: "刚刚", channel: "telegram" },
+        { title: "maria_beauty", source: "您好，想咨询一下服务", time: "1 分钟", channel: "instagram" },
+        { title: "Anna", source: "周六可以预约美甲吗？", time: "2 分钟", channel: "whatsapp" },
+        { title: "商务方案", source: "已发送开发方案，请查看附件", time: "3 分钟", channel: "gmail" },
+        { title: "网站表单", source: "Ivan · 广告落地页 · +1 555 123-4567", time: "4 分钟", channel: "website" },
+        { title: "广告 · 线索", source: "新线索：美业门店自动化", time: "6 分钟", channel: "facebook" },
+        { title: "消息", source: "想了解线索自动化，价格如何？", time: "7 分钟", channel: "vk" },
+        { title: "新联系人", source: "BuildCo LLC — 已在 CRM 提交咨询", time: "9 分钟", channel: "hubspot" },
+        { title: "项目简报", source: "Notion 简报已填写，可以查看", time: "11 分钟", channel: "notion" },
+        { title: "客户会议", source: "明天 15:00 · 讨论 MVP", time: "13 分钟", channel: "calendar" },
+        { title: "TIVONIX Bot", source: "机器人线索：Telegram + CRM 对接", time: "14 分钟", channel: "telegram" },
+        { title: "studio_pro", source: "带在线预约的网站多少钱？", time: "15 分钟", channel: "instagram" },
+        { title: "Dmitry", source: "需要门店客户在线预约", time: "16 分钟", channel: "whatsapp" },
+        { title: "网站表单", source: "新线索：落地页 + Telegram 通知", time: "18 分钟", channel: "website" },
+      ],
+    },
+    curtain: {
+      title: "开发流程 — 按步骤推进",
+      statusDone: "已完成",
+      statusInProgress: "进行中…",
+      steps: [
+        "我们是 TIVONIX。产品工作室：设计 + 开发。",
+        "明确目标与范围：SaaS / MVP、周期与优先级。",
+        "原型与 UI：结构、页面、状态，对标顶级 SaaS 视觉。",
+        "开发：用户后台、管理面板、角色、表格与筛选。",
+        "集成：支付、通知、邮件、分析、CRM。",
+        "质量：测试、性能、安全与清晰架构。",
+        "上线：部署、域名/SSL、监控与文档。",
+        "上线后：支持、迭代与产品增长。",
+      ],
+    },
+    whyUs: {
+      badge: "技术栈 • 技术 • 产品",
+      titleTop: "我们使用的",
+      titleBottom: "技术与工具",
+      description:
+        "面向 SaaS 与产品的完整技术栈：前端、后端、数据库、UI 体系与性能优化。外观专业，结构可扩展。",
+      footerBadge: "STACK READY • SaaS / MVP",
+      techs: {
+        react: { label: "React", sub: "产品 UI、组件与架构" },
+        ts: { label: "TypeScript", sub: "类型安全与可扩展性" },
+        js: { label: "JavaScript", sub: "逻辑、动画与集成" },
+        node: { label: "Node.js", sub: "API、服务与后台任务" },
+        express: { label: "Express", sub: "路由、中间件与鉴权" },
+        supabase: { label: "Supabase", sub: "Postgres、RLS、Storage、Auth" },
+        postgres: { label: "PostgreSQL", sub: "表结构、索引与查询" },
+        tailwind: { label: "Tailwind CSS", sub: "UI 体系、设计令牌与高效布局" },
+        saas: { label: "SaaS UI / UX", sub: "玻璃质感、栅格、细节与高级排版" },
+        perf: { label: "Performance", sub: "优化、懒加载与体验速度" },
+      },
+    },
+    newCase: {
+      label: "最新案例",
+      title: "NEW",
+      live: "已上线",
+      cta: "查看案例",
+      ctaExternal: "打开面板",
+    },
+    orbit: {
+      badge: "ADMIN PANEL • SaaS",
+      titlePrefix: "为产品打造的",
+      titleHighlight: "管理后台",
+      description:
+        "角色与权限、带筛选的数据表、状态/审核、仪表盘与集成 — 结构清晰，便于扩展。",
+      bullets: [
+        { title: "角色与权限", desc: "用户、权限、审计" },
+        { title: "表格与管理", desc: "搜索、筛选、导出" },
+        { title: "分析与流程", desc: "仪表盘、状态、结算" },
+      ],
+      primaryCta: "沟通项目",
+      secondaryCta: "案例",
+      footnote: "MVP / 客户后台 / 管理面板 / 集成",
+      chat: {
+        clientLabel: "客户 • 确认需求",
+        clientSubtitle: "SaaS + 管理后台",
+        msgClient1:
+          "你好！我们在做 SaaS。你们能做用户与数据管理的后台吗？",
+        msgMe1:
+          "可以 ✅ 我会做后台：角色/权限、表格（搜索/筛选）、状态、审核、分析，并对接 API 与基础安全。",
+        msgClient2: "很好。能加仪表盘和操作记录吗？",
+        inputPlaceholder: "输入消息…",
+        quickCallTitle: "快速通话",
+        quickCallDuration: "15 分钟",
+        quickCallHint: "点击开始通话",
+      },
+    },
+    benefits: {
+      badge: "阶段",
+      titlePrefix: "一个区块，一个重点。",
+      titleHighlight: "核心优势",
+      rowLabel: "优势",
+      rowMeta: "UI • 代码 • 速度 • 扩展",
+      items: [
+        {
+          title: "快速 MVP",
+          desc: "先交付产品核心：优先级、周期与上线逻辑，不做冗余。",
+          badge: "1–3 周",
+        },
+        {
+          title: "高级 UI",
+          desc: "栅格、排版、状态与细节 — 对标顶级 SaaS。",
+          badge: "即看即专业",
+        },
+        {
+          title: "安全与角色",
+          desc: "角色/权限、API 防护、基础安全实践与数据管控。",
+          badge: "Auth / RLS",
+        },
+        {
+          title: "系统集成",
+          desc: "支付、邮件、通知、分析、CRM — 稳定对接。",
+          badge: "webhooks",
+        },
+        {
+          title: "清晰架构",
+          desc: "组件、类型、API 分层与可扩展结构 — 一个月后也不会变成乱码堆。",
+          badge: "可扩展",
+        },
+        {
+          title: "上线之后",
+          desc: "部署、域名/SSL、监控、缺陷修复，以及基于指标的迭代计划。",
+          badge: "持续支持",
+        },
+      ],
+    },
+  },
 };
 
 /* ====== контекст ====== */
@@ -484,7 +641,7 @@ function detectLang(): Lang {
 
 function syncHtmlLang(lang: Lang) {
   if (typeof document === "undefined") return;
-  document.documentElement.lang = lang;
+  document.documentElement.lang = htmlLangAttr(lang);
   // удобно для CSS: html[data-lang="en"] ...
   (document.documentElement as HTMLElement).dataset.lang = lang;
 }
@@ -527,7 +684,7 @@ export function LangProvider({
   return <LangContext.Provider value={value}>{children}</LangContext.Provider>;
 }
 
-/** Syncs `lang` from `/en` or `/ru` URL prefixes (and partners paths). */
+/** Syncs `lang` from `/en`, `/zh` or `/ru` URL prefixes (and partners paths). */
 export function LangPathSync() {
   const { pathname } = useLocation();
   const { lang, setLang } = useLang();
@@ -536,6 +693,7 @@ export function LangPathSync() {
     let next: Lang | null = null;
     const clean = pathname.replace(/\/+$/, "") || "/";
     if (clean === "/en" || clean.startsWith("/en/")) next = "en";
+    else if (clean === "/zh" || clean.startsWith("/zh/")) next = "zh";
     else if (clean === "/ru" || clean.startsWith("/ru/")) next = "ru";
     else if (clean === "/partners") next = "ru";
     else if (
@@ -562,12 +720,18 @@ export function useLang() {
 
 /** Title и meta description для главной — те же строки, что в Hero (один источник правды). */
 export function homePageSeoFromDict(dict: Dictionary): { title: string; description: string } {
-  const isRu = dict.header.home === "На главную";
-  if (isRu) {
+  if (dict.header.home === "На главную") {
     return {
       title: "TIVONIX — сайты, CRM, боты и веб-продукты для бизнеса",
       description:
         "Разрабатываем лендинги, Telegram-ботов, CRM, личные кабинеты, SaaS и MVP — и связываем их в единый процесс: от первого обращения до оплаты.",
+    };
+  }
+  if (dict.header.home === "返回首页") {
+    return {
+      title: "TIVONIX — 面向企业的网站、CRM、机器人与 Web 产品",
+      description:
+        "白俄罗斯技术团队 TIVONIX：落地页、Telegram 机器人、CRM、客户后台、SaaS 与 MVP，打通从首次咨询到成交的完整流程，助力进入白俄罗斯与欧亚经济联盟市场。",
     };
   }
 

@@ -6,7 +6,7 @@ import Container from "../components/ui/Container";
 import Header from "../components/landing/Header";
 import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
-import { buildProjects, findProjectBySlug, type Project } from "../data/projectsCatalog";
+import { buildProjects, findProjectBySlug, projectSubtitle, projectDetails, type Project } from "../data/projectsCatalog";
 import { getProjectCaseSystem, type CaseSwatch } from "../data/projectCaseSystem";
 import { cx, projectPreviewSrc, ProjectGalleryStrip, s } from "./projectBlocks";
 import { LeadCTAButton } from "../components/leads/LeadCTAButton";
@@ -15,6 +15,7 @@ import { trackProjectView } from "../lib/analytics";
 import { buildProjectCaseSchema } from "../lib/schema";
 import { pathForLang } from "../lib/localePaths";
 import type { Lang } from "../i18n/LangProvider";
+import { t3 } from "../i18n/pick";
 
 const HEADER_H = 72;
 const CANONICAL_ORIGIN = "https://tivonix.tech";
@@ -493,7 +494,14 @@ function parseCaseBody(text: string): ParsedBlock[] {
       para.push(L);
       i++;
     }
-    if (para.length) blocks.push({ type: "prose", paragraphs: para });
+    if (para.length) {
+      blocks.push({ type: "prose", paragraphs: para });
+    } else {
+      // Avoid infinite loop when consecutive short lines all look like headings
+      // (common in CJK copy without Latin sentence punctuation).
+      blocks.push({ type: "prose", paragraphs: [line] });
+      i++;
+    }
   }
 
   return blocks;
@@ -627,7 +635,7 @@ function MoreLikeThis({
 function MoreProjectCard({ project, lang }: { project: Project; lang: Lang }) {
   const isRu = lang === "ru";
   const cover = projectPreviewSrc(project);
-  const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
+  const subtitle = projectSubtitle(project, lang);
 
   return (
     <Link to={pathForLang(`/projects/${project.id}`, lang)} className="group block min-w-0 outline-none">
@@ -670,33 +678,39 @@ export default function ProjectDetailPage() {
     if (project?.id) trackProjectView(project.id);
   }, [project?.id]);
 
-  const backLabel = isRu ? "Все проекты" : "All projects";
-  const stackLabel = isRu ? "Стек" : "Stack";
-  const domainLabel = isRu ? "Домен" : "Domain";
-  const statusLabel = isRu ? "Статус" : "Status";
-  const tagsLabel = isRu ? "Теги" : "Tags";
-  const liveLabel = isRu ? "В продакшене" : "Live";
-  const wipLabel = isRu ? "В разработке" : "In progress";
-  const openSiteLabel = isRu ? "Открыть сайт" : "Open website";
-  const websiteSoonLabel = isRu ? "Сайт скоро" : "Website soon";
-  const roleLabel = isRu ? "Роль TIVONIX" : "TIVONIX role";
-  const roleValue = isRu
-    ? "Дизайн и разработка под ключ"
-    : "End-to-end design and development";
-  const detailsLabel = isRu ? "Подробнее" : "Details";
+  const backLabel = t3(lang, "Все проекты", "All projects", "全部项目");
+  const stackLabel = t3(lang, "Стек", "Stack", "技术栈");
+  const domainLabel = t3(lang, "Домен", "Domain", "域名");
+  const statusLabel = t3(lang, "Статус", "Status", "状态");
+  const tagsLabel = t3(lang, "Теги", "Tags", "标签");
+  const liveLabel = t3(lang, "В продакшене", "Live", "已上线");
+  const wipLabel = t3(lang, "В разработке", "In progress", "开发中");
+  const openSiteLabel = t3(lang, "Открыть сайт", "Open website", "打开网站");
+  const websiteSoonLabel = t3(lang, "Сайт скоро", "Website soon", "网站即将上线");
+  const roleLabel = t3(lang, "Роль TIVONIX", "TIVONIX role", "TIVONIX 角色");
+  const roleValue = t3(
+    lang,
+    "Дизайн и разработка под ключ",
+    "End-to-end design and development",
+    "端到端设计与开发"
+  );
+  const detailsLabel = t3(lang, "Подробнее", "Details", "详情");
 
   if (!slug) return <Navigate to={pathForLang("/projects", lang)} replace />;
   if (!project) return <Navigate to={pathForLang("/projects", lang)} replace />;
 
-  const subtitle = isRu ? project.subtitleRu : project.subtitleEn;
-  const details = isRu ? project.detailsRu : project.detailsEn;
+  const subtitle = projectSubtitle(project, lang);
+  const details = projectDetails(project, lang);
   const mood = caseSystem ? (isRu ? caseSystem.moodRu : caseSystem.moodEn) : null;
-  const seoTitle = `${project.title} — ${isRu ? "кейс TIVONIX" : "TIVONIX case study"}`;
+  const seoTitle = `${project.title} — ${t3(lang, "кейс TIVONIX", "TIVONIX case study", "TIVONIX 案例")}`;
   const seoDescription = clipMetaDescription(
     subtitle +
-      (isRu
-        ? " Студия TIVONIX: веб-разработка, лендинги, продукты и MVP."
-        : " TIVONIX studio: web development, landings, products and MVPs.")
+      t3(
+        lang,
+        " Студия TIVONIX: веб-разработка, лендинги, продукты и MVP.",
+        " TIVONIX studio: web development, landings, products and MVPs.",
+        " 白俄罗斯技术团队 TIVONIX：网站开发、落地页、产品与 MVP。"
+      )
   );
   const wip = project.status === "wip";
   const domainClean = project.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "") ?? "";
@@ -722,10 +736,10 @@ export default function ProjectDetailPage() {
       <SEO
         title={seoTitle}
         description={seoDescription}
-        canonicalPath={`/projects/${project.id}`}
+        canonicalPath={pathForLang(`/projects/${project.id}`, lang)}
         ogImage={coverAbsolute}
         ogType="article"
-        ogLocalePrimary={isRu ? "ru_RU" : "en_US"}
+        ogLocalePrimary={lang === "zh" ? "zh_CN" : isRu ? "ru_RU" : "en_US"}
         schemaJsonLd={schemaJsonLd}
       />
 

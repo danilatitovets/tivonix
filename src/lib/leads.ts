@@ -181,4 +181,5 @@ export async function submitLead(
 }
 
 export const CONTACT_EMAIL = "tivoonix@gmail.com";
+/** Официальный Telegram username для коммерческих CTA (не @TIVONIXX). */
 export const TELEGRAM_DIRECT_URL = "https://t.me/TIVONIX";

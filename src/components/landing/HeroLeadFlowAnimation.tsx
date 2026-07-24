@@ -10,6 +10,7 @@ import {
   SiWhatsapp,
 } from "react-icons/si";
 import { useLang, type HeroLeadChannel, type Lang } from "../../i18n/LangProvider";
+import { t3 } from "../../i18n/pick";
 
 type LeadBlock = {
   title: string;
@@ -33,11 +34,11 @@ function channelMeta(channel: HeroLeadChannel, lang: Lang): ChannelMeta {
     case "whatsapp":
       return { Icon: SiWhatsapp, appName: "WhatsApp", color: "#25D366" };
     case "gmail":
-      return { Icon: Mail, appName: lang === "ru" ? "Почта" : "Gmail", color: "#EA4335" };
+      return { Icon: Mail, appName: t3(lang, "Почта", "Gmail", "邮箱"), color: "#EA4335" };
     case "facebook":
       return { Icon: SiFacebook, appName: "Facebook", color: "#1877F2" };
     case "vk":
-      return { Icon: SiVk, appName: lang === "ru" ? "ВКонтакте" : "VK", color: "#0077FF" };
+      return { Icon: SiVk, appName: t3(lang, "ВКонтакте", "VK", "VK"), color: "#0077FF" };
     case "hubspot":
       return { Icon: SiHubspot, appName: "HubSpot", color: "#FF7A59" };
     case "notion":
@@ -45,13 +46,13 @@ function channelMeta(channel: HeroLeadChannel, lang: Lang): ChannelMeta {
     case "calendar":
       return {
         Icon: Calendar,
-        appName: lang === "ru" ? "Календарь" : "Calendar",
+        appName: t3(lang, "Календарь", "Calendar", "日历"),
         color: "#4285F4",
       };
     default:
       return {
         Icon: Globe,
-        appName: lang === "ru" ? "Сайт" : "Website",
+        appName: t3(lang, "Сайт", "Website", "网站"),
         color: "#9CA3AF",
       };
   }

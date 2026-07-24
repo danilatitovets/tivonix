@@ -843,8 +843,9 @@ export default function LandingPainSection() {
           <h2
             className={`${LANDING_HEADLINE_CLASS} text-center leading-[1.08] sm:leading-[0.98]`}
           >
-            {copy.pain.titleLines.map((line) => (
+            {copy.pain.titleLines.map((line, i) => (
               <span key={line} className="block">
+                {i > 0 ? " " : null}
                 {line}
               </span>
             ))}

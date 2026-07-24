@@ -111,20 +111,27 @@ function useHeroScrollProgress(trackRef: React.RefObject<HTMLElement | null>) {
   return progress;
 }
 
-function HeroHeadline({ stage }: { stage: HeroScrollStage }) {
+function HeroHeadline({
+  stage,
+  as: Tag = "h1",
+}: {
+  stage: HeroScrollStage;
+  as?: "h1" | "h2";
+}) {
   const lines =
     stage.headlineLines && stage.headlineLines.length > 0
       ? stage.headlineLines
       : [stage.headline];
 
   return (
-    <h1 className={cx(HERO_SCROLL_HEADLINE_CLASS, "hero-scroll-headline mx-auto text-center")}>
+    <Tag className={cx(HERO_SCROLL_HEADLINE_CLASS, "hero-scroll-headline mx-auto text-center")}>
       {lines.map((line, i) => (
         <span key={`${line}-${i}`} className="hero-scroll-headline__line block">
+          {i > 0 ? " " : null}
           {line}
         </span>
       ))}
-    </h1>
+    </Tag>
   );
 }
 
@@ -201,7 +208,7 @@ function HeroCard({
                   }
                   aria-hidden={i !== activeStage}
                 >
-                  <HeroHeadline stage={stage} />
+                  <HeroHeadline stage={stage} as={i === 0 ? "h1" : "h2"} />
                   <p className="pointer-events-none mt-4 max-w-[38rem] px-2 text-[14px] font-medium leading-[1.55] text-white/72 sm:mt-5 sm:text-[15px]">
                     {stage.lead}
                   </p>

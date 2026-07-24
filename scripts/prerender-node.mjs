@@ -28,7 +28,15 @@ function splitLeadingHeadTags(appHtml) {
 }
 
 function langForRoute(route) {
-  return route === "/en" || route.startsWith("/en/") ? "en" : "ru";
+  if (route === "/en" || route.startsWith("/en/")) return "en";
+  if (route === "/zh" || route.startsWith("/zh/")) return "zh-CN";
+  return "ru";
+}
+
+function dataLangForRoute(route) {
+  if (route === "/en" || route.startsWith("/en/")) return "en";
+  if (route === "/zh" || route.startsWith("/zh/")) return "zh";
+  return "ru";
 }
 
 function injectRenderedHtml(template, appHtml, headTags, route) {
@@ -39,8 +47,9 @@ function injectRenderedHtml(template, appHtml, headTags, route) {
     : template;
 
   const lang = langForRoute(route);
+  const dataLang = dataLangForRoute(route);
   html = html.replace(/<html lang="[^"]*"/, `<html lang="${lang}"`);
-  html = html.replace(/<html([^>]*?)data-lang="[^"]*"/, `<html$1data-lang="${lang}"`);
+  html = html.replace(/<html([^>]*?)data-lang="[^"]*"/, `<html$1data-lang="${dataLang}"`);
 
   const rootRegex = /<div id="root"><\/div>/;
   if (rootRegex.test(html)) {

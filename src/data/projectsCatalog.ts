@@ -1,3 +1,4 @@
+import type { Lang } from "../i18n/LangProvider";
 export type ProjectStatus = "live" | "wip";
 
 export type Testimonial = {
@@ -67,6 +68,8 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Партнёрская панель TIVONIX: сделки, статусы, проекты и выплаты — один кабинет вместо хаоса в чатах и таблицах.",
         subtitleEn:
           "TIVONIX partner panel: deals, statuses, projects and payouts — one dashboard instead of chaos in chats and spreadsheets.",
+        subtitleZh:
+          "TIVONIX 合作伙伴面板：交易、状态、项目和付款 - 一个仪表板，而不是聊天和电子表格中的混乱。",
         detailsRu:
           "Формат: партнёрская панель / SaaS-кабинет\n\n" +
           "Зачем это\n" +
@@ -101,6 +104,8 @@ function buildAllProjects(isRu: boolean): Project[] {
           "TIVONIX build — **1 week**. Designed the partner workflow, shipped registration, login and deals, polished UI (grid, statuses, **empty states**) and went live on Railway.\n\n" +
           "Outcome\n" +
           "A live panel partners **actually open** — they run deals and see payouts. Not a “how it will look” demo, but a product already in use.\n",
+        detailsZh:
+          "格式：合作伙伴面板/SaaS 仪表板\n\n为什么这很重要\n合作伙伴关系很少会因为这个提议而消亡。当**没有人分享相同的图片**时，他们就会消亡：请求在哪里，交易处于什么阶段，何时付款。虽然真相存在于聊天和电子表格中，但每天都是从“提醒我”和午夜屏幕截图开始的。\n\n我们建立了一个**人们实际打开的内阁**：注册、登录、状态、项目和付款都集中在一个地方。不是一张“看起来如何”的幻灯片——一种已经转移资金和信任的工具。\n\n它是如何运作的\n合作伙伴注册，选择**推荐**或**白标**，并在审核后获得访问权限。\n然后循环很简单：提交任务→查看状态→知道下一步→跟踪支付。一个内阁，而不是聊天、电子表格和“请提醒我”。\n\n里面有什么\n完整的**合作伙伴网络柜**，而不是登陆页面。左侧深色侧边栏：主页、客户、合作伙伴、交易、支出、报告、设置、法律概况、合作伙伴申请和活动日志。\n\n**主页**显示实时 KPI：客户、合作伙伴、已完成的交易、销售总额、应计佣金和“待支付”，以及按日和月列出的图表、状态漏斗、顶级合作伙伴、来源和服务。数据实时更新时间。\n\n**客户**是公司和联系人合作伙伴移交的数据库：搜索、状态选项卡（正在审查/已批准/正在工作/已关闭/重复）、按合作伙伴、服务、来源、预算和日期进行过滤、添加客户和 Excel 导出。\n\n**合作伙伴**是整个网络：活动、客户、交易、销售、佣金和余额。分别 — 加入请求（推荐/白标签）和审核。 **付款**和佣金位于面板中，没有辅助电子表格。 UI 是为日常工作而不是为甲板而构建的。\n\n我们交付了什么\nTIVONIX 构建 — **1 周**。设计合作伙伴工作流程，交付注册、登录和交易，完善 UI（网格、状态、**空状态**）并在 Railway 上上线。\n\n结果\n现场小组合作伙伴**实际上是开放的** - 他们进行交易并查看付款。不是“它看起来如何”演示，而是已经在使用的产品。",
         domain: TIVONIXPANEL_DOMAIN,
         status: "live",
         tags: ["SaaS", "Admin Panel", "Partners", "Dashboard", "UI/UX"],
@@ -185,6 +190,8 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Сайт сети шиномонтажа LOGOVO в Минске: Figma → Next.js, 4 филиала, запись, карта, B2B — под ключ за 1 600 BYN, команда TIVONIX.",
         subtitleEn:
           "Website for LOGOVO tire network in Minsk: Figma → Next.js, 4 branches, booking, map, B2B — turnkey for 1,600 BYN by TIVONIX.",
+        subtitleZh:
+          "明斯克 LOGOVO 轮胎网络网站：Figma → Next.js，4 个分支机构，预订，地图，B2B — TIVONIX 交钥匙工程 1,600 BYN。",
         detailsRu:
           "Зачем это\n" +
           "Шиномонтаж выбирают не в кресле — **с дороги, одной рукой, пока мигает индикатор**. Если адрес, часы и «записаться» прячутся на трёх экранах — клиент уедет к тому, кто ответил быстрее.\n\n" +
@@ -213,6 +220,8 @@ function buildAllProjects(isRu: boolean): Project[] {
           "We helped with the **logovo24.by** domain, **set up hosting ourselves** (**hoster.by** / cPanel), shipped the `out/` static build, wired production. Full cycle: idea → Figma → code → deploy.\n\n" +
           "Outcome\n" +
           "Not a “thousand-buck site”. A **working tool for the LOGOVO network** for [[≈ $560]]: booking, map, B2B, design and prod on **logovo24.by** — by the TIVONIX team.\n",
+        detailsZh:
+          "为什么这很重要\n轮胎保养不是在沙发上选择的，而是**在路上单手选择，同时警告灯闪烁**。如果地址、营业时间和“预订”隐藏在三个屏幕上，客户就会开车去找谁回答得更快。\n\n客户 — **LOGOVO LLC**（明斯克轮胎网络，UNP 193616584）：**4 个分支机构**，两个开放 **24/7**，出租车和物流车队计费，全方位服务循环 - 装配、车轮维修/喷漆、存储、空调等。项目预算 — **1,600 BYN** ([[≈ 42,800 ₽]] / [[≈ $560]])。 **由 TIVONIX 团队构建** — 不是模板，也不是“这是一个 zip”。\n\n它是如何运作的\n有人在电话上打开 **logovo24.by** → 服务 → 地图/时间上的分支 → **预订** 或 **致电**。车队转向 B2B：发票、统一定价、跨四个地点的文档 — 没有“发送合同”线程。\n\n里面有什么\n我们构建了整个产品：**Figma 设计**（结构、移动优先、路上 CTA），然后是**Next.js 16 + TypeScript + Tailwind v4** - 用于共享托管的静态导出。无页面构建器：手工布局、带有“找到我”地理位置的传单地图、“4 轮套餐”计算器、之前/之后、评论、折扣、案例、常见问题解答、SEO（自动修复架构、站点地图、OG）。\n\n**11 项服务** 与 ded所示页面和定价：装配、商业、车轮维修/喷漆、氩气、穿刺、硫化、平衡、制动盘加工、存储、空调。 **4 个地址**（Leshchinskogo 和 Logoyskiy trakt — 24/7；Gurskogo 和 Dzerzhinskogo — 白天）。 B2B 区块：出租车/物流/车队，**75+ 客户**徽章。预订：表格→邮寄至网络。粘性移动栏：通话/预订。\n\n视觉系统 - 浅 **LOGOVO × Awesomic**：画布“#f4f4f5”，仅在 CTA 和 24/7 徽章上使用琥珀橙色“#ff5a00”，深色黑曜石块用于对比，大药丸按钮，36px 卡片半径。移动优先——大部分流量来自道路。\n\n交钥匙启动\n我们帮助 **logovo24.by** 域，**设置我们自己的托管**（**hoster.by** / cPanel），运送 `out/` 静态构建、有线生产。完整周期：想法→Figma→代码→部署。\n\n结果\n不是“千元网站”。 **LOGOVO 网络的工作工具**，售价 [[≈ 560 美元]]：在 **logovo24.by** 上进行预订、地图、B2B、设计和产品 — 由 TIVONIX 团队提供。",
         domain: LOGOVO_DOMAIN,
         status: "live",
         tags: ["Website", "Next.js", "Local Business", "Booking", "B2B", "Figma"],
@@ -379,6 +388,8 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Корпоративный сайт ООО «Хэдмайнд»: Figma → WordPress + Elementor, хостинг и домен headmind.ru — бюджет 100 000 ₽.",
         subtitleEn:
           "Corporate site for Headmind: Figma → WordPress + Elementor, hosting and domain headmind.ru — budget 100,000 ₽.",
+        subtitleZh:
+          "Headmind 的公司网站：Figma → WordPress + Elementor，托管和域名 headmind.ru — 预算 100,000 ₽。",
         detailsRu:
           "Зачем это\n" +
           "ООО «Хэдмайнд» — консалтинг по трансформации бизнеса: стратегия, цифровизация, оргдизайн, производство, контракты. В B2B часто **теряют сделку на первом касании**, если сайт говорит «обо всём и ни о чём». Нужен был сайт, который спокойно шлют в первом сообщении.\n\n" +
@@ -405,6 +416,8 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Figma (variant selection) → design → WordPress/Elementor → hosting + domain → live **headmind.ru**. Expertise packaged into a path to a lead.\n\n" +
           "Outcome\n" +
           "Not a “drop your logo” template. A **turnkey corporate site** for Evgeniy Belikov / Headmind: 100,000 ₽, Figma → WP, domain and hosting — open it and check yourself.\n",
+        detailsZh:
+          "为什么这很重要\nHeadadmind 是一家业务转型咨询公司：战略、数字化、组织设计、生产、合同。在 B2B 中，如果网站什么都说了，但什么也没说，你常常**在第一次接触时就失去了交易**。他们需要一个您可以在第一条消息中发送的网站。\n\n客户 — **Evgeniy Belikov**，Headmind 创始人兼首席执行官（联合创始人 — Vitaliy Petrovsky）。预算 — **100,000 ₽** ([[≈ $1,280]])。直播：**headmind.ru**。\n\n它是如何运作的\n访客遵循一条简短的路径：**服务**→**方法/专业知识**→**团队**→**联系人/领导**。每一步都清楚你是谁以及你为何强大。 CTA 位于人们已经准备好写作的地方。\n\n里面有什么\n首先**Figma 模型**：几个视觉方向，直到客户选择了最喜欢的。然后在 **WordPress + Elementor** 上进行设计和构建：服务（转型、数字化、人力资源、生产、合同、销售）、团队、信任、潜在客户表单。\n\n统包：托管设置、**域名 headmind.ru** 连接、交付生产、WordPress 管理员准备就绪，以便他们可以自己编辑内容。不是专门定制的 React 构建——快速启动、轻松编辑、平静的 B2B 网站。\n\n我们交付了什么\nFigma（变体选择）→设计→WordPress/Elementor → 托管 + 域名 → 直播 **headmind.ru**。专业知识融入了通往潜在客户的道路。\n\n结果\n不是“放弃您的徽标”模板。 Evgeniy Belikov / Headadmind 的 **交钥匙企业网站**：100,000 ₽，Figma → WP、域名和托管 - 打开它并自行检查。",
         domain: HEADMIND_DOMAIN,
         status: "live",
         tags: ["B2B", "WordPress", "Elementor", "Figma", "Corporate"],
@@ -443,6 +456,8 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Полный маркетплейс записи к мастерам: каталог с фильтрами и картой, Telegram Mini App, кабинет мастера (SaaS Free/Pro), platform-admin, bePaid — на Railway, домен slotty.of.by.",
         subtitleEn:
           "Full booking marketplace for masters: filtered catalog + map, Telegram Mini App, master SaaS cabinet (Free/Pro), platform admin, bePaid — on Railway, domain slotty.of.by.",
+        subtitleZh:
+          "大师的完整预订市场：过滤目录 + 地图、Telegram Mini App、大师 SaaS 柜（免费/专业版）、平台管理、bePaid — on Railway、域名 slotty.of.by。",
         detailsRu:
           "Зачем это\n" +
           "Запись к мастеру до сих пор часто живёт в **Direct и WhatsApp**: «есть на завтра?», «а через час?», «ой, забыла напомнить». Клиент устаёт писать. Мастер устаёт отвечать. Слоты пропадают в тишине чата.\n\n" +
@@ -481,6 +496,8 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Design + turnkey build: marketplace, cabinets, admin, integrations, domain and hosting. Live on **slotty.of.by** — **soon launching to real clients and masters**.\n\n" +
           "Outcome\n" +
           "Not a “look at the idea” demo. A **full booking marketplace** with filters, map, Mini App, master SaaS and platform admin. Victoria D., [[≈ $2,940]], 3 weeks — and a live prod you can open and check yourself.\n",
+        detailsZh:
+          "为什么这很重要\n预订大师仍然经常存在于**DM和WhatsApp**中：“明天有空吗？”，“一个小时后？”，“哎呀，忘了提醒”。客户厌倦了打字。大师们厌倦了回答。老虎机消失在聊天的沉默中。\n\n这不是草稿或“立即预订”按钮。它需要一个**完整的市场**：过滤目录、地图、客户路径、主 SaaS 柜、角色、平台管理、支付、通知和生产。客户 — **Victoria D.** 预算 — 230,000 ₽ ([[≈ $2,940]])。时间表 — **3 周**。\n\n它是如何运作的\n客户端打开**slotty.of.by**（网络或Telegram迷你应用程序）→目录→过滤器/地图→主→服务→**打开插槽**→确认。预订代码、电报 + 电子邮件提醒 — 无需致电。\n大师运行简介、投资组合、地址、服务、促销、时间表、请求和客户；免费或专业计划。\n平台管理员负责管理、预订、计费、bePaid 付款、广播和审计——该平台现已可运行。\n\n里面有什么\n**大型建筑**，而不是带有形式的平台。前端：React + TypeScript + Vite + Tailwind。后端：Express API、PostgreSQL（**88 迁移**）、JWT 会话。生产：**两个铁路服务**（Web + API），域名**slotty.of.by** - 我们建议d 在哪里购买域名、设置托管、指向 DNS 并实时发货。加上 Telegram Bot / Mini App、Google Auth、电子邮件（重新发送）、地图（传单 / OSM、可选 Yandex）、**bePaid** (BYN)、Sentry、SEO 预渲染。\n\n客户市场：**6 个类别**（美甲、理发、眉毛/睫毛、按摩、健身、纹身）。目录不是平面卡片列表 - 完整搜索：所有/流行/促销/新，文本搜索，**带地理排序的地图**。\n\n过滤器：排序（推荐、热门、最快、距离、评分、价格↑↓、评论）；日期（今天/明天/周/周末/确切日期）；一天中的时间+小时滑块；工作室或家里；期间; BYN 价格；评分从 4.5 / 4.7 / 4.9 起；评论计数；仅经过验证；仅促销；仅限网上预订。预订：日期→时段→评论→参考照片→使用代码**SL-…**成功。客户资料：约会、收藏夹、通知、设置、访问后回顾。\n\n主柜是一个单独的 SaaS：今天/请求/时间表/服务（目录、价格、捆绑、促销）/配置文件和投资组合/客户/声誉/计费/通知（数十种事件类型）。 **8步**入职：类别→个人资料→地图地址→服务→信任→预览→计划。计划：免费（限制）/ Pro / 7 天试用 — 付费或手动转账。\n\n平台管理：概述、请求（类别更改、删除、赞助、报告）、支持、系统状态、用户、主、服务、预订（包括问题取消）、计费和促销代码、bePaid 付款、广播、审计。角色：**客户端/主控/平台管理员**。身份验证：电子邮件、Google、Telegram - 手机或桌面。\n\n通常会破坏时间线的困难部分：并发预订和时段、待到期、自动完成、预订争议；免费/专业版权利；通知作业队列；多重身份验证；具有 20 多个过滤器参数和专业增强推荐的服务器目录。\n\n我们交付了什么\n设计+交钥匙构建：市场、橱柜、管理、集成、域名和托管。在 **slotty.of.by** 上直播 — **即将向真正的客户和大师推出**。\n\n结果\n不是“看看这个想法”的演示。 **完整的预订市场**，包含过滤器、地图、迷你应用程序、主 SaaS 和平台管理。 Victoria D.，[[≈ $2,940]]，3 周 — 以及您可以自己打开并检查的实时产品。",
         domain: SLOTTY_DOMAIN,
         status: "live",
         tags: ["Marketplace", "Booking", "Beauty", "SaaS", "Telegram", "Admin Panel"],
@@ -530,6 +547,8 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Финтех-платформа для долей в музыке: каталог, первичный и вторичный рынок, кошелёк USDT, ledger, compliance и operator portal — продукт с инвестором и живым сопровождением.",
         subtitleEn:
           "Fintech platform for music shares: catalog, primary & secondary market, USDT wallet, ledger, compliance and operator portal — investor-backed product with ongoing support.",
+        subtitleZh:
+          "音乐股票的金融科技平台：目录、一级和二级市场、USDT 钱包、账本、合规性和运营商门户——投资者支持的产品，并提供持续支持。",
         detailsRu:
           "Зачем это\n" +
           "Музыкальные активы — не лендинг с кнопкой «купить». Здесь **реальные деньги**, роли, согласия, депозиты и выводы должны сходиться без дыр: confirm → processing → result. Один сбой на выплате или consent — и доверие кончается быстрее любого релиза.\n\n" +
@@ -572,6 +591,8 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Designed and shipped the full loop: design, frontend, backend, database, compliance, automated tests and production ops. The product is live, backed by an investor at [[$200,000]], and **TIVONIX still supports and evolves** it.\n\n" +
           "Outcome\n" +
           "Not a demo and not a deck. A **live fintech platform** with an investor cabinet, a complex share exchange and a huge admin for payouts, charts and day-to-day operations. Still supported.\n",
+        detailsZh:
+          "为什么这很重要\n音乐资产不是带有购买按钮的登陆页面。 **真实货币**，角色、同意、存款和取款必须无漏洞锁定：确认→处理→结果。一旦付款或同意失败，信任就会比任何释放更快地消失。\n\n这不是一个“快速管理”。它需要**完整的股份交换**：投资者内阁、运营商门户、账本、财务、KYC/AML、争议、公共信任中心。我们端到端地构建了它，并且**仍然在生产中支持**它。\n\n它是如何运作的\n投资者注册、接受保单、在需要时完成 KYC，并充值 **USDT (TRC20)**。\n然后：在目录中选择一个版本→审查数据室→在主要市场购买股票（UNT）→跟踪头寸和应计费用→可选择在**二级市场**（订单簿、限价订单）进行交易→通过财务检查提取。\n运营商可以通过管理门户管理存款、取款、合规、发布、推荐、争议和公共系统状态。\n\n里面有什么\n**一个存储库中的大型产品**，而不是单页网站。 Next.js 上的客户端应用程序，NestJS 上的服务器，通过 Prisma 的 PostgreSQL，对关键资金流的自动测试。\n\n投资者柜：发布目录、股份申购、投资tfolio 和指标、钱包（存款、取款、历史记录、报表）、**具有复杂订单簿**和限价订单的二级市场、计算器、新闻、支持和争议中心、推荐和合作伙伴计划、VIP。\n\n公共面：产品登陆、**信任中心**（运营账本、服务状态、文档）、系统状态页面、费用、法律页面、帮助中心。\n\n运营商门户对于平台团队来说是一个**巨大的管理面板**：不是几个屏幕，而是数十个管理部分。执行概述、操作员任务、用户和角色、曲目和回合、艺术家、唱片公司、流派。\n\n金融：钱包、存款、**支出**、持有、收入和平台收入、金库、支付必需品。市场：二级市场、交易、可疑活动。运营：支持、争议、合规、KYC、法律文本、推荐和合作伙伴。\n\n使用**图表**进行分析：财务、用户、轨迹、市场、收入、风险、运营。加上报告和导出、新闻、帮助中心、系统状态、通知、员工审核日志。角色：超级管理员、会计师、内容、支持、合规、业务分析师。\n\n财务核心：内部复式记账操作账本、对账、平台费用、波场充值自动化、热/冷钱包政策、事件操作手册。酸性石灰“#b7f500”上的界面 — 与实时产品匹配。\n\n语言：界面完全本地化为**四种语言**——俄语、英语、西班牙语、葡萄牙语。\n\n我们交付了什么\n设计并交付完整的循环：设计、前端、后端、数据库、合规性、自动化测试和生产操作。该产品已上线，由 [[200,000 美元]] 的投资者支持，**TIVONIX 仍然支持并发展**它。\n\n结果\n不是演示，也不是套牌。一个**实时金融科技平台**，拥有投资者内阁、复杂的股票交易所以及庞大的支付、图表和日常运营管理系统。还是支持的。",
         domain: SPLITON_DOMAIN,
         status: "live",
         tags: [
@@ -659,4 +680,16 @@ export function findProjectBySlug(slug: string | undefined, isRu: boolean): Proj
 /** Стабильный список id для sitemap и канонических путей /projects/:id */
 export function allProjectIds(): string[] {
   return buildProjects(true).map((p) => p.id);
+}
+
+
+
+export function projectSubtitle(p: Project, lang: Lang): string {
+  if (lang === "zh") return p.subtitleZh ?? p.subtitleEn;
+  return lang === "ru" ? p.subtitleRu : p.subtitleEn;
+}
+
+export function projectDetails(p: Project, lang: Lang): string {
+  if (lang === "zh") return p.detailsZh ?? p.detailsEn;
+  return lang === "ru" ? p.detailsRu : p.detailsEn;
 }

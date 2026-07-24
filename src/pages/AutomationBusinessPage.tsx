@@ -236,7 +236,10 @@ function AutomationHero({ t }: { t: AutomationPageCopy }) {
             <div className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 overflow-x-hidden px-4 py-8 text-center sm:px-8 sm:py-10">
               <h1 className={`relative z-10 mt-5 ${automationTypo.h1}`}>
                 <span className="block">{t.hero.h1Line1}</span>
-                <span className="block">{t.hero.h1Line2}</span>
+                <span className="block">
+                  {" "}
+                  {t.hero.h1Line2}
+                </span>
               </h1>
 
               <p className="relative z-10 mx-auto mt-8 max-w-[40rem] text-[17px] font-medium leading-[1.55] text-white/85 sm:text-[19px] sm:leading-[1.6] lg:text-[20px]">
@@ -412,7 +415,10 @@ function WhyAutomation({ t }: { t: AutomationPageCopy }) {
         <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center py-2 text-center sm:py-4">
           <h2 className={automationTypo.h2}>
             <span className="block">{t.why.h2Line1}</span>
-            <span className="block">{t.why.h2Line2}</span>
+            <span className="block">
+              {" "}
+              {t.why.h2Line2}
+            </span>
           </h2>
 
           <p className="mt-6 max-w-[48rem] text-[19px] leading-[1.64] text-white/84 sm:text-[22px] sm:leading-[1.58]">
@@ -993,7 +999,7 @@ export default function AutomationBusinessPage() {
           description={t.seo.description}
           canonicalPath="/avtomatizaciya-biznesa"
           schemaJsonLd={schema}
-          ogLocalePrimary={lang === "en" ? "en_US" : "ru_RU"}
+          ogLocalePrimary={lang === "zh" ? "zh_CN" : lang === "en" ? "en_US" : "ru_RU"}
         />
 
         <Header />

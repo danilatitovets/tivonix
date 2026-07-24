@@ -5,6 +5,8 @@
     <loc>https://www.tivonix.tech/</loc>
     <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/" />
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -13,9 +15,291 @@
     <loc>https://www.tivonix.tech/en</loc>
     <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/" />
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/zh</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/" />
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/projects</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects" />
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/en/projects</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects" />
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/zh/projects</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects" />
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/contacts</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/contacts" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/contacts" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/contacts" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/contacts" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/contacts" />
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/en/contacts</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/contacts" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/contacts" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/contacts" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/contacts" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/contacts" />
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/zh/contacts</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/contacts" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/contacts" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/contacts" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/contacts" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/contacts" />
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/plans</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/plans" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/plans" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/plans" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/plans" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/plans" />
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/en/plans</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/plans" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/plans" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/plans" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/plans" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/plans" />
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/zh/plans</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/plans" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/plans" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/plans" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/plans" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/plans" />
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/about</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/about" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/about" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/about" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/about" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/about" />
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/en/about</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/about" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/about" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/about" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/about" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/about" />
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/zh/about</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/about" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/about" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/about" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/about" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/about" />
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/projects/tivonixpanel</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/tivonixpanel" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/tivonixpanel" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/tivonixpanel" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/tivonixpanel" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/tivonixpanel" />
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/en/projects/tivonixpanel</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/tivonixpanel" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/tivonixpanel" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/tivonixpanel" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/tivonixpanel" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/tivonixpanel" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/zh/projects/tivonixpanel</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/tivonixpanel" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/tivonixpanel" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/tivonixpanel" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/tivonixpanel" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/tivonixpanel" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/projects/spliton</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/spliton" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/spliton" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/spliton" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/spliton" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/spliton" />
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/en/projects/spliton</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/spliton" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/spliton" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/spliton" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/spliton" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/spliton" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/zh/projects/spliton</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/spliton" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/spliton" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/spliton" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/spliton" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/spliton" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/projects/slotty</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/slotty" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/slotty" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/slotty" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/slotty" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/slotty" />
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/en/projects/slotty</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/slotty" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/slotty" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/slotty" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/slotty" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/slotty" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/zh/projects/slotty</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/slotty" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/slotty" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/slotty" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/slotty" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/slotty" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/projects/headmind</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/headmind" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/headmind" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/headmind" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/headmind" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/headmind" />
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/en/projects/headmind</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/headmind" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/headmind" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/headmind" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/headmind" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/headmind" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/zh/projects/headmind</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/headmind" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/headmind" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/headmind" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/headmind" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/headmind" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/projects/logovo</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/logovo" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/logovo" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/logovo" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/logovo" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/logovo" />
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/en/projects/logovo</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/logovo" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/logovo" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/logovo" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/logovo" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/logovo" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/zh/projects/logovo</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/logovo" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/logovo" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/logovo" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/logovo" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/logovo" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.tivonix.tech/sozdanie-sajtov</loc>
@@ -26,118 +310,6 @@
     <loc>https://www.tivonix.tech/avtomatizaciya-biznesa</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/projects</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects" />
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/en/projects</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects" />
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/projects/tivonixpanel</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/tivonixpanel" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/tivonixpanel" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/tivonixpanel" />
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/en/projects/tivonixpanel</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/tivonixpanel" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/tivonixpanel" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/tivonixpanel" />
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/projects/spliton</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/spliton" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/spliton" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/spliton" />
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/en/projects/spliton</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/spliton" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/spliton" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/spliton" />
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/projects/slotty</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/slotty" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/slotty" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/slotty" />
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/en/projects/slotty</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/slotty" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/slotty" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/slotty" />
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/projects/headmind</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/headmind" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/headmind" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/headmind" />
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/en/projects/headmind</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/headmind" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/headmind" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/headmind" />
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/projects/logovo</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/logovo" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/logovo" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/logovo" />
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/en/projects/logovo</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/logovo" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/logovo" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/logovo" />
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/contacts</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/contacts" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/contacts" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/contacts" />
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/en/contacts</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/contacts" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/contacts" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/contacts" />
-    <changefreq>monthly</changefreq>
-    <priority>0.75</priority>
   </url>
   <url>
     <loc>https://www.tivonix.tech/partners</loc>
@@ -151,6 +323,11 @@
   </url>
   <url>
     <loc>https://www.tivonix.tech/en/partners</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/zh/partners</loc>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>

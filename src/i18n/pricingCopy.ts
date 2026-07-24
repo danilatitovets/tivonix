@@ -61,7 +61,7 @@ export function formatPlanHighlightsForTelegram(planId: PlanId, lang: Lang = "ru
         included.push(`  ✅ ${label}`);
       } else if (cell.kind === "basic") {
         included.push(
-          `  ✅ ${label}${lang === "ru" ? " (базово)" : " (basic)"}`
+          `  ✅ ${label}${lang === "ru" ? " (базово)" : lang === "zh" ? "（基础）" : " (basic)"}`
         );
       } else if (cell.kind === "text" && cell.textKey) {
         const value =
@@ -69,7 +69,7 @@ export function formatPlanHighlightsForTelegram(planId: PlanId, lang: Lang = "ru
         included.push(`  ✅ ${label}: ${value}`);
       } else if (cell.kind === "option") {
         optional.push(
-          `  ➕ ${label}${lang === "ru" ? " (опция)" : " (optional)"}`
+          `  ➕ ${label}${lang === "ru" ? " (опция)" : lang === "zh" ? "（可选）" : " (optional)"}`
         );
       }
     }
@@ -94,18 +94,18 @@ export function formatPlanHighlightsForTelegram(planId: PlanId, lang: Lang = "ru
 export function formatPlansOverviewForTelegram(lang: Lang = "ru"): string {
   const copy = pricingCopy(lang);
   const planIds: PlanId[] = ["start", "growth", "product", "custom"];
-  const title = lang === "ru" ? "📊 Тарифы TIVONIX" : "📊 TIVONIX plans";
+  const title = lang === "ru" ? "📊 Тарифы TIVONIX" : lang === "zh" ? "📊 TIVONIX 方案" : "📊 TIVONIX plans";
 
   const blocks = planIds.map((id) => {
     const plan = copy.plans[id];
     const chips = copy.footer.chips[id].map((c) => `• ${c}`).join("\n   ");
     const price =
       id === "custom"
-        ? (lang === "ru" ? "индивидуально" : "custom")
+        ? (lang === "ru" ? "индивидуально" : lang === "zh" ? "定制" : "custom")
         : (() => {
             const usd = PLAN_PRICE_USD[id];
             const discounted = Math.round(usd * (1 - LAUNCH_DISCOUNT_PERCENT / 100));
-            const fromLabel = lang === "ru" ? "от" : "from";
+            const fromLabel = lang === "ru" ? "от" : lang === "zh" ? "起" : "from";
             return `${fromLabel} $${discounted}`;
           })();
     return `▸ <b>${plan.name}</b> — ${price}\n   ${chips}`;
@@ -572,7 +572,230 @@ const COPY_EN = {
   },
 };
 
+const COPY_ZH = {
+  title: "启动方案",
+  subtitle: "对应需求的清晰方案 — 从首批线索到完整 Web 服务",
+  includesLabel: "包含内容",
+  launchDiscount: {
+    percent: "10%",
+    note: "* 启动优惠：早期项目按基础价折扣交付。",
+  },
+  afterSelect: {
+    title: "选定方案后会发生什么",
+    steps: [
+      "选择适合的方案",
+      "明确需求与范围",
+      "给出清晰的启动方案",
+      "确认后开工",
+    ],
+    note:
+      "价格显示为「起」是因为最终费用取决于页面、逻辑、集成与周期。讨论并确认范围后再付款。",
+  },
+  compareTitle: "对比方案",
+  expandAll: "全部展开",
+  collapseAll: "收起",
+  cell: {
+    yes: "是",
+    no: "—",
+    option: "可选",
+    basic: "基础",
+  },
+  cellText: {
+    support7: "7天",
+    support14: "14天",
+    support30: "30天",
+    supportCustom: "按约定",
+  },
+  badges: {
+    popular: "最受欢迎",
+    product: "面向 Web 产品",
+  },
+  plans: {
+    start: {
+      name: "Start",
+      tagline: "快速启动获客",
+      ...planPriceStrings("起", PLAN_PRICE_USD.start),
+      desc: "当您需要广告、Instagram 或 Telegram 页面 — 并希望快速把咨询汇入一处。",
+      includes: [
+        "落地页或服务页",
+        "线索表单",
+        "联系按钮",
+        "Telegram/邮件通知",
+        "移动端友好布局",
+        "基础分析",
+        "域名上线",
+      ],
+      cta: "沟通启动",
+      ctaHint: "打开我们的 Telegram 机器人 — 约 2 分钟。",
+      compactCta: "沟通 Start",
+    },
+    growth: {
+      name: "Growth",
+      tagline: "面向业务的线索系统",
+      ...planPriceStrings("起", PLAN_PRICE_USD.growth),
+      desc: "当线索增长且来自多渠道 — 团队需要秩序：状态、负责人、表格或迷你 CRM。",
+      includes: [
+        "网站或多页面",
+        "线索表单",
+        "Telegram 通知",
+        "表格或迷你 CRM",
+        "线索状态",
+        "基础管理",
+        "分析配置",
+        "上线协助",
+      ],
+      cta: "获取报价",
+      ctaHint: "打开简短表单，Growth 方案已预选。",
+      compactCta: "提交需求",
+    },
+    product: {
+      name: "Product",
+      tagline: "完整 Web 服务",
+      ...planPriceStrings("起", PLAN_PRICE_USD.product),
+      desc: "当您需要的不只是网站 — 而是带用户、客户后台、角色、数据库与管理后台的 Web 服务。",
+      includes: [
+        "客户后台",
+        "管理后台",
+        "注册和授权",
+        "用户角色",
+        "线索、状态、通知",
+        "database",
+        "集成",
+        "payments",
+        "响应式 UI",
+        "上线准备",
+      ],
+      cta: "沟通产品",
+      ctaHint: "打开简短表单。描述产品 — 我们评估范围。",
+      compactCta: "描述产品",
+    },
+    custom: {
+      name: "Custom",
+      tagline: "自动化与 AI",
+      price: "custom",
+      desc: "当需求不适合现成方案：AI 机器人、复杂 CRM、文档自动化、集成或内部系统。",
+      includes: [
+        "AI 机器人与助手",
+        "线索自动化",
+        "服务集成",
+        "数据和文档处理",
+        "客户后台",
+        "复杂角色与流程",
+        "定制 CRM",
+        "支持与持续迭代",
+      ],
+      cta: "申请方案",
+      ctaHint: "打开我们的 Telegram 机器人讨论非标需求。",
+      compactCta: "沟通 Custom",
+    },
+  },
+  faq: {
+    title: "价格常见问题",
+    items: [
+      {
+        id: "price-from",
+        q: "“起”是什么意思？",
+        a: "这是最低启动成本。最终价格取决于页面、逻辑、集成、客户后台、CRM 与周期。",
+      },
+      {
+        id: "pay-now",
+        q: "需要立刻付款吗？",
+        a: "不需要。我们先讨论需求、明确范围，再约定费用与阶段后付款。",
+      },
+      {
+        id: "which-plan",
+        q: "不确定选哪个方案？",
+        a: "选择 Growth 或留言。我们梳理需求，告诉您需要网站、机器人、CRM、客户后台还是定制自动化。",
+      },
+      {
+        id: "start-expand",
+        q: "可以从 Start 开始再扩展吗？",
+        a: "是的。通常更好先上简单版本、验证线索，再加 CRM、状态、客户后台或集成。",
+      },
+      {
+        id: "growth-includes",
+        q: "Growth 包含什么？",
+        a: "Growth 适合需要秩序而不只是表单：通知、状态、表格或迷你 CRM，以及清晰处理流。",
+      },
+      {
+        id: "when-product",
+        q: "何时需要 Product？",
+        a: "Product 面向真正的 Web 服务：用户、客户后台、角色、数据库、支付与管理后台。",
+      },
+      {
+        id: "when-custom",
+        q: "何时选择 Custom？",
+        a: "Custom 适合非标需求：AI 机器人、复杂 CRM、文档自动化、集成与团队内部工具。",
+      },
+    ],
+  },
+  groups: {
+    core: "核心",
+    crm: "线索与 CRM",
+    product: "产品逻辑",
+    automation: "自动化与 AI",
+    launch: "上线与支持",
+  },
+  features: {
+    landing: "落地页 / 页面",
+    responsive: "移动端布局",
+    form: "线索表单",
+    contactButtons: "联系按钮",
+    telegramNotify: "Telegram 通知",
+    emailNotify: "邮件通知",
+    leadStorage: "线索存储",
+    leadTable: "线索表",
+    miniCrm: "迷你 CRM",
+    statuses: "线索状态",
+    history: "处理记录",
+    roles: "员工角色",
+    cabinet: "客户后台",
+    admin: "管理后台",
+    auth: "身份认证",
+    database: "Database",
+    booking: "在线预约",
+    payments: "Payments",
+    autoNotify: "自动通知",
+    integrations: "集成",
+    aiBot: "AI 机器人",
+    aiLeads: "AI 线索处理",
+    documents: "文档处理",
+    customFlows: "定制场景",
+    domain: "域名协助",
+    deploy: "部署",
+    guide: "基础说明",
+    testing: "场景测试",
+    support: "上线后支持",
+  },
+  footer: {
+    valueTitle: "仅支付",
+    valueTitleHighlight: "您需要的启动范围",
+    valueAside: "不为暂时用不到的模块买单",
+    valueLead:
+      "我们先交付帮助获客与处理线索的部分。业务成长后再加 CRM、客户后台、支付、集成或自动化。",
+    helpTitle: "不确定选哪个方案？",
+    helpLead:
+      "用自己的话描述需求 — 我们建议从 Start、Growth、Product 还是 Custom 开始。",
+    helpCta: "通过 Telegram 联系",
+    helpModalCta: "提交需求",
+    planScopeCaption: "按方案划分的启动范围",
+    chips: {
+      start: ["落地页", "表单", "Telegram"],
+      growth: ["迷你 CRM", "状态", "管理"],
+      product: ["客户后台", "Payments", "角色"],
+      custom: ["AI 机器人", "集成", "CRM"],
+    },
+    shortDesc: {
+      start: "快速上线页面与线索",
+      growth: "团队可用的线索系统",
+      product: "完整 Web 服务",
+      custom: "定制自动化",
+    },
+  },
+};
+
 export function pricingCopy(lang: Lang) {
+  if (lang === "zh") return COPY_ZH;
   return lang === "ru" ? COPY_RU : COPY_EN;
 }
 

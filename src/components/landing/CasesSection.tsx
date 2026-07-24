@@ -5,7 +5,7 @@ import Reveal from "../ui/Reveal";
 import PillActionBar from "../ui/PillActionBar";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
-import { buildProjects } from "../../data/projectsCatalog";
+import { buildProjects, projectSubtitle } from "../../data/projectsCatalog";
 import { useLeadForm } from "../leads/useLeadForm";
 import { getStableViewportHeight } from "../../lib/stableViewport";
 
@@ -68,7 +68,7 @@ export default function CasesSection() {
   const featured = buildProjects(isRu).find((p) => p.id === "tivonixpanel");
   if (!featured) return null;
 
-  const subtitle = isRu ? featured.subtitleRu : featured.subtitleEn;
+  const subtitle = projectSubtitle(featured, lang);
   const caseCopy = copy.cases.tivonixpanel;
 
   const caseTabs = useMemo(() => {

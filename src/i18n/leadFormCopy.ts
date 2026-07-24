@@ -2,8 +2,8 @@ import type { Lang } from "./LangProvider";
 import type { BudgetId } from "../lib/leads";
 
 export function leadFormCopy(lang: Lang) {
-  const isRu = lang === "ru";
-  return isRu ? COPY_RU : COPY_EN;
+  if (lang === "zh") return COPY_ZH;
+  return lang === "ru" ? COPY_RU : COPY_EN;
 }
 
 const BUDGET_RU: { id: BudgetId; label: string }[] = [
@@ -22,6 +22,15 @@ const BUDGET_EN: { id: BudgetId; label: string }[] = [
   { id: "1500_5000", label: "$1,500–5,000" },
   { id: "from_5000", label: "from $5,000" },
   { id: "unknown", label: "not sure yet" },
+];
+
+const BUDGET_ZH: { id: BudgetId; label: string }[] = [
+  { id: "", label: "未选择" },
+  { id: "under_500", label: "低于 $500" },
+  { id: "500_1500", label: "$500–1,500" },
+  { id: "1500_5000", label: "$1,500–5,000" },
+  { id: "from_5000", label: "$5,000 起" },
+  { id: "unknown", label: "暂时不确定" },
 ];
 
 const COPY_RU = {
@@ -121,4 +130,52 @@ const COPY_EN = {
   planHint: "Request for this plan — add details below.",
   formNote:
     "We reply within a business day. A call is optional. We don\u2019t share contacts with third parties.",
+};
+
+const COPY_ZH = {
+  title: "告诉我们您要启动什么",
+  subtitle:
+    "用自己的话描述需求。我们会梳理任务，并发送初步方案、周期与费用区间。",
+  name: "姓名",
+  nameOptional: "选填",
+  contact: "Telegram、邮箱或其他联系方式",
+  contactHint: "邮箱、Telegram 或电话",
+  contactPh: "邮箱、@username 或电话",
+  task: "需求描述",
+  taskPh: "您需要做什么？",
+  budget: "大致预算",
+  budgetOptional: "选填",
+  budgets: BUDGET_ZH,
+  consent: "我同意个人信息处理政策",
+  privacyLabel: "隐私政策",
+  privacyHref: "/doc/Privacy_Policy_Tivonix_EN.pdf",
+  send: "获取初步评估",
+  sending: "提交中…",
+  close: "关闭",
+  cancel: "取消",
+  errors: {
+    contact: "请填写邮箱、Telegram 或电话。",
+    task: "请简要描述需求（至少几个字）。",
+    consent: "需要同意隐私政策。",
+  },
+  successTitle: "已收到您的需求",
+  success: "我们将评估任务，并在一个工作日内通过您预留的联系方式回复。",
+  successCase: "查看类似案例",
+  successHome: "返回首页",
+  errorTitle: "提交失败",
+  errorBody: "您也可以直接联系我们：",
+  fallbackEmail: "发送邮件至 tivoonix@gmail.com",
+  fallbackTelegram: "打开聊天 @TIVONIX",
+  altTelegram: "或通过 Telegram 联系",
+  altBot: "Telegram 机器人",
+  altEmail: "邮箱",
+  sticky: "获取评估",
+  ctaDiscuss: "评估项目",
+  ctaEstimate: "获取项目评估",
+  ctaProjects: "有类似需求？一起来谈",
+  selectedPlan: "已选方案",
+  clearPlan: "不选方案",
+  planHint: "按该套餐提交 — 可在下方补充细节。",
+  formNote:
+    "我们会在一个工作日内回复。通话非必须。联系方式不会提供给第三方。",
 };

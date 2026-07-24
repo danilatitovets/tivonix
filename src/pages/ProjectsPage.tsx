@@ -7,7 +7,7 @@ import Header from "../components/landing/Header";
 import Footer from "../components/landing/Footer";
 import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
-import { buildProjects, type Project } from "../data/projectsCatalog";
+import { buildProjects, projectSubtitle, type Project } from "../data/projectsCatalog";
 import { cx, projectPreviewSrc, ProjectPreviewFrame } from "./projectBlocks";
 import { LeadCTAButton } from "../components/leads/LeadCTAButton";
 import { leadFormCopy } from "../i18n/leadFormCopy";
@@ -59,7 +59,7 @@ function ProjectGridCard({ p, isRu, lang }: { p: Project; isRu: boolean; lang: L
   const wip = p.status === "wip";
   const domainClean = p.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "");
   const productType = p.tags[0] ?? (isRu ? "Проект" : "Project");
-  const subtitle = isRu ? p.subtitleRu : p.subtitleEn;
+  const subtitle = projectSubtitle(p, lang);
   const role = isRu ? "Роль TIVONIX: дизайн и разработка" : "TIVONIX role: design & development";
   const href = pathForLang(`/projects/${p.id}`, lang);
 
@@ -133,6 +133,7 @@ export default function ProjectsPage() {
   const { pathname } = useLocation();
   const isRu = lang === "ru";
   const isEnPath = pathname.startsWith("/en");
+  const isZhPath = pathname.startsWith("/zh");
   const [activeFilter, setActiveFilter] = useState(ALL_FILTER);
   const leadCopy = leadFormCopy(lang);
 

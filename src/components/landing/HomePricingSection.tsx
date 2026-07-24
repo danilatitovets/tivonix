@@ -48,7 +48,7 @@ const PLAN_TAGS: Record<PlanId, { ru: string; en: string }> = {
   start: { ru: "Заявки", en: "Leads" },
   growth: { ru: "Система", en: "System" },
   product: { ru: "Продукт", en: "Product" },
-  custom: { ru: "Масштаб", en: "Scale" },
+  custom: { ru: "Масштаб", en: "Scale", zh: "定制" },
 };
 
 function clamp01(v: number) {
@@ -165,7 +165,7 @@ export default function HomePricingSection() {
           {GRID_PLANS.map(({ id, img, footRu, footEn }, i) => {
             const plan = pricing.plans[id];
             const popular = id === "growth";
-            const tag = PLAN_TAGS[id][isRu ? "ru" : "en"];
+            const tag = PLAN_TAGS[id][lang];
             const isCustom = id === "custom";
 
             return (
@@ -245,7 +245,7 @@ export default function HomePricingSection() {
                             openLeadForm("pricing", { planId: id });
                           }}
                         >
-                          {isRu ? "Разобрать мой процесс" : "Map my process"}
+                          {lang === "zh" ? "梳理我的流程" : isRu ? "Разобрать мой процесс" : "Map my process"}
                         </button>
                       </div>
                     </div>
@@ -287,7 +287,7 @@ export default function HomePricingSection() {
             <div className="home-plan-enterprise__inner">
               <div className="home-plan-enterprise__copy">
                 <span className="home-plan-card__tag">
-                  {PLAN_TAGS.custom[isRu ? "ru" : "en"]}
+                  {PLAN_TAGS.custom[lang]}
                 </span>
                 <h3 className="home-plan-enterprise__name">{custom.name}</h3>
                 <p className="home-plan-enterprise__desc">{custom.desc}</p>
