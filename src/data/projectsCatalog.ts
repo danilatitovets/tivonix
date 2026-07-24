@@ -33,7 +33,7 @@ const LABELOS_DOMAIN = "https://labelos.digital/";
 const LOGOVO_DOMAIN = "https://www.logovo24.by/";
 const HEADMIND_DOMAIN = "https://headmind.ru/";
 const SLOTTY_DOMAIN = "https://slotty.of.by/book";
-const SPLITON_DOMAIN = "https://spliton.io/app";
+const SPLITON_DOMAIN = "https://www.spliton.io/";
 const TIVONIXPANEL_DOMAIN = "https://tivonixpanel-production.up.railway.app/login";
 
 /** Публичные кейсы на /projects (остальные скрыты, но остаются в каталоге) */
