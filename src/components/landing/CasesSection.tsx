@@ -65,11 +65,11 @@ export default function CasesSection() {
   const caseBlockRef = useRef<HTMLDivElement>(null);
   const coverX = useCaseCoverPan(caseBlockRef);
 
-  const featured = buildProjects(isRu).find((p) => p.id === "tivonixpanel");
+  const featured = buildProjects(isRu).find((p) => p.id === "spliton");
   if (!featured) return null;
 
   const subtitle = projectSubtitle(featured, lang);
-  const caseCopy = copy.cases.tivonixpanel;
+  const caseCopy = copy.cases.spliton;
 
   const caseTabs = useMemo(() => {
     const tabs = [
@@ -101,7 +101,7 @@ export default function CasesSection() {
     openLeadForm,
   ]);
 
-  const CASE_COVER = `/images/${encodeURI("обложки")}/tivonixpanel.webp`;
+  const CASE_COVER = featured.cover ?? "/images/project-priew/spliton.webp";
 
   return (
     <Section id="cases" className="scroll-mt-[var(--tivonix-header-spacer)] bg-black py-16 sm:py-20 lg:py-24">
@@ -154,8 +154,8 @@ export default function CasesSection() {
                       {isRu ? "Результат:" : "Result:"}
                     </span>{" "}
                     {isRu
-                      ? "Живая партнёрская панель в продакшене: сделки, статусы и выплаты в одном кабинете."
-                      : "Live partner panel in production: deals, statuses and payouts in one cabinet."}
+                      ? "Живая финтех-платформа в продакшене: доли, кошелёк, вторичный рынок и админка."
+                      : "Live fintech platform in production: shares, wallet, secondary market and admin."}
                   </p>
                 </div>
 

@@ -22,6 +22,8 @@ export type CtaSource =
   | "pricing_help"
   | "service_websites"
   | "service_automation"
+  | "mileseal_scope"
+  | "mileseal_scope_review"
   | "direction_leads"
   | "direction_product"
   | "founder"

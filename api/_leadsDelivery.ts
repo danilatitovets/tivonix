@@ -77,6 +77,8 @@ function sourceLabel(source: string): string {
     pricing_help: "Помощь на тарифах",
     service_websites: "Создание сайтов",
     service_automation: "Автоматизация",
+    mileseal_scope: "MileSeal — scope review",
+    mileseal_scope_review: "MileSeal — human scope review",
     "release-audit": "Тест",
     unknown: "Не указано",
   };

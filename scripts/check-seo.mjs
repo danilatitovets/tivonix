@@ -8,6 +8,7 @@ const requiredHtmlFiles = [
   "dist/contacts/index.html",
   "dist/sozdanie-sajtov/index.html",
   "dist/avtomatizaciya-biznesa/index.html",
+  "dist/mileseal/index.html",
   "dist/partners/index.html",
   "dist/ru/partners/index.html",
   "dist/en/partners/index.html",
@@ -15,7 +16,6 @@ const requiredHtmlFiles = [
   "dist/projects/spliton/index.html",
   "dist/projects/headmind/index.html",
   "dist/projects/logovo/index.html",
-  "dist/projects/tivonixpanel/index.html",
 ];
 
 const checks = [
@@ -44,17 +44,18 @@ const checks = [
     ],
   },
   {
-    file: "dist/projects/index.html",
-    phrases: ["Проекты", "Tivonix Panel", "Slotty", "Spliton", "Headmind", "LOGOVO"],
+    file: "dist/mileseal/index.html",
+    phrases: [
+      "MileSeal",
+      "Остановите расползание объёма",
+      "Попробовать демо",
+      "https://tivonix.tech/mileseal",
+      "прототип",
+    ],
   },
   {
-    file: "dist/projects/tivonixpanel/index.html",
-    phrases: [
-      "Tivonix Panel",
-      "Партнёрская панель",
-      "https://tivonix.tech/projects/tivonixpanel",
-      "tivonixpanel-production.up.railway.app",
-    ],
+    file: "dist/projects/index.html",
+    phrases: ["Проекты", "Slotty", "Spliton", "Headmind", "LOGOVO"],
   },
   {
     file: "dist/projects/spliton/index.html",

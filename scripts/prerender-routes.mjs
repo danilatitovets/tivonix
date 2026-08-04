@@ -5,6 +5,7 @@ export const PRERENDER_ROUTES = [
   "/zh",
   "/sozdanie-sajtov",
   "/avtomatizaciya-biznesa",
+  "/mileseal",
   "/projects",
   "/en/projects",
   "/zh/projects",
@@ -25,17 +26,14 @@ export const PRERENDER_ROUTES = [
   "/projects/spliton",
   "/projects/headmind",
   "/projects/logovo",
-  "/projects/tivonixpanel",
   "/en/projects/slotty",
   "/en/projects/spliton",
   "/en/projects/headmind",
   "/en/projects/logovo",
-  "/en/projects/tivonixpanel",
   "/zh/projects/slotty",
   "/zh/projects/spliton",
   "/zh/projects/headmind",
   "/zh/projects/logovo",
-  "/zh/projects/tivonixpanel",
 ];
 
 export function prerenderHtmlPath(distDir, route) {

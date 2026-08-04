@@ -108,11 +108,11 @@ export default function NewCaseSection() {
   const [smokeOn, setSmokeOn] = useState(false);
   const [coverZoom, setCoverZoom] = useState(1);
 
-  const featured = buildProjects(isRu).find((p) => p.id === "tivonixpanel");
+  const featured = buildProjects(isRu).find((p) => p.id === "spliton");
   const subtitle = featured ? projectSubtitle(featured, lang) : "";
-  const cover = featured?.cover ?? `/images/${encodeURI("обложки")}/tivonixpanel.webp`;
+  const cover = featured?.cover ?? "/images/project-priew/spliton.webp";
   const domain =
-    featured?.domain?.replace(/^https?:\/\//, "") ?? "tivonixpanel-production.up.railway.app/login";
+    featured?.domain?.replace(/^https?:\/\//, "") ?? "www.spliton.io";
   const outcome = featured?.outcomes?.[0] ?? "";
 
   useEffect(() => {

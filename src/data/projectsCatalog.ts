@@ -38,7 +38,6 @@ const TIVONIXPANEL_DOMAIN = "https://tivonixpanel-production.up.railway.app/logi
 
 /** Публичные кейсы на /projects (остальные скрыты, но остаются в каталоге) */
 export const PUBLIC_PROJECT_IDS = [
-  "tivonixpanel",
   "spliton",
   "slotty",
   "headmind",

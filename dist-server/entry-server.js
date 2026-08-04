@@ -2,9 +2,9 @@ import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import { renderToString } from "react-dom/server";
 import { useLocation, useNavigate, Link, useParams, Navigate, Routes, Route, MemoryRouter } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
-import React, { createContext, useState, useEffect, useMemo, useContext, useId, useRef, useCallback, useSyncExternalStore, useLayoutEffect, lazy, Suspense } from "react";
+import React, { createContext, useState, useEffect, useMemo, useContext, useId, useRef, useCallback, useSyncExternalStore, useLayoutEffect, lazy, Suspense, useReducer } from "react";
 import { createPortal } from "react-dom";
-import { Check, ArrowUpRight, ChevronDown, Mail, Bot, Zap, LayoutDashboard, Users, TrendingUp, ShieldCheck, ChevronLeft, ChevronRight, FolderOpen, Plus, Minus } from "lucide-react";
+import { Check, ArrowUpRight, ChevronDown, Mail, Bot, Zap, LayoutDashboard, Users, TrendingUp, ShieldCheck, ChevronLeft, ChevronRight, FolderOpen, Plus, Minus, Pencil, RotateCcw, ClipboardCopy, MessagesSquare, Play, Clock3, ClipboardPaste, MessageSquarePlus, FileCheck2 } from "lucide-react";
 import { SiTelegram, SiGmail, SiHubspot, SiGooglesheets, SiWhatsapp, SiNotion, SiGooglecalendar, SiClickup, SiStripe, SiGoogledocs, SiGoogleanalytics, SiZapier } from "react-icons/si";
 import { FiBell } from "react-icons/fi";
 function isLang(v) {
@@ -1848,7 +1848,7 @@ function pricingCopy(lang) {
   if (lang === "zh") return COPY_ZH$3;
   return lang === "ru" ? COPY_RU$3 : COPY_EN$3;
 }
-function cx$f(...a) {
+function cx$i(...a) {
   return a.filter(Boolean).join(" ");
 }
 const BRAND_CTA = "linear-gradient(90deg, #FFD7B0 0%, #FF9A3D 45%, #FF6A1A 100%)";
@@ -2038,18 +2038,18 @@ function LeadFormModal({
   if (!mounted && !open) return null;
   if (typeof document === "undefined") return null;
   const budgetOptions = copy.budgets.filter((b) => b.id !== "");
-  const inputBase = cx$f(
+  const inputBase = cx$i(
     "w-full h-12 rounded-xl px-4",
     "border-0 bg-white/[0.08] text-white placeholder:text-white/40",
     "outline-none focus:bg-white/[0.12]",
     "text-[14px] font-medium transition",
     HOTJAR_MASK_CLASS
   );
-  const labelClass = "mb-1.5 block min-h-[1.15rem] text-[12px] font-medium leading-none text-white/80";
+  const labelClass2 = "mb-1.5 block min-h-[1.15rem] text-[12px] font-medium leading-none text-white/80";
   const node = /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$f(
+      className: cx$i(
         "fixed inset-0 z-[220]",
         "flex items-end justify-center sm:items-center",
         "px-0 sm:px-5 py-0 sm:py-5"
@@ -2296,7 +2296,7 @@ function LeadFormModal({
                         ] }) : null,
                         /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 gap-3.5 sm:grid-cols-2", children: [
                           /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-                            /* @__PURE__ */ jsxs("label", { htmlFor: "lead-name", className: labelClass, children: [
+                            /* @__PURE__ */ jsxs("label", { htmlFor: "lead-name", className: labelClass2, children: [
                               copy.name,
                               " ",
                               /* @__PURE__ */ jsxs("span", { className: "font-normal text-white/45", children: [
@@ -2321,7 +2321,7 @@ function LeadFormModal({
                             )
                           ] }),
                           /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-                            /* @__PURE__ */ jsxs("label", { htmlFor: "lead-contact", className: labelClass, children: [
+                            /* @__PURE__ */ jsxs("label", { htmlFor: "lead-contact", className: labelClass2, children: [
                               copy.contact,
                               " *"
                             ] }),
@@ -2336,7 +2336,7 @@ function LeadFormModal({
                                 autoComplete: "email",
                                 inputMode: "email",
                                 placeholder: copy.contactPh,
-                                className: cx$f(
+                                className: cx$i(
                                   inputBase,
                                   errorField === "contact" && "bg-[#FF9A3D]/12 focus:bg-[#FF9A3D]/16"
                                 ),
@@ -2351,7 +2351,7 @@ function LeadFormModal({
                           ] })
                         ] }),
                         /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-                          /* @__PURE__ */ jsxs("label", { htmlFor: "lead-task", className: labelClass, children: [
+                          /* @__PURE__ */ jsxs("label", { htmlFor: "lead-task", className: labelClass2, children: [
                             copy.task,
                             " *"
                           ] }),
@@ -2364,7 +2364,7 @@ function LeadFormModal({
                               required: true,
                               rows: 4,
                               placeholder: activePlanId && planName ? lang === "ru" ? `Что важно по плану ${planName}? Сроки, примеры, пожелания…` : `What matters for the ${planName} plan? Timeline, examples, notes…` : copy.taskPh,
-                              className: cx$f(
+                              className: cx$i(
                                 "min-h-[108px] w-full resize-none rounded-xl px-4 py-3 text-[14px] font-medium",
                                 "border-0 bg-white/[0.08] text-white placeholder:text-white/40",
                                 "outline-none focus:bg-white/[0.12] transition",
@@ -2380,7 +2380,7 @@ function LeadFormModal({
                           )
                         ] }),
                         /* @__PURE__ */ jsxs("div", { children: [
-                          /* @__PURE__ */ jsxs("div", { className: labelClass, children: [
+                          /* @__PURE__ */ jsxs("div", { className: labelClass2, children: [
                             copy.budget,
                             " ",
                             /* @__PURE__ */ jsxs("span", { className: "font-normal text-white/45", children: [
@@ -2397,7 +2397,7 @@ function LeadFormModal({
                                 type: "button",
                                 disabled: status === "loading",
                                 onClick: () => update("budget", active ? "" : b.id),
-                                className: cx$f(
+                                className: cx$i(
                                   "h-9 rounded-full px-3.5 text-[12px] font-medium transition",
                                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40",
                                   active ? "bg-white text-black" : "bg-white/[0.08] text-white/75 hover:bg-white/[0.12] hover:text-white"
@@ -2417,7 +2417,7 @@ function LeadFormModal({
                               checked: form.consent,
                               onChange: (e) => update("consent", e.target.checked),
                               disabled: status === "loading",
-                              className: cx$f(
+                              className: cx$i(
                                 "mt-0.5 h-4 w-4 shrink-0 accent-[#FF9A3D]",
                                 errorField === "consent" && "outline outline-2 outline-[#FF9A3D]/60 outline-offset-2"
                               ),
@@ -2491,7 +2491,7 @@ function LeadFormModal({
                             type: "submit",
                             form: "lead-form",
                             disabled: status === "loading",
-                            className: cx$f(
+                            className: cx$i(
                               "flex h-12 w-full items-center justify-center rounded-full text-[15px] font-bold text-black",
                               "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
                               "hover:brightness-[1.04] active:brightness-[0.96]",
@@ -2918,12 +2918,12 @@ function partnerPanelRegisterUrl(type) {
   url.searchParams.set("type", type);
   return url.toString();
 }
-function cx$e(...a) {
+function cx$h(...a) {
   return a.filter(Boolean).join(" ");
 }
 function ctaClass$1(variant, size, className) {
   const isSquare = variant === "plain";
-  return cx$e(
+  return cx$h(
     "inline-flex items-center justify-center font-sans font-medium tracking-normal transition duration-200",
     isSquare ? "rounded-none shadow-none" : "rounded-full",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
@@ -2967,7 +2967,7 @@ function LeadCTAButton({
   );
 }
 const ORANGE_PILL = "bg-gradient-to-r from-[#FFD7B0] via-[#FF9A3D] to-[#FF6A1A] shadow-[0_6px_20px_rgba(255,107,44,0.2)]";
-function cx$d(...a) {
+function cx$g(...a) {
   return a.filter(Boolean).join(" ");
 }
 const LANGS = ["ru", "en", "zh"];
@@ -3003,7 +3003,7 @@ function LangToggle({
           role: "radio",
           "aria-checked": active,
           onClick: () => switchLang(code),
-          className: cx$d(
+          className: cx$g(
             "relative flex h-10 items-center justify-center rounded-full border-0 px-3 font-bold tracking-[0.08em] outline-none select-none transition duration-[260ms]",
             "text-[11px] focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
             active ? "bg-[#2c2c2c] text-white" : "bg-transparent text-white hover:bg-white/[0.06]"
@@ -3032,7 +3032,7 @@ function LangToggle({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$d(
+      className: cx$g(
         "relative shrink-0 select-none rounded-full border border-white/[0.08] bg-[#121212] p-1",
         h
       ),
@@ -3044,7 +3044,7 @@ function LangToggle({
           "span",
           {
             "aria-hidden": true,
-            className: cx$d(
+            className: cx$g(
               "pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-8px)/3)] rounded-full",
               ORANGE_PILL,
               !reducedMotion && "transition-transform duration-200 ease-[cubic-bezier(0.33,1,0.68,1)]"
@@ -3061,7 +3061,7 @@ function LangToggle({
             role: "radio",
             "aria-checked": lang === code,
             onClick: () => switchLang(code),
-            className: cx$d(
+            className: cx$g(
               "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
               "focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
               text,
@@ -3075,7 +3075,7 @@ function LangToggle({
     }
   );
 }
-function cx$c(...a) {
+function cx$f(...a) {
   return a.filter(Boolean).join(" ");
 }
 const NAV_MAIN = [
@@ -3190,7 +3190,7 @@ function PillNav({
   return /* @__PURE__ */ jsx(
     "nav",
     {
-      className: cx$c(
+      className: cx$f(
         "relative inline-flex items-center gap-0.5 rounded-full border-0 bg-[#141414] p-1"
       ),
       "aria-label": "Header navigation",
@@ -3204,7 +3204,7 @@ function PillNav({
             to: it.to,
             onClick: onItemClick(it.to, it.hash),
             "aria-current": isActive ? "page" : void 0,
-            className: cx$c(
+            className: cx$f(
               "relative flex items-center justify-center gap-2 rounded-full border-0 font-bold uppercase tracking-[0.14em] outline-none select-none transition",
               "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
               pad,
@@ -3402,7 +3402,7 @@ function Header() {
     "div",
     {
       id: "mobile-header-menu",
-      className: cx$c(
+      className: cx$f(
         "xl:hidden fixed inset-0 z-[200]",
         open ? "pointer-events-auto" : "pointer-events-none"
       ),
@@ -3410,7 +3410,7 @@ function Header() {
       children: /* @__PURE__ */ jsxs(
         "div",
         {
-          className: cx$c(
+          className: cx$f(
             "mobile-menu-panel absolute inset-0 flex min-h-[100dvh] flex-col overflow-hidden bg-[#161313]",
             "transition-[opacity,transform,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
             open ? "visible translate-y-0 opacity-100" : "invisible -translate-y-4 opacity-0"
@@ -3447,7 +3447,7 @@ function Header() {
                 {
                   type: "button",
                   onClick: closeMenu,
-                  className: cx$c(
+                  className: cx$f(
                     "grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-xl border-0",
                     "bg-white/[0.04] text-white/72 transition hover:bg-white/[0.08] active:scale-95",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
@@ -3515,7 +3515,7 @@ function Header() {
                 Link,
                 {
                   to: item.to,
-                  className: cx$c(
+                  className: cx$f(
                     "flex items-center justify-between border-b border-white/[0.08] px-3 py-4 text-[15px] font-medium text-white/92",
                     "transition-colors hover:bg-white/[0.03] active:bg-white/[0.02]",
                     activeKey === item.key && "text-[#FFAE66]"
@@ -3558,7 +3558,7 @@ function Header() {
                   Link,
                   {
                     to: onPartners ? `${partnersPath(lang)}#partner-formats` : pathForLang("/plans", lang),
-                    className: cx$c(
+                    className: cx$f(
                       "inline-flex h-12 items-center justify-center rounded-full px-6 font-sans text-[14px] font-medium text-white",
                       "bg-[#070607] transition hover:bg-[#1a1a1a]",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
@@ -3579,7 +3579,7 @@ function Header() {
       "div",
       {
         "aria-hidden": true,
-        className: cx$c(
+        className: cx$f(
           needsSpacer ? "h-[78px] sm:h-[82px]" : "h-0"
         )
       }
@@ -3587,7 +3587,7 @@ function Header() {
     /* @__PURE__ */ jsx(
       "header",
       {
-        className: cx$c(
+        className: cx$f(
           "pointer-events-none fixed inset-x-0 top-0 z-[120] transition-[transform,opacity]",
           // Float via transform (not `top`) so chrome/scroll never fights a top tween (~12–20px jumps)
           hideHeader ? "-translate-y-full opacity-0" : heroInView && !isMobile ? "translate-y-3 opacity-100 sm:translate-y-4" : "translate-y-0 opacity-100"
@@ -3596,11 +3596,11 @@ function Header() {
         children: /* @__PURE__ */ jsx("div", { className: "h-[78px] w-full bg-transparent sm:h-[82px]", children: /* @__PURE__ */ jsx(Container, { className: "h-full", children: /* @__PURE__ */ jsxs(
           "div",
           {
-            className: cx$c(
+            className: cx$f(
               "relative flex h-full w-full min-w-0 items-center xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:items-center xl:gap-x-4"
             ),
             children: [
-              /* @__PURE__ */ jsx("div", { className: cx$c("flex min-w-0 items-center gap-3 shrink-0 xl:justify-self-start", !hideHeader && "pointer-events-auto"), children: /* @__PURE__ */ jsx(
+              /* @__PURE__ */ jsx("div", { className: cx$f("flex min-w-0 items-center gap-3 shrink-0 xl:justify-self-start", !hideHeader && "pointer-events-auto"), children: /* @__PURE__ */ jsx(
                 Link,
                 {
                   to: "/",
@@ -3608,7 +3608,7 @@ function Header() {
                     e.preventDefault();
                     goHome();
                   },
-                  className: cx$c(
+                  className: cx$f(
                     "flex items-center outline-none",
                     "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 rounded-xl"
                   ),
@@ -3618,7 +3618,7 @@ function Header() {
                     {
                       src: logoSrc,
                       alt: "TIVONIX",
-                      className: cx$c(
+                      className: cx$f(
                         "w-auto object-contain object-left opacity-95 transition-all hover:opacity-100",
                         "h-9 sm:h-10"
                       ),
@@ -3632,7 +3632,7 @@ function Header() {
               heroInView && !isPartners ? /* @__PURE__ */ jsx(
                 "div",
                 {
-                  className: cx$c(
+                  className: cx$f(
                     "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 xl:hidden",
                     !hideHeader && "pointer-events-auto"
                   ),
@@ -3642,7 +3642,7 @@ function Header() {
               /* @__PURE__ */ jsxs(
                 "div",
                 {
-                  className: cx$c(
+                  className: cx$f(
                     "relative hidden min-w-0 items-center gap-2 justify-self-center xl:flex",
                     !hideHeader && "pointer-events-auto"
                   ),
@@ -3661,7 +3661,7 @@ function Header() {
                   ]
                 }
               ),
-              /* @__PURE__ */ jsx("div", { className: cx$c("ml-auto hidden min-w-0 shrink-0 items-center xl:ml-0 xl:flex xl:justify-self-end", !hideHeader && "pointer-events-auto"), children: onPartners ? /* @__PURE__ */ jsx(
+              /* @__PURE__ */ jsx("div", { className: cx$f("ml-auto hidden min-w-0 shrink-0 items-center xl:ml-0 xl:flex xl:justify-self-end", !hideHeader && "pointer-events-auto"), children: onPartners ? /* @__PURE__ */ jsx(
                 "a",
                 {
                   href: ctaHref,
@@ -3670,7 +3670,7 @@ function Header() {
                   children: ctaTop
                 }
               ) : /* @__PURE__ */ jsx(LeadCTAButton, { source: "header", variant: "white", className: "h-11 px-7 text-[14px]", children: ctaTop }) }),
-              /* @__PURE__ */ jsxs("div", { className: cx$c("ml-auto xl:hidden flex items-center gap-2", !hideHeader && "pointer-events-auto"), children: [
+              /* @__PURE__ */ jsxs("div", { className: cx$f("ml-auto xl:hidden flex items-center gap-2", !hideHeader && "pointer-events-auto"), children: [
                 /* @__PURE__ */ jsx("div", { className: "hidden md:block", children: onPartners ? /* @__PURE__ */ jsx(
                   "a",
                   {
@@ -3685,7 +3685,7 @@ function Header() {
                   {
                     ref: burgerRef,
                     type: "button",
-                    className: cx$c(
+                    className: cx$f(
                       "grid place-items-center outline-none border-0",
                       "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
                       "h-11 w-11 rounded-2xl",
@@ -5270,10 +5270,10 @@ function getStableViewportHeight() {
   if (!frozenH) readNow();
   return frozenH;
 }
-const HERO_VIDEO = "/images/hero-bg.mp4";
-const HERO_POSTER = "/images/hero-bg-poster.webp";
+const HERO_VIDEO$1 = "/images/hero-bg.mp4";
+const HERO_POSTER$1 = "/images/hero-bg-poster.webp";
 const SCROLL_TRACK_VH = 240;
-function cx$b(...a) {
+function cx$e(...a) {
   return a.filter(Boolean).join(" ");
 }
 function clamp01$3(v) {
@@ -5346,7 +5346,7 @@ function HeroHeadline({
   as: Tag = "h1"
 }) {
   const lines = stage.headlineLines && stage.headlineLines.length > 0 ? stage.headlineLines : [stage.headline];
-  return /* @__PURE__ */ jsx(Tag, { className: cx$b(HERO_SCROLL_HEADLINE_CLASS, "hero-scroll-headline mx-auto text-center"), children: lines.map((line, i) => /* @__PURE__ */ jsxs("span", { className: "hero-scroll-headline__line block", children: [
+  return /* @__PURE__ */ jsx(Tag, { className: cx$e(HERO_SCROLL_HEADLINE_CLASS, "hero-scroll-headline mx-auto text-center"), children: lines.map((line, i) => /* @__PURE__ */ jsxs("span", { className: "hero-scroll-headline__line block", children: [
     i > 0 ? " " : null,
     line
   ] }, `${line}-${i}`)) });
@@ -5366,7 +5366,7 @@ function HeroCard({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$b(
+      className: cx$e(
         "relative isolate h-full min-h-0 flex-1 overflow-visible rounded-[40px] bg-black"
       ),
       children: [
@@ -5376,8 +5376,8 @@ function HeroCard({
             {
               ref: videoRef,
               className: "pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center",
-              src: HERO_VIDEO,
-              poster: HERO_POSTER,
+              src: HERO_VIDEO$1,
+              poster: HERO_POSTER$1,
               autoPlay: true,
               muted: true,
               loop: true,
@@ -5406,7 +5406,7 @@ function HeroCard({
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-10 flex flex-col items-center justify-center pt-[calc(4.875rem+0.5rem)] pb-6 sm:pt-[calc(var(--tivonix-header-spacer)+1.5rem)]", children: /* @__PURE__ */ jsxs(
           "div",
           {
-            className: cx$b(
+            className: cx$e(
               LANDING_SHELL_CLASS,
               "pointer-events-none relative flex w-full flex-1 flex-col items-center justify-center"
             ),
@@ -5478,14 +5478,14 @@ function Hero() {
     return /* @__PURE__ */ jsx(
       Section,
       {
-        className: cx$b(
+        className: cx$e(
           "relative z-[1] isolate overflow-hidden bg-transparent !py-0",
           "min-h-[100svh] pb-0"
         ),
         children: /* @__PURE__ */ jsx(
           "div",
           {
-            className: cx$b(
+            className: cx$e(
               "mx-auto flex h-[calc(100svh-1.25rem)] min-h-0 w-full max-w-none flex-col",
               "px-3 pt-2.5 pb-2.5",
               "sm:max-w-[min(98vw,1840px)] sm:px-3",
@@ -5506,14 +5506,14 @@ function Hero() {
       children: /* @__PURE__ */ jsx(
         Section,
         {
-          className: cx$b(
+          className: cx$e(
             "hero-scroll-sticky sticky top-0 z-[1] isolate overflow-hidden bg-transparent !py-0",
             "min-h-[100svh] pb-0"
           ),
           children: /* @__PURE__ */ jsx(
             "div",
             {
-              className: cx$b(
+              className: cx$e(
                 "mx-auto flex h-[calc(100svh-1.25rem)] min-h-0 w-full max-w-none flex-col",
                 "px-3 pt-2.5 pb-2.5",
                 "sm:max-w-[min(98vw,1840px)] sm:px-3",
@@ -6267,7 +6267,6 @@ const SLOTTY_DOMAIN = "https://slotty.of.by/book";
 const SPLITON_DOMAIN = "https://www.spliton.io/";
 const TIVONIXPANEL_DOMAIN = "https://tivonixpanel-production.up.railway.app/login";
 const PUBLIC_PROJECT_IDS = [
-  "tivonixpanel",
   "spliton",
   "slotty",
   "headmind",
@@ -6581,7 +6580,7 @@ function useInView(ref, options) {
   return inView;
 }
 const AUTO_MS = 5500;
-function cx$a(...parts) {
+function cx$d(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function FeaturedCaseSlide({
@@ -6598,7 +6597,7 @@ function FeaturedCaseSlide({
   return /* @__PURE__ */ jsxs(
     "article",
     {
-      className: cx$a(
+      className: cx$d(
         "case-split case-split--no-tabs col-start-1 row-start-1 transition-opacity duration-300 ease-out",
         active ? "relative z-[1] opacity-100" : "pointer-events-none invisible z-0 opacity-0"
       ),
@@ -7984,13 +7983,13 @@ const AI_MODELS = MODEL_DEFS.map((model, index) => {
   };
 });
 const AI_MODEL_COUNT = AI_MODELS.length;
-function cx$9(...a) {
+function cx$c(...a) {
   return a.filter(Boolean).join(" ");
 }
 function TivonixGlowBorder({ className, children }) {
-  return /* @__PURE__ */ jsx("div", { className: cx$9("tivonix-glow-border", className), children: /* @__PURE__ */ jsx("div", { className: "tivonix-glow-border__content relative min-h-0 flex-1", children }) });
+  return /* @__PURE__ */ jsx("div", { className: cx$c("tivonix-glow-border", className), children: /* @__PURE__ */ jsx("div", { className: "tivonix-glow-border__content relative min-h-0 flex-1", children }) });
 }
-function cx$8(...a) {
+function cx$b(...a) {
   return a.filter(Boolean).join(" ");
 }
 function ScrollFingerHint({
@@ -8011,7 +8010,7 @@ function ScrollFingerHint({
     {
       type: onActivate ? "button" : void 0,
       onClick: onActivate,
-      className: cx$8(
+      className: cx$b(
         "scroll-finger-hint",
         visible && "scroll-finger-hint--visible",
         isDark && "scroll-finger-hint--dark",
@@ -9605,7 +9604,7 @@ function FAQSection() {
     }
   );
 }
-function cx$7(...a) {
+function cx$a(...a) {
   return a.filter(Boolean).join(" ");
 }
 function TelegramLink({
@@ -9630,7 +9629,7 @@ function TelegramLink({
 }
 function ctaClass(variant, size, className) {
   const isSquare = variant === "plain";
-  return cx$7(
+  return cx$a(
     "inline-flex items-center justify-center font-sans font-medium tracking-normal transition duration-200",
     isSquare ? "rounded-none shadow-none" : "rounded-full",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
@@ -9757,7 +9756,7 @@ function FinalCTASection() {
     }
   );
 }
-function cx$6(...a) {
+function cx$9(...a) {
   return a.filter(Boolean).join(" ");
 }
 const LOGO_LOCKUP_PNG = "/images/tivonix-logo-lockup.webp";
@@ -9846,7 +9845,7 @@ function ExternalLink({
       target: openInNewTab ? "_blank" : void 0,
       rel: openInNewTab ? "noopener noreferrer" : void 0,
       "aria-label": ariaLabel,
-      className: cx$6("site-footer__link", className),
+      className: cx$9("site-footer__link", className),
       children
     }
   );
@@ -9875,7 +9874,7 @@ function SocialIconLink({
       target: openInNewTab ? "_blank" : void 0,
       rel: openInNewTab ? "noopener noreferrer" : void 0,
       "aria-label": label,
-      className: cx$6("site-footer__social-link", className),
+      className: cx$9("site-footer__social-link", className),
       children
     }
   );
@@ -10352,7 +10351,7 @@ function LandingPage() {
   ] });
 }
 const HERO_IMG = "/images/hero.webp";
-function cx$5(...a) {
+function cx$8(...a) {
   return a.filter(Boolean).join(" ");
 }
 const s$1 = (v) => v;
@@ -10384,7 +10383,7 @@ function ProjectPreviewFrame({
   return /* @__PURE__ */ jsx(
     "div",
     {
-      className: cx$5(
+      className: cx$8(
         "relative overflow-hidden",
         fullWidth ? "w-full rounded-xl" : "mx-auto w-full rounded-2xl",
         "border-0 bg-[#141416]"
@@ -10593,7 +10592,7 @@ function GalleryLightbox({
     /* @__PURE__ */ jsxs(
       "div",
       {
-        className: cx$5(
+        className: cx$8(
           "fixed inset-0 z-[210] flex items-center justify-center p-2 pt-[max(0.5rem,env(safe-area-inset-top))] sm:p-6",
           "transition-opacity duration-200",
           visible ? "opacity-100" : "opacity-0"
@@ -10614,7 +10613,7 @@ function GalleryLightbox({
           /* @__PURE__ */ jsxs(
             "div",
             {
-              className: cx$5(
+              className: cx$8(
                 "relative z-[1] flex h-[min(94dvh,960px)] w-full max-w-[min(100vw,1200px)] flex-col",
                 "transition-transform duration-200",
                 visible ? "scale-100" : "scale-[0.97]"
@@ -10692,7 +10691,7 @@ function GalleryLightbox({
                     "div",
                     {
                       ref: stageRef,
-                      className: cx$5(
+                      className: cx$8(
                         "h-full rounded-2xl bg-black overscroll-contain",
                         zoomed ? "overflow-hidden touch-none cursor-grab active:cursor-grabbing" : "overflow-auto cursor-zoom-in"
                       ),
@@ -10708,7 +10707,7 @@ function GalleryLightbox({
                       children: /* @__PURE__ */ jsx(
                         "div",
                         {
-                          className: cx$5(
+                          className: cx$8(
                             "flex w-full justify-center",
                             zoomed || !tall ? "min-h-full items-center" : "items-start"
                           ),
@@ -10717,7 +10716,7 @@ function GalleryLightbox({
                             {
                               src,
                               alt: "",
-                              className: cx$5(
+                              className: cx$8(
                                 "block select-none transition-transform duration-100 will-change-transform",
                                 // Long pages: full width + vertical scroll. Wide UI: fit in viewport.
                                 tall && !zoomed ? "h-auto w-full max-w-full" : "max-h-full w-auto max-w-full object-contain"
@@ -10763,7 +10762,7 @@ function ProjectGalleryStrip({
       /* @__PURE__ */ jsxs(
         "div",
         {
-          className: cx$5(
+          className: cx$8(
             "flex gap-2.5 overflow-x-auto px-6 pb-1 sm:gap-3 sm:px-0",
             "snap-x snap-mandatory scroll-smooth",
             "no-scrollbar"
@@ -10853,7 +10852,7 @@ function ExternalIcon$1({ className }) {
     }
   );
 }
-const filterPillClass = (active) => cx$5(
+const filterPillClass = (active) => cx$8(
   "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-[13px] font-medium transition",
   active ? "bg-[#3a3a3d] text-white" : "bg-[#1c1c1f] text-white/78 hover:bg-[#262626] hover:text-white/92"
 );
@@ -10896,7 +10895,7 @@ function ProjectGridCard({ p, isRu, lang }) {
           href: p.domain,
           target: "_blank",
           rel: "noopener noreferrer",
-          className: cx$5(
+          className: cx$8(
             "shrink-0 inline-flex items-center gap-1 rounded-full",
             "bg-[#1c1c1f] px-2.5 py-1 text-[11px] font-medium text-white/58",
             "transition hover:bg-[#262626] hover:text-white/85"
@@ -10947,7 +10946,7 @@ function ProjectsPage() {
       /* @__PURE__ */ jsx("div", { className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs(
         "div",
         {
-          className: cx$5(
+          className: cx$8(
             "flex gap-2 overflow-x-auto pb-1 no-scrollbar",
             "justify-start sm:flex-wrap sm:justify-center"
           ),
@@ -11522,12 +11521,12 @@ function CaseBrandIntro({
   const renderLogo = (size) => logo ? /* @__PURE__ */ jsx(
     "div",
     {
-      className: cx$5(
+      className: cx$8(
         "overflow-hidden bg-black",
-        size === "desktop" ? cx$5(
+        size === "desktop" ? cx$8(
           "shrink-0 rounded-[16px]",
           logoFit === "contain" ? "h-[5.25rem] w-16" : "h-16 w-16"
-        ) : cx$5(
+        ) : cx$8(
           "mb-4 rounded-[12px] lg:hidden",
           logoFit === "contain" ? "h-12 w-10" : "h-11 w-11"
         )
@@ -11537,7 +11536,7 @@ function CaseBrandIntro({
         {
           src: logo,
           alt: "",
-          className: cx$5(
+          className: cx$8(
             "h-full w-full object-center",
             logoFit === "contain" ? "object-contain" : "object-cover"
           ),
@@ -11556,7 +11555,7 @@ function CaseBrandIntro({
       renderLogo("desktop")
     ] }),
     renderLogo("mobile"),
-    /* @__PURE__ */ jsx("div", { className: cx$5("max-w-[42rem] space-y-3.5 sm:space-y-4 lg:mt-8", BODY), children: storyParas }),
+    /* @__PURE__ */ jsx("div", { className: cx$8("max-w-[42rem] space-y-3.5 sm:space-y-4 lg:mt-8", BODY), children: storyParas }),
     domain && !wip ? /* @__PURE__ */ jsxs(
       "a",
       {
@@ -11617,13 +11616,13 @@ function PaletteSwatch({
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1400);
   };
-  return /* @__PURE__ */ jsxs("div", { className: cx$5("min-w-0", wide && "max-w-xl"), children: [
+  return /* @__PURE__ */ jsxs("div", { className: cx$8("min-w-0", wide && "max-w-xl"), children: [
     /* @__PURE__ */ jsxs(
       "button",
       {
         type: "button",
         onClick: onCopy,
-        className: cx$5(
+        className: cx$8(
           "group relative w-full overflow-hidden rounded-2xl ring-1 ring-white/[0.06]",
           "outline-none transition focus-visible:ring-2 focus-visible:ring-[#FF6B2C]/55",
           wide ? "h-16 sm:h-[72px]" : "h-14 sm:h-16"
@@ -11635,7 +11634,7 @@ function PaletteSwatch({
           /* @__PURE__ */ jsx(
             "span",
             {
-              className: cx$5(
+              className: cx$8(
                 "pointer-events-none absolute inset-0 rounded-2xl",
                 isLight ? "ring-1 ring-inset ring-black/10" : "ring-1 ring-inset ring-white/[0.04]"
               ),
@@ -11645,7 +11644,7 @@ function PaletteSwatch({
           /* @__PURE__ */ jsxs(
             "span",
             {
-              className: cx$5(
+              className: cx$8(
                 "absolute right-3 top-1/2 z-[1] -translate-y-1/2",
                 "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1",
                 "text-[11px] font-[600] tracking-normal backdrop-blur-sm",
@@ -11821,7 +11820,7 @@ function CaseDetailBody({
             className: "mb-12 scroll-mt-28 border-t border-white/[0.06] pt-8 sm:mb-[72px] sm:pt-12",
             children: [
               /* @__PURE__ */ jsx("h2", { className: H2, children: block.title }),
-              block.paragraphs?.length ? /* @__PURE__ */ jsx("div", { className: cx$5("mt-5 max-w-[42rem] space-y-4", isOutcome && "text-[#ededf3]"), children: block.paragraphs.map((p, idx) => /* @__PURE__ */ jsx("p", { className: BODY, children: /* @__PURE__ */ jsx(RichText, { text: p }) }, idx)) }) : null,
+              block.paragraphs?.length ? /* @__PURE__ */ jsx("div", { className: cx$8("mt-5 max-w-[42rem] space-y-4", isOutcome && "text-[#ededf3]"), children: block.paragraphs.map((p, idx) => /* @__PURE__ */ jsx("p", { className: BODY, children: /* @__PURE__ */ jsx(RichText, { text: p }) }, idx)) }) : null,
               block.bullets?.length ? /* @__PURE__ */ jsx(FeatureGrid, { items: block.bullets }) : null
             ]
           },
@@ -12013,7 +12012,7 @@ function ProjectDetailPage() {
               /* @__PURE__ */ jsxs("div", { className: "order-2 min-w-0 lg:pt-1", children: [
                 /* @__PURE__ */ jsxs("header", { className: "space-y-3 sm:space-y-4", children: [
                   /* @__PURE__ */ jsx("h1", { className: "font-hero text-[clamp(1.85rem,4.2vw,2.75rem)] font-normal uppercase tracking-[0.02em] leading-[1.02] text-[#ededf3]", children: project.title }),
-                  /* @__PURE__ */ jsx("p", { className: cx$5("max-w-[36ch]", BODY), children: mood ?? subtitle }),
+                  /* @__PURE__ */ jsx("p", { className: cx$8("max-w-[36ch]", BODY), children: mood ?? subtitle }),
                   mood ? /* @__PURE__ */ jsx("p", { className: "max-w-[40ch] text-[13px] leading-relaxed text-[#8a8a8e] sm:text-[14px]", children: subtitle }) : null
                 ] }),
                 /* @__PURE__ */ jsxs("dl", { className: "mt-6 sm:mt-8", children: [
@@ -12034,7 +12033,7 @@ function ProjectDetailPage() {
                     /* @__PURE__ */ jsx(
                       "span",
                       {
-                        className: cx$5(
+                        className: cx$8(
                           "h-1.5 w-1.5 shrink-0 rounded-full",
                           wip ? "bg-amber-400/90" : "bg-emerald-400/90"
                         )
@@ -12170,7 +12169,7 @@ function ProjectDetailPage() {
 }
 const ORANGE = "#FF9A3D";
 const ORANGE2 = "#FF6A1A";
-function cx$4(...a) {
+function cx$7(...a) {
   return a.filter(Boolean).join(" ");
 }
 function clamp(n, a, b) {
@@ -12252,7 +12251,7 @@ function LangChip({ item }) {
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$4(
+      className: cx$7(
         "select-none",
         "inline-flex max-w-[11rem] items-center gap-2 sm:gap-2.5",
         "rounded-full px-3 py-1.5 sm:px-3.5 sm:py-2",
@@ -12290,12 +12289,12 @@ function OrbitRing(props) {
       children: [
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-full border border-white/8 opacity-60" }),
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-full border border-[#FF9A3D]/10 opacity-80 [mask-image:radial-gradient(transparent_52%,black_64%)] [-webkit-mask-image:radial-gradient(transparent_52%,black_64%)]" }),
-        /* @__PURE__ */ jsx("div", { className: cx$4("absolute inset-0 will-change-transform", reverse ? "orbit-rev" : "orbit"), style: animStyle, children: items.map((it, i) => {
+        /* @__PURE__ */ jsx("div", { className: cx$7("absolute inset-0 will-change-transform", reverse ? "orbit-rev" : "orbit"), style: animStyle, children: items.map((it, i) => {
           const ang = offsetDeg + i * step + (i % 2 ? 8 : -5);
           const posStyle = s({
             transform: `translate(-50%,-50%) rotate(${ang}deg) translateX(${radius}px) rotate(${-ang}deg)`
           });
-          return /* @__PURE__ */ jsx("div", { className: "absolute left-1/2 top-1/2", style: posStyle, children: /* @__PURE__ */ jsx("div", { className: cx$4(reverse ? "counter-rev" : "counter"), style: animStyle, children: /* @__PURE__ */ jsx(LangChip, { item: it }) }) }, `${it.label}-${i}`);
+          return /* @__PURE__ */ jsx("div", { className: "absolute left-1/2 top-1/2", style: posStyle, children: /* @__PURE__ */ jsx("div", { className: cx$7(reverse ? "counter-rev" : "counter"), style: animStyle, children: /* @__PURE__ */ jsx(LangChip, { item: it }) }) }, `${it.label}-${i}`);
         }) })
       ]
     }
@@ -12342,7 +12341,7 @@ function SunContacts({ size }) {
   const title = isRu ? "Контакты" : "Contacts";
   const leadCopy = leadFormCopy(lang);
   const botCta = isRu ? "Telegram-бот" : "Telegram bot";
-  const contactRowClass = cx$4(
+  const contactRowClass = cx$7(
     "group inline-flex w-full items-center gap-3.5 rounded-xl px-4 py-2.5",
     "bg-white/[0.055] hover:bg-white/[0.085] transition duration-200",
     "shadow-[0_10px_40px_rgba(0,0,0,0.28)]",
@@ -12368,7 +12367,7 @@ function SunContacts({ size }) {
               rel: "noopener noreferrer",
               className: contactRowClass,
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx$4(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconTG, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$7(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconTG, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Telegram" })
               ]
             }
@@ -12379,9 +12378,9 @@ function SunContacts({ size }) {
               href: "https://mail.google.com/mail/?view=cm&fs=1&to=tivoonix@gmail.com&su=%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82%20(SaaS%2FMVP)",
               target: "_blank",
               rel: "noopener noreferrer",
-              className: cx$4(contactRowClass, "hidden sm:inline-flex"),
+              className: cx$7(contactRowClass, "hidden sm:inline-flex"),
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx$4(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconMail, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$7(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconMail, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Email" })
               ]
             }
@@ -12394,7 +12393,7 @@ function SunContacts({ size }) {
               rel: "noopener noreferrer",
               className: contactRowClass,
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx$4(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconInstagram, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$7(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconInstagram, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Instagram" })
               ]
             }
@@ -12416,7 +12415,7 @@ function SunContacts({ size }) {
               href: TG_BOT_URL,
               target: "_blank",
               rel: "noopener noreferrer",
-              className: cx$4(
+              className: cx$7(
                 "inline-flex h-10 w-full items-center justify-center rounded-xl px-5",
                 "text-[13px] font-[700] text-white/80 whitespace-nowrap",
                 "border border-white/15 bg-white/[0.05] hover:bg-white/[0.09] transition duration-200",
@@ -14798,7 +14797,7 @@ function AutomationBusinessPage() {
     /* @__PURE__ */ jsx(Footer, {})
   ] }) });
 }
-function cx$3(...parts) {
+function cx$6(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function PricingFAQSection() {
@@ -14812,14 +14811,14 @@ function PricingFAQSection() {
       return /* @__PURE__ */ jsxs(
         "div",
         {
-          className: cx$3("pricing-faq__item", open && "pricing-faq__item--open"),
+          className: cx$6("pricing-faq__item", open && "pricing-faq__item--open"),
           children: [
             /* @__PURE__ */ jsxs(
               "button",
               {
                 type: "button",
                 onClick: () => setOpenId((prev) => prev === item.id ? null : item.id),
-                className: cx$3(
+                className: cx$6(
                   "flex w-full items-center justify-between gap-4 px-5 text-left sm:px-8",
                   open ? "pb-3 pt-5" : "py-5"
                 ),
@@ -14828,7 +14827,7 @@ function PricingFAQSection() {
                   /* @__PURE__ */ jsx(
                     "span",
                     {
-                      className: cx$3(
+                      className: cx$6(
                         "font-sans text-[14px] font-medium sm:text-[15px]",
                         open ? "text-white" : "text-white/88"
                       ),
@@ -14839,7 +14838,7 @@ function PricingFAQSection() {
                     ChevronDown,
                     {
                       size: 16,
-                      className: cx$3(
+                      className: cx$6(
                         "shrink-0 transition",
                         open ? "rotate-180 text-[var(--color-ember)]" : "text-white/45"
                       ),
@@ -14864,7 +14863,7 @@ const SCOPE_LEVEL = {
   custom: 8
 };
 const SEGMENTS = 8;
-function cx$2(...parts) {
+function cx$5(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function PricingPlanScopeGrid({ onPlanAction }) {
@@ -14882,7 +14881,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
         {
           type: "button",
           onClick: () => onPlanAction(planId),
-          className: cx$2(
+          className: cx$5(
             "pricing-plan-scope__col",
             isGrowth && "pricing-plan-scope__col--growth"
           ),
@@ -14891,7 +14890,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
               /* @__PURE__ */ jsx(
                 "span",
                 {
-                  className: cx$2(
+                  className: cx$5(
                     "pricing-plan-scope__name font-hero font-normal uppercase tracking-[0.02em]",
                     isGrowth ? "text-[var(--color-ember)]" : "text-white"
                   ),
@@ -14901,7 +14900,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
               /* @__PURE__ */ jsx(
                 "span",
                 {
-                  className: cx$2(
+                  className: cx$5(
                     "pricing-plan-scope__price-old font-sans text-[10px] font-medium line-through",
                     planCopy.priceOriginal ? "text-white/35" : "text-transparent"
                   ),
@@ -14916,7 +14915,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
               return /* @__PURE__ */ jsx(
                 "span",
                 {
-                  className: cx$2("pricing-plan-scope__bar", on && "pricing-plan-scope__bar--on")
+                  className: cx$5("pricing-plan-scope__bar", on && "pricing-plan-scope__bar--on")
                 },
                 index
               );
@@ -14937,7 +14936,7 @@ const PLAN_IMAGES = {
   product: `${PLANS_IMG}/3.webp`,
   custom: `${PLANS_IMG}/4.webp`
 };
-function cx$1(...parts) {
+function cx$4(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function PlanCtaButton({
@@ -14955,7 +14954,7 @@ function PlanCtaButton({
       className: ctaClass$1(
         featured ? "primary" : "white",
         compact ? "md" : "md",
-        cx$1("w-full", compact && "h-9 text-[12px] sm:h-10 sm:text-[13px]", className)
+        cx$4("w-full", compact && "h-9 text-[12px] sm:h-10 sm:text-[13px]", className)
       ),
       children
     }
@@ -14989,7 +14988,7 @@ function ComparePlanHead({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$1(
+      className: cx$4(
         layout === "column" ? "pricing-compare__plan-head" : "pricing-compare__mobile-plan",
         featured && "pricing-compare__plan-head--featured"
       ),
@@ -14997,7 +14996,7 @@ function ComparePlanHead({
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: cx$1(
+            className: cx$4(
               "pricing-compare__plan-name font-hero font-normal uppercase tracking-[0.02em]",
               layout === "column" ? "text-[15px] sm:text-[16px]" : "text-[14px]",
               featured ? "text-[var(--color-ember)]" : "text-white"
@@ -15008,7 +15007,7 @@ function ComparePlanHead({
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: cx$1(
+            className: cx$4(
               "pricing-compare__plan-original font-sans text-[11px] font-medium",
               priceOriginal ? "text-white/35 line-through" : "text-transparent"
             ),
@@ -15019,7 +15018,7 @@ function ComparePlanHead({
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: cx$1(
+            className: cx$4(
               "pricing-compare__plan-price font-hero font-normal leading-none tracking-[0.02em] normal-case",
               layout === "column" ? "text-[14px] sm:text-[15px]" : "text-[13px]",
               isCustom ? "text-white" : "text-[var(--color-ember)]"
@@ -15040,7 +15039,7 @@ function PlanPrice({ price, priceOriginal }) {
   return /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__price-block", children: /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$1(
+      className: cx$4(
         "pricing-plan-card__price-value",
         from && amount ? "pricing-plan-card__price-value--stack" : "pricing-plan-card__price-value--solo"
       ),
@@ -15048,7 +15047,7 @@ function PlanPrice({ price, priceOriginal }) {
         /* @__PURE__ */ jsx(
           "p",
           {
-            className: cx$1(
+            className: cx$4(
               "pricing-plan-card__price-original",
               hasOriginal ? "is-visible" : "is-empty"
             ),
@@ -15089,7 +15088,7 @@ function PlanCard({
   return /* @__PURE__ */ jsxs(
     "article",
     {
-      className: cx$1(
+      className: cx$4(
         "pricing-plan-card",
         highlight && "pricing-plan-card--highlight",
         planId === "growth" && "pricing-plan-card--growth",
@@ -15113,7 +15112,7 @@ function PlanCard({
             /* @__PURE__ */ jsx(
               "h3",
               {
-                className: cx$1(
+                className: cx$4(
                   "pricing-plan-card__name"
                 ),
                 children: name
@@ -15157,7 +15156,7 @@ function CompactPlanCard({
   return /* @__PURE__ */ jsxs(
     "article",
     {
-      className: cx$1(
+      className: cx$4(
         "pricing-footer-card flex h-full flex-col",
         highlight && "pricing-footer-card--highlight",
         planId === "growth" && "pricing-footer-card--growth"
@@ -15204,7 +15203,7 @@ function PricingPlansSection({ className }) {
     Section,
     {
       id: "pricing",
-      className: cx$1(
+      className: cx$4(
         "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-10 sm:py-20 lg:py-24",
         className
       ),
@@ -15314,7 +15313,7 @@ function PricingPlansSection({ className }) {
                 PLAN_IDS.map((planId) => /* @__PURE__ */ jsx(
                   "div",
                   {
-                    className: cx$1(
+                    className: cx$4(
                       "pricing-compare__plan-col",
                       planId === "growth" && "pricing-compare__plan-col--growth"
                     ),
@@ -15347,7 +15346,7 @@ function PricingPlansSection({ className }) {
                       ChevronDown,
                       {
                         size: 16,
-                        className: cx$1("text-white/45 transition", open && "rotate-180"),
+                        className: cx$4("text-white/45 transition", open && "rotate-180"),
                         "aria-hidden": true
                       }
                     )
@@ -16788,11 +16787,11 @@ function buildPartnersSchema(copy, lang, pathname) {
     ]
   };
 }
-function cx(...parts) {
+function cx$3(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function Shell({ children, className }) {
-  return /* @__PURE__ */ jsx("div", { className: cx(LANDING_SHELL_CLASS, className), children });
+  return /* @__PURE__ */ jsx("div", { className: cx$3(LANDING_SHELL_CLASS, className), children });
 }
 function Reveal({ children, className }) {
   const ref = useRef(null);
@@ -16820,7 +16819,7 @@ function Reveal({ children, className }) {
     "div",
     {
       ref,
-      className: cx(
+      className: cx$3(
         className,
         visible ? "translate-y-0 opacity-100 motion-safe:transition-[opacity,transform] motion-safe:duration-500 motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]" : "translate-y-3 opacity-0"
       ),
@@ -17224,7 +17223,7 @@ function CapabilitiesBanner() {
                 "aria-selected": on,
                 "aria-label": item.title,
                 onClick: () => scrollToSlide(i),
-                className: cx(
+                className: cx$3(
                   "relative flex h-8 min-w-[2.4rem] items-center justify-center rounded-full border-0 px-2.5",
                   "font-partners text-[11px] font-bold tabular-nums tracking-[0.08em] outline-none select-none transition duration-200",
                   "focus-visible:ring-2 focus-visible:ring-[#ff6b2c]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
@@ -20562,7 +20561,7 @@ function PartnersPage() {
                     setLang(value);
                     navigate(partnersPath(value), { replace: true });
                   },
-                  className: cx(
+                  className: cx$3(
                     "rounded-full px-3 py-1.5 transition",
                     lang === value ? "bg-white text-[#ff6b2c]" : "text-white hover:bg-white/15"
                   ),
@@ -21238,6 +21237,1262 @@ function NotFoundPage() {
     /* @__PURE__ */ jsx(Footer, {})
   ] });
 }
+const EXAMPLES_EN = [
+  {
+    id: "migration",
+    label: "Content migration",
+    scope: "Homepage redesign and one revision round. Content migration is not included.",
+    request: "Please also migrate 84 articles and create individual author pages.",
+    result: {
+      status: "Out of scope",
+      hoursValue: "14–18",
+      costValue: "$840–$1,080",
+      reason: "Content migration and author pages were not included in the agreed project scope.",
+      recommendation: "Get written approval before work begins.",
+      changeRequest: "This request is outside the originally agreed project scope because content migration and author pages were not included. We estimate an additional 14–18 hours of work. The estimated cost is $840–$1,080. Please confirm the updated scope, timeline, and budget before implementation begins."
+    }
+  },
+  {
+    id: "integrations",
+    label: "Extra integrations",
+    scope: "Marketing site redesign with CMS, contact forms, and analytics setup. Third-party API integrations are not included.",
+    request: "Please also connect Salesforce CRM, Stripe payments, and Zapier webhooks for lead sync.",
+    result: {
+      status: "Out of scope",
+      hoursValue: "22–30",
+      costValue: "$1,320–$1,800",
+      reason: "CRM, payments, and webhook integrations were never included in the agreed scope.",
+      recommendation: "Pause work until the client approves a written change request.",
+      changeRequest: "This request is outside the originally agreed project scope because Salesforce, Stripe, and Zapier integrations were not included. We estimate an additional 22–30 hours of work. The estimated cost is $1,320–$1,800. Please confirm the updated scope, timeline, and budget before implementation begins."
+    }
+  },
+  {
+    id: "revisions",
+    label: "Additional revisions",
+    scope: "Brand landing page with two design revision rounds included. Dark mode is not included.",
+    request: "We need three more full revision rounds after the included ones, plus a complete dark mode version.",
+    result: {
+      status: "Out of scope",
+      hoursValue: "10–14",
+      costValue: "$600–$840",
+      reason: "Extra revision rounds and dark mode were not included in the agreed project scope.",
+      recommendation: "Get written approval before work begins.",
+      changeRequest: "This request is outside the originally agreed project scope because additional revision rounds and dark mode were not included. We estimate an additional 10–14 hours of work. The estimated cost is $600–$840. Please confirm the updated scope, timeline, and budget before implementation begins."
+    }
+  }
+];
+const EXAMPLES_RU = [
+  {
+    id: "migration",
+    label: "Миграция контента",
+    scope: "Редизайн главной и один раунд правок. Миграция контента не входит в объём.",
+    request: "Пожалуйста, ещё перенесите 84 статьи и сделайте отдельные страницы авторов.",
+    result: {
+      status: "Вне объёма",
+      hoursValue: "14–18",
+      costValue: "$840–$1,080",
+      reason: "Миграция контента и страницы авторов не входили в согласованный объём проекта.",
+      recommendation: "Получите письменное согласование до начала работ.",
+      changeRequest: "Этот запрос выходит за изначально согласованный объём проекта, потому что миграция контента и страницы авторов не были включены. Оценка дополнительной работы — 14–18 часов. Ориентировочная стоимость — $840–$1,080. Пожалуйста, подтвердите обновлённый объём, сроки и бюджет до начала реализации."
+    }
+  },
+  {
+    id: "integrations",
+    label: "Доп. интеграции",
+    scope: "Редизайн маркетингового сайта: CMS, формы и аналитика. Интеграции со сторонними API не входят.",
+    request: "Подключите ещё Salesforce CRM, оплату Stripe и вебхуки Zapier для синхронизации лидов.",
+    result: {
+      status: "Вне объёма",
+      hoursValue: "22–30",
+      costValue: "$1,320–$1,800",
+      reason: "CRM, платежи и вебхуки изначально не входили в согласованный объём.",
+      recommendation: "Не начинайте работу, пока клиент не утвердит запрос на изменение письменно.",
+      changeRequest: "Этот запрос выходит за изначально согласованный объём проекта, потому что интеграции Salesforce, Stripe и Zapier не были включены. Оценка дополнительной работы — 22–30 часов. Ориентировочная стоимость — $1,320–$1,800. Пожалуйста, подтвердите обновлённый объём, сроки и бюджет до начала реализации."
+    }
+  },
+  {
+    id: "revisions",
+    label: "Доп. правки",
+    scope: "Бренд-лендинг с двумя раундами дизайн-правок. Тёмная тема не входит.",
+    request: "Нужны ещё три полных раунда правок после включённых, плюс полноценная тёмная версия.",
+    result: {
+      status: "Вне объёма",
+      hoursValue: "10–14",
+      costValue: "$600–$840",
+      reason: "Дополнительные раунды правок и тёмная тема не входили в согласованный объём.",
+      recommendation: "Получите письменное согласование до начала работ.",
+      changeRequest: "Этот запрос выходит за изначально согласованный объём проекта, потому что дополнительные раунды правок и тёмная тема не были включены. Оценка дополнительной работы — 10–14 часов. Ориентировочная стоимость — $600–$840. Пожалуйста, подтвердите обновлённый объём, сроки и бюджет до начала реализации."
+    }
+  }
+];
+const EXAMPLES_ZH = [
+  {
+    id: "migration",
+    label: "内容迁移",
+    scope: "首页改版与一轮修改。内容迁移不包含在范围内。",
+    request: "请再迁移 84 篇文章，并创建独立作者页。",
+    result: {
+      status: "超出范围",
+      hoursValue: "14–18",
+      costValue: "$840–$1,080",
+      reason: "内容迁移与作者页未包含在已约定项目范围内。",
+      recommendation: "开始前请先取得书面确认。",
+      changeRequest: "该请求超出最初约定的项目范围，因为内容迁移与作者页未被包含。我们预估额外工作量为 14–18 小时，费用约 $840–$1,080。请在实施前确认更新后的范围、时间表与预算。"
+    }
+  },
+  {
+    id: "integrations",
+    label: "额外集成",
+    scope: "营销站改版：CMS、表单与分析。第三方 API 集成不包含在内。",
+    request: "请再接入 Salesforce CRM、Stripe 支付，以及用于线索同步的 Zapier Webhook。",
+    result: {
+      status: "超出范围",
+      hoursValue: "22–30",
+      costValue: "$1,320–$1,800",
+      reason: "CRM、支付与 Webhook 集成从未包含在约定范围内。",
+      recommendation: "在客户书面批准变更请求前，请暂停实施。",
+      changeRequest: "该请求超出最初约定的项目范围，因为 Salesforce、Stripe 与 Zapier 集成未被包含。我们预估额外工作量为 22–30 小时，费用约 $1,320–$1,800。请在实施前确认更新后的范围、时间表与预算。"
+    }
+  },
+  {
+    id: "revisions",
+    label: "额外修改",
+    scope: "品牌落地页含两轮设计修改。深色模式不包含。",
+    request: "在已包含的两轮之外，还需要三轮完整修改，并交付完整深色模式版本。",
+    result: {
+      status: "超出范围",
+      hoursValue: "10–14",
+      costValue: "$600–$840",
+      reason: "额外修改轮次与深色模式未包含在已约定项目范围内。",
+      recommendation: "开始前请先取得书面确认。",
+      changeRequest: "该请求超出最初约定的项目范围，因为额外修改轮次与深色模式未被包含。我们预估额外工作量为 10–14 小时，费用约 $600–$840。请在实施前确认更新后的范围、时间表与预算。"
+    }
+  }
+];
+const COPY = {
+  en: {
+    seo: {
+      title: "MileSeal — stop scope creep before unpaid work | TIVONIX",
+      description: "MileSeal is a TIVONIX validation prototype for digital agencies: compare a client request to the agreed scope, estimate extra hours, and generate a professional change request."
+    },
+    hero: {
+      badge: "A validation prototype by TIVONIX",
+      title: "Stop scope creep before it becomes unpaid work.",
+      subtitle: "Compare a client request against the agreed scope, estimate the extra effort, and generate a professional change request in seconds.",
+      tryDemo: "Try the live demo",
+      requestReview: "Request a scope review"
+    },
+    demo: {
+      title: "See where the project scope changed",
+      helper: "Choose a prepared agency scenario to see how MileSeal identifies unapproved work. Edit the example to request a human review.",
+      scopeLabel: "Agreed project scope",
+      requestLabel: "New client request",
+      analyze: "Analyze scope change",
+      analyzing: "Analyzing…",
+      editExample: "Edit this example",
+      restoreExample: "Restore example",
+      customNotice: "Custom analysis is not available in this validation preview yet.",
+      sendHumanReview: "Send this case for a human scope review",
+      hoursLabel: "Extra hours",
+      valueLabel: "Unapproved value",
+      generateCr: "Generate change request",
+      copy: "Copy to clipboard",
+      copied: "Copied to clipboard",
+      startOver: "Start over"
+    },
+    pain: {
+      badge: "Margin leak",
+      title: "Where agency margin disappears",
+      cards: [
+        {
+          title: "Untracked client requests",
+          text: "Side asks land in chat and email. Nobody logs them against the original brief."
+        },
+        {
+          title: "Work started before approval",
+          text: "The team starts “just this one thing” — and the unpaid hours pile up quietly."
+        },
+        {
+          title: "Extra hours never invoiced",
+          text: "By delivery, margin is gone. Scope creep already became free work."
+        }
+      ]
+    },
+    steps: {
+      badge: "Flow",
+      title: "From client message to approved change request",
+      items: [
+        {
+          n: "01",
+          title: "Paste the agreed scope",
+          text: "Drop in the signed brief or statement of work — the baseline you’re protecting."
+        },
+        {
+          n: "02",
+          title: "Add the new client request",
+          text: "Paste the message as it arrived. No cleanup needed for a first pass."
+        },
+        {
+          n: "03",
+          title: "Review effort and request approval",
+          text: "See the out-of-scope call, hours, cost band, and a ready change-request draft."
+        }
+      ]
+    },
+    cta: {
+      title: "Have a real scope-creep case?",
+      text: "Send us one recent client request. We’ll review whether it created unapproved work and show you how MileSeal would handle it.",
+      openForm: "Request a scope review",
+      name: "Name",
+      email: "Work email *",
+      agency: "Agency name",
+      clientRequest: "Recent client request *",
+      agreedScope: "Agreed scope *",
+      consent: "I agree to the processing of my data for this scope review.",
+      privacy: "Privacy Policy",
+      send: "Send for review",
+      sending: "Sending…",
+      successBadge: "Sent",
+      successTitle: "We’ll review your case",
+      successText: "Thanks — your scope review request is in. We’ll get back with a clear read on whether the work was unapproved and how MileSeal would handle it.",
+      errEmail: "Please enter a valid work email.",
+      errRequest: "Please paste a recent client request.",
+      errScope: "Please paste the agreed project scope.",
+      errConsent: "Please confirm consent to process your data.",
+      errNetwork: "Couldn’t send right now. Please try again or email tivoonix@gmail.com.",
+      errGeneric: "Something went wrong. Please try again."
+    },
+    footnote: "MileSeal is an early validation prototype by TIVONIX. Estimates are indicative and require human confirmation.",
+    examples: EXAMPLES_EN
+  },
+  ru: {
+    seo: {
+      title: "MileSeal — остановите расползание объёма до бесплатной работы | TIVONIX",
+      description: "MileSeal — прототип от TIVONIX для digital-агентств: сравните запрос клиента с согласованным объёмом, оцените доп. часы и сформируйте профессиональный запрос на изменение."
+    },
+    hero: {
+      badge: "Прототип от TIVONIX",
+      title: "Остановите расползание объёма, пока оно не стало бесплатной работой.",
+      subtitle: "Сверьте запрос клиента с согласованным объёмом, оцените доп. усилия и за секунды получите профессиональный запрос на изменение.",
+      tryDemo: "Попробовать демо",
+      requestReview: "Запросить разбор объёма"
+    },
+    demo: {
+      title: "Где изменился объём проекта",
+      helper: "Выберите готовый сценарий агентства, чтобы увидеть, как MileSeal выявляет несогласованные работы. Отредактируйте пример, чтобы запросить ручной разбор.",
+      scopeLabel: "Согласованный объём проекта",
+      requestLabel: "Новый запрос клиента",
+      analyze: "Проанализировать изменение",
+      analyzing: "Анализ…",
+      editExample: "Редактировать пример",
+      restoreExample: "Вернуть пример",
+      customNotice: "Анализ произвольного текста в этом превью пока недоступен.",
+      sendHumanReview: "Отправить кейс на ручной разбор объёма",
+      hoursLabel: "Доп. часы",
+      valueLabel: "Неутверждённая сумма",
+      generateCr: "Сгенерировать запрос на изменение",
+      copy: "Скопировать",
+      copied: "Скопировано в буфер",
+      startOver: "Начать заново"
+    },
+    pain: {
+      badge: "Утечка маржи",
+      title: "Где агентство теряет маржу",
+      cards: [
+        {
+          title: "Неучтенные запросы клиента",
+          text: "Побочные просьбы оседают в чатах и почте. Их никто не сверяет с исходным брифом."
+        },
+        {
+          title: "Работа до согласования",
+          text: "Команда берётся «только за это» — и неоплаченные часы тихо копятся."
+        },
+        {
+          title: "Доп. часы так и не выставили",
+          text: "К сдаче маржа уже съедена. Расползание объёма превратилось в бесплатную работу."
+        }
+      ]
+    },
+    steps: {
+      badge: "Процесс",
+      title: "От сообщения клиента до утверждённого запроса на изменение",
+      items: [
+        {
+          n: "01",
+          title: "Вставьте согласованный объём",
+          text: "Добавьте подписанный бриф или договор — базу, которую вы защищаете."
+        },
+        {
+          n: "02",
+          title: "Добавьте новый запрос клиента",
+          text: "Вставьте сообщение как пришло. Для первого прохода чистить не нужно."
+        },
+        {
+          n: "03",
+          title: "Оцените усилия и запросите согласование",
+          text: "Увидите статус вне объёма, часы, вилку стоимости и готовый черновик запроса на изменение."
+        }
+      ]
+    },
+    cta: {
+      title: "Есть реальный кейс расползания объёма?",
+      text: "Пришлите один недавний запрос клиента. Разберём, появилась ли неутверждённая работа, и покажем, как MileSeal это обработал бы.",
+      openForm: "Запросить разбор объёма",
+      name: "Имя",
+      email: "Рабочий email *",
+      agency: "Название агентства",
+      clientRequest: "Недавний запрос клиента *",
+      agreedScope: "Согласованный объём *",
+      consent: "Согласен(на) на обработку данных для этого разбора объёма.",
+      privacy: "Политика конфиденциальности",
+      send: "Отправить на разбор",
+      sending: "Отправляем…",
+      successBadge: "Отправлено",
+      successTitle: "Мы разберём ваш кейс",
+      successText: "Спасибо — заявка на разбор получена. Вернёмся с понятным выводом: была ли работа неутверждённой и как MileSeal обработал бы её.",
+      errEmail: "Укажите корректный рабочий email.",
+      errRequest: "Вставьте недавний запрос клиента.",
+      errScope: "Вставьте согласованный объём проекта.",
+      errConsent: "Подтвердите согласие на обработку данных.",
+      errNetwork: "Сейчас не удалось отправить. Попробуйте ещё раз или напишите на tivoonix@gmail.com.",
+      errGeneric: "Что-то пошло не так. Попробуйте ещё раз."
+    },
+    footnote: "MileSeal — ранний прототип от TIVONIX. Оценки ориентировочные и требуют подтверждения человеком.",
+    examples: EXAMPLES_RU
+  },
+  zh: {
+    seo: {
+      title: "MileSeal — 在范围蔓延变成免费加班前拦住它 | TIVONIX",
+      description: "MileSeal 是 TIVONIX 面向数字代理商的验证原型：对照约定范围检查客户新需求，估算额外工时，并生成专业变更请求。"
+    },
+    hero: {
+      badge: "TIVONIX 验证原型",
+      title: "在范围蔓延变成免费加班前拦住它。",
+      subtitle: "对照约定范围检查客户请求，估算额外工作量，并在数秒内生成专业变更请求。",
+      tryDemo: "试用演示",
+      requestReview: "申请范围复核"
+    },
+    demo: {
+      title: "看清项目范围如何变化",
+      helper: "选择一个预设代理场景，查看 MileSeal 如何识别未批准的工作。编辑示例以申请人工复核。",
+      scopeLabel: "已约定项目范围",
+      requestLabel: "新的客户请求",
+      analyze: "分析范围变更",
+      analyzing: "分析中…",
+      editExample: "编辑此示例",
+      restoreExample: "恢复示例",
+      customNotice: "此验证预览暂不支持自定义分析。",
+      sendHumanReview: "将此案例发送给人工范围复核",
+      hoursLabel: "额外工时",
+      valueLabel: "未批准金额",
+      generateCr: "生成变更请求",
+      copy: "复制到剪贴板",
+      copied: "已复制到剪贴板",
+      startOver: "重新开始"
+    },
+    pain: {
+      badge: "利润流失",
+      title: "代理商利润流失在哪里",
+      cards: [
+        {
+          title: "未追踪的客户请求",
+          text: "额外需求散落在聊天和邮件里，没人对照原始 brief 记录。"
+        },
+        {
+          title: "未批准就开工",
+          text: "团队先做“就这一件”——未付费工时悄悄累积。"
+        },
+        {
+          title: "额外工时从未开票",
+          text: "交付时利润已没。范围蔓延早变成免费劳动。"
+        }
+      ]
+    },
+    steps: {
+      badge: "流程",
+      title: "从客户消息到获批变更请求",
+      items: [
+        {
+          n: "01",
+          title: "粘贴已约定范围",
+          text: "放入已签署 brief 或 SoW——你要保护的基线。"
+        },
+        {
+          n: "02",
+          title: "添加新的客户请求",
+          text: "按原文粘贴消息。首轮无需整理。"
+        },
+        {
+          n: "03",
+          title: "复核工作量并请求批准",
+          text: "看到超范围判定、工时、费用区间，以及现成变更请求草稿。"
+        }
+      ]
+    },
+    cta: {
+      title: "有真实的范围蔓延案例？",
+      text: "发给我们一条近期客户请求。我们会判断是否产生了未批准工作，并展示 MileSeal 会如何处理。",
+      openForm: "申请范围复核",
+      name: "姓名",
+      email: "工作邮箱 *",
+      agency: "代理商名称",
+      clientRequest: "近期客户请求 *",
+      agreedScope: "已约定范围 *",
+      consent: "我同意为本次范围复核处理我的数据。",
+      privacy: "隐私政策",
+      send: "发送复核",
+      sending: "发送中…",
+      successBadge: "已发送",
+      successTitle: "我们会复核你的案例",
+      successText: "谢谢——范围复核请求已收到。我们会回复：工作是否未经批准，以及 MileSeal 会如何处理。",
+      errEmail: "请输入有效的工作邮箱。",
+      errRequest: "请粘贴近期客户请求。",
+      errScope: "请粘贴已约定项目范围。",
+      errConsent: "请确认同意处理数据。",
+      errNetwork: "暂时无法发送。请重试或发邮件至 tivoonix@gmail.com。",
+      errGeneric: "出错了，请重试。"
+    },
+    footnote: "MileSeal 是 TIVONIX 的早期验证原型。估算仅供参考，需人工确认。",
+    examples: EXAMPLES_ZH
+  }
+};
+function milesealCopy(lang) {
+  return COPY[lang] ?? COPY.en;
+}
+const HERO_VIDEO = "/images/hero-bg.mp4";
+const HERO_POSTER = "/images/hero-bg-poster.webp";
+function MilesealHero({ onTryDemo, onRequestReview }) {
+  const { lang } = useLang();
+  const copy = milesealCopy(lang).hero;
+  const videoRef = useRef(null);
+  useKeepVideoPlaying(videoRef);
+  return /* @__PURE__ */ jsxs("section", { className: "relative isolate min-h-[min(88svh,880px)] overflow-hidden bg-black pt-[calc(var(--tivonix-header-spacer)+0.5rem)] pb-10 sm:pb-14", children: [
+    /* @__PURE__ */ jsxs("div", { className: "pointer-events-none absolute inset-0 overflow-hidden bg-black", "aria-hidden": true, children: [
+      /* @__PURE__ */ jsx(
+        "video",
+        {
+          ref: videoRef,
+          className: "pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center",
+          src: HERO_VIDEO,
+          poster: HERO_POSTER,
+          autoPlay: true,
+          muted: true,
+          loop: true,
+          playsInline: true,
+          preload: "auto",
+          controls: false,
+          disablePictureInPicture: true
+        }
+      ),
+      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-b from-black/55 via-black/40 to-black" }),
+      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.55)_75%)]" })
+    ] }),
+    /* @__PURE__ */ jsx(Container, { className: "relative z-10", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[46rem] text-center", children: [
+      /* @__PURE__ */ jsx("span", { className: "inline-flex items-center rounded-full bg-white/[0.07] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF9A3D] ring-1 ring-white/10", children: copy.badge }),
+      /* @__PURE__ */ jsx("h1", { className: "mt-6 font-hero text-[clamp(2.2rem,6.5vw,4.5rem)] font-normal uppercase leading-[0.92] tracking-[0.01em] text-white text-balance", children: copy.title }),
+      /* @__PURE__ */ jsx("p", { className: "mx-auto mt-5 max-w-[38rem] font-sans text-[15px] font-medium leading-[1.55] text-white/72 sm:mt-6 sm:text-[16px]", children: copy.subtitle }),
+      /* @__PURE__ */ jsxs("div", { className: "mt-8 flex flex-col items-stretch justify-center gap-3 sm:mt-9 sm:flex-row sm:items-center", children: [
+        /* @__PURE__ */ jsx("button", { type: "button", onClick: onTryDemo, className: ctaClass$1("primary", "lg"), children: copy.tryDemo }),
+        /* @__PURE__ */ jsx("button", { type: "button", onClick: onRequestReview, className: ctaClass$1("secondary", "lg"), children: copy.requestReview })
+      ] })
+    ] }) })
+  ] });
+}
+function cx$2(...a) {
+  return a.filter(Boolean).join(" ");
+}
+const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
+function AutoGrowTextarea({
+  minRows = 3,
+  maxRows = 16,
+  className,
+  value,
+  onChange,
+  ...rest
+}) {
+  const ref = useRef(null);
+  const resize = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    const cs = window.getComputedStyle(el);
+    const lineHeight = parseFloat(cs.lineHeight) || 22;
+    const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+    const borderY = parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth);
+    const minH = lineHeight * minRows + padY + borderY;
+    const maxH = lineHeight * maxRows + padY + borderY;
+    el.style.height = "0px";
+    const next = Math.min(Math.max(el.scrollHeight, minH), maxH);
+    el.style.height = `${next}px`;
+    el.style.overflowY = el.scrollHeight > maxH ? "auto" : "hidden";
+  }, [minRows, maxRows]);
+  useIsomorphicLayoutEffect(() => {
+    resize();
+  }, [value, resize]);
+  useEffect(() => {
+    const onWin = () => resize();
+    window.addEventListener("resize", onWin);
+    return () => window.removeEventListener("resize", onWin);
+  }, [resize]);
+  return /* @__PURE__ */ jsx(
+    "textarea",
+    {
+      ...rest,
+      ref,
+      value,
+      rows: minRows,
+      onChange: (e) => {
+        onChange?.(e);
+        requestAnimationFrame(resize);
+      },
+      className: cx$2(
+        "block w-full resize-none overflow-hidden",
+        "rounded-[16px] px-4 py-3.5",
+        "border-0 bg-[#141414] text-white placeholder:text-white/35",
+        "outline-none focus:bg-[#1a1a1a] focus-visible:ring-2 focus-visible:ring-[#fc5000]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c0c0c]",
+        "font-sans text-[14px] font-medium leading-[1.55] transition-[background-color]",
+        "read-only:focus:bg-[#141414] read-only:focus-visible:ring-0",
+        className
+      )
+    }
+  );
+}
+function createInitialDemoState(example) {
+  return {
+    selectedScenarioId: example.id,
+    mode: "preset",
+    scope: example.scope,
+    request: example.request,
+    result: null,
+    isChangeRequestOpen: false,
+    analyzing: false,
+    copied: false
+  };
+}
+function demoReducer(state, action) {
+  switch (action.type) {
+    case "selectScenario":
+    case "restoreExample":
+    case "startOver":
+      return {
+        ...state,
+        selectedScenarioId: action.example.id,
+        mode: "preset",
+        scope: action.example.scope,
+        request: action.example.request,
+        result: null,
+        isChangeRequestOpen: false,
+        analyzing: false,
+        copied: false
+      };
+    case "editExample":
+      return {
+        ...state,
+        mode: "custom",
+        result: null,
+        isChangeRequestOpen: false,
+        analyzing: false,
+        copied: false
+      };
+    case "setScope":
+      return {
+        ...state,
+        mode: "custom",
+        scope: action.value,
+        result: null,
+        isChangeRequestOpen: false,
+        copied: false
+      };
+    case "setRequest":
+      return {
+        ...state,
+        mode: "custom",
+        request: action.value,
+        result: null,
+        isChangeRequestOpen: false,
+        copied: false
+      };
+    case "analyzeStart":
+      if (state.mode !== "preset") return state;
+      return {
+        ...state,
+        analyzing: true,
+        isChangeRequestOpen: false,
+        copied: false
+      };
+    case "analyzeSuccess":
+      if (state.mode !== "preset") {
+        return { ...state, analyzing: false, result: null };
+      }
+      return {
+        ...state,
+        analyzing: false,
+        result: action.result,
+        isChangeRequestOpen: false,
+        copied: false
+      };
+    case "openChangeRequest":
+      if (!state.result) return state;
+      return { ...state, isChangeRequestOpen: true };
+    case "copied":
+      return { ...state, copied: true };
+    case "clearCopied":
+      return { ...state, copied: false };
+    case "syncLangPreset": {
+      if (state.mode !== "preset") return state;
+      const hadResult = Boolean(state.result);
+      return {
+        ...state,
+        selectedScenarioId: action.example.id,
+        scope: action.example.scope,
+        request: action.example.request,
+        result: hadResult ? action.example.result : null,
+        isChangeRequestOpen: hadResult ? state.isChangeRequestOpen : false,
+        analyzing: false,
+        copied: false
+      };
+    }
+    default:
+      return state;
+  }
+}
+function cx$1(...a) {
+  return a.filter(Boolean).join(" ");
+}
+const fieldLabel = "mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#ffae66]/90";
+function MilesealDemo({ onSendForReview }) {
+  const { lang } = useLang();
+  const copy = milesealCopy(lang);
+  const examples = copy.examples;
+  const d = copy.demo;
+  const firstExample = examples[0];
+  const [state, dispatch] = useReducer(
+    demoReducer,
+    firstExample,
+    createInitialDemoState
+  );
+  const selectedExample = useMemo(
+    () => examples.find((e) => e.id === state.selectedScenarioId) ?? firstExample,
+    [examples, firstExample, state.selectedScenarioId]
+  );
+  const langRef = useRef(lang);
+  useEffect(() => {
+    if (langRef.current === lang) return;
+    langRef.current = lang;
+    const next = examples.find((e) => e.id === state.selectedScenarioId) ?? examples[0];
+    dispatch({ type: "syncLangPreset", example: next });
+  }, [lang, examples, state.selectedScenarioId]);
+  useEffect(() => {
+    if (!state.copied) return;
+    const t = window.setTimeout(() => dispatch({ type: "clearCopied" }), 2200);
+    return () => window.clearTimeout(t);
+  }, [state.copied]);
+  const isPreset = state.mode === "preset";
+  const showResult = isPreset && state.result !== null;
+  const showHelper = !showResult;
+  const handleAnalyze = () => {
+    if (!isPreset || state.analyzing) return;
+    dispatch({ type: "analyzeStart" });
+    const result = selectedExample.result;
+    window.setTimeout(() => {
+      dispatch({ type: "analyzeSuccess", result });
+    }, 360);
+  };
+  const handleCopy = async () => {
+    if (!state.result) return;
+    const text = state.result.changeRequest;
+    try {
+      await navigator.clipboard.writeText(text);
+      dispatch({ type: "copied" });
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      dispatch({ type: "copied" });
+    }
+  };
+  return /* @__PURE__ */ jsx(
+    Section,
+    {
+      id: "demo",
+      className: "scroll-mt-[var(--tivonix-header-spacer)] bg-black !py-12 sm:!py-16 lg:!py-20",
+      children: /* @__PURE__ */ jsxs(Container, { children: [
+        /* @__PURE__ */ jsxs(Reveal$1, { children: [
+          /* @__PURE__ */ jsx("h2", { className: "max-w-[28rem] font-hero text-[clamp(1.75rem,4.2vw,2.75rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white", children: d.title }),
+          showHelper ? /* @__PURE__ */ jsx("p", { className: "mt-3 max-w-[40rem] font-sans text-[14px] font-medium leading-[1.55] text-white/55 sm:text-[15px]", children: d.helper }) : null
+        ] }),
+        /* @__PURE__ */ jsx(Reveal$1, { delay: 70, className: "mt-7", children: /* @__PURE__ */ jsxs("div", { className: "overflow-hidden rounded-[24px] bg-[#0c0c0c]", children: [
+          /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-2 px-5 pt-5 sm:px-7 sm:pt-6", children: examples.map((example) => {
+            const active = isPreset && example.id === state.selectedScenarioId;
+            return /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                onClick: () => dispatch({ type: "selectScenario", example }),
+                className: cx$1(
+                  "rounded-full px-3.5 py-1.5 text-[12px] font-semibold transition",
+                  active ? "bg-[rgba(255,138,30,0.18)] text-[#ffae66]" : "bg-white/[0.06] text-white/62 hover:bg-white/[0.09] hover:text-white/85"
+                ),
+                children: example.label
+              },
+              example.id
+            );
+          }) }),
+          /* @__PURE__ */ jsxs("div", { className: "px-5 py-5 sm:px-7 sm:py-6", children: [
+            /* @__PURE__ */ jsxs("div", { className: "grid gap-4 lg:grid-cols-2 lg:items-start lg:gap-5", children: [
+              /* @__PURE__ */ jsxs("div", { children: [
+                /* @__PURE__ */ jsx("label", { htmlFor: "mileseal-scope", className: fieldLabel, children: d.scopeLabel }),
+                /* @__PURE__ */ jsx(
+                  AutoGrowTextarea,
+                  {
+                    id: "mileseal-scope",
+                    value: state.scope,
+                    minRows: 3,
+                    maxRows: 10,
+                    readOnly: isPreset,
+                    "aria-readonly": isPreset,
+                    onChange: (e) => dispatch({ type: "setScope", value: e.target.value }),
+                    className: isPreset ? "cursor-default opacity-90" : void 0
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsxs("div", { children: [
+                /* @__PURE__ */ jsx("label", { htmlFor: "mileseal-request", className: fieldLabel, children: d.requestLabel }),
+                /* @__PURE__ */ jsx(
+                  AutoGrowTextarea,
+                  {
+                    id: "mileseal-request",
+                    value: state.request,
+                    minRows: 3,
+                    maxRows: 10,
+                    readOnly: isPreset,
+                    "aria-readonly": isPreset,
+                    onChange: (e) => dispatch({ type: "setRequest", value: e.target.value }),
+                    className: isPreset ? "cursor-default opacity-90" : void 0
+                  }
+                )
+              ] })
+            ] }),
+            /* @__PURE__ */ jsx("div", { className: "mt-5 flex flex-wrap items-center gap-3", children: isPreset ? /* @__PURE__ */ jsxs(Fragment, { children: [
+              /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: handleAnalyze,
+                  disabled: state.analyzing || !state.scope.trim() || !state.request.trim(),
+                  className: ctaClass$1("primary", "lg", "disabled:opacity-50"),
+                  children: state.analyzing ? d.analyzing : d.analyze
+                }
+              ),
+              /* @__PURE__ */ jsxs(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => dispatch({ type: "editExample" }),
+                  className: ctaClass$1("ghost", "md", "gap-2"),
+                  children: [
+                    /* @__PURE__ */ jsx(Pencil, { className: "h-4 w-4", strokeWidth: 1.75, "aria-hidden": true }),
+                    d.editExample
+                  ]
+                }
+              )
+            ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+              /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => onSendForReview({
+                    scope: state.scope.trim(),
+                    request: state.request.trim()
+                  }),
+                  disabled: !state.scope.trim() || !state.request.trim(),
+                  className: ctaClass$1("primary", "lg", "disabled:opacity-50"),
+                  children: d.sendHumanReview
+                }
+              ),
+              /* @__PURE__ */ jsxs(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => dispatch({ type: "restoreExample", example: selectedExample }),
+                  className: ctaClass$1("ghost", "md", "gap-2"),
+                  children: [
+                    /* @__PURE__ */ jsx(RotateCcw, { className: "h-4 w-4", strokeWidth: 1.75, "aria-hidden": true }),
+                    d.restoreExample
+                  ]
+                }
+              )
+            ] }) }),
+            !isPreset ? /* @__PURE__ */ jsx(
+              "p",
+              {
+                className: "mt-4 rounded-[16px] bg-[#141414] px-4 py-3 text-[13px] font-medium leading-relaxed text-white/55",
+                role: "status",
+                children: d.customNotice
+              }
+            ) : null
+          ] })
+        ] }) }),
+        showResult && state.result ? /* @__PURE__ */ jsx("div", { className: "mt-5 translate-y-0 opacity-100 transition duration-500 ease-out sm:mt-6", children: /* @__PURE__ */ jsx("article", { className: "overflow-hidden rounded-[24px] bg-[#0c0c0c]", children: /* @__PURE__ */ jsxs("div", { className: "px-5 py-6 sm:px-8 sm:py-8", children: [
+          /* @__PURE__ */ jsx("span", { className: "inline-flex rounded-full bg-[rgba(255,138,30,0.16)] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#ffae66]", children: state.result.status }),
+          /* @__PURE__ */ jsxs("div", { className: "mt-6 grid gap-6 sm:grid-cols-2 sm:gap-10", children: [
+            /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsx("p", { className: "font-hero text-[clamp(2.6rem,8vw,3.75rem)] font-normal leading-none tracking-[0.01em] text-white", children: state.result.hoursValue }),
+              /* @__PURE__ */ jsx("p", { className: "mt-2 text-[13px] font-semibold uppercase tracking-[0.14em] text-white/45", children: d.hoursLabel })
+            ] }),
+            /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsx("p", { className: "font-hero text-[clamp(2.6rem,8vw,3.75rem)] font-normal leading-none tracking-[0.01em] text-white", children: state.result.costValue }),
+              /* @__PURE__ */ jsx("p", { className: "mt-2 text-[13px] font-semibold uppercase tracking-[0.14em] text-white/45", children: d.valueLabel })
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx("p", { className: "mt-7 max-w-[40rem] font-sans text-[15px] font-medium leading-[1.55] text-white/72 sm:text-[16px]", children: state.result.reason }),
+          /* @__PURE__ */ jsx("p", { className: "mt-3 max-w-[36rem] font-sans text-[14px] font-medium leading-[1.55] text-[#ffae66]/90", children: state.result.recommendation }),
+          !state.isChangeRequestOpen ? /* @__PURE__ */ jsx("div", { className: "mt-7", children: /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              onClick: () => dispatch({ type: "openChangeRequest" }),
+              className: ctaClass$1("primary", "lg"),
+              children: d.generateCr
+            }
+          ) }) : /* @__PURE__ */ jsxs("div", { className: "mt-7 border-t border-white/[0.07] pt-6", children: [
+            /* @__PURE__ */ jsx(
+              "p",
+              {
+                id: "mileseal-change-request",
+                className: "max-w-[48rem] font-sans text-[14px] font-medium leading-[1.65] text-white/70 sm:text-[15px]",
+                children: state.result.changeRequest
+              }
+            ),
+            /* @__PURE__ */ jsxs("div", { className: "mt-5 flex flex-wrap items-center gap-3", children: [
+              /* @__PURE__ */ jsxs(
+                "button",
+                {
+                  type: "button",
+                  onClick: handleCopy,
+                  className: ctaClass$1("primary", "md", "gap-2"),
+                  children: [
+                    state.copied ? /* @__PURE__ */ jsx(Check, { className: "h-4 w-4", strokeWidth: 2, "aria-hidden": true }) : /* @__PURE__ */ jsx(ClipboardCopy, { className: "h-4 w-4", strokeWidth: 1.75, "aria-hidden": true }),
+                    state.copied ? d.copied : d.copy
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsxs(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => dispatch({ type: "startOver", example: selectedExample }),
+                  className: ctaClass$1("ghost", "md", "gap-2"),
+                  children: [
+                    /* @__PURE__ */ jsx(RotateCcw, { className: "h-4 w-4", strokeWidth: 1.75, "aria-hidden": true }),
+                    d.startOver
+                  ]
+                }
+              )
+            ] }),
+            state.copied ? /* @__PURE__ */ jsx("p", { className: "mt-3 text-[13px] font-medium text-[#ffae66]", role: "status", children: d.copied }) : null
+          ] })
+        ] }) }) }) : null
+      ] })
+    }
+  );
+}
+const PAIN_ICONS = [MessagesSquare, Play, Clock3];
+const STEP_ICONS = [ClipboardPaste, MessageSquarePlus, FileCheck2];
+const PAIN_BG = [
+  "/images/mileseal/mileseal-pain-1.webp",
+  "/images/mileseal/mileseal-pain-2.webp",
+  "/images/mileseal/mileseal-pain-3.webp"
+];
+const STEP_BG = [
+  "/images/mileseal/mileseal-step-1.webp",
+  "/images/mileseal/mileseal-step-2.webp",
+  "/images/mileseal/mileseal-step-3.webp"
+];
+function MediaCard({
+  title,
+  text,
+  icon: Icon,
+  bg,
+  delay
+}) {
+  return /* @__PURE__ */ jsx(Reveal$1, { delay, className: "h-full", children: /* @__PURE__ */ jsxs("article", { className: "relative isolate flex h-full min-h-[240px] flex-col overflow-hidden rounded-[20px] bg-[#141414] sm:min-h-[280px] sm:rounded-2xl", children: [
+    /* @__PURE__ */ jsx(
+      "img",
+      {
+        src: bg,
+        alt: "",
+        loading: "lazy",
+        decoding: "async",
+        draggable: false,
+        className: "pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-55"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-black/78 to-black/35",
+        "aria-hidden": true
+      }
+    ),
+    /* @__PURE__ */ jsxs("div", { className: "relative z-[1] flex h-full flex-col p-5 sm:p-6", children: [
+      /* @__PURE__ */ jsx("span", { className: "inline-flex h-11 w-11 items-center justify-center rounded-full bg-[rgba(255,138,30,0.16)] text-[#ffae66]", children: /* @__PURE__ */ jsx(Icon, { className: "h-5 w-5", strokeWidth: 1.75, "aria-hidden": true }) }),
+      /* @__PURE__ */ jsx("h3", { className: "mt-auto pt-8 font-hero text-[22px] font-semibold uppercase leading-[1.05] tracking-[-0.03em] text-white sm:text-[24px]", children: title }),
+      /* @__PURE__ */ jsx("p", { className: "mt-3 font-sans text-[15px] font-medium leading-[1.55] text-white/72", children: text })
+    ] })
+  ] }) });
+}
+function MilesealValueSections() {
+  const { lang } = useLang();
+  const copy = milesealCopy(lang);
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(Section, { className: "bg-black !py-12 sm:!py-16", children: /* @__PURE__ */ jsxs(Container, { children: [
+      /* @__PURE__ */ jsx(Reveal$1, { children: /* @__PURE__ */ jsx("div", { className: "max-w-[40rem]", children: /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.85rem,4.5vw,3rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white", children: copy.pain.title }) }) }),
+      /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-3 sm:grid-cols-3 sm:gap-4", children: copy.pain.cards.map((card, i) => /* @__PURE__ */ jsx(
+        MediaCard,
+        {
+          title: card.title,
+          text: card.text,
+          icon: PAIN_ICONS[i] ?? MessagesSquare,
+          bg: PAIN_BG[i] ?? PAIN_BG[0],
+          delay: i * 70
+        },
+        card.title
+      )) })
+    ] }) }),
+    /* @__PURE__ */ jsx(Section, { className: "bg-black !py-12 sm:!py-16", children: /* @__PURE__ */ jsxs(Container, { children: [
+      /* @__PURE__ */ jsx(Reveal$1, { children: /* @__PURE__ */ jsx("div", { className: "max-w-[44rem]", children: /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.85rem,4.5vw,3rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white", children: copy.steps.title }) }) }),
+      /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-3 sm:grid-cols-3 sm:gap-4", children: copy.steps.items.map((step, i) => /* @__PURE__ */ jsx(
+        MediaCard,
+        {
+          title: step.title,
+          text: step.text,
+          icon: STEP_ICONS[i] ?? FileCheck2,
+          bg: STEP_BG[i] ?? STEP_BG[0],
+          delay: i * 70
+        },
+        step.n
+      )) })
+    ] }) })
+  ] });
+}
+function cx(...a) {
+  return a.filter(Boolean).join(" ");
+}
+const inputClass = cx(
+  "w-full h-12 rounded-[16px] px-4",
+  "border-0 bg-[#141414] text-white placeholder:text-white/35",
+  "outline-none focus:bg-[#1a1a1a] focus-visible:ring-2 focus-visible:ring-[#fc5000]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c0c0c]",
+  "font-sans text-[14px] font-medium transition"
+);
+const labelClass = "mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.12em] text-white/55";
+function MilesealScopeForm({ prefill, formOpen, onOpenForm, formKey }) {
+  const { lang } = useLang();
+  const copy = milesealCopy(lang).cta;
+  return /* @__PURE__ */ jsx(
+    Section,
+    {
+      id: "scope-review",
+      className: "scroll-mt-[var(--tivonix-header-spacer)] bg-black !py-14 sm:!py-16 lg:!py-20",
+      children: /* @__PURE__ */ jsxs(Container, { children: [
+        /* @__PURE__ */ jsx(Reveal$1, { children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[40rem] text-center", children: [
+          /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.85rem,4.5vw,3rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white text-balance", children: copy.title }),
+          /* @__PURE__ */ jsx("p", { className: "mx-auto mt-4 max-w-[34rem] text-[15px] font-medium leading-relaxed text-white/60 sm:text-[16px]", children: copy.text }),
+          !formOpen ? /* @__PURE__ */ jsx("div", { className: "mt-7", children: /* @__PURE__ */ jsx("button", { type: "button", onClick: onOpenForm, className: ctaClass$1("primary", "lg"), children: copy.openForm }) }) : null
+        ] }) }),
+        formOpen ? /* @__PURE__ */ jsx(Reveal$1, { delay: 60, className: "mx-auto mt-10 max-w-[40rem]", children: /* @__PURE__ */ jsx(MilesealReviewForm, { prefill }, `${formKey}-${lang}`) }) : null
+      ] })
+    }
+  );
+}
+function MilesealReviewForm({ prefill }) {
+  const { lang } = useLang();
+  const copy = milesealCopy(lang).cta;
+  const formId = useId();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [agency, setAgency] = useState("");
+  const [clientRequest, setClientRequest] = useState(prefill?.request ?? "");
+  const [agreedScope, setAgreedScope] = useState(prefill?.scope ?? "");
+  const [consent, setConsent] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
+  const [status, setStatus] = useState("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+  const privacyHref = lang === "ru" ? "/doc/Политика_обработки_ПД_Tivonix_RU.pdf" : "/doc/Privacy_Policy_Tivonix_EN.pdf";
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMsg("");
+    if (!email.trim() || email.trim().length < 3) {
+      setErrorMsg(copy.errEmail);
+      setStatus("error");
+      return;
+    }
+    if (!clientRequest.trim() || clientRequest.trim().length < 5) {
+      setErrorMsg(copy.errRequest);
+      setStatus("error");
+      return;
+    }
+    if (!agreedScope.trim() || agreedScope.trim().length < 5) {
+      setErrorMsg(copy.errScope);
+      setStatus("error");
+      return;
+    }
+    if (!consent) {
+      setErrorMsg(copy.errConsent);
+      setStatus("error");
+      return;
+    }
+    setStatus("loading");
+    trackLeadFormSubmit("mileseal_scope_review");
+    const labels = lang === "ru" ? { agency: "Агентство", scope: "Согласованный объём", request: "Запрос клиента", draft: "Черновик change request" } : lang === "zh" ? { agency: "代理商", scope: "已约定范围", request: "客户请求", draft: "变更请求草稿" } : { agency: "Agency", scope: "Agreed scope", request: "Recent client request", draft: "Demo change request draft" };
+    const taskParts = [
+      "[MileSeal human scope review]",
+      agency.trim() ? `${labels.agency}: ${agency.trim()}` : null,
+      "",
+      `${labels.scope}:`,
+      agreedScope.trim(),
+      "",
+      `${labels.request}:`,
+      clientRequest.trim(),
+      prefill?.changeRequest ? `
+${labels.draft}:
+${prefill.changeRequest}` : null
+    ].filter((line) => line !== null);
+    const result = await submitLead({
+      name: name.trim() || agency.trim() || "MileSeal",
+      contact: email.trim(),
+      task: taskParts.join("\n"),
+      budget: "unknown",
+      consent: true,
+      company_fax_url: honeypot,
+      lang,
+      meta: buildLeadMeta("mileseal_scope_review")
+    });
+    if (result.ok) {
+      trackLeadFormSuccess("mileseal_scope_review");
+      setStatus("success");
+      return;
+    }
+    setErrorMsg(result.fallback ? copy.errNetwork : copy.errGeneric);
+    setStatus("error");
+  };
+  if (status === "success") {
+    return /* @__PURE__ */ jsxs("div", { className: "rounded-[24px] bg-[#0c0c0c] px-6 py-10 text-center sm:px-10", children: [
+      /* @__PURE__ */ jsx("p", { className: "text-[11px] font-semibold uppercase tracking-[0.2em] text-[#FF9A3D]", children: copy.successBadge }),
+      /* @__PURE__ */ jsx("h3", { className: "mt-3 font-hero text-[clamp(1.6rem,3.5vw,2.25rem)] uppercase tracking-[0.02em] text-white", children: copy.successTitle }),
+      /* @__PURE__ */ jsx("p", { className: "mx-auto mt-3 max-w-[32rem] font-sans text-[15px] font-medium leading-[1.55] text-white/62", children: copy.successText })
+    ] });
+  }
+  return /* @__PURE__ */ jsxs(
+    "form",
+    {
+      onSubmit,
+      className: "relative rounded-[24px] bg-[#0c0c0c] p-5 sm:p-7",
+      noValidate: true,
+      children: [
+        /* @__PURE__ */ jsxs("div", { className: "grid gap-4 sm:grid-cols-2", children: [
+          /* @__PURE__ */ jsxs("div", { children: [
+            /* @__PURE__ */ jsx("label", { htmlFor: `${formId}-name`, className: labelClass, children: copy.name }),
+            /* @__PURE__ */ jsx(
+              "input",
+              {
+                id: `${formId}-name`,
+                name: "name",
+                type: "text",
+                autoComplete: "name",
+                className: inputClass,
+                value: name,
+                onChange: (e) => setName(e.target.value),
+                disabled: status === "loading"
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxs("div", { children: [
+            /* @__PURE__ */ jsx("label", { htmlFor: `${formId}-email`, className: labelClass, children: copy.email }),
+            /* @__PURE__ */ jsx(
+              "input",
+              {
+                id: `${formId}-email`,
+                name: "email",
+                type: "email",
+                autoComplete: "email",
+                required: true,
+                className: inputClass,
+                value: email,
+                onChange: (e) => setEmail(e.target.value),
+                disabled: status === "loading"
+              }
+            )
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "mt-4", children: [
+          /* @__PURE__ */ jsx("label", { htmlFor: `${formId}-agency`, className: labelClass, children: copy.agency }),
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              id: `${formId}-agency`,
+              name: "agency",
+              type: "text",
+              autoComplete: "organization",
+              className: inputClass,
+              value: agency,
+              onChange: (e) => setAgency(e.target.value),
+              disabled: status === "loading"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "mt-4", children: [
+          /* @__PURE__ */ jsx("label", { htmlFor: `${formId}-request`, className: labelClass, children: copy.clientRequest }),
+          /* @__PURE__ */ jsx(
+            AutoGrowTextarea,
+            {
+              id: `${formId}-request`,
+              name: "client_request",
+              required: true,
+              minRows: 3,
+              maxRows: 12,
+              value: clientRequest,
+              onChange: (e) => setClientRequest(e.target.value),
+              disabled: status === "loading"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "mt-4", children: [
+          /* @__PURE__ */ jsx("label", { htmlFor: `${formId}-scope`, className: labelClass, children: copy.agreedScope }),
+          /* @__PURE__ */ jsx(
+            AutoGrowTextarea,
+            {
+              id: `${formId}-scope`,
+              name: "agreed_scope",
+              required: true,
+              minRows: 3,
+              maxRows: 12,
+              value: agreedScope,
+              onChange: (e) => setAgreedScope(e.target.value),
+              disabled: status === "loading"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "absolute -left-[9999px] h-0 w-0 overflow-hidden", "aria-hidden": true, children: [
+          /* @__PURE__ */ jsx("label", { htmlFor: `${formId}-fax`, children: "Company fax" }),
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              id: `${formId}-fax`,
+              name: "company_fax_url",
+              type: "text",
+              tabIndex: -1,
+              autoComplete: "off",
+              value: honeypot,
+              onChange: (e) => setHoneypot(e.target.value)
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs("label", { className: "mt-5 flex items-start gap-3 text-[13px] font-medium leading-snug text-white/65", children: [
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              type: "checkbox",
+              checked: consent,
+              onChange: (e) => setConsent(e.target.checked),
+              disabled: status === "loading",
+              className: "mt-0.5 h-4 w-4 shrink-0 rounded border-0 bg-white/15 accent-[#fc5000]"
+            }
+          ),
+          /* @__PURE__ */ jsxs("span", { children: [
+            copy.consent,
+            " ",
+            /* @__PURE__ */ jsx(
+              "a",
+              {
+                href: privacyHref,
+                target: "_blank",
+                rel: "noopener noreferrer",
+                className: "text-white/85 underline underline-offset-2 hover:text-white",
+                children: copy.privacy
+              }
+            )
+          ] })
+        ] }),
+        errorMsg ? /* @__PURE__ */ jsx(
+          "p",
+          {
+            className: "mt-4 rounded-xl bg-[#fc5000]/12 px-3.5 py-2.5 text-[13px] font-medium text-[#FF9A3D]",
+            role: "alert",
+            children: errorMsg
+          }
+        ) : null,
+        /* @__PURE__ */ jsx("div", { className: "mt-6", children: /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "submit",
+            disabled: status === "loading",
+            className: ctaClass$1("primary", "lg", "w-full sm:w-auto disabled:opacity-60"),
+            children: status === "loading" ? copy.sending : copy.send
+          }
+        ) })
+      ]
+    }
+  );
+}
+function scrollToId(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const y = el.getBoundingClientRect().top + window.scrollY - 84;
+  window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+}
+function MilesealPage() {
+  const { lang } = useLang();
+  const copy = milesealCopy(lang);
+  const [formOpen, setFormOpen] = useState(false);
+  const [prefill, setPrefill] = useState(null);
+  const [formKey, setFormKey] = useState(0);
+  const openReview = useCallback((nextPrefill) => {
+    setPrefill(nextPrefill ?? null);
+    setFormKey((k) => k + 1);
+    setFormOpen(true);
+    requestAnimationFrame(() => scrollToId("scope-review"));
+  }, []);
+  return /* @__PURE__ */ jsxs("div", { className: "landing-caldera min-h-screen bg-black", children: [
+    /* @__PURE__ */ jsx(
+      SEO,
+      {
+        title: copy.seo.title,
+        description: copy.seo.description,
+        canonicalPath: "/mileseal",
+        ogLocalePrimary: ogLocaleFor(lang),
+        hreflang: false
+      }
+    ),
+    /* @__PURE__ */ jsx(Header, {}),
+    /* @__PURE__ */ jsxs("main", { children: [
+      /* @__PURE__ */ jsx(
+        MilesealHero,
+        {
+          onTryDemo: () => scrollToId("demo"),
+          onRequestReview: () => openReview()
+        }
+      ),
+      /* @__PURE__ */ jsx(MilesealDemo, { onSendForReview: openReview }),
+      /* @__PURE__ */ jsx(MilesealValueSections, {}),
+      /* @__PURE__ */ jsx(
+        MilesealScopeForm,
+        {
+          formOpen,
+          onOpenForm: () => openReview(),
+          prefill,
+          formKey
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsx(Footer, {})
+  ] });
+}
 const HEADER_OFFSET = 84;
 function ScrollToHash() {
   const { pathname, hash } = useLocation();
@@ -21281,6 +22536,7 @@ function AppRoutes() {
       /* @__PURE__ */ jsx(Route, { path: "/zh/contacts", element: /* @__PURE__ */ jsx(ContactsPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/sozdanie-sajtov", element: /* @__PURE__ */ jsx(WebsiteCreationPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/avtomatizaciya-biznesa", element: /* @__PURE__ */ jsx(AutomationBusinessPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/mileseal", element: /* @__PURE__ */ jsx(MilesealPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/partners", element: /* @__PURE__ */ jsx(PartnersPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: PARTNERS_PATH_RU, element: /* @__PURE__ */ jsx(PartnersPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: PARTNERS_PATH_EN, element: /* @__PURE__ */ jsx(PartnersPage, {}) }),
