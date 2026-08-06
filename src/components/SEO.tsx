@@ -13,6 +13,10 @@ export type SEOProps = {
   description: string;
   canonicalPath: string;
   ogImage?: string;
+  /** Optional Open Graph / Twitter title override. */
+  ogTitle?: string;
+  /** Optional Open Graph / Twitter description override. */
+  ogDescription?: string;
   ogType?: string;
   schemaJsonLd?: object;
   /** Основной og:locale под текущий язык страницы. */
@@ -26,6 +30,8 @@ export function SEO({
   description,
   canonicalPath,
   ogImage = DEFAULT_OG_IMAGE,
+  ogTitle,
+  ogDescription,
   ogType = "website",
   schemaJsonLd,
   ogLocalePrimary = "ru_RU",
@@ -34,6 +40,9 @@ export function SEO({
   const canonicalUrl = canonicalPath.startsWith("http")
     ? canonicalPath
     : `${CANONICAL_ORIGIN}${canonicalPath.startsWith("/") ? "" : "/"}${canonicalPath}`;
+
+  const socialTitle = ogTitle ?? title;
+  const socialDescription = ogDescription ?? description;
 
   const alts =
     ogLocalePrimary === "ru_RU"
@@ -62,8 +71,8 @@ export function SEO({
       {alts.map((loc) => (
         <meta key={loc} property="og:locale:alternate" content={loc} />
       ))}
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
+      <meta property="og:title" content={socialTitle} />
+      <meta property="og:description" content={socialDescription} />
       <meta property="og:url" content={canonicalUrl} />
       <meta property="og:image" content={ogImage} />
       <meta property="og:image:width" content={OG_IMAGE_WIDTH} />
@@ -75,8 +84,8 @@ export function SEO({
       <meta property="og:image:alt" content={OG_IMAGE_ALT} />
 
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={description} />
+      <meta name="twitter:title" content={socialTitle} />
+      <meta name="twitter:description" content={socialDescription} />
       <meta name="twitter:image" content={ogImage} />
       <meta name="twitter:image:alt" content={OG_IMAGE_ALT} />
       {schemaJsonLd != null ? (

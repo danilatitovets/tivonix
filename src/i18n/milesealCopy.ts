@@ -61,6 +61,12 @@ export type MilesealCopy = {
     errNetwork: string;
     errGeneric: string;
   };
+  caseTeaser: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    cta: string;
+  };
   footnote: string;
   examples: MilesealDemoExample[];
 };
@@ -312,6 +318,13 @@ const COPY: Record<Lang, MilesealCopy> = {
       errNetwork: "Couldn’t send right now. Please try again or email tivoonix@gmail.com.",
       errGeneric: "Something went wrong. Please try again.",
     },
+    caseTeaser: {
+      eyebrow: "DEMONSTRATION CASE",
+      title: "See how a “small” content request became 40 additional hours",
+      description:
+        "Follow the original scope, the later client request, MileSeal’s decision and the resulting change request.",
+      cta: "View the full case",
+    },
     footnote:
       "MileSeal is an early validation prototype by TIVONIX. Estimates are indicative and require human confirmation.",
     examples: EXAMPLES_EN,
@@ -413,6 +426,13 @@ const COPY: Record<Lang, MilesealCopy> = {
       errNetwork: "Сейчас не удалось отправить. Попробуйте ещё раз или напишите на tivoonix@gmail.com.",
       errGeneric: "Что-то пошло не так. Попробуйте ещё раз.",
     },
+    caseTeaser: {
+      eyebrow: "ДЕМОНСТРАЦИОННЫЙ КЕЙС",
+      title: "Как «небольшой» запрос на контент превратился в 40 дополнительных часов",
+      description:
+        "Посмотрите исходный объём, поздний запрос клиента, решение MileSeal и готовый запрос на изменение.",
+      cta: "Смотреть полный кейс",
+    },
     footnote:
       "MileSeal — ранний прототип от TIVONIX. Оценки ориентировочные и требуют подтверждения человеком.",
     examples: EXAMPLES_RU,
@@ -511,6 +531,12 @@ const COPY: Record<Lang, MilesealCopy> = {
       errConsent: "请确认同意处理数据。",
       errNetwork: "暂时无法发送。请重试或发邮件至 tivoonix@gmail.com。",
       errGeneric: "出错了，请重试。",
+    },
+    caseTeaser: {
+      eyebrow: "演示案例",
+      title: "看看一个“很小”的内容请求如何变成额外 40 小时",
+      description: "跟随最初范围、后续客户请求、MileSeal 判定以及最终变更请求。",
+      cta: "查看完整案例",
     },
     footnote: "MileSeal 是 TIVONIX 的早期验证原型。估算仅供参考，需人工确认。",
     examples: EXAMPLES_ZH,

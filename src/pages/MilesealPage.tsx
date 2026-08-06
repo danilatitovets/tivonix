@@ -4,6 +4,7 @@ import Footer from "../components/landing/Footer";
 import { SEO } from "../components/SEO";
 import MilesealHero from "../components/mileseal/MilesealHero";
 import MilesealDemo from "../components/mileseal/MilesealDemo";
+import MilesealCaseTeaser from "../components/mileseal/MilesealCaseTeaser";
 import MilesealValueSections from "../components/mileseal/MilesealValueSections";
 import MilesealScopeForm from "../components/mileseal/MilesealScopeForm";
 import { useLang } from "../i18n/LangProvider";
@@ -48,6 +49,7 @@ export default function MilesealPage() {
           onRequestReview={() => openReview()}
         />
         <MilesealDemo onSendForReview={openReview} />
+        <MilesealCaseTeaser />
         <MilesealValueSections />
         <MilesealScopeForm
           formOpen={formOpen}

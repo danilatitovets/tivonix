@@ -9,6 +9,7 @@ const requiredHtmlFiles = [
   "dist/sozdanie-sajtov/index.html",
   "dist/avtomatizaciya-biznesa/index.html",
   "dist/mileseal/index.html",
+  "dist/mileseal/cases/content-migration/index.html",
   "dist/partners/index.html",
   "dist/ru/partners/index.html",
   "dist/en/partners/index.html",
@@ -51,6 +52,19 @@ const checks = [
       "Попробовать демо",
       "https://tivonix.tech/mileseal",
       "прототип",
+      "ДЕМОНСТРАЦИОННЫЙ КЕЙС",
+      "/mileseal/cases/content-migration",
+    ],
+  },
+  {
+    file: "dist/mileseal/cases/content-migration/index.html",
+    phrases: [
+      "MileSeal",
+      "Интерактивное демо MileSeal",
+      "40",
+      "https://tivonix.tech/mileseal/cases/content-migration",
+      "Проанализировать запрос",
+      "Входит ли новый запрос клиента в согласованный объём?",
     ],
   },
   {

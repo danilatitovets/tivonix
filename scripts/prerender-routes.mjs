@@ -6,6 +6,7 @@ export const PRERENDER_ROUTES = [
   "/sozdanie-sajtov",
   "/avtomatizaciya-biznesa",
   "/mileseal",
+  "/mileseal/cases/content-migration",
   "/projects",
   "/en/projects",
   "/zh/projects",

@@ -11,6 +11,7 @@ import AboutPage from "./pages/AboutPage";
 import PartnersPage from "./pages/PartnersPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import MilesealPage from "./pages/MilesealPage";
+import MilesealCaseContentMigrationPage from "./pages/MilesealCaseContentMigrationPage";
 import { LangPathSync } from "./i18n/LangProvider";
 import { PARTNERS_PATH_EN, PARTNERS_PATH_RU, PARTNERS_PATH_ZH } from "./i18n/partnersPaths";
 
@@ -65,6 +66,10 @@ export function AppRoutes() {
         <Route path="/sozdanie-sajtov" element={<WebsiteCreationPage />} />
         <Route path="/avtomatizaciya-biznesa" element={<AutomationBusinessPage />} />
         <Route path="/mileseal" element={<MilesealPage />} />
+        <Route
+          path="/mileseal/cases/content-migration"
+          element={<MilesealCaseContentMigrationPage />}
+        />
         <Route path="/partners" element={<PartnersPage />} />
         <Route path={PARTNERS_PATH_RU} element={<PartnersPage />} />
         <Route path={PARTNERS_PATH_EN} element={<PartnersPage />} />

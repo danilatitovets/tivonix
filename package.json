@@ -16,7 +16,7 @@
     "prerender": "node scripts/prerender-node.mjs",
     "preview": "vite preview --host 127.0.0.1 --port 4174",
     "verify:hydration": "node scripts/verify-hydration.mjs",
-    "test": "node scripts/check-leads.mjs && node --experimental-strip-types scripts/check-mileseal-demo-state.mjs"
+    "test": "node scripts/check-leads.mjs && node --experimental-strip-types scripts/check-mileseal-demo-state.mjs && node --experimental-strip-types scripts/check-mileseal-case-demo-state.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
@@ -24,6 +24,8 @@
     "@react-three/postprocessing": "^3.0.4",
     "cobe": "^2.0.1",
     "grammy": "^1.41.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "lucide-react": "^0.562.0",
     "postprocessing": "^6.38.3",
     "react": "^19.2.0",
