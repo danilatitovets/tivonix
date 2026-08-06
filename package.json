@@ -16,7 +16,7 @@
     "prerender": "node scripts/prerender-node.mjs",
     "preview": "vite preview --host 127.0.0.1 --port 4174",
     "verify:hydration": "node scripts/verify-hydration.mjs",
-    "test": "node scripts/check-leads.mjs"
+    "test": "node scripts/check-leads.mjs && node --experimental-strip-types scripts/check-mileseal-demo-state.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

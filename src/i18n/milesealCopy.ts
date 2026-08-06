@@ -340,7 +340,8 @@ const COPY: Record<Lang, MilesealCopy> = {
       analyzing: "Анализ…",
       editExample: "Редактировать пример",
       restoreExample: "Вернуть пример",
-      customNotice: "Анализ произвольного текста в этом превью пока недоступен.",
+      customNotice:
+        "Анализ пользовательского кейса пока недоступен в этой демонстрационной версии.",
       sendHumanReview: "Отправить кейс на ручной разбор объёма",
       hoursLabel: "Доп. часы",
       valueLabel: "Неутверждённая сумма",

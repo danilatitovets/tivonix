@@ -45,7 +45,11 @@ assert.equal(s.scope, "Scope A");
 
 s = demoReducer(s, { type: "analyzeStart" });
 assert.equal(s.analyzing, true);
-s = demoReducer(s, { type: "analyzeSuccess", result: ex1.result });
+s = demoReducer(s, {
+  type: "analyzeSuccess",
+  result: ex1.result,
+  scenarioId: ex1.id,
+});
 assert.equal(s.result?.reason, "Reason A");
 assert.equal(s.mode, "preset");
 
@@ -64,7 +68,33 @@ assert.equal(s.scope, "Scope B");
 assert.equal(s.request, "Request B");
 assert.equal(s.result, null);
 
-s = demoReducer(s, { type: "analyzeSuccess", result: ex2.result });
+s = demoReducer(s, { type: "analyzeStart" });
+s = demoReducer(s, {
+  type: "analyzeSuccess",
+  result: ex2.result,
+  scenarioId: ex2.id,
+});
+assert.equal(s.result?.reason, "Reason B");
+
+// Stale analyzeSuccess after scenario switch must not apply foreign result
+s = demoReducer(createInitialDemoState(ex1), { type: "analyzeStart" });
+s = demoReducer(s, { type: "selectScenario", example: ex2 });
+assert.equal(s.analyzing, false);
+s = demoReducer(s, {
+  type: "analyzeSuccess",
+  result: ex1.result,
+  scenarioId: ex1.id,
+});
+assert.equal(s.result, null);
+assert.equal(s.selectedScenarioId, "integrations");
+assert.equal(s.scope, "Scope B");
+
+s = demoReducer(s, { type: "analyzeStart" });
+s = demoReducer(s, {
+  type: "analyzeSuccess",
+  result: ex2.result,
+  scenarioId: ex2.id,
+});
 assert.equal(s.result?.reason, "Reason B");
 
 s = demoReducer(s, { type: "openChangeRequest" });
@@ -76,7 +106,12 @@ assert.equal(s.result, null);
 assert.equal(s.isChangeRequestOpen, false);
 assert.equal(s.scope, "Scope B");
 
-s = demoReducer(s, { type: "analyzeSuccess", result: ex2.result });
+s = demoReducer(s, { type: "analyzeStart" });
+s = demoReducer(s, {
+  type: "analyzeSuccess",
+  result: ex2.result,
+  scenarioId: ex2.id,
+});
 const ex2Ru = {
   ...ex2,
   scope: "Объём B",
@@ -97,7 +132,11 @@ assert.equal(s.scope, "custom text");
 // Analyzing in custom must not keep a preset result
 s = demoReducer(createInitialDemoState(ex1), { type: "editExample" });
 s = demoReducer(s, { type: "analyzeStart" });
-s = demoReducer(s, { type: "analyzeSuccess", result: ex1.result });
+s = demoReducer(s, {
+  type: "analyzeSuccess",
+  result: ex1.result,
+  scenarioId: ex1.id,
+});
 assert.equal(s.result, null);
 assert.equal(s.mode, "custom");
 

@@ -56,6 +56,16 @@ export default function MilesealDemo({ onSendForReview }: Props) {
     return () => window.clearTimeout(t);
   }, [state.copied]);
 
+  const analyzeTimerRef = useRef<number | null>(null);
+  useEffect(() => {
+    return () => {
+      if (analyzeTimerRef.current != null) {
+        window.clearTimeout(analyzeTimerRef.current);
+        analyzeTimerRef.current = null;
+      }
+    };
+  }, [state.selectedScenarioId, state.mode, lang]);
+
   const isPreset = state.mode === "preset";
   const showResult = isPreset && state.result !== null;
   const showHelper = !showResult;
@@ -63,9 +73,14 @@ export default function MilesealDemo({ onSendForReview }: Props) {
   const handleAnalyze = () => {
     if (!isPreset || state.analyzing) return;
     dispatch({ type: "analyzeStart" });
+    const scenarioId = selectedExample.id;
     const result = selectedExample.result;
-    window.setTimeout(() => {
-      dispatch({ type: "analyzeSuccess", result });
+    if (analyzeTimerRef.current != null) {
+      window.clearTimeout(analyzeTimerRef.current);
+    }
+    analyzeTimerRef.current = window.setTimeout(() => {
+      analyzeTimerRef.current = null;
+      dispatch({ type: "analyzeSuccess", result, scenarioId });
     }, 360);
   };
 
@@ -75,7 +90,11 @@ export default function MilesealDemo({ onSendForReview }: Props) {
     try {
       await navigator.clipboard.writeText(text);
       dispatch({ type: "copied" });
+      return;
     } catch {
+      /* fall through to legacy copy */
+    }
+    try {
       const ta = document.createElement("textarea");
       ta.value = text;
       ta.setAttribute("readonly", "");
@@ -83,9 +102,11 @@ export default function MilesealDemo({ onSendForReview }: Props) {
       ta.style.left = "-9999px";
       document.body.appendChild(ta);
       ta.select();
-      document.execCommand("copy");
+      const ok = document.execCommand("copy");
       document.body.removeChild(ta);
-      dispatch({ type: "copied" });
+      if (ok) dispatch({ type: "copied" });
+    } catch {
+      /* no false success toast */
     }
   };
 
@@ -115,6 +136,7 @@ export default function MilesealDemo({ onSendForReview }: Props) {
                   <button
                     key={example.id}
                     type="button"
+                    aria-pressed={active}
                     onClick={() => dispatch({ type: "selectScenario", example })}
                     className={cx(
                       "rounded-full px-3.5 py-1.5 text-[12px] font-semibold transition",

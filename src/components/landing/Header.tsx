@@ -543,6 +543,9 @@ export default function Header() {
             </nav>
 
             <div className="mt-auto flex flex-col gap-2 px-2 pt-6 pb-[max(1rem,env(safe-area-inset-bottom))]">
+              <div className="mb-2 flex justify-center">
+                <LangToggle variant="hero" reducedMotion={reducedMotion} />
+              </div>
               {onPartners ? (
                 <a
                   href={ctaHref}

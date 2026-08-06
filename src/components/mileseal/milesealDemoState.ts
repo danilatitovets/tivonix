@@ -22,7 +22,7 @@ export type DemoAction =
   | { type: "setScope"; value: string }
   | { type: "setRequest"; value: string }
   | { type: "analyzeStart" }
-  | { type: "analyzeSuccess"; result: DemoResult }
+  | { type: "analyzeSuccess"; result: DemoResult; scenarioId: string }
   | { type: "openChangeRequest" }
   | { type: "copied" }
   | { type: "clearCopied" }
@@ -94,8 +94,17 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         copied: false,
       };
     case "analyzeSuccess":
-      if (state.mode !== "preset") {
-        return { ...state, analyzing: false, result: null };
+      // Ignore stale timeouts after scenario switch, lang sync, restore, or custom edit.
+      if (
+        state.mode !== "preset" ||
+        state.selectedScenarioId !== action.scenarioId ||
+        !state.analyzing
+      ) {
+        return {
+          ...state,
+          analyzing: false,
+          result: state.mode === "preset" ? state.result : null,
+        };
       }
       return {
         ...state,
