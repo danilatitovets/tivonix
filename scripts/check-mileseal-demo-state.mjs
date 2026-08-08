@@ -17,9 +17,14 @@ const ex1 = {
     status: "Out of scope",
     hoursValue: "14–18",
     costValue: "$840–$1,080",
+    timelineValue: "3–5 days",
+    confidence: "High",
     reason: "Reason A",
     recommendation: "Rec A",
+    effortItems: ["Item A — 14–18 hours"],
     changeRequest: "CR A",
+    changeRequestSoft: "CR A soft",
+    changeRequestFormal: "CR A formal",
   },
 };
 
@@ -32,9 +37,14 @@ const ex2 = {
     status: "Out of scope",
     hoursValue: "22–30",
     costValue: "$1,320–$1,800",
+    timelineValue: "5–8 days",
+    confidence: "High",
     reason: "Reason B",
     recommendation: "Rec B",
+    effortItems: ["Item B — 22–30 hours"],
     changeRequest: "CR B",
+    changeRequestSoft: "CR B soft",
+    changeRequestFormal: "CR B formal",
   },
 };
 

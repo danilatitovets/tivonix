@@ -48,11 +48,9 @@ const checks = [
     file: "dist/mileseal/index.html",
     phrases: [
       "MileSeal",
-      "Остановите расползание объёма",
-      "Попробовать демо",
+      "Scope",
+      "change request",
       "https://tivonix.tech/mileseal",
-      "прототип",
-      "ДЕМОНСТРАЦИОННЫЙ КЕЙС",
       "/mileseal/cases/content-migration",
     ],
   },

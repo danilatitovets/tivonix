@@ -1,28 +1,18 @@
-import { useCallback, useState } from "react";
-import Header from "../components/landing/Header";
-import Footer from "../components/landing/Footer";
+import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { SEO } from "../components/SEO";
-import MilesealHero from "../components/mileseal/MilesealHero";
-import MilesealDemo from "../components/mileseal/MilesealDemo";
-import MilesealCaseTeaser from "../components/mileseal/MilesealCaseTeaser";
-import MilesealValueSections from "../components/mileseal/MilesealValueSections";
-import MilesealScopeForm from "../components/mileseal/MilesealScopeForm";
+import MilesealWorkspace from "../components/mileseal/MilesealWorkspace";
 import { useLang } from "../i18n/LangProvider";
 import { milesealCopy } from "../i18n/milesealCopy";
 import { ogLocaleFor } from "../i18n/pick";
 import type { ScopeFormPrefill } from "../data/milesealDemo";
 
-function scrollToId(id: string) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const y = el.getBoundingClientRect().top + window.scrollY - 84;
-  window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
-}
-
 export default function MilesealPage() {
   const { lang } = useLang();
   const copy = milesealCopy(lang);
-  const [formOpen, setFormOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const openManualFromQuery = searchParams.get("manual") === "1";
+  const [formOpen, setFormOpen] = useState(openManualFromQuery);
   const [prefill, setPrefill] = useState<ScopeFormPrefill | null>(null);
   const [formKey, setFormKey] = useState(0);
 
@@ -30,11 +20,23 @@ export default function MilesealPage() {
     setPrefill(nextPrefill ?? null);
     setFormKey((k) => k + 1);
     setFormOpen(true);
-    requestAnimationFrame(() => scrollToId("scope-review"));
   }, []);
 
+  const closeForm = useCallback(() => {
+    setFormOpen(false);
+  }, []);
+
+  // Strip ?manual=1 from the URL after first paint (opens form via initial state).
+  useEffect(() => {
+    if (!openManualFromQuery) return;
+    const next = new URLSearchParams(searchParams);
+    if (!next.has("manual")) return;
+    next.delete("manual");
+    setSearchParams(next, { replace: true });
+  }, [openManualFromQuery, searchParams, setSearchParams]);
+
   return (
-    <div className="landing-caldera min-h-screen bg-black">
+    <>
       <SEO
         title={copy.seo.title}
         description={copy.seo.description}
@@ -42,23 +44,13 @@ export default function MilesealPage() {
         ogLocalePrimary={ogLocaleFor(lang)}
         hreflang={false}
       />
-      <Header />
-      <main>
-        <MilesealHero
-          onTryDemo={() => scrollToId("demo")}
-          onRequestReview={() => openReview()}
-        />
-        <MilesealDemo onSendForReview={openReview} />
-        <MilesealCaseTeaser />
-        <MilesealValueSections />
-        <MilesealScopeForm
-          formOpen={formOpen}
-          onOpenForm={() => openReview()}
-          prefill={prefill}
-          formKey={formKey}
-        />
-      </main>
-      <Footer />
-    </div>
+      <MilesealWorkspace
+        onRequestManualReview={openReview}
+        formOpen={formOpen}
+        formKey={formKey}
+        prefill={prefill}
+        onCloseForm={closeForm}
+      />
+    </>
   );
 }

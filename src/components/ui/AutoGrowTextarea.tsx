@@ -13,6 +13,8 @@ function cx(...a: Array<string | false | null | undefined>) {
 type Props = Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "rows"> & {
   minRows?: number;
   maxRows?: number;
+  /** Visual tone — dark matches legacy MileSeal forms; light for white panels. */
+  tone?: "dark" | "light";
 };
 
 const useIsomorphicLayoutEffect =
@@ -25,6 +27,7 @@ export default function AutoGrowTextarea({
   className,
   value,
   onChange,
+  tone = "dark",
   ...rest
 }: Props) {
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -56,6 +59,18 @@ export default function AutoGrowTextarea({
     return () => window.removeEventListener("resize", onWin);
   }, [resize]);
 
+  const toneClass =
+    tone === "light"
+      ? cx(
+          "border-0 bg-[#f4f3f1] text-[#141414] placeholder:text-[#141414]/4",
+          "outline-none focus:bg-[#efeeec] focus-visible:ring-2 focus-visible:ring-[#fc5000]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+        )
+      : cx(
+          "border-0 bg-[#141414] text-white placeholder:text-white/35",
+          "outline-none focus:bg-[#1a1a1a] focus-visible:ring-2 focus-visible:ring-[#fc5000]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c0c0c]",
+          "read-only:focus:bg-[#141414] read-only:focus-visible:ring-0"
+        );
+
   return (
     <textarea
       {...rest}
@@ -69,10 +84,8 @@ export default function AutoGrowTextarea({
       className={cx(
         "block w-full resize-none overflow-hidden",
         "rounded-[16px] px-4 py-3.5",
-        "border-0 bg-[#141414] text-white placeholder:text-white/35",
-        "outline-none focus:bg-[#1a1a1a] focus-visible:ring-2 focus-visible:ring-[#fc5000]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c0c0c]",
+        toneClass,
         "font-sans text-[14px] font-medium leading-[1.55] transition-[background-color]",
-        "read-only:focus:bg-[#141414] read-only:focus-visible:ring-0",
         className
       )}
     />

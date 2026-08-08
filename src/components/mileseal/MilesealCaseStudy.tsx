@@ -1024,7 +1024,7 @@ export default function MilesealCaseStudy() {
                 </p>
                 <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row sm:items-center">
                   <ArrowPillLink to="/mileseal">{copy.finalCta.primary}</ArrowPillLink>
-                  <ArrowPillLink to="/mileseal#scope-review" variant="outline">
+                  <ArrowPillLink to="/mileseal?manual=1" variant="outline">
                     {copy.finalCta.secondary}
                   </ArrowPillLink>
                 </div>

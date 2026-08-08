@@ -68,7 +68,11 @@ export default function MilesealScopeForm({ prefill, formOpen, onOpenForm, formK
   );
 }
 
-function MilesealReviewForm({ prefill }: { prefill?: ScopeFormPrefill | null }) {
+export function MilesealReviewForm({
+  prefill,
+}: {
+  prefill?: ScopeFormPrefill | null;
+}) {
   const { lang } = useLang();
   const copy = milesealCopy(lang).cta;
   const formId = useId();

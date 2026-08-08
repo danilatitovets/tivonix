@@ -79,12 +79,23 @@ const EXAMPLES_EN: MilesealDemoExample[] = [
     request: "Please also migrate 84 articles and create individual author pages.",
     result: {
       status: "Out of scope",
-      hoursValue: "14–18",
+      hoursValue: "14–18 hours",
       costValue: "$840–$1,080",
+      timelineValue: "3–5 days",
+      confidence: "High",
       reason: "Content migration and author pages were not included in the agreed project scope.",
       recommendation: "Get written approval before work begins.",
+      effortItems: [
+        "Content inventory & mapping — 4–5 hours",
+        "Article migration & redirects — 6–8 hours",
+        "Author pages & QA — 4–5 hours",
+      ],
       changeRequest:
         "This request is outside the originally agreed project scope because content migration and author pages were not included. We estimate an additional 14–18 hours of work. The estimated cost is $840–$1,080. Please confirm the updated scope, timeline, and budget before implementation begins.",
+      changeRequestSoft:
+        "Happy to help with the content migration and author pages — they weren’t part of the original scope. We estimate about 14–18 extra hours ($840–$1,080). Could you confirm the updated scope, timeline, and budget before we start?",
+      changeRequestFormal:
+        "Following a review of the agreed project scope, content migration and author pages fall outside the current deliverables. Additional effort is estimated at 14–18 hours, with an indicative cost of $840–$1,080. Written confirmation of the revised scope, timeline, and budget is required prior to implementation.",
     },
   },
   {
@@ -96,12 +107,24 @@ const EXAMPLES_EN: MilesealDemoExample[] = [
       "Please also connect Salesforce CRM, Stripe payments, and Zapier webhooks for lead sync.",
     result: {
       status: "Out of scope",
-      hoursValue: "22–30",
+      hoursValue: "22–30 hours",
       costValue: "$1,320–$1,800",
+      timelineValue: "5–8 days",
+      confidence: "High",
       reason: "CRM, payments, and webhook integrations were never included in the agreed scope.",
       recommendation: "Pause work until the client approves a written change request.",
+      effortItems: [
+        "Salesforce CRM sync — 8–10 hours",
+        "Stripe payments — 6–8 hours",
+        "Zapier webhooks — 4–6 hours",
+        "QA, docs & handover — 4–6 hours",
+      ],
       changeRequest:
         "This request is outside the originally agreed project scope because Salesforce, Stripe, and Zapier integrations were not included. We estimate an additional 22–30 hours of work. The estimated cost is $1,320–$1,800. Please confirm the updated scope, timeline, and budget before implementation begins.",
+      changeRequestSoft:
+        "We can support the Salesforce, Stripe, and Zapier connections — these integrations sit outside the current scope. Roughly 22–30 extra hours ($1,320–$1,800). Please confirm the updated scope, timeline, and budget before we proceed.",
+      changeRequestFormal:
+        "Upon review of the agreed scope, Salesforce, Stripe, and Zapier integrations are not included in the current deliverables. Estimated additional effort is 22–30 hours at an indicative cost of $1,320–$1,800. Implementation shall commence only after written approval of the revised scope, timeline, and budget.",
     },
   },
   {
@@ -112,12 +135,23 @@ const EXAMPLES_EN: MilesealDemoExample[] = [
       "We need three more full revision rounds after the included ones, plus a complete dark mode version.",
     result: {
       status: "Out of scope",
-      hoursValue: "10–14",
+      hoursValue: "10–14 hours",
       costValue: "$600–$840",
+      timelineValue: "2–4 days",
+      confidence: "High",
       reason: "Extra revision rounds and dark mode were not included in the agreed project scope.",
       recommendation: "Get written approval before work begins.",
+      effortItems: [
+        "Three extra revision rounds — 6–8 hours",
+        "Dark mode design & implementation — 3–4 hours",
+        "QA across breakpoints — 1–2 hours",
+      ],
       changeRequest:
         "This request is outside the originally agreed project scope because additional revision rounds and dark mode were not included. We estimate an additional 10–14 hours of work. The estimated cost is $600–$840. Please confirm the updated scope, timeline, and budget before implementation begins.",
+      changeRequestSoft:
+        "Glad to continue with more revision rounds and a dark mode version — both sit outside the included scope. We estimate about 10–14 extra hours ($600–$840). Please confirm the updated scope, timeline, and budget before we start.",
+      changeRequestFormal:
+        "Additional revision rounds and a dark mode version fall outside the agreed deliverables. Estimated additional effort is 10–14 hours, with an indicative cost of $600–$840. Written approval of the revised scope, timeline, and budget is required before work proceeds.",
     },
   },
 ];
@@ -130,12 +164,23 @@ const EXAMPLES_RU: MilesealDemoExample[] = [
     request: "Пожалуйста, ещё перенесите 84 статьи и сделайте отдельные страницы авторов.",
     result: {
       status: "Вне объёма",
-      hoursValue: "14–18",
+      hoursValue: "14–18 часов",
       costValue: "$840–$1,080",
+      timelineValue: "3–5 дней",
+      confidence: "Высокая",
       reason: "Миграция контента и страницы авторов не входили в согласованный объём проекта.",
       recommendation: "Получите письменное согласование до начала работ.",
+      effortItems: [
+        "Инвентаризация и карта контента — 4–5 часов",
+        "Миграция статей и редиректы — 6–8 часов",
+        "Страницы авторов и проверка — 4–5 часов",
+      ],
       changeRequest:
         "Этот запрос выходит за изначально согласованный объём проекта, потому что миграция контента и страницы авторов не были включены. Оценка дополнительной работы — 14–18 часов. Ориентировочная стоимость — $840–$1,080. Пожалуйста, подтвердите обновлённый объём, сроки и бюджет до начала реализации.",
+      changeRequestSoft:
+        "С миграцией контента и страницами авторов с удовольствием поможем — в исходный объём они не входили. Ориентир: ещё 14–18 часов ($840–$1,080). Подтвердите, пожалуйста, обновлённый объём, сроки и бюджет до старта.",
+      changeRequestFormal:
+        "По итогам сверки с согласованным объёмом проекта миграция контента и страницы авторов не входят в текущие результаты. Оценка дополнительной работы — 14–18 часов, ориентировочная стоимость — $840–$1,080. Реализация возможна после письменного подтверждения обновлённого объёма, сроков и бюджета.",
     },
   },
   {
@@ -147,12 +192,24 @@ const EXAMPLES_RU: MilesealDemoExample[] = [
       "Подключите ещё Salesforce CRM, оплату Stripe и вебхуки Zapier для синхронизации лидов.",
     result: {
       status: "Вне объёма",
-      hoursValue: "22–30",
+      hoursValue: "22–30 часов",
       costValue: "$1,320–$1,800",
+      timelineValue: "5–8 дней",
+      confidence: "Высокая",
       reason: "CRM, платежи и вебхуки изначально не входили в согласованный объём.",
       recommendation: "Не начинайте работу, пока клиент не утвердит запрос на изменение письменно.",
+      effortItems: [
+        "Синхронизация Salesforce CRM — 8–10 часов",
+        "Оплата Stripe — 6–8 часов",
+        "Вебхуки Zapier — 4–6 часов",
+        "Проверка, документация и передача — 4–6 часов",
+      ],
       changeRequest:
         "Этот запрос выходит за изначально согласованный объём проекта, потому что интеграции Salesforce, Stripe и Zapier не были включены. Оценка дополнительной работы — 22–30 часов. Ориентировочная стоимость — $1,320–$1,800. Пожалуйста, подтвердите обновлённый объём, сроки и бюджет до начала реализации.",
+      changeRequestSoft:
+        "Подключения Salesforce, Stripe и Zapier можем взять — в текущий объём эти интеграции не входят. Ориентир: ещё 22–30 часов ($1,320–$1,800). Подтвердите обновлённый объём, сроки и бюджет, и продолжим.",
+      changeRequestFormal:
+        "Согласно согласованному объёму, интеграции Salesforce, Stripe и Zapier не входят в текущие результаты. Оценка дополнительной работы — 22–30 часов, ориентировочная стоимость — $1,320–$1,800. Работы начинаются только после письменного утверждения обновлённого объёма, сроков и бюджета.",
     },
   },
   {
@@ -163,12 +220,23 @@ const EXAMPLES_RU: MilesealDemoExample[] = [
       "Нужны ещё три полных раунда правок после включённых, плюс полноценная тёмная версия.",
     result: {
       status: "Вне объёма",
-      hoursValue: "10–14",
+      hoursValue: "10–14 часов",
       costValue: "$600–$840",
+      timelineValue: "2–4 дня",
+      confidence: "Высокая",
       reason: "Дополнительные раунды правок и тёмная тема не входили в согласованный объём.",
       recommendation: "Получите письменное согласование до начала работ.",
+      effortItems: [
+        "Три дополнительных раунда правок — 6–8 часов",
+        "Дизайн и внедрение тёмной темы — 3–4 часа",
+        "Проверка на разных экранах — 1–2 часа",
+      ],
       changeRequest:
         "Этот запрос выходит за изначально согласованный объём проекта, потому что дополнительные раунды правок и тёмная тема не были включены. Оценка дополнительной работы — 10–14 часов. Ориентировочная стоимость — $600–$840. Пожалуйста, подтвердите обновлённый объём, сроки и бюджет до начала реализации.",
+      changeRequestSoft:
+        "Дополнительные раунды правок и тёмную тему готовы сделать — в согласованный объём они не входят. Ориентир: ещё 10–14 часов ($600–$840). Подтвердите обновлённый объём, сроки и бюджет до старта.",
+      changeRequestFormal:
+        "Дополнительные раунды правок и тёмная тема не входят в согласованные результаты. Оценка дополнительной работы — 10–14 часов, ориентировочная стоимость — $600–$840. Для продолжения требуется письменное подтверждение обновлённого объёма, сроков и бюджета.",
     },
   },
 ];
@@ -181,12 +249,23 @@ const EXAMPLES_ZH: MilesealDemoExample[] = [
     request: "请再迁移 84 篇文章，并创建独立作者页。",
     result: {
       status: "超出范围",
-      hoursValue: "14–18",
+      hoursValue: "14–18 小时",
       costValue: "$840–$1,080",
+      timelineValue: "3–5 天",
+      confidence: "高",
       reason: "内容迁移与作者页未包含在已约定项目范围内。",
       recommendation: "开始前请先取得书面确认。",
+      effortItems: [
+        "内容盘点与映射 — 4–5 小时",
+        "文章迁移与重定向 — 6–8 小时",
+        "作者页与验收 — 4–5 小时",
+      ],
       changeRequest:
         "该请求超出最初约定的项目范围，因为内容迁移与作者页未被包含。我们预估额外工作量为 14–18 小时，费用约 $840–$1,080。请在实施前确认更新后的范围、时间表与预算。",
+      changeRequestSoft:
+        "内容迁移与作者页我们很乐意支持——它们不在原始范围内。预估约额外 14–18 小时（$840–$1,080）。开工前请确认更新后的范围、时间表与预算。",
+      changeRequestFormal:
+        "经对照已约定项目范围，内容迁移与作者页不属于当前交付物。额外工作量预估为 14–18 小时，费用约 $840–$1,080。实施前须取得对更新范围、时间表与预算的书面确认。",
     },
   },
   {
@@ -196,12 +275,24 @@ const EXAMPLES_ZH: MilesealDemoExample[] = [
     request: "请再接入 Salesforce CRM、Stripe 支付，以及用于线索同步的 Zapier Webhook。",
     result: {
       status: "超出范围",
-      hoursValue: "22–30",
+      hoursValue: "22–30 小时",
       costValue: "$1,320–$1,800",
+      timelineValue: "5–8 天",
+      confidence: "高",
       reason: "CRM、支付与 Webhook 集成从未包含在约定范围内。",
       recommendation: "在客户书面批准变更请求前，请暂停实施。",
+      effortItems: [
+        "Salesforce CRM 同步 — 8–10 小时",
+        "Stripe 支付 — 6–8 小时",
+        "Zapier Webhook — 4–6 小时",
+        "验收、文档与交接 — 4–6 小时",
+      ],
       changeRequest:
         "该请求超出最初约定的项目范围，因为 Salesforce、Stripe 与 Zapier 集成未被包含。我们预估额外工作量为 22–30 小时，费用约 $1,320–$1,800。请在实施前确认更新后的范围、时间表与预算。",
+      changeRequestSoft:
+        "Salesforce、Stripe 与 Zapier 接入我们可以支持——这些集成不在当前范围内。预估约额外 22–30 小时（$1,320–$1,800）。请确认更新后的范围、时间表与预算后再继续。",
+      changeRequestFormal:
+        "根据已约定范围，Salesforce、Stripe 与 Zapier 集成不属于当前交付物。额外工作量预估为 22–30 小时，费用约 $1,320–$1,800。须在书面批准更新范围、时间表与预算后方可实施。",
     },
   },
   {
@@ -211,12 +302,23 @@ const EXAMPLES_ZH: MilesealDemoExample[] = [
     request: "在已包含的两轮之外，还需要三轮完整修改，并交付完整深色模式版本。",
     result: {
       status: "超出范围",
-      hoursValue: "10–14",
+      hoursValue: "10–14 小时",
       costValue: "$600–$840",
+      timelineValue: "2–4 天",
+      confidence: "高",
       reason: "额外修改轮次与深色模式未包含在已约定项目范围内。",
       recommendation: "开始前请先取得书面确认。",
+      effortItems: [
+        "额外三轮完整修改 — 6–8 小时",
+        "深色模式设计与实现 — 3–4 小时",
+        "多端验收 — 1–2 小时",
+      ],
       changeRequest:
         "该请求超出最初约定的项目范围，因为额外修改轮次与深色模式未被包含。我们预估额外工作量为 10–14 小时，费用约 $600–$840。请在实施前确认更新后的范围、时间表与预算。",
+      changeRequestSoft:
+        "额外修改轮次与深色模式我们都可以做——它们不在已包含范围内。预估约额外 10–14 小时（$600–$840）。开工前请确认更新后的范围、时间表与预算。",
+      changeRequestFormal:
+        "额外修改轮次与深色模式不属于已约定交付物。额外工作量预估为 10–14 小时，费用约 $600–$840。继续实施前须取得对更新范围、时间表与预算的书面批准。",
     },
   },
 ];
@@ -224,9 +326,9 @@ const EXAMPLES_ZH: MilesealDemoExample[] = [
 const COPY: Record<Lang, MilesealCopy> = {
   en: {
     seo: {
-      title: "MileSeal — stop scope creep before unpaid work | TIVONIX",
+      title: "MileSeal — AI Scope Change Workspace",
       description:
-        "MileSeal is a TIVONIX validation prototype for digital agencies: compare a client request to the agreed scope, estimate extra hours, and generate a professional change request.",
+        "Compare an agreed project scope with a new client request, assess delivery impact and generate a client-ready change request.",
     },
     hero: {
       badge: "A validation prototype by TIVONIX",
@@ -331,9 +433,9 @@ const COPY: Record<Lang, MilesealCopy> = {
   },
   ru: {
     seo: {
-      title: "MileSeal — остановите расползание объёма до бесплатной работы | TIVONIX",
+      title: "MileSeal — AI Scope Change Workspace",
       description:
-        "MileSeal — прототип от TIVONIX для digital-агентств: сравните запрос клиента с согласованным объёмом, оцените доп. часы и сформируйте профессиональный запрос на изменение.",
+        "Сравните согласованный объём проекта с новым запросом клиента, оцените влияние на сроки и стоимость и сформируйте готовый запрос на изменение. Это демонстрация: оценки ориентировочные и требуют проверки человеком.",
     },
     hero: {
       badge: "Прототип от TIVONIX",
@@ -439,9 +541,9 @@ const COPY: Record<Lang, MilesealCopy> = {
   },
   zh: {
     seo: {
-      title: "MileSeal — 在范围蔓延变成免费加班前拦住它 | TIVONIX",
+      title: "MileSeal — AI Scope Change Workspace",
       description:
-        "MileSeal 是 TIVONIX 面向数字代理商的验证原型：对照约定范围检查客户新需求，估算额外工时，并生成专业变更请求。",
+        "对照已约定的项目范围与新的客户请求，评估交付影响并生成可发给客户的变更请求。此为演示：估算仅供参考，需人工确认。",
     },
     hero: {
       badge: "TIVONIX 验证原型",

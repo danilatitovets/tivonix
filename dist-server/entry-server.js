@@ -1,12 +1,14 @@
 import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import { renderToString } from "react-dom/server";
-import { useLocation, useNavigate, Link, useParams, Navigate, Routes, Route, MemoryRouter } from "react-router-dom";
+import { useLocation, useNavigate, Link, useParams, Navigate, useSearchParams, Routes, Route, MemoryRouter } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import React, { createContext, useState, useEffect, useMemo, useContext, useId, useRef, useCallback, useSyncExternalStore, useLayoutEffect, lazy, Suspense, useReducer } from "react";
 import { createPortal } from "react-dom";
-import { Check, ArrowUpRight, ChevronDown, Mail, Bot, Zap, LayoutDashboard, Users, TrendingUp, ShieldCheck, ChevronLeft, ChevronRight, FolderOpen, Plus, Minus, Pencil, RotateCcw, ClipboardCopy, MessagesSquare, Play, Clock3, ClipboardPaste, MessageSquarePlus, FileCheck2 } from "lucide-react";
+import { Check, ArrowUpRight, ChevronDown, Mail, Bot, Zap, LayoutDashboard, Users, TrendingUp, ShieldCheck, ChevronLeft, ChevronRight, FolderOpen, Plus, Minus, X, MessageSquareText, FileText, User, Building2, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import { SiTelegram, SiGmail, SiHubspot, SiGooglesheets, SiWhatsapp, SiNotion, SiGooglecalendar, SiClickup, SiStripe, SiGoogledocs, SiGoogleanalytics, SiZapier } from "react-icons/si";
 import { FiBell } from "react-icons/fi";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 function isLang(v) {
   return v === "ru" || v === "en" || v === "zh";
 }
@@ -1848,7 +1850,7 @@ function pricingCopy(lang) {
   if (lang === "zh") return COPY_ZH$3;
   return lang === "ru" ? COPY_RU$3 : COPY_EN$3;
 }
-function cx$i(...a) {
+function cx$k(...a) {
   return a.filter(Boolean).join(" ");
 }
 const BRAND_CTA = "linear-gradient(90deg, #FFD7B0 0%, #FF9A3D 45%, #FF6A1A 100%)";
@@ -2038,7 +2040,7 @@ function LeadFormModal({
   if (!mounted && !open) return null;
   if (typeof document === "undefined") return null;
   const budgetOptions = copy.budgets.filter((b) => b.id !== "");
-  const inputBase = cx$i(
+  const inputBase = cx$k(
     "w-full h-12 rounded-xl px-4",
     "border-0 bg-white/[0.08] text-white placeholder:text-white/40",
     "outline-none focus:bg-white/[0.12]",
@@ -2049,7 +2051,7 @@ function LeadFormModal({
   const node = /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$i(
+      className: cx$k(
         "fixed inset-0 z-[220]",
         "flex items-end justify-center sm:items-center",
         "px-0 sm:px-5 py-0 sm:py-5"
@@ -2336,7 +2338,7 @@ function LeadFormModal({
                                 autoComplete: "email",
                                 inputMode: "email",
                                 placeholder: copy.contactPh,
-                                className: cx$i(
+                                className: cx$k(
                                   inputBase,
                                   errorField === "contact" && "bg-[#FF9A3D]/12 focus:bg-[#FF9A3D]/16"
                                 ),
@@ -2364,7 +2366,7 @@ function LeadFormModal({
                               required: true,
                               rows: 4,
                               placeholder: activePlanId && planName ? lang === "ru" ? `Что важно по плану ${planName}? Сроки, примеры, пожелания…` : `What matters for the ${planName} plan? Timeline, examples, notes…` : copy.taskPh,
-                              className: cx$i(
+                              className: cx$k(
                                 "min-h-[108px] w-full resize-none rounded-xl px-4 py-3 text-[14px] font-medium",
                                 "border-0 bg-white/[0.08] text-white placeholder:text-white/40",
                                 "outline-none focus:bg-white/[0.12] transition",
@@ -2397,7 +2399,7 @@ function LeadFormModal({
                                 type: "button",
                                 disabled: status === "loading",
                                 onClick: () => update("budget", active ? "" : b.id),
-                                className: cx$i(
+                                className: cx$k(
                                   "h-9 rounded-full px-3.5 text-[12px] font-medium transition",
                                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40",
                                   active ? "bg-white text-black" : "bg-white/[0.08] text-white/75 hover:bg-white/[0.12] hover:text-white"
@@ -2417,7 +2419,7 @@ function LeadFormModal({
                               checked: form.consent,
                               onChange: (e) => update("consent", e.target.checked),
                               disabled: status === "loading",
-                              className: cx$i(
+                              className: cx$k(
                                 "mt-0.5 h-4 w-4 shrink-0 accent-[#FF9A3D]",
                                 errorField === "consent" && "outline outline-2 outline-[#FF9A3D]/60 outline-offset-2"
                               ),
@@ -2491,7 +2493,7 @@ function LeadFormModal({
                             type: "submit",
                             form: "lead-form",
                             disabled: status === "loading",
-                            className: cx$i(
+                            className: cx$k(
                               "flex h-12 w-full items-center justify-center rounded-full text-[15px] font-bold text-black",
                               "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
                               "hover:brightness-[1.04] active:brightness-[0.96]",
@@ -2918,12 +2920,12 @@ function partnerPanelRegisterUrl(type) {
   url.searchParams.set("type", type);
   return url.toString();
 }
-function cx$h(...a) {
+function cx$j(...a) {
   return a.filter(Boolean).join(" ");
 }
 function ctaClass$1(variant, size, className) {
   const isSquare = variant === "plain";
-  return cx$h(
+  return cx$j(
     "inline-flex items-center justify-center font-sans font-medium tracking-normal transition duration-200",
     isSquare ? "rounded-none shadow-none" : "rounded-full",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
@@ -2967,11 +2969,11 @@ function LeadCTAButton({
   );
 }
 const ORANGE_PILL = "bg-gradient-to-r from-[#FFD7B0] via-[#FF9A3D] to-[#FF6A1A] shadow-[0_6px_20px_rgba(255,107,44,0.2)]";
-function cx$g(...a) {
+function cx$i(...a) {
   return a.filter(Boolean).join(" ");
 }
-const LANGS = ["ru", "en", "zh"];
-function langLabel(code) {
+const LANGS$1 = ["ru", "en", "zh"];
+function langLabel$1(code) {
   if (code === "zh") return "中文";
   return code.toUpperCase();
 }
@@ -2992,7 +2994,7 @@ function LangToggle({
     }
   };
   const label = t3(lang, "Выбор языка", "Language", "选择语言");
-  const activeIndex = Math.max(0, LANGS.indexOf(lang));
+  const activeIndex = Math.max(0, LANGS$1.indexOf(lang));
   if (isHero) {
     const item = (code) => {
       const active = lang === code;
@@ -3003,19 +3005,23 @@ function LangToggle({
           role: "radio",
           "aria-checked": active,
           onClick: () => switchLang(code),
-          className: cx$g(
-            "relative flex h-10 items-center justify-center rounded-full border-0 px-3 font-bold tracking-[0.08em] outline-none select-none transition duration-[260ms]",
-            "text-[11px] focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
+          className: cx$i(
+            "relative flex items-center justify-center rounded-full border-0 font-bold outline-none select-none transition duration-[260ms]",
+            compact ? "h-8 min-w-[2.35rem] px-1.5 text-[10px] tracking-[0.04em]" : "h-10 px-3 text-[11px] tracking-[0.08em]",
+            "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
             active ? "bg-[#2c2c2c] text-white" : "bg-transparent text-white hover:bg-white/[0.06]"
           ),
-          children: /* @__PURE__ */ jsx("span", { className: "leading-none translate-y-[0.5px]", children: langLabel(code) })
+          children: /* @__PURE__ */ jsx("span", { className: "leading-none translate-y-[0.5px]", children: langLabel$1(code) })
         }
       );
     };
     return /* @__PURE__ */ jsxs(
       "div",
       {
-        className: "relative inline-flex shrink-0 items-center gap-0.5 rounded-full border-0 bg-[#141414] p-1 select-none",
+        className: cx$i(
+          "relative inline-flex shrink-0 items-center rounded-full border-0 bg-[#141414] select-none",
+          compact ? "gap-0 p-0.5" : "gap-0.5 p-1"
+        ),
         role: "radiogroup",
         "aria-label": label,
         "aria-orientation": "horizontal",
@@ -3032,7 +3038,7 @@ function LangToggle({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$g(
+      className: cx$i(
         "relative shrink-0 select-none rounded-full border border-white/[0.08] bg-[#121212] p-1",
         h
       ),
@@ -3044,7 +3050,7 @@ function LangToggle({
           "span",
           {
             "aria-hidden": true,
-            className: cx$g(
+            className: cx$i(
               "pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-8px)/3)] rounded-full",
               ORANGE_PILL,
               !reducedMotion && "transition-transform duration-200 ease-[cubic-bezier(0.33,1,0.68,1)]"
@@ -3054,20 +3060,20 @@ function LangToggle({
             }
           }
         ),
-        /* @__PURE__ */ jsx("div", { className: "relative z-10 grid h-full grid-cols-3", children: LANGS.map((code) => /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx("div", { className: "relative z-10 grid h-full grid-cols-3", children: LANGS$1.map((code) => /* @__PURE__ */ jsx(
           "button",
           {
             type: "button",
             role: "radio",
             "aria-checked": lang === code,
             onClick: () => switchLang(code),
-            className: cx$g(
+            className: cx$i(
               "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
               "focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
               text,
               lang === code ? "text-[#1A202C]" : "text-white/45 hover:text-white/72"
             ),
-            children: langLabel(code)
+            children: langLabel$1(code)
           },
           code
         )) })
@@ -3075,7 +3081,7 @@ function LangToggle({
     }
   );
 }
-function cx$f(...a) {
+function cx$h(...a) {
   return a.filter(Boolean).join(" ");
 }
 const NAV_MAIN = [
@@ -3190,7 +3196,7 @@ function PillNav({
   return /* @__PURE__ */ jsx(
     "nav",
     {
-      className: cx$f(
+      className: cx$h(
         "relative inline-flex items-center gap-0.5 rounded-full border-0 bg-[#141414] p-1"
       ),
       "aria-label": "Header navigation",
@@ -3204,7 +3210,7 @@ function PillNav({
             to: it.to,
             onClick: onItemClick(it.to, it.hash),
             "aria-current": isActive ? "page" : void 0,
-            className: cx$f(
+            className: cx$h(
               "relative flex items-center justify-center gap-2 rounded-full border-0 font-bold uppercase tracking-[0.14em] outline-none select-none transition",
               "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
               pad,
@@ -3402,7 +3408,7 @@ function Header() {
     "div",
     {
       id: "mobile-header-menu",
-      className: cx$f(
+      className: cx$h(
         "xl:hidden fixed inset-0 z-[200]",
         open ? "pointer-events-auto" : "pointer-events-none"
       ),
@@ -3410,7 +3416,7 @@ function Header() {
       children: /* @__PURE__ */ jsxs(
         "div",
         {
-          className: cx$f(
+          className: cx$h(
             "mobile-menu-panel absolute inset-0 flex min-h-[100dvh] flex-col overflow-hidden bg-[#161313]",
             "transition-[opacity,transform,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
             open ? "visible translate-y-0 opacity-100" : "invisible -translate-y-4 opacity-0"
@@ -3447,7 +3453,7 @@ function Header() {
                 {
                   type: "button",
                   onClick: closeMenu,
-                  className: cx$f(
+                  className: cx$h(
                     "grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-xl border-0",
                     "bg-white/[0.04] text-white/72 transition hover:bg-white/[0.08] active:scale-95",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
@@ -3515,7 +3521,7 @@ function Header() {
                 Link,
                 {
                   to: item.to,
-                  className: cx$f(
+                  className: cx$h(
                     "flex items-center justify-between border-b border-white/[0.08] px-3 py-4 text-[15px] font-medium text-white/92",
                     "transition-colors hover:bg-white/[0.03] active:bg-white/[0.02]",
                     activeKey === item.key && "text-[#FFAE66]"
@@ -3532,6 +3538,7 @@ function Header() {
                 item.key
               )) }),
               /* @__PURE__ */ jsxs("div", { className: "mt-auto flex flex-col gap-2 px-2 pt-6 pb-[max(1rem,env(safe-area-inset-bottom))]", children: [
+                /* @__PURE__ */ jsx("div", { className: "mb-2 flex justify-center", children: /* @__PURE__ */ jsx(LangToggle, { variant: "hero", reducedMotion }) }),
                 onPartners ? /* @__PURE__ */ jsx(
                   "a",
                   {
@@ -3558,7 +3565,7 @@ function Header() {
                   Link,
                   {
                     to: onPartners ? `${partnersPath(lang)}#partner-formats` : pathForLang("/plans", lang),
-                    className: cx$f(
+                    className: cx$h(
                       "inline-flex h-12 items-center justify-center rounded-full px-6 font-sans text-[14px] font-medium text-white",
                       "bg-[#070607] transition hover:bg-[#1a1a1a]",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
@@ -3579,7 +3586,7 @@ function Header() {
       "div",
       {
         "aria-hidden": true,
-        className: cx$f(
+        className: cx$h(
           needsSpacer ? "h-[78px] sm:h-[82px]" : "h-0"
         )
       }
@@ -3587,7 +3594,7 @@ function Header() {
     /* @__PURE__ */ jsx(
       "header",
       {
-        className: cx$f(
+        className: cx$h(
           "pointer-events-none fixed inset-x-0 top-0 z-[120] transition-[transform,opacity]",
           // Float via transform (not `top`) so chrome/scroll never fights a top tween (~12–20px jumps)
           hideHeader ? "-translate-y-full opacity-0" : heroInView && !isMobile ? "translate-y-3 opacity-100 sm:translate-y-4" : "translate-y-0 opacity-100"
@@ -3596,11 +3603,11 @@ function Header() {
         children: /* @__PURE__ */ jsx("div", { className: "h-[78px] w-full bg-transparent sm:h-[82px]", children: /* @__PURE__ */ jsx(Container, { className: "h-full", children: /* @__PURE__ */ jsxs(
           "div",
           {
-            className: cx$f(
-              "relative flex h-full w-full min-w-0 items-center xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:items-center xl:gap-x-4"
+            className: cx$h(
+              "relative grid h-full w-full min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-2 sm:gap-x-3 xl:gap-x-4"
             ),
             children: [
-              /* @__PURE__ */ jsx("div", { className: cx$f("flex min-w-0 items-center gap-3 shrink-0 xl:justify-self-start", !hideHeader && "pointer-events-auto"), children: /* @__PURE__ */ jsx(
+              /* @__PURE__ */ jsx("div", { className: cx$h("flex min-w-0 items-center gap-3 justify-self-start", !hideHeader && "pointer-events-auto"), children: /* @__PURE__ */ jsx(
                 Link,
                 {
                   to: "/",
@@ -3608,8 +3615,8 @@ function Header() {
                     e.preventDefault();
                     goHome();
                   },
-                  className: cx$f(
-                    "flex items-center outline-none",
+                  className: cx$h(
+                    "flex min-w-0 max-w-full items-center outline-none",
                     "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 rounded-xl"
                   ),
                   "aria-label": ariaHome,
@@ -3618,9 +3625,9 @@ function Header() {
                     {
                       src: logoSrc,
                       alt: "TIVONIX",
-                      className: cx$f(
-                        "w-auto object-contain object-left opacity-95 transition-all hover:opacity-100",
-                        "h-9 sm:h-10"
+                      className: cx$h(
+                        "h-auto w-auto max-w-full object-contain object-left opacity-95 transition-all hover:opacity-100",
+                        "max-h-7 min-[390px]:max-h-8 sm:max-h-9 md:max-h-10"
                       ),
                       draggable: false,
                       loading: "eager",
@@ -3632,17 +3639,17 @@ function Header() {
               heroInView && !isPartners ? /* @__PURE__ */ jsx(
                 "div",
                 {
-                  className: cx$f(
-                    "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 xl:hidden",
+                  className: cx$h(
+                    "justify-self-center xl:hidden",
                     !hideHeader && "pointer-events-auto"
                   ),
-                  children: /* @__PURE__ */ jsx(LangToggle, { variant: "hero", reducedMotion })
+                  children: /* @__PURE__ */ jsx(LangToggle, { compact: true, variant: "hero", reducedMotion })
                 }
-              ) : null,
+              ) : /* @__PURE__ */ jsx("div", { className: "xl:hidden", "aria-hidden": true }),
               /* @__PURE__ */ jsxs(
                 "div",
                 {
-                  className: cx$f(
+                  className: cx$h(
                     "relative hidden min-w-0 items-center gap-2 justify-self-center xl:flex",
                     !hideHeader && "pointer-events-auto"
                   ),
@@ -3661,7 +3668,7 @@ function Header() {
                   ]
                 }
               ),
-              /* @__PURE__ */ jsx("div", { className: cx$f("ml-auto hidden min-w-0 shrink-0 items-center xl:ml-0 xl:flex xl:justify-self-end", !hideHeader && "pointer-events-auto"), children: onPartners ? /* @__PURE__ */ jsx(
+              /* @__PURE__ */ jsx("div", { className: cx$h("hidden min-w-0 shrink-0 items-center justify-self-end xl:flex", !hideHeader && "pointer-events-auto"), children: onPartners ? /* @__PURE__ */ jsx(
                 "a",
                 {
                   href: ctaHref,
@@ -3670,7 +3677,7 @@ function Header() {
                   children: ctaTop
                 }
               ) : /* @__PURE__ */ jsx(LeadCTAButton, { source: "header", variant: "white", className: "h-11 px-7 text-[14px]", children: ctaTop }) }),
-              /* @__PURE__ */ jsxs("div", { className: cx$f("ml-auto xl:hidden flex items-center gap-2", !hideHeader && "pointer-events-auto"), children: [
+              /* @__PURE__ */ jsxs("div", { className: cx$h("flex items-center justify-self-end gap-2 xl:hidden", !hideHeader && "pointer-events-auto"), children: [
                 /* @__PURE__ */ jsx("div", { className: "hidden md:block", children: onPartners ? /* @__PURE__ */ jsx(
                   "a",
                   {
@@ -3685,7 +3692,7 @@ function Header() {
                   {
                     ref: burgerRef,
                     type: "button",
-                    className: cx$f(
+                    className: cx$h(
                       "grid place-items-center outline-none border-0",
                       "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
                       "h-11 w-11 rounded-2xl",
@@ -5270,10 +5277,10 @@ function getStableViewportHeight() {
   if (!frozenH) readNow();
   return frozenH;
 }
-const HERO_VIDEO$1 = "/images/hero-bg.mp4";
-const HERO_POSTER$1 = "/images/hero-bg-poster.webp";
+const HERO_VIDEO$4 = "/images/hero-bg.mp4";
+const HERO_POSTER$4 = "/images/hero-bg-poster.webp";
 const SCROLL_TRACK_VH = 240;
-function cx$e(...a) {
+function cx$g(...a) {
   return a.filter(Boolean).join(" ");
 }
 function clamp01$3(v) {
@@ -5346,7 +5353,7 @@ function HeroHeadline({
   as: Tag = "h1"
 }) {
   const lines = stage.headlineLines && stage.headlineLines.length > 0 ? stage.headlineLines : [stage.headline];
-  return /* @__PURE__ */ jsx(Tag, { className: cx$e(HERO_SCROLL_HEADLINE_CLASS, "hero-scroll-headline mx-auto text-center"), children: lines.map((line, i) => /* @__PURE__ */ jsxs("span", { className: "hero-scroll-headline__line block", children: [
+  return /* @__PURE__ */ jsx(Tag, { className: cx$g(HERO_SCROLL_HEADLINE_CLASS, "hero-scroll-headline mx-auto text-center"), children: lines.map((line, i) => /* @__PURE__ */ jsxs("span", { className: "hero-scroll-headline__line block", children: [
     i > 0 ? " " : null,
     line
   ] }, `${line}-${i}`)) });
@@ -5366,7 +5373,7 @@ function HeroCard({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$e(
+      className: cx$g(
         "relative isolate h-full min-h-0 flex-1 overflow-visible rounded-[40px] bg-black"
       ),
       children: [
@@ -5376,8 +5383,8 @@ function HeroCard({
             {
               ref: videoRef,
               className: "pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center",
-              src: HERO_VIDEO$1,
-              poster: HERO_POSTER$1,
+              src: HERO_VIDEO$4,
+              poster: HERO_POSTER$4,
               autoPlay: true,
               muted: true,
               loop: true,
@@ -5406,7 +5413,7 @@ function HeroCard({
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-10 flex flex-col items-center justify-center pt-[calc(4.875rem+0.5rem)] pb-6 sm:pt-[calc(var(--tivonix-header-spacer)+1.5rem)]", children: /* @__PURE__ */ jsxs(
           "div",
           {
-            className: cx$e(
+            className: cx$g(
               LANDING_SHELL_CLASS,
               "pointer-events-none relative flex w-full flex-1 flex-col items-center justify-center"
             ),
@@ -5478,14 +5485,14 @@ function Hero() {
     return /* @__PURE__ */ jsx(
       Section,
       {
-        className: cx$e(
+        className: cx$g(
           "relative z-[1] isolate overflow-hidden bg-transparent !py-0",
           "min-h-[100svh] pb-0"
         ),
         children: /* @__PURE__ */ jsx(
           "div",
           {
-            className: cx$e(
+            className: cx$g(
               "mx-auto flex h-[calc(100svh-1.25rem)] min-h-0 w-full max-w-none flex-col",
               "px-3 pt-2.5 pb-2.5",
               "sm:max-w-[min(98vw,1840px)] sm:px-3",
@@ -5506,14 +5513,14 @@ function Hero() {
       children: /* @__PURE__ */ jsx(
         Section,
         {
-          className: cx$e(
+          className: cx$g(
             "hero-scroll-sticky sticky top-0 z-[1] isolate overflow-hidden bg-transparent !py-0",
             "min-h-[100svh] pb-0"
           ),
           children: /* @__PURE__ */ jsx(
             "div",
             {
-              className: cx$e(
+              className: cx$g(
                 "mx-auto flex h-[calc(100svh-1.25rem)] min-h-0 w-full max-w-none flex-col",
                 "px-3 pt-2.5 pb-2.5",
                 "sm:max-w-[min(98vw,1840px)] sm:px-3",
@@ -6580,7 +6587,7 @@ function useInView(ref, options) {
   return inView;
 }
 const AUTO_MS = 5500;
-function cx$d(...parts) {
+function cx$f(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function FeaturedCaseSlide({
@@ -6597,7 +6604,7 @@ function FeaturedCaseSlide({
   return /* @__PURE__ */ jsxs(
     "article",
     {
-      className: cx$d(
+      className: cx$f(
         "case-split case-split--no-tabs col-start-1 row-start-1 transition-opacity duration-300 ease-out",
         active ? "relative z-[1] opacity-100" : "pointer-events-none invisible z-0 opacity-0"
       ),
@@ -7983,13 +7990,13 @@ const AI_MODELS = MODEL_DEFS.map((model, index) => {
   };
 });
 const AI_MODEL_COUNT = AI_MODELS.length;
-function cx$c(...a) {
+function cx$e(...a) {
   return a.filter(Boolean).join(" ");
 }
 function TivonixGlowBorder({ className, children }) {
-  return /* @__PURE__ */ jsx("div", { className: cx$c("tivonix-glow-border", className), children: /* @__PURE__ */ jsx("div", { className: "tivonix-glow-border__content relative min-h-0 flex-1", children }) });
+  return /* @__PURE__ */ jsx("div", { className: cx$e("tivonix-glow-border", className), children: /* @__PURE__ */ jsx("div", { className: "tivonix-glow-border__content relative min-h-0 flex-1", children }) });
 }
-function cx$b(...a) {
+function cx$d(...a) {
   return a.filter(Boolean).join(" ");
 }
 function ScrollFingerHint({
@@ -8010,7 +8017,7 @@ function ScrollFingerHint({
     {
       type: onActivate ? "button" : void 0,
       onClick: onActivate,
-      className: cx$b(
+      className: cx$d(
         "scroll-finger-hint",
         visible && "scroll-finger-hint--visible",
         isDark && "scroll-finger-hint--dark",
@@ -9604,7 +9611,7 @@ function FAQSection() {
     }
   );
 }
-function cx$a(...a) {
+function cx$c(...a) {
   return a.filter(Boolean).join(" ");
 }
 function TelegramLink({
@@ -9629,7 +9636,7 @@ function TelegramLink({
 }
 function ctaClass(variant, size, className) {
   const isSquare = variant === "plain";
-  return cx$a(
+  return cx$c(
     "inline-flex items-center justify-center font-sans font-medium tracking-normal transition duration-200",
     isSquare ? "rounded-none shadow-none" : "rounded-full",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
@@ -9756,7 +9763,7 @@ function FinalCTASection() {
     }
   );
 }
-function cx$9(...a) {
+function cx$b(...a) {
   return a.filter(Boolean).join(" ");
 }
 const LOGO_LOCKUP_PNG = "/images/tivonix-logo-lockup.webp";
@@ -9845,7 +9852,7 @@ function ExternalLink({
       target: openInNewTab ? "_blank" : void 0,
       rel: openInNewTab ? "noopener noreferrer" : void 0,
       "aria-label": ariaLabel,
-      className: cx$9("site-footer__link", className),
+      className: cx$b("site-footer__link", className),
       children
     }
   );
@@ -9874,7 +9881,7 @@ function SocialIconLink({
       target: openInNewTab ? "_blank" : void 0,
       rel: openInNewTab ? "noopener noreferrer" : void 0,
       "aria-label": label,
-      className: cx$9("site-footer__social-link", className),
+      className: cx$b("site-footer__social-link", className),
       children
     }
   );
@@ -10062,12 +10069,16 @@ function SEO({
   description,
   canonicalPath,
   ogImage = DEFAULT_OG_IMAGE,
+  ogTitle,
+  ogDescription,
   ogType = "website",
   schemaJsonLd,
   ogLocalePrimary = "ru_RU",
   hreflang = false
 }) {
   const canonicalUrl = canonicalPath.startsWith("http") ? canonicalPath : `${CANONICAL_ORIGIN$1}${canonicalPath.startsWith("/") ? "" : "/"}${canonicalPath}`;
+  const socialTitle = ogTitle ?? title;
+  const socialDescription = ogDescription ?? description;
   const alts = ogLocalePrimary === "ru_RU" ? ["en_US", "zh_CN"] : ogLocalePrimary === "en_US" ? ["ru_RU", "zh_CN"] : ["ru_RU", "en_US"];
   const hrefs = hreflang ? hreflangPair(canonicalPath) : null;
   return /* @__PURE__ */ jsxs(Helmet, { children: [
@@ -10083,8 +10094,8 @@ function SEO({
     /* @__PURE__ */ jsx("meta", { property: "og:site_name", content: "TIVONIX" }),
     /* @__PURE__ */ jsx("meta", { property: "og:locale", content: ogLocalePrimary }),
     alts.map((loc) => /* @__PURE__ */ jsx("meta", { property: "og:locale:alternate", content: loc }, loc)),
-    /* @__PURE__ */ jsx("meta", { property: "og:title", content: title }),
-    /* @__PURE__ */ jsx("meta", { property: "og:description", content: description }),
+    /* @__PURE__ */ jsx("meta", { property: "og:title", content: socialTitle }),
+    /* @__PURE__ */ jsx("meta", { property: "og:description", content: socialDescription }),
     /* @__PURE__ */ jsx("meta", { property: "og:url", content: canonicalUrl }),
     /* @__PURE__ */ jsx("meta", { property: "og:image", content: ogImage }),
     /* @__PURE__ */ jsx("meta", { property: "og:image:width", content: OG_IMAGE_WIDTH }),
@@ -10098,8 +10109,8 @@ function SEO({
     ),
     /* @__PURE__ */ jsx("meta", { property: "og:image:alt", content: OG_IMAGE_ALT }),
     /* @__PURE__ */ jsx("meta", { name: "twitter:card", content: "summary_large_image" }),
-    /* @__PURE__ */ jsx("meta", { name: "twitter:title", content: title }),
-    /* @__PURE__ */ jsx("meta", { name: "twitter:description", content: description }),
+    /* @__PURE__ */ jsx("meta", { name: "twitter:title", content: socialTitle }),
+    /* @__PURE__ */ jsx("meta", { name: "twitter:description", content: socialDescription }),
     /* @__PURE__ */ jsx("meta", { name: "twitter:image", content: ogImage }),
     /* @__PURE__ */ jsx("meta", { name: "twitter:image:alt", content: OG_IMAGE_ALT }),
     schemaJsonLd != null ? /* @__PURE__ */ jsx("script", { type: "application/ld+json", children: JSON.stringify(schemaJsonLd) }) : null
@@ -10351,7 +10362,7 @@ function LandingPage() {
   ] });
 }
 const HERO_IMG = "/images/hero.webp";
-function cx$8(...a) {
+function cx$a(...a) {
   return a.filter(Boolean).join(" ");
 }
 const s$1 = (v) => v;
@@ -10383,7 +10394,7 @@ function ProjectPreviewFrame({
   return /* @__PURE__ */ jsx(
     "div",
     {
-      className: cx$8(
+      className: cx$a(
         "relative overflow-hidden",
         fullWidth ? "w-full rounded-xl" : "mx-auto w-full rounded-2xl",
         "border-0 bg-[#141416]"
@@ -10592,7 +10603,7 @@ function GalleryLightbox({
     /* @__PURE__ */ jsxs(
       "div",
       {
-        className: cx$8(
+        className: cx$a(
           "fixed inset-0 z-[210] flex items-center justify-center p-2 pt-[max(0.5rem,env(safe-area-inset-top))] sm:p-6",
           "transition-opacity duration-200",
           visible ? "opacity-100" : "opacity-0"
@@ -10613,7 +10624,7 @@ function GalleryLightbox({
           /* @__PURE__ */ jsxs(
             "div",
             {
-              className: cx$8(
+              className: cx$a(
                 "relative z-[1] flex h-[min(94dvh,960px)] w-full max-w-[min(100vw,1200px)] flex-col",
                 "transition-transform duration-200",
                 visible ? "scale-100" : "scale-[0.97]"
@@ -10691,7 +10702,7 @@ function GalleryLightbox({
                     "div",
                     {
                       ref: stageRef,
-                      className: cx$8(
+                      className: cx$a(
                         "h-full rounded-2xl bg-black overscroll-contain",
                         zoomed ? "overflow-hidden touch-none cursor-grab active:cursor-grabbing" : "overflow-auto cursor-zoom-in"
                       ),
@@ -10707,7 +10718,7 @@ function GalleryLightbox({
                       children: /* @__PURE__ */ jsx(
                         "div",
                         {
-                          className: cx$8(
+                          className: cx$a(
                             "flex w-full justify-center",
                             zoomed || !tall ? "min-h-full items-center" : "items-start"
                           ),
@@ -10716,7 +10727,7 @@ function GalleryLightbox({
                             {
                               src,
                               alt: "",
-                              className: cx$8(
+                              className: cx$a(
                                 "block select-none transition-transform duration-100 will-change-transform",
                                 // Long pages: full width + vertical scroll. Wide UI: fit in viewport.
                                 tall && !zoomed ? "h-auto w-full max-w-full" : "max-h-full w-auto max-w-full object-contain"
@@ -10762,7 +10773,7 @@ function ProjectGalleryStrip({
       /* @__PURE__ */ jsxs(
         "div",
         {
-          className: cx$8(
+          className: cx$a(
             "flex gap-2.5 overflow-x-auto px-6 pb-1 sm:gap-3 sm:px-0",
             "snap-x snap-mandatory scroll-smooth",
             "no-scrollbar"
@@ -10852,7 +10863,7 @@ function ExternalIcon$1({ className }) {
     }
   );
 }
-const filterPillClass = (active) => cx$8(
+const filterPillClass = (active) => cx$a(
   "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-[13px] font-medium transition",
   active ? "bg-[#3a3a3d] text-white" : "bg-[#1c1c1f] text-white/78 hover:bg-[#262626] hover:text-white/92"
 );
@@ -10895,7 +10906,7 @@ function ProjectGridCard({ p, isRu, lang }) {
           href: p.domain,
           target: "_blank",
           rel: "noopener noreferrer",
-          className: cx$8(
+          className: cx$a(
             "shrink-0 inline-flex items-center gap-1 rounded-full",
             "bg-[#1c1c1f] px-2.5 py-1 text-[11px] font-medium text-white/58",
             "transition hover:bg-[#262626] hover:text-white/85"
@@ -10946,7 +10957,7 @@ function ProjectsPage() {
       /* @__PURE__ */ jsx("div", { className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs(
         "div",
         {
-          className: cx$8(
+          className: cx$a(
             "flex gap-2 overflow-x-auto pb-1 no-scrollbar",
             "justify-start sm:flex-wrap sm:justify-center"
           ),
@@ -11521,12 +11532,12 @@ function CaseBrandIntro({
   const renderLogo = (size) => logo ? /* @__PURE__ */ jsx(
     "div",
     {
-      className: cx$8(
+      className: cx$a(
         "overflow-hidden bg-black",
-        size === "desktop" ? cx$8(
+        size === "desktop" ? cx$a(
           "shrink-0 rounded-[16px]",
           logoFit === "contain" ? "h-[5.25rem] w-16" : "h-16 w-16"
-        ) : cx$8(
+        ) : cx$a(
           "mb-4 rounded-[12px] lg:hidden",
           logoFit === "contain" ? "h-12 w-10" : "h-11 w-11"
         )
@@ -11536,7 +11547,7 @@ function CaseBrandIntro({
         {
           src: logo,
           alt: "",
-          className: cx$8(
+          className: cx$a(
             "h-full w-full object-center",
             logoFit === "contain" ? "object-contain" : "object-cover"
           ),
@@ -11555,7 +11566,7 @@ function CaseBrandIntro({
       renderLogo("desktop")
     ] }),
     renderLogo("mobile"),
-    /* @__PURE__ */ jsx("div", { className: cx$8("max-w-[42rem] space-y-3.5 sm:space-y-4 lg:mt-8", BODY), children: storyParas }),
+    /* @__PURE__ */ jsx("div", { className: cx$a("max-w-[42rem] space-y-3.5 sm:space-y-4 lg:mt-8", BODY), children: storyParas }),
     domain && !wip ? /* @__PURE__ */ jsxs(
       "a",
       {
@@ -11616,13 +11627,13 @@ function PaletteSwatch({
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1400);
   };
-  return /* @__PURE__ */ jsxs("div", { className: cx$8("min-w-0", wide && "max-w-xl"), children: [
+  return /* @__PURE__ */ jsxs("div", { className: cx$a("min-w-0", wide && "max-w-xl"), children: [
     /* @__PURE__ */ jsxs(
       "button",
       {
         type: "button",
         onClick: onCopy,
-        className: cx$8(
+        className: cx$a(
           "group relative w-full overflow-hidden rounded-2xl ring-1 ring-white/[0.06]",
           "outline-none transition focus-visible:ring-2 focus-visible:ring-[#FF6B2C]/55",
           wide ? "h-16 sm:h-[72px]" : "h-14 sm:h-16"
@@ -11634,7 +11645,7 @@ function PaletteSwatch({
           /* @__PURE__ */ jsx(
             "span",
             {
-              className: cx$8(
+              className: cx$a(
                 "pointer-events-none absolute inset-0 rounded-2xl",
                 isLight ? "ring-1 ring-inset ring-black/10" : "ring-1 ring-inset ring-white/[0.04]"
               ),
@@ -11644,7 +11655,7 @@ function PaletteSwatch({
           /* @__PURE__ */ jsxs(
             "span",
             {
-              className: cx$8(
+              className: cx$a(
                 "absolute right-3 top-1/2 z-[1] -translate-y-1/2",
                 "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1",
                 "text-[11px] font-[600] tracking-normal backdrop-blur-sm",
@@ -11820,7 +11831,7 @@ function CaseDetailBody({
             className: "mb-12 scroll-mt-28 border-t border-white/[0.06] pt-8 sm:mb-[72px] sm:pt-12",
             children: [
               /* @__PURE__ */ jsx("h2", { className: H2, children: block.title }),
-              block.paragraphs?.length ? /* @__PURE__ */ jsx("div", { className: cx$8("mt-5 max-w-[42rem] space-y-4", isOutcome && "text-[#ededf3]"), children: block.paragraphs.map((p, idx) => /* @__PURE__ */ jsx("p", { className: BODY, children: /* @__PURE__ */ jsx(RichText, { text: p }) }, idx)) }) : null,
+              block.paragraphs?.length ? /* @__PURE__ */ jsx("div", { className: cx$a("mt-5 max-w-[42rem] space-y-4", isOutcome && "text-[#ededf3]"), children: block.paragraphs.map((p, idx) => /* @__PURE__ */ jsx("p", { className: BODY, children: /* @__PURE__ */ jsx(RichText, { text: p }) }, idx)) }) : null,
               block.bullets?.length ? /* @__PURE__ */ jsx(FeatureGrid, { items: block.bullets }) : null
             ]
           },
@@ -12012,7 +12023,7 @@ function ProjectDetailPage() {
               /* @__PURE__ */ jsxs("div", { className: "order-2 min-w-0 lg:pt-1", children: [
                 /* @__PURE__ */ jsxs("header", { className: "space-y-3 sm:space-y-4", children: [
                   /* @__PURE__ */ jsx("h1", { className: "font-hero text-[clamp(1.85rem,4.2vw,2.75rem)] font-normal uppercase tracking-[0.02em] leading-[1.02] text-[#ededf3]", children: project.title }),
-                  /* @__PURE__ */ jsx("p", { className: cx$8("max-w-[36ch]", BODY), children: mood ?? subtitle }),
+                  /* @__PURE__ */ jsx("p", { className: cx$a("max-w-[36ch]", BODY), children: mood ?? subtitle }),
                   mood ? /* @__PURE__ */ jsx("p", { className: "max-w-[40ch] text-[13px] leading-relaxed text-[#8a8a8e] sm:text-[14px]", children: subtitle }) : null
                 ] }),
                 /* @__PURE__ */ jsxs("dl", { className: "mt-6 sm:mt-8", children: [
@@ -12033,7 +12044,7 @@ function ProjectDetailPage() {
                     /* @__PURE__ */ jsx(
                       "span",
                       {
-                        className: cx$8(
+                        className: cx$a(
                           "h-1.5 w-1.5 shrink-0 rounded-full",
                           wip ? "bg-amber-400/90" : "bg-emerald-400/90"
                         )
@@ -12169,7 +12180,7 @@ function ProjectDetailPage() {
 }
 const ORANGE = "#FF9A3D";
 const ORANGE2 = "#FF6A1A";
-function cx$7(...a) {
+function cx$9(...a) {
   return a.filter(Boolean).join(" ");
 }
 function clamp(n, a, b) {
@@ -12251,7 +12262,7 @@ function LangChip({ item }) {
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$7(
+      className: cx$9(
         "select-none",
         "inline-flex max-w-[11rem] items-center gap-2 sm:gap-2.5",
         "rounded-full px-3 py-1.5 sm:px-3.5 sm:py-2",
@@ -12289,12 +12300,12 @@ function OrbitRing(props) {
       children: [
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-full border border-white/8 opacity-60" }),
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-full border border-[#FF9A3D]/10 opacity-80 [mask-image:radial-gradient(transparent_52%,black_64%)] [-webkit-mask-image:radial-gradient(transparent_52%,black_64%)]" }),
-        /* @__PURE__ */ jsx("div", { className: cx$7("absolute inset-0 will-change-transform", reverse ? "orbit-rev" : "orbit"), style: animStyle, children: items.map((it, i) => {
+        /* @__PURE__ */ jsx("div", { className: cx$9("absolute inset-0 will-change-transform", reverse ? "orbit-rev" : "orbit"), style: animStyle, children: items.map((it, i) => {
           const ang = offsetDeg + i * step + (i % 2 ? 8 : -5);
           const posStyle = s({
             transform: `translate(-50%,-50%) rotate(${ang}deg) translateX(${radius}px) rotate(${-ang}deg)`
           });
-          return /* @__PURE__ */ jsx("div", { className: "absolute left-1/2 top-1/2", style: posStyle, children: /* @__PURE__ */ jsx("div", { className: cx$7(reverse ? "counter-rev" : "counter"), style: animStyle, children: /* @__PURE__ */ jsx(LangChip, { item: it }) }) }, `${it.label}-${i}`);
+          return /* @__PURE__ */ jsx("div", { className: "absolute left-1/2 top-1/2", style: posStyle, children: /* @__PURE__ */ jsx("div", { className: cx$9(reverse ? "counter-rev" : "counter"), style: animStyle, children: /* @__PURE__ */ jsx(LangChip, { item: it }) }) }, `${it.label}-${i}`);
         }) })
       ]
     }
@@ -12341,7 +12352,7 @@ function SunContacts({ size }) {
   const title = isRu ? "Контакты" : "Contacts";
   const leadCopy = leadFormCopy(lang);
   const botCta = isRu ? "Telegram-бот" : "Telegram bot";
-  const contactRowClass = cx$7(
+  const contactRowClass = cx$9(
     "group inline-flex w-full items-center gap-3.5 rounded-xl px-4 py-2.5",
     "bg-white/[0.055] hover:bg-white/[0.085] transition duration-200",
     "shadow-[0_10px_40px_rgba(0,0,0,0.28)]",
@@ -12367,7 +12378,7 @@ function SunContacts({ size }) {
               rel: "noopener noreferrer",
               className: contactRowClass,
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx$7(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconTG, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$9(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconTG, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Telegram" })
               ]
             }
@@ -12378,9 +12389,9 @@ function SunContacts({ size }) {
               href: "https://mail.google.com/mail/?view=cm&fs=1&to=tivoonix@gmail.com&su=%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82%20(SaaS%2FMVP)",
               target: "_blank",
               rel: "noopener noreferrer",
-              className: cx$7(contactRowClass, "hidden sm:inline-flex"),
+              className: cx$9(contactRowClass, "hidden sm:inline-flex"),
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx$7(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconMail, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$9(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconMail, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Email" })
               ]
             }
@@ -12393,7 +12404,7 @@ function SunContacts({ size }) {
               rel: "noopener noreferrer",
               className: contactRowClass,
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx$7(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconInstagram, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$9(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconInstagram, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Instagram" })
               ]
             }
@@ -12415,7 +12426,7 @@ function SunContacts({ size }) {
               href: TG_BOT_URL,
               target: "_blank",
               rel: "noopener noreferrer",
-              className: cx$7(
+              className: cx$9(
                 "inline-flex h-10 w-full items-center justify-center rounded-xl px-5",
                 "text-[13px] font-[700] text-white/80 whitespace-nowrap",
                 "border border-white/15 bg-white/[0.05] hover:bg-white/[0.09] transition duration-200",
@@ -14797,7 +14808,7 @@ function AutomationBusinessPage() {
     /* @__PURE__ */ jsx(Footer, {})
   ] }) });
 }
-function cx$6(...parts) {
+function cx$8(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function PricingFAQSection() {
@@ -14811,14 +14822,14 @@ function PricingFAQSection() {
       return /* @__PURE__ */ jsxs(
         "div",
         {
-          className: cx$6("pricing-faq__item", open && "pricing-faq__item--open"),
+          className: cx$8("pricing-faq__item", open && "pricing-faq__item--open"),
           children: [
             /* @__PURE__ */ jsxs(
               "button",
               {
                 type: "button",
                 onClick: () => setOpenId((prev) => prev === item.id ? null : item.id),
-                className: cx$6(
+                className: cx$8(
                   "flex w-full items-center justify-between gap-4 px-5 text-left sm:px-8",
                   open ? "pb-3 pt-5" : "py-5"
                 ),
@@ -14827,7 +14838,7 @@ function PricingFAQSection() {
                   /* @__PURE__ */ jsx(
                     "span",
                     {
-                      className: cx$6(
+                      className: cx$8(
                         "font-sans text-[14px] font-medium sm:text-[15px]",
                         open ? "text-white" : "text-white/88"
                       ),
@@ -14838,7 +14849,7 @@ function PricingFAQSection() {
                     ChevronDown,
                     {
                       size: 16,
-                      className: cx$6(
+                      className: cx$8(
                         "shrink-0 transition",
                         open ? "rotate-180 text-[var(--color-ember)]" : "text-white/45"
                       ),
@@ -14863,7 +14874,7 @@ const SCOPE_LEVEL = {
   custom: 8
 };
 const SEGMENTS = 8;
-function cx$5(...parts) {
+function cx$7(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function PricingPlanScopeGrid({ onPlanAction }) {
@@ -14881,7 +14892,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
         {
           type: "button",
           onClick: () => onPlanAction(planId),
-          className: cx$5(
+          className: cx$7(
             "pricing-plan-scope__col",
             isGrowth && "pricing-plan-scope__col--growth"
           ),
@@ -14890,7 +14901,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
               /* @__PURE__ */ jsx(
                 "span",
                 {
-                  className: cx$5(
+                  className: cx$7(
                     "pricing-plan-scope__name font-hero font-normal uppercase tracking-[0.02em]",
                     isGrowth ? "text-[var(--color-ember)]" : "text-white"
                   ),
@@ -14900,7 +14911,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
               /* @__PURE__ */ jsx(
                 "span",
                 {
-                  className: cx$5(
+                  className: cx$7(
                     "pricing-plan-scope__price-old font-sans text-[10px] font-medium line-through",
                     planCopy.priceOriginal ? "text-white/35" : "text-transparent"
                   ),
@@ -14915,7 +14926,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
               return /* @__PURE__ */ jsx(
                 "span",
                 {
-                  className: cx$5("pricing-plan-scope__bar", on && "pricing-plan-scope__bar--on")
+                  className: cx$7("pricing-plan-scope__bar", on && "pricing-plan-scope__bar--on")
                 },
                 index
               );
@@ -14936,7 +14947,7 @@ const PLAN_IMAGES = {
   product: `${PLANS_IMG}/3.webp`,
   custom: `${PLANS_IMG}/4.webp`
 };
-function cx$4(...parts) {
+function cx$6(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function PlanCtaButton({
@@ -14954,7 +14965,7 @@ function PlanCtaButton({
       className: ctaClass$1(
         featured ? "primary" : "white",
         compact ? "md" : "md",
-        cx$4("w-full", compact && "h-9 text-[12px] sm:h-10 sm:text-[13px]", className)
+        cx$6("w-full", compact && "h-9 text-[12px] sm:h-10 sm:text-[13px]", className)
       ),
       children
     }
@@ -14988,7 +14999,7 @@ function ComparePlanHead({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$4(
+      className: cx$6(
         layout === "column" ? "pricing-compare__plan-head" : "pricing-compare__mobile-plan",
         featured && "pricing-compare__plan-head--featured"
       ),
@@ -14996,7 +15007,7 @@ function ComparePlanHead({
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: cx$4(
+            className: cx$6(
               "pricing-compare__plan-name font-hero font-normal uppercase tracking-[0.02em]",
               layout === "column" ? "text-[15px] sm:text-[16px]" : "text-[14px]",
               featured ? "text-[var(--color-ember)]" : "text-white"
@@ -15007,7 +15018,7 @@ function ComparePlanHead({
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: cx$4(
+            className: cx$6(
               "pricing-compare__plan-original font-sans text-[11px] font-medium",
               priceOriginal ? "text-white/35 line-through" : "text-transparent"
             ),
@@ -15018,7 +15029,7 @@ function ComparePlanHead({
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: cx$4(
+            className: cx$6(
               "pricing-compare__plan-price font-hero font-normal leading-none tracking-[0.02em] normal-case",
               layout === "column" ? "text-[14px] sm:text-[15px]" : "text-[13px]",
               isCustom ? "text-white" : "text-[var(--color-ember)]"
@@ -15039,7 +15050,7 @@ function PlanPrice({ price, priceOriginal }) {
   return /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__price-block", children: /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$4(
+      className: cx$6(
         "pricing-plan-card__price-value",
         from && amount ? "pricing-plan-card__price-value--stack" : "pricing-plan-card__price-value--solo"
       ),
@@ -15047,7 +15058,7 @@ function PlanPrice({ price, priceOriginal }) {
         /* @__PURE__ */ jsx(
           "p",
           {
-            className: cx$4(
+            className: cx$6(
               "pricing-plan-card__price-original",
               hasOriginal ? "is-visible" : "is-empty"
             ),
@@ -15088,7 +15099,7 @@ function PlanCard({
   return /* @__PURE__ */ jsxs(
     "article",
     {
-      className: cx$4(
+      className: cx$6(
         "pricing-plan-card",
         highlight && "pricing-plan-card--highlight",
         planId === "growth" && "pricing-plan-card--growth",
@@ -15112,7 +15123,7 @@ function PlanCard({
             /* @__PURE__ */ jsx(
               "h3",
               {
-                className: cx$4(
+                className: cx$6(
                   "pricing-plan-card__name"
                 ),
                 children: name
@@ -15156,7 +15167,7 @@ function CompactPlanCard({
   return /* @__PURE__ */ jsxs(
     "article",
     {
-      className: cx$4(
+      className: cx$6(
         "pricing-footer-card flex h-full flex-col",
         highlight && "pricing-footer-card--highlight",
         planId === "growth" && "pricing-footer-card--growth"
@@ -15203,7 +15214,7 @@ function PricingPlansSection({ className }) {
     Section,
     {
       id: "pricing",
-      className: cx$4(
+      className: cx$6(
         "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-10 sm:py-20 lg:py-24",
         className
       ),
@@ -15313,7 +15324,7 @@ function PricingPlansSection({ className }) {
                 PLAN_IDS.map((planId) => /* @__PURE__ */ jsx(
                   "div",
                   {
-                    className: cx$4(
+                    className: cx$6(
                       "pricing-compare__plan-col",
                       planId === "growth" && "pricing-compare__plan-col--growth"
                     ),
@@ -15346,7 +15357,7 @@ function PricingPlansSection({ className }) {
                       ChevronDown,
                       {
                         size: 16,
-                        className: cx$4("text-white/45 transition", open && "rotate-180"),
+                        className: cx$6("text-white/45 transition", open && "rotate-180"),
                         "aria-hidden": true
                       }
                     )
@@ -16787,11 +16798,11 @@ function buildPartnersSchema(copy, lang, pathname) {
     ]
   };
 }
-function cx$3(...parts) {
+function cx$5(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function Shell({ children, className }) {
-  return /* @__PURE__ */ jsx("div", { className: cx$3(LANDING_SHELL_CLASS, className), children });
+  return /* @__PURE__ */ jsx("div", { className: cx$5(LANDING_SHELL_CLASS, className), children });
 }
 function Reveal({ children, className }) {
   const ref = useRef(null);
@@ -16819,7 +16830,7 @@ function Reveal({ children, className }) {
     "div",
     {
       ref,
-      className: cx$3(
+      className: cx$5(
         className,
         visible ? "translate-y-0 opacity-100 motion-safe:transition-[opacity,transform] motion-safe:duration-500 motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]" : "translate-y-3 opacity-0"
       ),
@@ -17223,7 +17234,7 @@ function CapabilitiesBanner() {
                 "aria-selected": on,
                 "aria-label": item.title,
                 onClick: () => scrollToSlide(i),
-                className: cx$3(
+                className: cx$5(
                   "relative flex h-8 min-w-[2.4rem] items-center justify-center rounded-full border-0 px-2.5",
                   "font-partners text-[11px] font-bold tabular-nums tracking-[0.08em] outline-none select-none transition duration-200",
                   "focus-visible:ring-2 focus-visible:ring-[#ff6b2c]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
@@ -20561,7 +20572,7 @@ function PartnersPage() {
                     setLang(value);
                     navigate(partnersPath(value), { replace: true });
                   },
-                  className: cx$3(
+                  className: cx$5(
                     "rounded-full px-3 py-1.5 transition",
                     lang === value ? "bg-white text-[#ff6b2c]" : "text-white hover:bg-white/15"
                   ),
@@ -21171,6 +21182,51 @@ function PartnersPage() {
     /* @__PURE__ */ jsx(PartnersFooter, {})
   ] });
 }
+const HERO_VIDEO$3 = "/images/hero-bg.mp4";
+const HERO_POSTER$3 = "/images/hero-bg-poster.webp";
+function Video404Mark() {
+  const videoRef = useRef(null);
+  useKeepVideoPlaying(videoRef);
+  return /* @__PURE__ */ jsxs("div", { className: "relative mx-auto w-full max-w-[56rem] select-none", "aria-hidden": true, children: [
+    /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-[6%] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(255,122,40,0.24),transparent_68%)] blur-2xl" }),
+    /* @__PURE__ */ jsxs("div", { className: "nf404-stage relative isolate grid place-items-center overflow-hidden rounded-[4px] bg-black", children: [
+      /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: "col-start-1 row-start-1 h-[clamp(7.5rem,28vw,17rem)] w-full bg-[linear-gradient(135deg,#FF6A1A_0%,#FF9A3D_45%,#7C2D12_100%)]",
+          "aria-hidden": true
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "img",
+        {
+          src: HERO_POSTER$3,
+          alt: "",
+          draggable: false,
+          className: "col-start-1 row-start-1 h-[clamp(7.5rem,28vw,17rem)] w-full object-cover object-center"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "video",
+        {
+          ref: videoRef,
+          className: "nf404-video col-start-1 row-start-1 h-[clamp(7.5rem,28vw,17rem)] w-full max-w-none object-cover object-center",
+          src: HERO_VIDEO$3,
+          poster: HERO_POSTER$3,
+          autoPlay: true,
+          muted: true,
+          loop: true,
+          playsInline: true,
+          preload: "auto",
+          controls: false,
+          disablePictureInPicture: true
+        }
+      ),
+      /* @__PURE__ */ jsx("div", { className: "col-start-1 row-start-1 flex h-[clamp(7.5rem,28vw,17rem)] w-full items-center justify-center bg-black mix-blend-multiply", children: /* @__PURE__ */ jsx("span", { className: "nf404-digits font-hero text-[clamp(7.25rem,28vw,16.5rem)] font-normal leading-none tracking-[-0.04em] text-white", children: "404" }) }),
+      /* @__PURE__ */ jsx("div", { className: "nf404-shimmer pointer-events-none absolute inset-0 mix-blend-soft-light" })
+    ] })
+  ] });
+}
 function NotFoundPage() {
   const { lang } = useLang();
   const title = t3(
@@ -21201,24 +21257,45 @@ function NotFoundPage() {
         "div",
         {
           "aria-hidden": true,
-          className: "pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,122,40,0.18),transparent_55%)]"
+          className: "pointer-events-none absolute inset-x-0 top-0 h-[min(72vh,640px)] opacity-[0.35]",
+          style: {
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+            maskImage: "linear-gradient(to bottom, black 35%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to bottom, black 35%, transparent 100%)"
+          }
         }
       ),
-      /* @__PURE__ */ jsxs(Container, { className: "relative pt-[calc(var(--tivonix-header-spacer)+2.5rem)] pb-16 sm:pb-20", children: [
-        /* @__PURE__ */ jsx("p", { className: "text-[13px] font-semibold tracking-[0.14em] text-[#FF9A3D]/90 uppercase", children: "404" }),
-        /* @__PURE__ */ jsx("h1", { className: "mt-4 max-w-[16ch] text-[clamp(2.1rem,5.5vw,3.6rem)] font-[850] leading-[1.05] tracking-[-0.035em] text-white", children: t3(lang, "Страница не найдена", "Page not found", "页面未找到") }),
-        /* @__PURE__ */ jsx("p", { className: "mt-5 max-w-xl text-[16px] leading-7 text-white/70 sm:text-[17px]", children: t3(
+      /* @__PURE__ */ jsx(
+        "div",
+        {
+          "aria-hidden": true,
+          className: "pointer-events-none absolute inset-x-0 top-0 h-[480px] bg-[radial-gradient(ellipse_at_50%_20%,rgba(255,122,40,0.16),transparent_58%)]"
+        }
+      ),
+      /* @__PURE__ */ jsx(Container, { className: "relative pt-[calc(var(--tivonix-header-spacer)+1.25rem)] pb-16 sm:pb-20", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[48rem] text-center", children: [
+        /* @__PURE__ */ jsx("h1", { className: "sr-only", children: t3(lang, "Страница не найдена", "Page not found", "页面未找到") }),
+        /* @__PURE__ */ jsx(Video404Mark, {}),
+        /* @__PURE__ */ jsx(
+          "p",
+          {
+            className: "mt-6 font-hero text-[clamp(1.85rem,4.5vw,3rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white sm:mt-8",
+            "aria-hidden": true,
+            children: t3(lang, "Страница не найдена", "Sorry about that.", "页面未找到")
+          }
+        ),
+        /* @__PURE__ */ jsx("p", { className: "mx-auto mt-4 max-w-xl text-[15px] font-medium leading-[1.55] text-white/65 sm:text-[16px]", children: t3(
           lang,
           "Ссылка устарела или адрес введён с ошибкой. Можно вернуться на главную, посмотреть проекты или оставить заявку.",
-          "The link may be outdated or mistyped. Go home, browse projects, or send a short brief.",
+          "The page you're looking for doesn't exist or has moved.",
           "链接可能已失效或地址输入有误。可返回首页、浏览项目或提交需求。"
         ) }),
-        /* @__PURE__ */ jsxs("div", { className: "mt-9 flex flex-wrap gap-3", children: [
+        /* @__PURE__ */ jsxs("div", { className: "mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center", children: [
           /* @__PURE__ */ jsx(
             Link,
             {
               to: localizedHome(lang),
-              className: "inline-flex h-12 items-center justify-center rounded-full bg-white px-7 text-[14px] font-bold text-black transition hover:bg-white/92 sm:px-8 sm:text-[15px]",
+              className: "inline-flex h-12 items-center justify-center rounded-full bg-white px-7 text-[14px] font-bold text-black transition hover:bg-white/92 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:px-8 sm:text-[15px]",
               children: t3(lang, "На главную", "Home", "返回首页")
             }
           ),
@@ -21226,15 +21303,265 @@ function NotFoundPage() {
             Link,
             {
               to: pathForLang("/projects", lang),
-              className: "inline-flex h-12 items-center justify-center rounded-full bg-white/[0.08] px-7 text-[14px] font-bold text-white/90 ring-1 ring-white/12 transition hover:bg-white/[0.12] sm:px-8 sm:text-[15px]",
+              className: "inline-flex h-12 items-center justify-center rounded-full bg-white/[0.08] px-7 text-[14px] font-bold text-white/90 ring-1 ring-white/12 transition hover:bg-white/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:px-8 sm:text-[15px]",
               children: t3(lang, "Проекты", "Projects", "项目案例")
             }
           ),
           /* @__PURE__ */ jsx(LeadCTAButton, { source: "final_cta", variant: "primary", size: "lg", children: t3(lang, "Оставить заявку", "Send a brief", "提交需求") })
         ] })
-      ] })
+      ] }) })
     ] }),
-    /* @__PURE__ */ jsx(Footer, {})
+    /* @__PURE__ */ jsx(Footer, {}),
+    /* @__PURE__ */ jsx("style", { children: `
+        @keyframes nf404-drift {
+          0% { object-position: 40% 50%; }
+          50% { object-position: 60% 42%; }
+          100% { object-position: 40% 50%; }
+        }
+        @keyframes nf404-shimmer {
+          0% { transform: translateX(-35%); opacity: 0.12; }
+          45% { opacity: 0.4; }
+          100% { transform: translateX(35%); opacity: 0.12; }
+        }
+        @keyframes nf404-glitch {
+          0%, 90%, 100% { transform: translate(0, 0); }
+          92% { transform: translate(-2px, 1px); }
+          94% { transform: translate(2px, -1px); }
+          96% { transform: translate(-1px, 0); }
+        }
+        .nf404-video {
+          animation: nf404-drift 14s ease-in-out infinite;
+        }
+        .nf404-digits {
+          animation: nf404-glitch 7s steps(1, end) infinite;
+        }
+        .nf404-shimmer {
+          background: linear-gradient(
+            105deg,
+            transparent 34%,
+            rgba(255, 255, 255, 0.38) 48%,
+            rgba(255, 154, 61, 0.28) 52%,
+            transparent 66%
+          );
+          animation: nf404-shimmer 5.5s ease-in-out infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .nf404-video,
+          .nf404-digits,
+          .nf404-shimmer {
+            animation: none !important;
+          }
+        }
+      ` })
+  ] });
+}
+function cx$4(...a) {
+  return a.filter(Boolean).join(" ");
+}
+function MsIcon({
+  gid,
+  className,
+  children,
+  ...rest
+}) {
+  return /* @__PURE__ */ jsxs(
+    "svg",
+    {
+      viewBox: "0 0 24 24",
+      fill: "none",
+      className: cx$4("h-6 w-6 shrink-0", className),
+      "aria-hidden": true,
+      ...rest,
+      children: [
+        /* @__PURE__ */ jsxs("defs", { children: [
+          /* @__PURE__ */ jsxs("linearGradient", { id: `${gid}-b`, x1: "4", y1: "3", x2: "22", y2: "22", gradientUnits: "userSpaceOnUse", children: [
+            /* @__PURE__ */ jsx("stop", { stopColor: "#FFAE66" }),
+            /* @__PURE__ */ jsx("stop", { offset: "0.5", stopColor: "#FC5000" }),
+            /* @__PURE__ */ jsx("stop", { offset: "1", stopColor: "#B83200" })
+          ] }),
+          /* @__PURE__ */ jsxs("linearGradient", { id: `${gid}-e`, x1: "6", y1: "2", x2: "20", y2: "12", gradientUnits: "userSpaceOnUse", children: [
+            /* @__PURE__ */ jsx("stop", { stopColor: "#FFF1E3" }),
+            /* @__PURE__ */ jsx("stop", { offset: "1", stopColor: "#FF9A3D" })
+          ] })
+        ] }),
+        children
+      ]
+    }
+  );
+}
+function MsIconReset({ className, ...rest }) {
+  return /* @__PURE__ */ jsxs(MsIcon, { gid: "msReset", className, ...rest, children: [
+    /* @__PURE__ */ jsx(
+      "path",
+      {
+        d: "M5 11.5 A7 7 0 1 1 6.2 16.8",
+        stroke: "url(#msReset-b)",
+        strokeWidth: "2.2",
+        strokeLinecap: "round"
+      }
+    ),
+    /* @__PURE__ */ jsx("path", { d: "M5 8.2 L5 12.4 L8.8 11.2 Z", fill: "url(#msReset-e)" })
+  ] });
+}
+function MsIconManual({ className, ...rest }) {
+  return /* @__PURE__ */ jsxs(MsIcon, { gid: "msManual", className, ...rest, children: [
+    /* @__PURE__ */ jsx("path", { d: "M4 9.5 L12 5 L20 9.5 L12 14 Z", fill: "url(#msManual-e)" }),
+    /* @__PURE__ */ jsx("path", { d: "M4 9.5 L12 14 L12 20.5 L4 16 Z", fill: "url(#msManual-b)" }),
+    /* @__PURE__ */ jsx("path", { d: "M20 9.5 L12 14 L12 20.5 L20 16 Z", fill: "#D63A00", opacity: "0.85" }),
+    /* @__PURE__ */ jsx("path", { d: "M7.5 8 L12 5.5 L16.5 8 L12 10.5 Z", fill: "#FFD7B0", opacity: "0.9" })
+  ] });
+}
+function MsIconCase({ className, ...rest }) {
+  return /* @__PURE__ */ jsxs(MsIcon, { gid: "msCase", className, ...rest, children: [
+    /* @__PURE__ */ jsx("path", { d: "M5 3.5 L14.5 2.5 L20 8.5 L19 20.5 L5 19.5 Z", fill: "url(#msCase-b)" }),
+    /* @__PURE__ */ jsx("path", { d: "M14.5 2.5 L20 8.5 L14.5 8.5 Z", fill: "url(#msCase-e)" }),
+    /* @__PURE__ */ jsx("path", { d: "M8 10.5 H15.5", stroke: "#FFF8F0", strokeWidth: "1.6", strokeLinecap: "round", opacity: "0.95" }),
+    /* @__PURE__ */ jsx("path", { d: "M8 14 H14", stroke: "#FFD7B0", strokeWidth: "1.6", strokeLinecap: "round", opacity: "0.85" }),
+    /* @__PURE__ */ jsx("path", { d: "M8 17.5 H12.5", stroke: "#FFD7B0", strokeWidth: "1.6", strokeLinecap: "round", opacity: "0.65" })
+  ] });
+}
+function MsIconCopy({ className, ...rest }) {
+  return /* @__PURE__ */ jsxs(MsIcon, { gid: "msCopy", className, ...rest, children: [
+    /* @__PURE__ */ jsx("path", { d: "M8.5 4 L17.5 3 L20 15 L10.5 16 Z", fill: "url(#msCopy-b)", opacity: "0.4" }),
+    /* @__PURE__ */ jsx("path", { d: "M4 6 L16 4.5 L18.5 19.5 L6 21 Z", fill: "url(#msCopy-b)" }),
+    /* @__PURE__ */ jsx("path", { d: "M16 4.5 L18.5 7.5 L16 7.5 Z", fill: "url(#msCopy-e)" }),
+    /* @__PURE__ */ jsx("path", { d: "M8 11.5 H14", stroke: "#FFF8F0", strokeWidth: "1.5", strokeLinecap: "round", opacity: "0.9" }),
+    /* @__PURE__ */ jsx("path", { d: "M8 15 H12.5", stroke: "#FFD7B0", strokeWidth: "1.5", strokeLinecap: "round", opacity: "0.75" })
+  ] });
+}
+function MsIconDownload({ className, ...rest }) {
+  return /* @__PURE__ */ jsxs(MsIcon, { gid: "msDl", className, ...rest, children: [
+    /* @__PURE__ */ jsx("path", { d: "M5 3.5 L19 3.5 L18 10 L6 10 Z", fill: "url(#msDl-e)", opacity: "0.85" }),
+    /* @__PURE__ */ jsx("path", { d: "M7 10 L17 10 L16 13.5 L8 13.5 Z", fill: "url(#msDl-b)", opacity: "0.7" }),
+    /* @__PURE__ */ jsx("path", { d: "M10.5 7.5 L13.5 7.5 L13.5 14 L17.5 14 L12 20 L6.5 14 L10.5 14 Z", fill: "url(#msDl-b)" }),
+    /* @__PURE__ */ jsx("path", { d: "M4 20.5 H20", stroke: "url(#msDl-e)", strokeWidth: "2", strokeLinecap: "round" })
+  ] });
+}
+function MsIconCheck({ className, ...rest }) {
+  return /* @__PURE__ */ jsx(MsIcon, { gid: "msCheck", className, ...rest, children: /* @__PURE__ */ jsx(
+    "path",
+    {
+      d: "M5 12 L10 17 L19 7",
+      stroke: "url(#msCheck-b)",
+      strokeWidth: "2.4",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }
+  ) });
+}
+function MsIconClose({ className, ...rest }) {
+  return /* @__PURE__ */ jsxs(MsIcon, { gid: "msClose", className, ...rest, children: [
+    /* @__PURE__ */ jsx("path", { d: "M6 6 L18 18", stroke: "url(#msClose-b)", strokeWidth: "2.2", strokeLinecap: "round" }),
+    /* @__PURE__ */ jsx("path", { d: "M18 6 L6 18", stroke: "url(#msClose-e)", strokeWidth: "2.2", strokeLinecap: "round" })
+  ] });
+}
+function MsIconChevronRight({ className, ...rest }) {
+  return /* @__PURE__ */ jsx(MsIcon, { gid: "msChevR", className, ...rest, children: /* @__PURE__ */ jsx(
+    "path",
+    {
+      d: "M9 5 L16 12 L9 19",
+      stroke: "url(#msChevR-b)",
+      strokeWidth: "2.2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }
+  ) });
+}
+function MsIconChevronLeft({ className, ...rest }) {
+  return /* @__PURE__ */ jsx(MsIcon, { gid: "msChevL", className, ...rest, children: /* @__PURE__ */ jsx(
+    "path",
+    {
+      d: "M15 5 L8 12 L15 19",
+      stroke: "url(#msChevL-b)",
+      strokeWidth: "2.2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }
+  ) });
+}
+function MsIconMenu({ className, ...rest }) {
+  return /* @__PURE__ */ jsxs(MsIcon, { gid: "msMenu", className, ...rest, children: [
+    /* @__PURE__ */ jsx("path", { d: "M5 7 H19", stroke: "url(#msMenu-b)", strokeWidth: "2.2", strokeLinecap: "round" }),
+    /* @__PURE__ */ jsx("path", { d: "M5 12 H19", stroke: "url(#msMenu-e)", strokeWidth: "2.2", strokeLinecap: "round" }),
+    /* @__PURE__ */ jsx("path", { d: "M5 17 H15", stroke: "url(#msMenu-b)", strokeWidth: "2.2", strokeLinecap: "round" })
+  ] });
+}
+function MsIconSidebar({ className, ...rest }) {
+  return /* @__PURE__ */ jsxs(MsIcon, { gid: "msSide", className, ...rest, children: [
+    /* @__PURE__ */ jsx("path", { d: "M4 5 H20 V19 H4 Z", stroke: "url(#msSide-b)", strokeWidth: "1.8" }),
+    /* @__PURE__ */ jsx("path", { d: "M9 5 V19", stroke: "url(#msSide-e)", strokeWidth: "1.8" }),
+    /* @__PURE__ */ jsx(
+      "path",
+      {
+        d: "M14 9 L11 12 L14 15",
+        stroke: "#FFF8F0",
+        strokeWidth: "1.6",
+        strokeLinecap: "round",
+        strokeLinejoin: "round"
+      }
+    )
+  ] });
+}
+function MsIconSidebarOpen({ className, ...rest }) {
+  return /* @__PURE__ */ jsxs(MsIcon, { gid: "msSideO", className, ...rest, children: [
+    /* @__PURE__ */ jsx("path", { d: "M4 5 H20 V19 H4 Z", stroke: "url(#msSideO-b)", strokeWidth: "1.8" }),
+    /* @__PURE__ */ jsx("path", { d: "M9 5 V19", stroke: "url(#msSideO-e)", strokeWidth: "1.8" }),
+    /* @__PURE__ */ jsx(
+      "path",
+      {
+        d: "M12 9 L15 12 L12 15",
+        stroke: "#FFF8F0",
+        strokeWidth: "1.6",
+        strokeLinecap: "round",
+        strokeLinejoin: "round"
+      }
+    )
+  ] });
+}
+function MsIconToneSoft({ className, ...rest }) {
+  return /* @__PURE__ */ jsxs(MsIcon, { gid: "msSoft", className, ...rest, children: [
+    /* @__PURE__ */ jsx("path", { d: "M4 6.5 L15.5 3.5 L20.5 14 L7 19.5 Z", fill: "url(#msSoft-b)" }),
+    /* @__PURE__ */ jsx("path", { d: "M15.5 3.5 L20.5 14 L15.5 13.5 Z", fill: "url(#msSoft-e)" }),
+    /* @__PURE__ */ jsx("path", { d: "M8 11 H15", stroke: "#FFF8F0", strokeWidth: "1.6", strokeLinecap: "round" }),
+    /* @__PURE__ */ jsx("path", { d: "M8 14.5 H13", stroke: "#FFD7B0", strokeWidth: "1.6", strokeLinecap: "round" })
+  ] });
+}
+function MsIconToneNeutral({ className, ...rest }) {
+  return /* @__PURE__ */ jsxs(MsIcon, { gid: "msNeu", className, ...rest, children: [
+    /* @__PURE__ */ jsx(
+      "path",
+      {
+        d: "M12 2 L14.1 9.1 L21.5 9.1 L15.6 13.4 L17.8 20.8 L12 16.3 L6.2 20.8 L8.4 13.4 L2.5 9.1 L9.9 9.1 Z",
+        fill: "url(#msNeu-b)"
+      }
+    ),
+    /* @__PURE__ */ jsx("path", { d: "M12 2 L14.1 9.1 L12 10.8 Z", fill: "url(#msNeu-e)" })
+  ] });
+}
+function MsIconToneFormal({ className, ...rest }) {
+  return /* @__PURE__ */ jsxs(MsIcon, { gid: "msForm", className, ...rest, children: [
+    /* @__PURE__ */ jsx("path", { d: "M6 7.5 L12 3 L18 7.5 L18 11 L12 8.5 L6 11 Z", fill: "url(#msForm-e)" }),
+    /* @__PURE__ */ jsx("path", { d: "M5 11 L12 8.5 L19 11 L19 21 L5 21 Z", fill: "url(#msForm-b)" }),
+    /* @__PURE__ */ jsx("path", { d: "M9 15 H15", stroke: "#FFF8F0", strokeWidth: "1.6", strokeLinecap: "round" })
+  ] });
+}
+function MsIconChevronDown({ className, ...rest }) {
+  return /* @__PURE__ */ jsx(MsIcon, { gid: "msChevD", className, ...rest, children: /* @__PURE__ */ jsx(
+    "path",
+    {
+      d: "M6 9 L12 15 L18 9",
+      stroke: "url(#msChevD-b)",
+      strokeWidth: "2.2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }
+  ) });
+}
+function MsIconAnalyzing({ className, ...rest }) {
+  return /* @__PURE__ */ jsxs(MsIcon, { gid: "msAn", className: cx$4("animate-pulse", className), ...rest, children: [
+    /* @__PURE__ */ jsx("path", { d: "M6 8 L12 4 L18 8 L16 18 L8 18 Z", fill: "url(#msAn-b)" }),
+    /* @__PURE__ */ jsx("path", { d: "M12 4 L18 8 L12 10 Z", fill: "url(#msAn-e)" }),
+    /* @__PURE__ */ jsx("path", { d: "M10 13 H14", stroke: "#FFF8F0", strokeWidth: "1.5", strokeLinecap: "round" })
   ] });
 }
 const EXAMPLES_EN = [
@@ -21245,11 +21572,20 @@ const EXAMPLES_EN = [
     request: "Please also migrate 84 articles and create individual author pages.",
     result: {
       status: "Out of scope",
-      hoursValue: "14–18",
+      hoursValue: "14–18 hours",
       costValue: "$840–$1,080",
+      timelineValue: "3–5 days",
+      confidence: "High",
       reason: "Content migration and author pages were not included in the agreed project scope.",
       recommendation: "Get written approval before work begins.",
-      changeRequest: "This request is outside the originally agreed project scope because content migration and author pages were not included. We estimate an additional 14–18 hours of work. The estimated cost is $840–$1,080. Please confirm the updated scope, timeline, and budget before implementation begins."
+      effortItems: [
+        "Content inventory & mapping — 4–5 hours",
+        "Article migration & redirects — 6–8 hours",
+        "Author pages & QA — 4–5 hours"
+      ],
+      changeRequest: "This request is outside the originally agreed project scope because content migration and author pages were not included. We estimate an additional 14–18 hours of work. The estimated cost is $840–$1,080. Please confirm the updated scope, timeline, and budget before implementation begins.",
+      changeRequestSoft: "Happy to help with the content migration and author pages — they weren’t part of the original scope. We estimate about 14–18 extra hours ($840–$1,080). Could you confirm the updated scope, timeline, and budget before we start?",
+      changeRequestFormal: "Following a review of the agreed project scope, content migration and author pages fall outside the current deliverables. Additional effort is estimated at 14–18 hours, with an indicative cost of $840–$1,080. Written confirmation of the revised scope, timeline, and budget is required prior to implementation."
     }
   },
   {
@@ -21259,11 +21595,21 @@ const EXAMPLES_EN = [
     request: "Please also connect Salesforce CRM, Stripe payments, and Zapier webhooks for lead sync.",
     result: {
       status: "Out of scope",
-      hoursValue: "22–30",
+      hoursValue: "22–30 hours",
       costValue: "$1,320–$1,800",
+      timelineValue: "5–8 days",
+      confidence: "High",
       reason: "CRM, payments, and webhook integrations were never included in the agreed scope.",
       recommendation: "Pause work until the client approves a written change request.",
-      changeRequest: "This request is outside the originally agreed project scope because Salesforce, Stripe, and Zapier integrations were not included. We estimate an additional 22–30 hours of work. The estimated cost is $1,320–$1,800. Please confirm the updated scope, timeline, and budget before implementation begins."
+      effortItems: [
+        "Salesforce CRM sync — 8–10 hours",
+        "Stripe payments — 6–8 hours",
+        "Zapier webhooks — 4–6 hours",
+        "QA, docs & handover — 4–6 hours"
+      ],
+      changeRequest: "This request is outside the originally agreed project scope because Salesforce, Stripe, and Zapier integrations were not included. We estimate an additional 22–30 hours of work. The estimated cost is $1,320–$1,800. Please confirm the updated scope, timeline, and budget before implementation begins.",
+      changeRequestSoft: "We can support the Salesforce, Stripe, and Zapier connections — these integrations sit outside the current scope. Roughly 22–30 extra hours ($1,320–$1,800). Please confirm the updated scope, timeline, and budget before we proceed.",
+      changeRequestFormal: "Upon review of the agreed scope, Salesforce, Stripe, and Zapier integrations are not included in the current deliverables. Estimated additional effort is 22–30 hours at an indicative cost of $1,320–$1,800. Implementation shall commence only after written approval of the revised scope, timeline, and budget."
     }
   },
   {
@@ -21273,11 +21619,20 @@ const EXAMPLES_EN = [
     request: "We need three more full revision rounds after the included ones, plus a complete dark mode version.",
     result: {
       status: "Out of scope",
-      hoursValue: "10–14",
+      hoursValue: "10–14 hours",
       costValue: "$600–$840",
+      timelineValue: "2–4 days",
+      confidence: "High",
       reason: "Extra revision rounds and dark mode were not included in the agreed project scope.",
       recommendation: "Get written approval before work begins.",
-      changeRequest: "This request is outside the originally agreed project scope because additional revision rounds and dark mode were not included. We estimate an additional 10–14 hours of work. The estimated cost is $600–$840. Please confirm the updated scope, timeline, and budget before implementation begins."
+      effortItems: [
+        "Three extra revision rounds — 6–8 hours",
+        "Dark mode design & implementation — 3–4 hours",
+        "QA across breakpoints — 1–2 hours"
+      ],
+      changeRequest: "This request is outside the originally agreed project scope because additional revision rounds and dark mode were not included. We estimate an additional 10–14 hours of work. The estimated cost is $600–$840. Please confirm the updated scope, timeline, and budget before implementation begins.",
+      changeRequestSoft: "Glad to continue with more revision rounds and a dark mode version — both sit outside the included scope. We estimate about 10–14 extra hours ($600–$840). Please confirm the updated scope, timeline, and budget before we start.",
+      changeRequestFormal: "Additional revision rounds and a dark mode version fall outside the agreed deliverables. Estimated additional effort is 10–14 hours, with an indicative cost of $600–$840. Written approval of the revised scope, timeline, and budget is required before work proceeds."
     }
   }
 ];
@@ -21289,11 +21644,20 @@ const EXAMPLES_RU = [
     request: "Пожалуйста, ещё перенесите 84 статьи и сделайте отдельные страницы авторов.",
     result: {
       status: "Вне объёма",
-      hoursValue: "14–18",
+      hoursValue: "14–18 часов",
       costValue: "$840–$1,080",
+      timelineValue: "3–5 дней",
+      confidence: "Высокая",
       reason: "Миграция контента и страницы авторов не входили в согласованный объём проекта.",
       recommendation: "Получите письменное согласование до начала работ.",
-      changeRequest: "Этот запрос выходит за изначально согласованный объём проекта, потому что миграция контента и страницы авторов не были включены. Оценка дополнительной работы — 14–18 часов. Ориентировочная стоимость — $840–$1,080. Пожалуйста, подтвердите обновлённый объём, сроки и бюджет до начала реализации."
+      effortItems: [
+        "Инвентаризация и карта контента — 4–5 часов",
+        "Миграция статей и редиректы — 6–8 часов",
+        "Страницы авторов и проверка — 4–5 часов"
+      ],
+      changeRequest: "Этот запрос выходит за изначально согласованный объём проекта, потому что миграция контента и страницы авторов не были включены. Оценка дополнительной работы — 14–18 часов. Ориентировочная стоимость — $840–$1,080. Пожалуйста, подтвердите обновлённый объём, сроки и бюджет до начала реализации.",
+      changeRequestSoft: "С миграцией контента и страницами авторов с удовольствием поможем — в исходный объём они не входили. Ориентир: ещё 14–18 часов ($840–$1,080). Подтвердите, пожалуйста, обновлённый объём, сроки и бюджет до старта.",
+      changeRequestFormal: "По итогам сверки с согласованным объёмом проекта миграция контента и страницы авторов не входят в текущие результаты. Оценка дополнительной работы — 14–18 часов, ориентировочная стоимость — $840–$1,080. Реализация возможна после письменного подтверждения обновлённого объёма, сроков и бюджета."
     }
   },
   {
@@ -21303,11 +21667,21 @@ const EXAMPLES_RU = [
     request: "Подключите ещё Salesforce CRM, оплату Stripe и вебхуки Zapier для синхронизации лидов.",
     result: {
       status: "Вне объёма",
-      hoursValue: "22–30",
+      hoursValue: "22–30 часов",
       costValue: "$1,320–$1,800",
+      timelineValue: "5–8 дней",
+      confidence: "Высокая",
       reason: "CRM, платежи и вебхуки изначально не входили в согласованный объём.",
       recommendation: "Не начинайте работу, пока клиент не утвердит запрос на изменение письменно.",
-      changeRequest: "Этот запрос выходит за изначально согласованный объём проекта, потому что интеграции Salesforce, Stripe и Zapier не были включены. Оценка дополнительной работы — 22–30 часов. Ориентировочная стоимость — $1,320–$1,800. Пожалуйста, подтвердите обновлённый объём, сроки и бюджет до начала реализации."
+      effortItems: [
+        "Синхронизация Salesforce CRM — 8–10 часов",
+        "Оплата Stripe — 6–8 часов",
+        "Вебхуки Zapier — 4–6 часов",
+        "Проверка, документация и передача — 4–6 часов"
+      ],
+      changeRequest: "Этот запрос выходит за изначально согласованный объём проекта, потому что интеграции Salesforce, Stripe и Zapier не были включены. Оценка дополнительной работы — 22–30 часов. Ориентировочная стоимость — $1,320–$1,800. Пожалуйста, подтвердите обновлённый объём, сроки и бюджет до начала реализации.",
+      changeRequestSoft: "Подключения Salesforce, Stripe и Zapier можем взять — в текущий объём эти интеграции не входят. Ориентир: ещё 22–30 часов ($1,320–$1,800). Подтвердите обновлённый объём, сроки и бюджет, и продолжим.",
+      changeRequestFormal: "Согласно согласованному объёму, интеграции Salesforce, Stripe и Zapier не входят в текущие результаты. Оценка дополнительной работы — 22–30 часов, ориентировочная стоимость — $1,320–$1,800. Работы начинаются только после письменного утверждения обновлённого объёма, сроков и бюджета."
     }
   },
   {
@@ -21317,11 +21691,20 @@ const EXAMPLES_RU = [
     request: "Нужны ещё три полных раунда правок после включённых, плюс полноценная тёмная версия.",
     result: {
       status: "Вне объёма",
-      hoursValue: "10–14",
+      hoursValue: "10–14 часов",
       costValue: "$600–$840",
+      timelineValue: "2–4 дня",
+      confidence: "Высокая",
       reason: "Дополнительные раунды правок и тёмная тема не входили в согласованный объём.",
       recommendation: "Получите письменное согласование до начала работ.",
-      changeRequest: "Этот запрос выходит за изначально согласованный объём проекта, потому что дополнительные раунды правок и тёмная тема не были включены. Оценка дополнительной работы — 10–14 часов. Ориентировочная стоимость — $600–$840. Пожалуйста, подтвердите обновлённый объём, сроки и бюджет до начала реализации."
+      effortItems: [
+        "Три дополнительных раунда правок — 6–8 часов",
+        "Дизайн и внедрение тёмной темы — 3–4 часа",
+        "Проверка на разных экранах — 1–2 часа"
+      ],
+      changeRequest: "Этот запрос выходит за изначально согласованный объём проекта, потому что дополнительные раунды правок и тёмная тема не были включены. Оценка дополнительной работы — 10–14 часов. Ориентировочная стоимость — $600–$840. Пожалуйста, подтвердите обновлённый объём, сроки и бюджет до начала реализации.",
+      changeRequestSoft: "Дополнительные раунды правок и тёмную тему готовы сделать — в согласованный объём они не входят. Ориентир: ещё 10–14 часов ($600–$840). Подтвердите обновлённый объём, сроки и бюджет до старта.",
+      changeRequestFormal: "Дополнительные раунды правок и тёмная тема не входят в согласованные результаты. Оценка дополнительной работы — 10–14 часов, ориентировочная стоимость — $600–$840. Для продолжения требуется письменное подтверждение обновлённого объёма, сроков и бюджета."
     }
   }
 ];
@@ -21333,11 +21716,20 @@ const EXAMPLES_ZH = [
     request: "请再迁移 84 篇文章，并创建独立作者页。",
     result: {
       status: "超出范围",
-      hoursValue: "14–18",
+      hoursValue: "14–18 小时",
       costValue: "$840–$1,080",
+      timelineValue: "3–5 天",
+      confidence: "高",
       reason: "内容迁移与作者页未包含在已约定项目范围内。",
       recommendation: "开始前请先取得书面确认。",
-      changeRequest: "该请求超出最初约定的项目范围，因为内容迁移与作者页未被包含。我们预估额外工作量为 14–18 小时，费用约 $840–$1,080。请在实施前确认更新后的范围、时间表与预算。"
+      effortItems: [
+        "内容盘点与映射 — 4–5 小时",
+        "文章迁移与重定向 — 6–8 小时",
+        "作者页与验收 — 4–5 小时"
+      ],
+      changeRequest: "该请求超出最初约定的项目范围，因为内容迁移与作者页未被包含。我们预估额外工作量为 14–18 小时，费用约 $840–$1,080。请在实施前确认更新后的范围、时间表与预算。",
+      changeRequestSoft: "内容迁移与作者页我们很乐意支持——它们不在原始范围内。预估约额外 14–18 小时（$840–$1,080）。开工前请确认更新后的范围、时间表与预算。",
+      changeRequestFormal: "经对照已约定项目范围，内容迁移与作者页不属于当前交付物。额外工作量预估为 14–18 小时，费用约 $840–$1,080。实施前须取得对更新范围、时间表与预算的书面确认。"
     }
   },
   {
@@ -21347,11 +21739,21 @@ const EXAMPLES_ZH = [
     request: "请再接入 Salesforce CRM、Stripe 支付，以及用于线索同步的 Zapier Webhook。",
     result: {
       status: "超出范围",
-      hoursValue: "22–30",
+      hoursValue: "22–30 小时",
       costValue: "$1,320–$1,800",
+      timelineValue: "5–8 天",
+      confidence: "高",
       reason: "CRM、支付与 Webhook 集成从未包含在约定范围内。",
       recommendation: "在客户书面批准变更请求前，请暂停实施。",
-      changeRequest: "该请求超出最初约定的项目范围，因为 Salesforce、Stripe 与 Zapier 集成未被包含。我们预估额外工作量为 22–30 小时，费用约 $1,320–$1,800。请在实施前确认更新后的范围、时间表与预算。"
+      effortItems: [
+        "Salesforce CRM 同步 — 8–10 小时",
+        "Stripe 支付 — 6–8 小时",
+        "Zapier Webhook — 4–6 小时",
+        "验收、文档与交接 — 4–6 小时"
+      ],
+      changeRequest: "该请求超出最初约定的项目范围，因为 Salesforce、Stripe 与 Zapier 集成未被包含。我们预估额外工作量为 22–30 小时，费用约 $1,320–$1,800。请在实施前确认更新后的范围、时间表与预算。",
+      changeRequestSoft: "Salesforce、Stripe 与 Zapier 接入我们可以支持——这些集成不在当前范围内。预估约额外 22–30 小时（$1,320–$1,800）。请确认更新后的范围、时间表与预算后再继续。",
+      changeRequestFormal: "根据已约定范围，Salesforce、Stripe 与 Zapier 集成不属于当前交付物。额外工作量预估为 22–30 小时，费用约 $1,320–$1,800。须在书面批准更新范围、时间表与预算后方可实施。"
     }
   },
   {
@@ -21361,19 +21763,28 @@ const EXAMPLES_ZH = [
     request: "在已包含的两轮之外，还需要三轮完整修改，并交付完整深色模式版本。",
     result: {
       status: "超出范围",
-      hoursValue: "10–14",
+      hoursValue: "10–14 小时",
       costValue: "$600–$840",
+      timelineValue: "2–4 天",
+      confidence: "高",
       reason: "额外修改轮次与深色模式未包含在已约定项目范围内。",
       recommendation: "开始前请先取得书面确认。",
-      changeRequest: "该请求超出最初约定的项目范围，因为额外修改轮次与深色模式未被包含。我们预估额外工作量为 10–14 小时，费用约 $600–$840。请在实施前确认更新后的范围、时间表与预算。"
+      effortItems: [
+        "额外三轮完整修改 — 6–8 小时",
+        "深色模式设计与实现 — 3–4 小时",
+        "多端验收 — 1–2 小时"
+      ],
+      changeRequest: "该请求超出最初约定的项目范围，因为额外修改轮次与深色模式未被包含。我们预估额外工作量为 10–14 小时，费用约 $600–$840。请在实施前确认更新后的范围、时间表与预算。",
+      changeRequestSoft: "额外修改轮次与深色模式我们都可以做——它们不在已包含范围内。预估约额外 10–14 小时（$600–$840）。开工前请确认更新后的范围、时间表与预算。",
+      changeRequestFormal: "额外修改轮次与深色模式不属于已约定交付物。额外工作量预估为 10–14 小时，费用约 $600–$840。继续实施前须取得对更新范围、时间表与预算的书面批准。"
     }
   }
 ];
-const COPY = {
+const COPY$2 = {
   en: {
     seo: {
-      title: "MileSeal — stop scope creep before unpaid work | TIVONIX",
-      description: "MileSeal is a TIVONIX validation prototype for digital agencies: compare a client request to the agreed scope, estimate extra hours, and generate a professional change request."
+      title: "MileSeal — AI Scope Change Workspace",
+      description: "Compare an agreed project scope with a new client request, assess delivery impact and generate a client-ready change request."
     },
     hero: {
       badge: "A validation prototype by TIVONIX",
@@ -21462,13 +21873,19 @@ const COPY = {
       errNetwork: "Couldn’t send right now. Please try again or email tivoonix@gmail.com.",
       errGeneric: "Something went wrong. Please try again."
     },
+    caseTeaser: {
+      eyebrow: "DEMONSTRATION CASE",
+      title: "See how a “small” content request became 40 additional hours",
+      description: "Follow the original scope, the later client request, MileSeal’s decision and the resulting change request.",
+      cta: "View the full case"
+    },
     footnote: "MileSeal is an early validation prototype by TIVONIX. Estimates are indicative and require human confirmation.",
     examples: EXAMPLES_EN
   },
   ru: {
     seo: {
-      title: "MileSeal — остановите расползание объёма до бесплатной работы | TIVONIX",
-      description: "MileSeal — прототип от TIVONIX для digital-агентств: сравните запрос клиента с согласованным объёмом, оцените доп. часы и сформируйте профессиональный запрос на изменение."
+      title: "MileSeal — AI Scope Change Workspace",
+      description: "Сравните согласованный объём проекта с новым запросом клиента, оцените влияние на сроки и стоимость и сформируйте готовый запрос на изменение. Это демонстрация: оценки ориентировочные и требуют проверки человеком."
     },
     hero: {
       badge: "Прототип от TIVONIX",
@@ -21486,7 +21903,7 @@ const COPY = {
       analyzing: "Анализ…",
       editExample: "Редактировать пример",
       restoreExample: "Вернуть пример",
-      customNotice: "Анализ произвольного текста в этом превью пока недоступен.",
+      customNotice: "Анализ пользовательского кейса пока недоступен в этой демонстрационной версии.",
       sendHumanReview: "Отправить кейс на ручной разбор объёма",
       hoursLabel: "Доп. часы",
       valueLabel: "Неутверждённая сумма",
@@ -21557,13 +21974,19 @@ const COPY = {
       errNetwork: "Сейчас не удалось отправить. Попробуйте ещё раз или напишите на tivoonix@gmail.com.",
       errGeneric: "Что-то пошло не так. Попробуйте ещё раз."
     },
+    caseTeaser: {
+      eyebrow: "ДЕМОНСТРАЦИОННЫЙ КЕЙС",
+      title: "Как «небольшой» запрос на контент превратился в 40 дополнительных часов",
+      description: "Посмотрите исходный объём, поздний запрос клиента, решение MileSeal и готовый запрос на изменение.",
+      cta: "Смотреть полный кейс"
+    },
     footnote: "MileSeal — ранний прототип от TIVONIX. Оценки ориентировочные и требуют подтверждения человеком.",
     examples: EXAMPLES_RU
   },
   zh: {
     seo: {
-      title: "MileSeal — 在范围蔓延变成免费加班前拦住它 | TIVONIX",
-      description: "MileSeal 是 TIVONIX 面向数字代理商的验证原型：对照约定范围检查客户新需求，估算额外工时，并生成专业变更请求。"
+      title: "MileSeal — AI Scope Change Workspace",
+      description: "对照已约定的项目范围与新的客户请求，评估交付影响并生成可发给客户的变更请求。此为演示：估算仅供参考，需人工确认。"
     },
     hero: {
       badge: "TIVONIX 验证原型",
@@ -21652,53 +22075,470 @@ const COPY = {
       errNetwork: "暂时无法发送。请重试或发邮件至 tivoonix@gmail.com。",
       errGeneric: "出错了，请重试。"
     },
+    caseTeaser: {
+      eyebrow: "演示案例",
+      title: "看看一个“很小”的内容请求如何变成额外 40 小时",
+      description: "跟随最初范围、后续客户请求、MileSeal 判定以及最终变更请求。",
+      cta: "查看完整案例"
+    },
     footnote: "MileSeal 是 TIVONIX 的早期验证原型。估算仅供参考，需人工确认。",
     examples: EXAMPLES_ZH
   }
 };
 function milesealCopy(lang) {
-  return COPY[lang] ?? COPY.en;
+  return COPY$2[lang] ?? COPY$2.en;
 }
-const HERO_VIDEO = "/images/hero-bg.mp4";
-const HERO_POSTER = "/images/hero-bg-poster.webp";
-function MilesealHero({ onTryDemo, onRequestReview }) {
-  const { lang } = useLang();
-  const copy = milesealCopy(lang).hero;
-  const videoRef = useRef(null);
-  useKeepVideoPlaying(videoRef);
-  return /* @__PURE__ */ jsxs("section", { className: "relative isolate min-h-[min(88svh,880px)] overflow-hidden bg-black pt-[calc(var(--tivonix-header-spacer)+0.5rem)] pb-10 sm:pb-14", children: [
-    /* @__PURE__ */ jsxs("div", { className: "pointer-events-none absolute inset-0 overflow-hidden bg-black", "aria-hidden": true, children: [
-      /* @__PURE__ */ jsx(
-        "video",
-        {
-          ref: videoRef,
-          className: "pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center",
-          src: HERO_VIDEO,
-          poster: HERO_POSTER,
-          autoPlay: true,
-          muted: true,
-          loop: true,
-          playsInline: true,
-          preload: "auto",
-          controls: false,
-          disablePictureInPicture: true
-        }
-      ),
-      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-b from-black/55 via-black/40 to-black" }),
-      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.55)_75%)]" })
-    ] }),
-    /* @__PURE__ */ jsx(Container, { className: "relative z-10", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[46rem] text-center", children: [
-      /* @__PURE__ */ jsx("span", { className: "inline-flex items-center rounded-full bg-white/[0.07] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF9A3D] ring-1 ring-white/10", children: copy.badge }),
-      /* @__PURE__ */ jsx("h1", { className: "mt-6 font-hero text-[clamp(2.2rem,6.5vw,4.5rem)] font-normal uppercase leading-[0.92] tracking-[0.01em] text-white text-balance", children: copy.title }),
-      /* @__PURE__ */ jsx("p", { className: "mx-auto mt-5 max-w-[38rem] font-sans text-[15px] font-medium leading-[1.55] text-white/72 sm:mt-6 sm:text-[16px]", children: copy.subtitle }),
-      /* @__PURE__ */ jsxs("div", { className: "mt-8 flex flex-col items-stretch justify-center gap-3 sm:mt-9 sm:flex-row sm:items-center", children: [
-        /* @__PURE__ */ jsx("button", { type: "button", onClick: onTryDemo, className: ctaClass$1("primary", "lg"), children: copy.tryDemo }),
-        /* @__PURE__ */ jsx("button", { type: "button", onClick: onRequestReview, className: ctaClass$1("secondary", "lg"), children: copy.requestReview })
-      ] })
-    ] }) })
-  ] });
+function prefillFromExample(example) {
+  return {
+    scope: example.scope,
+    request: example.request,
+    changeRequest: example.result.changeRequest
+  };
 }
-function cx$2(...a) {
+const COPY$1 = {
+  en: {
+    demoBadge: "Demo",
+    betaBadge: "Beta",
+    newAnalysis: "New analysis",
+    demoAnalyses: "Demo analyses",
+    demoTag: "Demo",
+    requestManualReview: "Request manual review",
+    openCaseStudy: "Open case study",
+    backToTivonix: "Back to TIVONIX",
+    topDemoScenario: "Demo scenario",
+    topCustomReview: "Custom review",
+    openArtifact: "Open change request",
+    reset: "Reset",
+    collapseSidebar: "Collapse sidebar",
+    expandSidebar: "Expand sidebar",
+    closeNav: "Close navigation",
+    openNav: "Open navigation",
+    emptyTitle: "What changed after the scope was agreed?",
+    emptyDescription: "Pick a demo scenario to see a full analysis, or paste an anonymized client request for a manual review by TIVONIX.",
+    introMessage: "MileSeal compares a new client request with the agreed project scope, estimates extra effort, and drafts a change request you can send.",
+    scopePreviewTitle: "Agreed scope",
+    scopeProject: "Project scope",
+    analyseRequest: "Analyse request",
+    analyzingTitle: "Analysing scope change…",
+    progressSteps: [
+      "Reviewing the agreed scope",
+      "Comparing the client request",
+      "Identifying additional work",
+      "Estimating cost and timeline",
+      "Drafting the change request"
+    ],
+    composerPlaceholder: "Paste a new client request…",
+    composerSend: "Send",
+    scopeChipPrefix: "Scope",
+    outsideScopeTitle: "This request is outside the agreed scope",
+    metrics: {
+      effort: "Extra effort",
+      cost: "Estimated cost",
+      timeline: "Timeline impact",
+      confidence: "Confidence"
+    },
+    whyTitle: "Why it’s outside scope",
+    effortTitle: "Effort breakdown",
+    excerptsTitle: "Scope excerpts",
+    whyBulletsPreset: [
+      "The request was not included in the agreed deliverables.",
+      "It creates additional work beyond the signed scope.",
+      "Timeline and budget need a separate update.",
+      "Written client approval is required before work starts."
+    ],
+    includedInScope: "Included in scope",
+    notInScope: "Not in scope",
+    newWorkstream: "New workstream",
+    needsApproval: "Needs approval",
+    openChangeRequest: "Open change request",
+    copySummary: "Copy summary",
+    makeSofter: "Softer",
+    makeFormal: "More formal",
+    resetWording: "Reset wording",
+    toneLabel: "Tone",
+    toneSoft: "Soft",
+    toneNeutral: "Default",
+    toneFormal: "Formal",
+    actionsLabel: "Export",
+    resetAnalysis: "Reset analysis",
+    artifactTitle: "Change request",
+    artifactEmpty: "Choose a demo scenario on the left and run the analysis — a client-ready draft will land here.",
+    artifactEmptyTitle: "Nothing here yet",
+    artifactEmptyAction: "Open a demo scenario",
+    artifactStatus: "Ready to send",
+    copy: "Copy",
+    copied: "Copied",
+    copyError: "Could not copy. Please select the text manually.",
+    downloadPdf: "Download PDF",
+    downloadingPdf: "Preparing PDF…",
+    pdfError: "Could not create the PDF. Please try again.",
+    closeArtifact: "Close",
+    customNotice: "Custom analysis is not available in this demo yet. Send the case for a manual review.",
+    sendManual: "Send for manual review",
+    manualTitle: "Manual scope review",
+    manualText: "We’ll review your anonymized request against the agreed scope and reply with a clear read on what changed.",
+    demoAnalysisLabel: "Demo analysis",
+    manualReviewLabel: "Manual review",
+    skipToContent: "Skip to content",
+    statusOutside: "Outside scope"
+  },
+  ru: {
+    demoBadge: "Демо",
+    betaBadge: "Бета",
+    newAnalysis: "Новый анализ",
+    demoAnalyses: "Демо-сценарии",
+    demoTag: "Демо",
+    requestManualReview: "Запросить ручной разбор",
+    openCaseStudy: "Открыть кейс",
+    backToTivonix: "Назад в TIVONIX",
+    topDemoScenario: "Демо-сценарий",
+    topCustomReview: "Свой запрос",
+    openArtifact: "Открыть запрос на изменение",
+    reset: "Сбросить",
+    collapseSidebar: "Свернуть боковую панель",
+    expandSidebar: "Развернуть боковую панель",
+    closeNav: "Закрыть меню",
+    openNav: "Открыть меню",
+    emptyTitle: "Что изменилось после согласования объёма?",
+    emptyDescription: "Выберите демо-сценарий, чтобы увидеть полный разбор, или вставьте обезличенный запрос клиента — его разберёт команда TIVONIX вручную.",
+    introMessage: "MileSeal сравнивает новый запрос клиента с согласованным объёмом проекта, оценивает доп. работу и готовит запрос на изменение, который можно отправить клиенту.",
+    scopePreviewTitle: "Согласованный объём",
+    scopeProject: "Объём проекта",
+    analyseRequest: "Проанализировать запрос",
+    analyzingTitle: "Разбираем изменение объёма…",
+    progressSteps: [
+      "Изучаем согласованный объём",
+      "Сравниваем запрос клиента",
+      "Определяем дополнительные работы",
+      "Рассчитываем стоимость и сроки",
+      "Формируем запрос на изменение"
+    ],
+    composerPlaceholder: "Вставьте новый запрос клиента…",
+    composerSend: "Отправить",
+    scopeChipPrefix: "Объём",
+    outsideScopeTitle: "Этот запрос выходит за согласованный объём",
+    metrics: {
+      effort: "Доп. работа",
+      cost: "Ориентировочная стоимость",
+      timeline: "Влияние на сроки",
+      confidence: "Уверенность"
+    },
+    whyTitle: "Почему это вне объёма",
+    effortTitle: "Разбивка по работам",
+    excerptsTitle: "Фрагменты объёма",
+    whyBulletsPreset: [
+      "Запрос не входил в согласованные результаты.",
+      "Появляется дополнительная работа сверх подписанного объёма.",
+      "Сроки и бюджет нужно обновить отдельно.",
+      "До начала работ нужно письменное согласование клиента."
+    ],
+    includedInScope: "Входит в объём",
+    notInScope: "Не входит в объём",
+    newWorkstream: "Новый поток работ",
+    needsApproval: "Нужно согласование",
+    openChangeRequest: "Открыть запрос на изменение",
+    copySummary: "Скопировать итог",
+    makeSofter: "Мягче",
+    makeFormal: "Формальнее",
+    resetWording: "Сбросить формулировку",
+    toneLabel: "Тон",
+    toneSoft: "Мягкий",
+    toneNeutral: "Базовый",
+    toneFormal: "Формальный",
+    actionsLabel: "Экспорт",
+    resetAnalysis: "Сбросить анализ",
+    artifactTitle: "Запрос на изменение",
+    artifactEmpty: "Выберите демо-сценарий слева и запустите анализ — сюда ляжет черновик для клиента.",
+    artifactEmptyTitle: "Пока пусто",
+    artifactEmptyAction: "Выбрать демо-сценарий",
+    artifactStatus: "Готово к отправке",
+    copy: "Скопировать",
+    copied: "Скопировано",
+    copyError: "Не удалось скопировать. Выделите текст вручную.",
+    downloadPdf: "Скачать PDF",
+    downloadingPdf: "Готовим PDF…",
+    pdfError: "Не удалось создать PDF. Попробуйте ещё раз.",
+    closeArtifact: "Закрыть",
+    customNotice: "Разбор своего кейса в этой демонстрации пока недоступен. Отправьте запрос на ручной разбор.",
+    sendManual: "Отправить на ручной разбор",
+    manualTitle: "Ручной разбор объёма",
+    manualText: "Мы сверим обезличенный запрос с согласованным объёмом и вернёмся с понятным выводом: что изменилось и как это оформить.",
+    demoAnalysisLabel: "Демо-анализ",
+    manualReviewLabel: "Ручной разбор",
+    skipToContent: "Перейти к содержимому",
+    statusOutside: "Вне объёма"
+  },
+  zh: {
+    demoBadge: "演示",
+    betaBadge: "Beta",
+    newAnalysis: "新分析",
+    demoAnalyses: "演示分析",
+    demoTag: "演示",
+    requestManualReview: "申请人工复核",
+    openCaseStudy: "打开案例",
+    backToTivonix: "返回 TIVONIX",
+    topDemoScenario: "演示场景",
+    topCustomReview: "自定义复核",
+    openArtifact: "打开变更请求",
+    reset: "重置",
+    collapseSidebar: "收起侧栏",
+    expandSidebar: "展开侧栏",
+    closeNav: "关闭导航",
+    openNav: "打开导航",
+    emptyTitle: "范围约定之后，发生了什么变化？",
+    emptyDescription: "选择演示场景查看完整分析，或粘贴脱敏后的客户请求，由 TIVONIX 团队人工复核。",
+    introMessage: "MileSeal 会对照已约定项目范围检查新的客户请求，估算额外工作量，并起草可发给客户的变更请求。",
+    scopePreviewTitle: "已约定范围",
+    scopeProject: "项目范围",
+    analyseRequest: "分析请求",
+    analyzingTitle: "正在分析范围变更…",
+    progressSteps: [
+      "核对已约定范围",
+      "对照客户请求",
+      "识别额外工作",
+      "估算费用与工期",
+      "生成变更请求"
+    ],
+    composerPlaceholder: "粘贴新的客户请求…",
+    composerSend: "发送",
+    scopeChipPrefix: "范围",
+    outsideScopeTitle: "该请求超出已约定范围",
+    metrics: {
+      effort: "额外工作量",
+      cost: "预估费用",
+      timeline: "工期影响",
+      confidence: "置信度"
+    },
+    whyTitle: "为何超出范围",
+    effortTitle: "工作量拆解",
+    excerptsTitle: "范围摘录",
+    whyBulletsPreset: [
+      "该请求未包含在已约定交付物中。",
+      "它会产生超出已签署范围的额外工作。",
+      "工期与预算需要单独更新。",
+      "开工前需取得客户书面批准。"
+    ],
+    includedInScope: "范围内",
+    notInScope: "范围外",
+    newWorkstream: "新工作流",
+    needsApproval: "需批准",
+    openChangeRequest: "打开变更请求",
+    copySummary: "复制摘要",
+    makeSofter: "更柔和",
+    makeFormal: "更正式",
+    resetWording: "重置措辞",
+    toneLabel: "语气",
+    toneSoft: "柔和",
+    toneNeutral: "默认",
+    toneFormal: "正式",
+    actionsLabel: "导出",
+    resetAnalysis: "重置分析",
+    artifactTitle: "变更请求",
+    artifactEmpty: "在左侧选择演示场景并运行分析——可发给客户的草稿会出现在这里。",
+    artifactEmptyTitle: "暂无内容",
+    artifactEmptyAction: "选择演示场景",
+    artifactStatus: "可发送",
+    copy: "复制",
+    copied: "已复制",
+    copyError: "无法复制。请手动选择文本。",
+    downloadPdf: "下载 PDF",
+    downloadingPdf: "正在生成 PDF…",
+    pdfError: "无法生成 PDF，请重试。",
+    closeArtifact: "关闭",
+    customNotice: "此演示暂不支持自定义分析。请将案例发送给人工业务复核。",
+    sendManual: "发送人工复核",
+    manualTitle: "人工范围复核",
+    manualText: "我们会对照已约定范围复核你的脱敏请求，并清楚说明哪些内容发生了变化。",
+    demoAnalysisLabel: "演示分析",
+    manualReviewLabel: "人工复核",
+    skipToContent: "跳到主要内容",
+    statusOutside: "超出范围"
+  }
+};
+function milesealWorkspaceCopy(lang) {
+  return COPY$1[lang] ?? COPY$1.en;
+}
+function baseFromExample(example) {
+  return {
+    selectedScenarioId: example.id,
+    mode: "preset",
+    scope: example.scope,
+    request: example.request
+  };
+}
+function createInitialDemoState(example) {
+  return {
+    ...baseFromExample(example),
+    result: null,
+    isChangeRequestOpen: false,
+    analyzing: false,
+    copied: false,
+    stage: "empty",
+    activeAnalysisStep: 0,
+    activeTone: "neutral",
+    copyError: false,
+    isSidebarCollapsed: false,
+    isMobileNavOpen: false,
+    sessionStarted: false
+  };
+}
+function demoReducer(state, action) {
+  switch (action.type) {
+    case "selectScenario":
+    case "restoreExample":
+      return {
+        ...state,
+        ...baseFromExample(action.example),
+        result: null,
+        isChangeRequestOpen: false,
+        analyzing: false,
+        copied: false,
+        copyError: false,
+        stage: "ready",
+        activeAnalysisStep: 0,
+        activeTone: "neutral",
+        sessionStarted: true,
+        isMobileNavOpen: false
+      };
+    case "startOver":
+      return {
+        ...createInitialDemoState(action.example),
+        ...baseFromExample(action.example),
+        stage: "ready",
+        sessionStarted: true,
+        isSidebarCollapsed: state.isSidebarCollapsed
+      };
+    case "newAnalysis":
+      return {
+        ...createInitialDemoState({
+          id: state.selectedScenarioId,
+          scope: "",
+          request: ""
+        }),
+        selectedScenarioId: state.selectedScenarioId,
+        isSidebarCollapsed: state.isSidebarCollapsed
+      };
+    case "editExample":
+      return {
+        ...state,
+        mode: "custom",
+        result: null,
+        isChangeRequestOpen: false,
+        analyzing: false,
+        copied: false,
+        copyError: false,
+        stage: state.sessionStarted ? "ready" : "empty",
+        activeAnalysisStep: 0
+      };
+    case "setScope":
+      return {
+        ...state,
+        mode: "custom",
+        scope: action.value,
+        result: null,
+        isChangeRequestOpen: false,
+        copied: false,
+        copyError: false,
+        stage: state.sessionStarted ? "ready" : "empty"
+      };
+    case "setRequest":
+      return {
+        ...state,
+        mode: "custom",
+        request: action.value,
+        result: null,
+        isChangeRequestOpen: false,
+        copied: false,
+        copyError: false,
+        stage: state.sessionStarted ? "ready" : "empty"
+      };
+    case "analyzeStart":
+      if (state.mode !== "preset") return state;
+      return {
+        ...state,
+        analyzing: true,
+        isChangeRequestOpen: true,
+        copied: false,
+        copyError: false,
+        stage: "analyzing",
+        activeAnalysisStep: 0,
+        sessionStarted: true
+      };
+    case "setAnalysisStep":
+      return { ...state, activeAnalysisStep: action.step };
+    case "analyzeSuccess":
+      if (state.mode !== "preset" || state.selectedScenarioId !== action.scenarioId || !state.analyzing) {
+        return {
+          ...state,
+          analyzing: false,
+          stage: state.mode === "preset" && state.result ? "result" : state.stage,
+          result: state.mode === "preset" ? state.result : null
+        };
+      }
+      return {
+        ...state,
+        analyzing: false,
+        result: action.result,
+        isChangeRequestOpen: true,
+        copied: false,
+        copyError: false,
+        stage: "result",
+        activeTone: "neutral"
+      };
+    case "openChangeRequest":
+      if (!state.result) return state;
+      return { ...state, isChangeRequestOpen: true };
+    case "closeChangeRequest":
+      return { ...state, isChangeRequestOpen: false };
+    case "setTone":
+      return { ...state, activeTone: action.tone };
+    case "copied":
+      return { ...state, copied: true, copyError: false };
+    case "copyFailed":
+      return { ...state, copied: false, copyError: true };
+    case "clearCopied":
+      return { ...state, copied: false, copyError: false };
+    case "enterManualReview":
+      return {
+        ...state,
+        mode: "custom",
+        stage: "manual-review",
+        analyzing: false,
+        result: null,
+        isChangeRequestOpen: false,
+        sessionStarted: true
+      };
+    case "toggleSidebarCollapsed":
+      return { ...state, isSidebarCollapsed: !state.isSidebarCollapsed };
+    case "setMobileNavOpen":
+      return { ...state, isMobileNavOpen: action.open };
+    case "syncLangPreset": {
+      if (state.mode !== "preset") return state;
+      const hadResult = Boolean(state.result);
+      return {
+        ...state,
+        selectedScenarioId: action.example.id,
+        scope: action.example.scope,
+        request: action.example.request,
+        result: hadResult ? action.example.result : null,
+        isChangeRequestOpen: hadResult ? state.isChangeRequestOpen : false,
+        analyzing: false,
+        copied: false,
+        copyError: false,
+        stage: !state.sessionStarted ? "empty" : hadResult ? "result" : "ready",
+        activeTone: "neutral"
+      };
+    }
+    default:
+      return state;
+  }
+}
+function changeRequestForTone(result, tone) {
+  if (tone === "soft") return result.changeRequestSoft || result.changeRequest;
+  if (tone === "formal") return result.changeRequestFormal || result.changeRequest;
+  return result.changeRequest;
+}
+function cx$3(...a) {
   return a.filter(Boolean).join(" ");
 }
 const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -21708,6 +22548,7 @@ function AutoGrowTextarea({
   className,
   value,
   onChange,
+  tone = "dark",
   ...rest
 }) {
   const ref = useRef(null);
@@ -21733,6 +22574,14 @@ function AutoGrowTextarea({
     window.addEventListener("resize", onWin);
     return () => window.removeEventListener("resize", onWin);
   }, [resize]);
+  const toneClass = tone === "light" ? cx$3(
+    "border-0 bg-[#f4f3f1] text-[#141414] placeholder:text-[#141414]/4",
+    "outline-none focus:bg-[#efeeec] focus-visible:ring-2 focus-visible:ring-[#fc5000]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+  ) : cx$3(
+    "border-0 bg-[#141414] text-white placeholder:text-white/35",
+    "outline-none focus:bg-[#1a1a1a] focus-visible:ring-2 focus-visible:ring-[#fc5000]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c0c0c]",
+    "read-only:focus:bg-[#141414] read-only:focus-visible:ring-0"
+  );
   return /* @__PURE__ */ jsx(
     "textarea",
     {
@@ -21744,476 +22593,29 @@ function AutoGrowTextarea({
         onChange?.(e);
         requestAnimationFrame(resize);
       },
-      className: cx$2(
+      className: cx$3(
         "block w-full resize-none overflow-hidden",
         "rounded-[16px] px-4 py-3.5",
-        "border-0 bg-[#141414] text-white placeholder:text-white/35",
-        "outline-none focus:bg-[#1a1a1a] focus-visible:ring-2 focus-visible:ring-[#fc5000]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c0c0c]",
+        toneClass,
         "font-sans text-[14px] font-medium leading-[1.55] transition-[background-color]",
-        "read-only:focus:bg-[#141414] read-only:focus-visible:ring-0",
         className
       )
     }
   );
 }
-function createInitialDemoState(example) {
-  return {
-    selectedScenarioId: example.id,
-    mode: "preset",
-    scope: example.scope,
-    request: example.request,
-    result: null,
-    isChangeRequestOpen: false,
-    analyzing: false,
-    copied: false
-  };
-}
-function demoReducer(state, action) {
-  switch (action.type) {
-    case "selectScenario":
-    case "restoreExample":
-    case "startOver":
-      return {
-        ...state,
-        selectedScenarioId: action.example.id,
-        mode: "preset",
-        scope: action.example.scope,
-        request: action.example.request,
-        result: null,
-        isChangeRequestOpen: false,
-        analyzing: false,
-        copied: false
-      };
-    case "editExample":
-      return {
-        ...state,
-        mode: "custom",
-        result: null,
-        isChangeRequestOpen: false,
-        analyzing: false,
-        copied: false
-      };
-    case "setScope":
-      return {
-        ...state,
-        mode: "custom",
-        scope: action.value,
-        result: null,
-        isChangeRequestOpen: false,
-        copied: false
-      };
-    case "setRequest":
-      return {
-        ...state,
-        mode: "custom",
-        request: action.value,
-        result: null,
-        isChangeRequestOpen: false,
-        copied: false
-      };
-    case "analyzeStart":
-      if (state.mode !== "preset") return state;
-      return {
-        ...state,
-        analyzing: true,
-        isChangeRequestOpen: false,
-        copied: false
-      };
-    case "analyzeSuccess":
-      if (state.mode !== "preset") {
-        return { ...state, analyzing: false, result: null };
-      }
-      return {
-        ...state,
-        analyzing: false,
-        result: action.result,
-        isChangeRequestOpen: false,
-        copied: false
-      };
-    case "openChangeRequest":
-      if (!state.result) return state;
-      return { ...state, isChangeRequestOpen: true };
-    case "copied":
-      return { ...state, copied: true };
-    case "clearCopied":
-      return { ...state, copied: false };
-    case "syncLangPreset": {
-      if (state.mode !== "preset") return state;
-      const hadResult = Boolean(state.result);
-      return {
-        ...state,
-        selectedScenarioId: action.example.id,
-        scope: action.example.scope,
-        request: action.example.request,
-        result: hadResult ? action.example.result : null,
-        isChangeRequestOpen: hadResult ? state.isChangeRequestOpen : false,
-        analyzing: false,
-        copied: false
-      };
-    }
-    default:
-      return state;
-  }
-}
-function cx$1(...a) {
+const HERO_VIDEO$2 = "/images/hero-bg.mp4";
+const HERO_POSTER$2 = "/images/hero-bg-poster.webp";
+function cx$2(...a) {
   return a.filter(Boolean).join(" ");
 }
-const fieldLabel = "mb-2 block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#ffae66]/90";
-function MilesealDemo({ onSendForReview }) {
+function MilesealManualReviewPanel({ prefill, onClose }) {
   const { lang } = useLang();
-  const copy = milesealCopy(lang);
-  const examples = copy.examples;
-  const d = copy.demo;
-  const firstExample = examples[0];
-  const [state, dispatch] = useReducer(
-    demoReducer,
-    firstExample,
-    createInitialDemoState
-  );
-  const selectedExample = useMemo(
-    () => examples.find((e) => e.id === state.selectedScenarioId) ?? firstExample,
-    [examples, firstExample, state.selectedScenarioId]
-  );
-  const langRef = useRef(lang);
-  useEffect(() => {
-    if (langRef.current === lang) return;
-    langRef.current = lang;
-    const next = examples.find((e) => e.id === state.selectedScenarioId) ?? examples[0];
-    dispatch({ type: "syncLangPreset", example: next });
-  }, [lang, examples, state.selectedScenarioId]);
-  useEffect(() => {
-    if (!state.copied) return;
-    const t = window.setTimeout(() => dispatch({ type: "clearCopied" }), 2200);
-    return () => window.clearTimeout(t);
-  }, [state.copied]);
-  const isPreset = state.mode === "preset";
-  const showResult = isPreset && state.result !== null;
-  const showHelper = !showResult;
-  const handleAnalyze = () => {
-    if (!isPreset || state.analyzing) return;
-    dispatch({ type: "analyzeStart" });
-    const result = selectedExample.result;
-    window.setTimeout(() => {
-      dispatch({ type: "analyzeSuccess", result });
-    }, 360);
-  };
-  const handleCopy = async () => {
-    if (!state.result) return;
-    const text = state.result.changeRequest;
-    try {
-      await navigator.clipboard.writeText(text);
-      dispatch({ type: "copied" });
-    } catch {
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      ta.setAttribute("readonly", "");
-      ta.style.position = "fixed";
-      ta.style.left = "-9999px";
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      dispatch({ type: "copied" });
-    }
-  };
-  return /* @__PURE__ */ jsx(
-    Section,
-    {
-      id: "demo",
-      className: "scroll-mt-[var(--tivonix-header-spacer)] bg-black !py-12 sm:!py-16 lg:!py-20",
-      children: /* @__PURE__ */ jsxs(Container, { children: [
-        /* @__PURE__ */ jsxs(Reveal$1, { children: [
-          /* @__PURE__ */ jsx("h2", { className: "max-w-[28rem] font-hero text-[clamp(1.75rem,4.2vw,2.75rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white", children: d.title }),
-          showHelper ? /* @__PURE__ */ jsx("p", { className: "mt-3 max-w-[40rem] font-sans text-[14px] font-medium leading-[1.55] text-white/55 sm:text-[15px]", children: d.helper }) : null
-        ] }),
-        /* @__PURE__ */ jsx(Reveal$1, { delay: 70, className: "mt-7", children: /* @__PURE__ */ jsxs("div", { className: "overflow-hidden rounded-[24px] bg-[#0c0c0c]", children: [
-          /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-2 px-5 pt-5 sm:px-7 sm:pt-6", children: examples.map((example) => {
-            const active = isPreset && example.id === state.selectedScenarioId;
-            return /* @__PURE__ */ jsx(
-              "button",
-              {
-                type: "button",
-                onClick: () => dispatch({ type: "selectScenario", example }),
-                className: cx$1(
-                  "rounded-full px-3.5 py-1.5 text-[12px] font-semibold transition",
-                  active ? "bg-[rgba(255,138,30,0.18)] text-[#ffae66]" : "bg-white/[0.06] text-white/62 hover:bg-white/[0.09] hover:text-white/85"
-                ),
-                children: example.label
-              },
-              example.id
-            );
-          }) }),
-          /* @__PURE__ */ jsxs("div", { className: "px-5 py-5 sm:px-7 sm:py-6", children: [
-            /* @__PURE__ */ jsxs("div", { className: "grid gap-4 lg:grid-cols-2 lg:items-start lg:gap-5", children: [
-              /* @__PURE__ */ jsxs("div", { children: [
-                /* @__PURE__ */ jsx("label", { htmlFor: "mileseal-scope", className: fieldLabel, children: d.scopeLabel }),
-                /* @__PURE__ */ jsx(
-                  AutoGrowTextarea,
-                  {
-                    id: "mileseal-scope",
-                    value: state.scope,
-                    minRows: 3,
-                    maxRows: 10,
-                    readOnly: isPreset,
-                    "aria-readonly": isPreset,
-                    onChange: (e) => dispatch({ type: "setScope", value: e.target.value }),
-                    className: isPreset ? "cursor-default opacity-90" : void 0
-                  }
-                )
-              ] }),
-              /* @__PURE__ */ jsxs("div", { children: [
-                /* @__PURE__ */ jsx("label", { htmlFor: "mileseal-request", className: fieldLabel, children: d.requestLabel }),
-                /* @__PURE__ */ jsx(
-                  AutoGrowTextarea,
-                  {
-                    id: "mileseal-request",
-                    value: state.request,
-                    minRows: 3,
-                    maxRows: 10,
-                    readOnly: isPreset,
-                    "aria-readonly": isPreset,
-                    onChange: (e) => dispatch({ type: "setRequest", value: e.target.value }),
-                    className: isPreset ? "cursor-default opacity-90" : void 0
-                  }
-                )
-              ] })
-            ] }),
-            /* @__PURE__ */ jsx("div", { className: "mt-5 flex flex-wrap items-center gap-3", children: isPreset ? /* @__PURE__ */ jsxs(Fragment, { children: [
-              /* @__PURE__ */ jsx(
-                "button",
-                {
-                  type: "button",
-                  onClick: handleAnalyze,
-                  disabled: state.analyzing || !state.scope.trim() || !state.request.trim(),
-                  className: ctaClass$1("primary", "lg", "disabled:opacity-50"),
-                  children: state.analyzing ? d.analyzing : d.analyze
-                }
-              ),
-              /* @__PURE__ */ jsxs(
-                "button",
-                {
-                  type: "button",
-                  onClick: () => dispatch({ type: "editExample" }),
-                  className: ctaClass$1("ghost", "md", "gap-2"),
-                  children: [
-                    /* @__PURE__ */ jsx(Pencil, { className: "h-4 w-4", strokeWidth: 1.75, "aria-hidden": true }),
-                    d.editExample
-                  ]
-                }
-              )
-            ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
-              /* @__PURE__ */ jsx(
-                "button",
-                {
-                  type: "button",
-                  onClick: () => onSendForReview({
-                    scope: state.scope.trim(),
-                    request: state.request.trim()
-                  }),
-                  disabled: !state.scope.trim() || !state.request.trim(),
-                  className: ctaClass$1("primary", "lg", "disabled:opacity-50"),
-                  children: d.sendHumanReview
-                }
-              ),
-              /* @__PURE__ */ jsxs(
-                "button",
-                {
-                  type: "button",
-                  onClick: () => dispatch({ type: "restoreExample", example: selectedExample }),
-                  className: ctaClass$1("ghost", "md", "gap-2"),
-                  children: [
-                    /* @__PURE__ */ jsx(RotateCcw, { className: "h-4 w-4", strokeWidth: 1.75, "aria-hidden": true }),
-                    d.restoreExample
-                  ]
-                }
-              )
-            ] }) }),
-            !isPreset ? /* @__PURE__ */ jsx(
-              "p",
-              {
-                className: "mt-4 rounded-[16px] bg-[#141414] px-4 py-3 text-[13px] font-medium leading-relaxed text-white/55",
-                role: "status",
-                children: d.customNotice
-              }
-            ) : null
-          ] })
-        ] }) }),
-        showResult && state.result ? /* @__PURE__ */ jsx("div", { className: "mt-5 translate-y-0 opacity-100 transition duration-500 ease-out sm:mt-6", children: /* @__PURE__ */ jsx("article", { className: "overflow-hidden rounded-[24px] bg-[#0c0c0c]", children: /* @__PURE__ */ jsxs("div", { className: "px-5 py-6 sm:px-8 sm:py-8", children: [
-          /* @__PURE__ */ jsx("span", { className: "inline-flex rounded-full bg-[rgba(255,138,30,0.16)] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#ffae66]", children: state.result.status }),
-          /* @__PURE__ */ jsxs("div", { className: "mt-6 grid gap-6 sm:grid-cols-2 sm:gap-10", children: [
-            /* @__PURE__ */ jsxs("div", { children: [
-              /* @__PURE__ */ jsx("p", { className: "font-hero text-[clamp(2.6rem,8vw,3.75rem)] font-normal leading-none tracking-[0.01em] text-white", children: state.result.hoursValue }),
-              /* @__PURE__ */ jsx("p", { className: "mt-2 text-[13px] font-semibold uppercase tracking-[0.14em] text-white/45", children: d.hoursLabel })
-            ] }),
-            /* @__PURE__ */ jsxs("div", { children: [
-              /* @__PURE__ */ jsx("p", { className: "font-hero text-[clamp(2.6rem,8vw,3.75rem)] font-normal leading-none tracking-[0.01em] text-white", children: state.result.costValue }),
-              /* @__PURE__ */ jsx("p", { className: "mt-2 text-[13px] font-semibold uppercase tracking-[0.14em] text-white/45", children: d.valueLabel })
-            ] })
-          ] }),
-          /* @__PURE__ */ jsx("p", { className: "mt-7 max-w-[40rem] font-sans text-[15px] font-medium leading-[1.55] text-white/72 sm:text-[16px]", children: state.result.reason }),
-          /* @__PURE__ */ jsx("p", { className: "mt-3 max-w-[36rem] font-sans text-[14px] font-medium leading-[1.55] text-[#ffae66]/90", children: state.result.recommendation }),
-          !state.isChangeRequestOpen ? /* @__PURE__ */ jsx("div", { className: "mt-7", children: /* @__PURE__ */ jsx(
-            "button",
-            {
-              type: "button",
-              onClick: () => dispatch({ type: "openChangeRequest" }),
-              className: ctaClass$1("primary", "lg"),
-              children: d.generateCr
-            }
-          ) }) : /* @__PURE__ */ jsxs("div", { className: "mt-7 border-t border-white/[0.07] pt-6", children: [
-            /* @__PURE__ */ jsx(
-              "p",
-              {
-                id: "mileseal-change-request",
-                className: "max-w-[48rem] font-sans text-[14px] font-medium leading-[1.65] text-white/70 sm:text-[15px]",
-                children: state.result.changeRequest
-              }
-            ),
-            /* @__PURE__ */ jsxs("div", { className: "mt-5 flex flex-wrap items-center gap-3", children: [
-              /* @__PURE__ */ jsxs(
-                "button",
-                {
-                  type: "button",
-                  onClick: handleCopy,
-                  className: ctaClass$1("primary", "md", "gap-2"),
-                  children: [
-                    state.copied ? /* @__PURE__ */ jsx(Check, { className: "h-4 w-4", strokeWidth: 2, "aria-hidden": true }) : /* @__PURE__ */ jsx(ClipboardCopy, { className: "h-4 w-4", strokeWidth: 1.75, "aria-hidden": true }),
-                    state.copied ? d.copied : d.copy
-                  ]
-                }
-              ),
-              /* @__PURE__ */ jsxs(
-                "button",
-                {
-                  type: "button",
-                  onClick: () => dispatch({ type: "startOver", example: selectedExample }),
-                  className: ctaClass$1("ghost", "md", "gap-2"),
-                  children: [
-                    /* @__PURE__ */ jsx(RotateCcw, { className: "h-4 w-4", strokeWidth: 1.75, "aria-hidden": true }),
-                    d.startOver
-                  ]
-                }
-              )
-            ] }),
-            state.copied ? /* @__PURE__ */ jsx("p", { className: "mt-3 text-[13px] font-medium text-[#ffae66]", role: "status", children: d.copied }) : null
-          ] })
-        ] }) }) }) : null
-      ] })
-    }
-  );
-}
-const PAIN_ICONS = [MessagesSquare, Play, Clock3];
-const STEP_ICONS = [ClipboardPaste, MessageSquarePlus, FileCheck2];
-const PAIN_BG = [
-  "/images/mileseal/mileseal-pain-1.webp",
-  "/images/mileseal/mileseal-pain-2.webp",
-  "/images/mileseal/mileseal-pain-3.webp"
-];
-const STEP_BG = [
-  "/images/mileseal/mileseal-step-1.webp",
-  "/images/mileseal/mileseal-step-2.webp",
-  "/images/mileseal/mileseal-step-3.webp"
-];
-function MediaCard({
-  title,
-  text,
-  icon: Icon,
-  bg,
-  delay
-}) {
-  return /* @__PURE__ */ jsx(Reveal$1, { delay, className: "h-full", children: /* @__PURE__ */ jsxs("article", { className: "relative isolate flex h-full min-h-[240px] flex-col overflow-hidden rounded-[20px] bg-[#141414] sm:min-h-[280px] sm:rounded-2xl", children: [
-    /* @__PURE__ */ jsx(
-      "img",
-      {
-        src: bg,
-        alt: "",
-        loading: "lazy",
-        decoding: "async",
-        draggable: false,
-        className: "pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-55"
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      "div",
-      {
-        className: "pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-black/78 to-black/35",
-        "aria-hidden": true
-      }
-    ),
-    /* @__PURE__ */ jsxs("div", { className: "relative z-[1] flex h-full flex-col p-5 sm:p-6", children: [
-      /* @__PURE__ */ jsx("span", { className: "inline-flex h-11 w-11 items-center justify-center rounded-full bg-[rgba(255,138,30,0.16)] text-[#ffae66]", children: /* @__PURE__ */ jsx(Icon, { className: "h-5 w-5", strokeWidth: 1.75, "aria-hidden": true }) }),
-      /* @__PURE__ */ jsx("h3", { className: "mt-auto pt-8 font-hero text-[22px] font-semibold uppercase leading-[1.05] tracking-[-0.03em] text-white sm:text-[24px]", children: title }),
-      /* @__PURE__ */ jsx("p", { className: "mt-3 font-sans text-[15px] font-medium leading-[1.55] text-white/72", children: text })
-    ] })
-  ] }) });
-}
-function MilesealValueSections() {
-  const { lang } = useLang();
-  const copy = milesealCopy(lang);
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx(Section, { className: "bg-black !py-12 sm:!py-16", children: /* @__PURE__ */ jsxs(Container, { children: [
-      /* @__PURE__ */ jsx(Reveal$1, { children: /* @__PURE__ */ jsx("div", { className: "max-w-[40rem]", children: /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.85rem,4.5vw,3rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white", children: copy.pain.title }) }) }),
-      /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-3 sm:grid-cols-3 sm:gap-4", children: copy.pain.cards.map((card, i) => /* @__PURE__ */ jsx(
-        MediaCard,
-        {
-          title: card.title,
-          text: card.text,
-          icon: PAIN_ICONS[i] ?? MessagesSquare,
-          bg: PAIN_BG[i] ?? PAIN_BG[0],
-          delay: i * 70
-        },
-        card.title
-      )) })
-    ] }) }),
-    /* @__PURE__ */ jsx(Section, { className: "bg-black !py-12 sm:!py-16", children: /* @__PURE__ */ jsxs(Container, { children: [
-      /* @__PURE__ */ jsx(Reveal$1, { children: /* @__PURE__ */ jsx("div", { className: "max-w-[44rem]", children: /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.85rem,4.5vw,3rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white", children: copy.steps.title }) }) }),
-      /* @__PURE__ */ jsx("div", { className: "mt-8 grid gap-3 sm:grid-cols-3 sm:gap-4", children: copy.steps.items.map((step, i) => /* @__PURE__ */ jsx(
-        MediaCard,
-        {
-          title: step.title,
-          text: step.text,
-          icon: STEP_ICONS[i] ?? FileCheck2,
-          bg: STEP_BG[i] ?? STEP_BG[0],
-          delay: i * 70
-        },
-        step.n
-      )) })
-    ] }) })
-  ] });
-}
-function cx(...a) {
-  return a.filter(Boolean).join(" ");
-}
-const inputClass = cx(
-  "w-full h-12 rounded-[16px] px-4",
-  "border-0 bg-[#141414] text-white placeholder:text-white/35",
-  "outline-none focus:bg-[#1a1a1a] focus-visible:ring-2 focus-visible:ring-[#fc5000]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c0c0c]",
-  "font-sans text-[14px] font-medium transition"
-);
-const labelClass = "mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.12em] text-white/55";
-function MilesealScopeForm({ prefill, formOpen, onOpenForm, formKey }) {
-  const { lang } = useLang();
-  const copy = milesealCopy(lang).cta;
-  return /* @__PURE__ */ jsx(
-    Section,
-    {
-      id: "scope-review",
-      className: "scroll-mt-[var(--tivonix-header-spacer)] bg-black !py-14 sm:!py-16 lg:!py-20",
-      children: /* @__PURE__ */ jsxs(Container, { children: [
-        /* @__PURE__ */ jsx(Reveal$1, { children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[40rem] text-center", children: [
-          /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.85rem,4.5vw,3rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white text-balance", children: copy.title }),
-          /* @__PURE__ */ jsx("p", { className: "mx-auto mt-4 max-w-[34rem] text-[15px] font-medium leading-relaxed text-white/60 sm:text-[16px]", children: copy.text }),
-          !formOpen ? /* @__PURE__ */ jsx("div", { className: "mt-7", children: /* @__PURE__ */ jsx("button", { type: "button", onClick: onOpenForm, className: ctaClass$1("primary", "lg"), children: copy.openForm }) }) : null
-        ] }) }),
-        formOpen ? /* @__PURE__ */ jsx(Reveal$1, { delay: 60, className: "mx-auto mt-10 max-w-[40rem]", children: /* @__PURE__ */ jsx(MilesealReviewForm, { prefill }, `${formKey}-${lang}`) }) : null
-      ] })
-    }
-  );
-}
-function MilesealReviewForm({ prefill }) {
-  const { lang } = useLang();
-  const copy = milesealCopy(lang).cta;
+  const cta = milesealCopy(lang).cta;
+  const ws = milesealWorkspaceCopy(lang);
   const formId = useId();
+  const videoRef = useRef(null);
+  useKeepVideoPlaying(videoRef);
+  const [step, setStep] = useState("welcome");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [agency, setAgency] = useState("");
@@ -22224,32 +22626,152 @@ function MilesealReviewForm({ prefill }) {
   const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const privacyHref = lang === "ru" ? "/doc/Политика_обработки_ПД_Tivonix_RU.pdf" : "/doc/Privacy_Policy_Tivonix_EN.pdf";
+  const steps = ["welcome", "request", "scope", "contact", "review"];
+  const stepIndex = steps.indexOf(step);
+  const ask = lang === "ru" ? {
+    welcomeTitle: "Давайте разберём ваш кейс",
+    welcomeText: "Я задам несколько коротких вопросов — без фейкового AI-ответа. После этого команда TIVONIX сверит запрос с объёмом вручную.",
+    start: "Начать",
+    qRequest: "Что написал клиент?",
+    qRequestHint: "Вставьте новый запрос как пришёл — можно обезличенно.",
+    qScope: "Что было согласовано?",
+    qScopeHint: "Кратко: что входит в объём и что явно исключено.",
+    qContact: "Куда прислать разбор?",
+    qContactHint: "Рабочий email обязателен. Имя и агентство — по желанию.",
+    qReview: "Проверьте и отправьте",
+    qReviewHint: "Мы ответим с понятным выводом: что изменилось и что нужно согласовать.",
+    next: "Далее",
+    back: "Назад",
+    stepOf: (n, total) => `Шаг ${n} из ${total}`
+  } : lang === "zh" ? {
+    welcomeTitle: "我们来梳理你的案例",
+    welcomeText: "我会问几个简短问题——不会给出虚假 AI 结论。随后 TIVONIX 团队会人工对照约定范围。",
+    start: "开始",
+    qRequest: "客户说了什么？",
+    qRequestHint: "粘贴新请求原文，可做脱敏。",
+    qScope: "当初约定了什么？",
+    qScopeHint: "简要说明范围内与明确排除的内容。",
+    qContact: "结果发到哪里？",
+    qContactHint: "工作邮箱必填。姓名与代理商可选。",
+    qReview: "确认并发送",
+    qReviewHint: "我们会回复清晰结论：哪里变了、需要哪些书面确认。",
+    next: "下一步",
+    back: "返回",
+    stepOf: (n, total) => `第 ${n} / ${total} 步`
+  } : {
+    welcomeTitle: "Let’s walk through your case",
+    welcomeText: "I’ll ask a few short questions — no fake AI verdict. Then the TIVONIX team will compare the request to the agreed scope by hand.",
+    start: "Start",
+    qRequest: "What did the client ask for?",
+    qRequestHint: "Paste the new request as it arrived — anonymised is fine.",
+    qScope: "What was already agreed?",
+    qScopeHint: "Briefly: what’s in scope and what was explicitly excluded.",
+    qContact: "Where should we send the review?",
+    qContactHint: "Work email is required. Name and agency are optional.",
+    qReview: "Review and send",
+    qReviewHint: "We’ll reply with a clear read on what changed and what needs approval.",
+    next: "Continue",
+    back: "Back",
+    stepOf: (n, total) => `Step ${n} of ${total}`
+  };
+  const inputClass2 = cx$2(
+    "w-full min-h-12 rounded-2xl px-4 py-3",
+    "border-0 bg-[#f4f3f1] text-[#141414] placeholder:text-[#141414]/35",
+    "outline-none transition",
+    "focus-visible:ring-2 focus-visible:ring-[#fc5000]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+    "font-sans text-[14px] font-medium"
+  );
+  const labelClass2 = "mb-1.5 flex items-center gap-2 text-[12px] font-semibold tracking-[0.04em] text-[#141414]/55";
+  const primaryBtn2 = cx$2(
+    "inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5",
+    "bg-[#fc5000] text-[14px] font-semibold text-white transition",
+    "hover:bg-[#e04800] active:scale-[0.98]",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+    "disabled:pointer-events-none disabled:opacity-50"
+  );
+  const ghostBtn = cx$2(
+    "inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-4",
+    "bg-transparent text-[14px] font-semibold text-[#141414]/65 transition",
+    "hover:bg-black/[0.04] hover:text-[#141414]",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+  );
+  const goNext = () => {
+    setErrorMsg("");
+    if (step === "welcome") {
+      setStep("request");
+      return;
+    }
+    if (step === "request") {
+      if (!clientRequest.trim() || clientRequest.trim().length < 5) {
+        setErrorMsg(cta.errRequest);
+        return;
+      }
+      setStep("scope");
+      return;
+    }
+    if (step === "scope") {
+      if (!agreedScope.trim() || agreedScope.trim().length < 5) {
+        setErrorMsg(cta.errScope);
+        return;
+      }
+      setStep("contact");
+      return;
+    }
+    if (step === "contact") {
+      if (!email.trim() || email.trim().length < 3) {
+        setErrorMsg(cta.errEmail);
+        return;
+      }
+      setStep("review");
+    }
+  };
+  const goBack = () => {
+    setErrorMsg("");
+    if (step === "request") setStep("welcome");
+    else if (step === "scope") setStep("request");
+    else if (step === "contact") setStep("scope");
+    else if (step === "review") setStep("contact");
+  };
   const onSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
     if (!email.trim() || email.trim().length < 3) {
-      setErrorMsg(copy.errEmail);
-      setStatus("error");
+      setErrorMsg(cta.errEmail);
+      setStep("contact");
       return;
     }
     if (!clientRequest.trim() || clientRequest.trim().length < 5) {
-      setErrorMsg(copy.errRequest);
-      setStatus("error");
+      setErrorMsg(cta.errRequest);
+      setStep("request");
       return;
     }
     if (!agreedScope.trim() || agreedScope.trim().length < 5) {
-      setErrorMsg(copy.errScope);
-      setStatus("error");
+      setErrorMsg(cta.errScope);
+      setStep("scope");
       return;
     }
     if (!consent) {
-      setErrorMsg(copy.errConsent);
-      setStatus("error");
+      setErrorMsg(cta.errConsent);
       return;
     }
     setStatus("loading");
     trackLeadFormSubmit("mileseal_scope_review");
-    const labels = lang === "ru" ? { agency: "Агентство", scope: "Согласованный объём", request: "Запрос клиента", draft: "Черновик change request" } : lang === "zh" ? { agency: "代理商", scope: "已约定范围", request: "客户请求", draft: "变更请求草稿" } : { agency: "Agency", scope: "Agreed scope", request: "Recent client request", draft: "Demo change request draft" };
+    const labels = lang === "ru" ? {
+      agency: "Агентство",
+      scope: "Согласованный объём",
+      request: "Запрос клиента",
+      draft: "Черновик change request"
+    } : lang === "zh" ? {
+      agency: "代理商",
+      scope: "已约定范围",
+      request: "客户请求",
+      draft: "变更请求草稿"
+    } : {
+      agency: "Agency",
+      scope: "Agreed scope",
+      request: "Recent client request",
+      draft: "Demo change request draft"
+    };
     const taskParts = [
       "[MileSeal human scope review]",
       agency.trim() ? `${labels.agency}: ${agency.trim()}` : null,
@@ -22278,187 +22800,1918 @@ ${prefill.changeRequest}` : null
       setStatus("success");
       return;
     }
-    setErrorMsg(result.fallback ? copy.errNetwork : copy.errGeneric);
+    setErrorMsg(result.fallback ? cta.errNetwork : cta.errGeneric);
     setStatus("error");
   };
-  if (status === "success") {
-    return /* @__PURE__ */ jsxs("div", { className: "rounded-[24px] bg-[#0c0c0c] px-6 py-10 text-center sm:px-10", children: [
-      /* @__PURE__ */ jsx("p", { className: "text-[11px] font-semibold uppercase tracking-[0.2em] text-[#FF9A3D]", children: copy.successBadge }),
-      /* @__PURE__ */ jsx("h3", { className: "mt-3 font-hero text-[clamp(1.6rem,3.5vw,2.25rem)] uppercase tracking-[0.02em] text-white", children: copy.successTitle }),
-      /* @__PURE__ */ jsx("p", { className: "mx-auto mt-3 max-w-[32rem] font-sans text-[15px] font-medium leading-[1.55] text-white/62", children: copy.successText })
-    ] });
-  }
   return /* @__PURE__ */ jsxs(
-    "form",
+    "div",
     {
-      onSubmit,
-      className: "relative rounded-[24px] bg-[#0c0c0c] p-5 sm:p-7",
-      noValidate: true,
+      className: "fixed inset-0 z-[60] flex items-end justify-center p-0 sm:items-center sm:p-5",
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": "mileseal-manual-title",
       children: [
-        /* @__PURE__ */ jsxs("div", { className: "grid gap-4 sm:grid-cols-2", children: [
-          /* @__PURE__ */ jsxs("div", { children: [
-            /* @__PURE__ */ jsx("label", { htmlFor: `${formId}-name`, className: labelClass, children: copy.name }),
-            /* @__PURE__ */ jsx(
-              "input",
-              {
-                id: `${formId}-name`,
-                name: "name",
-                type: "text",
-                autoComplete: "name",
-                className: inputClass,
-                value: name,
-                onChange: (e) => setName(e.target.value),
-                disabled: status === "loading"
-              }
-            )
-          ] }),
-          /* @__PURE__ */ jsxs("div", { children: [
-            /* @__PURE__ */ jsx("label", { htmlFor: `${formId}-email`, className: labelClass, children: copy.email }),
-            /* @__PURE__ */ jsx(
-              "input",
-              {
-                id: `${formId}-email`,
-                name: "email",
-                type: "email",
-                autoComplete: "email",
-                required: true,
-                className: inputClass,
-                value: email,
-                onChange: (e) => setEmail(e.target.value),
-                disabled: status === "loading"
-              }
-            )
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxs("div", { className: "mt-4", children: [
-          /* @__PURE__ */ jsx("label", { htmlFor: `${formId}-agency`, className: labelClass, children: copy.agency }),
-          /* @__PURE__ */ jsx(
-            "input",
-            {
-              id: `${formId}-agency`,
-              name: "agency",
-              type: "text",
-              autoComplete: "organization",
-              className: inputClass,
-              value: agency,
-              onChange: (e) => setAgency(e.target.value),
-              disabled: status === "loading"
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsxs("div", { className: "mt-4", children: [
-          /* @__PURE__ */ jsx("label", { htmlFor: `${formId}-request`, className: labelClass, children: copy.clientRequest }),
-          /* @__PURE__ */ jsx(
-            AutoGrowTextarea,
-            {
-              id: `${formId}-request`,
-              name: "client_request",
-              required: true,
-              minRows: 3,
-              maxRows: 12,
-              value: clientRequest,
-              onChange: (e) => setClientRequest(e.target.value),
-              disabled: status === "loading"
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsxs("div", { className: "mt-4", children: [
-          /* @__PURE__ */ jsx("label", { htmlFor: `${formId}-scope`, className: labelClass, children: copy.agreedScope }),
-          /* @__PURE__ */ jsx(
-            AutoGrowTextarea,
-            {
-              id: `${formId}-scope`,
-              name: "agreed_scope",
-              required: true,
-              minRows: 3,
-              maxRows: 12,
-              value: agreedScope,
-              onChange: (e) => setAgreedScope(e.target.value),
-              disabled: status === "loading"
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsxs("div", { className: "absolute -left-[9999px] h-0 w-0 overflow-hidden", "aria-hidden": true, children: [
-          /* @__PURE__ */ jsx("label", { htmlFor: `${formId}-fax`, children: "Company fax" }),
-          /* @__PURE__ */ jsx(
-            "input",
-            {
-              id: `${formId}-fax`,
-              name: "company_fax_url",
-              type: "text",
-              tabIndex: -1,
-              autoComplete: "off",
-              value: honeypot,
-              onChange: (e) => setHoneypot(e.target.value)
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsxs("label", { className: "mt-5 flex items-start gap-3 text-[13px] font-medium leading-snug text-white/65", children: [
-          /* @__PURE__ */ jsx(
-            "input",
-            {
-              type: "checkbox",
-              checked: consent,
-              onChange: (e) => setConsent(e.target.checked),
-              disabled: status === "loading",
-              className: "mt-0.5 h-4 w-4 shrink-0 rounded border-0 bg-white/15 accent-[#fc5000]"
-            }
-          ),
-          /* @__PURE__ */ jsxs("span", { children: [
-            copy.consent,
-            " ",
-            /* @__PURE__ */ jsx(
-              "a",
-              {
-                href: privacyHref,
-                target: "_blank",
-                rel: "noopener noreferrer",
-                className: "text-white/85 underline underline-offset-2 hover:text-white",
-                children: copy.privacy
-              }
-            )
-          ] })
-        ] }),
-        errorMsg ? /* @__PURE__ */ jsx(
-          "p",
-          {
-            className: "mt-4 rounded-xl bg-[#fc5000]/12 px-3.5 py-2.5 text-[13px] font-medium text-[#FF9A3D]",
-            role: "alert",
-            children: errorMsg
-          }
-        ) : null,
-        /* @__PURE__ */ jsx("div", { className: "mt-6", children: /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx(
           "button",
           {
-            type: "submit",
-            disabled: status === "loading",
-            className: ctaClass$1("primary", "lg", "w-full sm:w-auto disabled:opacity-60"),
-            children: status === "loading" ? copy.sending : copy.send
+            type: "button",
+            className: "absolute inset-0 bg-black/40 backdrop-blur-md",
+            "aria-label": ws.closeArtifact,
+            onClick: onClose
           }
-        ) })
+        ),
+        /* @__PURE__ */ jsxs(
+          "div",
+          {
+            className: cx$2(
+              "relative z-10 flex max-h-[min(94dvh,880px)] w-full max-w-[34rem] flex-col overflow-hidden",
+              "rounded-t-[1.75rem] sm:rounded-[1.75rem]",
+              "bg-white/88 shadow-[0_24px_80px_rgba(0,0,0,0.28)] ring-1 ring-white/60 backdrop-blur-2xl"
+            ),
+            children: [
+              /* @__PURE__ */ jsxs("div", { className: "relative h-[148px] shrink-0 overflow-hidden sm:h-[168px]", children: [
+                /* @__PURE__ */ jsx(
+                  "video",
+                  {
+                    ref: videoRef,
+                    className: "pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover",
+                    src: HERO_VIDEO$2,
+                    poster: HERO_POSTER$2,
+                    autoPlay: true,
+                    muted: true,
+                    loop: true,
+                    playsInline: true,
+                    preload: "metadata",
+                    controls: false,
+                    disablePictureInPicture: true
+                  }
+                ),
+                /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-b from-black/35 via-black/45 to-[#0a0a0a]/88" }),
+                /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(252,80,0,0.22)_0%,transparent_60%)]" }),
+                /* @__PURE__ */ jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: onClose,
+                    className: "absolute right-3 top-3 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-md transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
+                    "aria-label": ws.closeArtifact,
+                    children: /* @__PURE__ */ jsx(X, { className: "h-4 w-4", strokeWidth: 2, "aria-hidden": true })
+                  }
+                ),
+                /* @__PURE__ */ jsxs("div", { className: "relative z-10 flex h-full flex-col justify-end px-5 pb-4 pt-10 sm:px-6", children: [
+                  /* @__PURE__ */ jsxs("div", { className: "mb-3 flex items-center gap-2.5", children: [
+                    /* @__PURE__ */ jsx(
+                      "img",
+                      {
+                        src: "/images/mileseal-mark-orange.svg",
+                        alt: "",
+                        className: "h-9 w-9 drop-shadow-[0_8px_20px_rgba(252,80,0,0.45)]",
+                        width: 36,
+                        height: 36
+                      }
+                    ),
+                    /* @__PURE__ */ jsx("span", { className: "text-[15px] font-semibold tracking-[-0.02em] text-white", children: "MileSeal" }),
+                    /* @__PURE__ */ jsx("span", { className: "rounded-md bg-white/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-white/90 backdrop-blur-sm", children: ws.demoBadge })
+                  ] }),
+                  /* @__PURE__ */ jsx(
+                    "h2",
+                    {
+                      id: "mileseal-manual-title",
+                      className: "text-[clamp(1.2rem,3vw,1.45rem)] font-semibold tracking-[-0.03em] text-white",
+                      children: ws.manualTitle
+                    }
+                  ),
+                  /* @__PURE__ */ jsx("p", { className: "mt-1 max-w-[28rem] text-[13px] font-medium leading-snug text-white/70", children: ws.manualText })
+                ] })
+              ] }),
+              status !== "success" ? /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 border-b border-black/[0.05] bg-white/70 px-5 py-2.5 backdrop-blur-md sm:px-6", children: [
+                /* @__PURE__ */ jsx("p", { className: "text-[12px] font-semibold text-[#141414]/45", children: ask.stepOf(Math.max(1, stepIndex + 1), steps.length) }),
+                /* @__PURE__ */ jsx("div", { className: "ml-auto flex gap-1", children: steps.map((s2, i) => /* @__PURE__ */ jsx(
+                  "span",
+                  {
+                    className: cx$2(
+                      "h-1 w-5 rounded-full transition",
+                      i <= stepIndex ? "bg-[#fc5000]" : "bg-black/10"
+                    ),
+                    "aria-hidden": true
+                  },
+                  s2
+                )) })
+              ] }) : null,
+              /* @__PURE__ */ jsx("div", { className: "min-h-0 flex-1 overflow-y-auto px-5 py-4 no-scrollbar sm:px-6 sm:py-5", children: status === "success" ? /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center py-8 text-center", children: [
+                /* @__PURE__ */ jsx("span", { className: "inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#fc5000]/12 text-[#fc5000]", children: /* @__PURE__ */ jsx(Check, { className: "h-6 w-6", strokeWidth: 2.25, "aria-hidden": true }) }),
+                /* @__PURE__ */ jsx("p", { className: "mt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#fc5000]", children: cta.successBadge }),
+                /* @__PURE__ */ jsx("h3", { className: "mt-2 text-[1.35rem] font-semibold tracking-[-0.02em] text-[#141414]", children: cta.successTitle }),
+                /* @__PURE__ */ jsx("p", { className: "mt-2 max-w-[26rem] text-[14px] font-medium leading-relaxed text-[#141414]/55", children: cta.successText }),
+                /* @__PURE__ */ jsx("button", { type: "button", className: cx$2(primaryBtn2, "mt-6"), onClick: onClose, children: ws.closeArtifact })
+              ] }) : /* @__PURE__ */ jsxs("form", { onSubmit, noValidate: true, className: "flex min-h-full flex-col", children: [
+                /* @__PURE__ */ jsxs(AssistantBubble, { children: [
+                  step === "welcome" ? /* @__PURE__ */ jsxs(Fragment, { children: [
+                    /* @__PURE__ */ jsx("p", { className: "font-semibold text-[#141414]", children: ask.welcomeTitle }),
+                    /* @__PURE__ */ jsx("p", { className: "mt-1.5 text-[14px] font-medium leading-relaxed text-[#141414]/62", children: ask.welcomeText })
+                  ] }) : null,
+                  step === "request" ? /* @__PURE__ */ jsxs(Fragment, { children: [
+                    /* @__PURE__ */ jsxs("p", { className: "flex items-center gap-2 font-semibold text-[#141414]", children: [
+                      /* @__PURE__ */ jsx(MessageSquareText, { className: "h-4 w-4 text-[#fc5000]", "aria-hidden": true }),
+                      ask.qRequest
+                    ] }),
+                    /* @__PURE__ */ jsx("p", { className: "mt-1 text-[13px] font-medium text-[#141414]/5", children: ask.qRequestHint })
+                  ] }) : null,
+                  step === "scope" ? /* @__PURE__ */ jsxs(Fragment, { children: [
+                    /* @__PURE__ */ jsxs("p", { className: "flex items-center gap-2 font-semibold text-[#141414]", children: [
+                      /* @__PURE__ */ jsx(FileText, { className: "h-4 w-4 text-[#fc5000]", "aria-hidden": true }),
+                      ask.qScope
+                    ] }),
+                    /* @__PURE__ */ jsx("p", { className: "mt-1 text-[13px] font-medium text-[#141414]/5", children: ask.qScopeHint })
+                  ] }) : null,
+                  step === "contact" ? /* @__PURE__ */ jsxs(Fragment, { children: [
+                    /* @__PURE__ */ jsxs("p", { className: "flex items-center gap-2 font-semibold text-[#141414]", children: [
+                      /* @__PURE__ */ jsx(Mail, { className: "h-4 w-4 text-[#fc5000]", "aria-hidden": true }),
+                      ask.qContact
+                    ] }),
+                    /* @__PURE__ */ jsx("p", { className: "mt-1 text-[13px] font-medium text-[#141414]/5", children: ask.qContactHint })
+                  ] }) : null,
+                  step === "review" ? /* @__PURE__ */ jsxs(Fragment, { children: [
+                    /* @__PURE__ */ jsxs("p", { className: "flex items-center gap-2 font-semibold text-[#141414]", children: [
+                      /* @__PURE__ */ jsx(ShieldCheck, { className: "h-4 w-4 text-[#fc5000]", "aria-hidden": true }),
+                      ask.qReview
+                    ] }),
+                    /* @__PURE__ */ jsx("p", { className: "mt-1 text-[13px] font-medium text-[#141414]/5", children: ask.qReviewHint })
+                  ] }) : null
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "mt-4 space-y-3", children: [
+                  step === "request" ? /* @__PURE__ */ jsx(
+                    AutoGrowTextarea,
+                    {
+                      id: `${formId}-request`,
+                      name: "client_request",
+                      required: true,
+                      minRows: 4,
+                      maxRows: 10,
+                      tone: "light",
+                      value: clientRequest,
+                      onChange: (e) => setClientRequest(e.target.value),
+                      disabled: status === "loading",
+                      className: inputClass2,
+                      placeholder: cta.clientRequest
+                    }
+                  ) : null,
+                  step === "scope" ? /* @__PURE__ */ jsx(
+                    AutoGrowTextarea,
+                    {
+                      id: `${formId}-scope`,
+                      name: "agreed_scope",
+                      required: true,
+                      minRows: 4,
+                      maxRows: 10,
+                      tone: "light",
+                      value: agreedScope,
+                      onChange: (e) => setAgreedScope(e.target.value),
+                      disabled: status === "loading",
+                      className: inputClass2,
+                      placeholder: cta.agreedScope
+                    }
+                  ) : null,
+                  step === "contact" ? /* @__PURE__ */ jsxs("div", { className: "space-y-3", children: [
+                    /* @__PURE__ */ jsxs("div", { children: [
+                      /* @__PURE__ */ jsxs("label", { htmlFor: `${formId}-email`, className: labelClass2, children: [
+                        /* @__PURE__ */ jsx(Mail, { className: "h-3.5 w-3.5", "aria-hidden": true }),
+                        cta.email
+                      ] }),
+                      /* @__PURE__ */ jsx(
+                        "input",
+                        {
+                          id: `${formId}-email`,
+                          name: "email",
+                          type: "email",
+                          autoComplete: "email",
+                          required: true,
+                          className: inputClass2,
+                          value: email,
+                          onChange: (e) => setEmail(e.target.value),
+                          disabled: status === "loading"
+                        }
+                      )
+                    ] }),
+                    /* @__PURE__ */ jsxs("div", { className: "grid gap-3 sm:grid-cols-2", children: [
+                      /* @__PURE__ */ jsxs("div", { children: [
+                        /* @__PURE__ */ jsxs("label", { htmlFor: `${formId}-name`, className: labelClass2, children: [
+                          /* @__PURE__ */ jsx(User, { className: "h-3.5 w-3.5", "aria-hidden": true }),
+                          cta.name
+                        ] }),
+                        /* @__PURE__ */ jsx(
+                          "input",
+                          {
+                            id: `${formId}-name`,
+                            name: "name",
+                            type: "text",
+                            autoComplete: "name",
+                            className: inputClass2,
+                            value: name,
+                            onChange: (e) => setName(e.target.value),
+                            disabled: status === "loading"
+                          }
+                        )
+                      ] }),
+                      /* @__PURE__ */ jsxs("div", { children: [
+                        /* @__PURE__ */ jsxs("label", { htmlFor: `${formId}-agency`, className: labelClass2, children: [
+                          /* @__PURE__ */ jsx(Building2, { className: "h-3.5 w-3.5", "aria-hidden": true }),
+                          cta.agency
+                        ] }),
+                        /* @__PURE__ */ jsx(
+                          "input",
+                          {
+                            id: `${formId}-agency`,
+                            name: "agency",
+                            type: "text",
+                            autoComplete: "organization",
+                            className: inputClass2,
+                            value: agency,
+                            onChange: (e) => setAgency(e.target.value),
+                            disabled: status === "loading"
+                          }
+                        )
+                      ] })
+                    ] })
+                  ] }) : null,
+                  step === "review" ? /* @__PURE__ */ jsxs("div", { className: "space-y-3", children: [
+                    /* @__PURE__ */ jsx(
+                      SummaryCard,
+                      {
+                        icon: /* @__PURE__ */ jsx(MessageSquareText, { className: "h-4 w-4", "aria-hidden": true }),
+                        label: cta.clientRequest,
+                        value: clientRequest
+                      }
+                    ),
+                    /* @__PURE__ */ jsx(
+                      SummaryCard,
+                      {
+                        icon: /* @__PURE__ */ jsx(FileText, { className: "h-4 w-4", "aria-hidden": true }),
+                        label: cta.agreedScope,
+                        value: agreedScope
+                      }
+                    ),
+                    /* @__PURE__ */ jsx(
+                      SummaryCard,
+                      {
+                        icon: /* @__PURE__ */ jsx(Mail, { className: "h-4 w-4", "aria-hidden": true }),
+                        label: cta.email,
+                        value: email
+                      }
+                    ),
+                    /* @__PURE__ */ jsxs("label", { className: "mt-2 flex items-start gap-3 rounded-2xl bg-[#f4f3f1] px-3.5 py-3 text-[13px] font-medium leading-snug text-[#141414]/7", children: [
+                      /* @__PURE__ */ jsx(
+                        "input",
+                        {
+                          type: "checkbox",
+                          checked: consent,
+                          onChange: (e) => setConsent(e.target.checked),
+                          disabled: status === "loading",
+                          className: "mt-0.5 h-4 w-4 shrink-0 rounded border-0 bg-white accent-[#fc5000]"
+                        }
+                      ),
+                      /* @__PURE__ */ jsxs("span", { children: [
+                        cta.consent,
+                        " ",
+                        /* @__PURE__ */ jsx(
+                          "a",
+                          {
+                            href: privacyHref,
+                            target: "_blank",
+                            rel: "noopener noreferrer",
+                            className: "text-[#141414] underline underline-offset-2 hover:text-[#fc5000]",
+                            children: cta.privacy
+                          }
+                        )
+                      ] })
+                    ] })
+                  ] }) : null
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "absolute -left-[9999px] h-0 w-0 overflow-hidden", "aria-hidden": true, children: [
+                  /* @__PURE__ */ jsx("label", { htmlFor: `${formId}-fax`, children: "Company fax" }),
+                  /* @__PURE__ */ jsx(
+                    "input",
+                    {
+                      id: `${formId}-fax`,
+                      name: "company_fax_url",
+                      type: "text",
+                      tabIndex: -1,
+                      autoComplete: "off",
+                      value: honeypot,
+                      onChange: (e) => setHoneypot(e.target.value)
+                    }
+                  )
+                ] }),
+                errorMsg ? /* @__PURE__ */ jsx(
+                  "p",
+                  {
+                    className: "mt-3 rounded-xl bg-[#fc5000]/10 px-3.5 py-2.5 text-[13px] font-medium text-[#c2410c]",
+                    role: "alert",
+                    children: errorMsg
+                  }
+                ) : null,
+                /* @__PURE__ */ jsxs("div", { className: "mt-auto flex items-center gap-2 pt-5", children: [
+                  step !== "welcome" ? /* @__PURE__ */ jsx("button", { type: "button", className: ghostBtn, onClick: goBack, disabled: status === "loading", children: ask.back }) : null,
+                  /* @__PURE__ */ jsx("div", { className: "ml-auto flex items-center gap-2", children: step === "review" ? /* @__PURE__ */ jsxs("button", { type: "submit", className: primaryBtn2, disabled: status === "loading", children: [
+                    status === "loading" ? cta.sending : cta.send,
+                    /* @__PURE__ */ jsx(ArrowRight, { className: "h-4 w-4", strokeWidth: 2.25, "aria-hidden": true })
+                  ] }) : /* @__PURE__ */ jsxs("button", { type: "button", className: primaryBtn2, onClick: goNext, children: [
+                    step === "welcome" ? ask.start : ask.next,
+                    /* @__PURE__ */ jsx(ArrowRight, { className: "h-4 w-4", strokeWidth: 2.25, "aria-hidden": true })
+                  ] }) })
+                ] })
+              ] }) })
+            ]
+          }
+        )
       ]
     }
   );
 }
-function scrollToId(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const y = el.getBoundingClientRect().top + window.scrollY - 84;
-  window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+function AssistantBubble({ children }) {
+  return /* @__PURE__ */ jsxs("div", { className: "flex gap-2.5", children: [
+    /* @__PURE__ */ jsx(
+      "img",
+      {
+        src: "/images/mileseal-mark-orange.svg",
+        alt: "",
+        className: "mt-0.5 h-7 w-7 shrink-0",
+        width: 28,
+        height: 28
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "min-w-0 flex-1 rounded-2xl rounded-tl-md bg-[#f4f3f1]/90 px-3.5 py-3 ring-1 ring-black/[0.04]", children })
+  ] });
+}
+function SummaryCard({
+  icon,
+  label,
+  value
+}) {
+  return /* @__PURE__ */ jsxs("div", { className: "rounded-2xl bg-[#f4f3f1] px-3.5 py-3 ring-1 ring-black/[0.04]", children: [
+    /* @__PURE__ */ jsxs("p", { className: "flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#141414]/4", children: [
+      /* @__PURE__ */ jsx("span", { className: "text-[#fc5000]", children: icon }),
+      label
+    ] }),
+    /* @__PURE__ */ jsx("p", { className: "mt-1.5 whitespace-pre-wrap text-[13px] font-medium leading-relaxed text-[#141414]/8", children: value })
+  ] });
+}
+function useMinWidth(minPx) {
+  const query = `(min-width: ${minPx}px)`;
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia(query);
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(query).matches,
+    () => false
+  );
+}
+const HERO_VIDEO$1 = "/images/hero-bg.mp4";
+const HERO_POSTER$1 = "/images/hero-bg-poster.webp";
+function cx$1(...a) {
+  return a.filter(Boolean).join(" ");
+}
+function prefersReducedMotion$1() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+const LANGS = ["ru", "en", "zh"];
+function langLabel(code) {
+  if (code === "zh") return "中文";
+  return code.toUpperCase();
+}
+const focusRing = "outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3f1]";
+const iconBtn = cx$1(
+  "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-transparent text-[#141414]/55 transition",
+  "hover:text-[#141414]",
+  focusRing
+);
+const softBtn = cx$1(
+  "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-2.5 text-[13px] font-semibold transition",
+  "bg-transparent text-[#141414]/72 hover:text-[#141414]",
+  focusRing
+);
+const iconSlot = "inline-grid h-6 w-6 shrink-0 place-items-center";
+const primaryBtn = cx$1(
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-[13px] font-semibold text-white transition",
+  "bg-[#fc5000] hover:bg-[#e04800]",
+  "outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3f1]",
+  "disabled:pointer-events-none disabled:opacity-45"
+);
+async function downloadChangeRequestPdf$1(text) {
+  const [{ jsPDF: jsPDF2 }, html2canvas2] = await Promise.all([
+    import("jspdf"),
+    import("html2canvas")
+  ]);
+  const host = document.createElement("div");
+  host.setAttribute("aria-hidden", "true");
+  host.style.cssText = "position:fixed;left:-10000px;top:0;width:794px;pointer-events:none;opacity:0;";
+  host.innerHTML = `
+    <div id="mileseal-ws-pdf" style="width:794px;box-sizing:border-box;padding:48px 52px;background:#f7f6f4;color:#141414;font-family:'DM Sans',system-ui,sans-serif;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px;">
+        <img src="/images/mileseal-mark-orange.svg" width="28" height="28" alt="" />
+        <div style="font-size:15px;font-weight:650;letter-spacing:-0.02em;">MileSeal</div>
+        <div style="margin-left:auto;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#fc5000;">Change request</div>
+      </div>
+      <div style="white-space:pre-wrap;font-size:14px;line-height:1.65;font-weight:500;">${text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+    </div>
+  `;
+  document.body.appendChild(host);
+  const sheet = host.querySelector("#mileseal-ws-pdf");
+  if (!sheet) {
+    host.remove();
+    throw new Error("PDF sheet missing");
+  }
+  try {
+    const canvas = await html2canvas2.default(sheet, {
+      backgroundColor: "#f7f6f4",
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      width: 794,
+      windowWidth: 794
+    });
+    const doc = new jsPDF2({ unit: "mm", format: "a4", orientation: "portrait" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const imgW = pageW;
+    const imgH = canvas.height * imgW / canvas.width;
+    let remaining = imgH;
+    let srcY = 0;
+    let pageIndex = 0;
+    const pxPerMm = canvas.height / imgH;
+    while (remaining > 0.5) {
+      const sliceH = Math.min(remaining, pageH);
+      const sliceCanvas = document.createElement("canvas");
+      sliceCanvas.width = canvas.width;
+      sliceCanvas.height = Math.max(1, Math.round(sliceH * pxPerMm));
+      const ctx = sliceCanvas.getContext("2d");
+      if (!ctx) break;
+      ctx.drawImage(
+        canvas,
+        0,
+        Math.round(srcY * pxPerMm),
+        canvas.width,
+        sliceCanvas.height,
+        0,
+        0,
+        canvas.width,
+        sliceCanvas.height
+      );
+      if (pageIndex > 0) doc.addPage();
+      doc.addImage(
+        sliceCanvas.toDataURL("image/png"),
+        "PNG",
+        0,
+        0,
+        imgW,
+        sliceH
+      );
+      srcY += sliceH;
+      remaining -= sliceH;
+      pageIndex += 1;
+    }
+    doc.save("mileseal-change-request.pdf");
+  } finally {
+    host.remove();
+  }
+}
+function MilesealWorkspace({
+  onRequestManualReview,
+  formOpen,
+  formKey,
+  prefill,
+  onCloseForm
+}) {
+  const { lang, setLang } = useLang();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const copy = milesealCopy(lang);
+  const ws = milesealWorkspaceCopy(lang);
+  const examples = copy.examples;
+  const firstExample = examples[0];
+  const [state, dispatch] = useReducer(
+    demoReducer,
+    firstExample,
+    createInitialDemoState
+  );
+  const selectedExample = useMemo(
+    () => examples.find((e) => e.id === state.selectedScenarioId) ?? firstExample,
+    [examples, firstExample, state.selectedScenarioId]
+  );
+  const [whyOpen, setWhyOpen] = useState(false);
+  const [effortOpen, setEffortOpen] = useState(false);
+  const [excerptsOpen, setExcerptsOpen] = useState(false);
+  const [composerDraft, setComposerDraft] = useState("");
+  const [resetMenuOpen, setResetMenuOpen] = useState(false);
+  const [toneMenuOpen, setToneMenuOpen] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfError, setPdfError] = useState(false);
+  const isWideArtifact = useMinWidth(1150);
+  const isDesktopNav = useMinWidth(900);
+  const composerRef = useRef(null);
+  const mainRef = useRef(null);
+  const artifactVideoRef = useRef(null);
+  const analyzeTimersRef = useRef([]);
+  const langRef = useRef(lang);
+  useKeepVideoPlaying(artifactVideoRef);
+  const isPreset = state.mode === "preset";
+  const showResult = isPreset && state.result !== null;
+  const crText = state.result ? changeRequestForTone(state.result, state.activeTone) : "";
+  useEffect(() => {
+    if (langRef.current === lang) return;
+    langRef.current = lang;
+    if (state.mode !== "preset") return;
+    const next = examples.find((e) => e.id === state.selectedScenarioId) ?? examples[0];
+    dispatch({ type: "syncLangPreset", example: next });
+    if (state.sessionStarted) setComposerDraft(next.request);
+  }, [lang, examples, state.mode, state.selectedScenarioId, state.sessionStarted]);
+  useEffect(() => {
+    if (!state.copied && !state.copyError) return;
+    const t = window.setTimeout(() => dispatch({ type: "clearCopied" }), 2e3);
+    return () => window.clearTimeout(t);
+  }, [state.copied, state.copyError]);
+  useEffect(() => {
+    analyzeTimersRef.current.forEach((id) => window.clearTimeout(id));
+    analyzeTimersRef.current = [];
+    if (!state.analyzing || state.mode !== "preset") return;
+    const total = prefersReducedMotion$1() ? 200 : 2e3;
+    const stepCount = ws.progressSteps.length;
+    const stepMs = total / stepCount;
+    const scenarioId = selectedExample.id;
+    const result = selectedExample.result;
+    for (let i = 0; i < stepCount; i++) {
+      const id = window.setTimeout(() => {
+        dispatch({ type: "setAnalysisStep", step: i + 1 });
+      }, stepMs * (i + 1) * 0.85);
+      analyzeTimersRef.current.push(id);
+    }
+    const doneId = window.setTimeout(() => {
+      dispatch({ type: "analyzeSuccess", result, scenarioId });
+    }, total);
+    analyzeTimersRef.current.push(doneId);
+    return () => {
+      analyzeTimersRef.current.forEach((id) => window.clearTimeout(id));
+      analyzeTimersRef.current = [];
+    };
+  }, [state.analyzing, state.mode, selectedExample, ws.progressSteps.length]);
+  useEffect(() => {
+    if (isDesktopNav && state.isMobileNavOpen) {
+      dispatch({ type: "setMobileNavOpen", open: false });
+    }
+  }, [isDesktopNav, state.isMobileNavOpen]);
+  useEffect(() => {
+    const lock = state.isMobileNavOpen || !isWideArtifact && state.isChangeRequestOpen || formOpen;
+    if (!lock) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [state.isMobileNavOpen, state.isChangeRequestOpen, isWideArtifact, formOpen]);
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key !== "Escape") return;
+      if (formOpen) {
+        onCloseForm();
+        return;
+      }
+      if (!isWideArtifact && state.isChangeRequestOpen) {
+        dispatch({ type: "closeChangeRequest" });
+        return;
+      }
+      if (state.isMobileNavOpen) {
+        dispatch({ type: "setMobileNavOpen", open: false });
+        return;
+      }
+      if (resetMenuOpen) {
+        setResetMenuOpen(false);
+        return;
+      }
+      if (toneMenuOpen) {
+        setToneMenuOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [
+    formOpen,
+    onCloseForm,
+    isWideArtifact,
+    state.isChangeRequestOpen,
+    state.isMobileNavOpen,
+    resetMenuOpen,
+    toneMenuOpen
+  ]);
+  const switchLang = (next) => {
+    setLang(next);
+    const target = pathForLang(location.pathname, next);
+    if (target !== location.pathname) {
+      navigate(`${target}${location.search}${location.hash}`, { replace: true });
+    }
+  };
+  const startAnalyze = () => {
+    if (!isPreset || state.analyzing) return;
+    dispatch({ type: "analyzeStart" });
+  };
+  const handleSelectScenario = (example) => {
+    dispatch({ type: "selectScenario", example });
+    setComposerDraft(example.request);
+    setWhyOpen(false);
+    setEffortOpen(false);
+    setExcerptsOpen(false);
+  };
+  const handleNewAnalysis = () => {
+    dispatch({ type: "newAnalysis" });
+    setComposerDraft("");
+    setWhyOpen(false);
+    setEffortOpen(false);
+    setExcerptsOpen(false);
+    setResetMenuOpen(false);
+    setToneMenuOpen(false);
+  };
+  const handleResetAnalysis = () => {
+    dispatch({ type: "startOver", example: selectedExample });
+    setComposerDraft(selectedExample.request);
+    setWhyOpen(false);
+    setEffortOpen(false);
+    setExcerptsOpen(false);
+    setResetMenuOpen(false);
+  };
+  const handleCopy = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      dispatch({ type: "copied" });
+      return;
+    } catch {
+    }
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      if (ok) dispatch({ type: "copied" });
+      else dispatch({ type: "copyFailed" });
+    } catch {
+      dispatch({ type: "copyFailed" });
+    }
+  };
+  const handleDownloadPdf = async () => {
+    if (!crText || pdfBusy) return;
+    setPdfBusy(true);
+    setPdfError(false);
+    try {
+      await downloadChangeRequestPdf$1(crText);
+    } catch (err) {
+      console.error("PDF download failed", err);
+      setPdfError(true);
+    } finally {
+      setPdfBusy(false);
+    }
+  };
+  const openManual = (nextPrefill) => {
+    dispatch({ type: "enterManualReview" });
+    onRequestManualReview(nextPrefill ?? { scope: state.scope, request: state.request });
+  };
+  const sendComposer = () => {
+    const text = composerDraft.trim();
+    if (!text || state.analyzing) return;
+    const matchingExample = examples.find((e) => e.request.trim() === text);
+    if (matchingExample) {
+      dispatch({ type: "selectScenario", example: matchingExample });
+      dispatch({ type: "analyzeStart" });
+      return;
+    }
+    dispatch({ type: "setRequest", value: text });
+    dispatch({ type: "enterManualReview" });
+    onRequestManualReview({
+      scope: state.scope.trim() || selectedExample.scope,
+      request: text
+    });
+  };
+  const onComposerKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendComposer();
+    }
+  };
+  const onComposerSubmit = (e) => {
+    e.preventDefault();
+    sendComposer();
+  };
+  const resizeComposer = () => {
+    const el = composerRef.current;
+    if (!el) return;
+    el.style.height = "0px";
+    const next = Math.min(Math.max(el.scrollHeight, 48), 160);
+    el.style.height = `${next}px`;
+  };
+  useEffect(() => {
+    resizeComposer();
+  }, [composerDraft]);
+  const titleLabel = state.sessionStarted && isPreset ? selectedExample.label : state.sessionStarted && !isPreset ? ws.topCustomReview : "";
+  const sidebarCollapsed = state.isSidebarCollapsed && isDesktopNav;
+  const sidebarInner = /* @__PURE__ */ jsxs("div", { className: "flex h-full flex-col", children: [
+    /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: cx$1(
+          "flex items-center gap-2.5 px-3 py-3",
+          sidebarCollapsed && "flex-col px-2"
+        ),
+        children: [
+          /* @__PURE__ */ jsx(
+            "img",
+            {
+              src: "/images/mileseal-mark-orange.svg",
+              alt: "",
+              className: "h-8 w-8 shrink-0",
+              width: 32,
+              height: 32
+            }
+          ),
+          !sidebarCollapsed ? /* @__PURE__ */ jsx("div", { className: "min-w-0 flex-1", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx("span", { className: "truncate text-[15px] font-semibold tracking-[-0.02em]", children: "MileSeal" }),
+            /* @__PURE__ */ jsx("span", { className: "rounded-md bg-[#fc5000]/12 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#fc5000]", children: ws.demoBadge })
+          ] }) }) : null,
+          isDesktopNav ? /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              className: iconBtn,
+              "aria-label": state.isSidebarCollapsed ? ws.expandSidebar : ws.collapseSidebar,
+              onClick: () => dispatch({ type: "toggleSidebarCollapsed" }),
+              children: state.isSidebarCollapsed ? /* @__PURE__ */ jsx(MsIconSidebarOpen, { className: "h-6 w-6" }) : /* @__PURE__ */ jsx(MsIconSidebar, { className: "h-6 w-6" })
+            }
+          ) : /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              className: iconBtn,
+              "aria-label": ws.closeNav,
+              onClick: () => dispatch({ type: "setMobileNavOpen", open: false }),
+              children: /* @__PURE__ */ jsx(MsIconClose, { className: "h-6 w-6" })
+            }
+          )
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "px-3 pt-3", children: /* @__PURE__ */ jsx(
+      "button",
+      {
+        type: "button",
+        onClick: handleNewAnalysis,
+        className: cx$1(primaryBtn, "w-full", sidebarCollapsed && "px-0"),
+        title: ws.newAnalysis,
+        children: sidebarCollapsed ? /* @__PURE__ */ jsx("span", { className: "text-lg leading-none", "aria-hidden": true, children: "+" }) : ws.newAnalysis
+      }
+    ) }),
+    /* @__PURE__ */ jsxs(
+      "nav",
+      {
+        className: "mt-4 min-h-0 flex-1 overflow-y-auto px-2 pb-3 no-scrollbar",
+        "aria-label": ws.demoAnalyses,
+        children: [
+          !sidebarCollapsed ? /* @__PURE__ */ jsx("p", { className: "px-2 pb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#141414]/45", children: ws.demoAnalyses }) : null,
+          /* @__PURE__ */ jsx("ul", { className: "space-y-0.5", children: examples.map((example) => {
+            const active = state.sessionStarted && isPreset && example.id === state.selectedScenarioId;
+            return /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsxs(
+              "button",
+              {
+                type: "button",
+                "aria-current": active ? "page" : void 0,
+                title: example.label,
+                onClick: () => handleSelectScenario(example),
+                className: cx$1(
+                  "flex w-full min-h-11 items-center gap-2.5 rounded-xl px-2.5 text-left text-[13px] font-medium transition",
+                  focusRing,
+                  active ? "bg-white/70 text-[#141414]" : "text-[#141414]/65 hover:bg-black/[0.03] hover:text-[#141414]",
+                  sidebarCollapsed && "justify-center px-0"
+                ),
+                children: [
+                  /* @__PURE__ */ jsx(
+                    "span",
+                    {
+                      className: cx$1(
+                        "flex h-7 w-7 shrink-0 items-center justify-center",
+                        active ? "opacity-100" : "opacity-70"
+                      ),
+                      "aria-hidden": true,
+                      children: /* @__PURE__ */ jsx(ScenarioChatIcon, { id: example.id, active })
+                    }
+                  ),
+                  !sidebarCollapsed ? /* @__PURE__ */ jsx("span", { className: "min-w-0 flex-1 truncate", children: example.label }) : null,
+                  !sidebarCollapsed ? /* @__PURE__ */ jsx("span", { className: "shrink-0 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#141414]/35", children: ws.demoTag }) : null
+                ]
+              }
+            ) }, example.id);
+          }) })
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: cx$1(
+          "mt-auto space-y-1 p-3",
+          sidebarCollapsed && "px-2"
+        ),
+        children: [
+          /* @__PURE__ */ jsxs(
+            "button",
+            {
+              type: "button",
+              onClick: () => openManual(),
+              className: cx$1(
+                softBtn,
+                "w-full justify-start gap-3 px-2.5",
+                sidebarCollapsed && "justify-center px-0"
+              ),
+              title: ws.requestManualReview,
+              "aria-label": ws.requestManualReview,
+              children: [
+                /* @__PURE__ */ jsx("span", { className: iconSlot, children: /* @__PURE__ */ jsx(MsIconManual, { className: "h-6 w-6" }) }),
+                !sidebarCollapsed ? /* @__PURE__ */ jsx("span", { className: "min-w-0 flex-1 truncate text-left leading-none", children: ws.requestManualReview }) : null
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxs(
+            Link,
+            {
+              to: "/mileseal/cases/content-migration",
+              className: cx$1(
+                softBtn,
+                "w-full justify-start gap-3 px-2.5 no-underline",
+                sidebarCollapsed && "justify-center px-0"
+              ),
+              title: ws.openCaseStudy,
+              "aria-label": ws.openCaseStudy,
+              children: [
+                /* @__PURE__ */ jsx("span", { className: iconSlot, children: /* @__PURE__ */ jsx(MsIconCase, { className: "h-6 w-6" }) }),
+                !sidebarCollapsed ? /* @__PURE__ */ jsx("span", { className: "min-w-0 flex-1 truncate text-left leading-none", children: ws.openCaseStudy }) : null
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "div",
+            {
+              className: cx$1(
+                "flex items-center gap-0.5 p-0.5",
+                sidebarCollapsed && "flex-col"
+              ),
+              role: "radiogroup",
+              "aria-label": t3(lang, "Язык", "Language", "语言"),
+              children: LANGS.map((code) => /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  role: "radio",
+                  "aria-checked": lang === code,
+                  onClick: () => switchLang(code),
+                  className: cx$1(
+                    "flex h-9 min-w-0 flex-1 items-center justify-center rounded-lg text-[11px] font-bold tracking-[0.06em] transition",
+                    focusRing,
+                    lang === code ? "text-[#141414]" : "text-[#141414]/35 hover:text-[#141414]/7",
+                    sidebarCollapsed && "w-full flex-none"
+                  ),
+                  children: langLabel(code)
+                },
+                code
+              ))
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            Link,
+            {
+              to: "/",
+              className: cx$1(
+                softBtn,
+                "w-full justify-start no-underline",
+                sidebarCollapsed && "justify-center px-0"
+              ),
+              title: ws.backToTivonix,
+              children: sidebarCollapsed ? /* @__PURE__ */ jsx(MsIconChevronLeft, { className: "h-4 w-4" }) : ws.backToTivonix
+            }
+          )
+        ]
+      }
+    )
+  ] });
+  const artifactBody = /* @__PURE__ */ jsxs("div", { className: "flex h-full flex-col bg-transparent", children: [
+    /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: cx$1(
+          "relative overflow-hidden transition-[flex-grow,min-height,height] duration-700 ease-out",
+          state.analyzing ? "min-h-0 flex-1" : "h-[132px] shrink-0 sm:h-[148px]"
+        ),
+        children: [
+          /* @__PURE__ */ jsx(
+            "video",
+            {
+              ref: artifactVideoRef,
+              className: cx$1(
+                "pointer-events-none absolute object-cover",
+                state.analyzing ? "inset-0 h-full w-full scale-105 blur-[6px] brightness-[0.7] saturate-[1.2]" : "-inset-[18%] h-[136%] w-[136%] max-w-none scale-110 blur-[10px] brightness-[0.85] saturate-[1.15]"
+              ),
+              src: HERO_VIDEO$1,
+              poster: HERO_POSTER$1,
+              autoPlay: true,
+              muted: true,
+              loop: true,
+              playsInline: true,
+              preload: "metadata",
+              controls: false,
+              disablePictureInPicture: true,
+              "aria-hidden": true
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "div",
+            {
+              className: cx$1(
+                "absolute inset-0",
+                state.analyzing ? "bg-gradient-to-b from-black/35 via-black/45 to-black/55" : "bg-gradient-to-b from-black/25 via-black/35 to-[#f0eeea]"
+              )
+            }
+          ),
+          /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(252,80,0,0.28)_0%,transparent_55%)]" }),
+          !state.analyzing ? /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#f0eeea] to-transparent" }) : null,
+          state.analyzing ? /* @__PURE__ */ jsxs(
+            "div",
+            {
+              className: "absolute inset-x-0 top-0 overflow-hidden transition-[height] duration-500 ease-out",
+              style: {
+                height: `${Math.min(
+                  100,
+                  Math.max(
+                    18,
+                    (state.activeAnalysisStep + 0.35) / Math.max(1, ws.progressSteps.length) * 100
+                  )
+                )}%`,
+                transitionDuration: prefersReducedMotion$1() ? "80ms" : "500ms"
+              },
+              "aria-hidden": true,
+              children: [
+                /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-b from-[#fc5000]/35 via-[#fc5000]/18 to-transparent" }),
+                /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#fc5000] to-transparent opacity-80" }),
+                /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white/25 to-transparent" })
+              ]
+            }
+          ) : null,
+          /* @__PURE__ */ jsxs("div", { className: "relative z-10 flex h-full flex-col px-3 pb-3 pt-3 sm:px-4", children: [
+            /* @__PURE__ */ jsxs("div", { className: "flex items-start gap-2", children: [
+              /* @__PURE__ */ jsxs("div", { className: "flex min-w-0 flex-1 items-center gap-2.5", children: [
+                /* @__PURE__ */ jsx(
+                  "img",
+                  {
+                    src: "/images/mileseal-mark-orange.svg",
+                    alt: "",
+                    className: "h-8 w-8 shrink-0 drop-shadow-[0_6px_16px_rgba(252,80,0,0.35)]",
+                    width: 32,
+                    height: 32
+                  }
+                ),
+                /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+                  /* @__PURE__ */ jsx("h2", { className: "truncate text-[14px] font-semibold tracking-[-0.02em] text-white drop-shadow-sm", children: ws.artifactTitle }),
+                  /* @__PURE__ */ jsxs("p", { className: "mt-0.5 truncate text-[11px] font-medium text-white/65", children: [
+                    "MileSeal · ",
+                    ws.demoBadge
+                  ] })
+                ] })
+              ] }),
+              !isWideArtifact ? /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  className: "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-md transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
+                  "aria-label": ws.closeArtifact,
+                  onClick: () => dispatch({ type: "closeChangeRequest" }),
+                  children: /* @__PURE__ */ jsx(MsIconClose, { className: "h-4 w-4" })
+                }
+              ) : null
+            ] }),
+            state.analyzing ? /* @__PURE__ */ jsxs(
+              "div",
+              {
+                className: "flex min-h-0 flex-1 flex-col items-center justify-center px-2 pb-6 text-center",
+                "aria-live": "polite",
+                "aria-busy": "true",
+                children: [
+                  /* @__PURE__ */ jsxs("div", { className: "relative h-14 w-14", children: [
+                    /* @__PURE__ */ jsx(
+                      "span",
+                      {
+                        className: "absolute inset-0 rounded-full border-[2.5px] border-white/25",
+                        "aria-hidden": true
+                      }
+                    ),
+                    /* @__PURE__ */ jsx(
+                      "span",
+                      {
+                        className: cx$1(
+                          "absolute inset-0 rounded-full border-[2.5px] border-transparent border-t-[#fc5000] border-r-[#fc5000]/40",
+                          !prefersReducedMotion$1() && "animate-spin"
+                        ),
+                        "aria-hidden": true
+                      }
+                    ),
+                    /* @__PURE__ */ jsx("span", { className: "absolute inset-0 grid place-items-center", children: /* @__PURE__ */ jsx(MsIconAnalyzing, { className: "h-6 w-6" }) })
+                  ] }),
+                  /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-[16rem] text-[15px] font-semibold leading-snug tracking-[-0.02em] text-white drop-shadow-sm", children: ws.analyzingTitle }),
+                  /* @__PURE__ */ jsx("p", { className: "mt-1.5 max-w-[17rem] text-[12px] font-medium text-white/80", children: ws.progressSteps[Math.min(
+                    state.activeAnalysisStep,
+                    ws.progressSteps.length - 1
+                  )] ?? ws.progressSteps[0] }),
+                  /* @__PURE__ */ jsx("div", { className: "mt-5 h-1 w-40 overflow-hidden rounded-full bg-white/20", children: /* @__PURE__ */ jsx(
+                    "div",
+                    {
+                      className: "h-full rounded-full bg-[#fc5000] transition-[width] duration-300 ease-out",
+                      style: {
+                        width: `${Math.min(
+                          100,
+                          state.activeAnalysisStep / ws.progressSteps.length * 100
+                        )}%`,
+                        transitionDuration: prefersReducedMotion$1() ? "80ms" : "300ms"
+                      }
+                    }
+                  ) })
+                ]
+              }
+            ) : null
+          ] })
+        ]
+      }
+    ),
+    state.analyzing ? null : showResult && state.result ? /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsx("div", { className: "shrink-0 px-3 pb-3 sm:px-4", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxs(
+          "button",
+          {
+            type: "button",
+            className: cx$1(
+              "inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-2 rounded-full px-3 text-[13px] font-semibold transition",
+              "bg-white/85 text-[#141414]/85 shadow-sm ring-1 ring-black/[0.04]",
+              "hover:bg-white hover:text-[#141414]",
+              focusRing
+            ),
+            onClick: () => handleCopy(crText),
+            children: [
+              /* @__PURE__ */ jsx("span", { className: iconSlot, children: state.copied ? /* @__PURE__ */ jsx(MsIconCheck, { className: "h-6 w-6" }) : /* @__PURE__ */ jsx(MsIconCopy, { className: "h-6 w-6" }) }),
+              /* @__PURE__ */ jsx("span", { className: "truncate leading-none", children: state.copied ? ws.copied : ws.copy })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxs(
+          "button",
+          {
+            type: "button",
+            className: cx$1(
+              "inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-2 rounded-full px-3 text-[13px] font-semibold transition",
+              "bg-white/85 text-[#141414]/85 shadow-sm ring-1 ring-black/[0.04]",
+              "hover:bg-white hover:text-[#141414]",
+              focusRing
+            ),
+            disabled: pdfBusy,
+            onClick: handleDownloadPdf,
+            children: [
+              /* @__PURE__ */ jsx("span", { className: iconSlot, children: /* @__PURE__ */ jsx(MsIconDownload, { className: "h-6 w-6" }) }),
+              /* @__PURE__ */ jsx("span", { className: "truncate leading-none", children: pdfBusy ? ws.downloadingPdf : ws.downloadPdf })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxs("div", { className: "relative shrink-0", children: [
+          /* @__PURE__ */ jsxs(
+            "button",
+            {
+              type: "button",
+              className: cx$1(
+                "inline-flex h-10 items-center justify-between gap-2 rounded-full px-3 text-[13px] font-semibold transition",
+                "bg-white/85 text-[#141414]/85 shadow-sm ring-1 ring-black/[0.04]",
+                "hover:bg-white hover:text-[#141414]",
+                toneMenuOpen && "bg-white text-[#141414] ring-[#fc5000]/25",
+                focusRing
+              ),
+              "aria-haspopup": "dialog",
+              "aria-expanded": toneMenuOpen,
+              "aria-label": ws.toneLabel,
+              onClick: () => {
+                setToneMenuOpen((v) => !v);
+                setResetMenuOpen(false);
+              },
+              children: [
+                /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-2", children: [
+                  /* @__PURE__ */ jsx("span", { className: iconSlot, children: state.activeTone === "soft" ? /* @__PURE__ */ jsx(MsIconToneSoft, { className: "h-6 w-6" }) : state.activeTone === "formal" ? /* @__PURE__ */ jsx(MsIconToneFormal, { className: "h-6 w-6" }) : /* @__PURE__ */ jsx(MsIconToneNeutral, { className: "h-6 w-6" }) }),
+                  /* @__PURE__ */ jsx("span", { className: "whitespace-nowrap leading-none", children: state.activeTone === "soft" ? ws.toneSoft : state.activeTone === "formal" ? ws.toneFormal : ws.toneNeutral })
+                ] }),
+                /* @__PURE__ */ jsx(
+                  MsIconChevronDown,
+                  {
+                    className: cx$1(
+                      "h-4 w-4 shrink-0 transition-transform",
+                      toneMenuOpen && "rotate-180"
+                    )
+                  }
+                )
+              ]
+            }
+          ),
+          toneMenuOpen ? /* @__PURE__ */ jsxs(Fragment, { children: [
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                className: "fixed inset-0 z-40 cursor-default",
+                "aria-label": ws.closeArtifact,
+                onClick: () => setToneMenuOpen(false)
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "div",
+              {
+                className: "absolute right-0 top-full z-50 mt-1.5 w-[13.5rem] rounded-2xl bg-white px-3.5 pb-3.5 pt-3 shadow-[0_12px_40px_rgba(20,20,20,0.14)] ring-1 ring-black/[0.06]",
+                role: "dialog",
+                "aria-label": ws.toneLabel,
+                children: (() => {
+                  const tones = ["soft", "neutral", "formal"];
+                  const toneIndex = Math.max(
+                    0,
+                    tones.indexOf(state.activeTone)
+                  );
+                  const toneLabels = [
+                    ws.toneSoft,
+                    ws.toneNeutral,
+                    ws.toneFormal
+                  ];
+                  const pct = toneIndex / (tones.length - 1) * 100;
+                  return /* @__PURE__ */ jsxs(Fragment, { children: [
+                    /* @__PURE__ */ jsxs("div", { className: "mb-3 flex items-center justify-between gap-2", children: [
+                      /* @__PURE__ */ jsxs("p", { className: "text-[12px] font-semibold tracking-[-0.01em] text-[#141414]/45", children: [
+                        ws.toneLabel,
+                        /* @__PURE__ */ jsx("span", { className: "ml-1 inline-block translate-y-px opacity-70", children: "›" })
+                      ] }),
+                      /* @__PURE__ */ jsx("p", { className: "text-[12px] font-semibold text-[#fc5000]", children: toneLabels[toneIndex] })
+                    ] }),
+                    /* @__PURE__ */ jsxs("div", { className: "relative h-8", children: [
+                      /* @__PURE__ */ jsx(
+                        "div",
+                        {
+                          className: "absolute left-0 right-0 top-1/2 h-2.5 -translate-y-1/2 rounded-full bg-[#fc5000]/18",
+                          "aria-hidden": true
+                        }
+                      ),
+                      /* @__PURE__ */ jsx(
+                        "div",
+                        {
+                          className: "absolute left-0 top-1/2 h-2.5 -translate-y-1/2 rounded-full bg-[#fc5000] transition-[width] duration-150 ease-out",
+                          style: {
+                            width: `max(1.25rem, ${pct}%)`
+                          },
+                          "aria-hidden": true
+                        }
+                      ),
+                      /* @__PURE__ */ jsx(
+                        "div",
+                        {
+                          className: "pointer-events-none absolute inset-x-1 top-1/2 flex -translate-y-1/2 justify-between",
+                          "aria-hidden": true,
+                          children: tones.map((_, i) => /* @__PURE__ */ jsx(
+                            "span",
+                            {
+                              className: cx$1(
+                                "h-1 w-1 rounded-full",
+                                i <= toneIndex ? "bg-white/80" : "bg-[#141414]/18"
+                              )
+                            },
+                            i
+                          ))
+                        }
+                      ),
+                      /* @__PURE__ */ jsx(
+                        "input",
+                        {
+                          type: "range",
+                          min: 0,
+                          max: 2,
+                          step: 1,
+                          value: toneIndex,
+                          "aria-valuetext": toneLabels[toneIndex],
+                          "aria-label": ws.toneLabel,
+                          className: "tone-slider absolute inset-0 z-10 h-full w-full cursor-pointer appearance-none bg-transparent",
+                          onChange: (e) => {
+                            const next = tones[Number(e.target.value)] ?? "neutral";
+                            dispatch({ type: "setTone", tone: next });
+                          }
+                        }
+                      )
+                    ] })
+                  ] });
+                })()
+              }
+            )
+          ] }) : null
+        ] })
+      ] }) }),
+      /* @__PURE__ */ jsx("p", { className: "sr-only", "aria-live": "polite", children: state.copied ? ws.copied : state.copyError ? ws.copyError : `${ws.toneLabel}: ${state.activeTone === "soft" ? ws.toneSoft : state.activeTone === "formal" ? ws.toneFormal : ws.toneNeutral}` }),
+      (state.copyError || pdfError) && /* @__PURE__ */ jsx(
+        "p",
+        {
+          className: "px-3 pb-2 text-[12px] font-medium text-[#c2410c] sm:px-4",
+          role: "alert",
+          children: pdfError ? ws.pdfError : ws.copyError
+        }
+      ),
+      /* @__PURE__ */ jsx("div", { className: "min-h-0 flex-1 overflow-y-auto px-3 pb-4 no-scrollbar sm:px-4", children: /* @__PURE__ */ jsxs("div", { className: "rounded-2xl bg-white/70 px-5 py-5", children: [
+        /* @__PURE__ */ jsxs("div", { className: "mb-3 flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx("span", { className: "rounded-md bg-[#fc5000]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#fc5000]", children: ws.artifactStatus }),
+          /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5 text-[11px] font-medium text-[#141414]/4", children: [
+            state.activeTone === "soft" ? /* @__PURE__ */ jsx(MsIconToneSoft, { className: "h-3.5 w-3.5" }) : state.activeTone === "formal" ? /* @__PURE__ */ jsx(MsIconToneFormal, { className: "h-3.5 w-3.5" }) : /* @__PURE__ */ jsx(MsIconToneNeutral, { className: "h-3.5 w-3.5" }),
+            state.activeTone === "soft" ? ws.toneSoft : state.activeTone === "formal" ? ws.toneFormal : ws.toneNeutral
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx("pre", { className: "whitespace-pre-wrap font-sans text-[14px] font-medium leading-[1.65] text-[#141414]/88", children: crText })
+      ] }) })
+    ] }) : /* @__PURE__ */ jsxs("div", { className: "flex flex-1 flex-col items-center justify-center px-5 pb-8 text-center", children: [
+      /* @__PURE__ */ jsxs(
+        "div",
+        {
+          className: "w-full max-w-[15.5rem] rounded-2xl border border-dashed border-black/10 bg-white/40 px-4 py-5",
+          "aria-hidden": true,
+          children: [
+            /* @__PURE__ */ jsx("span", { className: "mx-auto mb-3 block h-11 w-11 drop-shadow-[0_8px_18px_rgba(252,80,0,0.28)]", children: /* @__PURE__ */ jsx(MileSealEmptyDraftIcon, {}) }),
+            /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+              /* @__PURE__ */ jsx("div", { className: "h-2.5 w-[72%] rounded-full bg-black/[0.06]" }),
+              /* @__PURE__ */ jsx("div", { className: "h-2.5 w-full rounded-full bg-black/[0.05]" }),
+              /* @__PURE__ */ jsx("div", { className: "h-2.5 w-[88%] rounded-full bg-black/[0.05]" }),
+              /* @__PURE__ */ jsx("div", { className: "h-2.5 w-[55%] rounded-full bg-black/[0.04]" })
+            ] })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsx("p", { className: "mt-4 text-[13px] font-semibold tracking-[-0.01em] text-[#141414]/75", children: ws.artifactEmptyTitle }),
+      /* @__PURE__ */ jsx("p", { className: "mt-1.5 max-w-[17rem] text-[13px] font-medium leading-relaxed text-[#141414]/45", children: ws.artifactEmpty }),
+      isPreset && state.sessionStarted && !state.result && !state.analyzing ? /* @__PURE__ */ jsxs(
+        "button",
+        {
+          type: "button",
+          className: cx$1(primaryBtn, "mt-4"),
+          onClick: startAnalyze,
+          children: [
+            ws.analyseRequest,
+            /* @__PURE__ */ jsx(MsIconChevronRight, { className: "h-4 w-4" })
+          ]
+        }
+      ) : /* @__PURE__ */ jsxs(
+        "button",
+        {
+          type: "button",
+          className: cx$1(softBtn, "mt-4"),
+          onClick: () => handleSelectScenario(firstExample),
+          children: [
+            ws.artifactEmptyAction,
+            /* @__PURE__ */ jsx(MsIconChevronRight, { className: "h-4 w-4" })
+          ]
+        }
+      )
+    ] })
+  ] });
+  const composer = /* @__PURE__ */ jsx(
+    "form",
+    {
+      onSubmit: onComposerSubmit,
+      className: "shrink-0 bg-transparent px-3 pb-3 pt-1 sm:px-4",
+      children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[820px] rounded-2xl bg-white/75 p-2", children: [
+        state.sessionStarted && state.scope.trim() ? /* @__PURE__ */ jsx("div", { className: "mb-1.5 flex px-2 pt-1", children: /* @__PURE__ */ jsxs("span", { className: "inline-flex max-w-full items-center gap-1.5 truncate rounded-lg bg-[#f4f3f1]/80 px-2 py-1 text-[11px] font-medium text-[#141414]/45", children: [
+          /* @__PURE__ */ jsx("span", { className: "shrink-0 text-[#141414]/3", children: ws.scopeChipPrefix }),
+          /* @__PURE__ */ jsx("span", { className: "truncate", children: state.scope })
+        ] }) }) : null,
+        /* @__PURE__ */ jsxs("div", { className: "flex items-end gap-2", children: [
+          /* @__PURE__ */ jsx(
+            "textarea",
+            {
+              ref: composerRef,
+              value: composerDraft,
+              onChange: (e) => setComposerDraft(e.target.value),
+              onKeyDown: onComposerKeyDown,
+              placeholder: ws.composerPlaceholder,
+              rows: 1,
+              className: cx$1(
+                "min-h-12 max-h-40 flex-1 resize-none bg-transparent px-3 py-3",
+                "font-sans text-[14px] font-medium leading-[1.5] text-[#141414] placeholder:text-[#141414]/35",
+                "outline-none"
+              ),
+              "aria-label": ws.composerPlaceholder
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "submit",
+              disabled: !composerDraft.trim() || state.analyzing,
+              className: cx$1(primaryBtn, "mb-0.5 shrink-0"),
+              children: ws.composerSend
+            }
+          )
+        ] })
+      ] })
+    }
+  );
+  return /* @__PURE__ */ jsxs("div", { className: "flex h-[100dvh] min-h-[100dvh] overflow-hidden bg-[#f4f3f1] text-[#141414]", children: [
+    /* @__PURE__ */ jsx(
+      "a",
+      {
+        href: "#mileseal-main",
+        className: "sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-xl focus:bg-white focus:px-4 focus:py-2.5 focus:text-[13px] focus:font-semibold focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#fc5000]/40",
+        children: ws.skipToContent
+      }
+    ),
+    isDesktopNav ? /* @__PURE__ */ jsx(
+      "aside",
+      {
+        className: cx$1(
+          "relative z-20 flex h-full shrink-0 flex-col bg-[#ebe8e3] transition-[width] duration-200",
+          sidebarCollapsed ? "w-[72px]" : "w-[260px]",
+          prefersReducedMotion$1() && "transition-none"
+        ),
+        "aria-label": "MileSeal",
+        children: sidebarInner
+      }
+    ) : null,
+    !isDesktopNav && state.isMobileNavOpen ? /* @__PURE__ */ jsxs("div", { className: "fixed inset-0 z-40 flex", role: "dialog", "aria-modal": "true", children: [
+      /* @__PURE__ */ jsx(
+        "button",
+        {
+          type: "button",
+          className: "absolute inset-0 bg-black/30",
+          "aria-label": ws.closeNav,
+          onClick: () => dispatch({ type: "setMobileNavOpen", open: false })
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "aside",
+        {
+          className: "relative z-10 flex h-full w-[min(260px,88vw)] flex-col bg-[#ebe8e3] shadow-xl",
+          "aria-label": "MileSeal",
+          children: sidebarInner
+        }
+      )
+    ] }) : null,
+    /* @__PURE__ */ jsxs("div", { className: "flex min-w-0 flex-1 flex-col", children: [
+      /* @__PURE__ */ jsxs("header", { className: "flex h-14 shrink-0 items-center gap-2 bg-transparent px-3 sm:px-4", children: [
+        !isDesktopNav ? /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            className: iconBtn,
+            "aria-label": ws.openNav,
+            "aria-expanded": state.isMobileNavOpen,
+            onClick: () => dispatch({ type: "setMobileNavOpen", open: true }),
+            children: /* @__PURE__ */ jsx(MsIconMenu, { className: "h-6 w-6" })
+          }
+        ) : null,
+        /* @__PURE__ */ jsx("div", { className: "min-w-0 flex-1", children: /* @__PURE__ */ jsxs("div", { className: "flex min-w-0 items-center gap-2", children: [
+          /* @__PURE__ */ jsx("h1", { className: "truncate text-[14px] font-semibold tracking-[-0.01em] sm:text-[15px]", children: titleLabel || "MileSeal" }),
+          state.sessionStarted ? /* @__PURE__ */ jsx("span", { className: "hidden shrink-0 rounded-md bg-black/[0.05] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#141414]/55 sm:inline", children: isPreset ? ws.topDemoScenario : ws.topCustomReview }) : null
+        ] }) }),
+        /* @__PURE__ */ jsx("button", { type: "button", className: cx$1(softBtn, "hidden sm:inline-flex"), onClick: handleNewAnalysis, children: ws.newAnalysis }),
+        showResult ? /* @__PURE__ */ jsxs(
+          "button",
+          {
+            type: "button",
+            className: softBtn,
+            onClick: () => dispatch({ type: "openChangeRequest" }),
+            children: [
+              ws.openArtifact,
+              /* @__PURE__ */ jsx(MsIconChevronRight, { className: "h-4 w-4" })
+            ]
+          }
+        ) : null,
+        /* @__PURE__ */ jsxs("div", { className: "relative", children: [
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              className: iconBtn,
+              "aria-label": ws.reset,
+              "aria-expanded": resetMenuOpen,
+              "aria-haspopup": "menu",
+              onClick: () => setResetMenuOpen((v) => !v),
+              children: /* @__PURE__ */ jsx(MsIconReset, { className: "h-6 w-6" })
+            }
+          ),
+          resetMenuOpen ? /* @__PURE__ */ jsxs(Fragment, { children: [
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                className: "fixed inset-0 z-30 cursor-default",
+                "aria-label": ws.closeNav,
+                onClick: () => setResetMenuOpen(false)
+              }
+            ),
+            /* @__PURE__ */ jsxs(
+              "div",
+              {
+                role: "menu",
+                className: "absolute right-0 top-full z-40 mt-1 min-w-[11rem] overflow-hidden rounded-xl bg-white/95 py-1 shadow-lg backdrop-blur-md",
+                children: [
+                  /* @__PURE__ */ jsx(
+                    "button",
+                    {
+                      type: "button",
+                      role: "menuitem",
+                      className: "flex w-full px-3.5 py-2.5 text-left text-[13px] font-medium hover:bg-black/[0.04]",
+                      onClick: handleResetAnalysis,
+                      children: ws.resetAnalysis
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "button",
+                    {
+                      type: "button",
+                      role: "menuitem",
+                      className: "flex w-full px-3.5 py-2.5 text-left text-[13px] font-medium hover:bg-black/[0.04]",
+                      onClick: handleNewAnalysis,
+                      children: ws.newAnalysis
+                    }
+                  )
+                ]
+              }
+            )
+          ] }) : null
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxs(
+        "main",
+        {
+          id: "mileseal-main",
+          ref: mainRef,
+          className: "flex min-h-0 flex-1 flex-col",
+          tabIndex: -1,
+          children: [
+            /* @__PURE__ */ jsx("div", { className: "mx-auto w-full max-w-[820px] flex-1 overflow-y-auto px-4 pb-4 pt-5 no-scrollbar sm:px-6", children: !state.sessionStarted ? /* @__PURE__ */ jsxs("div", { className: "flex min-h-[min(70dvh,36rem)] flex-col items-center justify-center text-center", children: [
+              /* @__PURE__ */ jsx(
+                "img",
+                {
+                  src: "/images/mileseal-mark-orange.svg",
+                  alt: "",
+                  className: "h-14 w-14",
+                  width: 56,
+                  height: 56
+                }
+              ),
+              /* @__PURE__ */ jsx("h2", { className: "mt-5 max-w-[22rem] text-[clamp(1.35rem,3.5vw,1.75rem)] font-semibold tracking-[-0.03em] text-balance", children: ws.emptyTitle }),
+              /* @__PURE__ */ jsx("p", { className: "mt-2.5 max-w-[26rem] text-[14px] font-medium leading-relaxed text-[#141414]/55", children: ws.emptyDescription }),
+              /* @__PURE__ */ jsx("div", { className: "mt-6 flex w-full max-w-[28rem] flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-center", children: examples.map((example) => /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => handleSelectScenario(example),
+                  className: cx$1(softBtn, "sm:min-w-[8.5rem]"),
+                  children: example.label
+                },
+                example.id
+              )) })
+            ] }) : /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
+              /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
+                /* @__PURE__ */ jsx(
+                  "img",
+                  {
+                    src: "/images/mileseal-mark-orange.svg",
+                    alt: "",
+                    className: "mt-0.5 h-7 w-7 shrink-0",
+                    width: 28,
+                    height: 28
+                  }
+                ),
+                /* @__PURE__ */ jsx("p", { className: "max-w-[36rem] text-[14px] font-medium leading-[1.6] text-[#141414]/75", children: ws.introMessage })
+              ] }),
+              state.scope.trim() ? /* @__PURE__ */ jsxs("div", { className: "rounded-2xl bg-black/[0.025] p-4", children: [
+                /* @__PURE__ */ jsx("p", { className: "text-[11px] font-semibold uppercase tracking-[0.12em] text-[#141414]/35", children: ws.scopePreviewTitle }),
+                /* @__PURE__ */ jsx("p", { className: "mt-1 text-[12px] font-medium text-[#141414]/35", children: ws.scopeProject }),
+                /* @__PURE__ */ jsx("p", { className: "mt-2 text-[14px] font-medium leading-[1.55] text-[#141414]/8", children: state.scope })
+              ] }) : null,
+              state.request.trim() ? /* @__PURE__ */ jsx("div", { className: "flex justify-end", children: /* @__PURE__ */ jsx("div", { className: "max-w-[85%] rounded-2xl bg-[#ebe8e3]/80 px-4 py-3 text-[14px] font-medium leading-[1.55] text-[#141414]/9", children: state.request }) }) : null,
+              isPreset && !state.result && !state.analyzing ? /* @__PURE__ */ jsx("div", { className: "flex justify-start pl-10", children: /* @__PURE__ */ jsx("button", { type: "button", className: primaryBtn, onClick: startAnalyze, children: ws.analyseRequest }) }) : null,
+              !isPreset && !state.analyzing ? /* @__PURE__ */ jsxs("div", { className: "rounded-2xl bg-black/[0.025] px-4 py-3.5", children: [
+                /* @__PURE__ */ jsx("p", { className: "text-[13px] font-medium leading-relaxed text-[#141414]/55", children: ws.customNotice }),
+                /* @__PURE__ */ jsx(
+                  "button",
+                  {
+                    type: "button",
+                    className: cx$1(primaryBtn, "mt-3"),
+                    onClick: () => openManual({
+                      scope: state.scope.trim(),
+                      request: state.request.trim()
+                    }),
+                    children: ws.sendManual
+                  }
+                )
+              ] }) : null,
+              state.analyzing ? /* @__PURE__ */ jsxs(
+                "div",
+                {
+                  className: "rounded-2xl bg-white/80 p-4 shadow-sm ring-1 ring-black/[0.04]",
+                  "aria-live": "polite",
+                  "aria-busy": "true",
+                  children: [
+                    /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
+                      /* @__PURE__ */ jsxs("div", { className: "relative h-9 w-9 shrink-0", children: [
+                        /* @__PURE__ */ jsx(
+                          "span",
+                          {
+                            className: "absolute inset-0 rounded-full border-2 border-[#fc5000]/20",
+                            "aria-hidden": true
+                          }
+                        ),
+                        /* @__PURE__ */ jsx(
+                          "span",
+                          {
+                            className: cx$1(
+                              "absolute inset-0 rounded-full border-2 border-transparent border-t-[#fc5000]",
+                              !prefersReducedMotion$1() && "animate-spin"
+                            ),
+                            "aria-hidden": true
+                          }
+                        )
+                      ] }),
+                      /* @__PURE__ */ jsx("p", { className: "text-[14px] font-semibold text-[#141414]", children: ws.analyzingTitle })
+                    ] }),
+                    /* @__PURE__ */ jsx("div", { className: "mt-3 h-1 overflow-hidden rounded-full bg-black/[0.06]", children: /* @__PURE__ */ jsx(
+                      "div",
+                      {
+                        className: "h-full rounded-full bg-[#fc5000] transition-[width] duration-300 ease-out",
+                        style: {
+                          width: `${Math.min(
+                            100,
+                            state.activeAnalysisStep / ws.progressSteps.length * 100
+                          )}%`,
+                          transitionDuration: prefersReducedMotion$1() ? "80ms" : "300ms"
+                        }
+                      }
+                    ) }),
+                    /* @__PURE__ */ jsx("ul", { className: "mt-3 space-y-2", children: ws.progressSteps.map((step, i) => {
+                      const done = state.activeAnalysisStep > i;
+                      const current = state.activeAnalysisStep === i;
+                      return /* @__PURE__ */ jsxs(
+                        "li",
+                        {
+                          className: cx$1(
+                            "flex items-center gap-2 text-[13px] font-medium",
+                            done ? "text-[#141414]" : current ? "text-[#141414]/75" : "text-[#141414]/35"
+                          ),
+                          children: [
+                            /* @__PURE__ */ jsx(
+                              "span",
+                              {
+                                className: cx$1(
+                                  "flex h-5 w-5 shrink-0 items-center justify-center rounded-full",
+                                  done ? "bg-[#fc5000] text-white" : current ? "bg-[#fc5000]/15 text-[#fc5000]" : "bg-black/[0.06] text-transparent"
+                                ),
+                                children: /* @__PURE__ */ jsx(MsIconCheck, { className: "h-3 w-3" })
+                              }
+                            ),
+                            step
+                          ]
+                        },
+                        step
+                      );
+                    }) })
+                  ]
+                }
+              ) : null,
+              showResult && state.result ? /* @__PURE__ */ jsx("div", { className: "space-y-4", children: /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
+                /* @__PURE__ */ jsx(
+                  "img",
+                  {
+                    src: "/images/mileseal-mark-orange.svg",
+                    alt: "",
+                    className: "mt-0.5 h-7 w-7 shrink-0",
+                    width: 28,
+                    height: 28
+                  }
+                ),
+                /* @__PURE__ */ jsxs("div", { className: "min-w-0 flex-1", children: [
+                  /* @__PURE__ */ jsx("div", { className: "flex flex-wrap items-center gap-2", children: /* @__PURE__ */ jsx("span", { className: "rounded-full bg-[#fc5000]/12 px-2.5 py-1 text-[11px] font-semibold text-[#fc5000]", children: ws.statusOutside }) }),
+                  /* @__PURE__ */ jsx("h3", { className: "mt-2 text-[17px] font-semibold tracking-[-0.02em]", children: ws.outsideScopeTitle }),
+                  /* @__PURE__ */ jsx("p", { className: "mt-2 text-[14px] font-medium leading-[1.55] text-[#141414]/7", children: state.result.reason }),
+                  /* @__PURE__ */ jsx("div", { className: "mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3", children: [
+                    [ws.metrics.effort, state.result.hoursValue],
+                    [ws.metrics.cost, state.result.costValue],
+                    [ws.metrics.timeline, state.result.timelineValue],
+                    [ws.metrics.confidence, state.result.confidence]
+                  ].map(([label, value]) => /* @__PURE__ */ jsxs(
+                    "div",
+                    {
+                      className: "rounded-xl bg-white px-3 py-3 ring-1 ring-black/[0.06] sm:px-3.5 sm:py-3.5",
+                      children: [
+                        /* @__PURE__ */ jsx("p", { className: "text-[10px] font-semibold uppercase leading-tight tracking-[0.08em] text-[#141414]/45", children: label }),
+                        /* @__PURE__ */ jsx("p", { className: "mt-2 text-[17px] font-semibold leading-tight tracking-[-0.02em] text-[#141414] tabular-nums sm:text-[18px]", children: value })
+                      ]
+                    },
+                    label
+                  )) }),
+                  /* @__PURE__ */ jsxs("div", { className: "mt-5 space-y-1 pt-1", children: [
+                    /* @__PURE__ */ jsx(
+                      Disclosure,
+                      {
+                        open: whyOpen,
+                        onToggle: () => setWhyOpen((v) => !v),
+                        title: ws.whyTitle,
+                        children: /* @__PURE__ */ jsx("ul", { className: "list-disc space-y-1.5 pl-4 text-[13px] font-medium leading-relaxed text-[#141414]/65", children: ws.whyBulletsPreset.map((b) => /* @__PURE__ */ jsx("li", { children: b }, b)) })
+                      }
+                    ),
+                    /* @__PURE__ */ jsxs(
+                      Disclosure,
+                      {
+                        open: effortOpen,
+                        onToggle: () => setEffortOpen((v) => !v),
+                        title: ws.effortTitle,
+                        children: [
+                          /* @__PURE__ */ jsx("ul", { className: "space-y-1.5 text-[13px] font-medium leading-relaxed text-[#141414]/65", children: (state.result.effortItems ?? []).map((item) => /* @__PURE__ */ jsxs("li", { className: "flex gap-2", children: [
+                            /* @__PURE__ */ jsx("span", { className: "mt-2 h-1 w-1 shrink-0 rounded-full bg-[#fc5000]", "aria-hidden": true }),
+                            /* @__PURE__ */ jsx("span", { children: item })
+                          ] }, item)) }),
+                          /* @__PURE__ */ jsxs("p", { className: "mt-2.5 text-[12px] font-semibold tabular-nums text-[#141414]/75", children: [
+                            ws.metrics.effort,
+                            ": ",
+                            state.result.hoursValue
+                          ] }),
+                          /* @__PURE__ */ jsx("p", { className: "mt-1.5 text-[13px] font-medium text-[#141414]/55", children: state.result.recommendation })
+                        ]
+                      }
+                    ),
+                    /* @__PURE__ */ jsx(
+                      Disclosure,
+                      {
+                        open: excerptsOpen,
+                        onToggle: () => setExcerptsOpen((v) => !v),
+                        title: ws.excerptsTitle,
+                        children: /* @__PURE__ */ jsxs("div", { className: "space-y-2 text-[13px] font-medium leading-relaxed", children: [
+                          /* @__PURE__ */ jsxs("p", { children: [
+                            /* @__PURE__ */ jsxs("span", { className: "text-[#141414]/4", children: [
+                              ws.includedInScope,
+                              ": "
+                            ] }),
+                            /* @__PURE__ */ jsx("span", { className: "text-[#141414]/7", children: state.scope })
+                          ] }),
+                          /* @__PURE__ */ jsxs("p", { children: [
+                            /* @__PURE__ */ jsxs("span", { className: "text-[#141414]/4", children: [
+                              ws.notInScope,
+                              ": "
+                            ] }),
+                            /* @__PURE__ */ jsx("span", { className: "text-[#141414]/7", children: state.request })
+                          ] }),
+                          /* @__PURE__ */ jsxs("p", { className: "text-[#141414]/55", children: [
+                            ws.newWorkstream,
+                            " · ",
+                            ws.needsApproval
+                          ] })
+                        ] })
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ jsxs("div", { className: "mt-5 flex flex-wrap gap-2", children: [
+                    /* @__PURE__ */ jsx(
+                      "button",
+                      {
+                        type: "button",
+                        className: primaryBtn,
+                        onClick: () => dispatch({ type: "openChangeRequest" }),
+                        children: ws.openChangeRequest
+                      }
+                    ),
+                    /* @__PURE__ */ jsx(
+                      "button",
+                      {
+                        type: "button",
+                        className: softBtn,
+                        onClick: () => handleCopy(crText),
+                        children: state.copied ? ws.copied : ws.copySummary
+                      }
+                    ),
+                    /* @__PURE__ */ jsx(
+                      "button",
+                      {
+                        type: "button",
+                        className: softBtn,
+                        onClick: () => openManual(
+                          prefillFromExample(selectedExample)
+                        ),
+                        children: ws.requestManualReview
+                      }
+                    )
+                  ] })
+                ] })
+              ] }) }) : null
+            ] }) }),
+            composer
+          ]
+        }
+      )
+    ] }),
+    isWideArtifact ? /* @__PURE__ */ jsx(
+      "aside",
+      {
+        className: "flex h-full w-[400px] shrink-0 flex-col bg-[#f0eeea]",
+        "aria-label": ws.artifactTitle,
+        children: artifactBody
+      }
+    ) : null,
+    !isWideArtifact && state.isChangeRequestOpen ? /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: "fixed inset-0 z-50 flex justify-end bg-black/30",
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-label": ws.artifactTitle,
+        children: [
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              className: "absolute inset-0",
+              "aria-label": ws.closeArtifact,
+              onClick: () => dispatch({ type: "closeChangeRequest" })
+            }
+          ),
+          /* @__PURE__ */ jsx("div", { className: "relative z-10 flex h-full w-full flex-col bg-[#f0eeea] shadow-2xl sm:max-w-[400px]", children: artifactBody })
+        ]
+      }
+    ) : null,
+    formOpen ? /* @__PURE__ */ jsx(
+      MilesealManualReviewPanel,
+      {
+        prefill,
+        onClose: onCloseForm
+      },
+      `${formKey}-${lang}`
+    ) : null,
+    /* @__PURE__ */ jsxs("nav", { className: "sr-only", "aria-label": "MileSeal", children: [
+      /* @__PURE__ */ jsx("p", { children: "MileSeal AI Scope Change Workspace — compare an agreed project scope with a new client request and generate a change request." }),
+      /* @__PURE__ */ jsx(Link, { to: "/mileseal/cases/content-migration", children: ws.openCaseStudy })
+    ] })
+  ] });
+}
+function Disclosure({
+  open,
+  onToggle,
+  title,
+  children
+}) {
+  return /* @__PURE__ */ jsxs("div", { children: [
+    /* @__PURE__ */ jsxs(
+      "button",
+      {
+        type: "button",
+        "aria-expanded": open,
+        onClick: onToggle,
+        className: cx$1(
+          "flex min-h-11 w-full items-center justify-between gap-2 rounded-xl px-1 text-left text-[13px] font-semibold text-[#141414]/8 transition hover:text-[#141414]",
+          focusRing
+        ),
+        children: [
+          title,
+          /* @__PURE__ */ jsx(
+            MsIconChevronRight,
+            {
+              className: cx$1(
+                "h-4 w-4 shrink-0 text-[#141414]/4 transition-transform",
+                open && "rotate-90"
+              )
+            }
+          )
+        ]
+      }
+    ),
+    open ? /* @__PURE__ */ jsx("div", { className: "px-1 pb-3 pt-0.5", children }) : null
+  ] });
+}
+function ScenarioChatIcon({ id, active }) {
+  const uid = id.replace(/[^a-z0-9]/gi, "");
+  const gBody = `scBody${uid}`;
+  const gEdge = `scEdge${uid}`;
+  const accent = active ? 1 : 0.92;
+  return /* @__PURE__ */ jsxs("svg", { viewBox: "0 0 28 28", className: "h-7 w-7", fill: "none", "aria-hidden": true, children: [
+    /* @__PURE__ */ jsxs("defs", { children: [
+      /* @__PURE__ */ jsxs("linearGradient", { id: gBody, x1: "4", y1: "4", x2: "24", y2: "24", gradientUnits: "userSpaceOnUse", children: [
+        /* @__PURE__ */ jsx("stop", { stopColor: "#FFAE66" }),
+        /* @__PURE__ */ jsx("stop", { offset: "0.5", stopColor: "#FC5000" }),
+        /* @__PURE__ */ jsx("stop", { offset: "1", stopColor: "#B83200" })
+      ] }),
+      /* @__PURE__ */ jsxs("linearGradient", { id: gEdge, x1: "8", y1: "3", x2: "22", y2: "14", gradientUnits: "userSpaceOnUse", children: [
+        /* @__PURE__ */ jsx("stop", { stopColor: "#FFF1E3" }),
+        /* @__PURE__ */ jsx("stop", { offset: "1", stopColor: "#FF9A3D" })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsx(
+      "path",
+      {
+        d: "M5 6.5 L18 4 L24 10 L22 20 L9 22 L4 16 Z",
+        fill: `url(#${gBody})`,
+        opacity: accent
+      }
+    ),
+    /* @__PURE__ */ jsx("path", { d: "M18 4 L24 10 L18 11 Z", fill: `url(#${gEdge})`, opacity: "0.95" }),
+    /* @__PURE__ */ jsx("path", { d: "M5 6.5 L9 22 L4 16 Z", fill: "#B83200", opacity: "0.28" }),
+    /* @__PURE__ */ jsx("path", { d: "M9 22 L7 26 L13 21.5 Z", fill: "#D63A00", opacity: "0.9" }),
+    id === "migration" ? /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsx("path", { d: "M10 11 H18", stroke: "#FFF8F0", strokeWidth: "1.6", strokeLinecap: "round", opacity: "0.95" }),
+      /* @__PURE__ */ jsx("path", { d: "M10 14.5 H16", stroke: "#FFD7B0", strokeWidth: "1.6", strokeLinecap: "round", opacity: "0.85" }),
+      /* @__PURE__ */ jsx("path", { d: "M10 18 H14.5", stroke: "#FFD7B0", strokeWidth: "1.6", strokeLinecap: "round", opacity: "0.65" })
+    ] }) : null,
+    id === "integrations" ? /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsx("circle", { cx: "11", cy: "12", r: "1.6", fill: "#FFF8F0" }),
+      /* @__PURE__ */ jsx("circle", { cx: "18", cy: "12", r: "1.6", fill: "#FFF8F0" }),
+      /* @__PURE__ */ jsx("circle", { cx: "14.5", cy: "17.5", r: "1.6", fill: "#FFD7B0" }),
+      /* @__PURE__ */ jsx("path", { d: "M12.4 13 L13.6 16.2", stroke: "#FFF1E3", strokeWidth: "1.3", strokeLinecap: "round" }),
+      /* @__PURE__ */ jsx("path", { d: "M16.6 13 L15.4 16.2", stroke: "#FFF1E3", strokeWidth: "1.3", strokeLinecap: "round" })
+    ] }) : null,
+    id === "revisions" ? /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          d: "M11 17.5 L12.2 12.5 L18 11 L16.8 16 Z",
+          fill: "#FFF8F0",
+          opacity: "0.92"
+        }
+      ),
+      /* @__PURE__ */ jsx("path", { d: "M17.2 11.2 L19 9.4", stroke: "#FFE8D2", strokeWidth: "1.4", strokeLinecap: "round" })
+    ] }) : null,
+    id !== "migration" && id !== "integrations" && id !== "revisions" ? /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsx("path", { d: "M10 12 H18", stroke: "#FFF8F0", strokeWidth: "1.6", strokeLinecap: "round" }),
+      /* @__PURE__ */ jsx("path", { d: "M10 16 H15", stroke: "#FFD7B0", strokeWidth: "1.6", strokeLinecap: "round" })
+    ] }) : null
+  ] });
+}
+function MileSealEmptyDraftIcon() {
+  return /* @__PURE__ */ jsxs(
+    "svg",
+    {
+      xmlns: "http://www.w3.org/2000/svg",
+      viewBox: "0 0 96 96",
+      fill: "none",
+      className: "h-full w-full",
+      "aria-hidden": true,
+      children: [
+        /* @__PURE__ */ jsxs("defs", { children: [
+          /* @__PURE__ */ jsxs("linearGradient", { id: "msEmptyBody", x1: "24", y1: "20", x2: "72", y2: "88", gradientUnits: "userSpaceOnUse", children: [
+            /* @__PURE__ */ jsx("stop", { stopColor: "#FFAE66" }),
+            /* @__PURE__ */ jsx("stop", { offset: "0.45", stopColor: "#FC5000" }),
+            /* @__PURE__ */ jsx("stop", { offset: "1", stopColor: "#B83200" })
+          ] }),
+          /* @__PURE__ */ jsxs("linearGradient", { id: "msEmptyFold", x1: "56", y1: "8", x2: "84", y2: "36", gradientUnits: "userSpaceOnUse", children: [
+            /* @__PURE__ */ jsx("stop", { stopColor: "#FFE0C2" }),
+            /* @__PURE__ */ jsx("stop", { offset: "0.5", stopColor: "#FF9A3D" }),
+            /* @__PURE__ */ jsx("stop", { offset: "1", stopColor: "#E04500" })
+          ] }),
+          /* @__PURE__ */ jsxs("linearGradient", { id: "msEmptyLine", x1: "30", y1: "48", x2: "66", y2: "48", gradientUnits: "userSpaceOnUse", children: [
+            /* @__PURE__ */ jsx("stop", { stopColor: "#FFF8F0" }),
+            /* @__PURE__ */ jsx("stop", { offset: "1", stopColor: "#FFD7B0" })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx("path", { d: "M22 18 L58 18 L78 38 L78 82 L22 82 Z", fill: "url(#msEmptyBody)" }),
+        /* @__PURE__ */ jsx("path", { d: "M58 18 L78 38 L58 38 Z", fill: "url(#msEmptyFold)" }),
+        /* @__PURE__ */ jsx("path", { d: "M32 50 H64", stroke: "url(#msEmptyLine)", strokeWidth: "5", strokeLinecap: "round", opacity: "0.92" }),
+        /* @__PURE__ */ jsx("path", { d: "M32 62 H58", stroke: "url(#msEmptyLine)", strokeWidth: "5", strokeLinecap: "round", opacity: "0.75" }),
+        /* @__PURE__ */ jsx("path", { d: "M32 74 H50", stroke: "url(#msEmptyLine)", strokeWidth: "5", strokeLinecap: "round", opacity: "0.55" }),
+        /* @__PURE__ */ jsx("path", { d: "M28 14 L34 8 L40 14 Z", fill: "#FFF8F0", opacity: "0.95" }),
+        /* @__PURE__ */ jsx("path", { d: "M40 14 L48 22 L34 22 Z", fill: "#FFB070", opacity: "0.8" })
+      ]
+    }
+  );
 }
 function MilesealPage() {
   const { lang } = useLang();
   const copy = milesealCopy(lang);
-  const [formOpen, setFormOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const openManualFromQuery = searchParams.get("manual") === "1";
+  const [formOpen, setFormOpen] = useState(openManualFromQuery);
   const [prefill, setPrefill] = useState(null);
   const [formKey, setFormKey] = useState(0);
   const openReview = useCallback((nextPrefill) => {
     setPrefill(nextPrefill ?? null);
     setFormKey((k) => k + 1);
     setFormOpen(true);
-    requestAnimationFrame(() => scrollToId("scope-review"));
   }, []);
-  return /* @__PURE__ */ jsxs("div", { className: "landing-caldera min-h-screen bg-black", children: [
+  const closeForm = useCallback(() => {
+    setFormOpen(false);
+  }, []);
+  useEffect(() => {
+    if (!openManualFromQuery) return;
+    const next = new URLSearchParams(searchParams);
+    if (!next.has("manual")) return;
+    next.delete("manual");
+    setSearchParams(next, { replace: true });
+  }, [openManualFromQuery, searchParams, setSearchParams]);
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
     /* @__PURE__ */ jsx(
       SEO,
       {
@@ -22469,27 +24722,1649 @@ function MilesealPage() {
         hreflang: false
       }
     ),
-    /* @__PURE__ */ jsx(Header, {}),
-    /* @__PURE__ */ jsxs("main", { children: [
-      /* @__PURE__ */ jsx(
-        MilesealHero,
-        {
-          onTryDemo: () => scrollToId("demo"),
-          onRequestReview: () => openReview()
+    /* @__PURE__ */ jsx(
+      MilesealWorkspace,
+      {
+        onRequestManualReview: openReview,
+        formOpen,
+        formKey,
+        prefill,
+        onCloseForm: closeForm
+      }
+    )
+  ] });
+}
+const CASE_ADDITIONAL_HOURS = 40;
+const CASE_CAPACITY_MIN = 1;
+function caseAdditionalCost(rate) {
+  return CASE_ADDITIONAL_HOURS * rate;
+}
+function caseTimelineDays(capacity) {
+  const safe = Math.max(CASE_CAPACITY_MIN, capacity);
+  return Math.ceil(CASE_ADDITIONAL_HOURS / safe);
+}
+function formatGbp(amount, lang) {
+  const rounded = Math.round(amount);
+  if (lang === "en") {
+    return `£${rounded.toLocaleString("en-GB")}`;
+  }
+  if (lang === "ru") {
+    return `£${rounded.toLocaleString("ru-RU")}`;
+  }
+  return `£${rounded.toLocaleString("en-GB")}`;
+}
+function ruPlural(n, one, few, many) {
+  const abs = Math.abs(Math.trunc(n)) % 100;
+  const last = abs % 10;
+  if (abs > 10 && abs < 20) return many;
+  if (last === 1) return one;
+  if (last >= 2 && last <= 4) return few;
+  return many;
+}
+function formatCaseHours(n, lang) {
+  if (lang === "ru") return `${n} ${ruPlural(n, "час", "часа", "часов")}`;
+  if (lang === "zh") return `${n} 小时`;
+  return `${n} ${n === 1 ? "hour" : "hours"}`;
+}
+function formatCaseBusinessDays(n, lang, withPlus = false) {
+  const prefix = withPlus ? "+" : "";
+  if (lang === "ru") {
+    return `${prefix}${n} ${ruPlural(n, "рабочий день", "рабочих дня", "рабочих дней")}`;
+  }
+  if (lang === "zh") return `${prefix}${n} 个工作日`;
+  return `${prefix}${n} ${n === 1 ? "business day" : "business days"}`;
+}
+const COPY = {
+  en: {
+    seo: {
+      title: "Content Migration Scope Creep Demo | MileSeal",
+      description: "See how MileSeal compares a fixed-price project scope with a later client request, calculates 40 additional hours and prepares a client-ready change request.",
+      ogTitle: "Is this client request inside the agreed scope?",
+      ogDescription: "An interactive MileSeal demonstration: compare agreed scope with a later request and generate a client-ready change request."
+    },
+    hero: {
+      eyebrow: "MileSeal interactive demo",
+      title: "Is this client request inside the agreed scope?",
+      subtitle: "Compare an agreed project scope with a later client request and generate a client-ready change request.",
+      runExample: "Run the example",
+      viewOutput: "Download document"
+    },
+    steps: {
+      scope: "Agreed scope",
+      request: "Client request",
+      analysis: "Analysis"
+    },
+    workspace: {
+      id: "workspace",
+      scopeLabel: "Agreed project scope",
+      requestLabel: "New client request",
+      docTitle: "Corporate Website Redesign",
+      meta: [
+        { label: "Fixed budget", value: "£15,000" },
+        { label: "Timeline", value: "6 weeks" },
+        { label: "Included", value: "Migration of 20 priority pages" },
+        { label: "Excluded", value: "Existing blog archive" },
+        { label: "Client responsibility", value: "All remaining archive content" }
+      ],
+      scopeExcerpt: "The agency will migrate twenty priority pages. Migration of the existing blog archive is excluded from the agreed deliverables.",
+      scopeHighlight: "Blog archive migration is not included.",
+      clientRequest: "Could you also migrate our 240 existing blog posts, including images, authors, categories, metadata and redirects? Most of it should be simple copy and paste.",
+      rateLabel: "Agency rate",
+      rateSuffix: "£/hour",
+      capacityLabel: "Available team time",
+      capacitySuffix: "hours/day",
+      rateError: "Enter a rate between £10 and £500.",
+      capacityError: "Enter capacity between 1 and 24 hours/day.",
+      analyse: "Analyse request",
+      analyzing: "Analysing…",
+      reset: "Reset example"
+    },
+    progress: {
+      label: "Analysis in progress",
+      steps: [
+        "Comparing against agreed scope",
+        "Identifying additional work",
+        "Calculating cost and timeline",
+        "Preparing change request"
+      ]
+    },
+    result: {
+      id: "result",
+      status: "Outside scope",
+      title: "This request is outside the agreed scope",
+      description: "The agreed migration covers 20 priority pages. The archive request was excluded and needs a separate change request.",
+      metrics: {
+        confidenceValue: "High confidence"
+      },
+      reasonsTitle: "Why it is outside scope",
+      reasons: [
+        "The agreement includes only 20 pages.",
+        "The blog archive was explicitly excluded.",
+        "Redirect work was not estimated.",
+        "The request creates a separate QA workstream.",
+        "Written client approval is required."
+      ],
+      breakdownTitle: "Effort breakdown",
+      breakdown: [
+        { label: "Migration of 240 posts", hours: 24 },
+        { label: "Images and metadata", hours: 5 },
+        { label: "Legacy content audit", hours: 4 },
+        { label: "Quality assurance", hours: 4 },
+        { label: "URL mapping and redirects", hours: 3 }
+      ],
+      totalLabel: "Total",
+      calcCost: "{hoursLabel} × {rate}/hour = {cost}",
+      calcDays: "{hoursLabel} ÷ {capacity} hours/day = {daysLabel}"
+    },
+    changeRequest: {
+      eyebrow: "Ready to send",
+      title: "Client-ready change request",
+      description: "Download the PDF or copy the wording for the client.",
+      docKind: "Change request",
+      docTitle: "Legacy Content Migration",
+      projectLabel: "Project",
+      projectValue: "Corporate Website Redesign",
+      statusLabel: "Status",
+      statusValue: "Awaiting client approval",
+      effortLabel: "Additional effort",
+      costLabel: "Additional cost",
+      timelineLabel: "Timeline impact",
+      approval: "Work will begin after written approval of this change request.",
+      tones: {
+        neutral: "Neutral",
+        soft: "Softer",
+        formal: "Formal"
+      },
+      bodies: {
+        neutral: "The original project scope includes migration of 20 priority pages. The requested migration of 240 legacy blog posts, including images, metadata, categories, authors and URL redirects, represents additional work outside the agreed scope.",
+        soft: "We would be happy to support the migration of the additional blog archive. As the agreed project scope currently covers 20 priority pages, the requested migration of 240 blog posts and related SEO data would need to be handled as an additional change request.",
+        formal: "Following a review of the signed project scope, the requested migration of 240 legacy blog posts, including associated media, metadata, taxonomy and URL redirects, falls outside the currently agreed deliverables and requires separate written approval."
+      },
+      copy: "Copy",
+      copied: "Copied",
+      copyError: "Could not copy. Please select the text manually.",
+      downloadPdf: "Download PDF",
+      makeSofter: "Softer",
+      makeFormal: "More formal",
+      resetWording: "Reset wording"
+    },
+    finalCta: {
+      title: "Analyse your own request",
+      text: "Use MileSeal to compare an agreed scope with a later client request and prepare a clear change request.",
+      primary: "Open MileSeal",
+      secondary: "Request a manual review"
+    },
+    footer: {
+      privacy: "Privacy",
+      contact: "Contact",
+      copyright: "© 2026 TIVONIX"
+    }
+  },
+  ru: {
+    seo: {
+      title: "Демо расползания объёма: миграция контента | MileSeal",
+      description: "Как MileSeal сравнивает фиксированный объём проекта с новым запросом клиента, считает 40 дополнительных часов и готовит запрос на изменение.",
+      ogTitle: "Входит ли новый запрос клиента в согласованный объём?",
+      ogDescription: "Интерактивная демонстрация MileSeal: сравните согласованный объём с новым запросом и получите готовый запрос на изменение."
+    },
+    hero: {
+      eyebrow: "Интерактивное демо MileSeal",
+      title: "Входит ли новый запрос клиента в согласованный объём?",
+      subtitle: "Сравните согласованный объём проекта с новым запросом клиента и получите готовый запрос на изменение.",
+      runExample: "Запустить пример",
+      viewOutput: "Скачать документ"
+    },
+    steps: {
+      scope: "Согласованный объём",
+      request: "Запрос клиента",
+      analysis: "Анализ"
+    },
+    workspace: {
+      id: "workspace",
+      scopeLabel: "Согласованный объём",
+      requestLabel: "Новый запрос клиента",
+      docTitle: "Редизайн корпоративного сайта",
+      meta: [
+        { label: "Фиксированный бюджет", value: "£15 000" },
+        { label: "Срок", value: "6 недель" },
+        { label: "Включено", value: "Миграция 20 приоритетных страниц" },
+        { label: "Исключено", value: "Существующий архив блога" },
+        { label: "Ответственность клиента", value: "Весь остальной архивный контент" }
+      ],
+      scopeExcerpt: "Агентство перенесёт двадцать приоритетных страниц. Миграция существующего архива блога исключена из согласованных работ.",
+      scopeHighlight: "Миграция архива блога не входит в объём работ.",
+      clientRequest: "А можете ещё перенести наши 240 существующих постов блога вместе с изображениями, авторами, категориями, метаданными и редиректами? Большая часть — это же просто копипаст.",
+      rateLabel: "Ставка агентства",
+      rateSuffix: "£/час",
+      capacityLabel: "Доступное время команды",
+      capacitySuffix: "часов/день",
+      rateError: "Укажите ставку от £10 до £500.",
+      capacityError: "Укажите от 1 до 24 часов в день.",
+      analyse: "Проанализировать запрос",
+      analyzing: "Анализ…",
+      reset: "Сбросить пример"
+    },
+    progress: {
+      label: "Идёт анализ",
+      steps: [
+        "Сравниваем с согласованным объёмом",
+        "Определяем дополнительные работы",
+        "Рассчитываем стоимость и сроки",
+        "Формируем запрос на изменение"
+      ]
+    },
+    result: {
+      id: "result",
+      status: "Вне объёма",
+      title: "Запрос не входит в согласованный объём",
+      description: "Согласованная миграция охватывает 20 приоритетных страниц. Запрос по архиву был исключён и требует отдельного согласования.",
+      metrics: {
+        confidenceValue: "Высокая уверенность"
+      },
+      reasonsTitle: "Почему запрос вне объёма",
+      reasons: [
+        "В соглашении только 20 страниц.",
+        "Архив блога был явно исключён.",
+        "Работы по редиректам не оценивались.",
+        "Запрос создаёт отдельный поток QA.",
+        "Нужно письменное согласование клиента."
+      ],
+      breakdownTitle: "Расчёт трудозатрат",
+      breakdown: [
+        { label: "Миграция 240 постов", hours: 24 },
+        { label: "Изображения и метаданные", hours: 5 },
+        { label: "Аудит архивного контента", hours: 4 },
+        { label: "Проверка качества", hours: 4 },
+        { label: "Карта URL и редиректы", hours: 3 }
+      ],
+      totalLabel: "Итого",
+      calcCost: "{hoursLabel} × {rate}/час = {cost}",
+      calcDays: "{hoursLabel} ÷ {capacity} часов/день = {daysLabel}"
+    },
+    changeRequest: {
+      eyebrow: "Готово к отправке",
+      title: "Готовый запрос на изменение",
+      description: "Скачайте PDF или скопируйте формулировку для клиента.",
+      docKind: "Запрос на изменение",
+      docTitle: "Миграция архивного контента",
+      projectLabel: "Проект",
+      projectValue: "Редизайн корпоративного сайта",
+      statusLabel: "Статус",
+      statusValue: "Ожидает согласования клиента",
+      effortLabel: "Дополнительная работа",
+      costLabel: "Дополнительная стоимость",
+      timelineLabel: "Влияние на сроки",
+      approval: "Работы начнутся после письменного утверждения этого запроса на изменение.",
+      tones: {
+        neutral: "Нейтральный",
+        soft: "Мягче",
+        formal: "Формальный"
+      },
+      bodies: {
+        neutral: "Исходный объём проекта включает миграцию 20 приоритетных страниц. Запрошенная миграция 240 архивных постов блога, включая изображения, метаданные, категории, авторов и URL-редиректы, представляет дополнительную работу вне согласованного объёма.",
+        soft: "Мы с радостью поддержим миграцию дополнительного архива блога. Поскольку согласованный объём сейчас покрывает 20 приоритетных страниц, запрошенный перенос 240 постов и связанных SEO-данных нужно оформить отдельным запросом на изменение.",
+        formal: "По итогам проверки подписанного объёма проекта запрошенная миграция 240 архивных постов блога, включая связанные медиа, метаданные, таксономию и URL-редиректы, выходит за рамки согласованных результатов и требует отдельного письменного утверждения."
+      },
+      copy: "Скопировать",
+      copied: "Скопировано",
+      copyError: "Не удалось скопировать. Выделите текст вручную.",
+      downloadPdf: "Скачать PDF",
+      makeSofter: "Смягчить",
+      makeFormal: "Официальнее",
+      resetWording: "Исходный текст"
+    },
+    finalCta: {
+      title: "Проверьте собственный запрос",
+      text: "Сравните согласованный объём с новым запросом клиента и подготовьте понятный запрос на изменение.",
+      primary: "Открыть MileSeal",
+      secondary: "Запросить ручной разбор"
+    },
+    footer: {
+      privacy: "Конфиденциальность",
+      contact: "Контакты",
+      copyright: "© 2026 TIVONIX"
+    }
+  },
+  zh: {
+    seo: {
+      title: "内容迁移范围蔓延演示 | MileSeal",
+      description: "查看 MileSeal 如何对照固定价格项目范围与后续客户请求，计算额外 40 小时，并生成可发给客户的变更请求。",
+      ogTitle: "这项客户请求是否在约定范围内？",
+      ogDescription: "交互式 MileSeal 演示：对照约定范围与后续请求，生成可发给客户的变更请求。"
+    },
+    hero: {
+      eyebrow: "MileSeal 交互演示",
+      title: "这项客户请求是否在约定范围内？",
+      subtitle: "对照约定项目范围与后续客户请求，生成可发给客户的变更请求。",
+      runExample: "运行示例",
+      viewOutput: "下载文档"
+    },
+    steps: {
+      scope: "约定范围",
+      request: "客户请求",
+      analysis: "分析"
+    },
+    workspace: {
+      id: "workspace",
+      scopeLabel: "已约定项目范围",
+      requestLabel: "新的客户请求",
+      docTitle: "企业官网改版",
+      meta: [
+        { label: "固定预算", value: "£15,000" },
+        { label: "工期", value: "6 周" },
+        { label: "已包含", value: "迁移 20 个优先页面" },
+        { label: "已排除", value: "现有博客存档" },
+        { label: "客户责任", value: "其余全部存档内容" }
+      ],
+      scopeExcerpt: "代理商将迁移二十个优先页面。现有博客存档的迁移不在约定交付物之中。",
+      scopeHighlight: "博客存档迁移不包含在工作范围内。",
+      clientRequest: "能不能顺便迁移我们现有的 240 篇博客文章，包括图片、作者、分类、元数据和重定向？大部分应该就是简单复制粘贴吧。",
+      rateLabel: "代理商费率",
+      rateSuffix: "£/小时",
+      capacityLabel: "团队可用时间",
+      capacitySuffix: "小时/天",
+      rateError: "请输入 £10 到 £500 之间的费率。",
+      capacityError: "请输入每天 1 到 24 小时的产能。",
+      analyse: "分析请求",
+      analyzing: "分析中…",
+      reset: "重置示例"
+    },
+    progress: {
+      label: "正在分析",
+      steps: [
+        "对照约定范围",
+        "识别额外工作",
+        "计算成本与工期",
+        "准备变更请求"
+      ]
+    },
+    result: {
+      id: "result",
+      status: "超出范围",
+      title: "该请求超出约定范围",
+      description: "约定迁移仅覆盖 20 个优先页面。存档请求已被排除，需要单独变更请求。",
+      metrics: {
+        confidenceValue: "高置信度"
+      },
+      reasonsTitle: "为何判定为超出范围",
+      reasons: [
+        "协议仅包含 20 个页面。",
+        "博客存档已被明确排除。",
+        "重定向工作未被估价。",
+        "该请求形成独立 QA 工作流。",
+        "需要客户书面批准。"
+      ],
+      breakdownTitle: "工时测算",
+      breakdown: [
+        { label: "迁移 240 篇文章", hours: 24 },
+        { label: "图片与元数据", hours: 5 },
+        { label: "遗留内容审计", hours: 4 },
+        { label: "质量保障", hours: 4 },
+        { label: "URL 映射与重定向", hours: 3 }
+      ],
+      totalLabel: "合计",
+      calcCost: "{hoursLabel} × {rate}/小时 = {cost}",
+      calcDays: "{hoursLabel} ÷ {capacity} 小时/天 = {daysLabel}"
+    },
+    changeRequest: {
+      eyebrow: "可发送",
+      title: "可发给客户的变更请求",
+      description: "下载 PDF 或复制措辞发给客户。",
+      docKind: "变更请求",
+      docTitle: "遗留内容迁移",
+      projectLabel: "项目",
+      projectValue: "企业官网改版",
+      statusLabel: "状态",
+      statusValue: "等待客户批准",
+      effortLabel: "额外工作量",
+      costLabel: "额外成本",
+      timelineLabel: "工期影响",
+      approval: "书面批准本变更请求后，方可开始工作。",
+      tones: {
+        neutral: "中性",
+        soft: "更柔和",
+        formal: "更正式"
+      },
+      bodies: {
+        neutral: "原项目范围包含 20 个优先页面的迁移。所请求迁移 240 篇遗留博客文章（含图片、元数据、分类、作者与 URL 重定向），属于约定范围之外的额外工作。",
+        soft: "我们很乐意支持额外博客存档的迁移。由于当前约定范围仅覆盖 20 个优先页面，所请求的 240 篇文章及相关 SEO 数据需要作为额外变更请求处理。",
+        formal: "经核对已签署项目范围，所请求迁移 240 篇遗留博客文章（含相关媒体、元数据、分类体系与 URL 重定向）超出当前约定交付物，需另行取得书面批准。"
+      },
+      copy: "复制",
+      copied: "已复制",
+      copyError: "无法复制。请手动选择文本。",
+      downloadPdf: "下载 PDF",
+      makeSofter: "更柔和",
+      makeFormal: "更正式",
+      resetWording: "重置措辞"
+    },
+    finalCta: {
+      title: "分析你自己的请求",
+      text: "用 MileSeal 对照约定范围与后续客户请求，并准备清晰的变更请求。",
+      primary: "打开 MileSeal",
+      secondary: "申请人工复核"
+    },
+    footer: {
+      privacy: "隐私",
+      contact: "联系",
+      copyright: "© 2026 TIVONIX"
+    }
+  }
+};
+function milesealCaseCopy(lang) {
+  return COPY[lang] ?? COPY.en;
+}
+function milesealCaseChangeRequestPlainText(params) {
+  const { copy, tone, costLabel, timelineLabel, hoursLabel } = params;
+  const cr = copy.changeRequest;
+  return [
+    cr.docKind.toUpperCase(),
+    cr.docTitle,
+    "",
+    `${cr.projectLabel}: ${cr.projectValue}`,
+    `${cr.statusLabel}: ${cr.statusValue}`,
+    "",
+    cr.bodies[tone],
+    "",
+    `${cr.effortLabel}: ${hoursLabel}`,
+    `${cr.costLabel}: ${costLabel}`,
+    `${cr.timelineLabel}: ${timelineLabel}`,
+    "",
+    cr.approval
+  ].join("\n");
+}
+const CASE_DEMO_DEFAULT_RATE = 70;
+const CASE_DEMO_DEFAULT_CAPACITY = 8;
+function clampRate(n) {
+  return Math.min(500, Math.max(10, n));
+}
+function clampCapacity(n) {
+  return Math.min(24, Math.max(1, n));
+}
+function parsePositive(value) {
+  const cleaned = value.trim().replace(",", ".");
+  if (!cleaned) return null;
+  const n = Number(cleaned);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return n;
+}
+function createInitialCaseDemoState(opts) {
+  const startInResult = opts?.startInResult ?? false;
+  return {
+    stage: startInResult ? "result" : "ready",
+    agencyRate: CASE_DEMO_DEFAULT_RATE,
+    deliveryHoursPerDay: CASE_DEMO_DEFAULT_CAPACITY,
+    rateInput: String(CASE_DEMO_DEFAULT_RATE),
+    capacityInput: String(CASE_DEMO_DEFAULT_CAPACITY),
+    rateInvalid: false,
+    capacityInvalid: false,
+    selectedTone: "neutral",
+    copied: false,
+    copyError: false,
+    activeAnalysisStep: -1,
+    hasRunDemo: startInResult
+  };
+}
+function caseDemoReducer(state, action) {
+  switch (action.type) {
+    case "setRateInput":
+      return {
+        ...state,
+        rateInput: action.value,
+        rateInvalid: false,
+        copied: false,
+        copyError: false
+      };
+    case "setCapacityInput":
+      return {
+        ...state,
+        capacityInput: action.value,
+        capacityInvalid: false,
+        copied: false,
+        copyError: false
+      };
+    case "commitRate": {
+      const parsed = parsePositive(state.rateInput);
+      if (parsed == null || parsed < 10 || parsed > 500) {
+        return { ...state, rateInvalid: true };
+      }
+      const next = clampRate(Math.round(parsed * 100) / 100);
+      return {
+        ...state,
+        agencyRate: next,
+        rateInput: String(next),
+        rateInvalid: false
+      };
+    }
+    case "commitCapacity": {
+      const parsed = parsePositive(state.capacityInput);
+      if (parsed == null || parsed < 1 || parsed > 24) {
+        return { ...state, capacityInvalid: true };
+      }
+      const next = clampCapacity(Math.round(parsed));
+      return {
+        ...state,
+        deliveryHoursPerDay: next,
+        capacityInput: String(next),
+        capacityInvalid: false
+      };
+    }
+    case "startAnalysis":
+      if (state.stage === "analyzing") return state;
+      return {
+        ...state,
+        stage: "analyzing",
+        activeAnalysisStep: 0,
+        hasRunDemo: true,
+        copied: false,
+        copyError: false
+      };
+    case "startAnalysisWith": {
+      if (state.stage === "analyzing") return state;
+      const rate = clampRate(Math.round(action.rate * 100) / 100);
+      const capacity = clampCapacity(Math.round(action.capacity));
+      return {
+        ...state,
+        agencyRate: rate,
+        deliveryHoursPerDay: capacity,
+        rateInput: String(rate),
+        capacityInput: String(capacity),
+        rateInvalid: false,
+        capacityInvalid: false,
+        stage: "analyzing",
+        activeAnalysisStep: 0,
+        hasRunDemo: true,
+        copied: false,
+        copyError: false
+      };
+    }
+    case "setAnalysisStep":
+      return { ...state, activeAnalysisStep: action.step };
+    case "finishAnalysis":
+      return {
+        ...state,
+        stage: "result",
+        activeAnalysisStep: 3,
+        hasRunDemo: true
+      };
+    case "showResultImmediate":
+      return {
+        ...state,
+        stage: "result",
+        activeAnalysisStep: 3,
+        hasRunDemo: true,
+        copied: false,
+        copyError: false
+      };
+    case "setTone":
+      return {
+        ...state,
+        selectedTone: action.tone,
+        copied: false,
+        copyError: false
+      };
+    case "resetTone":
+      return {
+        ...state,
+        selectedTone: "neutral",
+        copied: false,
+        copyError: false
+      };
+    case "copied":
+      return { ...state, copied: true, copyError: false };
+    case "copyFailed":
+      return { ...state, copied: false, copyError: true };
+    case "clearCopyStatus":
+      return { ...state, copied: false, copyError: false };
+    case "reset":
+      return createInitialCaseDemoState();
+    default:
+      return state;
+  }
+}
+const HERO_VIDEO = "/images/hero-bg.mp4";
+const HERO_POSTER = "/images/hero-bg-poster.webp";
+function cx(...a) {
+  return a.filter(Boolean).join(" ");
+}
+function prefersReducedMotion() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+function scrollToId(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const y = el.getBoundingClientRect().top + window.scrollY - 84;
+  window.scrollTo({ top: Math.max(0, y), behavior: prefersReducedMotion() ? "auto" : "smooth" });
+}
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+  }
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+function escapeHtml(s2) {
+  return s2.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+async function fetchAsDataUrl(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to load ${url}`);
+  const blob = await res.blob();
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error(`Failed to read ${url}`));
+    reader.readAsDataURL(blob);
+  });
+}
+const MILESEAL_MARK_SVG = (size) => `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="${size}" height="${size}" style="display:block;width:${size}px;height:${size}px;">
+  <defs>
+    <linearGradient id="pdfMsPeakL${size}" x1="18" y1="8" x2="48" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF1E3"/><stop offset="0.35" stop-color="#FFC48A"/><stop offset="1" stop-color="#FC5000"/>
+    </linearGradient>
+    <linearGradient id="pdfMsPeakR${size}" x1="78" y1="8" x2="48" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE0C2"/><stop offset="0.4" stop-color="#FF9A3D"/><stop offset="1" stop-color="#E04500"/>
+    </linearGradient>
+    <linearGradient id="pdfMsLeft${size}" x1="12" y1="28" x2="40" y2="88" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFAE66"/><stop offset="0.55" stop-color="#FC5000"/><stop offset="1" stop-color="#B83200"/>
+    </linearGradient>
+    <linearGradient id="pdfMsRight${size}" x1="84" y1="28" x2="56" y2="88" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FC5000"/><stop offset="0.5" stop-color="#D63A00"/><stop offset="1" stop-color="#8F2400"/>
+    </linearGradient>
+    <linearGradient id="pdfMsCenter${size}" x1="48" y1="30" x2="48" y2="72" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFD7B0"/><stop offset="0.45" stop-color="#FF8A3D"/><stop offset="1" stop-color="#FC5000"/>
+    </linearGradient>
+    <linearGradient id="pdfMsBridge${size}" x1="24" y1="20" x2="72" y2="36" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE8D2"/><stop offset="1" stop-color="#FF9A3D"/>
+    </linearGradient>
+  </defs>
+  <path d="M16 30 L30 10 L48 34 L30 28 Z" fill="url(#pdfMsPeakL${size})"/>
+  <path d="M80 30 L66 10 L48 34 L66 28 Z" fill="url(#pdfMsPeakR${size})"/>
+  <path d="M30 10 L48 34 L66 10 L66 28 L48 46 L30 28 Z" fill="url(#pdfMsBridge${size})" opacity="0.95"/>
+  <path d="M16 30 L30 28 L30 52 L24 82 L16 70 Z" fill="url(#pdfMsLeft${size})"/>
+  <path d="M80 30 L66 28 L66 52 L72 82 L80 70 Z" fill="url(#pdfMsRight${size})"/>
+  <path d="M30 28 L48 46 L66 28 L66 52 L48 70 L30 52 Z" fill="url(#pdfMsCenter${size})"/>
+  <path d="M30 10 L48 34 L30 28 Z" fill="#FFF8F0" opacity="0.9"/>
+  <path d="M66 10 L48 34 L66 28 Z" fill="#FFB070" opacity="0.75"/>
+  <path d="M30 52 L48 70 L48 46 Z" fill="#FF8A3D" opacity="0.55"/>
+  <path d="M66 52 L48 70 L48 46 Z" fill="#D63A00" opacity="0.45"/>
+</svg>`.trim();
+async function downloadChangeRequestPdf(opts) {
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://www.tivonix.tech";
+  const generatedAt = (/* @__PURE__ */ new Date()).toLocaleDateString(opts.dateLocale, {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
+  let logoLockup = `${origin}/images/tivonix-logo-white.png`;
+  try {
+    logoLockup = await fetchAsDataUrl(`${origin}/images/tivonix-logo-white.png`);
+  } catch {
+  }
+  const host = document.createElement("div");
+  host.setAttribute("aria-hidden", "true");
+  host.style.cssText = "position:fixed;left:-10000px;top:0;width:794px;background:#0a0a0a;z-index:-1;pointer-events:none;";
+  host.innerHTML = `
+    <div id="mileseal-pdf-sheet" style="
+      box-sizing:border-box;width:794px;min-height:1123px;padding:48px 44px 40px;
+      background:#0a0a0a;color:#ffffff;
+      font-family:'DM Sans','Segoe UI',system-ui,-apple-system,sans-serif;
+      -webkit-font-smoothing:antialiased;
+    ">
+      <table style="width:100%;border-collapse:collapse;margin:0 0 34px;table-layout:fixed;">
+        <tr>
+          <td style="vertical-align:middle;text-align:left;padding:0;height:42px;">
+            <img src="${logoLockup}" alt="TIVONIX" width="148" height="32" style="display:block;height:32px;width:auto;" />
+          </td>
+          <td style="vertical-align:middle;text-align:right;padding:0;height:42px;">
+            <div style="display:inline-block;height:42px;border-radius:999px;background:#ffffff;overflow:hidden;vertical-align:middle;">
+              <table style="border-collapse:collapse;height:42px;">
+                <tr>
+                  <td style="height:42px;vertical-align:middle;padding:0 0 0 12px;">
+                    <div style="width:26px;height:26px;overflow:hidden;">${MILESEAL_MARK_SVG(26)}</div>
+                  </td>
+                  <td style="height:42px;vertical-align:middle;padding:0 10px 0 8px;color:#070607;font-size:13px;font-weight:600;letter-spacing:-0.01em;white-space:nowrap;">
+                    <div style="line-height:16px;margin:0;padding:0;">MileSeal</div>
+                  </td>
+                  <td style="height:42px;vertical-align:middle;padding:0 6px 0 0;">
+                    <div style="width:30px;height:30px;border-radius:999px;background:#070607;color:#ffffff;text-align:center;line-height:30px;font-size:14px;font-weight:700;">→</div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <div style="height:32px;display:inline-block;border-radius:999px;background:#1a1a1a;overflow:hidden;vertical-align:middle;">
+        <table style="border-collapse:collapse;height:32px;">
+          <tr>
+            <td style="height:32px;vertical-align:middle;padding:0 14px;color:rgba(255,255,255,0.65);font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">
+              <div style="line-height:14px;margin:0;padding:0;">${escapeHtml(opts.docKind)}</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <h1 style="margin:18px 0 28px;font-size:36px;line-height:1.12;font-weight:700;letter-spacing:-0.03em;color:#ffffff;max-width:18ch;">
+        ${escapeHtml(opts.docTitle)}
+      </h1>
+
+      <table style="width:100%;border-collapse:collapse;margin:0 0 28px;table-layout:fixed;">
+        <tr>
+          <td style="width:50%;vertical-align:top;padding:0 7px 0 0;">
+            <div style="height:104px;border-radius:18px;background:#141414;overflow:hidden;">
+              <table style="width:100%;height:104px;border-collapse:collapse;">
+                <tr>
+                  <td style="height:104px;vertical-align:middle;padding:0 20px;">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.42);line-height:14px;margin:0 0 10px;padding:0;">
+                      ${escapeHtml(opts.projectLabel)}
+                    </div>
+                    <div style="font-size:16px;font-weight:600;line-height:22px;color:#ffffff;margin:0;padding:0;">
+                      ${escapeHtml(opts.projectValue)}
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </td>
+          <td style="width:50%;vertical-align:top;padding:0 0 0 7px;">
+            <div style="height:104px;border-radius:18px;background:#141414;overflow:hidden;">
+              <table style="width:100%;height:104px;border-collapse:collapse;">
+                <tr>
+                  <td style="height:104px;vertical-align:middle;padding:0 20px;">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.42);line-height:14px;margin:0 0 10px;padding:0;">
+                      ${escapeHtml(opts.statusLabel)}
+                    </div>
+                    <div style="font-size:16px;font-weight:600;line-height:22px;color:#ffffff;margin:0;padding:0;">
+                      ${escapeHtml(opts.statusValue)}
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 30px;font-size:16px;line-height:1.75;color:rgba(255,255,255,0.78);max-width:56ch;">
+        ${escapeHtml(opts.body)}
+      </p>
+
+      <table style="width:100%;border-collapse:collapse;margin:0 0 30px;table-layout:fixed;">
+        <tr>
+          <td style="width:33.33%;vertical-align:top;padding:0 6px 0 0;">
+            <div style="height:112px;border-radius:18px;background:#141414;overflow:hidden;">
+              <table style="width:100%;height:112px;border-collapse:collapse;">
+                <tr>
+                  <td style="height:112px;vertical-align:middle;padding:0 16px;">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.42);line-height:14px;margin:0 0 10px;padding:0;">
+                      ${escapeHtml(opts.effortLabel)}
+                    </div>
+                    <div style="font-size:24px;font-weight:700;letter-spacing:-0.03em;color:#ffffff;line-height:28px;margin:0;padding:0;">
+                      ${escapeHtml(opts.hoursLabel)}
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </td>
+          <td style="width:33.33%;vertical-align:top;padding:0 6px;">
+            <div style="height:112px;border-radius:18px;background:#fc5000;overflow:hidden;">
+              <table style="width:100%;height:112px;border-collapse:collapse;">
+                <tr>
+                  <td style="height:112px;vertical-align:middle;padding:0 16px;">
+                    <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(7,6,7,0.62);line-height:14px;margin:0 0 10px;padding:0;">
+                      ${escapeHtml(opts.costLabelName)}
+                    </div>
+                    <div style="font-size:24px;font-weight:800;letter-spacing:-0.03em;color:#070607;line-height:28px;margin:0;padding:0;">
+                      ${escapeHtml(opts.costLabel)}
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </td>
+          <td style="width:33.33%;vertical-align:top;padding:0 0 0 6px;">
+            <div style="height:112px;border-radius:18px;background:#141414;overflow:hidden;">
+              <table style="width:100%;height:112px;border-collapse:collapse;">
+                <tr>
+                  <td style="height:112px;vertical-align:middle;padding:0 16px;">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.42);line-height:14px;margin:0 0 10px;padding:0;">
+                      ${escapeHtml(opts.timelineLabelName)}
+                    </div>
+                    <div style="font-size:24px;font-weight:700;letter-spacing:-0.03em;color:#ffffff;line-height:28px;margin:0;padding:0;">
+                      ${escapeHtml(opts.timelineLabel)}
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <div style="height:56px;margin:0 0 48px;border-radius:999px;background:#ffffff;overflow:hidden;">
+        <table style="width:100%;height:56px;border-collapse:collapse;table-layout:fixed;">
+          <tr>
+            <td style="height:56px;vertical-align:middle;padding:0 8px 0 22px;color:#070607;font-size:14px;font-weight:600;">
+              <div style="line-height:18px;margin:0;padding:0;">
+                <span style="color:#fc5000;">TIVONIX</span><span style="color:rgba(7,6,7,0.28);padding:0 8px;">·</span>${escapeHtml(opts.approval)}
+              </div>
+            </td>
+            <td style="width:50px;height:56px;vertical-align:middle;padding:0 10px 0 0;text-align:right;">
+              <div style="display:inline-block;width:34px;height:34px;border-radius:999px;background:#070607;color:#ffffff;text-align:center;line-height:34px;font-size:16px;font-weight:700;">→</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+        <tr>
+          <td style="vertical-align:middle;padding:0;color:rgba(255,255,255,0.58);font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;">
+            <table style="border-collapse:collapse;">
+              <tr>
+                <td style="vertical-align:middle;padding:0 10px 0 0;">
+                  <span style="display:block;width:22px;height:22px;line-height:0;">${MILESEAL_MARK_SVG(22)}</span>
+                </td>
+                <td style="vertical-align:middle;padding:0;line-height:22px;white-space:nowrap;">MileSeal by TIVONIX</td>
+              </tr>
+            </table>
+          </td>
+          <td style="vertical-align:middle;padding:0;text-align:right;color:rgba(255,255,255,0.42);font-size:11px;font-weight:500;white-space:nowrap;">
+            Demonstration · ${escapeHtml(generatedAt)}
+          </td>
+        </tr>
+      </table>
+    </div>
+  `;
+  document.body.appendChild(host);
+  const sheet = host.querySelector("#mileseal-pdf-sheet");
+  if (!sheet) {
+    host.remove();
+    throw new Error("PDF sheet missing");
+  }
+  const imgs = Array.from(sheet.querySelectorAll("img"));
+  await Promise.all(
+    imgs.map(
+      (img) => new Promise((resolve) => {
+        if (img.complete && img.naturalWidth > 0) {
+          resolve();
+          return;
         }
-      ),
-      /* @__PURE__ */ jsx(MilesealDemo, { onSendForReview: openReview }),
-      /* @__PURE__ */ jsx(MilesealValueSections, {}),
-      /* @__PURE__ */ jsx(
-        MilesealScopeForm,
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+        window.setTimeout(() => resolve(), 2500);
+      })
+    )
+  );
+  await new Promise((r) => requestAnimationFrame(() => r(void 0)));
+  await new Promise((r) => setTimeout(r, 80));
+  try {
+    const canvas = await html2canvas(sheet, {
+      backgroundColor: "#0a0a0a",
+      scale: 3,
+      useCORS: true,
+      logging: false,
+      width: 794,
+      windowWidth: 794,
+      allowTaint: true
+    });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const imgW = pageW;
+    const imgH = canvas.height * imgW / canvas.width;
+    if (imgH <= pageH + 0.5) {
+      pdf.addImage(imgData, "PNG", 0, 0, imgW, imgH);
+    } else {
+      const fitH = pageH;
+      const fitW = canvas.width * fitH / canvas.height;
+      const x = (pageW - fitW) / 2;
+      pdf.addImage(imgData, "PNG", x, 0, fitW, fitH);
+    }
+    pdf.save(opts.fileName ?? "mileseal-change-request.pdf");
+  } finally {
+    host.remove();
+  }
+}
+const labelClass = "mb-1.5 block text-[12px] font-semibold tracking-[0.04em] text-white/45";
+const inputClass = cx(
+  "h-11 w-full min-h-11 rounded-[12px] border border-white/[0.08] bg-[#141414] px-3.5",
+  "font-sans text-[15px] font-medium text-white placeholder:text-white/35",
+  "outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#121212]"
+);
+function MilesealCaseStudy() {
+  const { lang } = useLang();
+  const copy = milesealCaseCopy(lang);
+  const location = useLocation();
+  const hashBootstrapped = useRef(false);
+  const analysisTimers = useRef([]);
+  const analyseBtnRef = useRef(null);
+  const heroVideoRef = useRef(null);
+  const ctaVideoRef = useRef(null);
+  useKeepVideoPlaying(heroVideoRef);
+  useKeepVideoPlaying(ctaVideoRef);
+  const [state, dispatch] = useReducer(
+    caseDemoReducer,
+    void 0,
+    () => createInitialCaseDemoState()
+  );
+  const cost = caseAdditionalCost(state.agencyRate);
+  const days = caseTimelineDays(state.deliveryHoursPerDay);
+  const costLabel = formatGbp(cost, lang);
+  const rateLabel = formatGbp(state.agencyRate, lang);
+  const hoursLabel = formatCaseHours(CASE_ADDITIONAL_HOURS, lang);
+  const timelineLabel = formatCaseBusinessDays(days, lang, true);
+  const daysLabel = formatCaseBusinessDays(days, lang, false);
+  const calcCostText = copy.result.calcCost.replace("{hoursLabel}", hoursLabel).replace("{rate}", rateLabel).replace("{cost}", costLabel);
+  const calcDaysText = copy.result.calcDays.replace("{hoursLabel}", hoursLabel).replace("{capacity}", String(state.deliveryHoursPerDay)).replace("{daysLabel}", daysLabel);
+  const plainChangeRequest = useMemo(
+    () => milesealCaseChangeRequestPlainText({
+      copy,
+      tone: state.selectedTone,
+      costLabel,
+      timelineLabel,
+      hoursLabel
+    }),
+    [copy, state.selectedTone, costLabel, timelineLabel, hoursLabel]
+  );
+  const clearAnalysisTimers = () => {
+    for (const id of analysisTimers.current) window.clearTimeout(id);
+    analysisTimers.current = [];
+  };
+  useEffect(() => () => clearAnalysisTimers(), []);
+  useEffect(() => {
+    if (!state.copied && !state.copyError) return;
+    const t = window.setTimeout(() => dispatch({ type: "clearCopyStatus" }), 2400);
+    return () => window.clearTimeout(t);
+  }, [state.copied, state.copyError]);
+  useEffect(() => {
+    if (hashBootstrapped.current) return;
+    if (location.hash.replace("#", "") !== "change-request") return;
+    hashBootstrapped.current = true;
+    dispatch({ type: "showResultImmediate" });
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => scrollToId("change-request"));
+    });
+  }, [location.hash]);
+  const runAnalysis = () => {
+    const rateRaw = Number(String(state.rateInput).trim().replace(",", "."));
+    const capRaw = Number(String(state.capacityInput).trim().replace(",", "."));
+    const rateOk = Number.isFinite(rateRaw) && rateRaw >= 10 && rateRaw <= 500;
+    const capOk = Number.isFinite(capRaw) && capRaw >= 1 && capRaw <= 24;
+    if (!rateOk || !capOk) {
+      if (!rateOk) dispatch({ type: "commitRate" });
+      if (!capOk) dispatch({ type: "commitCapacity" });
+      return;
+    }
+    clearAnalysisTimers();
+    dispatch({ type: "startAnalysisWith", rate: rateRaw, capacity: capRaw });
+    requestAnimationFrame(() => scrollToId("analysis-progress"));
+    const reduced = prefersReducedMotion();
+    const stepCount = copy.progress.steps.length;
+    const totalMs = reduced ? 200 : 1600;
+    const stepMs = totalMs / stepCount;
+    for (let i = 0; i < stepCount; i += 1) {
+      const id = window.setTimeout(() => {
+        dispatch({ type: "setAnalysisStep", step: i });
+      }, Math.round(i * stepMs));
+      analysisTimers.current.push(id);
+    }
+    const doneId = window.setTimeout(() => {
+      dispatch({ type: "finishAnalysis" });
+      requestAnimationFrame(() => scrollToId(copy.result.id));
+    }, totalMs + (reduced ? 40 : 100));
+    analysisTimers.current.push(doneId);
+  };
+  const handleRunExample = () => {
+    scrollToId(copy.workspace.id);
+    window.setTimeout(() => {
+      analyseBtnRef.current?.focus({ preventScroll: true });
+      runAnalysis();
+    }, prefersReducedMotion() ? 50 : 280);
+  };
+  const handleCopy = async () => {
+    const ok = await copyText(plainChangeRequest);
+    dispatch({ type: ok ? "copied" : "copyFailed" });
+  };
+  const handleDownloadPdf = () => {
+    void downloadChangeRequestPdf({
+      docKind: copy.changeRequest.docKind,
+      docTitle: copy.changeRequest.docTitle,
+      projectLabel: copy.changeRequest.projectLabel,
+      projectValue: copy.changeRequest.projectValue,
+      statusLabel: copy.changeRequest.statusLabel,
+      statusValue: copy.changeRequest.statusValue,
+      body: copy.changeRequest.bodies[state.selectedTone],
+      effortLabel: copy.changeRequest.effortLabel,
+      hoursLabel,
+      costLabelName: copy.changeRequest.costLabel,
+      costLabel,
+      timelineLabelName: copy.changeRequest.timelineLabel,
+      timelineLabel,
+      approval: copy.changeRequest.approval,
+      dateLocale: lang === "ru" ? "ru-RU" : lang === "zh" ? "zh-CN" : "en-GB",
+      fileName: "mileseal-change-request.pdf"
+    }).catch((err) => {
+      console.error("PDF download failed", err);
+    });
+  };
+  const handleViewDocument = (e) => {
+    e.preventDefault();
+    if (state.stage !== "result") {
+      dispatch({ type: "showResultImmediate" });
+      requestAnimationFrame(() => {
+        scrollToId("change-request");
+        window.setTimeout(() => handleDownloadPdf(), prefersReducedMotion() ? 80 : 220);
+      });
+      return;
+    }
+    scrollToId("change-request");
+    handleDownloadPdf();
+  };
+  const setTone = (tone) => dispatch({ type: "setTone", tone });
+  const analyzing = state.stage === "analyzing";
+  const showResult = state.stage === "result";
+  const stepIndex = analyzing ? 2 : showResult ? 2 : 1;
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsxs("section", { className: "relative isolate overflow-hidden bg-[#0a0a0a] pt-[calc(var(--tivonix-header-spacer)+0.75rem)] pb-10 sm:pb-12", children: [
+      /* @__PURE__ */ jsxs("div", { className: "pointer-events-none absolute inset-0 overflow-hidden", "aria-hidden": true, children: [
+        /* @__PURE__ */ jsx(
+          "video",
+          {
+            ref: heroVideoRef,
+            className: "pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center",
+            src: HERO_VIDEO,
+            poster: HERO_POSTER,
+            autoPlay: true,
+            muted: true,
+            loop: true,
+            playsInline: true,
+            preload: "auto",
+            controls: false,
+            disablePictureInPicture: true
+          }
+        ),
+        /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-b from-black/70 via-black/55 to-[#0a0a0a]" }),
+        /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(10,10,10,0.55)_78%)]" })
+      ] }),
+      /* @__PURE__ */ jsx(Container, { className: "relative z-10 mx-auto max-w-[1240px]", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[720px] text-center", children: [
+        /* @__PURE__ */ jsx("p", { className: "text-[12px] font-semibold tracking-[0.04em] text-white/55", children: copy.hero.eyebrow }),
+        /* @__PURE__ */ jsx("h1", { className: "mt-3 font-sans text-[clamp(2.125rem,4.5vw,3.375rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-white text-balance", children: copy.hero.title }),
+        /* @__PURE__ */ jsx("p", { className: "mx-auto mt-3 max-w-[40rem] text-[15px] font-medium leading-[1.55] text-white/70 sm:text-[16px]", children: copy.hero.subtitle }),
+        /* @__PURE__ */ jsxs("div", { className: "mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-x-5", children: [
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              onClick: handleRunExample,
+              disabled: analyzing,
+              className: ctaClass$1("primary", "md", "disabled:opacity-50"),
+              children: copy.hero.runExample
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "a",
+            {
+              href: "#change-request",
+              onClick: handleViewDocument,
+              className: "text-[14px] font-medium text-white/60 underline-offset-4 transition hover:text-white hover:underline",
+              children: copy.hero.viewOutput
+            }
+          )
+        ] })
+      ] }) })
+    ] }),
+    /* @__PURE__ */ jsx(
+      "section",
+      {
+        id: copy.workspace.id,
+        className: "scroll-mt-[var(--tivonix-header-spacer)] bg-[#0a0a0a] pb-10 sm:pb-14",
+        children: /* @__PURE__ */ jsx(Container, { className: "mx-auto max-w-[1240px]", children: /* @__PURE__ */ jsxs("div", { className: "rounded-[20px] border border-white/[0.08] bg-[#121212] p-[18px] sm:rounded-[22px] sm:p-8 lg:p-10", children: [
+          /* @__PURE__ */ jsx(
+            StepIndicator,
+            {
+              steps: [copy.steps.scope, copy.steps.request, copy.steps.analysis],
+              current: stepIndex,
+              completed: showResult
+            }
+          ),
+          /* @__PURE__ */ jsxs("div", { className: "mt-8 grid gap-8 lg:grid-cols-2 lg:gap-10", children: [
+            /* @__PURE__ */ jsxs("article", { children: [
+              /* @__PURE__ */ jsx("p", { className: labelClass, children: copy.workspace.scopeLabel }),
+              /* @__PURE__ */ jsx("h2", { className: "mt-1 font-sans text-[20px] font-semibold tracking-[-0.02em] text-white sm:text-[22px]", children: copy.workspace.docTitle }),
+              /* @__PURE__ */ jsx("dl", { className: "mt-5 space-y-3.5", children: copy.workspace.meta.map((row) => /* @__PURE__ */ jsxs("div", { className: "grid gap-0.5 sm:grid-cols-[minmax(0,11.5rem)_1fr] sm:gap-4", children: [
+                /* @__PURE__ */ jsx("dt", { className: "text-[13px] font-medium text-white/40", children: row.label }),
+                /* @__PURE__ */ jsx("dd", { className: "text-[15px] font-medium leading-[1.45] text-white/88 sm:text-[16px]", children: row.value })
+              ] }, row.label)) }),
+              /* @__PURE__ */ jsx("p", { className: "mt-6 text-[15px] font-medium leading-[1.6] text-white/65 sm:text-[16px]", children: copy.workspace.scopeExcerpt }),
+              /* @__PURE__ */ jsx("p", { className: "mt-4 rounded-[12px] bg-white/[0.04] px-3.5 py-3 text-[14px] font-semibold leading-snug text-white/80 ring-1 ring-white/[0.06] sm:text-[15px]", children: copy.workspace.scopeHighlight })
+            ] }),
+            /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsx("label", { htmlFor: "mileseal-case-request", className: labelClass, children: copy.workspace.requestLabel }),
+              /* @__PURE__ */ jsx(
+                "textarea",
+                {
+                  id: "mileseal-case-request",
+                  readOnly: true,
+                  rows: 5,
+                  value: copy.workspace.clientRequest,
+                  className: cx(
+                    inputClass,
+                    "h-auto min-h-[8.5rem] resize-none py-3.5 leading-[1.55] opacity-95 sm:min-h-[9.5rem]"
+                  ),
+                  "aria-readonly": "true"
+                }
+              ),
+              /* @__PURE__ */ jsxs("div", { className: "mt-5 grid gap-3 min-[420px]:grid-cols-2", children: [
+                /* @__PURE__ */ jsxs("div", { children: [
+                  /* @__PURE__ */ jsx("label", { htmlFor: "mileseal-case-rate", className: labelClass, children: copy.workspace.rateLabel }),
+                  /* @__PURE__ */ jsxs("div", { className: "relative", children: [
+                    /* @__PURE__ */ jsx(
+                      "input",
+                      {
+                        id: "mileseal-case-rate",
+                        type: "number",
+                        inputMode: "decimal",
+                        min: 10,
+                        max: 500,
+                        step: 1,
+                        value: state.rateInput,
+                        disabled: analyzing,
+                        onChange: (e) => dispatch({ type: "setRateInput", value: e.target.value }),
+                        onBlur: () => dispatch({ type: "commitRate" }),
+                        "aria-invalid": state.rateInvalid,
+                        "aria-describedby": state.rateInvalid ? "mileseal-case-rate-error" : void 0,
+                        className: inputClass
+                      }
+                    ),
+                    /* @__PURE__ */ jsx("span", { className: "pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[12px] font-medium text-white/40", children: copy.workspace.rateSuffix })
+                  ] }),
+                  state.rateInvalid ? /* @__PURE__ */ jsx("p", { id: "mileseal-case-rate-error", className: "mt-1.5 text-[12px] text-[#ff8a6a]", role: "alert", children: copy.workspace.rateError }) : null
+                ] }),
+                /* @__PURE__ */ jsxs("div", { children: [
+                  /* @__PURE__ */ jsx("label", { htmlFor: "mileseal-case-capacity", className: labelClass, children: copy.workspace.capacityLabel }),
+                  /* @__PURE__ */ jsxs("div", { className: "relative", children: [
+                    /* @__PURE__ */ jsx(
+                      "input",
+                      {
+                        id: "mileseal-case-capacity",
+                        type: "number",
+                        inputMode: "numeric",
+                        min: 1,
+                        max: 24,
+                        step: 1,
+                        value: state.capacityInput,
+                        disabled: analyzing,
+                        onChange: (e) => dispatch({ type: "setCapacityInput", value: e.target.value }),
+                        onBlur: () => dispatch({ type: "commitCapacity" }),
+                        "aria-invalid": state.capacityInvalid,
+                        "aria-describedby": state.capacityInvalid ? "mileseal-case-capacity-error" : void 0,
+                        className: inputClass
+                      }
+                    ),
+                    /* @__PURE__ */ jsx("span", { className: "pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[12px] font-medium text-white/40", children: copy.workspace.capacitySuffix })
+                  ] }),
+                  state.capacityInvalid ? /* @__PURE__ */ jsx(
+                    "p",
+                    {
+                      id: "mileseal-case-capacity-error",
+                      className: "mt-1.5 text-[12px] text-[#ff8a6a]",
+                      role: "alert",
+                      children: copy.workspace.capacityError
+                    }
+                  ) : null
+                ] })
+              ] }),
+              /* @__PURE__ */ jsxs("div", { className: "mt-6 flex flex-wrap items-center gap-x-5 gap-y-3", children: [
+                /* @__PURE__ */ jsx(
+                  "button",
+                  {
+                    ref: analyseBtnRef,
+                    type: "button",
+                    onClick: runAnalysis,
+                    disabled: analyzing,
+                    className: ctaClass$1("primary", "md", "min-w-[11rem] disabled:opacity-50"),
+                    children: analyzing ? copy.workspace.analyzing : copy.workspace.analyse
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: () => {
+                      clearAnalysisTimers();
+                      dispatch({ type: "reset" });
+                    },
+                    disabled: analyzing,
+                    className: "min-h-11 text-[14px] font-medium text-white/50 transition hover:text-white/80 disabled:opacity-50",
+                    children: copy.workspace.reset
+                  }
+                )
+              ] })
+            ] })
+          ] }),
+          analyzing ? /* @__PURE__ */ jsxs(
+            "div",
+            {
+              id: "analysis-progress",
+              className: "mt-8 scroll-mt-[var(--tivonix-header-spacer)] border-t border-white/[0.08] pt-6",
+              role: "status",
+              "aria-live": "polite",
+              "aria-busy": "true",
+              "aria-labelledby": "mileseal-case-analysis-title",
+              children: [
+                /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
+                  /* @__PURE__ */ jsx(
+                    Loader2,
+                    {
+                      className: "h-5 w-5 shrink-0 animate-spin text-[#fc5000] motion-reduce:animate-none",
+                      strokeWidth: 2,
+                      "aria-hidden": true
+                    }
+                  ),
+                  /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+                    /* @__PURE__ */ jsx(
+                      "p",
+                      {
+                        id: "mileseal-case-analysis-title",
+                        className: "text-[12px] font-medium tracking-[0.04em] text-white/45",
+                        children: copy.progress.label
+                      }
+                    ),
+                    /* @__PURE__ */ jsx("p", { className: "mt-1 text-[15px] font-medium text-white sm:text-[16px]", children: copy.progress.steps[Math.max(0, Math.min(state.activeAnalysisStep, copy.progress.steps.length - 1))] })
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsx(
+                  "div",
+                  {
+                    className: "mt-4 h-[2px] overflow-hidden rounded-full bg-white/[0.06]",
+                    role: "progressbar",
+                    "aria-valuemin": 0,
+                    "aria-valuemax": 100,
+                    "aria-valuenow": Math.round(
+                      (state.activeAnalysisStep + 1) / copy.progress.steps.length * 100
+                    ),
+                    children: /* @__PURE__ */ jsx("div", { className: "mileseal-orange-shimmer h-full w-full rounded-full motion-reduce:animate-none" })
+                  }
+                )
+              ]
+            }
+          ) : null,
+          showResult ? /* @__PURE__ */ jsxs(
+            "div",
+            {
+              id: copy.result.id,
+              className: "mt-8 scroll-mt-[var(--tivonix-header-spacer)] border-t border-white/[0.08] pt-8",
+              children: [
+                /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-10", children: [
+                  /* @__PURE__ */ jsxs("div", { className: "min-w-0 max-w-[36rem]", children: [
+                    /* @__PURE__ */ jsx("span", { className: "inline-flex items-center rounded-full bg-[#fc5000]/15 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[#ffae66]", children: copy.result.status }),
+                    /* @__PURE__ */ jsx("h2", { className: "mt-3 font-sans text-[clamp(1.35rem,2.5vw,1.75rem)] font-semibold tracking-[-0.02em] text-white", children: copy.result.title }),
+                    /* @__PURE__ */ jsx("p", { className: "mt-2 text-[15px] font-medium leading-[1.55] text-white/60 sm:text-[16px]", children: copy.result.description })
+                  ] }),
+                  /* @__PURE__ */ jsxs("dl", { className: "grid w-full grid-cols-2 gap-y-4 border-t border-white/[0.08] pt-4 sm:gap-0 sm:border-t-0 sm:pt-0 lg:max-w-[28rem] lg:grid-cols-4 lg:divide-x lg:divide-white/[0.08]", children: [
+                    /* @__PURE__ */ jsx(MetricCell, { value: hoursLabel }),
+                    /* @__PURE__ */ jsx(MetricCell, { value: costLabel }),
+                    /* @__PURE__ */ jsx(MetricCell, { value: timelineLabel }),
+                    /* @__PURE__ */ jsx(MetricCell, { value: copy.result.metrics.confidenceValue })
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "mt-9 grid gap-8 lg:grid-cols-2 lg:gap-10", children: [
+                  /* @__PURE__ */ jsxs("div", { children: [
+                    /* @__PURE__ */ jsx("h3", { className: "text-[13px] font-semibold text-white/50", children: copy.result.reasonsTitle }),
+                    /* @__PURE__ */ jsx("ul", { className: "mt-4 space-y-2.5", role: "list", children: copy.result.reasons.map((reason) => /* @__PURE__ */ jsxs(
+                      "li",
+                      {
+                        className: "flex gap-2.5 text-[15px] font-medium leading-[1.5] text-white/75 sm:text-[16px]",
+                        children: [
+                          /* @__PURE__ */ jsx("span", { className: "mt-2 h-1 w-1 shrink-0 rounded-full bg-white/35", "aria-hidden": true }),
+                          /* @__PURE__ */ jsx("span", { children: reason })
+                        ]
+                      },
+                      reason
+                    )) })
+                  ] }),
+                  /* @__PURE__ */ jsxs("div", { children: [
+                    /* @__PURE__ */ jsx("h3", { className: "text-[13px] font-semibold text-white/50", children: copy.result.breakdownTitle }),
+                    /* @__PURE__ */ jsx("ul", { className: "mt-4 space-y-3", role: "list", children: copy.result.breakdown.map((row) => /* @__PURE__ */ jsxs("li", { children: [
+                      /* @__PURE__ */ jsxs("div", { className: "flex items-baseline justify-between gap-3 text-[14px] sm:text-[15px]", children: [
+                        /* @__PURE__ */ jsx("span", { className: "font-medium text-white/70", children: row.label }),
+                        /* @__PURE__ */ jsx("span", { className: "shrink-0 font-semibold tabular-nums text-white", children: formatCaseHours(row.hours, lang) })
+                      ] }),
+                      /* @__PURE__ */ jsx("div", { className: "mt-1.5 h-1 overflow-hidden rounded-full bg-white/[0.08]", children: /* @__PURE__ */ jsx(
+                        "div",
+                        {
+                          className: "h-full rounded-full bg-white/30",
+                          style: {
+                            width: `${row.hours / CASE_ADDITIONAL_HOURS * 100}%`
+                          }
+                        }
+                      ) })
+                    ] }, row.label)) }),
+                    /* @__PURE__ */ jsxs("div", { className: "mt-4 flex items-baseline justify-between border-t border-white/[0.08] pt-3", children: [
+                      /* @__PURE__ */ jsx("span", { className: "text-[13px] font-semibold text-white/45", children: copy.result.totalLabel }),
+                      /* @__PURE__ */ jsx("span", { className: "text-[16px] font-semibold text-white", children: hoursLabel })
+                    ] }),
+                    /* @__PURE__ */ jsx("p", { className: "mt-4 text-[14px] font-medium text-white/65 sm:text-[15px]", children: calcCostText }),
+                    /* @__PURE__ */ jsx("p", { className: "mt-1.5 text-[14px] font-medium text-white/65 sm:text-[15px]", children: calcDaysText })
+                  ] })
+                ] })
+              ]
+            }
+          ) : null
+        ] }) })
+      }
+    ),
+    showResult ? /* @__PURE__ */ jsx(
+      "section",
+      {
+        id: "change-request",
+        className: "scroll-mt-[var(--tivonix-header-spacer)] bg-[#0a0a0a] pb-12 pt-10 sm:pb-16 sm:pt-14",
+        children: /* @__PURE__ */ jsx(Container, { className: "mx-auto max-w-[1240px]", children: /* @__PURE__ */ jsxs("div", { className: "max-w-none", children: [
+          /* @__PURE__ */ jsx("p", { className: "text-[12px] font-medium tracking-[0.04em] text-white/45", children: copy.changeRequest.eyebrow }),
+          /* @__PURE__ */ jsx("h2", { className: "mt-2 font-sans text-[clamp(1.35rem,2.4vw,1.75rem)] font-semibold tracking-[-0.02em] text-white", children: copy.changeRequest.title }),
+          /* @__PURE__ */ jsx("p", { className: "mt-2 max-w-[40rem] text-[15px] font-medium leading-[1.55] text-white/55", children: copy.changeRequest.description }),
+          /* @__PURE__ */ jsxs(
+            "div",
+            {
+              className: "mt-7 flex flex-wrap items-center gap-2.5 sm:gap-3",
+              role: "group",
+              "aria-label": copy.changeRequest.title,
+              children: [
+                /* @__PURE__ */ jsx(ArrowPillButton, { onClick: handleDownloadPdf, children: copy.changeRequest.downloadPdf }),
+                /* @__PURE__ */ jsx(
+                  ArrowPillButton,
+                  {
+                    variant: "outline",
+                    onClick: handleCopy,
+                    icon: state.copied ? "check" : "arrow",
+                    children: state.copied ? copy.changeRequest.copied : copy.changeRequest.copy
+                  }
+                ),
+                /* @__PURE__ */ jsxs(
+                  "div",
+                  {
+                    className: "inline-flex flex-wrap items-center gap-1.5 rounded-full bg-[#1a1a1a] p-1.5 ring-1 ring-white/[0.08]",
+                    role: "group",
+                    "aria-label": copy.changeRequest.tones.neutral,
+                    children: [
+                      /* @__PURE__ */ jsx(
+                        ToneButton,
+                        {
+                          label: copy.changeRequest.makeSofter,
+                          pressed: state.selectedTone === "soft",
+                          onClick: () => setTone("soft")
+                        }
+                      ),
+                      /* @__PURE__ */ jsx(
+                        ToneButton,
+                        {
+                          label: copy.changeRequest.makeFormal,
+                          pressed: state.selectedTone === "formal",
+                          onClick: () => setTone("formal")
+                        }
+                      ),
+                      /* @__PURE__ */ jsx(
+                        ToneButton,
+                        {
+                          label: copy.changeRequest.resetWording,
+                          pressed: state.selectedTone === "neutral",
+                          onClick: () => dispatch({ type: "resetTone" })
+                        }
+                      )
+                    ]
+                  }
+                )
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsx("p", { className: "sr-only", "aria-live": "polite", children: state.copied ? copy.changeRequest.copied : state.copyError ? copy.changeRequest.copyError : "" }),
+          state.copyError ? /* @__PURE__ */ jsxs(
+            "p",
+            {
+              className: "mt-3 flex items-center gap-1.5 text-[13px] font-medium text-[#ff8a6a]",
+              role: "alert",
+              children: [
+                /* @__PURE__ */ jsx(AlertCircle, { className: "h-3.5 w-3.5 shrink-0", "aria-hidden": true }),
+                copy.changeRequest.copyError
+              ]
+            }
+          ) : null
+        ] }) })
+      }
+    ) : null,
+    /* @__PURE__ */ jsx("section", { className: "relative bg-[#0a0a0a] pb-0 pt-28 sm:pt-32 lg:pt-36", children: /* @__PURE__ */ jsxs("div", { className: "relative isolate w-full overflow-visible", children: [
+      /* @__PURE__ */ jsxs("div", { className: "pointer-events-none absolute left-1/2 top-0 z-20 flex -translate-x-1/2 -translate-y-[52%] items-center justify-center gap-3 sm:-translate-y-[55%] sm:gap-4 lg:gap-5", children: [
+        /* @__PURE__ */ jsx(
+          "img",
+          {
+            src: "/images/mileseal-mark-orange.svg",
+            alt: "",
+            className: "h-[4.25rem] w-[4.25rem] drop-shadow-[0_18px_44px_rgba(252,80,0,0.4)] sm:h-24 sm:w-24 lg:h-28 lg:w-28",
+            width: 112,
+            height: 112,
+            "aria-hidden": true
+          }
+        ),
+        /* @__PURE__ */ jsx("span", { className: "select-none font-sans text-[2.35rem] font-semibold tracking-[-0.04em] text-white [text-rendering:geometricPrecision] drop-shadow-[0_10px_28px_rgba(0,0,0,0.55)] sm:text-[3rem] lg:text-[3.5rem]", children: "MileSeal" })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "relative overflow-hidden", children: [
+        /* @__PURE__ */ jsxs("div", { className: "pointer-events-none absolute inset-0 overflow-hidden", "aria-hidden": true, children: [
+          /* @__PURE__ */ jsx(
+            "video",
+            {
+              ref: ctaVideoRef,
+              className: "pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center",
+              src: HERO_VIDEO,
+              poster: HERO_POSTER,
+              autoPlay: true,
+              muted: true,
+              loop: true,
+              playsInline: true,
+              preload: "metadata",
+              controls: false,
+              disablePictureInPicture: true
+            }
+          ),
+          /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/70 to-black/60" }),
+          /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 top-0 h-[48%] bg-gradient-to-b from-[#0a0a0a] via-[rgba(252,80,0,0.12)] to-transparent" }),
+          /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(252,80,0,0.14)_0%,transparent_55%)]" })
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "relative z-10 px-5 pb-16 pt-24 sm:px-8 sm:pb-20 sm:pt-28 lg:pb-24 lg:pt-32", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[36rem] text-center", children: [
+          /* @__PURE__ */ jsx("h2", { className: "font-sans text-[clamp(1.35rem,2.4vw,1.75rem)] font-semibold tracking-[-0.02em] text-white", children: copy.finalCta.title }),
+          /* @__PURE__ */ jsx("p", { className: "mx-auto mt-3 max-w-[30rem] text-[15px] font-medium leading-[1.55] text-white/70 sm:text-[16px]", children: copy.finalCta.text }),
+          /* @__PURE__ */ jsxs("div", { className: "mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row sm:items-center", children: [
+            /* @__PURE__ */ jsx(ArrowPillLink, { to: "/mileseal", children: copy.finalCta.primary }),
+            /* @__PURE__ */ jsx(ArrowPillLink, { to: "/mileseal?manual=1", variant: "outline", children: copy.finalCta.secondary })
+          ] })
+        ] }) })
+      ] })
+    ] }) }),
+    /* @__PURE__ */ jsx("style", { children: `
+        .mileseal-orange-shimmer {
+          background: linear-gradient(
+            90deg,
+            #ffd7b0 0%,
+            #ff9a3d 25%,
+            #fc5000 50%,
+            #ff9a3d 75%,
+            #ffd7b0 100%
+          );
+          background-size: 200% 100%;
+          animation: milesealOrangeShimmer 1.1s linear infinite;
+        }
+        @keyframes milesealOrangeShimmer {
+          0% { background-position: 100% 0; }
+          100% { background-position: -100% 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .mileseal-orange-shimmer {
+            animation: none;
+            background: #fc5000;
+            background-size: auto;
+          }
+        }
+      ` })
+  ] });
+}
+function StepIndicator({
+  steps,
+  current,
+  completed
+}) {
+  return /* @__PURE__ */ jsx("ol", { className: "flex flex-wrap items-center gap-y-2", "aria-label": "Demo steps", children: steps.map((label, i) => {
+    const isCurrent = !completed && i === current;
+    const isDone = completed || i < current;
+    return /* @__PURE__ */ jsxs("li", { className: "flex items-center", children: [
+      i > 0 ? /* @__PURE__ */ jsx(
+        "span",
         {
-          formOpen,
-          onOpenForm: () => openReview(),
-          prefill,
-          formKey
+          className: cx(
+            "mx-2 h-px w-6 sm:mx-3 sm:w-10",
+            isDone || isCurrent ? "bg-white/25" : "bg-white/10"
+          ),
+          "aria-hidden": true
+        }
+      ) : null,
+      /* @__PURE__ */ jsxs(
+        "span",
+        {
+          className: cx(
+            "inline-flex items-center gap-2 text-[12px] font-medium sm:text-[13px]",
+            isCurrent && "text-white",
+            isDone && !isCurrent && "text-white/55",
+            !isDone && !isCurrent && "text-white/35"
+          ),
+          "aria-current": isCurrent ? "step" : void 0,
+          children: [
+            /* @__PURE__ */ jsx(
+              "span",
+              {
+                className: cx(
+                  "inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold",
+                  isCurrent && "bg-[#fc5000] text-black",
+                  isDone && !isCurrent && "bg-white/15 text-white/70",
+                  !isDone && !isCurrent && "bg-white/[0.06] text-white/40"
+                ),
+                "aria-hidden": true,
+                children: isDone && !isCurrent ? /* @__PURE__ */ jsx(Check, { className: "h-3 w-3", strokeWidth: 2.5 }) : i + 1
+              }
+            ),
+            /* @__PURE__ */ jsx("span", { className: "hidden min-[400px]:inline", children: label })
+          ]
         }
       )
-    ] }),
+    ] }, label);
+  }) });
+}
+function MetricCell({ value }) {
+  return /* @__PURE__ */ jsx("div", { className: "px-0 sm:px-3 lg:first:pl-0 lg:last:pr-0", children: /* @__PURE__ */ jsx("dd", { className: "text-[15px] font-semibold leading-snug text-white sm:text-[16px]", children: value }) });
+}
+function arrowPillClass(variant = "solid") {
+  const solid = variant === "solid";
+  return cx(
+    "group inline-flex min-h-11 items-center gap-3 rounded-full py-1.5 pl-5 pr-1.5",
+    "font-sans text-[14px] font-medium tracking-[-0.01em] transition duration-200",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]",
+    "active:scale-[0.98]",
+    solid ? "bg-white text-black hover:bg-white/92" : "bg-transparent text-white ring-1 ring-white/18 hover:bg-white/[0.06]"
+  );
+}
+function ArrowPillIcon({
+  variant = "solid",
+  icon = "arrow"
+}) {
+  const solid = variant === "solid";
+  return /* @__PURE__ */ jsx(
+    "span",
+    {
+      className: cx(
+        "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition",
+        solid ? "bg-black text-white" : "bg-white text-black"
+      ),
+      "aria-hidden": true,
+      children: icon === "check" ? /* @__PURE__ */ jsx(Check, { className: "h-3.5 w-3.5", strokeWidth: 2.5 }) : /* @__PURE__ */ jsx(ArrowRight, { className: "h-3.5 w-3.5", strokeWidth: 2.25 })
+    }
+  );
+}
+function ArrowPillButton({
+  children,
+  onClick,
+  variant = "solid",
+  icon = "arrow"
+}) {
+  return /* @__PURE__ */ jsxs("button", { type: "button", onClick, className: arrowPillClass(variant), children: [
+    /* @__PURE__ */ jsx("span", { className: "pr-0.5", children }),
+    /* @__PURE__ */ jsx(ArrowPillIcon, { variant, icon })
+  ] });
+}
+function ArrowPillLink({
+  children,
+  to,
+  variant = "solid"
+}) {
+  return /* @__PURE__ */ jsxs(Link, { to, className: arrowPillClass(variant), children: [
+    /* @__PURE__ */ jsx("span", { className: "pr-0.5", children }),
+    /* @__PURE__ */ jsx(ArrowPillIcon, { variant })
+  ] });
+}
+function ToneButton({
+  label,
+  pressed,
+  onClick
+}) {
+  return /* @__PURE__ */ jsx(
+    "button",
+    {
+      type: "button",
+      "aria-pressed": pressed,
+      onClick,
+      className: cx(
+        "inline-flex h-9 items-center justify-center rounded-full px-4 text-[13px] font-medium tracking-[-0.01em] transition",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1a1a]",
+        pressed ? "-my-0.5 h-10 bg-white px-5 text-black shadow-[0_4px_16px_rgba(0,0,0,0.25)]" : "bg-transparent text-white/70 ring-1 ring-white/20 hover:bg-white/[0.04] hover:text-white"
+      ),
+      children: label
+    }
+  );
+}
+function MilesealCaseContentMigrationPage() {
+  const { lang } = useLang();
+  const copy = milesealCaseCopy(lang);
+  return /* @__PURE__ */ jsxs("div", { className: "landing-caldera min-h-screen bg-[#0a0a0a]", children: [
+    /* @__PURE__ */ jsx(
+      SEO,
+      {
+        title: copy.seo.title,
+        description: copy.seo.description,
+        ogTitle: copy.seo.ogTitle,
+        ogDescription: copy.seo.ogDescription,
+        canonicalPath: "/mileseal/cases/content-migration",
+        ogLocalePrimary: ogLocaleFor(lang),
+        hreflang: false
+      }
+    ),
+    /* @__PURE__ */ jsx(Header, {}),
+    /* @__PURE__ */ jsx("main", { children: /* @__PURE__ */ jsx(MilesealCaseStudy, {}) }),
     /* @__PURE__ */ jsx(Footer, {})
   ] });
 }
@@ -22537,6 +26412,13 @@ function AppRoutes() {
       /* @__PURE__ */ jsx(Route, { path: "/sozdanie-sajtov", element: /* @__PURE__ */ jsx(WebsiteCreationPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/avtomatizaciya-biznesa", element: /* @__PURE__ */ jsx(AutomationBusinessPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/mileseal", element: /* @__PURE__ */ jsx(MilesealPage, {}) }),
+      /* @__PURE__ */ jsx(
+        Route,
+        {
+          path: "/mileseal/cases/content-migration",
+          element: /* @__PURE__ */ jsx(MilesealCaseContentMigrationPage, {})
+        }
+      ),
       /* @__PURE__ */ jsx(Route, { path: "/partners", element: /* @__PURE__ */ jsx(PartnersPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: PARTNERS_PATH_RU, element: /* @__PURE__ */ jsx(PartnersPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: PARTNERS_PATH_EN, element: /* @__PURE__ */ jsx(PartnersPage, {}) }),

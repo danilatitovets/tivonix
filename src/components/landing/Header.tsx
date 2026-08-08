@@ -611,11 +611,11 @@ export default function Header() {
           <Container className="h-full">
             <div
               className={cx(
-                "relative flex h-full w-full min-w-0 items-center xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:items-center xl:gap-x-4"
+                "relative grid h-full w-full min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-2 sm:gap-x-3 xl:gap-x-4"
               )}
             >
                 {/* LEFT: логотип */}
-                <div className={cx("flex min-w-0 items-center gap-3 shrink-0 xl:justify-self-start", !hideHeader && "pointer-events-auto")}>
+                <div className={cx("flex min-w-0 items-center gap-3 justify-self-start", !hideHeader && "pointer-events-auto")}>
                   <Link
                     to="/"
                     onClick={(e) => {
@@ -623,7 +623,7 @@ export default function Header() {
                       goHome();
                     }}
                     className={cx(
-                      "flex items-center outline-none",
+                      "flex min-w-0 max-w-full items-center outline-none",
                       "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 rounded-xl"
                     )}
                     aria-label={ariaHome}
@@ -632,8 +632,8 @@ export default function Header() {
                       src={logoSrc}
                       alt="TIVONIX"
                       className={cx(
-                        "w-auto object-contain object-left opacity-95 transition-all hover:opacity-100",
-                        "h-9 sm:h-10"
+                        "h-auto w-auto max-w-full object-contain object-left opacity-95 transition-all hover:opacity-100",
+                        "max-h-7 min-[390px]:max-h-8 sm:max-h-9 md:max-h-10"
                       )}
                       draggable={false}
                       loading="eager"
@@ -642,17 +642,19 @@ export default function Header() {
                   </Link>
                 </div>
 
-                {/* CENTER: RU/EN на mobile/tablet в hero — на одной линии с лого и бургером */}
+                {/* CENTER: RU/EN на mobile/tablet в hero — в сетке, без absolute поверх лого */}
                 {heroInView && !isPartners ? (
                   <div
                     className={cx(
-                      "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 xl:hidden",
+                      "justify-self-center xl:hidden",
                       !hideHeader && "pointer-events-auto"
                     )}
                   >
-                    <LangToggle variant="hero" reducedMotion={reducedMotion} />
+                    <LangToggle compact variant="hero" reducedMotion={reducedMotion} />
                   </div>
-                ) : null}
+                ) : (
+                  <div className="xl:hidden" aria-hidden />
+                )}
 
                 {/* CENTER: навигация (только xl+) + RU/EN рядом с табами */}
                 <div
@@ -674,7 +676,7 @@ export default function Header() {
                 </div>
 
                 {/* RIGHT: CTA (desktop xl+) */}
-                <div className={cx("ml-auto hidden min-w-0 shrink-0 items-center xl:ml-0 xl:flex xl:justify-self-end", !hideHeader && "pointer-events-auto")}>
+                <div className={cx("hidden min-w-0 shrink-0 items-center justify-self-end xl:flex", !hideHeader && "pointer-events-auto")}>
                   {onPartners ? (
                     <a
                       href={ctaHref}
@@ -691,7 +693,7 @@ export default function Header() {
                 </div>
 
                 {/* RIGHT: tablet/mobile (до xl) — CTA + бургер */}
-                <div className={cx("ml-auto xl:hidden flex items-center gap-2", !hideHeader && "pointer-events-auto")}>
+                <div className={cx("flex items-center justify-self-end gap-2 xl:hidden", !hideHeader && "pointer-events-auto")}>
                   <div className="hidden md:block">
                     {onPartners ? (
                       <a

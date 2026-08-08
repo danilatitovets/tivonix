@@ -53,8 +53,11 @@ export default function LangToggle({
           aria-checked={active}
           onClick={() => switchLang(code)}
           className={cx(
-            "relative flex h-10 items-center justify-center rounded-full border-0 px-3 font-bold tracking-[0.08em] outline-none select-none transition duration-[260ms]",
-            "text-[11px] focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
+            "relative flex items-center justify-center rounded-full border-0 font-bold outline-none select-none transition duration-[260ms]",
+            compact
+              ? "h-8 min-w-[2.35rem] px-1.5 text-[10px] tracking-[0.04em]"
+              : "h-10 px-3 text-[11px] tracking-[0.08em]",
+            "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
             active
               ? "bg-[#2c2c2c] text-white"
               : "bg-transparent text-white hover:bg-white/[0.06]"
@@ -67,7 +70,10 @@ export default function LangToggle({
 
     return (
       <div
-        className="relative inline-flex shrink-0 items-center gap-0.5 rounded-full border-0 bg-[#141414] p-1 select-none"
+        className={cx(
+          "relative inline-flex shrink-0 items-center rounded-full border-0 bg-[#141414] select-none",
+          compact ? "gap-0 p-0.5" : "gap-0.5 p-1"
+        )}
         role="radiogroup"
         aria-label={label}
         aria-orientation="horizontal"

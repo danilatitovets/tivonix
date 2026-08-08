@@ -287,6 +287,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://www.tivonix.tech/mileseal/cases/content-migration</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
     <loc>https://www.tivonix.tech/partners</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
