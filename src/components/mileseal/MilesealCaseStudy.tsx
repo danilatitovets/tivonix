@@ -5,6 +5,15 @@ import Container from "../ui/Container";
 import { ctaClass } from "../leads/ctaStyles";
 import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
 import { useLang } from "../../i18n/LangProvider";
+import { pathForLang } from "../../lib/localePaths";
+import { trackMilesealDemoStarted, trackMilesealSampleDownloaded } from "../../lib/analytics";
+import WorkStartDecisionPanel from "./WorkStartDecisionPanel";
+import {
+  authorizationLabel,
+  decisionLabel,
+  formatWorkStartDecisionBlock,
+} from "../../lib/workStartDecision";
+import { workStartDecisionCopy } from "../../i18n/workStartDecisionCopy";
 import {
   CASE_ADDITIONAL_HOURS,
   caseAdditionalCost,
@@ -65,6 +74,8 @@ async function copyText(text: string): Promise<boolean> {
 
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
+import type { Lang } from "../../i18n/LangProvider";
+import { savePdfWithTextLayer } from "../../lib/milesealPdf";
 
 function escapeHtml(s: string): string {
   return s
@@ -121,6 +132,8 @@ const MILESEAL_MARK_SVG = (size: number) => `
 </svg>`.trim();
 
 async function downloadChangeRequestPdf(opts: {
+  lang: Lang;
+  plainText: string;
   docKind: string;
   docTitle: string;
   projectLabel: string;
@@ -137,6 +150,19 @@ async function downloadChangeRequestPdf(opts: {
   approval: string;
   dateLocale: string;
   fileName?: string;
+  workStartDecision?: {
+    heading: string;
+    ownerLabel: string;
+    owner: string;
+    decisionLabel: string;
+    decision: string;
+    rationaleLabel: string;
+    rationale: string;
+    authorizationLabel: string;
+    authorization: string;
+    dateLabel: string;
+    date: string;
+  };
 }) {
   const origin = typeof window !== "undefined" ? window.location.origin : "https://www.tivonix.tech";
   const generatedAt = new Date().toLocaleDateString(opts.dateLocale, {
@@ -296,6 +322,24 @@ async function downloadChangeRequestPdf(opts: {
         </tr>
       </table>
 
+      ${
+        opts.workStartDecision
+          ? `
+      <div style="margin:0 0 28px;border-radius:18px;background:#141414;padding:22px 24px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#fc5000;line-height:14px;margin:0 0 16px;padding:0;">
+          ${escapeHtml(opts.workStartDecision.heading)}
+        </div>
+        <div style="font-size:14px;line-height:1.7;color:rgba(255,255,255,0.82);">
+          <div style="margin:0 0 8px;"><strong>${escapeHtml(opts.workStartDecision.ownerLabel)}:</strong> ${escapeHtml(opts.workStartDecision.owner)}</div>
+          <div style="margin:0 0 8px;"><strong>${escapeHtml(opts.workStartDecision.decisionLabel)}:</strong> ${escapeHtml(opts.workStartDecision.decision)}</div>
+          <div style="margin:0 0 8px;"><strong>${escapeHtml(opts.workStartDecision.rationaleLabel)}:</strong> ${escapeHtml(opts.workStartDecision.rationale)}</div>
+          <div style="margin:0 0 8px;"><strong>${escapeHtml(opts.workStartDecision.authorizationLabel)}:</strong> ${escapeHtml(opts.workStartDecision.authorization)}</div>
+          <div style="margin:0;"><strong>${escapeHtml(opts.workStartDecision.dateLabel)}:</strong> ${escapeHtml(opts.workStartDecision.date)}</div>
+        </div>
+      </div>`
+          : ""
+      }
+
       <div style="height:56px;margin:0 0 48px;border-radius:999px;background:#ffffff;overflow:hidden;">
         <table style="width:100%;height:56px;border-collapse:collapse;table-layout:fixed;">
           <tr>
@@ -383,7 +427,12 @@ async function downloadChangeRequestPdf(opts: {
       pdf.addImage(imgData, "PNG", x, 0, fitW, fitH);
     }
 
-    pdf.save(opts.fileName ?? "mileseal-change-request.pdf");
+    await savePdfWithTextLayer(
+      pdf,
+      opts.plainText,
+      opts.lang,
+      opts.fileName ?? "mileseal-change-request.pdf"
+    );
   } finally {
     host.remove();
   }
@@ -401,6 +450,7 @@ export default function MilesealCaseStudy() {
   const { lang } = useLang();
   const copy = milesealCaseCopy(lang);
   const location = useLocation();
+  const milesealPath = pathForLang("/mileseal", lang);
   const hashBootstrapped = useRef(false);
   const analysisTimers = useRef<number[]>([]);
   const analyseBtnRef = useRef<HTMLButtonElement>(null);
@@ -433,6 +483,9 @@ export default function MilesealCaseStudy() {
     .replace("{capacity}", String(state.deliveryHoursPerDay))
     .replace("{daysLabel}", daysLabel);
 
+  const wsdLabels = workStartDecisionCopy(lang);
+  const workStartDecisionBlock = formatWorkStartDecisionBlock(state.workStartDecision, lang);
+
   const plainChangeRequest = useMemo(
     () =>
       milesealCaseChangeRequestPlainText({
@@ -441,9 +494,27 @@ export default function MilesealCaseStudy() {
         costLabel,
         timelineLabel,
         hoursLabel,
+        workStartDecisionBlock,
       }),
-    [copy, state.selectedTone, costLabel, timelineLabel, hoursLabel]
+    [copy, state.selectedTone, costLabel, timelineLabel, hoursLabel, workStartDecisionBlock]
   );
+
+  const pdfWorkStartDecision =
+    state.workStartDecision.saved && !state.workStartDecision.stale
+      ? {
+          heading: wsdLabels.documentHeading,
+          ownerLabel: wsdLabels.ownerLabel,
+          owner: state.workStartDecision.owner.trim(),
+          decisionLabel: wsdLabels.decisionLabel,
+          decision: decisionLabel(state.workStartDecision.decision, wsdLabels),
+          rationaleLabel: wsdLabels.rationaleLabel,
+          rationale: state.workStartDecision.rationale.trim(),
+          authorizationLabel: wsdLabels.authorizationLabel,
+          authorization: authorizationLabel(state.workStartDecision.authorization, wsdLabels),
+          dateLabel: wsdLabels.dateLabel,
+          date: state.workStartDecision.decisionDate.trim(),
+        }
+      : undefined;
 
   const clearAnalysisTimers = () => {
     for (const id of analysisTimers.current) window.clearTimeout(id);
@@ -481,6 +552,7 @@ export default function MilesealCaseStudy() {
     }
 
     clearAnalysisTimers();
+    trackMilesealDemoStarted({ surface: "case", scenarioId: "content-migration" });
     dispatch({ type: "startAnalysisWith", rate: rateRaw, capacity: capRaw });
     requestAnimationFrame(() => scrollToId("analysis-progress"));
 
@@ -518,6 +590,8 @@ export default function MilesealCaseStudy() {
 
   const handleDownloadPdf = () => {
     void downloadChangeRequestPdf({
+      lang,
+      plainText: plainChangeRequest,
       docKind: copy.changeRequest.docKind,
       docTitle: copy.changeRequest.docTitle,
       projectLabel: copy.changeRequest.projectLabel,
@@ -534,7 +608,12 @@ export default function MilesealCaseStudy() {
       approval: copy.changeRequest.approval,
       dateLocale: lang === "ru" ? "ru-RU" : lang === "zh" ? "zh-CN" : "en-GB",
       fileName: "mileseal-change-request.pdf",
-    }).catch((err) => {
+      workStartDecision: pdfWorkStartDecision,
+    })
+      .then(() => {
+        trackMilesealSampleDownloaded({ surface: "case" });
+      })
+      .catch((err) => {
       console.error("PDF download failed", err);
     });
   };
@@ -892,6 +971,12 @@ export default function MilesealCaseStudy() {
                     </p>
                   </div>
                 </div>
+
+                <WorkStartDecisionPanel
+                  className="mt-8"
+                  value={state.workStartDecision}
+                  onChange={(value) => dispatch({ type: "setWorkStartDecision", value })}
+                />
               </div>
             ) : null}
           </div>
@@ -1023,8 +1108,8 @@ export default function MilesealCaseStudy() {
                   {copy.finalCta.text}
                 </p>
                 <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row sm:items-center">
-                  <ArrowPillLink to="/mileseal">{copy.finalCta.primary}</ArrowPillLink>
-                  <ArrowPillLink to="/mileseal?manual=1" variant="outline">
+                  <ArrowPillLink to={milesealPath}>{copy.finalCta.primary}</ArrowPillLink>
+                  <ArrowPillLink to={`${milesealPath}?manual=1`} variant="outline">
                     {copy.finalCta.secondary}
                   </ArrowPillLink>
                 </div>

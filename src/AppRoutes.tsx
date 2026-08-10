@@ -66,8 +66,18 @@ export function AppRoutes() {
         <Route path="/sozdanie-sajtov" element={<WebsiteCreationPage />} />
         <Route path="/avtomatizaciya-biznesa" element={<AutomationBusinessPage />} />
         <Route path="/mileseal" element={<MilesealPage />} />
+        <Route path="/en/mileseal" element={<MilesealPage />} />
+        <Route path="/zh/mileseal" element={<MilesealPage />} />
         <Route
           path="/mileseal/cases/content-migration"
+          element={<MilesealCaseContentMigrationPage />}
+        />
+        <Route
+          path="/en/mileseal/cases/content-migration"
+          element={<MilesealCaseContentMigrationPage />}
+        />
+        <Route
+          path="/zh/mileseal/cases/content-migration"
           element={<MilesealCaseContentMigrationPage />}
         />
         <Route path="/partners" element={<PartnersPage />} />

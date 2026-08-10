@@ -2,6 +2,11 @@ import type { Lang } from "../i18n/LangProvider";
 
 const LOCALIZED_BASES = ["/", "/projects", "/contacts", "/plans", "/about"] as const;
 
+const LOCALIZED_PATHS = [
+  "/mileseal",
+  "/mileseal/cases/content-migration",
+] as const;
+
 function withPrefix(lang: Lang, base: string): string {
   if (lang === "ru") return base === "/" ? "/" : base;
   const prefix = `/${lang}`;
@@ -41,6 +46,10 @@ export function pathForLang(pathname: string, lang: Lang): string {
   if (mZh) return withPrefix(lang, `/projects/${mZh[1]}`);
 
   const base = stripLangPrefix(clean);
+
+  if ((LOCALIZED_PATHS as readonly string[]).includes(base)) {
+    return withPrefix(lang, base);
+  }
 
   if ((LOCALIZED_BASES as readonly string[]).includes(base)) {
     return withPrefix(lang, base);

@@ -30,6 +30,9 @@ export type LeadMeta = {
   datetime: string;
   planId?: string;
   planName?: string;
+  offer?: string;
+  amount?: number;
+  currency?: string;
 };
 
 export type LeadSubmitBody = {
@@ -57,9 +60,16 @@ function readUtm(param: string): string {
   }
 }
 
+export type LeadMetaExtras = {
+  offer?: string;
+  amount?: number;
+  currency?: string;
+};
+
 export function buildLeadMeta(
   ctaSource?: CtaSource,
-  plan?: { id?: string; name?: string }
+  plan?: { id?: string; name?: string },
+  extras?: LeadMetaExtras
 ): LeadMeta {
   const source = ctaSource || getCtaSource();
   return {
@@ -73,6 +83,9 @@ export function buildLeadMeta(
     datetime: new Date().toISOString(),
     planId: plan?.id,
     planName: plan?.name,
+    offer: extras?.offer,
+    amount: extras?.amount,
+    currency: extras?.currency,
   };
 }
 

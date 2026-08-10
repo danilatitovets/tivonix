@@ -554,7 +554,9 @@ function LangPathSync() {
     else if (clean === "/zh" || clean.startsWith("/zh/")) next = "zh";
     else if (clean === "/ru" || clean.startsWith("/ru/")) next = "ru";
     else if (clean === "/partners") next = "ru";
-    else if (clean === "/" || clean === "/plans" || clean === "/about" || clean === "/projects" || clean === "/contacts" || /^\/projects\//.test(clean)) {
+    else if (clean === "/mileseal" || clean.startsWith("/mileseal/")) {
+      next = "ru";
+    } else if (clean === "/" || clean === "/plans" || clean === "/about" || clean === "/projects" || clean === "/contacts" || /^\/projects\//.test(clean)) {
       next = "ru";
     }
     if (next && next !== lang) setLang(next);
@@ -665,6 +667,7 @@ function scrub(props) {
   }
   return out;
 }
+const milesealOnceKeys = /* @__PURE__ */ new Set();
 function trackEvent(name, props) {
   const safe = scrub(props);
   trackHotjarEvent(name);
@@ -711,6 +714,29 @@ function trackProjectView(slug) {
 }
 function trackPricingView() {
   trackEvent("pricing_view");
+}
+function trackMilesealOnce(key, name, props) {
+  if (milesealOnceKeys.has(key)) return;
+  milesealOnceKeys.add(key);
+  trackEvent(name, props);
+}
+function trackMilesealDemoStarted(props) {
+  trackMilesealOnce("mileseal_demo_started", "mileseal_demo_started", props);
+}
+function trackMilesealCaseOpened(props) {
+  trackMilesealOnce("mileseal_case_opened", "mileseal_case_opened", props);
+}
+function trackMilesealManualReviewOpened(props) {
+  trackEvent("mileseal_manual_review_opened", props);
+}
+function trackMilesealManualReviewSubmitted(props) {
+  trackEvent("mileseal_manual_review_submitted", props);
+}
+function trackMilesealSampleDownloaded(props) {
+  trackEvent("mileseal_sample_downloaded", props);
+}
+function trackMilesealAuditRequested(props) {
+  trackEvent("mileseal_audit_requested", props);
 }
 function leadFormCopy(lang) {
   if (lang === "zh") return COPY_ZH$4;
@@ -876,6 +902,10 @@ const COPY_ZH$4 = {
   formNote: "我们会在一个工作日内回复。通话非必须。联系方式不会提供给第三方。"
 };
 const LOCALIZED_BASES = ["/", "/projects", "/contacts", "/plans", "/about"];
+const LOCALIZED_PATHS = [
+  "/mileseal",
+  "/mileseal/cases/content-migration"
+];
 function withPrefix(lang, base) {
   if (lang === "ru") return base === "/" ? "/" : base;
   const prefix = `/${lang}`;
@@ -903,6 +933,9 @@ function pathForLang(pathname, lang) {
   const mZh = clean.match(/^\/zh\/projects\/([^/]+)$/);
   if (mZh) return withPrefix(lang, `/projects/${mZh[1]}`);
   const base = stripLangPrefix(clean);
+  if (LOCALIZED_PATHS.includes(base)) {
+    return withPrefix(lang, base);
+  }
   if (LOCALIZED_BASES.includes(base)) {
     return withPrefix(lang, base);
   }
@@ -927,7 +960,7 @@ function readUtm(param) {
     return "";
   }
 }
-function buildLeadMeta(ctaSource, plan) {
+function buildLeadMeta(ctaSource, plan, extras) {
   const source = ctaSource || getCtaSource();
   return {
     url: typeof window !== "undefined" ? window.location.href : "",
@@ -939,7 +972,10 @@ function buildLeadMeta(ctaSource, plan) {
     utmCampaign: readUtm("utm_campaign"),
     datetime: (/* @__PURE__ */ new Date()).toISOString(),
     planId: plan?.id,
-    planName: plan?.name
+    planName: plan?.name,
+    offer: extras?.offer,
+    amount: extras?.amount,
+    currency: extras?.currency
   };
 }
 const DRAFT_KEY = "tivonix_lead_draft_v1";
@@ -1850,7 +1886,7 @@ function pricingCopy(lang) {
   if (lang === "zh") return COPY_ZH$3;
   return lang === "ru" ? COPY_RU$3 : COPY_EN$3;
 }
-function cx$k(...a) {
+function cx$l(...a) {
   return a.filter(Boolean).join(" ");
 }
 const BRAND_CTA = "linear-gradient(90deg, #FFD7B0 0%, #FF9A3D 45%, #FF6A1A 100%)";
@@ -2040,7 +2076,7 @@ function LeadFormModal({
   if (!mounted && !open) return null;
   if (typeof document === "undefined") return null;
   const budgetOptions = copy.budgets.filter((b) => b.id !== "");
-  const inputBase = cx$k(
+  const inputBase = cx$l(
     "w-full h-12 rounded-xl px-4",
     "border-0 bg-white/[0.08] text-white placeholder:text-white/40",
     "outline-none focus:bg-white/[0.12]",
@@ -2051,7 +2087,7 @@ function LeadFormModal({
   const node = /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$k(
+      className: cx$l(
         "fixed inset-0 z-[220]",
         "flex items-end justify-center sm:items-center",
         "px-0 sm:px-5 py-0 sm:py-5"
@@ -2338,7 +2374,7 @@ function LeadFormModal({
                                 autoComplete: "email",
                                 inputMode: "email",
                                 placeholder: copy.contactPh,
-                                className: cx$k(
+                                className: cx$l(
                                   inputBase,
                                   errorField === "contact" && "bg-[#FF9A3D]/12 focus:bg-[#FF9A3D]/16"
                                 ),
@@ -2366,7 +2402,7 @@ function LeadFormModal({
                               required: true,
                               rows: 4,
                               placeholder: activePlanId && planName ? lang === "ru" ? `Что важно по плану ${planName}? Сроки, примеры, пожелания…` : `What matters for the ${planName} plan? Timeline, examples, notes…` : copy.taskPh,
-                              className: cx$k(
+                              className: cx$l(
                                 "min-h-[108px] w-full resize-none rounded-xl px-4 py-3 text-[14px] font-medium",
                                 "border-0 bg-white/[0.08] text-white placeholder:text-white/40",
                                 "outline-none focus:bg-white/[0.12] transition",
@@ -2399,7 +2435,7 @@ function LeadFormModal({
                                 type: "button",
                                 disabled: status === "loading",
                                 onClick: () => update("budget", active ? "" : b.id),
-                                className: cx$k(
+                                className: cx$l(
                                   "h-9 rounded-full px-3.5 text-[12px] font-medium transition",
                                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40",
                                   active ? "bg-white text-black" : "bg-white/[0.08] text-white/75 hover:bg-white/[0.12] hover:text-white"
@@ -2419,7 +2455,7 @@ function LeadFormModal({
                               checked: form.consent,
                               onChange: (e) => update("consent", e.target.checked),
                               disabled: status === "loading",
-                              className: cx$k(
+                              className: cx$l(
                                 "mt-0.5 h-4 w-4 shrink-0 accent-[#FF9A3D]",
                                 errorField === "consent" && "outline outline-2 outline-[#FF9A3D]/60 outline-offset-2"
                               ),
@@ -2493,7 +2529,7 @@ function LeadFormModal({
                             type: "submit",
                             form: "lead-form",
                             disabled: status === "loading",
-                            className: cx$k(
+                            className: cx$l(
                               "flex h-12 w-full items-center justify-center rounded-full text-[15px] font-bold text-black",
                               "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
                               "hover:brightness-[1.04] active:brightness-[0.96]",
@@ -2920,12 +2956,12 @@ function partnerPanelRegisterUrl(type) {
   url.searchParams.set("type", type);
   return url.toString();
 }
-function cx$j(...a) {
+function cx$k(...a) {
   return a.filter(Boolean).join(" ");
 }
 function ctaClass$1(variant, size, className) {
   const isSquare = variant === "plain";
-  return cx$j(
+  return cx$k(
     "inline-flex items-center justify-center font-sans font-medium tracking-normal transition duration-200",
     isSquare ? "rounded-none shadow-none" : "rounded-full",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
@@ -2969,7 +3005,7 @@ function LeadCTAButton({
   );
 }
 const ORANGE_PILL = "bg-gradient-to-r from-[#FFD7B0] via-[#FF9A3D] to-[#FF6A1A] shadow-[0_6px_20px_rgba(255,107,44,0.2)]";
-function cx$i(...a) {
+function cx$j(...a) {
   return a.filter(Boolean).join(" ");
 }
 const LANGS$1 = ["ru", "en", "zh"];
@@ -3005,7 +3041,7 @@ function LangToggle({
           role: "radio",
           "aria-checked": active,
           onClick: () => switchLang(code),
-          className: cx$i(
+          className: cx$j(
             "relative flex items-center justify-center rounded-full border-0 font-bold outline-none select-none transition duration-[260ms]",
             compact ? "h-8 min-w-[2.35rem] px-1.5 text-[10px] tracking-[0.04em]" : "h-10 px-3 text-[11px] tracking-[0.08em]",
             "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
@@ -3018,7 +3054,7 @@ function LangToggle({
     return /* @__PURE__ */ jsxs(
       "div",
       {
-        className: cx$i(
+        className: cx$j(
           "relative inline-flex shrink-0 items-center rounded-full border-0 bg-[#141414] select-none",
           compact ? "gap-0 p-0.5" : "gap-0.5 p-1"
         ),
@@ -3038,7 +3074,7 @@ function LangToggle({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$i(
+      className: cx$j(
         "relative shrink-0 select-none rounded-full border border-white/[0.08] bg-[#121212] p-1",
         h
       ),
@@ -3050,7 +3086,7 @@ function LangToggle({
           "span",
           {
             "aria-hidden": true,
-            className: cx$i(
+            className: cx$j(
               "pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-8px)/3)] rounded-full",
               ORANGE_PILL,
               !reducedMotion && "transition-transform duration-200 ease-[cubic-bezier(0.33,1,0.68,1)]"
@@ -3067,7 +3103,7 @@ function LangToggle({
             role: "radio",
             "aria-checked": lang === code,
             onClick: () => switchLang(code),
-            className: cx$i(
+            className: cx$j(
               "flex items-center justify-center rounded-full font-semibold tracking-wide outline-none",
               "focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
               text,
@@ -3081,7 +3117,7 @@ function LangToggle({
     }
   );
 }
-function cx$h(...a) {
+function cx$i(...a) {
   return a.filter(Boolean).join(" ");
 }
 const NAV_MAIN = [
@@ -3196,7 +3232,7 @@ function PillNav({
   return /* @__PURE__ */ jsx(
     "nav",
     {
-      className: cx$h(
+      className: cx$i(
         "relative inline-flex items-center gap-0.5 rounded-full border-0 bg-[#141414] p-1"
       ),
       "aria-label": "Header navigation",
@@ -3210,7 +3246,7 @@ function PillNav({
             to: it.to,
             onClick: onItemClick(it.to, it.hash),
             "aria-current": isActive ? "page" : void 0,
-            className: cx$h(
+            className: cx$i(
               "relative flex items-center justify-center gap-2 rounded-full border-0 font-bold uppercase tracking-[0.14em] outline-none select-none transition",
               "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
               pad,
@@ -3408,7 +3444,7 @@ function Header() {
     "div",
     {
       id: "mobile-header-menu",
-      className: cx$h(
+      className: cx$i(
         "xl:hidden fixed inset-0 z-[200]",
         open ? "pointer-events-auto" : "pointer-events-none"
       ),
@@ -3416,7 +3452,7 @@ function Header() {
       children: /* @__PURE__ */ jsxs(
         "div",
         {
-          className: cx$h(
+          className: cx$i(
             "mobile-menu-panel absolute inset-0 flex min-h-[100dvh] flex-col overflow-hidden bg-[#161313]",
             "transition-[opacity,transform,visibility] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
             open ? "visible translate-y-0 opacity-100" : "invisible -translate-y-4 opacity-0"
@@ -3453,7 +3489,7 @@ function Header() {
                 {
                   type: "button",
                   onClick: closeMenu,
-                  className: cx$h(
+                  className: cx$i(
                     "grid h-10 w-10 min-h-[44px] min-w-[44px] place-items-center rounded-xl border-0",
                     "bg-white/[0.04] text-white/72 transition hover:bg-white/[0.08] active:scale-95",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/70"
@@ -3521,7 +3557,7 @@ function Header() {
                 Link,
                 {
                   to: item.to,
-                  className: cx$h(
+                  className: cx$i(
                     "flex items-center justify-between border-b border-white/[0.08] px-3 py-4 text-[15px] font-medium text-white/92",
                     "transition-colors hover:bg-white/[0.03] active:bg-white/[0.02]",
                     activeKey === item.key && "text-[#FFAE66]"
@@ -3565,7 +3601,7 @@ function Header() {
                   Link,
                   {
                     to: onPartners ? `${partnersPath(lang)}#partner-formats` : pathForLang("/plans", lang),
-                    className: cx$h(
+                    className: cx$i(
                       "inline-flex h-12 items-center justify-center rounded-full px-6 font-sans text-[14px] font-medium text-white",
                       "bg-[#070607] transition hover:bg-[#1a1a1a]",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
@@ -3586,7 +3622,7 @@ function Header() {
       "div",
       {
         "aria-hidden": true,
-        className: cx$h(
+        className: cx$i(
           needsSpacer ? "h-[78px] sm:h-[82px]" : "h-0"
         )
       }
@@ -3594,7 +3630,7 @@ function Header() {
     /* @__PURE__ */ jsx(
       "header",
       {
-        className: cx$h(
+        className: cx$i(
           "pointer-events-none fixed inset-x-0 top-0 z-[120] transition-[transform,opacity]",
           // Float via transform (not `top`) so chrome/scroll never fights a top tween (~12–20px jumps)
           hideHeader ? "-translate-y-full opacity-0" : heroInView && !isMobile ? "translate-y-3 opacity-100 sm:translate-y-4" : "translate-y-0 opacity-100"
@@ -3603,11 +3639,11 @@ function Header() {
         children: /* @__PURE__ */ jsx("div", { className: "h-[78px] w-full bg-transparent sm:h-[82px]", children: /* @__PURE__ */ jsx(Container, { className: "h-full", children: /* @__PURE__ */ jsxs(
           "div",
           {
-            className: cx$h(
+            className: cx$i(
               "relative grid h-full w-full min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-2 sm:gap-x-3 xl:gap-x-4"
             ),
             children: [
-              /* @__PURE__ */ jsx("div", { className: cx$h("flex min-w-0 items-center gap-3 justify-self-start", !hideHeader && "pointer-events-auto"), children: /* @__PURE__ */ jsx(
+              /* @__PURE__ */ jsx("div", { className: cx$i("flex min-w-0 items-center gap-3 justify-self-start", !hideHeader && "pointer-events-auto"), children: /* @__PURE__ */ jsx(
                 Link,
                 {
                   to: "/",
@@ -3615,7 +3651,7 @@ function Header() {
                     e.preventDefault();
                     goHome();
                   },
-                  className: cx$h(
+                  className: cx$i(
                     "flex min-w-0 max-w-full items-center outline-none",
                     "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 rounded-xl"
                   ),
@@ -3625,7 +3661,7 @@ function Header() {
                     {
                       src: logoSrc,
                       alt: "TIVONIX",
-                      className: cx$h(
+                      className: cx$i(
                         "h-auto w-auto max-w-full object-contain object-left opacity-95 transition-all hover:opacity-100",
                         "max-h-7 min-[390px]:max-h-8 sm:max-h-9 md:max-h-10"
                       ),
@@ -3639,7 +3675,7 @@ function Header() {
               heroInView && !isPartners ? /* @__PURE__ */ jsx(
                 "div",
                 {
-                  className: cx$h(
+                  className: cx$i(
                     "justify-self-center xl:hidden",
                     !hideHeader && "pointer-events-auto"
                   ),
@@ -3649,7 +3685,7 @@ function Header() {
               /* @__PURE__ */ jsxs(
                 "div",
                 {
-                  className: cx$h(
+                  className: cx$i(
                     "relative hidden min-w-0 items-center gap-2 justify-self-center xl:flex",
                     !hideHeader && "pointer-events-auto"
                   ),
@@ -3668,7 +3704,7 @@ function Header() {
                   ]
                 }
               ),
-              /* @__PURE__ */ jsx("div", { className: cx$h("hidden min-w-0 shrink-0 items-center justify-self-end xl:flex", !hideHeader && "pointer-events-auto"), children: onPartners ? /* @__PURE__ */ jsx(
+              /* @__PURE__ */ jsx("div", { className: cx$i("hidden min-w-0 shrink-0 items-center justify-self-end xl:flex", !hideHeader && "pointer-events-auto"), children: onPartners ? /* @__PURE__ */ jsx(
                 "a",
                 {
                   href: ctaHref,
@@ -3677,7 +3713,7 @@ function Header() {
                   children: ctaTop
                 }
               ) : /* @__PURE__ */ jsx(LeadCTAButton, { source: "header", variant: "white", className: "h-11 px-7 text-[14px]", children: ctaTop }) }),
-              /* @__PURE__ */ jsxs("div", { className: cx$h("flex items-center justify-self-end gap-2 xl:hidden", !hideHeader && "pointer-events-auto"), children: [
+              /* @__PURE__ */ jsxs("div", { className: cx$i("flex items-center justify-self-end gap-2 xl:hidden", !hideHeader && "pointer-events-auto"), children: [
                 /* @__PURE__ */ jsx("div", { className: "hidden md:block", children: onPartners ? /* @__PURE__ */ jsx(
                   "a",
                   {
@@ -3692,7 +3728,7 @@ function Header() {
                   {
                     ref: burgerRef,
                     type: "button",
-                    className: cx$h(
+                    className: cx$i(
                       "grid place-items-center outline-none border-0",
                       "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
                       "h-11 w-11 rounded-2xl",
@@ -5277,10 +5313,10 @@ function getStableViewportHeight() {
   if (!frozenH) readNow();
   return frozenH;
 }
-const HERO_VIDEO$4 = "/images/hero-bg.mp4";
-const HERO_POSTER$4 = "/images/hero-bg-poster.webp";
+const HERO_VIDEO$5 = "/images/hero-bg.mp4";
+const HERO_POSTER$5 = "/images/hero-bg-poster.webp";
 const SCROLL_TRACK_VH = 240;
-function cx$g(...a) {
+function cx$h(...a) {
   return a.filter(Boolean).join(" ");
 }
 function clamp01$3(v) {
@@ -5353,7 +5389,7 @@ function HeroHeadline({
   as: Tag = "h1"
 }) {
   const lines = stage.headlineLines && stage.headlineLines.length > 0 ? stage.headlineLines : [stage.headline];
-  return /* @__PURE__ */ jsx(Tag, { className: cx$g(HERO_SCROLL_HEADLINE_CLASS, "hero-scroll-headline mx-auto text-center"), children: lines.map((line, i) => /* @__PURE__ */ jsxs("span", { className: "hero-scroll-headline__line block", children: [
+  return /* @__PURE__ */ jsx(Tag, { className: cx$h(HERO_SCROLL_HEADLINE_CLASS, "hero-scroll-headline mx-auto text-center"), children: lines.map((line, i) => /* @__PURE__ */ jsxs("span", { className: "hero-scroll-headline__line block", children: [
     i > 0 ? " " : null,
     line
   ] }, `${line}-${i}`)) });
@@ -5373,7 +5409,7 @@ function HeroCard({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$g(
+      className: cx$h(
         "relative isolate h-full min-h-0 flex-1 overflow-visible rounded-[40px] bg-black"
       ),
       children: [
@@ -5383,8 +5419,8 @@ function HeroCard({
             {
               ref: videoRef,
               className: "pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center",
-              src: HERO_VIDEO$4,
-              poster: HERO_POSTER$4,
+              src: HERO_VIDEO$5,
+              poster: HERO_POSTER$5,
               autoPlay: true,
               muted: true,
               loop: true,
@@ -5413,7 +5449,7 @@ function HeroCard({
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-10 flex flex-col items-center justify-center pt-[calc(4.875rem+0.5rem)] pb-6 sm:pt-[calc(var(--tivonix-header-spacer)+1.5rem)]", children: /* @__PURE__ */ jsxs(
           "div",
           {
-            className: cx$g(
+            className: cx$h(
               LANDING_SHELL_CLASS,
               "pointer-events-none relative flex w-full flex-1 flex-col items-center justify-center"
             ),
@@ -5485,14 +5521,14 @@ function Hero() {
     return /* @__PURE__ */ jsx(
       Section,
       {
-        className: cx$g(
+        className: cx$h(
           "relative z-[1] isolate overflow-hidden bg-transparent !py-0",
           "min-h-[100svh] pb-0"
         ),
         children: /* @__PURE__ */ jsx(
           "div",
           {
-            className: cx$g(
+            className: cx$h(
               "mx-auto flex h-[calc(100svh-1.25rem)] min-h-0 w-full max-w-none flex-col",
               "px-3 pt-2.5 pb-2.5",
               "sm:max-w-[min(98vw,1840px)] sm:px-3",
@@ -5513,14 +5549,14 @@ function Hero() {
       children: /* @__PURE__ */ jsx(
         Section,
         {
-          className: cx$g(
+          className: cx$h(
             "hero-scroll-sticky sticky top-0 z-[1] isolate overflow-hidden bg-transparent !py-0",
             "min-h-[100svh] pb-0"
           ),
           children: /* @__PURE__ */ jsx(
             "div",
             {
-              className: cx$g(
+              className: cx$h(
                 "mx-auto flex h-[calc(100svh-1.25rem)] min-h-0 w-full max-w-none flex-col",
                 "px-3 pt-2.5 pb-2.5",
                 "sm:max-w-[min(98vw,1840px)] sm:px-3",
@@ -6587,7 +6623,7 @@ function useInView(ref, options) {
   return inView;
 }
 const AUTO_MS = 5500;
-function cx$f(...parts) {
+function cx$g(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function FeaturedCaseSlide({
@@ -6604,7 +6640,7 @@ function FeaturedCaseSlide({
   return /* @__PURE__ */ jsxs(
     "article",
     {
-      className: cx$f(
+      className: cx$g(
         "case-split case-split--no-tabs col-start-1 row-start-1 transition-opacity duration-300 ease-out",
         active ? "relative z-[1] opacity-100" : "pointer-events-none invisible z-0 opacity-0"
       ),
@@ -7990,13 +8026,13 @@ const AI_MODELS = MODEL_DEFS.map((model, index) => {
   };
 });
 const AI_MODEL_COUNT = AI_MODELS.length;
-function cx$e(...a) {
+function cx$f(...a) {
   return a.filter(Boolean).join(" ");
 }
 function TivonixGlowBorder({ className, children }) {
-  return /* @__PURE__ */ jsx("div", { className: cx$e("tivonix-glow-border", className), children: /* @__PURE__ */ jsx("div", { className: "tivonix-glow-border__content relative min-h-0 flex-1", children }) });
+  return /* @__PURE__ */ jsx("div", { className: cx$f("tivonix-glow-border", className), children: /* @__PURE__ */ jsx("div", { className: "tivonix-glow-border__content relative min-h-0 flex-1", children }) });
 }
-function cx$d(...a) {
+function cx$e(...a) {
   return a.filter(Boolean).join(" ");
 }
 function ScrollFingerHint({
@@ -8017,7 +8053,7 @@ function ScrollFingerHint({
     {
       type: onActivate ? "button" : void 0,
       onClick: onActivate,
-      className: cx$d(
+      className: cx$e(
         "scroll-finger-hint",
         visible && "scroll-finger-hint--visible",
         isDark && "scroll-finger-hint--dark",
@@ -9611,7 +9647,7 @@ function FAQSection() {
     }
   );
 }
-function cx$c(...a) {
+function cx$d(...a) {
   return a.filter(Boolean).join(" ");
 }
 function TelegramLink({
@@ -9636,7 +9672,7 @@ function TelegramLink({
 }
 function ctaClass(variant, size, className) {
   const isSquare = variant === "plain";
-  return cx$c(
+  return cx$d(
     "inline-flex items-center justify-center font-sans font-medium tracking-normal transition duration-200",
     isSquare ? "rounded-none shadow-none" : "rounded-full",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
@@ -9763,7 +9799,7 @@ function FinalCTASection() {
     }
   );
 }
-function cx$b(...a) {
+function cx$c(...a) {
   return a.filter(Boolean).join(" ");
 }
 const LOGO_LOCKUP_PNG = "/images/tivonix-logo-lockup.webp";
@@ -9852,7 +9888,7 @@ function ExternalLink({
       target: openInNewTab ? "_blank" : void 0,
       rel: openInNewTab ? "noopener noreferrer" : void 0,
       "aria-label": ariaLabel,
-      className: cx$b("site-footer__link", className),
+      className: cx$c("site-footer__link", className),
       children
     }
   );
@@ -9881,7 +9917,7 @@ function SocialIconLink({
       target: openInNewTab ? "_blank" : void 0,
       rel: openInNewTab ? "noopener noreferrer" : void 0,
       "aria-label": label,
-      className: cx$b("site-footer__social-link", className),
+      className: cx$c("site-footer__social-link", className),
       children
     }
   );
@@ -10362,7 +10398,7 @@ function LandingPage() {
   ] });
 }
 const HERO_IMG = "/images/hero.webp";
-function cx$a(...a) {
+function cx$b(...a) {
   return a.filter(Boolean).join(" ");
 }
 const s$1 = (v) => v;
@@ -10394,7 +10430,7 @@ function ProjectPreviewFrame({
   return /* @__PURE__ */ jsx(
     "div",
     {
-      className: cx$a(
+      className: cx$b(
         "relative overflow-hidden",
         fullWidth ? "w-full rounded-xl" : "mx-auto w-full rounded-2xl",
         "border-0 bg-[#141416]"
@@ -10603,7 +10639,7 @@ function GalleryLightbox({
     /* @__PURE__ */ jsxs(
       "div",
       {
-        className: cx$a(
+        className: cx$b(
           "fixed inset-0 z-[210] flex items-center justify-center p-2 pt-[max(0.5rem,env(safe-area-inset-top))] sm:p-6",
           "transition-opacity duration-200",
           visible ? "opacity-100" : "opacity-0"
@@ -10624,7 +10660,7 @@ function GalleryLightbox({
           /* @__PURE__ */ jsxs(
             "div",
             {
-              className: cx$a(
+              className: cx$b(
                 "relative z-[1] flex h-[min(94dvh,960px)] w-full max-w-[min(100vw,1200px)] flex-col",
                 "transition-transform duration-200",
                 visible ? "scale-100" : "scale-[0.97]"
@@ -10702,7 +10738,7 @@ function GalleryLightbox({
                     "div",
                     {
                       ref: stageRef,
-                      className: cx$a(
+                      className: cx$b(
                         "h-full rounded-2xl bg-black overscroll-contain",
                         zoomed ? "overflow-hidden touch-none cursor-grab active:cursor-grabbing" : "overflow-auto cursor-zoom-in"
                       ),
@@ -10718,7 +10754,7 @@ function GalleryLightbox({
                       children: /* @__PURE__ */ jsx(
                         "div",
                         {
-                          className: cx$a(
+                          className: cx$b(
                             "flex w-full justify-center",
                             zoomed || !tall ? "min-h-full items-center" : "items-start"
                           ),
@@ -10727,7 +10763,7 @@ function GalleryLightbox({
                             {
                               src,
                               alt: "",
-                              className: cx$a(
+                              className: cx$b(
                                 "block select-none transition-transform duration-100 will-change-transform",
                                 // Long pages: full width + vertical scroll. Wide UI: fit in viewport.
                                 tall && !zoomed ? "h-auto w-full max-w-full" : "max-h-full w-auto max-w-full object-contain"
@@ -10773,7 +10809,7 @@ function ProjectGalleryStrip({
       /* @__PURE__ */ jsxs(
         "div",
         {
-          className: cx$a(
+          className: cx$b(
             "flex gap-2.5 overflow-x-auto px-6 pb-1 sm:gap-3 sm:px-0",
             "snap-x snap-mandatory scroll-smooth",
             "no-scrollbar"
@@ -10863,7 +10899,7 @@ function ExternalIcon$1({ className }) {
     }
   );
 }
-const filterPillClass = (active) => cx$a(
+const filterPillClass = (active) => cx$b(
   "shrink-0 rounded-full border-0 px-3.5 py-1.5 text-[13px] font-medium transition",
   active ? "bg-[#3a3a3d] text-white" : "bg-[#1c1c1f] text-white/78 hover:bg-[#262626] hover:text-white/92"
 );
@@ -10906,7 +10942,7 @@ function ProjectGridCard({ p, isRu, lang }) {
           href: p.domain,
           target: "_blank",
           rel: "noopener noreferrer",
-          className: cx$a(
+          className: cx$b(
             "shrink-0 inline-flex items-center gap-1 rounded-full",
             "bg-[#1c1c1f] px-2.5 py-1 text-[11px] font-medium text-white/58",
             "transition hover:bg-[#262626] hover:text-white/85"
@@ -10957,7 +10993,7 @@ function ProjectsPage() {
       /* @__PURE__ */ jsx("div", { className: "mt-10 sm:mt-12", children: /* @__PURE__ */ jsxs(
         "div",
         {
-          className: cx$a(
+          className: cx$b(
             "flex gap-2 overflow-x-auto pb-1 no-scrollbar",
             "justify-start sm:flex-wrap sm:justify-center"
           ),
@@ -11532,12 +11568,12 @@ function CaseBrandIntro({
   const renderLogo = (size) => logo ? /* @__PURE__ */ jsx(
     "div",
     {
-      className: cx$a(
+      className: cx$b(
         "overflow-hidden bg-black",
-        size === "desktop" ? cx$a(
+        size === "desktop" ? cx$b(
           "shrink-0 rounded-[16px]",
           logoFit === "contain" ? "h-[5.25rem] w-16" : "h-16 w-16"
-        ) : cx$a(
+        ) : cx$b(
           "mb-4 rounded-[12px] lg:hidden",
           logoFit === "contain" ? "h-12 w-10" : "h-11 w-11"
         )
@@ -11547,7 +11583,7 @@ function CaseBrandIntro({
         {
           src: logo,
           alt: "",
-          className: cx$a(
+          className: cx$b(
             "h-full w-full object-center",
             logoFit === "contain" ? "object-contain" : "object-cover"
           ),
@@ -11566,7 +11602,7 @@ function CaseBrandIntro({
       renderLogo("desktop")
     ] }),
     renderLogo("mobile"),
-    /* @__PURE__ */ jsx("div", { className: cx$a("max-w-[42rem] space-y-3.5 sm:space-y-4 lg:mt-8", BODY), children: storyParas }),
+    /* @__PURE__ */ jsx("div", { className: cx$b("max-w-[42rem] space-y-3.5 sm:space-y-4 lg:mt-8", BODY), children: storyParas }),
     domain && !wip ? /* @__PURE__ */ jsxs(
       "a",
       {
@@ -11627,13 +11663,13 @@ function PaletteSwatch({
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1400);
   };
-  return /* @__PURE__ */ jsxs("div", { className: cx$a("min-w-0", wide && "max-w-xl"), children: [
+  return /* @__PURE__ */ jsxs("div", { className: cx$b("min-w-0", wide && "max-w-xl"), children: [
     /* @__PURE__ */ jsxs(
       "button",
       {
         type: "button",
         onClick: onCopy,
-        className: cx$a(
+        className: cx$b(
           "group relative w-full overflow-hidden rounded-2xl ring-1 ring-white/[0.06]",
           "outline-none transition focus-visible:ring-2 focus-visible:ring-[#FF6B2C]/55",
           wide ? "h-16 sm:h-[72px]" : "h-14 sm:h-16"
@@ -11645,7 +11681,7 @@ function PaletteSwatch({
           /* @__PURE__ */ jsx(
             "span",
             {
-              className: cx$a(
+              className: cx$b(
                 "pointer-events-none absolute inset-0 rounded-2xl",
                 isLight ? "ring-1 ring-inset ring-black/10" : "ring-1 ring-inset ring-white/[0.04]"
               ),
@@ -11655,7 +11691,7 @@ function PaletteSwatch({
           /* @__PURE__ */ jsxs(
             "span",
             {
-              className: cx$a(
+              className: cx$b(
                 "absolute right-3 top-1/2 z-[1] -translate-y-1/2",
                 "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1",
                 "text-[11px] font-[600] tracking-normal backdrop-blur-sm",
@@ -11831,7 +11867,7 @@ function CaseDetailBody({
             className: "mb-12 scroll-mt-28 border-t border-white/[0.06] pt-8 sm:mb-[72px] sm:pt-12",
             children: [
               /* @__PURE__ */ jsx("h2", { className: H2, children: block.title }),
-              block.paragraphs?.length ? /* @__PURE__ */ jsx("div", { className: cx$a("mt-5 max-w-[42rem] space-y-4", isOutcome && "text-[#ededf3]"), children: block.paragraphs.map((p, idx) => /* @__PURE__ */ jsx("p", { className: BODY, children: /* @__PURE__ */ jsx(RichText, { text: p }) }, idx)) }) : null,
+              block.paragraphs?.length ? /* @__PURE__ */ jsx("div", { className: cx$b("mt-5 max-w-[42rem] space-y-4", isOutcome && "text-[#ededf3]"), children: block.paragraphs.map((p, idx) => /* @__PURE__ */ jsx("p", { className: BODY, children: /* @__PURE__ */ jsx(RichText, { text: p }) }, idx)) }) : null,
               block.bullets?.length ? /* @__PURE__ */ jsx(FeatureGrid, { items: block.bullets }) : null
             ]
           },
@@ -12023,7 +12059,7 @@ function ProjectDetailPage() {
               /* @__PURE__ */ jsxs("div", { className: "order-2 min-w-0 lg:pt-1", children: [
                 /* @__PURE__ */ jsxs("header", { className: "space-y-3 sm:space-y-4", children: [
                   /* @__PURE__ */ jsx("h1", { className: "font-hero text-[clamp(1.85rem,4.2vw,2.75rem)] font-normal uppercase tracking-[0.02em] leading-[1.02] text-[#ededf3]", children: project.title }),
-                  /* @__PURE__ */ jsx("p", { className: cx$a("max-w-[36ch]", BODY), children: mood ?? subtitle }),
+                  /* @__PURE__ */ jsx("p", { className: cx$b("max-w-[36ch]", BODY), children: mood ?? subtitle }),
                   mood ? /* @__PURE__ */ jsx("p", { className: "max-w-[40ch] text-[13px] leading-relaxed text-[#8a8a8e] sm:text-[14px]", children: subtitle }) : null
                 ] }),
                 /* @__PURE__ */ jsxs("dl", { className: "mt-6 sm:mt-8", children: [
@@ -12044,7 +12080,7 @@ function ProjectDetailPage() {
                     /* @__PURE__ */ jsx(
                       "span",
                       {
-                        className: cx$a(
+                        className: cx$b(
                           "h-1.5 w-1.5 shrink-0 rounded-full",
                           wip ? "bg-amber-400/90" : "bg-emerald-400/90"
                         )
@@ -12180,7 +12216,7 @@ function ProjectDetailPage() {
 }
 const ORANGE = "#FF9A3D";
 const ORANGE2 = "#FF6A1A";
-function cx$9(...a) {
+function cx$a(...a) {
   return a.filter(Boolean).join(" ");
 }
 function clamp(n, a, b) {
@@ -12262,7 +12298,7 @@ function LangChip({ item }) {
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$9(
+      className: cx$a(
         "select-none",
         "inline-flex max-w-[11rem] items-center gap-2 sm:gap-2.5",
         "rounded-full px-3 py-1.5 sm:px-3.5 sm:py-2",
@@ -12300,12 +12336,12 @@ function OrbitRing(props) {
       children: [
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-full border border-white/8 opacity-60" }),
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-full border border-[#FF9A3D]/10 opacity-80 [mask-image:radial-gradient(transparent_52%,black_64%)] [-webkit-mask-image:radial-gradient(transparent_52%,black_64%)]" }),
-        /* @__PURE__ */ jsx("div", { className: cx$9("absolute inset-0 will-change-transform", reverse ? "orbit-rev" : "orbit"), style: animStyle, children: items.map((it, i) => {
+        /* @__PURE__ */ jsx("div", { className: cx$a("absolute inset-0 will-change-transform", reverse ? "orbit-rev" : "orbit"), style: animStyle, children: items.map((it, i) => {
           const ang = offsetDeg + i * step + (i % 2 ? 8 : -5);
           const posStyle = s({
             transform: `translate(-50%,-50%) rotate(${ang}deg) translateX(${radius}px) rotate(${-ang}deg)`
           });
-          return /* @__PURE__ */ jsx("div", { className: "absolute left-1/2 top-1/2", style: posStyle, children: /* @__PURE__ */ jsx("div", { className: cx$9(reverse ? "counter-rev" : "counter"), style: animStyle, children: /* @__PURE__ */ jsx(LangChip, { item: it }) }) }, `${it.label}-${i}`);
+          return /* @__PURE__ */ jsx("div", { className: "absolute left-1/2 top-1/2", style: posStyle, children: /* @__PURE__ */ jsx("div", { className: cx$a(reverse ? "counter-rev" : "counter"), style: animStyle, children: /* @__PURE__ */ jsx(LangChip, { item: it }) }) }, `${it.label}-${i}`);
         }) })
       ]
     }
@@ -12352,7 +12388,7 @@ function SunContacts({ size }) {
   const title = isRu ? "Контакты" : "Contacts";
   const leadCopy = leadFormCopy(lang);
   const botCta = isRu ? "Telegram-бот" : "Telegram bot";
-  const contactRowClass = cx$9(
+  const contactRowClass = cx$a(
     "group inline-flex w-full items-center gap-3.5 rounded-xl px-4 py-2.5",
     "bg-white/[0.055] hover:bg-white/[0.085] transition duration-200",
     "shadow-[0_10px_40px_rgba(0,0,0,0.28)]",
@@ -12378,7 +12414,7 @@ function SunContacts({ size }) {
               rel: "noopener noreferrer",
               className: contactRowClass,
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx$9(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconTG, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$a(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconTG, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Telegram" })
               ]
             }
@@ -12389,9 +12425,9 @@ function SunContacts({ size }) {
               href: "https://mail.google.com/mail/?view=cm&fs=1&to=tivoonix@gmail.com&su=%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82%20(SaaS%2FMVP)",
               target: "_blank",
               rel: "noopener noreferrer",
-              className: cx$9(contactRowClass, "hidden sm:inline-flex"),
+              className: cx$a(contactRowClass, "hidden sm:inline-flex"),
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx$9(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconMail, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$a(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconMail, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Email" })
               ]
             }
@@ -12404,7 +12440,7 @@ function SunContacts({ size }) {
               rel: "noopener noreferrer",
               className: contactRowClass,
               children: [
-                /* @__PURE__ */ jsx("span", { className: cx$9(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconInstagram, {}) }),
+                /* @__PURE__ */ jsx("span", { className: cx$a(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconInstagram, {}) }),
                 /* @__PURE__ */ jsx("span", { className: "min-w-0 text-[13px] font-[780] tracking-tight text-white/85", children: "Instagram" })
               ]
             }
@@ -12426,7 +12462,7 @@ function SunContacts({ size }) {
               href: TG_BOT_URL,
               target: "_blank",
               rel: "noopener noreferrer",
-              className: cx$9(
+              className: cx$a(
                 "inline-flex h-10 w-full items-center justify-center rounded-xl px-5",
                 "text-[13px] font-[700] text-white/80 whitespace-nowrap",
                 "border border-white/15 bg-white/[0.05] hover:bg-white/[0.09] transition duration-200",
@@ -14808,7 +14844,7 @@ function AutomationBusinessPage() {
     /* @__PURE__ */ jsx(Footer, {})
   ] }) });
 }
-function cx$8(...parts) {
+function cx$9(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function PricingFAQSection() {
@@ -14822,14 +14858,14 @@ function PricingFAQSection() {
       return /* @__PURE__ */ jsxs(
         "div",
         {
-          className: cx$8("pricing-faq__item", open && "pricing-faq__item--open"),
+          className: cx$9("pricing-faq__item", open && "pricing-faq__item--open"),
           children: [
             /* @__PURE__ */ jsxs(
               "button",
               {
                 type: "button",
                 onClick: () => setOpenId((prev) => prev === item.id ? null : item.id),
-                className: cx$8(
+                className: cx$9(
                   "flex w-full items-center justify-between gap-4 px-5 text-left sm:px-8",
                   open ? "pb-3 pt-5" : "py-5"
                 ),
@@ -14838,7 +14874,7 @@ function PricingFAQSection() {
                   /* @__PURE__ */ jsx(
                     "span",
                     {
-                      className: cx$8(
+                      className: cx$9(
                         "font-sans text-[14px] font-medium sm:text-[15px]",
                         open ? "text-white" : "text-white/88"
                       ),
@@ -14849,7 +14885,7 @@ function PricingFAQSection() {
                     ChevronDown,
                     {
                       size: 16,
-                      className: cx$8(
+                      className: cx$9(
                         "shrink-0 transition",
                         open ? "rotate-180 text-[var(--color-ember)]" : "text-white/45"
                       ),
@@ -14874,7 +14910,7 @@ const SCOPE_LEVEL = {
   custom: 8
 };
 const SEGMENTS = 8;
-function cx$7(...parts) {
+function cx$8(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function PricingPlanScopeGrid({ onPlanAction }) {
@@ -14892,7 +14928,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
         {
           type: "button",
           onClick: () => onPlanAction(planId),
-          className: cx$7(
+          className: cx$8(
             "pricing-plan-scope__col",
             isGrowth && "pricing-plan-scope__col--growth"
           ),
@@ -14901,7 +14937,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
               /* @__PURE__ */ jsx(
                 "span",
                 {
-                  className: cx$7(
+                  className: cx$8(
                     "pricing-plan-scope__name font-hero font-normal uppercase tracking-[0.02em]",
                     isGrowth ? "text-[var(--color-ember)]" : "text-white"
                   ),
@@ -14911,7 +14947,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
               /* @__PURE__ */ jsx(
                 "span",
                 {
-                  className: cx$7(
+                  className: cx$8(
                     "pricing-plan-scope__price-old font-sans text-[10px] font-medium line-through",
                     planCopy.priceOriginal ? "text-white/35" : "text-transparent"
                   ),
@@ -14926,7 +14962,7 @@ function PricingPlanScopeGrid({ onPlanAction }) {
               return /* @__PURE__ */ jsx(
                 "span",
                 {
-                  className: cx$7("pricing-plan-scope__bar", on && "pricing-plan-scope__bar--on")
+                  className: cx$8("pricing-plan-scope__bar", on && "pricing-plan-scope__bar--on")
                 },
                 index
               );
@@ -14947,7 +14983,7 @@ const PLAN_IMAGES = {
   product: `${PLANS_IMG}/3.webp`,
   custom: `${PLANS_IMG}/4.webp`
 };
-function cx$6(...parts) {
+function cx$7(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function PlanCtaButton({
@@ -14965,7 +15001,7 @@ function PlanCtaButton({
       className: ctaClass$1(
         featured ? "primary" : "white",
         compact ? "md" : "md",
-        cx$6("w-full", compact && "h-9 text-[12px] sm:h-10 sm:text-[13px]", className)
+        cx$7("w-full", compact && "h-9 text-[12px] sm:h-10 sm:text-[13px]", className)
       ),
       children
     }
@@ -14999,7 +15035,7 @@ function ComparePlanHead({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$6(
+      className: cx$7(
         layout === "column" ? "pricing-compare__plan-head" : "pricing-compare__mobile-plan",
         featured && "pricing-compare__plan-head--featured"
       ),
@@ -15007,7 +15043,7 @@ function ComparePlanHead({
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: cx$6(
+            className: cx$7(
               "pricing-compare__plan-name font-hero font-normal uppercase tracking-[0.02em]",
               layout === "column" ? "text-[15px] sm:text-[16px]" : "text-[14px]",
               featured ? "text-[var(--color-ember)]" : "text-white"
@@ -15018,7 +15054,7 @@ function ComparePlanHead({
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: cx$6(
+            className: cx$7(
               "pricing-compare__plan-original font-sans text-[11px] font-medium",
               priceOriginal ? "text-white/35 line-through" : "text-transparent"
             ),
@@ -15029,7 +15065,7 @@ function ComparePlanHead({
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: cx$6(
+            className: cx$7(
               "pricing-compare__plan-price font-hero font-normal leading-none tracking-[0.02em] normal-case",
               layout === "column" ? "text-[14px] sm:text-[15px]" : "text-[13px]",
               isCustom ? "text-white" : "text-[var(--color-ember)]"
@@ -15050,7 +15086,7 @@ function PlanPrice({ price, priceOriginal }) {
   return /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__price-block", children: /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cx$6(
+      className: cx$7(
         "pricing-plan-card__price-value",
         from && amount ? "pricing-plan-card__price-value--stack" : "pricing-plan-card__price-value--solo"
       ),
@@ -15058,7 +15094,7 @@ function PlanPrice({ price, priceOriginal }) {
         /* @__PURE__ */ jsx(
           "p",
           {
-            className: cx$6(
+            className: cx$7(
               "pricing-plan-card__price-original",
               hasOriginal ? "is-visible" : "is-empty"
             ),
@@ -15099,7 +15135,7 @@ function PlanCard({
   return /* @__PURE__ */ jsxs(
     "article",
     {
-      className: cx$6(
+      className: cx$7(
         "pricing-plan-card",
         highlight && "pricing-plan-card--highlight",
         planId === "growth" && "pricing-plan-card--growth",
@@ -15123,7 +15159,7 @@ function PlanCard({
             /* @__PURE__ */ jsx(
               "h3",
               {
-                className: cx$6(
+                className: cx$7(
                   "pricing-plan-card__name"
                 ),
                 children: name
@@ -15167,7 +15203,7 @@ function CompactPlanCard({
   return /* @__PURE__ */ jsxs(
     "article",
     {
-      className: cx$6(
+      className: cx$7(
         "pricing-footer-card flex h-full flex-col",
         highlight && "pricing-footer-card--highlight",
         planId === "growth" && "pricing-footer-card--growth"
@@ -15214,7 +15250,7 @@ function PricingPlansSection({ className }) {
     Section,
     {
       id: "pricing",
-      className: cx$6(
+      className: cx$7(
         "scroll-mt-[var(--tivonix-header-spacer)] bg-black py-10 sm:py-20 lg:py-24",
         className
       ),
@@ -15324,7 +15360,7 @@ function PricingPlansSection({ className }) {
                 PLAN_IDS.map((planId) => /* @__PURE__ */ jsx(
                   "div",
                   {
-                    className: cx$6(
+                    className: cx$7(
                       "pricing-compare__plan-col",
                       planId === "growth" && "pricing-compare__plan-col--growth"
                     ),
@@ -15357,7 +15393,7 @@ function PricingPlansSection({ className }) {
                       ChevronDown,
                       {
                         size: 16,
-                        className: cx$6("text-white/45 transition", open && "rotate-180"),
+                        className: cx$7("text-white/45 transition", open && "rotate-180"),
                         "aria-hidden": true
                       }
                     )
@@ -16798,11 +16834,11 @@ function buildPartnersSchema(copy, lang, pathname) {
     ]
   };
 }
-function cx$5(...parts) {
+function cx$6(...parts) {
   return parts.filter(Boolean).join(" ");
 }
 function Shell({ children, className }) {
-  return /* @__PURE__ */ jsx("div", { className: cx$5(LANDING_SHELL_CLASS, className), children });
+  return /* @__PURE__ */ jsx("div", { className: cx$6(LANDING_SHELL_CLASS, className), children });
 }
 function Reveal({ children, className }) {
   const ref = useRef(null);
@@ -16830,7 +16866,7 @@ function Reveal({ children, className }) {
     "div",
     {
       ref,
-      className: cx$5(
+      className: cx$6(
         className,
         visible ? "translate-y-0 opacity-100 motion-safe:transition-[opacity,transform] motion-safe:duration-500 motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]" : "translate-y-3 opacity-0"
       ),
@@ -17234,7 +17270,7 @@ function CapabilitiesBanner() {
                 "aria-selected": on,
                 "aria-label": item.title,
                 onClick: () => scrollToSlide(i),
-                className: cx$5(
+                className: cx$6(
                   "relative flex h-8 min-w-[2.4rem] items-center justify-center rounded-full border-0 px-2.5",
                   "font-partners text-[11px] font-bold tabular-nums tracking-[0.08em] outline-none select-none transition duration-200",
                   "focus-visible:ring-2 focus-visible:ring-[#ff6b2c]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
@@ -20572,7 +20608,7 @@ function PartnersPage() {
                     setLang(value);
                     navigate(partnersPath(value), { replace: true });
                   },
-                  className: cx$5(
+                  className: cx$6(
                     "rounded-full px-3 py-1.5 transition",
                     lang === value ? "bg-white text-[#ff6b2c]" : "text-white hover:bg-white/15"
                   ),
@@ -21182,8 +21218,8 @@ function PartnersPage() {
     /* @__PURE__ */ jsx(PartnersFooter, {})
   ] });
 }
-const HERO_VIDEO$3 = "/images/hero-bg.mp4";
-const HERO_POSTER$3 = "/images/hero-bg-poster.webp";
+const HERO_VIDEO$4 = "/images/hero-bg.mp4";
+const HERO_POSTER$4 = "/images/hero-bg-poster.webp";
 function Video404Mark() {
   const videoRef = useRef(null);
   useKeepVideoPlaying(videoRef);
@@ -21200,7 +21236,7 @@ function Video404Mark() {
       /* @__PURE__ */ jsx(
         "img",
         {
-          src: HERO_POSTER$3,
+          src: HERO_POSTER$4,
           alt: "",
           draggable: false,
           className: "col-start-1 row-start-1 h-[clamp(7.5rem,28vw,17rem)] w-full object-cover object-center"
@@ -21211,8 +21247,8 @@ function Video404Mark() {
         {
           ref: videoRef,
           className: "nf404-video col-start-1 row-start-1 h-[clamp(7.5rem,28vw,17rem)] w-full max-w-none object-cover object-center",
-          src: HERO_VIDEO$3,
-          poster: HERO_POSTER$3,
+          src: HERO_VIDEO$4,
+          poster: HERO_POSTER$4,
           autoPlay: true,
           muted: true,
           loop: true,
@@ -21355,7 +21391,160 @@ function NotFoundPage() {
       ` })
   ] });
 }
-function cx$4(...a) {
+function milesealCommercialCopy() {
+  return {
+    hero: {
+      badge: "For agencies & studios",
+      title: "Stop one client request before it becomes unpaid work.",
+      subtitle: "Compare a late client ask against the agreed scope, estimate the extra effort, and send a professional change request — or get a human review within 24 hours.",
+      reviewCta: "Review my request — free",
+      caseCta: "See the 56-hour case"
+    },
+    ladder: {
+      eyebrow: "Commercial ladder",
+      title: "Start free. Scale when scope leakage is real.",
+      subtitle: "Every tier builds on the last. The $350 audit fee is credited in full toward Founding Installation.",
+      featuredBadge: "Most chosen",
+      tiers: [
+        {
+          id: "review",
+          eyebrow: "Last Incident Review",
+          price: "Free",
+          title: "One real scope-creep case",
+          text: "Send a recent client request and agreed scope. We return a clear read within 24 hours.",
+          cta: "Review my request — free"
+        },
+        {
+          id: "audit",
+          eyebrow: "Scope Leakage Audit",
+          price: "$350",
+          title: "Structured leakage audit",
+          text: "We review your delivery workflow, scope boundaries, and where unpaid hours enter the project.",
+          cta: "Request the $350 audit",
+          featured: true
+        },
+        {
+          id: "installation",
+          eyebrow: "Founding Installation",
+          price: "$1,250",
+          title: "MileSeal installed for your team",
+          text: "Templates, change-request wording, and a repeatable scope-change workflow for client work.",
+          note: "$350 audit fee credited toward Installation."
+        }
+      ]
+    }
+  };
+}
+const HERO_VIDEO$3 = "/images/hero-bg.mp4";
+const HERO_POSTER$3 = "/images/hero-bg-poster.webp";
+function MilesealCommercialLanding({
+  caseStudyPath,
+  onRequestReview,
+  onRequestAudit,
+  reviewOpenerRef
+}) {
+  const copy = milesealCommercialCopy();
+  const videoRef = useRef(null);
+  useKeepVideoPlaying(videoRef);
+  const openReview = () => {
+    trackLeadFormOpen("mileseal_scope_review");
+    onRequestReview();
+  };
+  return /* @__PURE__ */ jsxs("div", { className: "bg-black text-white", children: [
+    /* @__PURE__ */ jsxs("section", { className: "relative isolate min-h-[min(92svh,920px)] overflow-hidden pt-[calc(var(--tivonix-header-spacer)+0.5rem)] pb-12 sm:pb-16", children: [
+      /* @__PURE__ */ jsxs("div", { className: "pointer-events-none absolute inset-0 overflow-hidden bg-black", "aria-hidden": true, children: [
+        /* @__PURE__ */ jsx(
+          "video",
+          {
+            ref: videoRef,
+            className: "pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center",
+            src: HERO_VIDEO$3,
+            poster: HERO_POSTER$3,
+            autoPlay: true,
+            muted: true,
+            loop: true,
+            playsInline: true,
+            preload: "auto",
+            controls: false,
+            disablePictureInPicture: true
+          }
+        ),
+        /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-black" }),
+        /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(252,80,0,0.18)_0%,transparent_62%)]" })
+      ] }),
+      /* @__PURE__ */ jsx(Container, { className: "relative z-10", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[46rem] text-center", children: [
+        /* @__PURE__ */ jsx("span", { className: "inline-flex items-center rounded-full bg-white/[0.07] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF9A3D] ring-1 ring-white/10", children: copy.hero.badge }),
+        /* @__PURE__ */ jsx("h1", { className: "mt-6 font-hero text-[clamp(2rem,6vw,4.25rem)] font-normal uppercase leading-[0.94] tracking-[0.01em] text-white text-balance", children: copy.hero.title }),
+        /* @__PURE__ */ jsx("p", { className: "mx-auto mt-5 max-w-[38rem] font-sans text-[15px] font-medium leading-[1.55] text-white/72 sm:mt-6 sm:text-[16px]", children: copy.hero.subtitle }),
+        /* @__PURE__ */ jsxs("div", { className: "mt-8 flex flex-col items-stretch justify-center gap-3 sm:mt-9 sm:flex-row sm:items-center", children: [
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              ref: reviewOpenerRef,
+              "data-testid": "mileseal-hero-review-cta",
+              onClick: openReview,
+              className: ctaClass$1("primary", "lg"),
+              children: copy.hero.reviewCta
+            }
+          ),
+          /* @__PURE__ */ jsx(Link, { to: caseStudyPath, className: ctaClass$1("secondary", "lg"), children: copy.hero.caseCta })
+        ] })
+      ] }) })
+    ] }),
+    /* @__PURE__ */ jsx(
+      "section",
+      {
+        id: "mileseal-offers",
+        className: "border-t border-white/[0.06] bg-[#0a0a0a] py-14 sm:py-16",
+        "aria-labelledby": "mileseal-offers-title",
+        children: /* @__PURE__ */ jsxs(Container, { children: [
+          /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[40rem] text-center", children: [
+            /* @__PURE__ */ jsx("p", { className: "text-[11px] font-bold uppercase tracking-[0.18em] text-[#ffae66]", children: copy.ladder.eyebrow }),
+            /* @__PURE__ */ jsx(
+              "h2",
+              {
+                id: "mileseal-offers-title",
+                className: "mt-4 font-hero text-[clamp(1.75rem,4vw,2.75rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white",
+                children: copy.ladder.title
+              }
+            ),
+            /* @__PURE__ */ jsx("p", { className: "mx-auto mt-4 max-w-[34rem] text-[15px] font-medium leading-[1.55] text-white/60", children: copy.ladder.subtitle })
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "mx-auto mt-10 grid max-w-[56rem] gap-4 sm:grid-cols-3 sm:gap-5", children: copy.ladder.tiers.map((tier) => /* @__PURE__ */ jsxs(
+            "div",
+            {
+              className: tier.featured ? "relative overflow-hidden rounded-[24px] bg-[#141414] px-5 py-7 ring-2 ring-[#fc5000]/55 sm:px-6 sm:py-8" : "overflow-hidden rounded-[24px] bg-[#0c0c0c] px-5 py-7 ring-1 ring-white/[0.08] sm:px-6 sm:py-8",
+              children: [
+                tier.featured ? /* @__PURE__ */ jsx("span", { className: "absolute right-4 top-4 rounded-full bg-[#fc5000]/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#ffae66]", children: copy.ladder.featuredBadge }) : null,
+                /* @__PURE__ */ jsx("p", { className: "text-[11px] font-bold uppercase tracking-[0.14em] text-white/45", children: tier.eyebrow }),
+                /* @__PURE__ */ jsx("p", { className: "mt-3 font-hero text-[2rem] font-normal uppercase leading-none tracking-[0.02em] text-white", children: tier.price }),
+                /* @__PURE__ */ jsx("h3", { className: "mt-4 text-[17px] font-semibold tracking-[-0.02em] text-white", children: tier.title }),
+                /* @__PURE__ */ jsx("p", { className: "mt-2 text-[14px] font-medium leading-[1.55] text-white/58", children: tier.text }),
+                tier.note ? /* @__PURE__ */ jsx("p", { className: "mt-3 text-[12px] font-semibold text-[#ffae66]", children: tier.note }) : null,
+                tier.cta ? /* @__PURE__ */ jsx(
+                  "button",
+                  {
+                    type: "button",
+                    "data-testid": tier.id === "review" ? "mileseal-pricing-review-cta" : tier.id === "audit" ? "mileseal-pricing-audit-cta" : void 0,
+                    onClick: tier.id === "audit" ? () => {
+                      trackLeadFormOpen("mileseal_scope_leakage_audit");
+                      onRequestAudit();
+                    } : tier.id === "review" ? openReview : void 0,
+                    className: tier.featured ? ctaClass$1("primary", "md") + " mt-6 w-full" : ctaClass$1("secondary", "md") + " mt-6 w-full",
+                    children: tier.cta
+                  }
+                ) : null
+              ]
+            },
+            tier.id
+          )) })
+        ] })
+      }
+    )
+  ] });
+}
+function cx$5(...a) {
   return a.filter(Boolean).join(" ");
 }
 function MsIcon({
@@ -21369,7 +21558,7 @@ function MsIcon({
     {
       viewBox: "0 0 24 24",
       fill: "none",
-      className: cx$4("h-6 w-6 shrink-0", className),
+      className: cx$5("h-6 w-6 shrink-0", className),
       "aria-hidden": true,
       ...rest,
       children: [
@@ -21558,7 +21747,7 @@ function MsIconChevronDown({ className, ...rest }) {
   ) });
 }
 function MsIconAnalyzing({ className, ...rest }) {
-  return /* @__PURE__ */ jsxs(MsIcon, { gid: "msAn", className: cx$4("animate-pulse", className), ...rest, children: [
+  return /* @__PURE__ */ jsxs(MsIcon, { gid: "msAn", className: cx$5("animate-pulse", className), ...rest, children: [
     /* @__PURE__ */ jsx("path", { d: "M6 8 L12 4 L18 8 L16 18 L8 18 Z", fill: "url(#msAn-b)" }),
     /* @__PURE__ */ jsx("path", { d: "M12 4 L18 8 L12 10 Z", fill: "url(#msAn-e)" }),
     /* @__PURE__ */ jsx("path", { d: "M10 13 H14", stroke: "#FFF8F0", strokeWidth: "1.5", strokeLinecap: "round" })
@@ -21566,9 +21755,9 @@ function MsIconAnalyzing({ className, ...rest }) {
 }
 const EXAMPLES_EN = [
   {
-    id: "migration",
-    label: "Content migration",
-    scope: "Homepage redesign and one revision round. Content migration is not included.",
+    id: "homepage-authors",
+    label: "Homepage + author pages",
+    scope: "Homepage redesign and one revision round for a marketing site. Article migration and author pages are excluded. Workspace demo only — not the 56-hour Content Migration case study.",
     request: "Please also migrate 84 articles and create individual author pages.",
     result: {
       status: "Out of scope",
@@ -21638,9 +21827,9 @@ const EXAMPLES_EN = [
 ];
 const EXAMPLES_RU = [
   {
-    id: "migration",
-    label: "Миграция контента",
-    scope: "Редизайн главной и один раунд правок. Миграция контента не входит в объём.",
+    id: "homepage-authors",
+    label: "Главная + страницы авторов",
+    scope: "Редизайн главной и один раунд правок для маркетингового сайта. Миграция статей и страницы авторов не входят в объём. Только демо workspace — не кейс Content Migration на 56 часов.",
     request: "Пожалуйста, ещё перенесите 84 статьи и сделайте отдельные страницы авторов.",
     result: {
       status: "Вне объёма",
@@ -21710,9 +21899,9 @@ const EXAMPLES_RU = [
 ];
 const EXAMPLES_ZH = [
   {
-    id: "migration",
-    label: "内容迁移",
-    scope: "首页改版与一轮修改。内容迁移不包含在范围内。",
+    id: "homepage-authors",
+    label: "首页 + 作者页",
+    scope: "营销网站首页改版与一个修订轮次。文章迁移与作者页不在范围内。仅为 workspace 演示——不是 56 小时的 Content Migration 案例。",
     request: "请再迁移 84 篇文章，并创建独立作者页。",
     result: {
       status: "超出范围",
@@ -21780,7 +21969,7 @@ const EXAMPLES_ZH = [
     }
   }
 ];
-const COPY$2 = {
+const COPY$3 = {
   en: {
     seo: {
       title: "MileSeal — AI Scope Change Workspace",
@@ -21864,8 +22053,8 @@ const COPY$2 = {
       send: "Send for review",
       sending: "Sending…",
       successBadge: "Sent",
-      successTitle: "We’ll review your case",
-      successText: "Thanks — your scope review request is in. We’ll get back with a clear read on whether the work was unapproved and how MileSeal would handle it.",
+      successTitle: "Request received",
+      successText: "Your request has been received. We’ll return the review within 24 hours.",
       errEmail: "Please enter a valid work email.",
       errRequest: "Please paste a recent client request.",
       errScope: "Please paste the agreed project scope.",
@@ -21875,7 +22064,7 @@ const COPY$2 = {
     },
     caseTeaser: {
       eyebrow: "DEMONSTRATION CASE",
-      title: "See how a “small” content request became 40 additional hours",
+      title: "See how a “small” content request became 56 additional hours",
       description: "Follow the original scope, the later client request, MileSeal’s decision and the resulting change request.",
       cta: "View the full case"
     },
@@ -21976,7 +22165,7 @@ const COPY$2 = {
     },
     caseTeaser: {
       eyebrow: "ДЕМОНСТРАЦИОННЫЙ КЕЙС",
-      title: "Как «небольшой» запрос на контент превратился в 40 дополнительных часов",
+      title: "Как «небольшой» запрос на контент превратился в 56 дополнительных часов",
       description: "Посмотрите исходный объём, поздний запрос клиента, решение MileSeal и готовый запрос на изменение.",
       cta: "Смотреть полный кейс"
     },
@@ -22077,7 +22266,7 @@ const COPY$2 = {
     },
     caseTeaser: {
       eyebrow: "演示案例",
-      title: "看看一个“很小”的内容请求如何变成额外 40 小时",
+      title: "看看一个“很小”的内容请求如何变成额外 56 小时",
       description: "跟随最初范围、后续客户请求、MileSeal 判定以及最终变更请求。",
       cta: "查看完整案例"
     },
@@ -22086,7 +22275,7 @@ const COPY$2 = {
   }
 };
 function milesealCopy(lang) {
-  return COPY$2[lang] ?? COPY$2.en;
+  return COPY$3[lang] ?? COPY$3.en;
 }
 function prefillFromExample(example) {
   return {
@@ -22095,7 +22284,7 @@ function prefillFromExample(example) {
     changeRequest: example.result.changeRequest
   };
 }
-const COPY$1 = {
+const COPY$2 = {
   en: {
     demoBadge: "Demo",
     betaBadge: "Beta",
@@ -22180,6 +22369,7 @@ const COPY$1 = {
     demoAnalysisLabel: "Demo analysis",
     manualReviewLabel: "Manual review",
     skipToContent: "Skip to content",
+    seoNavDescription: "MileSeal AI Scope Change Workspace — compare an agreed project scope with a new client request and generate a change request.",
     statusOutside: "Outside scope"
   },
   ru: {
@@ -22266,6 +22456,7 @@ const COPY$1 = {
     demoAnalysisLabel: "Демо-анализ",
     manualReviewLabel: "Ручной разбор",
     skipToContent: "Перейти к содержимому",
+    seoNavDescription: "MileSeal — рабочее пространство для изменений объёма: сравните согласованный scope с новым запросом клиента и сформируйте change request.",
     statusOutside: "Вне объёма"
   },
   zh: {
@@ -22352,11 +22543,192 @@ const COPY$1 = {
     demoAnalysisLabel: "演示分析",
     manualReviewLabel: "人工复核",
     skipToContent: "跳到主要内容",
+    seoNavDescription: "MileSeal 范围变更工作区 — 对照已约定项目范围与新客户请求，并生成变更请求。",
     statusOutside: "超出范围"
   }
 };
 function milesealWorkspaceCopy(lang) {
+  return COPY$2[lang] ?? COPY$2.en;
+}
+const COPY$1 = {
+  en: {
+    title: "Work-Start Decision",
+    subtitle: "Record who approved how work may proceed before delivery starts.",
+    ownerLabel: "Decision Owner",
+    ownerPlaceholder: "Name or role (e.g. Delivery lead)",
+    decisionLabel: "Decision",
+    rationaleLabel: "Rationale",
+    rationalePlaceholder: "Why this decision was made",
+    authorizationLabel: "Authorization",
+    dateLabel: "Decision Date",
+    save: "Save decision",
+    saving: "Saving…",
+    saved: "Decision saved",
+    staleNotice: "Scope or request changed — decision reset to Approval required.",
+    saveError: "Complete all required fields before saving.",
+    errOwner: "Enter the decision owner.",
+    errDecision: "Select a decision.",
+    errRationale: "Enter a rationale.",
+    errDate: "Enter the decision date.",
+    errWorkMayStart: "Work may start only after Decision Owner, Decision, Rationale and Decision Date are filled.",
+    documentHeading: "WORK-START DECISION",
+    decisions: {
+      include: "Include",
+      trade: "Trade",
+      delay: "Delay",
+      price: "Price",
+      escalate: "Escalate"
+    },
+    authorization: {
+      approval_required: "Approval required",
+      work_may_start: "Work may start"
+    }
+  },
+  ru: {
+    title: "Work-Start Decision",
+    subtitle: "Зафиксируйте, кто и как разрешил начать работу до старта выполнения.",
+    ownerLabel: "Decision Owner",
+    ownerPlaceholder: "Имя или роль (например, Delivery lead)",
+    decisionLabel: "Decision",
+    rationaleLabel: "Rationale",
+    rationalePlaceholder: "Почему принято это решение",
+    authorizationLabel: "Authorization",
+    dateLabel: "Decision Date",
+    save: "Сохранить решение",
+    saving: "Сохранение…",
+    saved: "Решение сохранено",
+    staleNotice: "Объём или запрос изменились — решение сброшено на Approval required.",
+    saveError: "Заполните все обязательные поля перед сохранением.",
+    errOwner: "Укажите decision owner.",
+    errDecision: "Выберите decision.",
+    errRationale: "Укажите rationale.",
+    errDate: "Укажите decision date.",
+    errWorkMayStart: "Work may start возможен только после заполнения Decision Owner, Decision, Rationale и Decision Date.",
+    documentHeading: "WORK-START DECISION",
+    decisions: {
+      include: "Include",
+      trade: "Trade",
+      delay: "Delay",
+      price: "Price",
+      escalate: "Escalate"
+    },
+    authorization: {
+      approval_required: "Approval required",
+      work_may_start: "Work may start"
+    }
+  },
+  zh: {
+    title: "Work-Start Decision",
+    subtitle: "在开始交付前记录谁批准了工作如何推进。",
+    ownerLabel: "Decision Owner",
+    ownerPlaceholder: "姓名或角色（例如 Delivery lead）",
+    decisionLabel: "Decision",
+    rationaleLabel: "Rationale",
+    rationalePlaceholder: "为何做出此决定",
+    authorizationLabel: "Authorization",
+    dateLabel: "Decision Date",
+    save: "保存决定",
+    saving: "保存中…",
+    saved: "决定已保存",
+    staleNotice: "范围或请求已变更 — 决定已重置为 Approval required。",
+    saveError: "保存前请填写所有必填字段。",
+    errOwner: "请输入 decision owner。",
+    errDecision: "请选择 decision。",
+    errRationale: "请输入 rationale。",
+    errDate: "请输入 decision date。",
+    errWorkMayStart: "仅当 Decision Owner、Decision、Rationale 和 Decision Date 全部填写后才可选择 Work may start。",
+    documentHeading: "WORK-START DECISION",
+    decisions: {
+      include: "Include",
+      trade: "Trade",
+      delay: "Delay",
+      price: "Price",
+      escalate: "Escalate"
+    },
+    authorization: {
+      approval_required: "Approval required",
+      work_may_start: "Work may start"
+    }
+  }
+};
+function workStartDecisionCopy(lang) {
   return COPY$1[lang] ?? COPY$1.en;
+}
+function todayIsoDate() {
+  const d = /* @__PURE__ */ new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+function createDefaultWorkStartDecision(scenarioId) {
+  const decision = scenarioId === "content-migration" ? "price" : "";
+  return {
+    owner: "",
+    decision,
+    rationale: "",
+    authorization: "approval_required",
+    decisionDate: todayIsoDate(),
+    saved: false,
+    stale: false,
+    saveError: false,
+    fieldErrors: {}
+  };
+}
+function invalidateWorkStartDecision(prev, scenarioId) {
+  return {
+    ...createDefaultWorkStartDecision(scenarioId),
+    stale: prev.saved
+  };
+}
+function validateWorkStartDecision(state, labels) {
+  const fieldErrors = {};
+  if (!state.owner.trim()) fieldErrors.owner = labels.errOwner;
+  if (!state.decision) fieldErrors.decision = labels.errDecision;
+  if (!state.rationale.trim()) fieldErrors.rationale = labels.errRationale;
+  if (!state.decisionDate.trim()) fieldErrors.decisionDate = labels.errDate;
+  if (state.authorization === "work_may_start") {
+    if (!state.owner.trim()) fieldErrors.owner = labels.errOwner;
+    if (!state.decision) fieldErrors.decision = labels.errDecision;
+    if (!state.rationale.trim()) fieldErrors.rationale = labels.errRationale;
+    if (!state.decisionDate.trim()) fieldErrors.decisionDate = labels.errDate;
+    if (Object.keys(fieldErrors).length > 0) {
+      fieldErrors.authorization = labels.errWorkMayStart;
+    }
+  }
+  return {
+    ...state,
+    fieldErrors,
+    saveError: Object.keys(fieldErrors).length > 0,
+    saved: Object.keys(fieldErrors).length === 0,
+    stale: false
+  };
+}
+function decisionLabel(decision, labels) {
+  if (!decision) return "—";
+  return labels.decisions[decision];
+}
+function authorizationLabel(authorization, labels) {
+  return labels.authorization[authorization];
+}
+function formatWorkStartDecisionBlock(state, lang) {
+  const labels = workStartDecisionCopy(lang);
+  if (!state.saved || state.stale) return "";
+  return [
+    labels.documentHeading,
+    `${labels.ownerLabel}: ${state.owner.trim()}`,
+    `${labels.decisionLabel}: ${decisionLabel(state.decision, labels)}`,
+    `${labels.rationaleLabel}: ${state.rationale.trim()}`,
+    `${labels.authorizationLabel}: ${authorizationLabel(state.authorization, labels)}`,
+    `${labels.dateLabel}: ${state.decisionDate.trim()}`
+  ].join("\n");
+}
+function appendWorkStartDecisionToText(base, state, lang) {
+  const block = formatWorkStartDecisionBlock(state, lang);
+  if (!block) return base;
+  return `${base.trim()}
+
+${block}`;
 }
 function baseFromExample(example) {
   return {
@@ -22379,7 +22751,8 @@ function createInitialDemoState(example) {
     copyError: false,
     isSidebarCollapsed: false,
     isMobileNavOpen: false,
-    sessionStarted: false
+    sessionStarted: false,
+    workStartDecision: createDefaultWorkStartDecision(example.id)
   };
 }
 function demoReducer(state, action) {
@@ -22398,7 +22771,8 @@ function demoReducer(state, action) {
         activeAnalysisStep: 0,
         activeTone: "neutral",
         sessionStarted: true,
-        isMobileNavOpen: false
+        isMobileNavOpen: false,
+        workStartDecision: createDefaultWorkStartDecision(action.example.id)
       };
     case "startOver":
       return {
@@ -22406,7 +22780,8 @@ function demoReducer(state, action) {
         ...baseFromExample(action.example),
         stage: "ready",
         sessionStarted: true,
-        isSidebarCollapsed: state.isSidebarCollapsed
+        isSidebarCollapsed: state.isSidebarCollapsed,
+        workStartDecision: createDefaultWorkStartDecision(action.example.id)
       };
     case "newAnalysis":
       return {
@@ -22416,7 +22791,8 @@ function demoReducer(state, action) {
           request: ""
         }),
         selectedScenarioId: state.selectedScenarioId,
-        isSidebarCollapsed: state.isSidebarCollapsed
+        isSidebarCollapsed: state.isSidebarCollapsed,
+        workStartDecision: createDefaultWorkStartDecision(state.selectedScenarioId)
       };
     case "editExample":
       return {
@@ -22428,7 +22804,11 @@ function demoReducer(state, action) {
         copied: false,
         copyError: false,
         stage: state.sessionStarted ? "ready" : "empty",
-        activeAnalysisStep: 0
+        activeAnalysisStep: 0,
+        workStartDecision: invalidateWorkStartDecision(
+          state.workStartDecision,
+          state.selectedScenarioId
+        )
       };
     case "setScope":
       return {
@@ -22439,7 +22819,11 @@ function demoReducer(state, action) {
         isChangeRequestOpen: false,
         copied: false,
         copyError: false,
-        stage: state.sessionStarted ? "ready" : "empty"
+        stage: state.sessionStarted ? "ready" : "empty",
+        workStartDecision: invalidateWorkStartDecision(
+          state.workStartDecision,
+          state.selectedScenarioId
+        )
       };
     case "setRequest":
       return {
@@ -22450,7 +22834,11 @@ function demoReducer(state, action) {
         isChangeRequestOpen: false,
         copied: false,
         copyError: false,
-        stage: state.sessionStarted ? "ready" : "empty"
+        stage: state.sessionStarted ? "ready" : "empty",
+        workStartDecision: invalidateWorkStartDecision(
+          state.workStartDecision,
+          state.selectedScenarioId
+        )
       };
     case "analyzeStart":
       if (state.mode !== "preset") return state;
@@ -22462,7 +22850,11 @@ function demoReducer(state, action) {
         copyError: false,
         stage: "analyzing",
         activeAnalysisStep: 0,
-        sessionStarted: true
+        sessionStarted: true,
+        workStartDecision: invalidateWorkStartDecision(
+          state.workStartDecision,
+          state.selectedScenarioId
+        )
       };
     case "setAnalysisStep":
       return { ...state, activeAnalysisStep: action.step };
@@ -22483,7 +22875,8 @@ function demoReducer(state, action) {
         copied: false,
         copyError: false,
         stage: "result",
-        activeTone: "neutral"
+        activeTone: "neutral",
+        workStartDecision: createDefaultWorkStartDecision(action.scenarioId)
       };
     case "openChangeRequest":
       if (!state.result) return state;
@@ -22526,9 +22919,12 @@ function demoReducer(state, action) {
         copied: false,
         copyError: false,
         stage: !state.sessionStarted ? "empty" : hadResult ? "result" : "ready",
-        activeTone: "neutral"
+        activeTone: "neutral",
+        workStartDecision: hadResult ? state.workStartDecision : createDefaultWorkStartDecision(action.example.id)
       };
     }
+    case "setWorkStartDecision":
+      return { ...state, workStartDecision: action.value };
     default:
       return state;
   }
@@ -22538,7 +22934,7 @@ function changeRequestForTone(result, tone) {
   if (tone === "formal") return result.changeRequestFormal || result.changeRequest;
   return result.changeRequest;
 }
-function cx$3(...a) {
+function cx$4(...a) {
   return a.filter(Boolean).join(" ");
 }
 const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -22574,10 +22970,10 @@ function AutoGrowTextarea({
     window.addEventListener("resize", onWin);
     return () => window.removeEventListener("resize", onWin);
   }, [resize]);
-  const toneClass = tone === "light" ? cx$3(
+  const toneClass = tone === "light" ? cx$4(
     "border-0 bg-[#f4f3f1] text-[#141414] placeholder:text-[#141414]/4",
     "outline-none focus:bg-[#efeeec] focus-visible:ring-2 focus-visible:ring-[#fc5000]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-  ) : cx$3(
+  ) : cx$4(
     "border-0 bg-[#141414] text-white placeholder:text-white/35",
     "outline-none focus:bg-[#1a1a1a] focus-visible:ring-2 focus-visible:ring-[#fc5000]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c0c0c]",
     "read-only:focus:bg-[#141414] read-only:focus-visible:ring-0"
@@ -22593,7 +22989,7 @@ function AutoGrowTextarea({
         onChange?.(e);
         requestAnimationFrame(resize);
       },
-      className: cx$3(
+      className: cx$4(
         "block w-full resize-none overflow-hidden",
         "rounded-[16px] px-4 py-3.5",
         toneClass,
@@ -22603,19 +22999,112 @@ function AutoGrowTextarea({
     }
   );
 }
+function milesealLeadCtaSource(variant) {
+  return variant === "audit" ? "mileseal_scope_leakage_audit" : "mileseal_scope_review";
+}
+function buildMilesealLeadTask(input) {
+  const isAudit = input.variant === "audit";
+  const labels = input.lang === "ru" ? {
+    agency: "Агентство",
+    scope: "Согласованный объём",
+    request: "Запрос клиента",
+    draft: "Черновик change request"
+  } : input.lang === "zh" ? {
+    agency: "代理商",
+    scope: "已约定范围",
+    request: "客户请求",
+    draft: "变更请求草稿"
+  } : {
+    agency: "Agency",
+    scope: "Agreed scope excerpt",
+    request: "Later client request",
+    draft: "Demo change request draft"
+  };
+  const header = isAudit ? "[MileSeal Scope Leakage Audit — $350]" : "[MileSeal human scope review]";
+  const parts = [
+    header,
+    input.agency.trim() ? `${labels.agency}: ${input.agency.trim()}` : null,
+    "",
+    `${labels.scope}:`,
+    input.agreedScope.trim(),
+    "",
+    `${labels.request}:`,
+    input.clientRequest.trim(),
+    input.prefill?.changeRequest ? `
+${labels.draft}:
+${input.prefill.changeRequest}` : null
+  ].filter((line) => line !== null);
+  return parts.join("\n");
+}
+function buildMilesealLeadBody(input) {
+  const ctaSource = milesealLeadCtaSource(input.variant);
+  const meta = input.variant === "audit" ? buildLeadMeta(ctaSource, void 0, {
+    offer: "scope_leakage_audit",
+    amount: 350,
+    currency: "USD"
+  }) : buildLeadMeta(ctaSource);
+  return {
+    name: input.name.trim() || input.agency.trim() || "MileSeal",
+    contact: input.email.trim(),
+    task: buildMilesealLeadTask(input),
+    budget: "unknown",
+    consent: true,
+    company_fax_url: input.honeypot,
+    lang: input.lang,
+    meta
+  };
+}
+async function submitMilesealLead(input, fetchImpl = fetch) {
+  const body = buildMilesealLeadBody(input);
+  try {
+    const res = await fetchImpl("/api/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.ok) return { ok: true };
+    return {
+      ok: false,
+      error: data.error || `http_${res.status}`,
+      fallback: data.fallback || res.status >= 500
+    };
+  } catch {
+    return { ok: false, error: "network_error", fallback: true };
+  }
+}
 const HERO_VIDEO$2 = "/images/hero-bg.mp4";
 const HERO_POSTER$2 = "/images/hero-bg-poster.webp";
-function cx$2(...a) {
+function cx$3(...a) {
   return a.filter(Boolean).join(" ");
 }
-function MilesealManualReviewPanel({ prefill, onClose }) {
+function MilesealManualReviewPanel({
+  prefill,
+  variant = "review",
+  initialStep = "welcome",
+  onClose,
+  returnFocusRef
+}) {
   const { lang } = useLang();
   const cta = milesealCopy(lang).cta;
   const ws = milesealWorkspaceCopy(lang);
+  const isAudit = variant === "audit";
+  const ctaSource = isAudit ? "mileseal_scope_leakage_audit" : "mileseal_scope_review";
   const formId = useId();
   const videoRef = useRef(null);
   useKeepVideoPlaying(videoRef);
-  const [step, setStep] = useState("welcome");
+  const closePanel = useCallback(() => {
+    onClose();
+    requestAnimationFrame(() => returnFocusRef?.current?.focus({ preventScroll: true }));
+  }, [onClose, returnFocusRef]);
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") closePanel();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [closePanel]);
+  const [step, setStep] = useState(initialStep);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [agency, setAgency] = useState("");
@@ -22625,6 +23114,13 @@ function MilesealManualReviewPanel({ prefill, onClose }) {
   const [honeypot, setHoneypot] = useState("");
   const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  useEffect(() => {
+    if (step !== "request") return;
+    const id = `${formId}-request`;
+    requestAnimationFrame(() => {
+      document.getElementById(id)?.focus({ preventScroll: true });
+    });
+  }, [step, formId]);
   const privacyHref = lang === "ru" ? "/doc/Политика_обработки_ПД_Tivonix_RU.pdf" : "/doc/Privacy_Policy_Tivonix_EN.pdf";
   const steps = ["welcome", "request", "scope", "contact", "review"];
   const stepIndex = steps.indexOf(step);
@@ -22659,8 +23155,8 @@ function MilesealManualReviewPanel({ prefill, onClose }) {
     back: "返回",
     stepOf: (n, total) => `第 ${n} / ${total} 步`
   } : {
-    welcomeTitle: "Let’s walk through your case",
-    welcomeText: "I’ll ask a few short questions — no fake AI verdict. Then the TIVONIX team will compare the request to the agreed scope by hand.",
+    welcomeTitle: isAudit ? "Request the Scope Leakage Audit" : "Let’s walk through your case",
+    welcomeText: isAudit ? "Share one recent scope-creep incident and your agreed scope. We’ll confirm the $350 audit scope and reply within one business day." : "I’ll ask a few short questions — no fake AI verdict. Then the TIVONIX team will compare the request to the agreed scope by hand.",
     start: "Start",
     qRequest: "What did the client ask for?",
     qRequestHint: "Paste the new request as it arrived — anonymised is fine.",
@@ -22674,7 +23170,7 @@ function MilesealManualReviewPanel({ prefill, onClose }) {
     back: "Back",
     stepOf: (n, total) => `Step ${n} of ${total}`
   };
-  const inputClass2 = cx$2(
+  const inputClass2 = cx$3(
     "w-full min-h-12 rounded-2xl px-4 py-3",
     "border-0 bg-[#f4f3f1] text-[#141414] placeholder:text-[#141414]/35",
     "outline-none transition",
@@ -22682,14 +23178,14 @@ function MilesealManualReviewPanel({ prefill, onClose }) {
     "font-sans text-[14px] font-medium"
   );
   const labelClass2 = "mb-1.5 flex items-center gap-2 text-[12px] font-semibold tracking-[0.04em] text-[#141414]/55";
-  const primaryBtn2 = cx$2(
+  const primaryBtn2 = cx$3(
     "inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5",
     "bg-[#fc5000] text-[14px] font-semibold text-white transition",
     "hover:bg-[#e04800] active:scale-[0.98]",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
     "disabled:pointer-events-none disabled:opacity-50"
   );
-  const ghostBtn = cx$2(
+  const ghostBtn = cx$3(
     "inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-4",
     "bg-transparent text-[14px] font-semibold text-[#141414]/65 transition",
     "hover:bg-black/[0.04] hover:text-[#141414]",
@@ -22755,48 +23251,25 @@ function MilesealManualReviewPanel({ prefill, onClose }) {
       return;
     }
     setStatus("loading");
-    trackLeadFormSubmit("mileseal_scope_review");
-    const labels = lang === "ru" ? {
-      agency: "Агентство",
-      scope: "Согласованный объём",
-      request: "Запрос клиента",
-      draft: "Черновик change request"
-    } : lang === "zh" ? {
-      agency: "代理商",
-      scope: "已约定范围",
-      request: "客户请求",
-      draft: "变更请求草稿"
-    } : {
-      agency: "Agency",
-      scope: "Agreed scope",
-      request: "Recent client request",
-      draft: "Demo change request draft"
-    };
-    const taskParts = [
-      "[MileSeal human scope review]",
-      agency.trim() ? `${labels.agency}: ${agency.trim()}` : null,
-      "",
-      `${labels.scope}:`,
-      agreedScope.trim(),
-      "",
-      `${labels.request}:`,
-      clientRequest.trim(),
-      prefill?.changeRequest ? `
-${labels.draft}:
-${prefill.changeRequest}` : null
-    ].filter((line) => line !== null);
-    const result = await submitLead({
-      name: name.trim() || agency.trim() || "MileSeal",
-      contact: email.trim(),
-      task: taskParts.join("\n"),
-      budget: "unknown",
-      consent: true,
-      company_fax_url: honeypot,
+    trackLeadFormSubmit(ctaSource);
+    const result = await submitMilesealLead({
       lang,
-      meta: buildLeadMeta("mileseal_scope_review")
+      variant,
+      name,
+      email,
+      agency,
+      clientRequest,
+      agreedScope,
+      honeypot,
+      prefill
     });
     if (result.ok) {
-      trackLeadFormSuccess("mileseal_scope_review");
+      trackLeadFormSuccess(ctaSource);
+      if (isAudit) {
+        trackMilesealAuditRequested({ offer: "scope_leakage_audit", amount: 350, currency: "USD" });
+      } else {
+        trackMilesealManualReviewSubmitted({ variant: "review" });
+      }
       setStatus("success");
       return;
     }
@@ -22817,13 +23290,13 @@ ${prefill.changeRequest}` : null
             type: "button",
             className: "absolute inset-0 bg-black/40 backdrop-blur-md",
             "aria-label": ws.closeArtifact,
-            onClick: onClose
+            onClick: closePanel
           }
         ),
         /* @__PURE__ */ jsxs(
           "div",
           {
-            className: cx$2(
+            className: cx$3(
               "relative z-10 flex max-h-[min(94dvh,880px)] w-full max-w-[34rem] flex-col overflow-hidden",
               "rounded-t-[1.75rem] sm:rounded-[1.75rem]",
               "bg-white/88 shadow-[0_24px_80px_rgba(0,0,0,0.28)] ring-1 ring-white/60 backdrop-blur-2xl"
@@ -22852,7 +23325,7 @@ ${prefill.changeRequest}` : null
                   "button",
                   {
                     type: "button",
-                    onClick: onClose,
+                    onClick: closePanel,
                     className: "absolute right-3 top-3 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-md transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
                     "aria-label": ws.closeArtifact,
                     children: /* @__PURE__ */ jsx(X, { className: "h-4 w-4", strokeWidth: 2, "aria-hidden": true })
@@ -22878,10 +23351,10 @@ ${prefill.changeRequest}` : null
                     {
                       id: "mileseal-manual-title",
                       className: "text-[clamp(1.2rem,3vw,1.45rem)] font-semibold tracking-[-0.03em] text-white",
-                      children: ws.manualTitle
+                      children: isAudit ? "Scope Leakage Audit" : ws.manualTitle
                     }
                   ),
-                  /* @__PURE__ */ jsx("p", { className: "mt-1 max-w-[28rem] text-[13px] font-medium leading-snug text-white/70", children: ws.manualText })
+                  /* @__PURE__ */ jsx("p", { className: "mt-1 max-w-[28rem] text-[13px] font-medium leading-snug text-white/70", children: isAudit ? "Structured review of where unpaid scope enters your delivery workflow." : ws.manualText })
                 ] })
               ] }),
               status !== "success" ? /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 border-b border-black/[0.05] bg-white/70 px-5 py-2.5 backdrop-blur-md sm:px-6", children: [
@@ -22889,7 +23362,7 @@ ${prefill.changeRequest}` : null
                 /* @__PURE__ */ jsx("div", { className: "ml-auto flex gap-1", children: steps.map((s2, i) => /* @__PURE__ */ jsx(
                   "span",
                   {
-                    className: cx$2(
+                    className: cx$3(
                       "h-1 w-5 rounded-full transition",
                       i <= stepIndex ? "bg-[#fc5000]" : "bg-black/10"
                     ),
@@ -22903,7 +23376,7 @@ ${prefill.changeRequest}` : null
                 /* @__PURE__ */ jsx("p", { className: "mt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#fc5000]", children: cta.successBadge }),
                 /* @__PURE__ */ jsx("h3", { className: "mt-2 text-[1.35rem] font-semibold tracking-[-0.02em] text-[#141414]", children: cta.successTitle }),
                 /* @__PURE__ */ jsx("p", { className: "mt-2 max-w-[26rem] text-[14px] font-medium leading-relaxed text-[#141414]/55", children: cta.successText }),
-                /* @__PURE__ */ jsx("button", { type: "button", className: cx$2(primaryBtn2, "mt-6"), onClick: onClose, children: ws.closeArtifact })
+                /* @__PURE__ */ jsx("button", { type: "button", className: cx$3(primaryBtn2, "mt-6"), onClick: onClose, children: ws.closeArtifact })
               ] }) : /* @__PURE__ */ jsxs("form", { onSubmit, noValidate: true, className: "flex min-h-full flex-col", children: [
                 /* @__PURE__ */ jsxs(AssistantBubble, { children: [
                   step === "welcome" ? /* @__PURE__ */ jsxs(Fragment, { children: [
@@ -23156,6 +23629,168 @@ function SummaryCard({
     /* @__PURE__ */ jsx("p", { className: "mt-1.5 whitespace-pre-wrap text-[13px] font-medium leading-relaxed text-[#141414]/8", children: value })
   ] });
 }
+function cx$2(...a) {
+  return a.filter(Boolean).join(" ");
+}
+const DECISIONS = [
+  "include",
+  "trade",
+  "delay",
+  "price",
+  "escalate"
+];
+function WorkStartDecisionPanel({ value, onChange, className }) {
+  const { lang } = useLang();
+  const copy = workStartDecisionCopy(lang);
+  const [busy, setBusy] = useState(false);
+  const patch = (partial) => {
+    onChange({
+      ...value,
+      ...partial,
+      saved: false,
+      saveError: false,
+      fieldErrors: {}
+    });
+  };
+  const onSave = () => {
+    setBusy(true);
+    const validated = validateWorkStartDecision(value, copy);
+    onChange(validated);
+    setBusy(false);
+  };
+  const inputClass2 = cx$2(
+    "w-full min-h-10 rounded-xl border border-black/[0.08] bg-white px-3 py-2",
+    "font-sans text-[14px] font-medium text-[#141414] placeholder:text-[#141414]/35",
+    "outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/35"
+  );
+  const labelClass2 = "mb-1 block text-[12px] font-semibold text-[#141414]/55";
+  return /* @__PURE__ */ jsxs(
+    "section",
+    {
+      className: cx$2("rounded-2xl bg-white/90 p-4 ring-1 ring-black/[0.05] sm:p-5", className),
+      "aria-labelledby": "work-start-decision-title",
+      children: [
+        /* @__PURE__ */ jsx(
+          "h3",
+          {
+            id: "work-start-decision-title",
+            className: "text-[15px] font-semibold tracking-[-0.02em] text-[#141414]",
+            children: copy.title
+          }
+        ),
+        /* @__PURE__ */ jsx("p", { className: "mt-1 text-[13px] font-medium leading-relaxed text-[#141414]/55", children: copy.subtitle }),
+        value.stale ? /* @__PURE__ */ jsx(
+          "p",
+          {
+            className: "mt-3 rounded-xl bg-[#fc5000]/10 px-3 py-2 text-[13px] font-medium text-[#c2410c]",
+            role: "status",
+            children: copy.staleNotice
+          }
+        ) : null,
+        /* @__PURE__ */ jsxs("div", { className: "mt-4 space-y-3", children: [
+          /* @__PURE__ */ jsxs("div", { children: [
+            /* @__PURE__ */ jsx("label", { htmlFor: "wsd-owner", className: labelClass2, children: copy.ownerLabel }),
+            /* @__PURE__ */ jsx(
+              "input",
+              {
+                id: "wsd-owner",
+                className: inputClass2,
+                value: value.owner,
+                onChange: (e) => patch({ owner: e.target.value }),
+                placeholder: copy.ownerPlaceholder
+              }
+            ),
+            value.fieldErrors.owner ? /* @__PURE__ */ jsx("p", { className: "mt-1 text-[12px] text-[#c2410c]", role: "alert", children: value.fieldErrors.owner }) : null
+          ] }),
+          /* @__PURE__ */ jsxs("div", { children: [
+            /* @__PURE__ */ jsx("span", { className: labelClass2, children: copy.decisionLabel }),
+            /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-2", children: DECISIONS.map((choice) => /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                "aria-pressed": value.decision === choice,
+                onClick: () => patch({ decision: choice }),
+                className: cx$2(
+                  "rounded-full px-3 py-1.5 text-[12px] font-semibold transition",
+                  value.decision === choice ? "bg-[#fc5000] text-white" : "bg-[#f4f3f1] text-[#141414]/70 hover:text-[#141414]"
+                ),
+                children: copy.decisions[choice]
+              },
+              choice
+            )) }),
+            value.fieldErrors.decision ? /* @__PURE__ */ jsx("p", { className: "mt-1 text-[12px] text-[#c2410c]", role: "alert", children: value.fieldErrors.decision }) : null
+          ] }),
+          /* @__PURE__ */ jsxs("div", { children: [
+            /* @__PURE__ */ jsx("label", { htmlFor: "wsd-rationale", className: labelClass2, children: copy.rationaleLabel }),
+            /* @__PURE__ */ jsx(
+              "textarea",
+              {
+                id: "wsd-rationale",
+                className: cx$2(inputClass2, "min-h-[88px] resize-y"),
+                value: value.rationale,
+                onChange: (e) => patch({ rationale: e.target.value }),
+                placeholder: copy.rationalePlaceholder
+              }
+            ),
+            value.fieldErrors.rationale ? /* @__PURE__ */ jsx("p", { className: "mt-1 text-[12px] text-[#c2410c]", role: "alert", children: value.fieldErrors.rationale }) : null
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "grid gap-3 sm:grid-cols-2", children: [
+            /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsx("span", { className: labelClass2, children: copy.authorizationLabel }),
+              /* @__PURE__ */ jsx("div", { className: "flex flex-col gap-2", children: ["approval_required", "work_may_start"].map(
+                (auth) => /* @__PURE__ */ jsxs(
+                  "label",
+                  {
+                    className: "flex items-center gap-2 rounded-xl bg-[#f4f3f1] px-3 py-2 text-[13px] font-medium text-[#141414]/80",
+                    children: [
+                      /* @__PURE__ */ jsx(
+                        "input",
+                        {
+                          type: "radio",
+                          name: "wsd-authorization",
+                          checked: value.authorization === auth,
+                          onChange: () => patch({ authorization: auth }),
+                          className: "accent-[#fc5000]"
+                        }
+                      ),
+                      copy.authorization[auth]
+                    ]
+                  },
+                  auth
+                )
+              ) }),
+              value.fieldErrors.authorization ? /* @__PURE__ */ jsx("p", { className: "mt-1 text-[12px] text-[#c2410c]", role: "alert", children: value.fieldErrors.authorization }) : null
+            ] }),
+            /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsx("label", { htmlFor: "wsd-date", className: labelClass2, children: copy.dateLabel }),
+              /* @__PURE__ */ jsx(
+                "input",
+                {
+                  id: "wsd-date",
+                  type: "date",
+                  className: inputClass2,
+                  value: value.decisionDate,
+                  onChange: (e) => patch({ decisionDate: e.target.value })
+                }
+              ),
+              value.fieldErrors.decisionDate ? /* @__PURE__ */ jsx("p", { className: "mt-1 text-[12px] text-[#c2410c]", role: "alert", children: value.fieldErrors.decisionDate }) : null
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "mt-4 flex flex-wrap items-center gap-3", children: [
+          /* @__PURE__ */ jsx("button", { type: "button", className: cx$2(primaryBtn$1), onClick: onSave, disabled: busy, children: busy ? copy.saving : copy.save }),
+          value.saved && !value.saveError ? /* @__PURE__ */ jsx("p", { className: "text-[13px] font-semibold text-[#15803d]", role: "status", children: copy.saved }) : null,
+          value.saveError && Object.keys(value.fieldErrors).length > 0 ? /* @__PURE__ */ jsx("p", { className: "text-[13px] font-medium text-[#c2410c]", role: "alert", children: copy.saveError }) : null
+        ] })
+      ]
+    }
+  );
+}
+const primaryBtn$1 = cx$2(
+  "inline-flex min-h-10 items-center justify-center rounded-xl px-4",
+  "bg-[#fc5000] text-[13px] font-semibold text-white transition hover:bg-[#e04800]",
+  "disabled:pointer-events-none disabled:opacity-50"
+);
 function useMinWidth(minPx) {
   const query = `(min-width: ${minPx}px)`;
   return useSyncExternalStore(
@@ -23167,6 +23802,74 @@ function useMinWidth(minPx) {
     () => window.matchMedia(query).matches,
     () => false
   );
+}
+const fontCache = /* @__PURE__ */ new Map();
+function arrayBufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 1) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+async function loadFontBytes(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`font_fetch_failed:${url}`);
+  return res.arrayBuffer();
+}
+function registerFont(doc, vfsName, fontId, base64) {
+  doc.addFileToVFS(vfsName, base64);
+  doc.addFont(vfsName, fontId, "normal");
+  return fontId;
+}
+async function ensurePdfFont(doc, lang) {
+  const key = lang === "zh" ? "notoSansSc" : lang === "ru" ? "notoSans" : "helvetica";
+  if (key === "helvetica") return "helvetica";
+  if (!fontCache.has(key)) {
+    fontCache.set(
+      key,
+      (async () => {
+        const url = key === "notoSansSc" ? "/fonts/NotoSansSC-Regular.ttf" : "/fonts/NotoSans-Regular.ttf";
+        const vfsName = key === "notoSansSc" ? "NotoSansSC-Regular.ttf" : "NotoSans-Regular.ttf";
+        const bytes = await loadFontBytes(url);
+        return registerFont(doc, vfsName, key, arrayBufferToBase64(bytes));
+      })()
+    );
+  }
+  return fontCache.get(key);
+}
+function normalizeForPdfTextLayer(text) {
+  return text.replace(/\u00A0|\u202F/g, " ").replace(/£/g, "GBP ").replace(/\$/g, "USD ").replace(/\u2013|\u2014/g, "-");
+}
+async function appendSearchableTextLayer(doc, plainText, lang) {
+  const trimmed = normalizeForPdfTextLayer(plainText.trim());
+  if (!trimmed) return;
+  const fontName = await ensurePdfFont(doc, lang);
+  doc.setFont(fontName, "normal");
+  doc.setFontSize(10);
+  const margin = 8;
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const maxWidth = pageW - margin * 2;
+  const lineHeight = 4.2;
+  const lines = doc.splitTextToSize(trimmed, maxWidth);
+  let pageIndex = 0;
+  let y = margin;
+  doc.setPage(1);
+  for (const line of lines) {
+    if (y > pageH - margin) {
+      pageIndex += 1;
+      if (pageIndex >= doc.getNumberOfPages()) doc.addPage();
+      doc.setPage(pageIndex + 1);
+      y = margin;
+    }
+    doc.text(line, margin, y, { renderingMode: "invisible" });
+    y += lineHeight;
+  }
+}
+async function savePdfWithTextLayer(doc, plainText, lang, fileName) {
+  await appendSearchableTextLayer(doc, plainText, lang);
+  doc.save(fileName);
 }
 const HERO_VIDEO$1 = "/images/hero-bg.mp4";
 const HERO_POSTER$1 = "/images/hero-bg-poster.webp";
@@ -23200,7 +23903,7 @@ const primaryBtn = cx$1(
   "outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4f3f1]",
   "disabled:pointer-events-none disabled:opacity-45"
 );
-async function downloadChangeRequestPdf$1(text) {
+async function downloadChangeRequestPdf$1(text, lang) {
   const [{ jsPDF: jsPDF2 }, html2canvas2] = await Promise.all([
     import("jspdf"),
     import("html2canvas")
@@ -23273,7 +23976,7 @@ async function downloadChangeRequestPdf$1(text) {
       remaining -= sliceH;
       pageIndex += 1;
     }
-    doc.save("mileseal-change-request.pdf");
+    await savePdfWithTextLayer(doc, text, lang, "mileseal-change-request.pdf");
   } finally {
     host.remove();
   }
@@ -23282,14 +23985,19 @@ function MilesealWorkspace({
   onRequestManualReview,
   formOpen,
   formKey,
+  formVariant = "review",
   prefill,
-  onCloseForm
+  onCloseForm,
+  layout = "fullscreen",
+  formOpenerRef,
+  formInitialStep
 }) {
   const { lang, setLang } = useLang();
   const navigate = useNavigate();
   const location = useLocation();
   const copy = milesealCopy(lang);
   const ws = milesealWorkspaceCopy(lang);
+  const caseStudyPath = pathForLang("/mileseal/cases/content-migration", lang);
   const examples = copy.examples;
   const firstExample = examples[0];
   const [state, dispatch] = useReducer(
@@ -23319,7 +24027,11 @@ function MilesealWorkspace({
   useKeepVideoPlaying(artifactVideoRef);
   const isPreset = state.mode === "preset";
   const showResult = isPreset && state.result !== null;
-  const crText = state.result ? changeRequestForTone(state.result, state.activeTone) : "";
+  const crText = state.result ? appendWorkStartDecisionToText(
+    changeRequestForTone(state.result, state.activeTone),
+    state.workStartDecision,
+    lang
+  ) : "";
   useEffect(() => {
     if (langRef.current === lang) return;
     langRef.current = lang;
@@ -23414,6 +24126,7 @@ function MilesealWorkspace({
   };
   const startAnalyze = () => {
     if (!isPreset || state.analyzing) return;
+    trackMilesealDemoStarted({ scenarioId: selectedExample.id, surface: "workspace" });
     dispatch({ type: "analyzeStart" });
   };
   const handleSelectScenario = (example) => {
@@ -23468,7 +24181,8 @@ function MilesealWorkspace({
     setPdfBusy(true);
     setPdfError(false);
     try {
-      await downloadChangeRequestPdf$1(crText);
+      await downloadChangeRequestPdf$1(crText, lang);
+      trackMilesealSampleDownloaded({ surface: "workspace" });
     } catch (err) {
       console.error("PDF download failed", err);
       setPdfError(true);
@@ -23478,6 +24192,7 @@ function MilesealWorkspace({
   };
   const openManual = (nextPrefill) => {
     dispatch({ type: "enterManualReview" });
+    trackLeadFormOpen("mileseal_scope_review");
     onRequestManualReview(nextPrefill ?? { scope: state.scope, request: state.request });
   };
   const sendComposer = () => {
@@ -23485,6 +24200,7 @@ function MilesealWorkspace({
     if (!text || state.analyzing) return;
     const matchingExample = examples.find((e) => e.request.trim() === text);
     if (matchingExample) {
+      trackMilesealDemoStarted({ scenarioId: matchingExample.id });
       dispatch({ type: "selectScenario", example: matchingExample });
       dispatch({ type: "analyzeStart" });
       return;
@@ -23645,7 +24361,7 @@ function MilesealWorkspace({
           /* @__PURE__ */ jsxs(
             Link,
             {
-              to: "/mileseal/cases/content-migration",
+              to: caseStudyPath,
               className: cx$1(
                 softBtn,
                 "w-full justify-start gap-3 px-2.5 no-underline",
@@ -24061,10 +24777,10 @@ function MilesealWorkspace({
         "button",
         {
           type: "button",
-          className: cx$1(primaryBtn, "mt-4"),
-          onClick: startAnalyze,
+          className: cx$1(softBtn, "mt-4"),
+          onClick: () => handleSelectScenario(firstExample),
           children: [
-            ws.analyseRequest,
+            ws.artifactEmptyAction,
             /* @__PURE__ */ jsx(MsIconChevronRight, { className: "h-4 w-4" })
           ]
         }
@@ -24123,442 +24839,465 @@ function MilesealWorkspace({
       ] })
     }
   );
-  return /* @__PURE__ */ jsxs("div", { className: "flex h-[100dvh] min-h-[100dvh] overflow-hidden bg-[#f4f3f1] text-[#141414]", children: [
-    /* @__PURE__ */ jsx(
-      "a",
-      {
-        href: "#mileseal-main",
-        className: "sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-xl focus:bg-white focus:px-4 focus:py-2.5 focus:text-[13px] focus:font-semibold focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#fc5000]/40",
-        children: ws.skipToContent
-      }
-    ),
-    isDesktopNav ? /* @__PURE__ */ jsx(
-      "aside",
-      {
-        className: cx$1(
-          "relative z-20 flex h-full shrink-0 flex-col bg-[#ebe8e3] transition-[width] duration-200",
-          sidebarCollapsed ? "w-[72px]" : "w-[260px]",
-          prefersReducedMotion$1() && "transition-none"
-        ),
-        "aria-label": "MileSeal",
-        children: sidebarInner
-      }
-    ) : null,
-    !isDesktopNav && state.isMobileNavOpen ? /* @__PURE__ */ jsxs("div", { className: "fixed inset-0 z-40 flex", role: "dialog", "aria-modal": "true", children: [
-      /* @__PURE__ */ jsx(
-        "button",
-        {
-          type: "button",
-          className: "absolute inset-0 bg-black/30",
-          "aria-label": ws.closeNav,
-          onClick: () => dispatch({ type: "setMobileNavOpen", open: false })
-        }
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: cx$1(
+        "flex overflow-hidden bg-[#f4f3f1] text-[#141414]",
+        layout === "section" ? "min-h-[100dvh] h-[min(100dvh,920px)]" : "h-[100dvh] min-h-[100dvh]"
       ),
-      /* @__PURE__ */ jsx(
-        "aside",
-        {
-          className: "relative z-10 flex h-full w-[min(260px,88vw)] flex-col bg-[#ebe8e3] shadow-xl",
-          "aria-label": "MileSeal",
-          children: sidebarInner
-        }
-      )
-    ] }) : null,
-    /* @__PURE__ */ jsxs("div", { className: "flex min-w-0 flex-1 flex-col", children: [
-      /* @__PURE__ */ jsxs("header", { className: "flex h-14 shrink-0 items-center gap-2 bg-transparent px-3 sm:px-4", children: [
-        !isDesktopNav ? /* @__PURE__ */ jsx(
-          "button",
+      children: [
+        /* @__PURE__ */ jsx(
+          "a",
           {
-            type: "button",
-            className: iconBtn,
-            "aria-label": ws.openNav,
-            "aria-expanded": state.isMobileNavOpen,
-            onClick: () => dispatch({ type: "setMobileNavOpen", open: true }),
-            children: /* @__PURE__ */ jsx(MsIconMenu, { className: "h-6 w-6" })
+            href: "#mileseal-main",
+            className: "sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-xl focus:bg-white focus:px-4 focus:py-2.5 focus:text-[13px] focus:font-semibold focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#fc5000]/40",
+            children: ws.skipToContent
+          }
+        ),
+        isDesktopNav ? /* @__PURE__ */ jsx(
+          "aside",
+          {
+            className: cx$1(
+              "relative z-20 flex h-full shrink-0 flex-col bg-[#ebe8e3] transition-[width] duration-200",
+              sidebarCollapsed ? "w-[72px]" : "w-[260px]",
+              prefersReducedMotion$1() && "transition-none"
+            ),
+            "aria-label": "MileSeal",
+            children: sidebarInner
           }
         ) : null,
-        /* @__PURE__ */ jsx("div", { className: "min-w-0 flex-1", children: /* @__PURE__ */ jsxs("div", { className: "flex min-w-0 items-center gap-2", children: [
-          /* @__PURE__ */ jsx("h1", { className: "truncate text-[14px] font-semibold tracking-[-0.01em] sm:text-[15px]", children: titleLabel || "MileSeal" }),
-          state.sessionStarted ? /* @__PURE__ */ jsx("span", { className: "hidden shrink-0 rounded-md bg-black/[0.05] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#141414]/55 sm:inline", children: isPreset ? ws.topDemoScenario : ws.topCustomReview }) : null
-        ] }) }),
-        /* @__PURE__ */ jsx("button", { type: "button", className: cx$1(softBtn, "hidden sm:inline-flex"), onClick: handleNewAnalysis, children: ws.newAnalysis }),
-        showResult ? /* @__PURE__ */ jsxs(
-          "button",
-          {
-            type: "button",
-            className: softBtn,
-            onClick: () => dispatch({ type: "openChangeRequest" }),
-            children: [
-              ws.openArtifact,
-              /* @__PURE__ */ jsx(MsIconChevronRight, { className: "h-4 w-4" })
-            ]
-          }
-        ) : null,
-        /* @__PURE__ */ jsxs("div", { className: "relative", children: [
+        !isDesktopNav && state.isMobileNavOpen ? /* @__PURE__ */ jsxs("div", { className: "fixed inset-0 z-40 flex", role: "dialog", "aria-modal": "true", children: [
           /* @__PURE__ */ jsx(
             "button",
             {
               type: "button",
-              className: iconBtn,
-              "aria-label": ws.reset,
-              "aria-expanded": resetMenuOpen,
-              "aria-haspopup": "menu",
-              onClick: () => setResetMenuOpen((v) => !v),
-              children: /* @__PURE__ */ jsx(MsIconReset, { className: "h-6 w-6" })
+              className: "absolute inset-0 bg-black/30",
+              "aria-label": ws.closeNav,
+              onClick: () => dispatch({ type: "setMobileNavOpen", open: false })
             }
           ),
-          resetMenuOpen ? /* @__PURE__ */ jsxs(Fragment, { children: [
-            /* @__PURE__ */ jsx(
+          /* @__PURE__ */ jsx(
+            "aside",
+            {
+              className: "relative z-10 flex h-full w-[min(260px,88vw)] flex-col bg-[#ebe8e3] shadow-xl",
+              "aria-label": "MileSeal",
+              children: sidebarInner
+            }
+          )
+        ] }) : null,
+        /* @__PURE__ */ jsxs("div", { className: "flex min-w-0 flex-1 flex-col", children: [
+          /* @__PURE__ */ jsxs("header", { className: "flex h-14 shrink-0 items-center gap-2 bg-transparent px-3 sm:px-4", children: [
+            !isDesktopNav ? /* @__PURE__ */ jsx(
               "button",
               {
                 type: "button",
-                className: "fixed inset-0 z-30 cursor-default",
-                "aria-label": ws.closeNav,
-                onClick: () => setResetMenuOpen(false)
+                className: iconBtn,
+                "aria-label": ws.openNav,
+                "aria-expanded": state.isMobileNavOpen,
+                onClick: () => dispatch({ type: "setMobileNavOpen", open: true }),
+                children: /* @__PURE__ */ jsx(MsIconMenu, { className: "h-6 w-6" })
               }
-            ),
-            /* @__PURE__ */ jsxs(
-              "div",
+            ) : null,
+            /* @__PURE__ */ jsx("div", { className: "min-w-0 flex-1", children: /* @__PURE__ */ jsxs("div", { className: "flex min-w-0 items-center gap-2", children: [
+              /* @__PURE__ */ jsx("h1", { className: "truncate text-[14px] font-semibold tracking-[-0.01em] sm:text-[15px]", children: titleLabel || "MileSeal" }),
+              state.sessionStarted ? /* @__PURE__ */ jsx("span", { className: "hidden shrink-0 rounded-md bg-black/[0.05] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#141414]/55 sm:inline", children: isPreset ? ws.topDemoScenario : ws.topCustomReview }) : null
+            ] }) }),
+            /* @__PURE__ */ jsx("button", { type: "button", className: cx$1(softBtn, "hidden sm:inline-flex"), onClick: handleNewAnalysis, children: ws.newAnalysis }),
+            showResult ? /* @__PURE__ */ jsxs(
+              "button",
               {
-                role: "menu",
-                className: "absolute right-0 top-full z-40 mt-1 min-w-[11rem] overflow-hidden rounded-xl bg-white/95 py-1 shadow-lg backdrop-blur-md",
+                type: "button",
+                className: softBtn,
+                onClick: () => dispatch({ type: "openChangeRequest" }),
                 children: [
-                  /* @__PURE__ */ jsx(
-                    "button",
-                    {
-                      type: "button",
-                      role: "menuitem",
-                      className: "flex w-full px-3.5 py-2.5 text-left text-[13px] font-medium hover:bg-black/[0.04]",
-                      onClick: handleResetAnalysis,
-                      children: ws.resetAnalysis
-                    }
-                  ),
-                  /* @__PURE__ */ jsx(
-                    "button",
-                    {
-                      type: "button",
-                      role: "menuitem",
-                      className: "flex w-full px-3.5 py-2.5 text-left text-[13px] font-medium hover:bg-black/[0.04]",
-                      onClick: handleNewAnalysis,
-                      children: ws.newAnalysis
-                    }
-                  )
+                  ws.openArtifact,
+                  /* @__PURE__ */ jsx(MsIconChevronRight, { className: "h-4 w-4" })
                 ]
               }
-            )
-          ] }) : null
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxs(
-        "main",
-        {
-          id: "mileseal-main",
-          ref: mainRef,
-          className: "flex min-h-0 flex-1 flex-col",
-          tabIndex: -1,
-          children: [
-            /* @__PURE__ */ jsx("div", { className: "mx-auto w-full max-w-[820px] flex-1 overflow-y-auto px-4 pb-4 pt-5 no-scrollbar sm:px-6", children: !state.sessionStarted ? /* @__PURE__ */ jsxs("div", { className: "flex min-h-[min(70dvh,36rem)] flex-col items-center justify-center text-center", children: [
+            ) : null,
+            /* @__PURE__ */ jsxs("div", { className: "relative", children: [
               /* @__PURE__ */ jsx(
-                "img",
-                {
-                  src: "/images/mileseal-mark-orange.svg",
-                  alt: "",
-                  className: "h-14 w-14",
-                  width: 56,
-                  height: 56
-                }
-              ),
-              /* @__PURE__ */ jsx("h2", { className: "mt-5 max-w-[22rem] text-[clamp(1.35rem,3.5vw,1.75rem)] font-semibold tracking-[-0.03em] text-balance", children: ws.emptyTitle }),
-              /* @__PURE__ */ jsx("p", { className: "mt-2.5 max-w-[26rem] text-[14px] font-medium leading-relaxed text-[#141414]/55", children: ws.emptyDescription }),
-              /* @__PURE__ */ jsx("div", { className: "mt-6 flex w-full max-w-[28rem] flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-center", children: examples.map((example) => /* @__PURE__ */ jsx(
                 "button",
                 {
                   type: "button",
-                  onClick: () => handleSelectScenario(example),
-                  className: cx$1(softBtn, "sm:min-w-[8.5rem]"),
-                  children: example.label
-                },
-                example.id
-              )) })
-            ] }) : /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
-              /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-                /* @__PURE__ */ jsx(
-                  "img",
-                  {
-                    src: "/images/mileseal-mark-orange.svg",
-                    alt: "",
-                    className: "mt-0.5 h-7 w-7 shrink-0",
-                    width: 28,
-                    height: 28
-                  }
-                ),
-                /* @__PURE__ */ jsx("p", { className: "max-w-[36rem] text-[14px] font-medium leading-[1.6] text-[#141414]/75", children: ws.introMessage })
-              ] }),
-              state.scope.trim() ? /* @__PURE__ */ jsxs("div", { className: "rounded-2xl bg-black/[0.025] p-4", children: [
-                /* @__PURE__ */ jsx("p", { className: "text-[11px] font-semibold uppercase tracking-[0.12em] text-[#141414]/35", children: ws.scopePreviewTitle }),
-                /* @__PURE__ */ jsx("p", { className: "mt-1 text-[12px] font-medium text-[#141414]/35", children: ws.scopeProject }),
-                /* @__PURE__ */ jsx("p", { className: "mt-2 text-[14px] font-medium leading-[1.55] text-[#141414]/8", children: state.scope })
-              ] }) : null,
-              state.request.trim() ? /* @__PURE__ */ jsx("div", { className: "flex justify-end", children: /* @__PURE__ */ jsx("div", { className: "max-w-[85%] rounded-2xl bg-[#ebe8e3]/80 px-4 py-3 text-[14px] font-medium leading-[1.55] text-[#141414]/9", children: state.request }) }) : null,
-              isPreset && !state.result && !state.analyzing ? /* @__PURE__ */ jsx("div", { className: "flex justify-start pl-10", children: /* @__PURE__ */ jsx("button", { type: "button", className: primaryBtn, onClick: startAnalyze, children: ws.analyseRequest }) }) : null,
-              !isPreset && !state.analyzing ? /* @__PURE__ */ jsxs("div", { className: "rounded-2xl bg-black/[0.025] px-4 py-3.5", children: [
-                /* @__PURE__ */ jsx("p", { className: "text-[13px] font-medium leading-relaxed text-[#141414]/55", children: ws.customNotice }),
+                  className: iconBtn,
+                  "aria-label": ws.reset,
+                  "aria-expanded": resetMenuOpen,
+                  "aria-haspopup": "menu",
+                  onClick: () => setResetMenuOpen((v) => !v),
+                  children: /* @__PURE__ */ jsx(MsIconReset, { className: "h-6 w-6" })
+                }
+              ),
+              resetMenuOpen ? /* @__PURE__ */ jsxs(Fragment, { children: [
                 /* @__PURE__ */ jsx(
                   "button",
                   {
                     type: "button",
-                    className: cx$1(primaryBtn, "mt-3"),
-                    onClick: () => openManual({
-                      scope: state.scope.trim(),
-                      request: state.request.trim()
-                    }),
-                    children: ws.sendManual
-                  }
-                )
-              ] }) : null,
-              state.analyzing ? /* @__PURE__ */ jsxs(
-                "div",
-                {
-                  className: "rounded-2xl bg-white/80 p-4 shadow-sm ring-1 ring-black/[0.04]",
-                  "aria-live": "polite",
-                  "aria-busy": "true",
-                  children: [
-                    /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
-                      /* @__PURE__ */ jsxs("div", { className: "relative h-9 w-9 shrink-0", children: [
-                        /* @__PURE__ */ jsx(
-                          "span",
-                          {
-                            className: "absolute inset-0 rounded-full border-2 border-[#fc5000]/20",
-                            "aria-hidden": true
-                          }
-                        ),
-                        /* @__PURE__ */ jsx(
-                          "span",
-                          {
-                            className: cx$1(
-                              "absolute inset-0 rounded-full border-2 border-transparent border-t-[#fc5000]",
-                              !prefersReducedMotion$1() && "animate-spin"
-                            ),
-                            "aria-hidden": true
-                          }
-                        )
-                      ] }),
-                      /* @__PURE__ */ jsx("p", { className: "text-[14px] font-semibold text-[#141414]", children: ws.analyzingTitle })
-                    ] }),
-                    /* @__PURE__ */ jsx("div", { className: "mt-3 h-1 overflow-hidden rounded-full bg-black/[0.06]", children: /* @__PURE__ */ jsx(
-                      "div",
-                      {
-                        className: "h-full rounded-full bg-[#fc5000] transition-[width] duration-300 ease-out",
-                        style: {
-                          width: `${Math.min(
-                            100,
-                            state.activeAnalysisStep / ws.progressSteps.length * 100
-                          )}%`,
-                          transitionDuration: prefersReducedMotion$1() ? "80ms" : "300ms"
-                        }
-                      }
-                    ) }),
-                    /* @__PURE__ */ jsx("ul", { className: "mt-3 space-y-2", children: ws.progressSteps.map((step, i) => {
-                      const done = state.activeAnalysisStep > i;
-                      const current = state.activeAnalysisStep === i;
-                      return /* @__PURE__ */ jsxs(
-                        "li",
-                        {
-                          className: cx$1(
-                            "flex items-center gap-2 text-[13px] font-medium",
-                            done ? "text-[#141414]" : current ? "text-[#141414]/75" : "text-[#141414]/35"
-                          ),
-                          children: [
-                            /* @__PURE__ */ jsx(
-                              "span",
-                              {
-                                className: cx$1(
-                                  "flex h-5 w-5 shrink-0 items-center justify-center rounded-full",
-                                  done ? "bg-[#fc5000] text-white" : current ? "bg-[#fc5000]/15 text-[#fc5000]" : "bg-black/[0.06] text-transparent"
-                                ),
-                                children: /* @__PURE__ */ jsx(MsIconCheck, { className: "h-3 w-3" })
-                              }
-                            ),
-                            step
-                          ]
-                        },
-                        step
-                      );
-                    }) })
-                  ]
-                }
-              ) : null,
-              showResult && state.result ? /* @__PURE__ */ jsx("div", { className: "space-y-4", children: /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
-                /* @__PURE__ */ jsx(
-                  "img",
-                  {
-                    src: "/images/mileseal-mark-orange.svg",
-                    alt: "",
-                    className: "mt-0.5 h-7 w-7 shrink-0",
-                    width: 28,
-                    height: 28
+                    className: "fixed inset-0 z-30 cursor-default",
+                    "aria-label": ws.closeNav,
+                    onClick: () => setResetMenuOpen(false)
                   }
                 ),
-                /* @__PURE__ */ jsxs("div", { className: "min-w-0 flex-1", children: [
-                  /* @__PURE__ */ jsx("div", { className: "flex flex-wrap items-center gap-2", children: /* @__PURE__ */ jsx("span", { className: "rounded-full bg-[#fc5000]/12 px-2.5 py-1 text-[11px] font-semibold text-[#fc5000]", children: ws.statusOutside }) }),
-                  /* @__PURE__ */ jsx("h3", { className: "mt-2 text-[17px] font-semibold tracking-[-0.02em]", children: ws.outsideScopeTitle }),
-                  /* @__PURE__ */ jsx("p", { className: "mt-2 text-[14px] font-medium leading-[1.55] text-[#141414]/7", children: state.result.reason }),
-                  /* @__PURE__ */ jsx("div", { className: "mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3", children: [
-                    [ws.metrics.effort, state.result.hoursValue],
-                    [ws.metrics.cost, state.result.costValue],
-                    [ws.metrics.timeline, state.result.timelineValue],
-                    [ws.metrics.confidence, state.result.confidence]
-                  ].map(([label, value]) => /* @__PURE__ */ jsxs(
-                    "div",
-                    {
-                      className: "rounded-xl bg-white px-3 py-3 ring-1 ring-black/[0.06] sm:px-3.5 sm:py-3.5",
-                      children: [
-                        /* @__PURE__ */ jsx("p", { className: "text-[10px] font-semibold uppercase leading-tight tracking-[0.08em] text-[#141414]/45", children: label }),
-                        /* @__PURE__ */ jsx("p", { className: "mt-2 text-[17px] font-semibold leading-tight tracking-[-0.02em] text-[#141414] tabular-nums sm:text-[18px]", children: value })
-                      ]
-                    },
-                    label
-                  )) }),
-                  /* @__PURE__ */ jsxs("div", { className: "mt-5 space-y-1 pt-1", children: [
+                /* @__PURE__ */ jsxs(
+                  "div",
+                  {
+                    role: "menu",
+                    className: "absolute right-0 top-full z-40 mt-1 min-w-[11rem] overflow-hidden rounded-xl bg-white/95 py-1 shadow-lg backdrop-blur-md",
+                    children: [
+                      /* @__PURE__ */ jsx(
+                        "button",
+                        {
+                          type: "button",
+                          role: "menuitem",
+                          className: "flex w-full px-3.5 py-2.5 text-left text-[13px] font-medium hover:bg-black/[0.04]",
+                          onClick: handleResetAnalysis,
+                          children: ws.resetAnalysis
+                        }
+                      ),
+                      /* @__PURE__ */ jsx(
+                        "button",
+                        {
+                          type: "button",
+                          role: "menuitem",
+                          className: "flex w-full px-3.5 py-2.5 text-left text-[13px] font-medium hover:bg-black/[0.04]",
+                          onClick: handleNewAnalysis,
+                          children: ws.newAnalysis
+                        }
+                      )
+                    ]
+                  }
+                )
+              ] }) : null
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxs(
+            "main",
+            {
+              id: "mileseal-main",
+              ref: mainRef,
+              className: "flex min-h-0 flex-1 flex-col",
+              tabIndex: -1,
+              children: [
+                /* @__PURE__ */ jsxs("div", { className: "mx-auto w-full max-w-[820px] flex-1 overflow-y-auto px-4 pb-4 pt-5 no-scrollbar sm:px-6", children: [
+                  /* @__PURE__ */ jsx("div", { id: "scope-review", className: "scroll-mt-24", tabIndex: -1, "aria-hidden": true }),
+                  !state.sessionStarted ? /* @__PURE__ */ jsxs("div", { className: "flex min-h-[min(70dvh,36rem)] flex-col items-center justify-center text-center", children: [
                     /* @__PURE__ */ jsx(
-                      Disclosure,
+                      "img",
                       {
-                        open: whyOpen,
-                        onToggle: () => setWhyOpen((v) => !v),
-                        title: ws.whyTitle,
-                        children: /* @__PURE__ */ jsx("ul", { className: "list-disc space-y-1.5 pl-4 text-[13px] font-medium leading-relaxed text-[#141414]/65", children: ws.whyBulletsPreset.map((b) => /* @__PURE__ */ jsx("li", { children: b }, b)) })
+                        src: "/images/mileseal-mark-orange.svg",
+                        alt: "",
+                        className: "h-14 w-14",
+                        width: 56,
+                        height: 56
                       }
                     ),
-                    /* @__PURE__ */ jsxs(
-                      Disclosure,
+                    /* @__PURE__ */ jsx("h2", { className: "mt-5 max-w-[22rem] text-[clamp(1.35rem,3.5vw,1.75rem)] font-semibold tracking-[-0.03em] text-balance", children: ws.emptyTitle }),
+                    /* @__PURE__ */ jsx("p", { className: "mt-2.5 max-w-[26rem] text-[14px] font-medium leading-relaxed text-[#141414]/55", children: ws.emptyDescription }),
+                    /* @__PURE__ */ jsx("div", { className: "mt-6 flex w-full max-w-[28rem] flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-center", children: examples.map((example) => /* @__PURE__ */ jsx(
+                      "button",
                       {
-                        open: effortOpen,
-                        onToggle: () => setEffortOpen((v) => !v),
-                        title: ws.effortTitle,
+                        type: "button",
+                        onClick: () => handleSelectScenario(example),
+                        className: cx$1(softBtn, "sm:min-w-[8.5rem]"),
+                        children: example.label
+                      },
+                      example.id
+                    )) })
+                  ] }) : /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
+                    /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
+                      /* @__PURE__ */ jsx(
+                        "img",
+                        {
+                          src: "/images/mileseal-mark-orange.svg",
+                          alt: "",
+                          className: "mt-0.5 h-7 w-7 shrink-0",
+                          width: 28,
+                          height: 28
+                        }
+                      ),
+                      /* @__PURE__ */ jsx("p", { className: "max-w-[36rem] text-[14px] font-medium leading-[1.6] text-[#141414]/75", children: ws.introMessage })
+                    ] }),
+                    state.scope.trim() ? /* @__PURE__ */ jsxs("div", { className: "rounded-2xl bg-black/[0.025] p-4", children: [
+                      /* @__PURE__ */ jsx("p", { className: "text-[11px] font-semibold uppercase tracking-[0.12em] text-[#141414]/35", children: ws.scopePreviewTitle }),
+                      /* @__PURE__ */ jsx("p", { className: "mt-1 text-[12px] font-medium text-[#141414]/35", children: ws.scopeProject }),
+                      /* @__PURE__ */ jsx("p", { className: "mt-2 text-[14px] font-medium leading-[1.55] text-[#141414]/8", children: state.scope })
+                    ] }) : null,
+                    state.request.trim() ? /* @__PURE__ */ jsx("div", { className: "flex justify-end", children: /* @__PURE__ */ jsx("div", { className: "max-w-[85%] rounded-2xl bg-[#ebe8e3]/80 px-4 py-3 text-[14px] font-medium leading-[1.55] text-[#141414]/9", children: state.request }) }) : null,
+                    isPreset && !state.result && !state.analyzing ? /* @__PURE__ */ jsx("div", { className: "flex justify-start pl-10", children: /* @__PURE__ */ jsx("button", { type: "button", className: primaryBtn, onClick: startAnalyze, children: ws.analyseRequest }) }) : null,
+                    !isPreset && !state.analyzing ? /* @__PURE__ */ jsxs("div", { className: "rounded-2xl bg-black/[0.025] px-4 py-3.5", children: [
+                      /* @__PURE__ */ jsx("p", { className: "text-[13px] font-medium leading-relaxed text-[#141414]/55", children: ws.customNotice }),
+                      /* @__PURE__ */ jsx(
+                        "button",
+                        {
+                          type: "button",
+                          className: cx$1(primaryBtn, "mt-3"),
+                          onClick: () => openManual({
+                            scope: state.scope.trim(),
+                            request: state.request.trim()
+                          }),
+                          children: ws.sendManual
+                        }
+                      )
+                    ] }) : null,
+                    state.analyzing ? /* @__PURE__ */ jsxs(
+                      "div",
+                      {
+                        className: "rounded-2xl bg-white/80 p-4 shadow-sm ring-1 ring-black/[0.04]",
+                        "aria-live": "polite",
+                        "aria-busy": "true",
                         children: [
-                          /* @__PURE__ */ jsx("ul", { className: "space-y-1.5 text-[13px] font-medium leading-relaxed text-[#141414]/65", children: (state.result.effortItems ?? []).map((item) => /* @__PURE__ */ jsxs("li", { className: "flex gap-2", children: [
-                            /* @__PURE__ */ jsx("span", { className: "mt-2 h-1 w-1 shrink-0 rounded-full bg-[#fc5000]", "aria-hidden": true }),
-                            /* @__PURE__ */ jsx("span", { children: item })
-                          ] }, item)) }),
-                          /* @__PURE__ */ jsxs("p", { className: "mt-2.5 text-[12px] font-semibold tabular-nums text-[#141414]/75", children: [
-                            ws.metrics.effort,
-                            ": ",
-                            state.result.hoursValue
+                          /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
+                            /* @__PURE__ */ jsxs("div", { className: "relative h-9 w-9 shrink-0", children: [
+                              /* @__PURE__ */ jsx(
+                                "span",
+                                {
+                                  className: "absolute inset-0 rounded-full border-2 border-[#fc5000]/20",
+                                  "aria-hidden": true
+                                }
+                              ),
+                              /* @__PURE__ */ jsx(
+                                "span",
+                                {
+                                  className: cx$1(
+                                    "absolute inset-0 rounded-full border-2 border-transparent border-t-[#fc5000]",
+                                    !prefersReducedMotion$1() && "animate-spin"
+                                  ),
+                                  "aria-hidden": true
+                                }
+                              )
+                            ] }),
+                            /* @__PURE__ */ jsx("p", { className: "text-[14px] font-semibold text-[#141414]", children: ws.analyzingTitle })
                           ] }),
-                          /* @__PURE__ */ jsx("p", { className: "mt-1.5 text-[13px] font-medium text-[#141414]/55", children: state.result.recommendation })
+                          /* @__PURE__ */ jsx("div", { className: "mt-3 h-1 overflow-hidden rounded-full bg-black/[0.06]", children: /* @__PURE__ */ jsx(
+                            "div",
+                            {
+                              className: "h-full rounded-full bg-[#fc5000] transition-[width] duration-300 ease-out",
+                              style: {
+                                width: `${Math.min(
+                                  100,
+                                  state.activeAnalysisStep / ws.progressSteps.length * 100
+                                )}%`,
+                                transitionDuration: prefersReducedMotion$1() ? "80ms" : "300ms"
+                              }
+                            }
+                          ) }),
+                          /* @__PURE__ */ jsx("ul", { className: "mt-3 space-y-2", children: ws.progressSteps.map((step, i) => {
+                            const done = state.activeAnalysisStep > i;
+                            const current = state.activeAnalysisStep === i;
+                            return /* @__PURE__ */ jsxs(
+                              "li",
+                              {
+                                className: cx$1(
+                                  "flex items-center gap-2 text-[13px] font-medium",
+                                  done ? "text-[#141414]" : current ? "text-[#141414]/75" : "text-[#141414]/35"
+                                ),
+                                children: [
+                                  /* @__PURE__ */ jsx(
+                                    "span",
+                                    {
+                                      className: cx$1(
+                                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full",
+                                        done ? "bg-[#fc5000] text-white" : current ? "bg-[#fc5000]/15 text-[#fc5000]" : "bg-black/[0.06] text-transparent"
+                                      ),
+                                      children: /* @__PURE__ */ jsx(MsIconCheck, { className: "h-3 w-3" })
+                                    }
+                                  ),
+                                  step
+                                ]
+                              },
+                              step
+                            );
+                          }) })
                         ]
                       }
-                    ),
-                    /* @__PURE__ */ jsx(
-                      Disclosure,
-                      {
-                        open: excerptsOpen,
-                        onToggle: () => setExcerptsOpen((v) => !v),
-                        title: ws.excerptsTitle,
-                        children: /* @__PURE__ */ jsxs("div", { className: "space-y-2 text-[13px] font-medium leading-relaxed", children: [
-                          /* @__PURE__ */ jsxs("p", { children: [
-                            /* @__PURE__ */ jsxs("span", { className: "text-[#141414]/4", children: [
-                              ws.includedInScope,
-                              ": "
-                            ] }),
-                            /* @__PURE__ */ jsx("span", { className: "text-[#141414]/7", children: state.scope })
-                          ] }),
-                          /* @__PURE__ */ jsxs("p", { children: [
-                            /* @__PURE__ */ jsxs("span", { className: "text-[#141414]/4", children: [
-                              ws.notInScope,
-                              ": "
-                            ] }),
-                            /* @__PURE__ */ jsx("span", { className: "text-[#141414]/7", children: state.request })
-                          ] }),
-                          /* @__PURE__ */ jsxs("p", { className: "text-[#141414]/55", children: [
-                            ws.newWorkstream,
-                            " · ",
-                            ws.needsApproval
-                          ] })
-                        ] })
-                      }
-                    )
-                  ] }),
-                  /* @__PURE__ */ jsxs("div", { className: "mt-5 flex flex-wrap gap-2", children: [
-                    /* @__PURE__ */ jsx(
-                      "button",
-                      {
-                        type: "button",
-                        className: primaryBtn,
-                        onClick: () => dispatch({ type: "openChangeRequest" }),
-                        children: ws.openChangeRequest
-                      }
-                    ),
-                    /* @__PURE__ */ jsx(
-                      "button",
-                      {
-                        type: "button",
-                        className: softBtn,
-                        onClick: () => handleCopy(crText),
-                        children: state.copied ? ws.copied : ws.copySummary
-                      }
-                    ),
-                    /* @__PURE__ */ jsx(
-                      "button",
-                      {
-                        type: "button",
-                        className: softBtn,
-                        onClick: () => openManual(
-                          prefillFromExample(selectedExample)
+                    ) : null,
+                    showResult && state.result ? /* @__PURE__ */ jsx("div", { className: "space-y-4", children: /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
+                      /* @__PURE__ */ jsx(
+                        "img",
+                        {
+                          src: "/images/mileseal-mark-orange.svg",
+                          alt: "",
+                          className: "mt-0.5 h-7 w-7 shrink-0",
+                          width: 28,
+                          height: 28
+                        }
+                      ),
+                      /* @__PURE__ */ jsxs("div", { className: "min-w-0 flex-1", children: [
+                        /* @__PURE__ */ jsx("div", { className: "flex flex-wrap items-center gap-2", children: /* @__PURE__ */ jsx("span", { className: "rounded-full bg-[#fc5000]/12 px-2.5 py-1 text-[11px] font-semibold text-[#fc5000]", children: ws.statusOutside }) }),
+                        /* @__PURE__ */ jsx("h3", { className: "mt-2 text-[17px] font-semibold tracking-[-0.02em]", children: ws.outsideScopeTitle }),
+                        /* @__PURE__ */ jsx("p", { className: "mt-2 text-[14px] font-medium leading-[1.55] text-[#141414]/7", children: state.result.reason }),
+                        /* @__PURE__ */ jsx("div", { className: "mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3", children: [
+                          [ws.metrics.effort, state.result.hoursValue],
+                          [ws.metrics.cost, state.result.costValue],
+                          [ws.metrics.timeline, state.result.timelineValue],
+                          [ws.metrics.confidence, state.result.confidence]
+                        ].map(([label, value]) => /* @__PURE__ */ jsxs(
+                          "div",
+                          {
+                            className: "rounded-xl bg-white px-3 py-3 ring-1 ring-black/[0.06] sm:px-3.5 sm:py-3.5",
+                            children: [
+                              /* @__PURE__ */ jsx("p", { className: "text-[10px] font-semibold uppercase leading-tight tracking-[0.08em] text-[#141414]/45", children: label }),
+                              /* @__PURE__ */ jsx("p", { className: "mt-2 text-[17px] font-semibold leading-tight tracking-[-0.02em] text-[#141414] tabular-nums sm:text-[18px]", children: value })
+                            ]
+                          },
+                          label
+                        )) }),
+                        /* @__PURE__ */ jsxs("div", { className: "mt-5 space-y-1 pt-1", children: [
+                          /* @__PURE__ */ jsx(
+                            Disclosure,
+                            {
+                              open: whyOpen,
+                              onToggle: () => setWhyOpen((v) => !v),
+                              title: ws.whyTitle,
+                              children: /* @__PURE__ */ jsx("ul", { className: "list-disc space-y-1.5 pl-4 text-[13px] font-medium leading-relaxed text-[#141414]/65", children: ws.whyBulletsPreset.map((b) => /* @__PURE__ */ jsx("li", { children: b }, b)) })
+                            }
+                          ),
+                          /* @__PURE__ */ jsxs(
+                            Disclosure,
+                            {
+                              open: effortOpen,
+                              onToggle: () => setEffortOpen((v) => !v),
+                              title: ws.effortTitle,
+                              children: [
+                                /* @__PURE__ */ jsx("ul", { className: "space-y-1.5 text-[13px] font-medium leading-relaxed text-[#141414]/65", children: (state.result.effortItems ?? []).map((item) => /* @__PURE__ */ jsxs("li", { className: "flex gap-2", children: [
+                                  /* @__PURE__ */ jsx("span", { className: "mt-2 h-1 w-1 shrink-0 rounded-full bg-[#fc5000]", "aria-hidden": true }),
+                                  /* @__PURE__ */ jsx("span", { children: item })
+                                ] }, item)) }),
+                                /* @__PURE__ */ jsxs("p", { className: "mt-2.5 text-[12px] font-semibold tabular-nums text-[#141414]/75", children: [
+                                  ws.metrics.effort,
+                                  ": ",
+                                  state.result.hoursValue
+                                ] }),
+                                /* @__PURE__ */ jsx("p", { className: "mt-1.5 text-[13px] font-medium text-[#141414]/55", children: state.result.recommendation })
+                              ]
+                            }
+                          ),
+                          /* @__PURE__ */ jsx(
+                            Disclosure,
+                            {
+                              open: excerptsOpen,
+                              onToggle: () => setExcerptsOpen((v) => !v),
+                              title: ws.excerptsTitle,
+                              children: /* @__PURE__ */ jsxs("div", { className: "space-y-2 text-[13px] font-medium leading-relaxed", children: [
+                                /* @__PURE__ */ jsxs("p", { children: [
+                                  /* @__PURE__ */ jsxs("span", { className: "text-[#141414]/4", children: [
+                                    ws.includedInScope,
+                                    ": "
+                                  ] }),
+                                  /* @__PURE__ */ jsx("span", { className: "text-[#141414]/7", children: state.scope })
+                                ] }),
+                                /* @__PURE__ */ jsxs("p", { children: [
+                                  /* @__PURE__ */ jsxs("span", { className: "text-[#141414]/4", children: [
+                                    ws.notInScope,
+                                    ": "
+                                  ] }),
+                                  /* @__PURE__ */ jsx("span", { className: "text-[#141414]/7", children: state.request })
+                                ] }),
+                                /* @__PURE__ */ jsxs("p", { className: "text-[#141414]/55", children: [
+                                  ws.newWorkstream,
+                                  " · ",
+                                  ws.needsApproval
+                                ] })
+                              ] })
+                            }
+                          )
+                        ] }),
+                        /* @__PURE__ */ jsx(
+                          WorkStartDecisionPanel,
+                          {
+                            className: "mt-5",
+                            value: state.workStartDecision,
+                            onChange: (value) => dispatch({ type: "setWorkStartDecision", value })
+                          }
                         ),
-                        children: ws.requestManualReview
-                      }
-                    )
+                        /* @__PURE__ */ jsxs("div", { className: "mt-5 flex flex-wrap gap-2", children: [
+                          /* @__PURE__ */ jsx(
+                            "button",
+                            {
+                              type: "button",
+                              className: primaryBtn,
+                              onClick: () => dispatch({ type: "openChangeRequest" }),
+                              children: ws.openChangeRequest
+                            }
+                          ),
+                          /* @__PURE__ */ jsx(
+                            "button",
+                            {
+                              type: "button",
+                              className: softBtn,
+                              onClick: () => handleCopy(crText),
+                              children: state.copied ? ws.copied : ws.copySummary
+                            }
+                          ),
+                          /* @__PURE__ */ jsx(
+                            "button",
+                            {
+                              type: "button",
+                              className: softBtn,
+                              onClick: () => openManual(
+                                prefillFromExample(selectedExample)
+                              ),
+                              children: ws.requestManualReview
+                            }
+                          )
+                        ] })
+                      ] })
+                    ] }) }) : null
                   ] })
-                ] })
-              ] }) }) : null
-            ] }) }),
-            composer
-          ]
-        }
-      )
-    ] }),
-    isWideArtifact ? /* @__PURE__ */ jsx(
-      "aside",
-      {
-        className: "flex h-full w-[400px] shrink-0 flex-col bg-[#f0eeea]",
-        "aria-label": ws.artifactTitle,
-        children: artifactBody
-      }
-    ) : null,
-    !isWideArtifact && state.isChangeRequestOpen ? /* @__PURE__ */ jsxs(
-      "div",
-      {
-        className: "fixed inset-0 z-50 flex justify-end bg-black/30",
-        role: "dialog",
-        "aria-modal": "true",
-        "aria-label": ws.artifactTitle,
-        children: [
-          /* @__PURE__ */ jsx(
-            "button",
-            {
-              type: "button",
-              className: "absolute inset-0",
-              "aria-label": ws.closeArtifact,
-              onClick: () => dispatch({ type: "closeChangeRequest" })
+                ] }),
+                composer
+              ]
             }
-          ),
-          /* @__PURE__ */ jsx("div", { className: "relative z-10 flex h-full w-full flex-col bg-[#f0eeea] shadow-2xl sm:max-w-[400px]", children: artifactBody })
-        ]
-      }
-    ) : null,
-    formOpen ? /* @__PURE__ */ jsx(
-      MilesealManualReviewPanel,
-      {
-        prefill,
-        onClose: onCloseForm
-      },
-      `${formKey}-${lang}`
-    ) : null,
-    /* @__PURE__ */ jsxs("nav", { className: "sr-only", "aria-label": "MileSeal", children: [
-      /* @__PURE__ */ jsx("p", { children: "MileSeal AI Scope Change Workspace — compare an agreed project scope with a new client request and generate a change request." }),
-      /* @__PURE__ */ jsx(Link, { to: "/mileseal/cases/content-migration", children: ws.openCaseStudy })
-    ] })
-  ] });
+          )
+        ] }),
+        isWideArtifact ? /* @__PURE__ */ jsx(
+          "aside",
+          {
+            className: "flex h-full w-[400px] shrink-0 flex-col bg-[#f0eeea]",
+            "aria-label": ws.artifactTitle,
+            children: artifactBody
+          }
+        ) : null,
+        !isWideArtifact && state.isChangeRequestOpen ? /* @__PURE__ */ jsxs(
+          "div",
+          {
+            className: "fixed inset-0 z-50 flex justify-end bg-black/30",
+            role: "dialog",
+            "aria-modal": "true",
+            "aria-label": ws.artifactTitle,
+            children: [
+              /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  className: "absolute inset-0",
+                  "aria-label": ws.closeArtifact,
+                  onClick: () => dispatch({ type: "closeChangeRequest" })
+                }
+              ),
+              /* @__PURE__ */ jsx("div", { className: "relative z-10 flex h-full w-full flex-col bg-[#f0eeea] shadow-2xl sm:max-w-[400px]", children: artifactBody })
+            ]
+          }
+        ) : null,
+        formOpen ? /* @__PURE__ */ jsx(
+          MilesealManualReviewPanel,
+          {
+            prefill,
+            variant: formVariant,
+            initialStep: formInitialStep,
+            onClose: onCloseForm,
+            returnFocusRef: formOpenerRef
+          },
+          `${formKey}-${lang}-${formVariant}`
+        ) : null,
+        /* @__PURE__ */ jsxs("nav", { className: "sr-only", "aria-label": "MileSeal", children: [
+          /* @__PURE__ */ jsx("p", { children: ws.seoNavDescription }),
+          /* @__PURE__ */ jsx(Link, { to: caseStudyPath, children: ws.openCaseStudy })
+        ] })
+      ]
+    }
+  );
 }
 function Disclosure({
   open,
@@ -24622,7 +25361,7 @@ function ScenarioChatIcon({ id, active }) {
     /* @__PURE__ */ jsx("path", { d: "M18 4 L24 10 L18 11 Z", fill: `url(#${gEdge})`, opacity: "0.95" }),
     /* @__PURE__ */ jsx("path", { d: "M5 6.5 L9 22 L4 16 Z", fill: "#B83200", opacity: "0.28" }),
     /* @__PURE__ */ jsx("path", { d: "M9 22 L7 26 L13 21.5 Z", fill: "#D63A00", opacity: "0.9" }),
-    id === "migration" ? /* @__PURE__ */ jsxs(Fragment, { children: [
+    id === "homepage-authors" ? /* @__PURE__ */ jsxs(Fragment, { children: [
       /* @__PURE__ */ jsx("path", { d: "M10 11 H18", stroke: "#FFF8F0", strokeWidth: "1.6", strokeLinecap: "round", opacity: "0.95" }),
       /* @__PURE__ */ jsx("path", { d: "M10 14.5 H16", stroke: "#FFD7B0", strokeWidth: "1.6", strokeLinecap: "round", opacity: "0.85" }),
       /* @__PURE__ */ jsx("path", { d: "M10 18 H14.5", stroke: "#FFD7B0", strokeWidth: "1.6", strokeLinecap: "round", opacity: "0.65" })
@@ -24645,7 +25384,7 @@ function ScenarioChatIcon({ id, active }) {
       ),
       /* @__PURE__ */ jsx("path", { d: "M17.2 11.2 L19 9.4", stroke: "#FFE8D2", strokeWidth: "1.4", strokeLinecap: "round" })
     ] }) : null,
-    id !== "migration" && id !== "integrations" && id !== "revisions" ? /* @__PURE__ */ jsxs(Fragment, { children: [
+    id !== "homepage-authors" && id !== "integrations" && id !== "revisions" ? /* @__PURE__ */ jsxs(Fragment, { children: [
       /* @__PURE__ */ jsx("path", { d: "M10 12 H18", stroke: "#FFF8F0", strokeWidth: "1.6", strokeLinecap: "round" }),
       /* @__PURE__ */ jsx("path", { d: "M10 16 H15", stroke: "#FFD7B0", strokeWidth: "1.6", strokeLinecap: "round" })
     ] }) : null
@@ -24688,53 +25427,131 @@ function MileSealEmptyDraftIcon() {
     }
   );
 }
+const MILESEAL_OG_IMAGE = "https://tivonix.tech/images/mileseal/og-mileseal.jpg";
+const MILESEAL_CASE_OG_IMAGE = "https://tivonix.tech/images/mileseal/og-mileseal-case-content-migration.jpg";
+function scrollToScopeReview() {
+  const anchor = document.getElementById("scope-review");
+  if (anchor) {
+    anchor.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+  document.getElementById("mileseal-workspace")?.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
 function MilesealPage() {
   const { lang } = useLang();
+  const location = useLocation();
   const copy = milesealCopy(lang);
+  const canonicalPath = pathForLang(location.pathname, lang);
+  const caseStudyPath = pathForLang("/mileseal/cases/content-migration", lang);
+  const isEnCommercial = lang === "en";
   const [searchParams, setSearchParams] = useSearchParams();
   const openManualFromQuery = searchParams.get("manual") === "1";
   const [formOpen, setFormOpen] = useState(openManualFromQuery);
+  const [formVariant, setFormVariant] = useState("review");
   const [prefill, setPrefill] = useState(null);
+  const [formInitialStep, setFormInitialStep] = useState("request");
   const [formKey, setFormKey] = useState(0);
+  const formOpenerRef = useRef(null);
+  const hashHandled = useRef(false);
   const openReview = useCallback((nextPrefill) => {
+    setFormVariant("review");
+    setFormInitialStep(nextPrefill ? "request" : "request");
     setPrefill(nextPrefill ?? null);
     setFormKey((k) => k + 1);
     setFormOpen(true);
+    trackMilesealManualReviewOpened({ variant: "review" });
+  }, []);
+  const openAudit = useCallback((nextPrefill) => {
+    setFormVariant("audit");
+    setFormInitialStep("request");
+    setPrefill(nextPrefill ?? null);
+    setFormKey((k) => k + 1);
+    setFormOpen(true);
+    trackMilesealManualReviewOpened({ variant: "audit" });
   }, []);
   const closeForm = useCallback(() => {
     setFormOpen(false);
   }, []);
+  const openReviewFromHero = useCallback(() => {
+    scrollToScopeReview();
+    window.setTimeout(() => openReview(), 320);
+  }, [openReview]);
   useEffect(() => {
     if (!openManualFromQuery) return;
     const next = new URLSearchParams(searchParams);
     if (!next.has("manual")) return;
     next.delete("manual");
     setSearchParams(next, { replace: true });
+    trackMilesealManualReviewOpened({ variant: "review", source: "query" });
   }, [openManualFromQuery, searchParams, setSearchParams]);
+  useEffect(() => {
+    if (hashHandled.current) return;
+    const hash = location.hash.replace("#", "");
+    if (hash !== "scope-review") return;
+    hashHandled.current = true;
+    scrollToScopeReview();
+    window.setTimeout(() => openReview(), 320);
+  }, [location.hash, openReview]);
   return /* @__PURE__ */ jsxs(Fragment, { children: [
     /* @__PURE__ */ jsx(
       SEO,
       {
         title: copy.seo.title,
         description: copy.seo.description,
-        canonicalPath: "/mileseal",
+        canonicalPath,
         ogLocalePrimary: ogLocaleFor(lang),
-        hreflang: false
+        ogImage: isEnCommercial ? MILESEAL_OG_IMAGE : void 0,
+        ogTitle: isEnCommercial ? copy.seo.title : void 0,
+        ogDescription: isEnCommercial ? copy.seo.description : void 0,
+        hreflang: true
       }
     ),
-    /* @__PURE__ */ jsx(
+    isEnCommercial ? /* @__PURE__ */ jsxs("div", { className: "min-h-screen bg-black", children: [
+      /* @__PURE__ */ jsx(
+        MilesealCommercialLanding,
+        {
+          caseStudyPath,
+          onRequestReview: openReviewFromHero,
+          onRequestAudit: () => {
+            scrollToScopeReview();
+            window.setTimeout(() => openAudit(), 320);
+          },
+          reviewOpenerRef: formOpenerRef
+        }
+      ),
+      /* @__PURE__ */ jsx("section", { id: "mileseal-workspace", "aria-label": "MileSeal workspace", children: /* @__PURE__ */ jsx(
+        MilesealWorkspace,
+        {
+          layout: "section",
+          onRequestManualReview: openReview,
+          formOpen,
+          formKey,
+          formVariant,
+          prefill,
+          onCloseForm: closeForm,
+          formOpenerRef,
+          formInitialStep
+        }
+      ) })
+    ] }) : /* @__PURE__ */ jsx(
       MilesealWorkspace,
       {
         onRequestManualReview: openReview,
         formOpen,
         formKey,
+        formVariant,
         prefill,
-        onCloseForm: closeForm
+        onCloseForm: closeForm,
+        formOpenerRef,
+        formInitialStep
       }
     )
   ] });
 }
-const CASE_ADDITIONAL_HOURS = 40;
+const CASE_ADDITIONAL_HOURS = 56;
 const CASE_CAPACITY_MIN = 1;
 function caseAdditionalCost(rate) {
   return CASE_ADDITIONAL_HOURS * rate;
@@ -24778,7 +25595,7 @@ const COPY = {
   en: {
     seo: {
       title: "Content Migration Scope Creep Demo | MileSeal",
-      description: "See how MileSeal compares a fixed-price project scope with a later client request, calculates 40 additional hours and prepares a client-ready change request.",
+      description: "See how MileSeal compares a fixed-price project scope with a later client request, calculates 56 additional hours and prepares a client-ready change request.",
       ogTitle: "Is this client request inside the agreed scope?",
       ogDescription: "An interactive MileSeal demonstration: compare agreed scope with a later request and generate a client-ready change request."
     },
@@ -24800,7 +25617,7 @@ const COPY = {
       requestLabel: "New client request",
       docTitle: "Corporate Website Redesign",
       meta: [
-        { label: "Fixed budget", value: "£15,000" },
+        { label: "Fixed budget", value: "£18,000" },
         { label: "Timeline", value: "6 weeks" },
         { label: "Included", value: "Migration of 20 priority pages" },
         { label: "Excluded", value: "Existing blog archive" },
@@ -24846,11 +25663,11 @@ const COPY = {
       ],
       breakdownTitle: "Effort breakdown",
       breakdown: [
-        { label: "Migration of 240 posts", hours: 24 },
-        { label: "Images and metadata", hours: 5 },
-        { label: "Legacy content audit", hours: 4 },
-        { label: "Quality assurance", hours: 4 },
-        { label: "URL mapping and redirects", hours: 3 }
+        { label: "Migration and field mapping", hours: 24 },
+        { label: "Images, authors, categories and metadata", hours: 12 },
+        { label: "Legacy content audit", hours: 6 },
+        { label: "Redirects", hours: 6 },
+        { label: "QA and rework", hours: 8 }
       ],
       totalLabel: "Total",
       calcCost: "{hoursLabel} × {rate}/hour = {cost}",
@@ -24903,7 +25720,7 @@ const COPY = {
   ru: {
     seo: {
       title: "Демо расползания объёма: миграция контента | MileSeal",
-      description: "Как MileSeal сравнивает фиксированный объём проекта с новым запросом клиента, считает 40 дополнительных часов и готовит запрос на изменение.",
+      description: "Как MileSeal сравнивает фиксированный объём проекта с новым запросом клиента, считает 56 дополнительных часов и готовит запрос на изменение.",
       ogTitle: "Входит ли новый запрос клиента в согласованный объём?",
       ogDescription: "Интерактивная демонстрация MileSeal: сравните согласованный объём с новым запросом и получите готовый запрос на изменение."
     },
@@ -24925,7 +25742,7 @@ const COPY = {
       requestLabel: "Новый запрос клиента",
       docTitle: "Редизайн корпоративного сайта",
       meta: [
-        { label: "Фиксированный бюджет", value: "£15 000" },
+        { label: "Фиксированный бюджет", value: "£18 000" },
         { label: "Срок", value: "6 недель" },
         { label: "Включено", value: "Миграция 20 приоритетных страниц" },
         { label: "Исключено", value: "Существующий архив блога" },
@@ -24971,11 +25788,11 @@ const COPY = {
       ],
       breakdownTitle: "Расчёт трудозатрат",
       breakdown: [
-        { label: "Миграция 240 постов", hours: 24 },
-        { label: "Изображения и метаданные", hours: 5 },
-        { label: "Аудит архивного контента", hours: 4 },
-        { label: "Проверка качества", hours: 4 },
-        { label: "Карта URL и редиректы", hours: 3 }
+        { label: "Миграция и маппинг полей", hours: 24 },
+        { label: "Изображения, авторы, категории и метаданные", hours: 12 },
+        { label: "Аудит архивного контента", hours: 6 },
+        { label: "Редиректы", hours: 6 },
+        { label: "QA и доработки", hours: 8 }
       ],
       totalLabel: "Итого",
       calcCost: "{hoursLabel} × {rate}/час = {cost}",
@@ -25028,7 +25845,7 @@ const COPY = {
   zh: {
     seo: {
       title: "内容迁移范围蔓延演示 | MileSeal",
-      description: "查看 MileSeal 如何对照固定价格项目范围与后续客户请求，计算额外 40 小时，并生成可发给客户的变更请求。",
+      description: "查看 MileSeal 如何对照固定价格项目范围与后续客户请求，计算额外 56 小时，并生成可发给客户的变更请求。",
       ogTitle: "这项客户请求是否在约定范围内？",
       ogDescription: "交互式 MileSeal 演示：对照约定范围与后续请求，生成可发给客户的变更请求。"
     },
@@ -25050,7 +25867,7 @@ const COPY = {
       requestLabel: "新的客户请求",
       docTitle: "企业官网改版",
       meta: [
-        { label: "固定预算", value: "£15,000" },
+        { label: "固定预算", value: "£18,000" },
         { label: "工期", value: "6 周" },
         { label: "已包含", value: "迁移 20 个优先页面" },
         { label: "已排除", value: "现有博客存档" },
@@ -25096,11 +25913,11 @@ const COPY = {
       ],
       breakdownTitle: "工时测算",
       breakdown: [
-        { label: "迁移 240 篇文章", hours: 24 },
-        { label: "图片与元数据", hours: 5 },
-        { label: "遗留内容审计", hours: 4 },
-        { label: "质量保障", hours: 4 },
-        { label: "URL 映射与重定向", hours: 3 }
+        { label: "迁移与字段映射", hours: 24 },
+        { label: "图片、作者、分类与元数据", hours: 12 },
+        { label: "遗留内容审计", hours: 6 },
+        { label: "重定向", hours: 6 },
+        { label: "QA 与返工", hours: 8 }
       ],
       totalLabel: "合计",
       calcCost: "{hoursLabel} × {rate}/小时 = {cost}",
@@ -25155,9 +25972,9 @@ function milesealCaseCopy(lang) {
   return COPY[lang] ?? COPY.en;
 }
 function milesealCaseChangeRequestPlainText(params) {
-  const { copy, tone, costLabel, timelineLabel, hoursLabel } = params;
+  const { copy, tone, costLabel, timelineLabel, hoursLabel, workStartDecisionBlock } = params;
   const cr = copy.changeRequest;
-  return [
+  const lines = [
     cr.docKind.toUpperCase(),
     cr.docTitle,
     "",
@@ -25169,11 +25986,15 @@ function milesealCaseChangeRequestPlainText(params) {
     `${cr.effortLabel}: ${hoursLabel}`,
     `${cr.costLabel}: ${costLabel}`,
     `${cr.timelineLabel}: ${timelineLabel}`,
-    "",
-    cr.approval
-  ].join("\n");
+    ""
+  ];
+  if (workStartDecisionBlock?.trim()) {
+    lines.push(workStartDecisionBlock.trim(), "");
+  }
+  lines.push(cr.approval);
+  return lines.join("\n");
 }
-const CASE_DEMO_DEFAULT_RATE = 70;
+const CASE_DEMO_DEFAULT_RATE = 80;
 const CASE_DEMO_DEFAULT_CAPACITY = 8;
 function clampRate(n) {
   return Math.min(500, Math.max(10, n));
@@ -25202,7 +26023,8 @@ function createInitialCaseDemoState(opts) {
     copied: false,
     copyError: false,
     activeAnalysisStep: -1,
-    hasRunDemo: startInResult
+    hasRunDemo: startInResult,
+    workStartDecision: createDefaultWorkStartDecision("content-migration")
   };
 }
 function caseDemoReducer(state, action) {
@@ -25257,7 +26079,8 @@ function caseDemoReducer(state, action) {
         activeAnalysisStep: 0,
         hasRunDemo: true,
         copied: false,
-        copyError: false
+        copyError: false,
+        workStartDecision: invalidateWorkStartDecision(state.workStartDecision, "content-migration")
       };
     case "startAnalysisWith": {
       if (state.stage === "analyzing") return state;
@@ -25275,7 +26098,8 @@ function caseDemoReducer(state, action) {
         activeAnalysisStep: 0,
         hasRunDemo: true,
         copied: false,
-        copyError: false
+        copyError: false,
+        workStartDecision: invalidateWorkStartDecision(state.workStartDecision, "content-migration")
       };
     }
     case "setAnalysisStep":
@@ -25285,7 +26109,8 @@ function caseDemoReducer(state, action) {
         ...state,
         stage: "result",
         activeAnalysisStep: 3,
-        hasRunDemo: true
+        hasRunDemo: true,
+        workStartDecision: createDefaultWorkStartDecision("content-migration")
       };
     case "showResultImmediate":
       return {
@@ -25318,6 +26143,8 @@ function caseDemoReducer(state, action) {
       return { ...state, copied: false, copyError: false };
     case "reset":
       return createInitialCaseDemoState();
+    case "setWorkStartDecision":
+      return { ...state, workStartDecision: action.value };
     default:
       return state;
   }
@@ -25560,6 +26387,20 @@ async function downloadChangeRequestPdf(opts) {
         </tr>
       </table>
 
+      ${opts.workStartDecision ? `
+      <div style="margin:0 0 28px;border-radius:18px;background:#141414;padding:22px 24px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#fc5000;line-height:14px;margin:0 0 16px;padding:0;">
+          ${escapeHtml(opts.workStartDecision.heading)}
+        </div>
+        <div style="font-size:14px;line-height:1.7;color:rgba(255,255,255,0.82);">
+          <div style="margin:0 0 8px;"><strong>${escapeHtml(opts.workStartDecision.ownerLabel)}:</strong> ${escapeHtml(opts.workStartDecision.owner)}</div>
+          <div style="margin:0 0 8px;"><strong>${escapeHtml(opts.workStartDecision.decisionLabel)}:</strong> ${escapeHtml(opts.workStartDecision.decision)}</div>
+          <div style="margin:0 0 8px;"><strong>${escapeHtml(opts.workStartDecision.rationaleLabel)}:</strong> ${escapeHtml(opts.workStartDecision.rationale)}</div>
+          <div style="margin:0 0 8px;"><strong>${escapeHtml(opts.workStartDecision.authorizationLabel)}:</strong> ${escapeHtml(opts.workStartDecision.authorization)}</div>
+          <div style="margin:0;"><strong>${escapeHtml(opts.workStartDecision.dateLabel)}:</strong> ${escapeHtml(opts.workStartDecision.date)}</div>
+        </div>
+      </div>` : ""}
+
       <div style="height:56px;margin:0 0 48px;border-radius:999px;background:#ffffff;overflow:hidden;">
         <table style="width:100%;height:56px;border-collapse:collapse;table-layout:fixed;">
           <tr>
@@ -25640,7 +26481,12 @@ async function downloadChangeRequestPdf(opts) {
       const x = (pageW - fitW) / 2;
       pdf.addImage(imgData, "PNG", x, 0, fitW, fitH);
     }
-    pdf.save(opts.fileName ?? "mileseal-change-request.pdf");
+    await savePdfWithTextLayer(
+      pdf,
+      opts.plainText,
+      opts.lang,
+      opts.fileName ?? "mileseal-change-request.pdf"
+    );
   } finally {
     host.remove();
   }
@@ -25655,6 +26501,7 @@ function MilesealCaseStudy() {
   const { lang } = useLang();
   const copy = milesealCaseCopy(lang);
   const location = useLocation();
+  const milesealPath = pathForLang("/mileseal", lang);
   const hashBootstrapped = useRef(false);
   const analysisTimers = useRef([]);
   const analyseBtnRef = useRef(null);
@@ -25676,16 +26523,32 @@ function MilesealCaseStudy() {
   const daysLabel = formatCaseBusinessDays(days, lang, false);
   const calcCostText = copy.result.calcCost.replace("{hoursLabel}", hoursLabel).replace("{rate}", rateLabel).replace("{cost}", costLabel);
   const calcDaysText = copy.result.calcDays.replace("{hoursLabel}", hoursLabel).replace("{capacity}", String(state.deliveryHoursPerDay)).replace("{daysLabel}", daysLabel);
+  const wsdLabels = workStartDecisionCopy(lang);
+  const workStartDecisionBlock = formatWorkStartDecisionBlock(state.workStartDecision, lang);
   const plainChangeRequest = useMemo(
     () => milesealCaseChangeRequestPlainText({
       copy,
       tone: state.selectedTone,
       costLabel,
       timelineLabel,
-      hoursLabel
+      hoursLabel,
+      workStartDecisionBlock
     }),
-    [copy, state.selectedTone, costLabel, timelineLabel, hoursLabel]
+    [copy, state.selectedTone, costLabel, timelineLabel, hoursLabel, workStartDecisionBlock]
   );
+  const pdfWorkStartDecision = state.workStartDecision.saved && !state.workStartDecision.stale ? {
+    heading: wsdLabels.documentHeading,
+    ownerLabel: wsdLabels.ownerLabel,
+    owner: state.workStartDecision.owner.trim(),
+    decisionLabel: wsdLabels.decisionLabel,
+    decision: decisionLabel(state.workStartDecision.decision, wsdLabels),
+    rationaleLabel: wsdLabels.rationaleLabel,
+    rationale: state.workStartDecision.rationale.trim(),
+    authorizationLabel: wsdLabels.authorizationLabel,
+    authorization: authorizationLabel(state.workStartDecision.authorization, wsdLabels),
+    dateLabel: wsdLabels.dateLabel,
+    date: state.workStartDecision.decisionDate.trim()
+  } : void 0;
   const clearAnalysisTimers = () => {
     for (const id of analysisTimers.current) window.clearTimeout(id);
     analysisTimers.current = [];
@@ -25716,6 +26579,7 @@ function MilesealCaseStudy() {
       return;
     }
     clearAnalysisTimers();
+    trackMilesealDemoStarted({ surface: "case", scenarioId: "content-migration" });
     dispatch({ type: "startAnalysisWith", rate: rateRaw, capacity: capRaw });
     requestAnimationFrame(() => scrollToId("analysis-progress"));
     const reduced = prefersReducedMotion();
@@ -25747,6 +26611,8 @@ function MilesealCaseStudy() {
   };
   const handleDownloadPdf = () => {
     void downloadChangeRequestPdf({
+      lang,
+      plainText: plainChangeRequest,
       docKind: copy.changeRequest.docKind,
       docTitle: copy.changeRequest.docTitle,
       projectLabel: copy.changeRequest.projectLabel,
@@ -25762,7 +26628,10 @@ function MilesealCaseStudy() {
       timelineLabel,
       approval: copy.changeRequest.approval,
       dateLocale: lang === "ru" ? "ru-RU" : lang === "zh" ? "zh-CN" : "en-GB",
-      fileName: "mileseal-change-request.pdf"
+      fileName: "mileseal-change-request.pdf",
+      workStartDecision: pdfWorkStartDecision
+    }).then(() => {
+      trackMilesealSampleDownloaded({ surface: "case" });
     }).catch((err) => {
       console.error("PDF download failed", err);
     });
@@ -26067,7 +26936,15 @@ function MilesealCaseStudy() {
                     /* @__PURE__ */ jsx("p", { className: "mt-4 text-[14px] font-medium text-white/65 sm:text-[15px]", children: calcCostText }),
                     /* @__PURE__ */ jsx("p", { className: "mt-1.5 text-[14px] font-medium text-white/65 sm:text-[15px]", children: calcDaysText })
                   ] })
-                ] })
+                ] }),
+                /* @__PURE__ */ jsx(
+                  WorkStartDecisionPanel,
+                  {
+                    className: "mt-8",
+                    value: state.workStartDecision,
+                    onChange: (value) => dispatch({ type: "setWorkStartDecision", value })
+                  }
+                )
               ]
             }
           ) : null
@@ -26193,8 +27070,8 @@ function MilesealCaseStudy() {
           /* @__PURE__ */ jsx("h2", { className: "font-sans text-[clamp(1.35rem,2.4vw,1.75rem)] font-semibold tracking-[-0.02em] text-white", children: copy.finalCta.title }),
           /* @__PURE__ */ jsx("p", { className: "mx-auto mt-3 max-w-[30rem] text-[15px] font-medium leading-[1.55] text-white/70 sm:text-[16px]", children: copy.finalCta.text }),
           /* @__PURE__ */ jsxs("div", { className: "mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row sm:items-center", children: [
-            /* @__PURE__ */ jsx(ArrowPillLink, { to: "/mileseal", children: copy.finalCta.primary }),
-            /* @__PURE__ */ jsx(ArrowPillLink, { to: "/mileseal?manual=1", variant: "outline", children: copy.finalCta.secondary })
+            /* @__PURE__ */ jsx(ArrowPillLink, { to: milesealPath, children: copy.finalCta.primary }),
+            /* @__PURE__ */ jsx(ArrowPillLink, { to: `${milesealPath}?manual=1`, variant: "outline", children: copy.finalCta.secondary })
           ] })
         ] }) })
       ] })
@@ -26349,7 +27226,12 @@ function ToneButton({
 }
 function MilesealCaseContentMigrationPage() {
   const { lang } = useLang();
+  const location = useLocation();
   const copy = milesealCaseCopy(lang);
+  const canonicalPath = pathForLang(location.pathname, lang);
+  useEffect(() => {
+    trackMilesealCaseOpened({ surface: "case_page" });
+  }, []);
   return /* @__PURE__ */ jsxs("div", { className: "landing-caldera min-h-screen bg-[#0a0a0a]", children: [
     /* @__PURE__ */ jsx(
       SEO,
@@ -26358,9 +27240,10 @@ function MilesealCaseContentMigrationPage() {
         description: copy.seo.description,
         ogTitle: copy.seo.ogTitle,
         ogDescription: copy.seo.ogDescription,
-        canonicalPath: "/mileseal/cases/content-migration",
+        canonicalPath,
         ogLocalePrimary: ogLocaleFor(lang),
-        hreflang: false
+        ogImage: lang === "en" ? MILESEAL_CASE_OG_IMAGE : void 0,
+        hreflang: true
       }
     ),
     /* @__PURE__ */ jsx(Header, {}),
@@ -26412,10 +27295,26 @@ function AppRoutes() {
       /* @__PURE__ */ jsx(Route, { path: "/sozdanie-sajtov", element: /* @__PURE__ */ jsx(WebsiteCreationPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/avtomatizaciya-biznesa", element: /* @__PURE__ */ jsx(AutomationBusinessPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/mileseal", element: /* @__PURE__ */ jsx(MilesealPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/en/mileseal", element: /* @__PURE__ */ jsx(MilesealPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/zh/mileseal", element: /* @__PURE__ */ jsx(MilesealPage, {}) }),
       /* @__PURE__ */ jsx(
         Route,
         {
           path: "/mileseal/cases/content-migration",
+          element: /* @__PURE__ */ jsx(MilesealCaseContentMigrationPage, {})
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        Route,
+        {
+          path: "/en/mileseal/cases/content-migration",
+          element: /* @__PURE__ */ jsx(MilesealCaseContentMigrationPage, {})
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        Route,
+        {
+          path: "/zh/mileseal/cases/content-migration",
           element: /* @__PURE__ */ jsx(MilesealCaseContentMigrationPage, {})
         }
       ),

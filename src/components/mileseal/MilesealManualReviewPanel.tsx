@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import {
   ArrowRight,
   Building2,
@@ -12,8 +12,13 @@ import {
 } from "lucide-react";
 import AutoGrowTextarea from "../ui/AutoGrowTextarea";
 import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
-import { buildLeadMeta, submitLead } from "../../lib/leads";
-import { trackLeadFormSubmit, trackLeadFormSuccess } from "../../lib/analytics";
+import { submitMilesealLead, type MilesealLeadVariant } from "../../lib/milesealLeadSubmit";
+import {
+  trackLeadFormSubmit,
+  trackLeadFormSuccess,
+  trackMilesealAuditRequested,
+  trackMilesealManualReviewSubmitted,
+} from "../../lib/analytics";
 import { useLang } from "../../i18n/LangProvider";
 import { milesealCopy } from "../../i18n/milesealCopy";
 import { milesealWorkspaceCopy } from "../../i18n/milesealWorkspaceCopy";
@@ -30,18 +35,42 @@ type Step = "welcome" | "request" | "scope" | "contact" | "review";
 
 type Props = {
   prefill?: ScopeFormPrefill | null;
+  variant?: MilesealLeadVariant;
+  initialStep?: Step;
   onClose: () => void;
+  returnFocusRef?: React.RefObject<HTMLElement | null>;
 };
 
-export default function MilesealManualReviewPanel({ prefill, onClose }: Props) {
+export default function MilesealManualReviewPanel({
+  prefill,
+  variant = "review",
+  initialStep = "welcome",
+  onClose,
+  returnFocusRef,
+}: Props) {
   const { lang } = useLang();
   const cta = milesealCopy(lang).cta;
   const ws = milesealWorkspaceCopy(lang);
+  const isAudit = variant === "audit";
+  const ctaSource = isAudit ? "mileseal_scope_leakage_audit" : "mileseal_scope_review";
   const formId = useId();
   const videoRef = useRef<HTMLVideoElement>(null);
   useKeepVideoPlaying(videoRef);
 
-  const [step, setStep] = useState<Step>("welcome");
+  const closePanel = useCallback(() => {
+    onClose();
+    requestAnimationFrame(() => returnFocusRef?.current?.focus({ preventScroll: true }));
+  }, [onClose, returnFocusRef]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closePanel();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [closePanel]);
+
+  const [step, setStep] = useState<Step>(initialStep);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [agency, setAgency] = useState("");
@@ -51,6 +80,14 @@ export default function MilesealManualReviewPanel({ prefill, onClose }: Props) {
   const [honeypot, setHoneypot] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    if (step !== "request") return;
+    const id = `${formId}-request`;
+    requestAnimationFrame(() => {
+      document.getElementById(id)?.focus({ preventScroll: true });
+    });
+  }, [step, formId]);
 
   const privacyHref =
     lang === "ru"
@@ -98,9 +135,12 @@ export default function MilesealManualReviewPanel({ prefill, onClose }: Props) {
             stepOf: (n: number, total: number) => `第 ${n} / ${total} 步`,
           }
         : {
-            welcomeTitle: "Let’s walk through your case",
-            welcomeText:
-              "I’ll ask a few short questions — no fake AI verdict. Then the TIVONIX team will compare the request to the agreed scope by hand.",
+            welcomeTitle: isAudit
+              ? "Request the Scope Leakage Audit"
+              : "Let’s walk through your case",
+            welcomeText: isAudit
+              ? "Share one recent scope-creep incident and your agreed scope. We’ll confirm the $350 audit scope and reply within one business day."
+              : "I’ll ask a few short questions — no fake AI verdict. Then the TIVONIX team will compare the request to the agreed scope by hand.",
             start: "Start",
             qRequest: "What did the client ask for?",
             qRequestHint: "Paste the new request as it arrived — anonymised is fine.",
@@ -204,55 +244,28 @@ export default function MilesealManualReviewPanel({ prefill, onClose }: Props) {
     }
 
     setStatus("loading");
-    trackLeadFormSubmit("mileseal_scope_review");
+    trackLeadFormSubmit(ctaSource);
 
-    const labels =
-      lang === "ru"
-        ? {
-            agency: "Агентство",
-            scope: "Согласованный объём",
-            request: "Запрос клиента",
-            draft: "Черновик change request",
-          }
-        : lang === "zh"
-          ? {
-              agency: "代理商",
-              scope: "已约定范围",
-              request: "客户请求",
-              draft: "变更请求草稿",
-            }
-          : {
-              agency: "Agency",
-              scope: "Agreed scope",
-              request: "Recent client request",
-              draft: "Demo change request draft",
-            };
-
-    const taskParts = [
-      "[MileSeal human scope review]",
-      agency.trim() ? `${labels.agency}: ${agency.trim()}` : null,
-      "",
-      `${labels.scope}:`,
-      agreedScope.trim(),
-      "",
-      `${labels.request}:`,
-      clientRequest.trim(),
-      prefill?.changeRequest ? `\n${labels.draft}:\n${prefill.changeRequest}` : null,
-    ].filter((line): line is string => line !== null);
-
-    const result = await submitLead({
-      name: name.trim() || agency.trim() || "MileSeal",
-      contact: email.trim(),
-      task: taskParts.join("\n"),
-      budget: "unknown",
-      consent: true,
-      company_fax_url: honeypot,
+    const result = await submitMilesealLead({
       lang,
-      meta: buildLeadMeta("mileseal_scope_review"),
+      variant,
+      name,
+      email,
+      agency,
+      clientRequest,
+      agreedScope,
+      consent,
+      honeypot,
+      prefill,
     });
 
     if (result.ok) {
-      trackLeadFormSuccess("mileseal_scope_review");
+      trackLeadFormSuccess(ctaSource);
+      if (isAudit) {
+        trackMilesealAuditRequested({ offer: "scope_leakage_audit", amount: 350, currency: "USD" });
+      } else {
+        trackMilesealManualReviewSubmitted({ variant: "review" });
+      }
       setStatus("success");
       return;
     }
@@ -272,7 +285,7 @@ export default function MilesealManualReviewPanel({ prefill, onClose }: Props) {
         type="button"
         className="absolute inset-0 bg-black/40 backdrop-blur-md"
         aria-label={ws.closeArtifact}
-        onClick={onClose}
+        onClick={closePanel}
       />
 
       <div
@@ -302,7 +315,7 @@ export default function MilesealManualReviewPanel({ prefill, onClose }: Props) {
 
           <button
             type="button"
-            onClick={onClose}
+            onClick={closePanel}
             className="absolute right-3 top-3 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-md transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
             aria-label={ws.closeArtifact}
           >
@@ -329,10 +342,12 @@ export default function MilesealManualReviewPanel({ prefill, onClose }: Props) {
               id="mileseal-manual-title"
               className="text-[clamp(1.2rem,3vw,1.45rem)] font-semibold tracking-[-0.03em] text-white"
             >
-              {ws.manualTitle}
+              {isAudit ? "Scope Leakage Audit" : ws.manualTitle}
             </h2>
             <p className="mt-1 max-w-[28rem] text-[13px] font-medium leading-snug text-white/70">
-              {ws.manualText}
+              {isAudit
+                ? "Structured review of where unpaid scope enters your delivery workflow."
+                : ws.manualText}
             </p>
           </div>
         </div>

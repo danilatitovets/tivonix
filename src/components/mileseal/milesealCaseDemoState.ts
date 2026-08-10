@@ -1,8 +1,13 @@
 import type { CaseTone } from "../../i18n/milesealCaseCopy";
+import {
+  createDefaultWorkStartDecision,
+  invalidateWorkStartDecision,
+  type WorkStartDecisionState,
+} from "../../lib/workStartDecision.ts";
 
 export type DemoStage = "ready" | "analyzing" | "result";
 
-export const CASE_DEMO_DEFAULT_RATE = 70;
+export const CASE_DEMO_DEFAULT_RATE = 80;
 export const CASE_DEMO_DEFAULT_CAPACITY = 8;
 
 export type CaseDemoState = {
@@ -18,6 +23,7 @@ export type CaseDemoState = {
   copyError: boolean;
   activeAnalysisStep: number;
   hasRunDemo: boolean;
+  workStartDecision: WorkStartDecisionState;
 };
 
 export type CaseDemoAction =
@@ -35,7 +41,8 @@ export type CaseDemoAction =
   | { type: "copied" }
   | { type: "copyFailed" }
   | { type: "clearCopyStatus" }
-  | { type: "reset" };
+  | { type: "reset" }
+  | { type: "setWorkStartDecision"; value: WorkStartDecisionState };
 
 function clampRate(n: number): number {
   return Math.min(500, Math.max(10, n));
@@ -68,6 +75,7 @@ export function createInitialCaseDemoState(opts?: { startInResult?: boolean }): 
     copyError: false,
     activeAnalysisStep: -1,
     hasRunDemo: startInResult,
+    workStartDecision: createDefaultWorkStartDecision("content-migration"),
   };
 }
 
@@ -124,6 +132,7 @@ export function caseDemoReducer(state: CaseDemoState, action: CaseDemoAction): C
         hasRunDemo: true,
         copied: false,
         copyError: false,
+        workStartDecision: invalidateWorkStartDecision(state.workStartDecision, "content-migration"),
       };
     case "startAnalysisWith": {
       if (state.stage === "analyzing") return state;
@@ -142,6 +151,7 @@ export function caseDemoReducer(state: CaseDemoState, action: CaseDemoAction): C
         hasRunDemo: true,
         copied: false,
         copyError: false,
+        workStartDecision: invalidateWorkStartDecision(state.workStartDecision, "content-migration"),
       };
     }
     case "setAnalysisStep":
@@ -152,6 +162,7 @@ export function caseDemoReducer(state: CaseDemoState, action: CaseDemoAction): C
         stage: "result",
         activeAnalysisStep: 3,
         hasRunDemo: true,
+        workStartDecision: createDefaultWorkStartDecision("content-migration"),
       };
     case "showResultImmediate":
       return {
@@ -184,6 +195,8 @@ export function caseDemoReducer(state: CaseDemoState, action: CaseDemoAction): C
       return { ...state, copied: false, copyError: false };
     case "reset":
       return createInitialCaseDemoState();
+    case "setWorkStartDecision":
+      return { ...state, workStartDecision: action.value };
     default:
       return state;
   }

@@ -73,9 +73,10 @@ export type MilesealCopy = {
 
 const EXAMPLES_EN: MilesealDemoExample[] = [
   {
-    id: "migration",
-    label: "Content migration",
-    scope: "Homepage redesign and one revision round. Content migration is not included.",
+    id: "homepage-authors",
+    label: "Homepage + author pages",
+    scope:
+      "Homepage redesign and one revision round for a marketing site. Article migration and author pages are excluded. Workspace demo only — not the 56-hour Content Migration case study.",
     request: "Please also migrate 84 articles and create individual author pages.",
     result: {
       status: "Out of scope",
@@ -158,9 +159,10 @@ const EXAMPLES_EN: MilesealDemoExample[] = [
 
 const EXAMPLES_RU: MilesealDemoExample[] = [
   {
-    id: "migration",
-    label: "Миграция контента",
-    scope: "Редизайн главной и один раунд правок. Миграция контента не входит в объём.",
+    id: "homepage-authors",
+    label: "Главная + страницы авторов",
+    scope:
+      "Редизайн главной и один раунд правок для маркетингового сайта. Миграция статей и страницы авторов не входят в объём. Только демо workspace — не кейс Content Migration на 56 часов.",
     request: "Пожалуйста, ещё перенесите 84 статьи и сделайте отдельные страницы авторов.",
     result: {
       status: "Вне объёма",
@@ -243,9 +245,10 @@ const EXAMPLES_RU: MilesealDemoExample[] = [
 
 const EXAMPLES_ZH: MilesealDemoExample[] = [
   {
-    id: "migration",
-    label: "内容迁移",
-    scope: "首页改版与一轮修改。内容迁移不包含在范围内。",
+    id: "homepage-authors",
+    label: "首页 + 作者页",
+    scope:
+      "营销网站首页改版与一个修订轮次。文章迁移与作者页不在范围内。仅为 workspace 演示——不是 56 小时的 Content Migration 案例。",
     request: "请再迁移 84 篇文章，并创建独立作者页。",
     result: {
       status: "超出范围",
@@ -410,9 +413,9 @@ const COPY: Record<Lang, MilesealCopy> = {
       send: "Send for review",
       sending: "Sending…",
       successBadge: "Sent",
-      successTitle: "We’ll review your case",
+      successTitle: "Request received",
       successText:
-        "Thanks — your scope review request is in. We’ll get back with a clear read on whether the work was unapproved and how MileSeal would handle it.",
+        "Your request has been received. We’ll return the review within 24 hours.",
       errEmail: "Please enter a valid work email.",
       errRequest: "Please paste a recent client request.",
       errScope: "Please paste the agreed project scope.",
@@ -422,7 +425,7 @@ const COPY: Record<Lang, MilesealCopy> = {
     },
     caseTeaser: {
       eyebrow: "DEMONSTRATION CASE",
-      title: "See how a “small” content request became 40 additional hours",
+      title: "See how a “small” content request became 56 additional hours",
       description:
         "Follow the original scope, the later client request, MileSeal’s decision and the resulting change request.",
       cta: "View the full case",
@@ -530,7 +533,7 @@ const COPY: Record<Lang, MilesealCopy> = {
     },
     caseTeaser: {
       eyebrow: "ДЕМОНСТРАЦИОННЫЙ КЕЙС",
-      title: "Как «небольшой» запрос на контент превратился в 40 дополнительных часов",
+      title: "Как «небольшой» запрос на контент превратился в 56 дополнительных часов",
       description:
         "Посмотрите исходный объём, поздний запрос клиента, решение MileSeal и готовый запрос на изменение.",
       cta: "Смотреть полный кейс",
@@ -636,7 +639,7 @@ const COPY: Record<Lang, MilesealCopy> = {
     },
     caseTeaser: {
       eyebrow: "演示案例",
-      title: "看看一个“很小”的内容请求如何变成额外 40 小时",
+      title: "看看一个“很小”的内容请求如何变成额外 56 小时",
       description: "跟随最初范围、后续客户请求、MileSeal 判定以及最终变更请求。",
       cta: "查看完整案例",
     },

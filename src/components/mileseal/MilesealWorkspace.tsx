@@ -37,12 +37,22 @@ import {
   demoReducer,
   type DemoTone,
 } from "./milesealDemoState";
-import MilesealManualReviewPanel from "./MilesealManualReviewPanel";
+import MilesealManualReviewPanel, {
+  type MilesealLeadVariant,
+} from "./MilesealManualReviewPanel";
+import WorkStartDecisionPanel from "./WorkStartDecisionPanel";
 import type { ScopeFormPrefill } from "../../data/milesealDemo";
 import { useMinWidth } from "../../hooks/useMinWidth";
 import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
 import { pathForLang } from "../../lib/localePaths";
+import { appendWorkStartDecisionToText } from "../../lib/workStartDecision";
+import { savePdfWithTextLayer } from "../../lib/milesealPdf";
 import { t3 } from "../../i18n/pick";
+import {
+  trackLeadFormOpen,
+  trackMilesealDemoStarted,
+  trackMilesealSampleDownloaded,
+} from "../../lib/analytics";
 
 const HERO_VIDEO = "/images/hero-bg.mp4";
 const HERO_POSTER = "/images/hero-bg-poster.webp";
@@ -67,8 +77,12 @@ type Props = {
   onRequestManualReview: (prefill?: ScopeFormPrefill | null) => void;
   formOpen: boolean;
   formKey: number;
+  formVariant?: MilesealLeadVariant;
   prefill: ScopeFormPrefill | null;
   onCloseForm: () => void;
+  layout?: "fullscreen" | "section";
+  formOpenerRef?: React.RefObject<HTMLElement | null>;
+  formInitialStep?: "welcome" | "request" | "scope" | "contact" | "review";
 };
 
 const focusRing =
@@ -96,7 +110,7 @@ const primaryBtn = cx(
   "disabled:pointer-events-none disabled:opacity-45"
 );
 
-async function downloadChangeRequestPdf(text: string) {
+async function downloadChangeRequestPdf(text: string, lang: Lang) {
   const [{ jsPDF }, html2canvas] = await Promise.all([
     import("jspdf"),
     import("html2canvas"),
@@ -178,7 +192,7 @@ async function downloadChangeRequestPdf(text: string) {
       pageIndex += 1;
     }
 
-    doc.save("mileseal-change-request.pdf");
+    await savePdfWithTextLayer(doc, text, lang, "mileseal-change-request.pdf");
   } finally {
     host.remove();
   }
@@ -188,14 +202,19 @@ export default function MilesealWorkspace({
   onRequestManualReview,
   formOpen,
   formKey,
+  formVariant = "review",
   prefill,
   onCloseForm,
+  layout = "fullscreen",
+  formOpenerRef,
+  formInitialStep,
 }: Props) {
   const { lang, setLang } = useLang();
   const navigate = useNavigate();
   const location = useLocation();
   const copy = milesealCopy(lang);
   const ws = milesealWorkspaceCopy(lang);
+  const caseStudyPath = pathForLang("/mileseal/cases/content-migration", lang);
   const examples = copy.examples;
   const firstExample = examples[0];
 
@@ -231,7 +250,11 @@ export default function MilesealWorkspace({
   const isPreset = state.mode === "preset";
   const showResult = isPreset && state.result !== null;
   const crText = state.result
-    ? changeRequestForTone(state.result, state.activeTone)
+    ? appendWorkStartDecisionToText(
+        changeRequestForTone(state.result, state.activeTone),
+        state.workStartDecision,
+        lang
+      )
     : "";
 
   // Sync preset copy when language changes
@@ -350,6 +373,7 @@ export default function MilesealWorkspace({
 
   const startAnalyze = () => {
     if (!isPreset || state.analyzing) return;
+    trackMilesealDemoStarted({ scenarioId: selectedExample.id, surface: "workspace" });
     dispatch({ type: "analyzeStart" });
   };
 
@@ -410,7 +434,8 @@ export default function MilesealWorkspace({
     setPdfBusy(true);
     setPdfError(false);
     try {
-      await downloadChangeRequestPdf(crText);
+      await downloadChangeRequestPdf(crText, lang);
+      trackMilesealSampleDownloaded({ surface: "workspace" });
     } catch (err) {
       console.error("PDF download failed", err);
       setPdfError(true);
@@ -421,6 +446,7 @@ export default function MilesealWorkspace({
 
   const openManual = (nextPrefill?: ScopeFormPrefill | null) => {
     dispatch({ type: "enterManualReview" });
+    trackLeadFormOpen("mileseal_scope_review");
     onRequestManualReview(nextPrefill ?? { scope: state.scope, request: state.request });
   };
 
@@ -430,7 +456,7 @@ export default function MilesealWorkspace({
 
     const matchingExample = examples.find((e) => e.request.trim() === text);
     if (matchingExample) {
-      // Preset-only analysis: exact demo request text → fake AI result
+      trackMilesealDemoStarted({ scenarioId: matchingExample.id });
       dispatch({ type: "selectScenario", example: matchingExample });
       dispatch({ type: "analyzeStart" });
       return;
@@ -631,7 +657,7 @@ export default function MilesealWorkspace({
           ) : null}
         </button>
         <Link
-          to="/mileseal/cases/content-migration"
+          to={caseStudyPath}
           className={cx(
             softBtn,
             "w-full justify-start gap-3 px-2.5 no-underline",
@@ -1100,10 +1126,10 @@ export default function MilesealWorkspace({
           {isPreset && state.sessionStarted && !state.result && !state.analyzing ? (
             <button
               type="button"
-              className={cx(primaryBtn, "mt-4")}
-              onClick={startAnalyze}
+              className={cx(softBtn, "mt-4")}
+              onClick={() => handleSelectScenario(firstExample)}
             >
-              {ws.analyseRequest}
+              {ws.artifactEmptyAction}
               <MsIconChevronRight className="h-4 w-4" />
             </button>
           ) : (
@@ -1163,7 +1189,14 @@ export default function MilesealWorkspace({
   );
 
   return (
-    <div className="flex h-[100dvh] min-h-[100dvh] overflow-hidden bg-[#f4f3f1] text-[#141414]">
+    <div
+      className={cx(
+        "flex overflow-hidden bg-[#f4f3f1] text-[#141414]",
+        layout === "section"
+          ? "min-h-[100dvh] h-[min(100dvh,920px)]"
+          : "h-[100dvh] min-h-[100dvh]"
+      )}
+    >
       <a
         href="#mileseal-main"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-xl focus:bg-white focus:px-4 focus:py-2.5 focus:text-[13px] focus:font-semibold focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#fc5000]/40"
@@ -1298,6 +1331,7 @@ export default function MilesealWorkspace({
           tabIndex={-1}
         >
           <div className="mx-auto w-full max-w-[820px] flex-1 overflow-y-auto px-4 pb-4 pt-5 no-scrollbar sm:px-6">
+            <div id="scope-review" className="scroll-mt-24" tabIndex={-1} aria-hidden />
             {!state.sessionStarted ? (
               <div className="flex min-h-[min(70dvh,36rem)] flex-col items-center justify-center text-center">
                 <img
@@ -1569,6 +1603,14 @@ export default function MilesealWorkspace({
                           </Disclosure>
                         </div>
 
+                        <WorkStartDecisionPanel
+                          className="mt-5"
+                          value={state.workStartDecision}
+                          onChange={(value) =>
+                            dispatch({ type: "setWorkStartDecision", value })
+                          }
+                        />
+
                         <div className="mt-5 flex flex-wrap gap-2">
                           <button
                             type="button"
@@ -1641,19 +1683,19 @@ export default function MilesealWorkspace({
       {/* Manual review panel — conversational white glass */}
       {formOpen ? (
         <MilesealManualReviewPanel
-          key={`${formKey}-${lang}`}
+          key={`${formKey}-${lang}-${formVariant}`}
           prefill={prefill}
+          variant={formVariant}
+          initialStep={formInitialStep}
           onClose={onCloseForm}
+          returnFocusRef={formOpenerRef}
         />
       ) : null}
 
       {/* Always present for SEO / prerender crawlers */}
       <nav className="sr-only" aria-label="MileSeal">
-        <p>
-          MileSeal AI Scope Change Workspace — compare an agreed project scope with a new client
-          request and generate a change request.
-        </p>
-        <Link to="/mileseal/cases/content-migration">{ws.openCaseStudy}</Link>
+        <p>{ws.seoNavDescription}</p>
+        <Link to={caseStudyPath}>{ws.openCaseStudy}</Link>
       </nav>
     </div>
   );
@@ -1725,7 +1767,7 @@ function ScenarioChatIcon({ id, active }: { id: string; active?: boolean }) {
       {/* Tail */}
       <path d="M9 22 L7 26 L13 21.5 Z" fill="#D63A00" opacity="0.9" />
 
-      {id === "migration" ? (
+      {id === "homepage-authors" ? (
         <>
           <path d="M10 11 H18" stroke="#FFF8F0" strokeWidth="1.6" strokeLinecap="round" opacity="0.95" />
           <path d="M10 14.5 H16" stroke="#FFD7B0" strokeWidth="1.6" strokeLinecap="round" opacity="0.85" />
@@ -1751,7 +1793,7 @@ function ScenarioChatIcon({ id, active }: { id: string; active?: boolean }) {
           <path d="M17.2 11.2 L19 9.4" stroke="#FFE8D2" strokeWidth="1.4" strokeLinecap="round" />
         </>
       ) : null}
-      {id !== "migration" && id !== "integrations" && id !== "revisions" ? (
+      {id !== "homepage-authors" && id !== "integrations" && id !== "revisions" ? (
         <>
           <path d="M10 12 H18" stroke="#FFF8F0" strokeWidth="1.6" strokeLinecap="round" />
           <path d="M10 16 H15" stroke="#FFD7B0" strokeWidth="1.6" strokeLinecap="round" />

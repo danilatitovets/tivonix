@@ -101,8 +101,8 @@ export type MilesealCaseCopy = {
   };
 };
 
-export const CASE_ADDITIONAL_HOURS = 40;
-export const CASE_DEFAULT_RATE = 70;
+export const CASE_ADDITIONAL_HOURS = 56;
+export const CASE_DEFAULT_RATE = 80;
 export const CASE_DEFAULT_CAPACITY = 8;
 export const CASE_RATE_MIN = 10;
 export const CASE_RATE_MAX = 500;
@@ -159,7 +159,7 @@ const COPY: Record<Lang, MilesealCaseCopy> = {
     seo: {
       title: "Content Migration Scope Creep Demo | MileSeal",
       description:
-        "See how MileSeal compares a fixed-price project scope with a later client request, calculates 40 additional hours and prepares a client-ready change request.",
+        "See how MileSeal compares a fixed-price project scope with a later client request, calculates 56 additional hours and prepares a client-ready change request.",
       ogTitle: "Is this client request inside the agreed scope?",
       ogDescription:
         "An interactive MileSeal demonstration: compare agreed scope with a later request and generate a client-ready change request.",
@@ -183,7 +183,7 @@ const COPY: Record<Lang, MilesealCaseCopy> = {
       requestLabel: "New client request",
       docTitle: "Corporate Website Redesign",
       meta: [
-        { label: "Fixed budget", value: "£15,000" },
+        { label: "Fixed budget", value: "£18,000" },
         { label: "Timeline", value: "6 weeks" },
         { label: "Included", value: "Migration of 20 priority pages" },
         { label: "Excluded", value: "Existing blog archive" },
@@ -232,11 +232,11 @@ const COPY: Record<Lang, MilesealCaseCopy> = {
       ],
       breakdownTitle: "Effort breakdown",
       breakdown: [
-        { label: "Migration of 240 posts", hours: 24 },
-        { label: "Images and metadata", hours: 5 },
-        { label: "Legacy content audit", hours: 4 },
-        { label: "Quality assurance", hours: 4 },
-        { label: "URL mapping and redirects", hours: 3 },
+        { label: "Migration and field mapping", hours: 24 },
+        { label: "Images, authors, categories and metadata", hours: 12 },
+        { label: "Legacy content audit", hours: 6 },
+        { label: "Redirects", hours: 6 },
+        { label: "QA and rework", hours: 8 },
       ],
       totalLabel: "Total",
       calcCost: "{hoursLabel} × {rate}/hour = {cost}",
@@ -292,7 +292,7 @@ const COPY: Record<Lang, MilesealCaseCopy> = {
     seo: {
       title: "Демо расползания объёма: миграция контента | MileSeal",
       description:
-        "Как MileSeal сравнивает фиксированный объём проекта с новым запросом клиента, считает 40 дополнительных часов и готовит запрос на изменение.",
+        "Как MileSeal сравнивает фиксированный объём проекта с новым запросом клиента, считает 56 дополнительных часов и готовит запрос на изменение.",
       ogTitle: "Входит ли новый запрос клиента в согласованный объём?",
       ogDescription:
         "Интерактивная демонстрация MileSeal: сравните согласованный объём с новым запросом и получите готовый запрос на изменение.",
@@ -316,7 +316,7 @@ const COPY: Record<Lang, MilesealCaseCopy> = {
       requestLabel: "Новый запрос клиента",
       docTitle: "Редизайн корпоративного сайта",
       meta: [
-        { label: "Фиксированный бюджет", value: "£15 000" },
+        { label: "Фиксированный бюджет", value: "£18 000" },
         { label: "Срок", value: "6 недель" },
         { label: "Включено", value: "Миграция 20 приоритетных страниц" },
         { label: "Исключено", value: "Существующий архив блога" },
@@ -365,11 +365,11 @@ const COPY: Record<Lang, MilesealCaseCopy> = {
       ],
       breakdownTitle: "Расчёт трудозатрат",
       breakdown: [
-        { label: "Миграция 240 постов", hours: 24 },
-        { label: "Изображения и метаданные", hours: 5 },
-        { label: "Аудит архивного контента", hours: 4 },
-        { label: "Проверка качества", hours: 4 },
-        { label: "Карта URL и редиректы", hours: 3 },
+        { label: "Миграция и маппинг полей", hours: 24 },
+        { label: "Изображения, авторы, категории и метаданные", hours: 12 },
+        { label: "Аудит архивного контента", hours: 6 },
+        { label: "Редиректы", hours: 6 },
+        { label: "QA и доработки", hours: 8 },
       ],
       totalLabel: "Итого",
       calcCost: "{hoursLabel} × {rate}/час = {cost}",
@@ -425,7 +425,7 @@ const COPY: Record<Lang, MilesealCaseCopy> = {
     seo: {
       title: "内容迁移范围蔓延演示 | MileSeal",
       description:
-        "查看 MileSeal 如何对照固定价格项目范围与后续客户请求，计算额外 40 小时，并生成可发给客户的变更请求。",
+        "查看 MileSeal 如何对照固定价格项目范围与后续客户请求，计算额外 56 小时，并生成可发给客户的变更请求。",
       ogTitle: "这项客户请求是否在约定范围内？",
       ogDescription: "交互式 MileSeal 演示：对照约定范围与后续请求，生成可发给客户的变更请求。",
     },
@@ -447,7 +447,7 @@ const COPY: Record<Lang, MilesealCaseCopy> = {
       requestLabel: "新的客户请求",
       docTitle: "企业官网改版",
       meta: [
-        { label: "固定预算", value: "£15,000" },
+        { label: "固定预算", value: "£18,000" },
         { label: "工期", value: "6 周" },
         { label: "已包含", value: "迁移 20 个优先页面" },
         { label: "已排除", value: "现有博客存档" },
@@ -494,11 +494,11 @@ const COPY: Record<Lang, MilesealCaseCopy> = {
       ],
       breakdownTitle: "工时测算",
       breakdown: [
-        { label: "迁移 240 篇文章", hours: 24 },
-        { label: "图片与元数据", hours: 5 },
-        { label: "遗留内容审计", hours: 4 },
-        { label: "质量保障", hours: 4 },
-        { label: "URL 映射与重定向", hours: 3 },
+        { label: "迁移与字段映射", hours: 24 },
+        { label: "图片、作者、分类与元数据", hours: 12 },
+        { label: "遗留内容审计", hours: 6 },
+        { label: "重定向", hours: 6 },
+        { label: "QA 与返工", hours: 8 },
       ],
       totalLabel: "合计",
       calcCost: "{hoursLabel} × {rate}/小时 = {cost}",
@@ -562,10 +562,11 @@ export function milesealCaseChangeRequestPlainText(params: {
   costLabel: string;
   timelineLabel: string;
   hoursLabel: string;
+  workStartDecisionBlock?: string;
 }): string {
-  const { copy, tone, costLabel, timelineLabel, hoursLabel } = params;
+  const { copy, tone, costLabel, timelineLabel, hoursLabel, workStartDecisionBlock } = params;
   const cr = copy.changeRequest;
-  return [
+  const lines = [
     cr.docKind.toUpperCase(),
     cr.docTitle,
     "",
@@ -578,6 +579,10 @@ export function milesealCaseChangeRequestPlainText(params: {
     `${cr.costLabel}: ${costLabel}`,
     `${cr.timelineLabel}: ${timelineLabel}`,
     "",
-    cr.approval,
-  ].join("\n");
+  ];
+  if (workStartDecisionBlock?.trim()) {
+    lines.push(workStartDecisionBlock.trim(), "");
+  }
+  lines.push(cr.approval);
+  return lines.join("\n");
 }

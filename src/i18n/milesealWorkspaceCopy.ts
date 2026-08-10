@@ -68,6 +68,7 @@ export type MilesealWorkspaceCopy = {
   demoAnalysisLabel: string;
   manualReviewLabel: string;
   skipToContent: string;
+  seoNavDescription: string;
   statusOutside: string;
 };
 
@@ -161,6 +162,8 @@ const COPY: Record<Lang, MilesealWorkspaceCopy> = {
     demoAnalysisLabel: "Demo analysis",
     manualReviewLabel: "Manual review",
     skipToContent: "Skip to content",
+    seoNavDescription:
+      "MileSeal AI Scope Change Workspace — compare an agreed project scope with a new client request and generate a change request.",
     statusOutside: "Outside scope",
   },
   ru: {
@@ -252,6 +255,8 @@ const COPY: Record<Lang, MilesealWorkspaceCopy> = {
     demoAnalysisLabel: "Демо-анализ",
     manualReviewLabel: "Ручной разбор",
     skipToContent: "Перейти к содержимому",
+    seoNavDescription:
+      "MileSeal — рабочее пространство для изменений объёма: сравните согласованный scope с новым запросом клиента и сформируйте change request.",
     statusOutside: "Вне объёма",
   },
   zh: {
@@ -340,6 +345,8 @@ const COPY: Record<Lang, MilesealWorkspaceCopy> = {
     demoAnalysisLabel: "演示分析",
     manualReviewLabel: "人工复核",
     skipToContent: "跳到主要内容",
+    seoNavDescription:
+      "MileSeal 范围变更工作区 — 对照已约定项目范围与新客户请求，并生成变更请求。",
     statusOutside: "超出范围",
   },
 };

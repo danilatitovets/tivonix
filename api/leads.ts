@@ -157,6 +157,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const planId = PLAN_IDS.has(planIdRaw) ? planIdRaw : undefined;
     const planName = planId ? str(body.planName ?? metaIn.planName, 80) || undefined : undefined;
 
+    const offer = str(metaIn.offer, 80) || undefined;
+    const amountRaw = metaIn.amount;
+    const amount =
+      typeof amountRaw === "number" && Number.isFinite(amountRaw)
+        ? amountRaw
+        : typeof amountRaw === "string" && amountRaw.trim()
+          ? Number(amountRaw)
+          : undefined;
+    const currency = str(metaIn.currency, 8) || undefined;
+
     const requestId = createLeadRequestId();
 
     const lead: LeadPayload = {
@@ -179,6 +189,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         datetime: str(metaIn.datetime, 64) || new Date().toISOString(),
         planId,
         planName,
+        offer,
+        amount: typeof amount === "number" && Number.isFinite(amount) ? amount : undefined,
+        currency,
       },
     };
 

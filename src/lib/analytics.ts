@@ -24,6 +24,7 @@ export type CtaSource =
   | "service_automation"
   | "mileseal_scope"
   | "mileseal_scope_review"
+  | "mileseal_scope_leakage_audit"
   | "direction_leads"
   | "direction_product"
   | "founder"
@@ -77,13 +78,34 @@ function scrub(props?: AnalyticsProps): AnalyticsProps | undefined {
   return out;
 }
 
+type AnalyticsTestEvent = { name: string; props?: AnalyticsProps };
+let testSink: AnalyticsTestEvent[] | null = null;
+const milesealOnceKeys = new Set<string>();
+
 export function trackEvent(
   name: HotjarEventName | string,
   props?: AnalyticsProps
 ): void {
   const safe = scrub(props);
+  if (testSink) {
+    testSink.push({ name, props: safe });
+  }
   trackHotjarEvent(name as HotjarEventName);
   trackPartnersEvent(name, safe);
+}
+
+/** Test-only sink for MileSeal analytics assertions. */
+export function __setAnalyticsTestSink(enabled: boolean): void {
+  testSink = enabled ? [] : null;
+}
+
+export function __readAnalyticsTestSink(): AnalyticsTestEvent[] {
+  return testSink ? [...testSink] : [];
+}
+
+export function __resetAnalyticsTestSink(): void {
+  if (testSink) testSink.length = 0;
+  milesealOnceKeys.clear();
 }
 
 export function trackCtaPrimaryClick(source: CtaSource): void {
@@ -144,4 +166,39 @@ export function trackProjectView(slug: string): void {
 
 export function trackPricingView(): void {
   trackEvent("pricing_view");
+}
+
+/** Fire a MileSeal analytics event at most once per page session. */
+export function trackMilesealOnce(
+  key: string,
+  name: string,
+  props?: AnalyticsProps
+): void {
+  if (milesealOnceKeys.has(key)) return;
+  milesealOnceKeys.add(key);
+  trackEvent(name, props);
+}
+
+export function trackMilesealDemoStarted(props?: AnalyticsProps): void {
+  trackMilesealOnce("mileseal_demo_started", "mileseal_demo_started", props);
+}
+
+export function trackMilesealCaseOpened(props?: AnalyticsProps): void {
+  trackMilesealOnce("mileseal_case_opened", "mileseal_case_opened", props);
+}
+
+export function trackMilesealManualReviewOpened(props?: AnalyticsProps): void {
+  trackEvent("mileseal_manual_review_opened", props);
+}
+
+export function trackMilesealManualReviewSubmitted(props?: AnalyticsProps): void {
+  trackEvent("mileseal_manual_review_submitted", props);
+}
+
+export function trackMilesealSampleDownloaded(props?: AnalyticsProps): void {
+  trackEvent("mileseal_sample_downloaded", props);
+}
+
+export function trackMilesealAuditRequested(props?: AnalyticsProps): void {
+  trackEvent("mileseal_audit_requested", props);
 }

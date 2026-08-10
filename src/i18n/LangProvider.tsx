@@ -696,7 +696,9 @@ export function LangPathSync() {
     else if (clean === "/zh" || clean.startsWith("/zh/")) next = "zh";
     else if (clean === "/ru" || clean.startsWith("/ru/")) next = "ru";
     else if (clean === "/partners") next = "ru";
-    else if (
+    else if (clean === "/mileseal" || clean.startsWith("/mileseal/")) {
+      next = "ru";
+    } else if (
       clean === "/" ||
       clean === "/plans" ||
       clean === "/about" ||

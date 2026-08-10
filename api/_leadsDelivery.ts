@@ -26,6 +26,9 @@ export type LeadPayload = {
     datetime: string;
     planId?: string;
     planName?: string;
+    offer?: string;
+    amount?: number;
+    currency?: string;
   };
 };
 
@@ -79,6 +82,7 @@ function sourceLabel(source: string): string {
     service_automation: "Автоматизация",
     mileseal_scope: "MileSeal — scope review",
     mileseal_scope_review: "MileSeal — human scope review",
+    mileseal_scope_leakage_audit: "MileSeal — Scope Leakage Audit ($350)",
     "release-audit": "Тест",
     unknown: "Не указано",
   };
@@ -110,6 +114,12 @@ function formatWhen(iso: string): string {
 function formatPlain(lead: LeadPayload): string {
   const plan = (lead.planName || lead.meta.planName || lead.planId || lead.meta.planId || "").trim();
   const budget = budgetLabel(lead.budget);
+  const offer = (lead.meta.offer || "").trim();
+  const amount =
+    typeof lead.meta.amount === "number" && Number.isFinite(lead.meta.amount)
+      ? lead.meta.amount
+      : undefined;
+  const currency = (lead.meta.currency || "").trim();
   const lines: Array<string | null> = [
     "Новая заявка — TIVONIX",
     "",
@@ -117,6 +127,8 @@ function formatPlain(lead: LeadPayload): string {
     `Контакт: ${lead.contact}`,
     plan ? `Тариф: ${plan}` : null,
     budget ? `Бюджет: ${budget}` : null,
+    offer ? `Оффер: ${offer}` : null,
+    amount != null && currency ? `Сумма: ${amount} ${currency}` : null,
     `Язык посетителя: ${visitorLangLabel(lead.lang)}`,
     "",
     "Задача:",
@@ -141,6 +153,12 @@ function formatPlain(lead: LeadPayload): string {
 function formatHtml(lead: LeadPayload): string {
   const plan = (lead.planName || lead.meta.planName || lead.planId || lead.meta.planId || "").trim();
   const budget = budgetLabel(lead.budget);
+  const offer = (lead.meta.offer || "").trim();
+  const amount =
+    typeof lead.meta.amount === "number" && Number.isFinite(lead.meta.amount)
+      ? lead.meta.amount
+      : undefined;
+  const currency = (lead.meta.currency || "").trim();
   const contact = lead.contact.trim();
   const contactHtml = contact.includes("@")
     ? `<a href="mailto:${escapeHtml(contact)}" style="color:#FF6A1A;text-decoration:none">${escapeHtml(contact)}</a>`
@@ -159,6 +177,10 @@ function formatHtml(lead: LeadPayload): string {
   const optionalRows = [
     plan ? row("Тариф", escapeHtml(plan)) : "",
     budget ? row("Бюджет", escapeHtml(budget)) : "",
+    offer ? row("Оффер", escapeHtml(offer)) : "",
+    amount != null && currency
+      ? row("Сумма", escapeHtml(`${amount} ${currency}`))
+      : "",
   ].join("");
 
   const moreRows = [

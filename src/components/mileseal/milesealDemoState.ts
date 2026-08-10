@@ -1,4 +1,9 @@
 import type { MilesealDemoExample } from "../../data/milesealDemo";
+import {
+  createDefaultWorkStartDecision,
+  invalidateWorkStartDecision,
+  type WorkStartDecisionState,
+} from "../../lib/workStartDecision.ts";
 
 export type DemoMode = "preset" | "custom";
 export type DemoTone = "neutral" | "soft" | "formal";
@@ -28,6 +33,7 @@ export type DemoState = {
   isSidebarCollapsed: boolean;
   isMobileNavOpen: boolean;
   sessionStarted: boolean;
+  workStartDecision: WorkStartDecisionState;
 };
 
 export type DemoAction =
@@ -50,7 +56,8 @@ export type DemoAction =
   | { type: "enterManualReview" }
   | { type: "toggleSidebarCollapsed" }
   | { type: "setMobileNavOpen"; open: boolean }
-  | { type: "syncLangPreset"; example: MilesealDemoExample };
+  | { type: "syncLangPreset"; example: MilesealDemoExample }
+  | { type: "setWorkStartDecision"; value: WorkStartDecisionState };
 
 function baseFromExample(example: MilesealDemoExample): Pick<
   DemoState,
@@ -78,6 +85,7 @@ export function createInitialDemoState(example: MilesealDemoExample): DemoState 
     isSidebarCollapsed: false,
     isMobileNavOpen: false,
     sessionStarted: false,
+    workStartDecision: createDefaultWorkStartDecision(example.id),
   };
 }
 
@@ -98,6 +106,7 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         activeTone: "neutral",
         sessionStarted: true,
         isMobileNavOpen: false,
+        workStartDecision: createDefaultWorkStartDecision(action.example.id),
       };
     case "startOver":
       return {
@@ -106,6 +115,7 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         stage: "ready",
         sessionStarted: true,
         isSidebarCollapsed: state.isSidebarCollapsed,
+        workStartDecision: createDefaultWorkStartDecision(action.example.id),
       };
     case "newAnalysis":
       return {
@@ -130,6 +140,7 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         }),
         selectedScenarioId: state.selectedScenarioId,
         isSidebarCollapsed: state.isSidebarCollapsed,
+        workStartDecision: createDefaultWorkStartDecision(state.selectedScenarioId),
       };
     case "editExample":
       return {
@@ -142,6 +153,10 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         copyError: false,
         stage: state.sessionStarted ? "ready" : "empty",
         activeAnalysisStep: 0,
+        workStartDecision: invalidateWorkStartDecision(
+          state.workStartDecision,
+          state.selectedScenarioId
+        ),
       };
     case "setScope":
       return {
@@ -153,6 +168,10 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         copied: false,
         copyError: false,
         stage: state.sessionStarted ? "ready" : "empty",
+        workStartDecision: invalidateWorkStartDecision(
+          state.workStartDecision,
+          state.selectedScenarioId
+        ),
       };
     case "setRequest":
       return {
@@ -164,6 +183,10 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         copied: false,
         copyError: false,
         stage: state.sessionStarted ? "ready" : "empty",
+        workStartDecision: invalidateWorkStartDecision(
+          state.workStartDecision,
+          state.selectedScenarioId
+        ),
       };
     case "analyzeStart":
       if (state.mode !== "preset") return state;
@@ -176,6 +199,10 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         stage: "analyzing",
         activeAnalysisStep: 0,
         sessionStarted: true,
+        workStartDecision: invalidateWorkStartDecision(
+          state.workStartDecision,
+          state.selectedScenarioId
+        ),
       };
     case "setAnalysisStep":
       return { ...state, activeAnalysisStep: action.step };
@@ -202,6 +229,7 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
         copyError: false,
         stage: "result",
         activeTone: "neutral",
+        workStartDecision: createDefaultWorkStartDecision(action.scenarioId),
       };
     case "openChangeRequest":
       if (!state.result) return state;
@@ -249,8 +277,13 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
             ? "result"
             : "ready",
         activeTone: "neutral",
+        workStartDecision: hadResult
+          ? state.workStartDecision
+          : createDefaultWorkStartDecision(action.example.id),
       };
     }
+    case "setWorkStartDecision":
+      return { ...state, workStartDecision: action.value };
     default:
       return state;
   }

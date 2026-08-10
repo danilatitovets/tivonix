@@ -9,7 +9,7 @@ import {
 } from "../src/components/mileseal/milesealDemoState.ts";
 
 const ex1 = {
-  id: "migration",
+  id: "homepage-authors",
   label: "Content migration",
   scope: "Scope A",
   request: "Request A",
@@ -151,3 +151,52 @@ assert.equal(s.result, null);
 assert.equal(s.mode, "custom");
 
 console.log("mileseal demo state checks passed");
+
+// Work-Start Decision defaults + invalidation
+import {
+  createDefaultWorkStartDecision,
+  invalidateWorkStartDecision,
+  validateWorkStartDecision,
+} from "../src/lib/workStartDecision.ts";
+import { workStartDecisionCopy } from "../src/i18n/workStartDecisionCopy.ts";
+
+const def = createDefaultWorkStartDecision("homepage-authors");
+assert.equal(def.authorization, "approval_required");
+assert.equal(def.decision, "");
+
+const saved = validateWorkStartDecision(
+  {
+    ...def,
+    owner: "Owner A",
+    decision: "price",
+    rationale: "Because scope changed",
+    authorization: "work_may_start",
+    decisionDate: "2026-08-10",
+  },
+  workStartDecisionCopy("en")
+);
+assert.equal(saved.saved, true);
+assert.equal(saved.authorization, "work_may_start");
+
+const stale = invalidateWorkStartDecision(saved, "homepage-authors");
+assert.equal(stale.authorization, "approval_required");
+assert.equal(stale.stale, true);
+assert.equal(stale.saved, false);
+
+let ws = createInitialDemoState(ex1);
+ws = demoReducer(ws, { type: "analyzeStart" });
+ws = demoReducer(ws, {
+  type: "analyzeSuccess",
+  result: ex1.result,
+  scenarioId: ex1.id,
+});
+ws = demoReducer(ws, {
+  type: "setWorkStartDecision",
+  value: saved,
+});
+assert.equal(ws.workStartDecision.saved, true);
+ws = demoReducer(ws, { type: "setScope", value: "changed scope" });
+assert.equal(ws.workStartDecision.authorization, "approval_required");
+assert.equal(ws.workStartDecision.stale, true);
+
+console.log("mileseal WSD state checks passed");
