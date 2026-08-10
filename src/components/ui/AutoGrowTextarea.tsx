@@ -62,7 +62,7 @@ export default function AutoGrowTextarea({
   const toneClass =
     tone === "light"
       ? cx(
-          "border-0 bg-[#f4f3f1] text-[#141414] placeholder:text-[#141414]/4",
+          "border-0 bg-[#f4f3f1] text-[#141414] placeholder:text-[#141414]/55",
           "outline-none focus:bg-[#efeeec] focus-visible:ring-2 focus-visible:ring-[#fc5000]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
         )
       : cx(

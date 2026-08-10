@@ -157,14 +157,14 @@ export default function MilesealManualReviewPanel({
 
   const inputClass = cx(
     "w-full min-h-12 rounded-2xl px-4 py-3",
-    "border-0 bg-[#f4f3f1] text-[#141414] placeholder:text-[#141414]/35",
+    "border-0 bg-[#f4f3f1] text-[#141414] placeholder:text-[#141414]/55",
     "outline-none transition",
     "focus-visible:ring-2 focus-visible:ring-[#fc5000]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
     "font-sans text-[14px] font-medium"
   );
 
   const labelClass =
-    "mb-1.5 flex items-center gap-2 text-[12px] font-semibold tracking-[0.04em] text-[#141414]/55";
+    "mb-1.5 flex items-center gap-2 text-[12px] font-semibold tracking-[0.04em] text-[#141414]/75";
 
   const primaryBtn = cx(
     "inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5",
@@ -443,35 +443,47 @@ export default function MilesealManualReviewPanel({
 
               <div className="mt-4 space-y-3">
                 {step === "request" ? (
-                  <AutoGrowTextarea
-                    id={`${formId}-request`}
-                    name="client_request"
-                    required
-                    minRows={4}
-                    maxRows={10}
-                    tone="light"
-                    value={clientRequest}
-                    onChange={(e) => setClientRequest(e.target.value)}
-                    disabled={status === "loading"}
-                    className={inputClass}
-                    placeholder={cta.clientRequest}
-                  />
+                  <div>
+                    <label htmlFor={`${formId}-request`} className={labelClass}>
+                      {cta.clientRequest}
+                    </label>
+                    <AutoGrowTextarea
+                      id={`${formId}-request`}
+                      name="client_request"
+                      required
+                      minRows={4}
+                      maxRows={10}
+                      tone="light"
+                      value={clientRequest}
+                      onChange={(e) => setClientRequest(e.target.value)}
+                      disabled={status === "loading"}
+                      className={inputClass}
+                      aria-label={cta.clientRequest}
+                      placeholder={ask.qRequestHint}
+                    />
+                  </div>
                 ) : null}
 
                 {step === "scope" ? (
-                  <AutoGrowTextarea
-                    id={`${formId}-scope`}
-                    name="agreed_scope"
-                    required
-                    minRows={4}
-                    maxRows={10}
-                    tone="light"
-                    value={agreedScope}
-                    onChange={(e) => setAgreedScope(e.target.value)}
-                    disabled={status === "loading"}
-                    className={inputClass}
-                    placeholder={cta.agreedScope}
-                  />
+                  <div>
+                    <label htmlFor={`${formId}-scope`} className={labelClass}>
+                      {cta.agreedScope}
+                    </label>
+                    <AutoGrowTextarea
+                      id={`${formId}-scope`}
+                      name="agreed_scope"
+                      required
+                      minRows={4}
+                      maxRows={10}
+                      tone="light"
+                      value={agreedScope}
+                      onChange={(e) => setAgreedScope(e.target.value)}
+                      disabled={status === "loading"}
+                      className={inputClass}
+                      aria-label={cta.agreedScope}
+                      placeholder={ask.qScopeHint}
+                    />
+                  </div>
                 ) : null}
 
                 {step === "contact" ? (
