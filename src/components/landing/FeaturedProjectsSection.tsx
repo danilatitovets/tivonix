@@ -54,6 +54,7 @@ function FeaturedCaseSlide({
             alt={project.title}
             loading={active ? "eager" : "lazy"}
             decoding="async"
+            fetchPriority={active ? "high" : undefined}
             className="case-split__img"
             width={960}
             height={640}

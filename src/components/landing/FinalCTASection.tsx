@@ -7,11 +7,8 @@ import { LeadCTAButton } from "../leads/LeadCTAButton";
 import { TelegramLink } from "./LandingCTA";
 import { TG_CHANNEL_URL } from "../../constants/links";
 import { trackTelegramDirectClick } from "../../lib/analytics";
-import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
 import { getStableViewportHeight } from "../../lib/stableViewport";
-
-const FINAL_CTA_VIDEO = "/images/hero-bg.mp4";
-const FINAL_CTA_POSTER = "/images/hero-bg-poster.webp";
+import BgLoopVideo from "../ui/BgLoopVideo";
 
 function clamp01(v: number) {
   return Math.min(1, Math.max(0, v));
@@ -67,14 +64,11 @@ export default function FinalCTASection() {
   const { lang } = useLang();
   const copy = landingCopy(lang);
   const cardRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const bgScale = useSectionScrollScale(cardRef);
 
   const bgStyle: CSSProperties = {
     transform: `translate3d(-50%, -50%, 0) scale(${bgScale})`,
   };
-
-  useKeepVideoPlaying(videoRef);
 
   return (
     <Section
@@ -87,20 +81,7 @@ export default function FinalCTASection() {
           className="final-cta-card relative overflow-hidden rounded-[28px] px-6 py-12 text-center sm:rounded-[40px] sm:px-10 sm:py-14 lg:px-16 lg:py-16"
         >
           <div className="final-cta-card__bg" aria-hidden>
-            <video
-              ref={videoRef}
-              className="final-cta-card__bg-img pointer-events-none"
-              style={bgStyle}
-              src={FINAL_CTA_VIDEO}
-              poster={FINAL_CTA_POSTER}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="auto"
-              controls={false}
-              disablePictureInPicture
-            />
+            <BgLoopVideo className="final-cta-card__bg-img pointer-events-none" style={bgStyle} />
             <div className="final-cta-card__bg-overlay" />
           </div>
 

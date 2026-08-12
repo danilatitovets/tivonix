@@ -1,12 +1,8 @@
-import { useRef } from "react";
 import Container from "../ui/Container";
 import { ctaClass } from "../leads/ctaStyles";
-import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
 import { useLang } from "../../i18n/LangProvider";
 import { milesealCopy } from "../../i18n/milesealCopy";
-
-const HERO_VIDEO = "/images/hero-bg.mp4";
-const HERO_POSTER = "/images/hero-bg-poster.webp";
+import BgLoopVideo from "../ui/BgLoopVideo";
 
 type Props = {
   onTryDemo: () => void;
@@ -16,25 +12,11 @@ type Props = {
 export default function MilesealHero({ onTryDemo, onRequestReview }: Props) {
   const { lang } = useLang();
   const copy = milesealCopy(lang).hero;
-  const videoRef = useRef<HTMLVideoElement>(null);
-  useKeepVideoPlaying(videoRef);
 
   return (
     <section className="relative isolate min-h-[min(88svh,880px)] overflow-hidden bg-black pt-[calc(var(--tivonix-header-spacer)+0.5rem)] pb-10 sm:pb-14">
       <div className="pointer-events-none absolute inset-0 overflow-hidden bg-black" aria-hidden>
-        <video
-          ref={videoRef}
-          className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center"
-          src={HERO_VIDEO}
-          poster={HERO_POSTER}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          controls={false}
-          disablePictureInPicture
-        />
+        <BgLoopVideo className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/40 to-black" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.55)_75%)]" />
       </div>

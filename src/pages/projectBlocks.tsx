@@ -10,6 +10,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import type { Project, ProjectStatus } from "../data/projectsCatalog";
+import SoftImg from "../components/ui/SoftImg";
 
 export const HERO_IMG = "/images/hero.webp";
 
@@ -74,7 +75,7 @@ export function ProjectPreviewFrame({
             }),
       }}
     >
-      <img
+      <SoftImg
         src={src}
         alt=""
         className="absolute inset-0 block h-full w-full object-cover object-top"
@@ -472,13 +473,14 @@ export function ProjectGalleryStrip({
                 onClick={() => setActive(i)}
               >
                 <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-[#1c1c1f] ring-1 ring-white/[0.06] sm:rounded-2xl">
-                  <img
+                  <SoftImg
                     src={src}
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover object-top"
                     draggable={false}
-                    loading="lazy"
+                    loading={i < 2 ? "eager" : "lazy"}
                     decoding="async"
+                    fetchPriority={i === 0 ? "high" : undefined}
                   />
                 </div>
               </button>

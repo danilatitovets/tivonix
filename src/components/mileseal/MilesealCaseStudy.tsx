@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { AlertCircle, ArrowRight, Check, Loader2 } from "lucide-react";
 import Container from "../ui/Container";
 import { ctaClass } from "../leads/ctaStyles";
-import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
+import BgLoopVideo from "../ui/BgLoopVideo";
 import { useLang } from "../../i18n/LangProvider";
 import { pathForLang } from "../../lib/localePaths";
 import { trackMilesealDemoStarted, trackMilesealSampleDownloaded } from "../../lib/analytics";
@@ -29,9 +29,6 @@ import {
   caseDemoReducer,
   createInitialCaseDemoState,
 } from "./milesealCaseDemoState";
-
-const HERO_VIDEO = "/images/hero-bg.mp4";
-const HERO_POSTER = "/images/hero-bg-poster.webp";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -454,10 +451,6 @@ export default function MilesealCaseStudy() {
   const hashBootstrapped = useRef(false);
   const analysisTimers = useRef<number[]>([]);
   const analyseBtnRef = useRef<HTMLButtonElement>(null);
-  const heroVideoRef = useRef<HTMLVideoElement>(null);
-  const ctaVideoRef = useRef<HTMLVideoElement>(null);
-  useKeepVideoPlaying(heroVideoRef);
-  useKeepVideoPlaying(ctaVideoRef);
 
   const [state, dispatch] = useReducer(
     caseDemoReducer,
@@ -644,19 +637,7 @@ export default function MilesealCaseStudy() {
       {/* Compact product hero — centered, brand video behind */}
       <section className="relative isolate overflow-hidden bg-[#0a0a0a] pt-[calc(var(--tivonix-header-spacer)+0.75rem)] pb-10 sm:pb-12">
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-          <video
-            ref={heroVideoRef}
-            className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center"
-            src={HERO_VIDEO}
-            poster={HERO_POSTER}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            controls={false}
-            disablePictureInPicture
-          />
+          <BgLoopVideo className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/55 to-[#0a0a0a]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(10,10,10,0.55)_78%)]" />
         </div>
@@ -1081,19 +1062,7 @@ export default function MilesealCaseStudy() {
 
           <div className="relative overflow-hidden">
             <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-              <video
-                ref={ctaVideoRef}
-                className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center"
-                src={HERO_VIDEO}
-                poster={HERO_POSTER}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                controls={false}
-                disablePictureInPicture
-              />
+              <BgLoopVideo className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center" />
               <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/70 to-black/60" />
               <div className="absolute inset-x-0 top-0 h-[48%] bg-gradient-to-b from-[#0a0a0a] via-[rgba(252,80,0,0.12)] to-transparent" />
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(252,80,0,0.14)_0%,transparent_55%)]" />

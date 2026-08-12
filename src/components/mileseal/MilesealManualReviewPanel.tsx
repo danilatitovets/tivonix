@@ -11,7 +11,7 @@ import {
   X,
 } from "lucide-react";
 import AutoGrowTextarea from "../ui/AutoGrowTextarea";
-import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
+import BgLoopVideo from "../ui/BgLoopVideo";
 import { submitMilesealLead, type MilesealLeadVariant } from "../../lib/milesealLeadSubmit";
 import {
   trackLeadFormSubmit,
@@ -23,9 +23,6 @@ import { useLang } from "../../i18n/LangProvider";
 import { milesealCopy } from "../../i18n/milesealCopy";
 import { milesealWorkspaceCopy } from "../../i18n/milesealWorkspaceCopy";
 import type { ScopeFormPrefill } from "../../data/milesealDemo";
-
-const HERO_VIDEO = "/images/hero-bg.mp4";
-const HERO_POSTER = "/images/hero-bg-poster.webp";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -54,8 +51,6 @@ export default function MilesealManualReviewPanel({
   const isAudit = variant === "audit";
   const ctaSource = isAudit ? "mileseal_scope_leakage_audit" : "mileseal_scope_review";
   const formId = useId();
-  const videoRef = useRef<HTMLVideoElement>(null);
-  useKeepVideoPlaying(videoRef);
 
   const closePanel = useCallback(() => {
     onClose();
@@ -297,19 +292,7 @@ export default function MilesealManualReviewPanel({
       >
         {/* Hero video header */}
         <div className="relative h-[148px] shrink-0 overflow-hidden sm:h-[168px]">
-          <video
-            ref={videoRef}
-            className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover"
-            src={HERO_VIDEO}
-            poster={HERO_POSTER}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            controls={false}
-            disablePictureInPicture
-          />
+          <BgLoopVideo className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/45 to-[#0a0a0a]/88" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(252,80,0,0.22)_0%,transparent_60%)]" />
 

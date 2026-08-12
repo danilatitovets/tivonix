@@ -1,13 +1,10 @@
 import { Link } from "react-router-dom";
 import Container from "../ui/Container";
 import { ctaClass } from "../leads/ctaStyles";
-import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
-import { useRef, type RefObject } from "react";
+import { type RefObject } from "react";
 import { milesealCommercialCopy } from "../../i18n/milesealCommercialCopy";
 import { trackLeadFormOpen } from "../../lib/analytics";
-
-const HERO_VIDEO = "/images/hero-bg.mp4";
-const HERO_POSTER = "/images/hero-bg-poster.webp";
+import BgLoopVideo from "../ui/BgLoopVideo";
 
 type Props = {
   caseStudyPath: string;
@@ -23,8 +20,6 @@ export default function MilesealCommercialLanding({
   reviewOpenerRef,
 }: Props) {
   const copy = milesealCommercialCopy();
-  const videoRef = useRef<HTMLVideoElement>(null);
-  useKeepVideoPlaying(videoRef);
 
   const openReview = () => {
     trackLeadFormOpen("mileseal_scope_review");
@@ -35,19 +30,7 @@ export default function MilesealCommercialLanding({
     <div className="bg-black text-white">
       <section className="relative isolate min-h-[min(92svh,920px)] overflow-hidden pt-[calc(var(--tivonix-header-spacer)+0.5rem)] pb-12 sm:pb-16">
         <div className="pointer-events-none absolute inset-0 overflow-hidden bg-black" aria-hidden>
-          <video
-            ref={videoRef}
-            className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center"
-            src={HERO_VIDEO}
-            poster={HERO_POSTER}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            controls={false}
-            disablePictureInPicture
-          />
+          <BgLoopVideo className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-black" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(252,80,0,0.18)_0%,transparent_62%)]" />
         </div>

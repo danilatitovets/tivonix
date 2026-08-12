@@ -9,6 +9,7 @@ import { useLang } from "../i18n/LangProvider";
 import { buildProjects, findProjectBySlug, projectSubtitle, projectDetails, type Project } from "../data/projectsCatalog";
 import { getProjectCaseSystem, type CaseSwatch } from "../data/projectCaseSystem";
 import { cx, projectPreviewSrc, ProjectGalleryStrip, s } from "./projectBlocks";
+import SoftImg from "../components/ui/SoftImg";
 import { LeadCTAButton } from "../components/leads/LeadCTAButton";
 import { leadFormCopy } from "../i18n/leadFormCopy";
 import { trackProjectView } from "../lib/analytics";
@@ -778,13 +779,15 @@ export default function ProjectDetailPage() {
               <div className="order-1 min-w-0">
                 <figure className="relative w-full overflow-hidden rounded-[12px] bg-[#141416]">
                   <div className="relative aspect-[16/10] w-full">
-                    <img
+                    <SoftImg
                       src={coverSrc}
                       alt={`${project.title} — ${isRu ? "обложка кейса" : "case cover"}`}
                       className="absolute inset-0 h-full w-full object-cover object-top"
                       draggable={false}
                       decoding="async"
+                      loading="eager"
                       fetchPriority="high"
+                      fade
                     />
                   </div>
                 </figure>

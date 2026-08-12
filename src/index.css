@@ -218,10 +218,26 @@
     }
   }
 
-  /* в•Ёв••в•Ёв•њв•Ёв•›в•Ёв”‚в•Ёв”¤в•Ёв–‘ 1С‚РђРЈ2px в•Ёв”¤в•Ёв–‘в•¤РЎв•¤Р’ в•Ёв•ќв•Ёв•Ўв•Ёв”¤в•Ёв••в•Ёв–‘ */
+  /* Media defaults — keep full-bleed bg videos from collapsing via height:auto */
   img, video, canvas, svg {
     max-width: 100%;
     height: auto;
+  }
+
+  video.hero-bg-video,
+  img.hero-bg-video,
+  img.hero-bg-video__poster {
+    max-width: none;
+    height: unset;
+  }
+
+  .hero-bg-video::-webkit-media-controls,
+  .hero-bg-video::-webkit-media-controls-start-playback-button,
+  .hero-bg-video::-webkit-media-controls-enclosure {
+    display: none !important;
+    -webkit-appearance: none;
+    opacity: 0;
+    pointer-events: none;
   }
 
     /* Comparison — три связанные карточки: проблема → система → планы */

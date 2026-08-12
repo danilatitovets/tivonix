@@ -53,9 +53,7 @@ import {
   trackMilesealDemoStarted,
   trackMilesealSampleDownloaded,
 } from "../../lib/analytics";
-
-const HERO_VIDEO = "/images/hero-bg.mp4";
-const HERO_POSTER = "/images/hero-bg-poster.webp";
+import { HERO_POSTER, HERO_VIDEO_DESKTOP, pickHeroVideoSrc } from "../../lib/heroMedia";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -245,7 +243,12 @@ export default function MilesealWorkspace({
   const artifactVideoRef = useRef<HTMLVideoElement>(null);
   const analyzeTimersRef = useRef<number[]>([]);
   const langRef = useRef(lang);
+  const [heroVideoSrc, setHeroVideoSrc] = useState(HERO_VIDEO_DESKTOP);
   useKeepVideoPlaying(artifactVideoRef);
+
+  useEffect(() => {
+    setHeroVideoSrc(pickHeroVideoSrc());
+  }, []);
 
   const isPreset = state.mode === "preset";
   const showResult = isPreset && state.result !== null;
@@ -737,12 +740,12 @@ export default function MilesealWorkspace({
         <video
           ref={artifactVideoRef}
           className={cx(
-            "pointer-events-none absolute object-cover",
+            "hero-bg-video pointer-events-none absolute object-cover",
             state.analyzing
               ? "inset-0 h-full w-full scale-105 blur-[6px] brightness-[0.7] saturate-[1.2]"
               : "-inset-[18%] h-[136%] w-[136%] max-w-none scale-110 blur-[10px] brightness-[0.85] saturate-[1.15]"
           )}
-          src={HERO_VIDEO}
+          src={heroVideoSrc}
           poster={HERO_POSTER}
           autoPlay
           muted

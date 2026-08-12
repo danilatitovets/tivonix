@@ -5,13 +5,10 @@ import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
 import { HERO_SCROLL_HEADLINE_CLASS, LANDING_SHELL_CLASS } from "../../lib/landingLayout";
 import { isTelegramWebView } from "../../lib/telegramWebView";
-import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
 import { getStableViewportHeight } from "../../lib/stableViewport";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
 import { pathForLang } from "../../lib/localePaths";
-
-const HERO_VIDEO = "/images/hero-bg.mp4";
-const HERO_POSTER = "/images/hero-bg-poster.webp";
+import BgLoopVideo from "../ui/BgLoopVideo";
 
 /** Use svh — dvh resizes mid-scroll in TG / mobile chrome and jumps sticky tracks */
 const SCROLL_TRACK_VH = 240;
@@ -151,8 +148,6 @@ function HeroCard({
   const { lang } = useLang();
   const textOpacity = useMemo(() => textOpacities(progress), [progress]);
   const activeStage = textOpacity[2] > 0.5 ? 2 : textOpacity[1] > 0.5 ? 1 : 0;
-  const videoRef = useRef<HTMLVideoElement>(null);
-  useKeepVideoPlaying(videoRef);
 
   return (
     <div
@@ -161,20 +156,7 @@ function HeroCard({
       )}
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] bg-black">
-        <video
-          ref={videoRef}
-          className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center"
-          src={HERO_VIDEO}
-          poster={HERO_POSTER}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          controls={false}
-          disablePictureInPicture
-          aria-hidden
-        />
+        <BgLoopVideo className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center" />
 
         <div
           className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/55"

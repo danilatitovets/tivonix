@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "../components/landing/Header";
 import Footer from "../components/landing/Footer";
@@ -9,13 +9,16 @@ import { useKeepVideoPlaying } from "../hooks/useKeepVideoPlaying";
 import { useLang } from "../i18n/LangProvider";
 import { localizedHome, ogLocaleFor, t3 } from "../i18n/pick";
 import { pathForLang } from "../lib/localePaths";
-
-const HERO_VIDEO = "/images/hero-bg.mp4";
-const HERO_POSTER = "/images/hero-bg-poster.webp";
+import { HERO_POSTER, HERO_VIDEO_DESKTOP, pickHeroVideoSrc } from "../lib/heroMedia";
 
 function Video404Mark() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [src, setSrc] = useState(HERO_VIDEO_DESKTOP);
   useKeepVideoPlaying(videoRef);
+
+  useEffect(() => {
+    setSrc(pickHeroVideoSrc());
+  }, []);
 
   return (
     <div className="relative mx-auto w-full max-w-[56rem] select-none" aria-hidden>
@@ -38,8 +41,8 @@ function Video404Mark() {
         />
         <video
           ref={videoRef}
-          className="nf404-video col-start-1 row-start-1 h-[clamp(7.5rem,28vw,17rem)] w-full max-w-none object-cover object-center"
-          src={HERO_VIDEO}
+          className="hero-bg-video nf404-video col-start-1 row-start-1 h-[clamp(7.5rem,28vw,17rem)] w-full max-w-none object-cover object-center"
+          src={src}
           poster={HERO_POSTER}
           autoPlay
           muted
