@@ -10,6 +10,7 @@ import { aboutPath } from "../../i18n/aboutCopy";
 import { partnerPanelLoginUrl } from "../../lib/partnerPanel";
 import { trackPartnersEvent } from "../../lib/ads";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
+import { useLeadForm } from "../leads/useLeadForm";
 import { leadFormCopy } from "../../i18n/leadFormCopy";
 import LangToggle from "./LangToggle";
 import { pathForLang } from "../../lib/localePaths";
@@ -206,6 +207,7 @@ export default function Header() {
 
   const navigate = useNavigate();
   const location = useLocation();
+  const { isOpen: leadFormOpen, closeLeadForm } = useLeadForm();
   const reducedMotion = usePrefersReducedMotion();
   const isMobile = useIsMobile();
   const heroInView = useHomeHeroInView(location.pathname);
@@ -223,7 +225,8 @@ export default function Header() {
     mo.observe(el, { attributes: true, attributeFilter: ["data-partners-caps"] });
     return () => mo.disconnect();
   }, [location.pathname]);
-  const hideHeader = (footerInView || (partnersCapsLock && !isMobile)) && !open;
+  const hideHeader =
+    (footerInView || (partnersCapsLock && !isMobile)) && !open && !leadFormOpen;
   const isPartners = isPartnersPath(location.pathname);
   const logoSrc = isPartners ? LOGO_BLACK : heroInView ? LOGO_WHITE : LOGO_DEFAULT;
   const isHome = location.pathname === "/" || location.pathname === "/en";
@@ -365,6 +368,7 @@ export default function Header() {
 
   const onNav = (to: string, hash?: string) => (e: React.MouseEvent) => {
     setOpen(false);
+    closeLeadForm();
     if (hash) {
       e.preventDefault();
       const go = () => {
@@ -392,6 +396,7 @@ export default function Header() {
 
   const goHome = () => {
     setOpen(false);
+    closeLeadForm();
     if (location.pathname !== homePath) navigate(homePath);
     window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
   };
@@ -597,7 +602,7 @@ export default function Header() {
 
       <header
         className={cx(
-          "pointer-events-none fixed inset-x-0 top-0 z-[120] transition-[transform,opacity]",
+          "pointer-events-none fixed inset-x-0 top-0 z-[130] transition-[transform,opacity]",
           // Float via transform (not `top`) so chrome/scroll never fights a top tween (~12–20px jumps)
           hideHeader
             ? "-translate-y-full opacity-0"

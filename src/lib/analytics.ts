@@ -30,6 +30,7 @@ export type CtaSource =
   | "founder"
   | "compare"
   | "footer"
+  | "partners"
   | "unknown";
 
 const CTA_SOURCE_KEY = "tivonix_cta_source";

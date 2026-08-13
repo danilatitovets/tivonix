@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Container from "../ui/Container";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
-import { buildTelegramTextUrl } from "../../constants/links";
+import { useLeadForm } from "../leads/useLeadForm";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -14,10 +14,6 @@ const VIDEOS = ["/video/1.mp4", "/video/2.mp4", "/video/3.mp4", "/video/4.mp4"] 
 
 // смещение “фокуса” видео вниз (без translate, без дыр сверху)
 const VIDEO_OFFSET_PX = 14;
-
-// ✅ TG bot for quotes
-const TG_TEXT_RU = "Привет! Хочу рассчитать стоимость. Пакет: ";
-const TG_TEXT_EN = "Hi! I want a quote. Package: ";
 
 type Plan = {
   key: string;
@@ -185,13 +181,8 @@ function useVideoBlock(ref: React.RefObject<HTMLVideoElement | null>, src?: stri
 }
 
 // ✅ открываем TG (в новой вкладке) + с префиллом текста
-function openTelegram(planName: string, isRu: boolean) {
-  const text = isRu ? `${TG_TEXT_RU}${planName}` : `${TG_TEXT_EN}${planName}`;
-  const url = buildTelegramTextUrl(text);
-  window.open(url, "_blank", "noopener,noreferrer");
-}
-
 function PlanCard({ p, isRu }: { p: Plan; isRu: boolean }) {
+  const { openLeadForm } = useLeadForm();
   const ref = useRef<HTMLVideoElement | null>(null);
   const { play, stop, inView } = useVideoBlock(ref, p.videoSrc);
   const [videoFailed, setVideoFailed] = useState(false);
@@ -205,9 +196,6 @@ function PlanCard({ p, isRu }: { p: Plan; isRu: boolean }) {
   const bullets = isRu ? p.bulletsRu : p.bulletsEn;
   const badge = isRu ? p.badgeRu : p.badgeEn;
   const chip = p.chip ? (isRu ? p.chip.ru : p.chip.en) : null;
-
-  // имя пакета для текста в TG
-  const planName = isRu ? p.labelRu : p.labelEn;
 
   return (
     <article
@@ -341,10 +329,9 @@ function PlanCard({ p, isRu }: { p: Plan; isRu: boolean }) {
         <div className="mt-3 text-[12.5px] text-white/55">{subtitle}</div>
 
         <div className="mt-5">
-          {/* ✅ Кнопка ведёт в Telegram */}
           <button
             type="button"
-            onClick={() => openTelegram(planName, isRu)}
+            onClick={() => openLeadForm("pricing")}
             className={cx(
               "inline-flex h-11 w-full items-center justify-center rounded-full px-6",
               "text-[12px] font-[950] tracking-[0.18em] uppercase",

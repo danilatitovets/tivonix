@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { TG_BOT_URL } from "../../constants/links";
+import { TG_CHANNEL_URL } from "../../constants/links";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -20,7 +20,7 @@ export function TelegramLink({
   size = "md",
   className,
   children,
-  href = TG_BOT_URL,
+  href = TG_CHANNEL_URL,
   onClick,
 }: Omit<Props, "type">) {
   return (

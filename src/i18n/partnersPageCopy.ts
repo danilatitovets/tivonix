@@ -336,7 +336,7 @@ const RU: PartnersCopy = {
   },
   discuss: {
     label: "Задать вопрос",
-    ask: "Telegram — только вопрос, регистрация в панели",
+    ask: "Опишите задачу в форме — регистрация в панели отдельно",
   },
   ui: {
     client: "Клиент",
@@ -603,7 +603,7 @@ const EN: PartnersCopy = {
   },
   discuss: {
     label: "Ask a question",
-    ask: "Telegram for questions — registration is in the panel",
+    ask: "Describe the task in the form — panel registration is separate",
   },
   ui: {
     client: "Client",
@@ -870,7 +870,7 @@ const ZH: PartnersCopy = {
   },
   discuss: {
     label: "提问",
-    ask: "问题走 Telegram — 注册在面板完成",
+    ask: "在表单中描述需求 — 面板注册另行完成",
   },
   ui: {
     client: "客户",

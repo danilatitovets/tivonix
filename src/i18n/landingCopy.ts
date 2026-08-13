@@ -430,7 +430,7 @@ const COPY_RU = {
     subtitle:
       "Опишите задачу своими словами. Мы разберём её и отправим предварительный план, срок и диапазон стоимости.",
     ctaPrimary: "Получить оценку",
-    ctaSecondary: "Написать в Telegram",
+    ctaSecondary: "Посмотреть проекты",
     micro: "Ответим в течение рабочего дня. Созвон не обязателен. Контакты не передаём третьим лицам.",
   },
   packages: {
@@ -905,7 +905,7 @@ const COPY_EN = {
     subtitle:
       "Describe the task in your own words. We’ll review it and send a preliminary plan, timeline and cost range.",
     ctaPrimary: "Get an estimate",
-    ctaSecondary: "Message on Telegram",
+    ctaSecondary: "See projects",
     micro: "We reply within a business day. A call is optional. We don’t share contacts with third parties.",
   },
   packages: {
@@ -1380,7 +1380,7 @@ const COPY_ZH = {
     subtitle:
       "用自己的话描述需求。我们会梳理并发送初步方案、周期与费用区间。",
     ctaPrimary: "获取评估",
-    ctaSecondary: "通过 Telegram 联系",
+    ctaSecondary: "查看项目",
     micro: "工作日内回复。通话非必须。联系方式不提供给第三方。",
   },
   packages: {

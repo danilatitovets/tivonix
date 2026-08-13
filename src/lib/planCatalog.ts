@@ -3,7 +3,7 @@ import type { PlanId } from "./pricingData";
 /** План или сценарий «помочь выбрать» на /plans */
 export type PlanLeadId = PlanId | "help";
 
-export type PlanCtaAction = "telegram" | "modal";
+export type PlanCtaAction = "modal";
 
 export type PlanCatalogEntry = {
   id: PlanLeadId;
@@ -18,8 +18,8 @@ export type PlanCatalogEntry = {
 };
 
 /**
- * Единая карта планов для /plans, Telegram-бота и StartModal.
- * Все CTA на /plans ведут в Telegram-бота (deep link ?start=...).
+ * Единая карта планов для /plans и формы заявки.
+ * Все CTA на /plans открывают форму на сайте.
  */
 export const PLAN_CATALOG: Record<PlanLeadId, PlanCatalogEntry> = {
   start: {
@@ -32,7 +32,7 @@ export const PLAN_CATALOG: Record<PlanLeadId, PlanCatalogEntry> = {
     },
     telegramPayload: "plan_start",
     adminSource: "Start (/plans)",
-    ctaAction: "telegram",
+    ctaAction: "modal",
   },
   growth: {
     id: "growth",
@@ -44,7 +44,7 @@ export const PLAN_CATALOG: Record<PlanLeadId, PlanCatalogEntry> = {
     },
     telegramPayload: "plan_growth",
     adminSource: "Growth (/plans)",
-    ctaAction: "telegram",
+    ctaAction: "modal",
   },
   product: {
     id: "product",
@@ -56,7 +56,7 @@ export const PLAN_CATALOG: Record<PlanLeadId, PlanCatalogEntry> = {
     },
     telegramPayload: "plan_product",
     adminSource: "Product (/plans)",
-    ctaAction: "telegram",
+    ctaAction: "modal",
   },
   custom: {
     id: "custom",
@@ -68,7 +68,7 @@ export const PLAN_CATALOG: Record<PlanLeadId, PlanCatalogEntry> = {
     },
     telegramPayload: "plan_custom",
     adminSource: "Custom (/plans)",
-    ctaAction: "telegram",
+    ctaAction: "modal",
   },
   help: {
     id: "help",
@@ -80,7 +80,7 @@ export const PLAN_CATALOG: Record<PlanLeadId, PlanCatalogEntry> = {
     },
     telegramPayload: "plan_help",
     adminSource: "Help (/plans)",
-    ctaAction: "telegram",
+    ctaAction: "modal",
   },
 };
 

@@ -1,9 +1,11 @@
 import {
   useCallback,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
+import { useLocation } from "react-router-dom";
 import type { CtaSource } from "../../lib/analytics";
 import { trackCtaPrimaryClick, trackLeadFormOpen } from "../../lib/analytics";
 import type { PlanId } from "../../lib/pricingData";
@@ -11,9 +13,14 @@ import LeadFormModal from "./LeadFormModal";
 import { LeadFormContext, type OpenLeadFormOptions } from "./leadFormContext";
 
 export function LeadFormProvider({ children }: { children: ReactNode }) {
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [source, setSource] = useState<CtaSource>("unknown");
   const [planId, setPlanId] = useState<PlanId | null>(null);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
 
   const openLeadForm = useCallback((ctaSource: CtaSource, options?: OpenLeadFormOptions) => {
     trackCtaPrimaryClick(ctaSource);

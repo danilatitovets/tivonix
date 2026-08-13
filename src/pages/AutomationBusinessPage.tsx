@@ -32,7 +32,6 @@ import Container from "../components/ui/Container";
 import Section from "../components/ui/Section";
 import { SEO } from "../components/SEO";
 import { useLeadForm } from "../components/leads/useLeadForm";
-import { trackTelegramBotClick, trackTelegramDirectClick } from "../lib/analytics";
 import {
   AUTOMATION_SIGNS_IMG_DIR,
   getAutomationPageCopy,
@@ -41,7 +40,6 @@ import {
 import { automationTypo } from "../i18n/automationTypography";
 import { useLang } from "../i18n/LangProvider";
 import { pathForLang } from "../lib/localePaths";
-import { TG_BOT_URL } from "../constants/links";
 
 const AUTOMATION_HERO_IMG = "/images/avtomatizaciya-biznesa/hero.webp";
 const AUTOMATION_CONTACT_EMAIL = "tivoonix@gmail.com";
@@ -252,17 +250,8 @@ function AutomationHero({ t }: { t: AutomationPageCopy }) {
                   onClick={() => openLeadForm("service_automation")}
                   className="inline-flex h-9 min-w-0 shrink-0 items-center justify-center rounded-full bg-white px-4 text-[13px] font-semibold tracking-tight text-neutral-900 shadow-sm transition hover:bg-white/92 active:translate-y-px sm:px-5 sm:text-[14px]"
                 >
-                  {t.hero.microCtaTelegram}
+                  {t.hero.ctaDiscuss}
                 </button>
-                <a
-                  href={TG_BOT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => trackTelegramBotClick()}
-                  className="inline-flex h-9 min-w-0 shrink-0 items-center justify-center rounded-full bg-white/[0.12] px-4 text-[13px] font-semibold tracking-tight text-white/90 ring-1 ring-white/15 transition hover:bg-white/[0.18] active:translate-y-px sm:px-5 sm:text-[14px]"
-                >
-                  Telegram
-                </a>
                 <a
                   href={`mailto:${AUTOMATION_CONTACT_EMAIL}?subject=${encodeURIComponent(t.hero.microCtaEmailSubject)}`}
                   className="inline-flex h-9 min-w-0 shrink-0 items-center justify-center rounded-full bg-white/[0.12] px-4 text-[13px] font-semibold tracking-tight text-white/90 ring-1 ring-white/15 transition hover:bg-white/[0.18] active:translate-y-px sm:px-5 sm:text-[14px]"
@@ -946,16 +935,6 @@ function AutomationCTA({ t }: { t: AutomationPageCopy }) {
               >
                 {t.ctaBlock.primary}
               </button>
-
-              <a
-                href="https://t.me/TIVONIX"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => trackTelegramDirectClick()}
-                className="inline-flex h-[54px] items-center justify-center rounded-2xl bg-white/[0.08] px-6 text-[15px] font-[780] text-white/90 transition hover:bg-white/[0.13] active:translate-y-px sm:h-[58px] sm:px-7 sm:text-[16px]"
-              >
-                {t.ctaBlock.secondary}
-              </a>
             </div>
 
             <p className="mt-4 text-[13px] leading-[1.65] text-white/58 sm:text-[13.5px]">

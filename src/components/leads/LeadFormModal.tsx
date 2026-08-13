@@ -19,7 +19,6 @@ import {
   trackLeadFormSubmit,
   trackLeadFormSuccess,
   trackLeadFormValidationError,
-  trackTelegramBotClick,
   trackTelegramDirectClick,
 } from "../../lib/analytics";
 import { HOTJAR_MASK_CLASS, HOTJAR_SUPPRESS_ATTR } from "../../lib/hotjar";
@@ -36,9 +35,9 @@ import {
   type BudgetId,
   type LeadFormFields,
 } from "../../lib/leads";
-import { TG_BOT_URL } from "../../constants/links";
 import type { PlanId } from "../../lib/pricingData";
 import { planPagePrice, pricingCopy } from "../../i18n/pricingCopy";
+import BgLoopVideo from "../ui/BgLoopVideo";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -284,9 +283,9 @@ export default function LeadFormModal({
   const node = (
     <div
       className={cx(
-        "fixed inset-0 z-[220]",
+        "fixed inset-0 z-[115]",
         "flex items-end justify-center sm:items-center",
-        "px-0 sm:px-5 py-0 sm:py-5"
+        "px-0 sm:px-5 py-0 sm:pt-[calc(var(--tivonix-header-spacer)+0.5rem)] sm:pb-5"
       )}
       aria-hidden={!open}
     >
@@ -342,18 +341,11 @@ export default function LeadFormModal({
           <div
             className="relative flex max-h-[min(94dvh,780px)] flex-col overflow-hidden rounded-t-[27px] bg-black/50 backdrop-blur-2xl sm:rounded-[27px]"
           >
-            {/* atmosphere */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 opacity-80"
-              style={{
-                backgroundImage: "url(/images/121.webp)",
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                filter: "blur(22px)",
-                transform: "scale(1.08)",
-              }}
-            />
+            {/* same hero loop as the landing video */}
+            <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+              <BgLoopVideo />
+              <div className="absolute inset-0 bg-black/62" />
+            </div>
             <div
               aria-hidden
               className="pointer-events-none absolute inset-0"
@@ -380,33 +372,17 @@ export default function LeadFormModal({
 
             {/* header */}
             <div className="relative z-10 shrink-0 px-5 pt-4 sm:px-7 sm:pt-5">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-white/12 backdrop-blur-xl sm:hidden">
-                    <img
-                      src="/images/tivonix-logo-icon.webp"
-                      alt=""
-                      className="h-6 w-6 opacity-90"
-                      draggable={false}
-                    />
-                  </div>
-                  <img
-                    src="/images/tivonix-logo-lockup.webp"
-                    alt="TIVONIX"
-                    draggable={false}
-                    className="hidden h-9 w-auto opacity-90 sm:block"
-                  />
-                  <div className="min-w-0 sm:ml-1">
-                    <h2
-                      id={titleId}
-                      className="truncate text-[17px] font-extrabold tracking-tight text-white sm:text-[19px]"
-                    >
-                      {copy.title}
-                    </h2>
-                    <p id={descId} className="mt-0.5 truncate text-[12px] text-white/55 sm:text-[12.5px]">
-                      {copy.subtitle}
-                    </p>
-                  </div>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 pr-2">
+                  <h2
+                    id={titleId}
+                    className="text-[17px] font-extrabold tracking-tight text-white sm:text-[19px]"
+                  >
+                    {copy.title}
+                  </h2>
+                  <p id={descId} className="mt-0.5 text-[12px] text-white/55 sm:text-[12.5px]">
+                    {copy.subtitle}
+                  </p>
                 </div>
 
                 <button
@@ -733,18 +709,6 @@ export default function LeadFormModal({
                     className="transition hover:text-white/75"
                   >
                     @TIVONIX
-                  </a>
-                  <span aria-hidden className="text-white/18">
-                    ·
-                  </span>
-                  <a
-                    href={TG_BOT_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => trackTelegramBotClick()}
-                    className="transition hover:text-white/75"
-                  >
-                    {copy.altBot}
                   </a>
                   <span aria-hidden className="text-white/18">
                     ·

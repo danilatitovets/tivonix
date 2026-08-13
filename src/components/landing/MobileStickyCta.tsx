@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { useLang } from "../../i18n/LangProvider";
 import { homeExtraCopy } from "../../i18n/homeExtraCopy";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
+import { useLeadForm } from "../leads/useLeadForm";
 
 /** Mobile fixed CTA — hides when final contact form is in view. */
 export default function MobileStickyCta() {
   const { lang } = useLang();
   const copy = homeExtraCopy(lang);
+  const { isOpen: leadFormOpen } = useLeadForm();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -41,7 +43,7 @@ export default function MobileStickyCta() {
     };
   }, []);
 
-  if (!visible) return null;
+  if (!visible || leadFormOpen) return null;
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[110] px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden">

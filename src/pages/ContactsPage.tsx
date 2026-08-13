@@ -4,7 +4,6 @@ import Container from "../components/ui/Container";
 import Header from "../components/landing/Header";
 import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
-import { TG_BOT_URL } from "../constants/links";
 import { LeadCTAButton } from "../components/leads/LeadCTAButton";
 import { leadFormCopy } from "../i18n/leadFormCopy";
 import { useLocation } from "react-router-dom";
@@ -231,7 +230,6 @@ function SunContacts({ size }: { size: number }) {
 
   const title = isRu ? "Контакты" : "Contacts";
   const leadCopy = leadFormCopy(lang);
-  const botCta = isRu ? "Telegram-бот" : "Telegram bot";
 
   const contactRowClass = cx(
     "group inline-flex w-full items-center gap-3.5 rounded-xl px-4 py-2.5",
@@ -314,7 +312,7 @@ function SunContacts({ size }: { size: number }) {
                   </a>
                 </div>
 
-                <div className="mt-3 relative z-20 pointer-events-auto space-y-2">
+                <div className="mt-3 relative z-20 pointer-events-auto">
                   <LeadCTAButton
                     source="contacts"
                     variant="primary"
@@ -322,19 +320,6 @@ function SunContacts({ size }: { size: number }) {
                   >
                     {leadCopy.ctaDiscuss}
                   </LeadCTAButton>
-                  <a
-                    href={TG_BOT_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cx(
-                      "inline-flex h-10 w-full items-center justify-center rounded-xl px-5",
-                      "text-[13px] font-[700] text-white/80 whitespace-nowrap",
-                      "border border-white/15 bg-white/[0.05] hover:bg-white/[0.09] transition duration-200",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/35"
-                    )}
-                  >
-                    {botCta}
-                  </a>
                 </div>
               </div>
             </div>
@@ -361,8 +346,8 @@ export default function ContactsPage() {
     ? "Контакты TIVONIX — заказать сайт или веб-сервис"
     : "TIVONIX contacts — order a website or web service";
   const seoDescription = isRu
-    ? "Свяжитесь с TIVONIX, чтобы обсудить создание сайта, лендинга, веб-сервиса, MVP, админки или Telegram-бота."
-    : "Contact TIVONIX to discuss creating a website, landing page, web service, MVP, admin panel, or Telegram bot.";
+    ? "Свяжитесь с TIVONIX, чтобы обсудить создание сайта, лендинга, веб-сервиса, MVP или админки."
+    : "Contact TIVONIX to discuss creating a website, landing page, web service, MVP, or admin panel.";
 
   const ring1 = useMemo<LangItem[]>(
     () => [

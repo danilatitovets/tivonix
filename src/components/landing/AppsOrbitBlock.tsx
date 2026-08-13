@@ -11,15 +11,15 @@ import React,
 import Container from "../ui/Container";
 import Section from "../ui/Section";
 import { useLang, type Lang } from "../../i18n/LangProvider";
-import { TG_CHANNEL_URL } from "../../constants/links";
 import { CONTACT_EMAIL } from "../../lib/leads";
+import { useLeadForm } from "../leads/useLeadForm";
+import { leadFormCopy } from "../../i18n/leadFormCopy";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
 
 const IMG = "/images/gen.webp";
-const TG_URL = TG_CHANNEL_URL;
 const EMAIL = CONTACT_EMAIL;
 
 function usePrefersReducedMotion() {
@@ -59,7 +59,6 @@ const COPY = {
     pCompact:
       "Подберём решение под задачу — без лишней разработки. Разберём, где теряются заявки, и предложим понятный план запуска.",
     trust: "Ответим в течение дня • Первая консультация — бесплатно",
-    tg: "Написать в Telegram",
     emailBtnLabel: "Открыть в Gmail",
     emailAria: "Открыть Gmail",
   },
@@ -72,7 +71,6 @@ const COPY = {
     pCompact:
       "We’ll match the solution to your task — without extra scope. We’ll find where you lose leads and outline a clear launch plan.",
     trust: "We reply within a day • First consultation is free",
-    tg: "Write on Telegram",
     emailBtnLabel: "Open in Gmail",
     emailAria: "Open Gmail compose",
   },
@@ -156,7 +154,9 @@ function buildGmailUrl(to: string, subject: string, body: string) {
 
 export default function AppsOrbitBlock() {
   const { lang } = useLang();
-  const t = lang === "zh" ? COPY.zh : lang === "ru" ? COPY.ru : COPY.en;
+  const t = lang === "ru" ? COPY.ru : COPY.en;
+  const { openLeadForm } = useLeadForm();
+  const formCta = leadFormCopy(lang).ctaDiscuss;
   const [bgFailed, setBgFailed] = useState(false);
 
   const reducedMotion = usePrefersReducedMotion();
@@ -398,11 +398,10 @@ export default function AppsOrbitBlock() {
                         {t.emailBtnLabel}
                       </a>
 
-                      {/* Telegram (правая кнопка, оранжевая) */}
-                      <a
-                        href={TG_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      {/* Form (primary) */}
+                      <button
+                        type="button"
+                        onClick={() => openLeadForm("main_offer")}
                         className={cx(
                           "group relative block w-full",
                           "rounded-2xl px-6 py-[13px] sm:py-[16px]",
@@ -418,7 +417,7 @@ export default function AppsOrbitBlock() {
                             "linear-gradient(180deg, #FFB020 0%, #FF7A18 45%, #FF5A12 100%)",
                         }}
                       >
-                        <span className="relative z-10">{t.tg}</span>
+                        <span className="relative z-10">{formCta}</span>
                         <span
                           className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 blur-xl transition duration-300 group-hover:opacity-70"
                           style={{
@@ -426,7 +425,7 @@ export default function AppsOrbitBlock() {
                               "radial-gradient(700px 120px at 50% 30%, rgba(255,176,32,0.65), rgba(0,0,0,0))",
                           }}
                         />
-                      </a>
+                      </button>
                     </div>
                   </div>
                 </div>

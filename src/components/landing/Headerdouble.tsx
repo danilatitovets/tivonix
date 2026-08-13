@@ -5,10 +5,6 @@ import Container from "../ui/Container";
 import { Button } from "../ui/Button";
 import { useLang, type Lang } from "../../i18n/LangProvider";
 import StartModal from "./StartModal";
-import { TG_BOT_URL } from "../../constants/links";
-
-// Мобилка: CTA ведёт в бота, модалка не открывается. Десктоп: модалка.
-const MOBILE_BREAKPOINT = 1280; // xl
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -325,11 +321,6 @@ export default function Header() {
     setOpen(false);
     if (location.pathname !== "/") navigate("/");
     window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
-    // На мобилке — переход в бота, без модалки
-    if (typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT) {
-      window.open(TG_BOT_URL, "_blank", "noopener,noreferrer");
-      return;
-    }
     setStartOpen(true);
   };
 
@@ -646,19 +637,17 @@ export default function Header() {
                   {/* scroll area */}
                   <div className="px-6 pb-6 pt-0 overflow-y-auto overscroll-contain" style={{ maxHeight: menuMaxH } as React.CSSProperties} onClick={(e) => e.stopPropagation()}>
                     <div className="flex flex-col gap-3">
-                      <a
-                        href={TG_BOT_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        type="button"
                         className={cx(
                           "h-12 rounded-2xl font-semibold flex items-center justify-center",
                           "bg-[#FF9A3D] text-black hover:brightness-105 active:brightness-95",
                           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0c]"
                         )}
-                        onClick={() => setOpen(false)}
+                        onClick={openStartModal}
                       >
                         {ctaScrolled}
-                      </a>
+                      </button>
                       <Link
                         to="/contacts"
                         className={cx(

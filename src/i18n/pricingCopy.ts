@@ -332,7 +332,7 @@ const COPY_RU = {
     helpTitle: "Не уверены, какой план выбрать?",
     helpLead:
       "Опишите задачу своими словами — подскажем, с чего лучше начать: Start, Growth, Product или Custom.",
-    helpCta: "Написать в Telegram",
+    helpCta: "Оставить заявку",
     helpModalCta: "Оставить заявку",
     planScopeCaption: "Объём запуска по планам",
     chips: {
@@ -404,7 +404,7 @@ const COPY_EN = {
         "domain launch",
       ],
       cta: "Discuss launch",
-      ctaHint: "Opens our Telegram bot — takes about 2 minutes.",
+      ctaHint: "Opens a short form. The Start plan will already be selected.",
       compactCta: "Discuss Start",
     },
     growth: {
@@ -463,7 +463,7 @@ const COPY_EN = {
         "support and evolution",
       ],
       cta: "Request a plan",
-      ctaHint: "Opens our Telegram bot to discuss a non-standard task.",
+      ctaHint: "Opens a short form to discuss a non-standard task.",
       compactCta: "Discuss Custom",
     },
   },
@@ -554,7 +554,7 @@ const COPY_EN = {
     helpTitle: "Not sure which plan to pick?",
     helpLead:
       "Describe your task in your own words — we’ll suggest whether to start with Start, Growth, Product or Custom.",
-    helpCta: "Message on Telegram",
+    helpCta: "Send a request",
     helpModalCta: "Submit request",
     planScopeCaption: "Launch scope by plan",
     chips: {
@@ -626,7 +626,7 @@ const COPY_ZH = {
         "域名上线",
       ],
       cta: "沟通启动",
-      ctaHint: "打开我们的 Telegram 机器人 — 约 2 分钟。",
+      ctaHint: "打开简短表单，Start 方案已预选。",
       compactCta: "沟通 Start",
     },
     growth: {
@@ -685,7 +685,7 @@ const COPY_ZH = {
         "支持与持续迭代",
       ],
       cta: "申请方案",
-      ctaHint: "打开我们的 Telegram 机器人讨论非标需求。",
+      ctaHint: "打开表单，讨论非标需求。",
       compactCta: "沟通 Custom",
     },
   },
@@ -776,7 +776,7 @@ const COPY_ZH = {
     helpTitle: "不确定选哪个方案？",
     helpLead:
       "用自己的话描述需求 — 我们建议从 Start、Growth、Product 还是 Custom 开始。",
-    helpCta: "通过 Telegram 联系",
+    helpCta: "提交需求",
     helpModalCta: "提交需求",
     planScopeCaption: "按方案划分的启动范围",
     chips: {

@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { Link } from "react-router-dom";
 import Container from "../ui/Container";
 import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
-import { TelegramLink } from "./LandingCTA";
-import { TG_CHANNEL_URL } from "../../constants/links";
-import { trackTelegramDirectClick } from "../../lib/analytics";
+import { pathForLang } from "../../lib/localePaths";
 import { getStableViewportHeight } from "../../lib/stableViewport";
 import BgLoopVideo from "../ui/BgLoopVideo";
 
@@ -102,15 +101,12 @@ export default function FinalCTASection() {
             >
               {copy.finalCta.ctaPrimary}
             </LeadCTAButton>
-            <TelegramLink
-              variant="white"
-              size="lg"
-              href={TG_CHANNEL_URL}
-              className="final-cta-btn final-cta-btn--black"
-              onClick={() => trackTelegramDirectClick()}
+            <Link
+              to={pathForLang("/projects", lang)}
+              className="final-cta-btn final-cta-btn--black inline-flex items-center justify-center rounded-full font-sans text-[15px] font-medium sm:text-[16px]"
             >
               {copy.finalCta.ctaSecondary}
-            </TelegramLink>
+            </Link>
           </div>
         </div>
       </Container>

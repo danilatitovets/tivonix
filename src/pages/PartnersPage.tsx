@@ -4,7 +4,8 @@ import { Helmet } from "react-helmet-async";
 import Header from "../components/landing/Header";
 import { SEO } from "../components/SEO";
 import ScrollFingerHint from "../components/ui/ScrollFingerHint";
-import { PARTNER_AGENCY_TELEGRAM_URL, TG_CHANNEL_URL } from "../constants/links";
+import { TG_CHANNEL_URL } from "../constants/links";
+import { useLeadForm } from "../components/leads/useLeadForm";
 import { useLang } from "../i18n/LangProvider";
 import { getPartnersCopy, PARTNERS_DOCS, type PartnersCopy } from "../i18n/partnersPageCopy";
 import {
@@ -137,12 +138,12 @@ function Reveal({ children, className }: { children: ReactNode; className?: stri
 
 function DarkPill({
   children,
-  href = PARTNER_AGENCY_TELEGRAM_URL,
+  href,
   sameTab = false,
   onClick,
 }: {
   children: ReactNode;
-  href?: string;
+  href: string;
   /** Same-tab navigation (panel register/login). */
   sameTab?: boolean;
   onClick?: (e: MouseEvent<HTMLAnchorElement>) => void;
@@ -715,22 +716,19 @@ function CapabilitiesBanner() {
 function DiscussPanel() {
   const { lang } = useLang();
   const copy = getPartnersCopy(lang);
+  const { openLeadForm } = useLeadForm();
   return (
     <div className="partners-bento__discuss">
       <p className="partners-bento__discuss-label">{copy.discuss.label}</p>
       <div className="partners-bento__discuss-btns">
-        <a
-          href={PARTNER_AGENCY_TELEGRAM_URL}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={() => openLeadForm("partners")}
           className="partners-bento__discuss-btn partners-bento__discuss-btn--tg"
           aria-label={copy.discuss.ask}
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-            <path d="M21.5 3.6 2.9 11.1c-1.3.5-1.3 1.3-.2 1.6l4.7 1.5 1.8 5.5c.2.7.1.9.8.9.5 0 .7-.2 1-.5l2.4-2.3 5 3.7c.9.5 1.6.2 1.8-.9L22.9 5c.3-1.2-.4-1.8-1.4-1.4ZM9.2 14.5l-.3 3.3 1.3-1.7 8-7.6-9 5.9Z" />
-          </svg>
-          Telegram
-        </a>
+          {copy.discuss.label}
+        </button>
         <a
           href={PARTNERS_GMAIL_URL}
           target="_blank"
@@ -944,6 +942,7 @@ function PartnersFooter() {
   const line = copy.footer.marquee;
   const docs = PARTNERS_DOCS[lang];
   const loginUrl = partnerPanelLoginUrl();
+  const { openLeadForm } = useLeadForm();
 
   return (
     <footer id="site-footer" className="partners-footer">
@@ -975,13 +974,12 @@ function PartnersFooter() {
             </a>
             <Link to={pathForLang("/projects", lang)}>{copy.footer.projects}</Link>
             <Link to={pathForLang("/contacts", lang)}>{copy.footer.contacts}</Link>
-            <a
-              href={PARTNER_AGENCY_TELEGRAM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={() => openLeadForm("partners")}
             >
               {copy.footer.askTelegram}
-            </a>
+            </button>
             <a href={TG_CHANNEL_URL} target="_blank" rel="noopener noreferrer">
               {copy.footer.channel}
             </a>
@@ -1571,16 +1569,22 @@ export default function PartnersPage() {
             flex-wrap: wrap;
             gap: 0.35rem 1.15rem;
           }
-          .partners-footer__nav a {
+          .partners-footer__nav a,
+          .partners-footer__nav button {
             color: #1a1a1a;
             font-family: Inter, ui-sans-serif, system-ui, sans-serif;
             font-size: 14px;
             font-weight: 600;
             letter-spacing: -0.01em;
             text-decoration: none;
+            background: none;
+            border: 0;
+            padding: 0;
+            cursor: pointer;
             transition: color 0.2s ease;
           }
-          .partners-footer__nav a:hover {
+          .partners-footer__nav a:hover,
+          .partners-footer__nav button:hover {
             color: #ff6b2c;
           }
           .partners-footer__note {
@@ -2832,16 +2836,20 @@ export default function PartnersPage() {
             z-index: 1;
             display: inline-flex;
             min-height: 2.5rem;
+            width: 100%;
             align-items: center;
             justify-content: center;
             gap: 0.35rem;
+            border: 0;
             border-radius: 999px;
             padding: 0.45rem 0.65rem;
+            font-family: inherit;
             font-size: 13px;
             font-weight: 600;
             letter-spacing: -0.01em;
             text-decoration: none;
             pointer-events: auto;
+            cursor: pointer;
             transition: filter 0.2s ease, background 0.2s ease;
           }
           .partners-bento__discuss-btn--tg {

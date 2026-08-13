@@ -4,7 +4,6 @@ import Container from "../components/ui/Container";
 import Section from "../components/ui/Section";
 import { SEO } from "../components/SEO";
 import { LeadCTAButton } from "../components/leads/LeadCTAButton";
-import { trackTelegramDirectClick } from "../lib/analytics";
 import { useLang } from "../i18n/LangProvider";
 
 export default function WebsiteCreationPage() {
@@ -42,15 +41,6 @@ export default function WebsiteCreationPage() {
               <LeadCTAButton source="service_websites" variant="primary" size="lg">
                 {isRu ? "Оставить заявку" : "Send a brief"}
               </LeadCTAButton>
-              <a
-                href="https://t.me/TIVONIX"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => trackTelegramDirectClick()}
-                className="inline-flex h-12 items-center justify-center rounded-full bg-white/[0.08] px-7 text-[14px] font-bold text-white/90 ring-1 ring-white/12 transition hover:bg-white/[0.12]"
-              >
-                Telegram
-              </a>
             </div>
           </Container>
         </Section>
@@ -103,15 +93,6 @@ export default function WebsiteCreationPage() {
                 className="inline-flex h-11 items-center justify-center rounded-xl px-6 text-[14px] font-[650] text-white border border-white/15 bg-white/[0.04]"
               >
                 {isRu ? "Контакты" : "Contacts"}
-              </a>
-              <a
-                href="https://t.me/TIVONIX"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => trackTelegramDirectClick()}
-                className="inline-flex h-11 items-center justify-center rounded-xl px-6 text-[14px] font-[650] text-white/80 border border-white/10 bg-transparent"
-              >
-                Telegram
               </a>
             </div>
           </Container>
