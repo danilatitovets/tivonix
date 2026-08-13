@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
-import { HERO_POSTER, HERO_VIDEO_DESKTOP, pickHeroVideoSrc } from "../../lib/heroMedia";
+import {
+  FORM_POSTER,
+  HERO_POSTER,
+  HERO_VIDEO_DESKTOP,
+  pickFormVideoSrc,
+  pickHeroVideoSrc,
+} from "../../lib/heroMedia";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
@@ -12,6 +18,8 @@ type Props = {
   poster?: string;
   /** Force a specific src (skips mobile/desktop pick). */
   src?: string;
+  /** Hero keeps the original loop; form/final CTA use the new abstract clip. */
+  variant?: "hero" | "form";
 };
 
 /**
@@ -24,16 +32,18 @@ type Props = {
 export default function BgLoopVideo({
   className,
   style,
-  poster = HERO_POSTER,
+  poster,
   src: srcProp,
+  variant = "hero",
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const posterSrc = poster ?? (variant === "form" ? FORM_POSTER : HERO_POSTER);
   const [src, setSrc] = useState(srcProp ?? HERO_VIDEO_DESKTOP);
   const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
-    setSrc(srcProp ?? pickHeroVideoSrc());
-  }, [srcProp]);
+    setSrc(srcProp ?? (variant === "form" ? pickFormVideoSrc() : pickHeroVideoSrc()));
+  }, [srcProp, variant]);
 
   useEffect(() => {
     setPlaying(false);
@@ -61,7 +71,7 @@ export default function BgLoopVideo({
         ref={videoRef}
         className="hero-bg-video"
         src={src}
-        poster={poster}
+        poster={posterSrc}
         autoPlay
         muted
         loop
@@ -78,7 +88,7 @@ export default function BgLoopVideo({
         onStalled={() => setPlaying(false)}
       />
       <img
-        src={poster}
+        src={posterSrc}
         alt=""
         draggable={false}
         decoding="async"

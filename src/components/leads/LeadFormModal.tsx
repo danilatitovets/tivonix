@@ -353,7 +353,7 @@ export default function LeadFormModal({
                       "linear-gradient(180deg, black 0%, black 42%, rgba(0,0,0,0.35) 72%, transparent 100%)",
                   }}
                 >
-                  <BgLoopVideo />
+                  <BgLoopVideo variant="form" />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-b from-black/28 via-black/40 to-[#0b0b0d]" />
                 <div

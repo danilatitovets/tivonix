@@ -80,7 +80,7 @@ export default function FinalCTASection() {
           className="final-cta-card relative overflow-hidden rounded-[28px] px-6 py-12 text-center sm:rounded-[40px] sm:px-10 sm:py-14 lg:px-16 lg:py-16"
         >
           <div className="final-cta-card__bg" aria-hidden>
-            <BgLoopVideo className="final-cta-card__bg-img pointer-events-none" style={bgStyle} />
+            <BgLoopVideo variant="form" className="final-cta-card__bg-img pointer-events-none" style={bgStyle} />
             <div className="final-cta-card__bg-overlay" />
           </div>
 
