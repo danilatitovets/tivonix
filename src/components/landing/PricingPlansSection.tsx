@@ -565,7 +565,13 @@ export default function PricingPlansSection({ className }: { className?: string 
                             </p>
                             <div className="pricing-compare__mobile-values">
                               {PLAN_IDS.map((planId) => (
-                                <div key={planId} className="pricing-compare__mobile-value">
+                                <div
+                                  key={planId}
+                                  className={cx(
+                                    "pricing-compare__mobile-value",
+                                    planId === "growth" && "pricing-compare__mobile-value--growth"
+                                  )}
+                                >
                                   <p className="pricing-compare__mobile-plan-label">
                                     {copy.plans[planId].name}
                                   </p>
