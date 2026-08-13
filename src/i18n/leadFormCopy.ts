@@ -53,6 +53,7 @@ const COPY_RU = {
   privacyHref: "/doc/Политика_обработки_ПД_Tivonix_RU.pdf",
   send: "Получить предварительную оценку",
   sending: "Отправляю…",
+  sent: "Отправлено",
   close: "Закрыть",
   cancel: "Отмена",
   errors: {
@@ -102,6 +103,7 @@ const COPY_EN = {
   privacyHref: "/doc/Privacy_Policy_Tivonix_EN.pdf",
   send: "Get a preliminary estimate",
   sending: "Sending…",
+  sent: "Sent",
   close: "Close",
   cancel: "Cancel",
   errors: {
@@ -151,6 +153,7 @@ const COPY_ZH = {
   privacyHref: "/doc/Privacy_Policy_Tivonix_EN.pdf",
   send: "获取初步评估",
   sending: "提交中…",
+  sent: "已发送",
   close: "关闭",
   cancel: "取消",
   errors: {

@@ -99,6 +99,8 @@ export default function LeadFormModal({
     null
   );
   const [serverError, setServerError] = useState(false);
+  const [showSuccessDetails, setShowSuccessDetails] = useState(false);
+  const expandVideo = status === "loading" || status === "success";
 
   const planName = activePlanId ? pricing.plans[activePlanId].name : null;
   const planPrice = activePlanId ? planPagePrice(lang, activePlanId) : null;
@@ -110,6 +112,7 @@ export default function LeadFormModal({
       setFieldError("");
       setErrorField(null);
       setServerError(false);
+      setShowSuccessDetails(false);
       startedRef.current = false;
       successRef.current = false;
       setActivePlanId(planId);
@@ -131,6 +134,18 @@ export default function LeadFormModal({
       return () => window.clearTimeout(t);
     }
   }, [open, planId]);
+
+  useEffect(() => {
+    if (status !== "success") {
+      setShowSuccessDetails(false);
+      return;
+    }
+    const reduced =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const t = window.setTimeout(() => setShowSuccessDetails(true), reduced ? 0 : 1400);
+    return () => window.clearTimeout(t);
+  }, [status]);
 
   useEffect(() => {
     if (!open || status === "success") return;
@@ -306,6 +321,19 @@ export default function LeadFormModal({
           background: linear-gradient(180deg, #FFD7B0, #FF9A3D, #FF6A1A);
           border-radius: 999px;
         }
+        .lead-sent-word {
+          animation: lead-sent-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .lead-sent-details {
+          animation: lead-sent-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        @keyframes lead-sent-in {
+          from { opacity: 0; transform: translateY(10px) scale(0.94); filter: blur(8px); }
+          to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .lead-sent-word, .lead-sent-details { animation: none; }
+        }
       `}</style>
 
       <div
@@ -339,23 +367,26 @@ export default function LeadFormModal({
           style={{ background: FRAME }}
         >
           <div
-            className="relative flex max-h-[min(94dvh,780px)] flex-col overflow-hidden rounded-t-[27px] bg-[#0b0b0d] sm:rounded-[27px]"
+            className="relative flex min-h-[min(72dvh,620px)] max-h-[min(94dvh,780px)] flex-col overflow-hidden rounded-t-[27px] bg-[#0b0b0d] sm:rounded-[27px]"
           >
-            {/* header — hero video only here, blurred out at the bottom */}
-            <div className="relative z-10 isolate shrink-0 overflow-hidden px-5 pt-5 sm:px-7 sm:pt-6">
-              <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    maskImage:
-                      "linear-gradient(180deg, black 0%, black 42%, rgba(0,0,0,0.35) 72%, transparent 100%)",
-                    WebkitMaskImage:
-                      "linear-gradient(180deg, black 0%, black 42%, rgba(0,0,0,0.35) 72%, transparent 100%)",
-                  }}
-                >
-                  <BgLoopVideo variant="form" />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-b from-black/28 via-black/40 to-[#0b0b0d]" />
+            <div
+              aria-hidden
+              className={cx(
+                "pointer-events-none absolute inset-x-0 top-0 z-0 overflow-hidden",
+                "transition-[height] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                expandVideo ? "h-full" : "h-[8.75rem] sm:h-[9.5rem]"
+              )}
+            >
+              <BgLoopVideo variant="form" />
+              <div
+                className={cx(
+                  "absolute inset-0 transition-colors duration-500",
+                  expandVideo
+                    ? "bg-black/72"
+                    : "bg-gradient-to-b from-black/28 via-black/40 to-[#0b0b0d]"
+                )}
+              />
+              {!expandVideo ? (
                 <div
                   className="absolute inset-x-0 bottom-0 h-[96px]"
                   style={{
@@ -367,40 +398,122 @@ export default function LeadFormModal({
                       "linear-gradient(180deg, transparent 0%, black 58%, black 100%)",
                   }}
                 />
-              </div>
+              ) : null}
+            </div>
 
-              <div className="relative flex items-start justify-between gap-3">
-                <div className="min-w-0 pr-2">
-                  <h2
-                    id={titleId}
-                    className="text-[17px] font-extrabold tracking-tight text-white sm:text-[19px]"
-                  >
-                    {copy.title}
-                  </h2>
-                  <p id={descId} className="mt-1 max-w-[46ch] text-[12px] leading-snug text-white/70 sm:text-[12.5px]">
-                    {copy.subtitle}
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={status === "loading"}
+              className="group absolute right-4 top-4 z-30 grid h-9 w-9 place-items-center rounded-full bg-black/45 text-white/80 ring-1 ring-white/12 transition hover:bg-black/60 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/40 disabled:opacity-50 sm:right-5 sm:top-5"
+              aria-label={copy.close}
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="transition-transform duration-200 group-hover:rotate-90"
+                aria-hidden
+              >
+                <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </button>
+
+            {expandVideo ? (
+              <div
+                className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 py-16 text-center"
+                role="status"
+                aria-live="polite"
+              >
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0"
+                  style={{
+                    background:
+                      "radial-gradient(ellipse 72% 48% at 50% 48%, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.28) 58%, transparent 78%)",
+                  }}
+                />
+                {status === "success" && showSuccessDetails ? (
+                  <div className="lead-sent-details relative flex flex-col items-center gap-4">
+                    <div
+                      className="grid h-14 w-14 place-items-center rounded-full"
+                      style={{
+                        background:
+                          "linear-gradient(145deg, rgba(255,215,176,0.25), rgba(255,106,26,0.2))",
+                        boxShadow: "0 0 40px rgba(255,154,61,0.25)",
+                      }}
+                    >
+                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden>
+                        <path
+                          d="M5.5 12.6c2 1.6 3.3 3.2 4.2 5.1 2.6-4.8 5.8-8.2 10-11.2"
+                          stroke="#FF9A3D"
+                          strokeWidth="2.4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                    <h3 className="font-hero text-[1.35rem] font-semibold tracking-[-0.02em] text-white">
+                      {copy.successTitle}
+                    </h3>
+                    <p className="max-w-[36ch] text-[15px] leading-relaxed text-white/80 sm:text-[16px]">
+                      {copy.success}
+                    </p>
+                    <div className="mt-2 flex flex-col items-center gap-2.5 sm:flex-row">
+                      <a
+                        href={pathForLang("/projects/spliton", lang)}
+                        className="inline-flex h-11 items-center justify-center rounded-full border border-white/15 bg-black/25 px-5 text-[13.5px] font-medium text-white/90 backdrop-blur-md transition hover:border-white/30 hover:text-white"
+                        onClick={onClose}
+                      >
+                        {copy.successCase}
+                      </a>
+                      <a
+                        href={lang === "en" ? "/en" : lang === "zh" ? "/zh" : "/"}
+                        className="inline-flex h-11 items-center justify-center rounded-full bg-white px-5 text-[13.5px] font-bold text-black transition hover:bg-white/92"
+                        onClick={onClose}
+                      >
+                        {copy.successHome}
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="lead-sent-word relative font-hero text-[clamp(1.85rem,6.5vw,3.5rem)] font-normal uppercase leading-none tracking-[0.14em] text-white">
+                    <span
+                      className="inline-block rounded-full px-8 py-3.5 sm:px-10"
+                      style={{
+                        background: "rgba(6,6,8,0.92)",
+                        boxShadow: "0 16px 48px rgba(0,0,0,0.55)",
+                        textShadow: "0 2px 10px rgba(0,0,0,0.7)",
+                      }}
+                    >
+                      {status === "success" ? copy.sent : copy.sending}
+                    </span>
                   </p>
-                </div>
+                )}
+              </div>
+            ) : null}
 
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  disabled={status === "loading"}
-                  className="group grid h-9 w-9 shrink-0 place-items-center rounded-full bg-black/35 text-white/80 ring-1 ring-white/12 transition hover:bg-black/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/40 disabled:opacity-50"
-                  aria-label={copy.close}
+            <div
+              className={cx(
+                "relative z-10 flex min-h-0 flex-1 flex-col transition-opacity duration-300",
+                expandVideo && "pointer-events-none select-none opacity-0"
+              )}
+              aria-hidden={expandVideo}
+            >
+            {/* header */}
+            <div className="relative isolate shrink-0 overflow-hidden px-5 pt-5 pr-14 sm:px-7 sm:pt-6 sm:pr-16">
+              <div className="relative min-w-0 pr-2">
+                <h2
+                  id={titleId}
+                  className="text-[17px] font-extrabold tracking-tight text-white sm:text-[19px]"
                 >
-                  <svg
-                    width="15"
-                    height="15"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    className="transition-transform duration-200 group-hover:rotate-90"
-                    aria-hidden
-                  >
-                    <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                </button>
+                  {copy.title}
+                </h2>
+                <p id={descId} className="mt-1 max-w-[46ch] text-[12px] leading-snug text-white/70 sm:text-[12.5px]">
+                  {copy.subtitle}
+                </p>
               </div>
 
               <div className="pointer-events-none relative mt-5 h-4">
@@ -411,54 +524,6 @@ export default function LeadFormModal({
 
             {/* body */}
             <div className="lead-modal-scroll relative z-10 min-h-0 flex-1 bg-[#0b0b0d] px-5 pb-2 pt-1 sm:px-7">
-              {status === "success" ? (
-                <div
-                  className="flex min-h-[280px] flex-col items-center justify-center gap-4 py-10 text-center"
-                  role="status"
-                  aria-live="polite"
-                >
-                  <div
-                    className="grid h-14 w-14 place-items-center rounded-full"
-                    style={{
-                      background:
-                        "linear-gradient(145deg, rgba(255,215,176,0.25), rgba(255,106,26,0.2))",
-                      boxShadow: "0 0 40px rgba(255,154,61,0.25)",
-                    }}
-                  >
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden>
-                      <path
-                        d="M5.5 12.6c2 1.6 3.3 3.2 4.2 5.1 2.6-4.8 5.8-8.2 10-11.2"
-                        stroke="#FF9A3D"
-                        strokeWidth="2.4"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="font-hero text-[1.35rem] font-semibold tracking-[-0.02em] text-white">
-                    {copy.successTitle}
-                  </h3>
-                  <p className="max-w-[36ch] text-[15px] leading-relaxed text-white/75 sm:text-[16px]">
-                    {copy.success}
-                  </p>
-                  <div className="mt-2 flex flex-col items-center gap-2.5 sm:flex-row">
-                    <a
-                      href={pathForLang("/projects/spliton", lang)}
-                      className="inline-flex h-11 items-center justify-center rounded-full border border-white/15 px-5 text-[13.5px] font-medium text-white/85 transition hover:border-white/30 hover:text-white"
-                      onClick={onClose}
-                    >
-                      {copy.successCase}
-                    </a>
-                    <a
-                      href={lang === "en" ? "/en" : lang === "zh" ? "/zh" : "/"}
-                      className="inline-flex h-11 items-center justify-center rounded-full bg-white px-5 text-[13.5px] font-bold text-black transition hover:bg-white/92"
-                      onClick={onClose}
-                    >
-                      {copy.successHome}
-                    </a>
-                  </div>
-                </div>
-              ) : (
                 <form id="lead-form" onSubmit={onSubmit} noValidate className="space-y-3.5 pb-2">
                   <div className="absolute -left-[9999px] top-auto h-0 w-0 overflow-hidden" aria-hidden>
                     <label htmlFor="lead-company-fax">Company fax</label>
@@ -667,11 +732,9 @@ export default function LeadFormModal({
                     </div>
                   ) : null}
                 </form>
-              )}
             </div>
 
             {/* footer */}
-            {status !== "success" ? (
               <div className="relative z-10 shrink-0 bg-[#0b0b0d] px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-5">
                 <div
                   aria-hidden
@@ -719,7 +782,7 @@ export default function LeadFormModal({
                   </a>
                 </div>
               </div>
-            ) : null}
+            </div>
           </div>
         </div>
       </div>

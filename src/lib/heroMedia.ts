@@ -6,7 +6,7 @@ export const FORM_VIDEO_DESKTOP = "/images/form-bg.mp4";
 export const FORM_VIDEO_MOBILE = "/images/form-bg-mobile.mp4";
 export const FORM_POSTER = "/images/form-bg-poster.webp";
 
-function pickLoopSrc(desktop: string, mobile: string): string {
+export function pickLoopSrc(desktop: string, mobile: string): string {
   if (typeof window === "undefined") return desktop;
 
   try {

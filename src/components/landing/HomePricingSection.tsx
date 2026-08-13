@@ -12,37 +12,35 @@ import { useLeadForm } from "../leads/useLeadForm";
 import { trackEvent } from "../../lib/analytics";
 import { getStableViewportHeight } from "../../lib/stableViewport";
 import { pathForLang } from "../../lib/localePaths";
+import PlanBgVideo from "../ui/PlanBgVideo";
+import type { PlanVideoId } from "../../lib/planMedia";
 
-const PLANS_IMG = `/images/${encodeURIComponent("планы")}`;
-
-const GRID_PLANS: { id: PlanId; img: string; footRu: string; footEn: string }[] = [
+const GRID_PLANS: { id: PlanId; video: PlanVideoId; footRu: string; footEn: string }[] = [
   {
     id: "start",
-    img: `${PLANS_IMG}/1.webp`,
+    video: "start",
     footRu: "Быстрый старт под рекламу",
     footEn: "Fast launch for ads",
   },
   {
     id: "growth",
-    img: `${PLANS_IMG}/2.webp`,
+    video: "growth",
     footRu: "Чаще всего выбирают",
     footEn: "Most chosen plan",
   },
   {
     id: "product",
-    img: `${PLANS_IMG}/3.webp`,
+    video: "product",
     footRu: "Для веб-сервиса",
     footEn: "For a web service",
   },
   {
     id: "custom",
-    img: `${PLANS_IMG}/4.webp`,
+    video: "custom",
     footRu: "Под вашу логику",
     footEn: "Built around your logic",
   },
 ];
-
-const ENTERPRISE_IMG = `${PLANS_IMG}/5.webp`;
 
 const PLAN_TAGS: Record<PlanId, { ru: string; en: string }> = {
   start: { ru: "Заявки", en: "Leads" },
@@ -162,7 +160,7 @@ export default function HomePricingSection() {
         </Reveal>
 
         <div className="home-plan-grid mt-10">
-          {GRID_PLANS.map(({ id, img, footRu, footEn }, i) => {
+          {GRID_PLANS.map(({ id, video, footRu, footEn }, i) => {
             const plan = pricing.plans[id];
             const popular = id === "growth";
             const tag = PLAN_TAGS[id][lang];
@@ -177,13 +175,7 @@ export default function HomePricingSection() {
                   ].join(" ")}
                 >
                   <div className="home-plan-card__media" aria-hidden>
-                    <img
-                      src={img}
-                      alt=""
-                      className="home-plan-card__bg"
-                      loading="lazy"
-                      decoding="async"
-                    />
+                    <PlanBgVideo plan={video} className="home-plan-card__bg" />
                   </div>
                   <div className="home-plan-card__veil" aria-hidden />
 
@@ -275,13 +267,7 @@ export default function HomePricingSection() {
         <Reveal delay={200} className="mt-3">
           <article className="home-plan-enterprise">
             <div className="home-plan-enterprise__media" aria-hidden>
-              <img
-                src={ENTERPRISE_IMG}
-                alt=""
-                className="home-plan-enterprise__bg"
-                loading="lazy"
-                decoding="async"
-              />
+              <PlanBgVideo plan="enterprise" className="home-plan-enterprise__bg" />
             </div>
             <div className="home-plan-card__veil home-plan-card__veil--wide" aria-hidden />
             <div className="home-plan-enterprise__inner">

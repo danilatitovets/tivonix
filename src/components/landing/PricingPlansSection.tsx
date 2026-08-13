@@ -16,17 +16,10 @@ import {
 } from "../../lib/pricingData";
 import { useLeadForm } from "../leads/useLeadForm";
 import { ctaClass } from "../leads/ctaStyles";
+import PlanBgVideo from "../ui/PlanBgVideo";
 
 const COMPARE_LOGO = "/images/tivonix-logo-white.webp";
 const EMBER = "#fc5000";
-const PLANS_IMG = `/images/${encodeURIComponent("планы")}`;
-
-const PLAN_IMAGES: Record<PlanId, string> = {
-  start: `${PLANS_IMG}/1.webp`,
-  growth: `${PLANS_IMG}/2.webp`,
-  product: `${PLANS_IMG}/3.webp`,
-  custom: `${PLANS_IMG}/4.webp`,
-};
 
 function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
@@ -251,13 +244,7 @@ function PlanCard({
       )}
     >
       <div className="pricing-plan-card__media" aria-hidden>
-        <img
-          src={PLAN_IMAGES[planId]}
-          alt=""
-          className="pricing-plan-card__bg"
-          loading="lazy"
-          decoding="async"
-        />
+        <PlanBgVideo plan={planId} className="pricing-plan-card__bg" />
       </div>
       <div className="pricing-plan-card__veil" aria-hidden />
 
