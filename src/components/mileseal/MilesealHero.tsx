@@ -16,7 +16,7 @@ export default function MilesealHero({ onTryDemo, onRequestReview }: Props) {
   return (
     <section className="relative isolate min-h-[min(88svh,880px)] overflow-hidden bg-black pt-[calc(var(--tivonix-header-spacer)+0.5rem)] pb-10 sm:pb-14">
       <div className="pointer-events-none absolute inset-0 overflow-hidden bg-black" aria-hidden>
-        <BgLoopVideo className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center" />
+          <BgLoopVideo />
         <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/40 to-black" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.55)_75%)]" />
       </div>

@@ -30,7 +30,7 @@ export default function MilesealCommercialLanding({
     <div className="bg-black text-white">
       <section className="relative isolate min-h-[min(92svh,920px)] overflow-hidden pt-[calc(var(--tivonix-header-spacer)+0.5rem)] pb-12 sm:pb-16">
         <div className="pointer-events-none absolute inset-0 overflow-hidden bg-black" aria-hidden>
-          <BgLoopVideo className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center" />
+          <BgLoopVideo />
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-black" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(252,80,0,0.18)_0%,transparent_62%)]" />
         </div>

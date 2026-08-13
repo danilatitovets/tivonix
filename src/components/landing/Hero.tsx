@@ -156,7 +156,7 @@ function HeroCard({
       )}
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] bg-black">
-        <BgLoopVideo className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center" />
+        <BgLoopVideo />
 
         <div
           className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/55"

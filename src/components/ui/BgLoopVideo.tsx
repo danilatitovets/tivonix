@@ -15,8 +15,11 @@ type Props = {
 };
 
 /**
- * Full-bleed muted loop with a poster cover until playback actually starts.
- * Hides the native iOS/Android “tap to play” affordance behind the poster.
+ * Full-bleed muted loop. Poster stays on top until real playback so iOS
+ * never shows its native Play affordance over an empty/paused frame.
+ *
+ * `className` / `style` go on the wrapper (for Final CTA zoom etc.).
+ * The video + poster always fill the wrapper 100%.
  */
 export default function BgLoopVideo({
   className,
@@ -46,11 +49,17 @@ export default function BgLoopVideo({
   useKeepVideoPlaying(videoRef);
 
   return (
-    <>
+    <div
+      className={cx(
+        "hero-bg-video-wrap pointer-events-none overflow-hidden",
+        className ?? "absolute inset-0"
+      )}
+      style={style}
+      aria-hidden
+    >
       <video
         ref={videoRef}
-        className={cx("hero-bg-video", className)}
-        style={style}
+        className="hero-bg-video"
         src={src}
         poster={poster}
         autoPlay
@@ -59,26 +68,26 @@ export default function BgLoopVideo({
         playsInline
         preload="auto"
         controls={false}
+        controlsList="nodownload nofullscreen noremoteplayback"
         disablePictureInPicture
-        aria-hidden
+        disableRemotePlayback
         onPlaying={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
         onWaiting={() => setPlaying(false)}
+        onEmptied={() => setPlaying(false)}
+        onStalled={() => setPlaying(false)}
       />
       <img
         src={poster}
         alt=""
-        aria-hidden
         draggable={false}
         decoding="async"
         fetchPriority="high"
         className={cx(
-          className,
-          "hero-bg-video__poster pointer-events-none transition-opacity duration-500",
+          "hero-bg-video__poster transition-opacity duration-300",
           playing ? "opacity-0" : "opacity-100"
         )}
-        style={style}
       />
-    </>
+    </div>
   );
 }

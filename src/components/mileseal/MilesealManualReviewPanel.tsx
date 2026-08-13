@@ -292,7 +292,7 @@ export default function MilesealManualReviewPanel({
       >
         {/* Hero video header */}
         <div className="relative h-[148px] shrink-0 overflow-hidden sm:h-[168px]">
-          <BgLoopVideo className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover" />
+          <BgLoopVideo />
           <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/45 to-[#0a0a0a]/88" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(252,80,0,0.22)_0%,transparent_60%)]" />
 

@@ -224,20 +224,33 @@
     height: auto;
   }
 
+  .hero-bg-video-wrap {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
   video.hero-bg-video,
-  img.hero-bg-video,
   img.hero-bg-video__poster {
-    max-width: none;
-    height: unset;
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    object-fit: cover !important;
+    object-position: center !important;
   }
 
   .hero-bg-video::-webkit-media-controls,
   .hero-bg-video::-webkit-media-controls-start-playback-button,
-  .hero-bg-video::-webkit-media-controls-enclosure {
+  .hero-bg-video::-webkit-media-controls-enclosure,
+  .hero-bg-video::-webkit-media-controls-overlay-play-button {
     display: none !important;
-    -webkit-appearance: none;
-    opacity: 0;
-    pointer-events: none;
+    -webkit-appearance: none !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    pointer-events: none !important;
   }
 
     /* Comparison — три связанные карточки: проблема → система → планы */

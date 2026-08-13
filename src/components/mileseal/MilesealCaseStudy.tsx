@@ -637,7 +637,7 @@ export default function MilesealCaseStudy() {
       {/* Compact product hero — centered, brand video behind */}
       <section className="relative isolate overflow-hidden bg-[#0a0a0a] pt-[calc(var(--tivonix-header-spacer)+0.75rem)] pb-10 sm:pb-12">
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-          <BgLoopVideo className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center" />
+          <BgLoopVideo />
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/55 to-[#0a0a0a]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(10,10,10,0.55)_78%)]" />
         </div>
@@ -1062,7 +1062,7 @@ export default function MilesealCaseStudy() {
 
           <div className="relative overflow-hidden">
             <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-              <BgLoopVideo className="pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center" />
+              <BgLoopVideo />
               <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/70 to-black/60" />
               <div className="absolute inset-x-0 top-0 h-[48%] bg-gradient-to-b from-[#0a0a0a] via-[rgba(252,80,0,0.12)] to-transparent" />
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(252,80,0,0.14)_0%,transparent_55%)]" />
