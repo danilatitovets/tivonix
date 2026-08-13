@@ -272,8 +272,8 @@ export default function LeadFormModal({
 
   const inputBase = cx(
     "w-full h-12 rounded-xl px-4",
-    "border-0 bg-white/[0.08] text-white placeholder:text-white/40",
-    "outline-none focus:bg-white/[0.12]",
+    "border-0 bg-white/[0.10] text-white placeholder:text-white/40",
+    "outline-none focus:bg-white/[0.14]",
     "text-[14px] font-medium transition",
     HOTJAR_MASK_CLASS
   );
@@ -339,40 +339,37 @@ export default function LeadFormModal({
           style={{ background: FRAME }}
         >
           <div
-            className="relative flex max-h-[min(94dvh,780px)] flex-col overflow-hidden rounded-t-[27px] bg-black/50 backdrop-blur-2xl sm:rounded-[27px]"
+            className="relative flex max-h-[min(94dvh,780px)] flex-col overflow-hidden rounded-t-[27px] bg-[#0b0b0d] sm:rounded-[27px]"
           >
-            {/* same hero loop as the landing video */}
-            <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-              <BgLoopVideo />
-              <div className="absolute inset-0 bg-black/62" />
-            </div>
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0"
-              style={{
-                backgroundImage:
-                  "radial-gradient(720px 380px at 16% 0%, rgba(255,154,61,0.20), transparent 58%)," +
-                  "radial-gradient(640px 420px at 92% 28%, rgba(143,168,200,0.16), transparent 60%)," +
-                  "radial-gradient(520px 360px at 50% 110%, rgba(255,106,26,0.12), transparent 55%)",
-              }}
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 opacity-[0.18]"
-              style={{
-                backgroundImage:
-                  "radial-gradient(rgba(255,255,255,0.22) 1px, transparent 1px)",
-                backgroundSize: "18px 18px",
-                maskImage:
-                  "radial-gradient(closest-side at 50% 35%, black, transparent 80%)",
-                WebkitMaskImage:
-                  "radial-gradient(closest-side at 50% 35%, black, transparent 80%)",
-              }}
-            />
+            {/* header — hero video only here, blurred out at the bottom */}
+            <div className="relative z-10 isolate shrink-0 overflow-hidden px-5 pt-5 sm:px-7 sm:pt-6">
+              <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    maskImage:
+                      "linear-gradient(180deg, black 0%, black 42%, rgba(0,0,0,0.35) 72%, transparent 100%)",
+                    WebkitMaskImage:
+                      "linear-gradient(180deg, black 0%, black 42%, rgba(0,0,0,0.35) 72%, transparent 100%)",
+                  }}
+                >
+                  <BgLoopVideo />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-b from-black/28 via-black/40 to-[#0b0b0d]" />
+                <div
+                  className="absolute inset-x-0 bottom-0 h-[96px]"
+                  style={{
+                    backdropFilter: "blur(22px)",
+                    WebkitBackdropFilter: "blur(22px)",
+                    maskImage:
+                      "linear-gradient(180deg, transparent 0%, black 58%, black 100%)",
+                    WebkitMaskImage:
+                      "linear-gradient(180deg, transparent 0%, black 58%, black 100%)",
+                  }}
+                />
+              </div>
 
-            {/* header */}
-            <div className="relative z-10 shrink-0 px-5 pt-4 sm:px-7 sm:pt-5">
-              <div className="flex items-start justify-between gap-3">
+              <div className="relative flex items-start justify-between gap-3">
                 <div className="min-w-0 pr-2">
                   <h2
                     id={titleId}
@@ -380,7 +377,7 @@ export default function LeadFormModal({
                   >
                     {copy.title}
                   </h2>
-                  <p id={descId} className="mt-0.5 text-[12px] text-white/55 sm:text-[12.5px]">
+                  <p id={descId} className="mt-1 max-w-[46ch] text-[12px] leading-snug text-white/70 sm:text-[12.5px]">
                     {copy.subtitle}
                   </p>
                 </div>
@@ -389,7 +386,7 @@ export default function LeadFormModal({
                   type="button"
                   onClick={handleClose}
                   disabled={status === "loading"}
-                  className="group grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.08] text-white/80 transition hover:bg-white/[0.14] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/40 disabled:opacity-50"
+                  className="group grid h-9 w-9 shrink-0 place-items-center rounded-full bg-black/35 text-white/80 ring-1 ring-white/12 transition hover:bg-black/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/40 disabled:opacity-50"
                   aria-label={copy.close}
                 >
                   <svg
@@ -406,14 +403,14 @@ export default function LeadFormModal({
                 </button>
               </div>
 
-              <div className="pointer-events-none mt-4 h-4">
+              <div className="pointer-events-none relative mt-5 h-4">
                 <div className="mx-auto h-[2px] w-full rounded-full opacity-95" style={{ background: ORANGE_LINE }} />
                 <div className="mx-auto mt-[-2px] h-5 w-full opacity-35 blur-xl" style={{ background: ORANGE_LINE }} />
               </div>
             </div>
 
             {/* body */}
-            <div className="lead-modal-scroll relative z-10 min-h-0 flex-1 px-5 pb-2 pt-1 sm:px-7">
+            <div className="lead-modal-scroll relative z-10 min-h-0 flex-1 bg-[#0b0b0d] px-5 pb-2 pt-1 sm:px-7">
               {status === "success" ? (
                 <div
                   className="flex min-h-[280px] flex-col items-center justify-center gap-4 py-10 text-center"
@@ -566,8 +563,8 @@ export default function LeadFormModal({
                       }
                       className={cx(
                         "min-h-[108px] w-full resize-none rounded-xl px-4 py-3 text-[14px] font-medium",
-                        "border-0 bg-white/[0.08] text-white placeholder:text-white/40",
-                        "outline-none focus:bg-white/[0.12] transition",
+                        "border-0 bg-white/[0.10] text-white placeholder:text-white/40",
+                        "outline-none focus:bg-white/[0.14] transition",
                         HOTJAR_MASK_CLASS,
                         errorField === "task" && "bg-[#FF9A3D]/12 focus:bg-[#FF9A3D]/16"
                       )}
@@ -675,7 +672,7 @@ export default function LeadFormModal({
 
             {/* footer */}
             {status !== "success" ? (
-              <div className="relative z-10 shrink-0 bg-black/35 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl sm:px-7 sm:pb-5">
+              <div className="relative z-10 shrink-0 bg-[#0b0b0d] px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-5">
                 <div
                   aria-hidden
                   className="mb-3 h-px w-full opacity-60"
