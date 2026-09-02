@@ -26,6 +26,91 @@ export type ProjectCaseSystem = {
 
 
 export const PROJECT_CASE_SYSTEM: Record<string, ProjectCaseSystem> = {
+  "neo-terminal": {
+    moodRu: "AI-операционная система коммерции — от каталога до сделки",
+    moodEn: "AI commerce operating system — from catalog to transaction",
+    storyRu:
+      "Коммерция ломается, когда каталог говорит одно, склад — другое, клиент пишет в мессенджер, а менеджер вручную сшивает всё это вместе.\n\n" +
+      "Neo Terminal собран вокруг другой модели: товарные данные, остатки, клиенты, диалоги, заказы и операции живут на **одном коммерческом слое**.\n\n" +
+      "Это не ещё одна витрина и не чат-бот, прикрученный к каталогу. Neo Terminal объединяет Merchant OS, клиентский Smart City, продажи с поддержкой AI, склад, B2B-закупки, омниканальные диалоги, checkout, доставку, аналитику и операционную автоматизацию в одном продукте.\n\n" +
+      "Система принимает коммерческие данные из YML, XLSX, CSV, CommerceML и коннекторов, нормализует их в одну товарную модель и отдаёт те же данные в поиск, AI-сценарии, склад и инструменты мерчанта.\n\n" +
+      "Платформа собрана так, чтобы закрывать полный путь: **каталог → discovery → диалог → решение → корзина → транзакция → фулфилмент → аналитика**.",
+    storyEn:
+      "Commerce breaks when the catalog says one thing, the warehouse says another, a customer asks a question in a messenger, and the manager has to connect everything manually.\n\n" +
+      "Neo Terminal was designed around a different model: product data, stock, customers, conversations, orders and operations live on **one commerce layer**.\n\n" +
+      "It is not another storefront and not a chatbot attached to a catalog. Neo Terminal combines a Merchant OS, customer-facing Smart City, AI-assisted sales, inventory workflows, B2B procurement, omnichannel conversations, checkout, delivery, analytics and operational automation in one product.\n\n" +
+      "The system can ingest commerce data from YML, XLSX, CSV, CommerceML and connector-based sources, normalize it into one product model and make the same data available to customer search, AI workflows, warehouse operations and merchant tools.\n\n" +
+      "The result is a platform designed to connect the full path: **catalog → discovery → conversation → decision → cart → transaction → fulfillment → analytics**.",
+    logo: "/images/project-logos/neo-terminal.webp",
+    logoFit: "contain",
+    palette: [
+      {
+        name: "Terminal Orange",
+        hex: "#ff5a00",
+        group: "brand",
+        roleRu:
+          "Основной акцент Neo Terminal: активные состояния, выбранная навигация, интеллектуальные действия и ключевые сигналы продукта.",
+        roleEn:
+          "Primary Neo Terminal accent for active states, selected navigation, intelligent actions and key product signals.",
+      },
+      {
+        name: "Terminal Paper",
+        hex: "#ffffff",
+        group: "neutral",
+        roleRu: "Основная поверхность интерфейса и холст контента.",
+        roleEn: "Primary interface surface and content canvas.",
+      },
+      {
+        name: "Cloud",
+        hex: "#f5f5f5",
+        group: "neutral",
+        roleRu: "Фон приложения и вторичные области страниц.",
+        roleEn: "Application background and secondary page areas.",
+      },
+      {
+        name: "Soft Surface",
+        hex: "#fafafa",
+        group: "neutral",
+        roleRu: "Тихие панели, группы контролов и мягкое отделение контента.",
+        roleEn: "Quiet panels, grouped controls and subtle content separation.",
+      },
+      {
+        name: "Terminal Ink",
+        hex: "#0a0a0a",
+        group: "neutral",
+        roleRu: "Основная типографика, навигация и главные действия.",
+        roleEn: "Primary typography, navigation and main actions.",
+      },
+      {
+        name: "Muted Graphite",
+        hex: "#737373",
+        group: "neutral",
+        roleRu: "Вторичные подписи, метаданные и вспомогательная информация.",
+        roleEn: "Secondary labels, metadata and supporting information.",
+      },
+      {
+        name: "Hairline",
+        hex: "#e5e5e5",
+        group: "neutral",
+        roleRu: "Тонкие разделители и границы интерфейса.",
+        roleEn: "Subtle separators and interface boundaries.",
+      },
+      {
+        name: "Signal Soft",
+        hex: "#fff1e8",
+        group: "neutral",
+        roleRu: "Мягкий оранжевый контекст для выбранных и интеллектуальных состояний.",
+        roleEn: "Soft orange context for selected and intelligent states.",
+      },
+      {
+        name: "Danger",
+        hex: "#e7000b",
+        group: "neutral",
+        roleRu: "Деструктивные действия и критические ошибки.",
+        roleEn: "Destructive actions and critical error states.",
+      },
+    ],
+  },
   tivonixpanel: {
     moodRu: "Партнёрский кабинет без хаоса в чатах",
     moodEn: "Partner cabinet without chat chaos",
@@ -159,11 +244,11 @@ export const PROJECT_CASE_SYSTEM: Record<string, ProjectCaseSystem> = {
     moodEn: "Full booking marketplace — filters, map, master SaaS",
     storyRu:
       "Не «кнопка записаться». **Маркетплейс**: каталог с жёсткими фильтрами и картой, Telegram Mini App, кабинет мастера Free/Pro, platform-admin, bePaid.\n\n" +
-      "Заказчик — **Виктория Д.** Бюджет — 230 000 ₽ ([[≈ 2 940 $]]). Срок — **3 недели**. React + Express + PostgreSQL, прод на **Railway**, домен **slotty.of.by** — подсказали, где купить, подняли хостинг, выкатили.\n\n" +
+      "Заказчик — **Виктория Д.** Срок — **3 недели**. React + Express + PostgreSQL, прод на **Railway**, домен **slotty.of.by** — подсказали, где купить, подняли хостинг, выкатили.\n\n" +
       "Скоро запуск к **настоящим клиентам и мастерам**. Зайти и проверить можно самому: слот видно сразу, без Direct.",
     storyEn:
       "Not a “book now” button. A **marketplace**: filtered catalog + map, Telegram Mini App, master Free/Pro cabinet, platform admin, bePaid.\n\n" +
-      "Client — **Victoria D.** Budget — 230,000 ₽ ([[≈ $2,940]]). Timeline — **3 weeks**. React + Express + PostgreSQL, production on **Railway**, domain **slotty.of.by** — we advised where to buy, set up hosting, shipped live.\n\n" +
+      "Client — **Victoria D.** Timeline — **3 weeks**. React + Express + PostgreSQL, production on **Railway**, domain **slotty.of.by** — we advised where to buy, set up hosting, shipped live.\n\n" +
       "Soon launching to **real clients and masters**. You can open it yourself: the slot is visible right away — no DMs.",
     logo: "/images/project-logos/slotty.png",
     palette: [
@@ -224,10 +309,10 @@ export const PROJECT_CASE_SYSTEM: Record<string, ProjectCaseSystem> = {
     moodRu: "Корпоративный сайт — Figma → WordPress под ключ",
     moodEn: "Corporate site — Figma → WordPress turnkey",
     storyRu:
-      "Заказчик — **Евгений Беликов**, основатель и гендиректор ООО «Хэдмайнд». Бюджет — **100 000 ₽** ([[≈ 1 280 $]]).\n\n" +
+      "Заказчик — **Евгений Беликов**, основатель и гендиректор ООО «Хэдмайнд».\n\n" +
       "Сначала макеты в **Figma** (несколько вариантов на выбор), потом сборка на **WordPress + Elementor**, хостинг и домен **headmind.ru**. Сайт, который спокойно шлют в первом B2B-сообщении.",
     storyEn:
-      "Client — **Evgeniy Belikov**, founder and CEO of Headmind. Budget — **100,000 ₽** ([[≈ $1,280]]).\n\n" +
+      "Client — **Evgeniy Belikov**, founder and CEO of Headmind.\n\n" +
       "First **Figma** mockups (several options), then **WordPress + Elementor**, hosting and domain **headmind.ru**. A site you can send in the first B2B message.",
     logo: "/images/project-logos/headmind.png",
     palette: [
@@ -283,13 +368,13 @@ export const PROJECT_CASE_SYSTEM: Record<string, ProjectCaseSystem> = {
     ],
   },
   logovo: {
-    moodRu: "Сеть шиномонтажа LOGOVO — сайт под ключ за 1 600 BYN",
-    moodEn: "LOGOVO tire network — turnkey site for 1,600 BYN",
+    moodRu: "Сеть шиномонтажа LOGOVO — сайт под ключ",
+    moodEn: "LOGOVO tire network — turnkey site",
     storyRu:
-      "Заказчик — **ООО «Логово»**, Минск: **4 филиала**, два **24/7**. Бюджет — **1 600 BYN** ([[≈ 42 800 ₽]] / [[≈ 560 $]]).\n\n" +
+      "Заказчик — **ООО «Логово»**, Минск: **4 филиала**, два **24/7**.\n\n" +
       "Собрала **команда TIVONIX**: Figma → Next.js → домен и hoster.by. Светлый Awesomic-canvas, ember `#ff5a00` на CTA — запись с дороги за минуту.",
     storyEn:
-      "Client — **LOGOVO LLC**, Minsk: **4 branches**, two **24/7**. Budget — **1,600 BYN** ([[≈ 42,800 ₽]] / [[≈ $560]]).\n\n" +
+      "Client — **LOGOVO LLC**, Minsk: **4 branches**, two **24/7**.\n\n" +
       "Built by the **TIVONIX team**: Figma → Next.js → domain and hoster.by. Light Awesomic canvas, ember `#ff5a00` on CTAs — book from the road in a minute.",
     logo: "/images/project-logos/logovo.png",
     logoFit: "contain",

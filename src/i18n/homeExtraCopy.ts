@@ -22,12 +22,30 @@ const COPY_RU = {
     problem: "Проблема:",
     solution: "Решение:",
     resultLabel: "Результат:",
-    prev: "Предыдущий кейс",
-    next: "Следующий кейс",
-    items: [
-      {
-        id: "spliton",
-        type: "Веб-продукт · FinTech",
+        prev: "Предыдущий кейс",
+        next: "Следующий кейс",
+        items: [
+          {
+            id: "neo-terminal",
+            type: "AI Commerce · RetailTech",
+            problem:
+              "Розничные данные живут в разных местах: каталоги, ERP, сообщения, склады и таблицы. Клиенты ждут ответа, пока команда вручную сшивает одну и ту же информацию по каналам.",
+            solution:
+              "Собрали единый коммерческий слой: загрузка каталога, склад, продажи с AI, Smart City, B2B-закупки, омниканальные диалоги, checkout, доставка и операции мерчанта.",
+            result:
+              "Одна операционная система коммерции, где товары, остатки, диалоги, заказы и бизнес-процессы живут на одном слое данных.",
+            modules: [
+              "AI Seller",
+              "Smart Inventory",
+              "B2B",
+              "Smart City",
+              "Omnichannel",
+              "Merchant OS",
+            ],
+          },
+          {
+            id: "spliton",
+            type: "Веб-продукт · FinTech",
         problem:
           "Нужна была финтех-платформа для долей в музыке — не лендинг, а полноценный продукт с деньгами, ролями и комплаенсом.",
         solution:
@@ -60,17 +78,6 @@ const COPY_RU = {
           "Telegram",
           "bePaid",
         ],
-      },
-      {
-        id: "logovo",
-        type: "Локальный бизнес",
-        problem:
-          "Клиент с дороги не находил филиал и запись — адреса и CTA прятались, заявка терялась.",
-        solution:
-          "Собрали сайт сети: филиалы, услуги, цены, карта и короткий путь до заявки или звонка.",
-        result:
-          "Сайт сети шиномонтажей с филиалами, услугами, ценами и маршрутом до заявки.",
-        modules: ["Филиалы", "Услуги", "Цены", "Карта", "Запись", "B2B"],
       },
     ],
   },
@@ -261,12 +268,30 @@ const COPY_EN = {
     problem: "Problem:",
     solution: "Solution:",
     resultLabel: "Result:",
-    prev: "Previous case",
-    next: "Next case",
-    items: [
-      {
-        id: "spliton",
-        type: "Web product · FinTech",
+        prev: "Previous case",
+        next: "Next case",
+        items: [
+          {
+            id: "neo-terminal",
+            type: "AI Commerce · RetailTech",
+            problem:
+              "Retail data lives in different places: product catalogs, ERP systems, messages, warehouses and spreadsheets. Customers wait for answers while teams manually reconnect the same information across channels.",
+            solution:
+              "We built a unified commerce layer with catalog ingestion, inventory, AI-assisted selling, Smart City discovery, B2B procurement, omnichannel conversations, checkout, delivery and merchant operations.",
+            result:
+              "One commerce operating system where products, stock, conversations, orders and business workflows share the same data layer.",
+            modules: [
+              "AI Seller",
+              "Smart Inventory",
+              "B2B",
+              "Smart City",
+              "Omnichannel",
+              "Merchant OS",
+            ],
+          },
+          {
+            id: "spliton",
+            type: "Web product · FinTech",
         problem:
           "Needed a fintech platform for music shares — a full product with money flows, roles and compliance, not a landing page.",
         solution:
@@ -299,17 +324,6 @@ const COPY_EN = {
           "Telegram",
           "bePaid",
         ],
-      },
-      {
-        id: "logovo",
-        type: "Local business",
-        problem:
-          "Drivers couldn’t find a branch or booking path — addresses and CTAs were buried, leads were lost.",
-        solution:
-          "Built a network site: branches, services, prices, map and a short path to book or call.",
-        result:
-          "Tire-service network site with branches, services, prices and a clear path to a lead.",
-        modules: ["Branches", "Services", "Prices", "Map", "Booking", "B2B"],
       },
     ],
   },
@@ -500,12 +514,30 @@ const COPY_ZH = {
     problem: "问题：",
     solution: "方案：",
     resultLabel: "结果：",
-    prev: "上一个案例",
-    next: "下一个案例",
-    items: [
-      {
-        id: "spliton",
-        type: "Web 产品 · 金融科技",
+        prev: "上一个案例",
+        next: "下一个案例",
+        items: [
+          {
+            id: "neo-terminal",
+            type: "AI Commerce · RetailTech",
+            problem:
+              "零售数据分散在目录、ERP、消息、仓库和表格里。客户在等回复，团队却在各渠道手工拼接同一份信息。",
+            solution:
+              "我们构建了统一的商业层：目录接入、库存、AI 辅助销售、Smart City、B2B 采购、全渠道对话、结算、配送与商家运营。",
+            result:
+              "一套商业操作系统：商品、库存、对话、订单与业务流程共享同一数据层。",
+            modules: [
+              "AI Seller",
+              "Smart Inventory",
+              "B2B",
+              "Smart City",
+              "Omnichannel",
+              "Merchant OS",
+            ],
+          },
+          {
+            id: "spliton",
+            type: "Web 产品 · 金融科技",
         problem:
           "需要音乐份额金融科技平台 — 含资金流、角色与合规的完整产品，不是落地页。",
         solution:
@@ -538,17 +570,6 @@ const COPY_ZH = {
           "Telegram",
           "bePaid",
         ],
-      },
-      {
-        id: "logovo",
-        type: "本地生意",
-        problem:
-          "司机找不到门店或预约路径 — 地址与 CTA 被埋没，线索流失。",
-        solution:
-          "交付网络站：门店、服务、价格、地图与短路径预约/拨打。",
-        result:
-          "轮胎服务网络站：门店、服务、价格与清晰获客路径。",
-        modules: ["门店", "服务", "价格", "地图", "预约", "企业对企业"],
       },
     ],
   },

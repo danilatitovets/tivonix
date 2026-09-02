@@ -15,10 +15,12 @@ const requiredHtmlFiles = [
   "dist/partners/index.html",
   "dist/ru/partners/index.html",
   "dist/en/partners/index.html",
+  "dist/projects/neo-terminal/index.html",
   "dist/projects/slotty/index.html",
   "dist/projects/spliton/index.html",
   "dist/projects/headmind/index.html",
   "dist/projects/logovo/index.html",
+  "dist/en/projects/neo-terminal/index.html",
 ];
 
 const checks = [
@@ -103,7 +105,25 @@ const checks = [
   },
   {
     file: "dist/projects/index.html",
-    phrases: ["Проекты", "Slotty", "Spliton", "Headmind", "LOGOVO"],
+    phrases: ["Проекты", "Neo Terminal", "Slotty", "Spliton", "Headmind", "LOGOVO"],
+  },
+  {
+    file: "dist/projects/neo-terminal/index.html",
+    phrases: [
+      "Neo Terminal",
+      "операционная система коммерции",
+      "https://tivonix.tech/projects/neo-terminal",
+      "neo-terminal-web.onrender.com",
+    ],
+  },
+  {
+    file: "dist/en/projects/neo-terminal/index.html",
+    phrases: [
+      "Neo Terminal",
+      "AI Commerce Operating System",
+      "https://tivonix.tech/en/projects/neo-terminal",
+      "neo-terminal-web.onrender.com",
+    ],
   },
   {
     file: "dist/projects/spliton/index.html",

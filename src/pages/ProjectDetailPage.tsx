@@ -6,7 +6,7 @@ import Container from "../components/ui/Container";
 import Header from "../components/landing/Header";
 import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
-import { buildProjects, findProjectBySlug, projectSubtitle, projectDetails, type Project } from "../data/projectsCatalog";
+import { buildProjects, findProjectBySlug, projectSubtitle, projectDetails, isProjectSiteOpen, type Project } from "../data/projectsCatalog";
 import { getProjectCaseSystem, type CaseSwatch } from "../data/projectCaseSystem";
 import { cx, projectPreviewSrc, ProjectGalleryStrip, s } from "./projectBlocks";
 import SoftImg from "../components/ui/SoftImg";
@@ -639,6 +639,7 @@ function MoreProjectCard({ project, lang }: { project: Project; lang: Lang }) {
   const subtitle = projectSubtitle(project, lang);
 
   return (
+    <article className="min-w-0">
     <Link to={pathForLang(`/projects/${project.id}`, lang)} className="group block min-w-0 outline-none">
       <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[12px] bg-[#141416]">
         <img
@@ -664,6 +665,14 @@ function MoreProjectCard({ project, lang }: { project: Project; lang: Lang }) {
         </div>
       </div>
     </Link>
+    <LeadCTAButton
+      source="project_page"
+      variant="plain"
+      className="mt-3 !h-auto !justify-start !px-0 !py-0 !text-[13px] !font-medium !text-[#FF9A3D] hover:!bg-transparent hover:!text-[#FFB06A] active:!scale-100"
+    >
+      {leadFormCopy(lang).ctaSimilarProject} →
+    </LeadCTAButton>
+    </article>
   );
 }
 
@@ -686,13 +695,14 @@ export default function ProjectDetailPage() {
   const tagsLabel = t3(lang, "Теги", "Tags", "标签");
   const liveLabel = t3(lang, "В продакшене", "Live", "已上线");
   const wipLabel = t3(lang, "В разработке", "In progress", "开发中");
+  const pilotLabel = t3(lang, "Готов к пилоту", "Pilot-ready", "试点就绪");
   const openSiteLabel = t3(lang, "Открыть сайт", "Open website", "打开网站");
   const websiteSoonLabel = t3(lang, "Сайт скоро", "Website soon", "网站即将上线");
   const roleLabel = t3(lang, "Роль TIVONIX", "TIVONIX role", "TIVONIX 角色");
   const roleValue = t3(
     lang,
-    "Дизайн и разработка под ключ",
-    "End-to-end design and development",
+    project?.roleRu ?? "Дизайн и разработка под ключ",
+    project?.roleEn ?? "End-to-end design and development",
     "端到端设计与开发"
   );
   const detailsLabel = t3(lang, "Подробнее", "Details", "详情");
@@ -703,17 +713,23 @@ export default function ProjectDetailPage() {
   const subtitle = projectSubtitle(project, lang);
   const details = projectDetails(project, lang);
   const mood = caseSystem ? (isRu ? caseSystem.moodRu : caseSystem.moodEn) : null;
-  const seoTitle = `${project.title} — ${t3(lang, "кейс TIVONIX", "TIVONIX case study", "TIVONIX 案例")}`;
+  const seoTitle =
+    (isRu ? project.seoTitleRu : project.seoTitleEn) ??
+    `${project.title} — ${t3(lang, "кейс TIVONIX", "TIVONIX case study", "TIVONIX 案例")}`;
   const seoDescription = clipMetaDescription(
-    subtitle +
-      t3(
-        lang,
-        " Студия TIVONIX: веб-разработка, лендинги, продукты и MVP.",
-        " TIVONIX studio: web development, landings, products and MVPs.",
-        " 白俄罗斯技术团队 TIVONIX：网站开发、落地页、产品与 MVP。"
-      )
+    (isRu ? project.seoDescriptionRu : project.seoDescriptionEn) ??
+      subtitle +
+        t3(
+          lang,
+          " Студия TIVONIX: веб-разработка, лендинги, продукты и MVP.",
+          " TIVONIX studio: web development, landings, products and MVPs.",
+          " 白俄罗斯技术团队 TIVONIX：网站开发、落地页、产品与 MVP。"
+        )
   );
   const wip = project.status === "wip";
+  const pilot = project.status === "pilot";
+  const siteOpen = isProjectSiteOpen(project);
+  const statusText = wip ? wipLabel : pilot ? pilotLabel : liveLabel;
   const domainClean = project.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "") ?? "";
   const coverSrc = projectPreviewSrc(project);
   const coverAbsolute = absoluteAssetUrl(coverSrc);
@@ -723,7 +739,7 @@ export default function ProjectDetailPage() {
     title: project.title,
     description: seoDescription,
     coverUrl: coverAbsolute,
-    domain: project.domain,
+    domain: siteOpen ? project.domain : undefined,
     tags: project.tags,
     stack: project.stack,
     lang,
@@ -812,7 +828,7 @@ export default function ProjectDetailPage() {
 
                 <dl className="mt-6 sm:mt-8">
                   <SpecRow label={domainLabel}>
-                    {project.domain && !wip ? (
+                    {siteOpen ? (
                       <a
                         href={project.domain}
                         target="_blank"
@@ -822,6 +838,8 @@ export default function ProjectDetailPage() {
                         <span className="truncate">{formatDomainLabel(domainClean)}</span>
                         <ExternalIcon className="shrink-0 text-[#8a8a8e]" />
                       </a>
+                    ) : domainClean ? (
+                      <span className="text-[#8a8a8e]">{formatDomainLabel(domainClean)}</span>
                     ) : (
                       <span className="text-[#8a8a8e]">{websiteSoonLabel}</span>
                     )}
@@ -832,10 +850,10 @@ export default function ProjectDetailPage() {
                       <span
                         className={cx(
                           "h-1.5 w-1.5 shrink-0 rounded-full",
-                          wip ? "bg-amber-400/90" : "bg-emerald-400/90"
+                          wip || pilot ? "bg-amber-400/90" : "bg-emerald-400/90"
                         )}
                       />
-                      {wip ? wipLabel : liveLabel}
+                      {statusText}
                     </span>
                   </SpecRow>
 
@@ -861,7 +879,7 @@ export default function ProjectDetailPage() {
                 </dl>
 
                 <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:gap-4">
-                  {project.domain && !wip ? (
+                  {siteOpen ? (
                     <a
                       href={project.domain}
                       target="_blank"
@@ -881,7 +899,7 @@ export default function ProjectDetailPage() {
                     variant="plain"
                     className="!h-12 w-full !rounded-full !border !border-white/15 !bg-transparent !px-6 !text-[15px] !font-medium !tracking-normal !text-[#ededf3] hover:!border-white/25 hover:!bg-white/[0.03] hover:!text-white sm:!h-auto sm:!min-h-0 sm:!rounded-none sm:!border-0 sm:!px-0 sm:!py-1 sm:hover:!bg-transparent sm:hover:!text-white/75"
                   >
-                    {leadFormCopy(lang).ctaDiscuss}
+                    {leadFormCopy(lang).ctaSimilarProject}
                   </LeadCTAButton>
 
                   <p className="text-left text-[12px] leading-relaxed tracking-normal text-[#8a8a8e] sm:text-[13px]">
@@ -922,7 +940,7 @@ export default function ProjectDetailPage() {
                     logoFit={caseSystem.logoFit}
                     domain={project.domain}
                     domainClean={domainClean}
-                    wip={wip}
+                    wip={!siteOpen}
                   />
                 ) : (
                   <>

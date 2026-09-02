@@ -28,8 +28,10 @@ function useSectionScrollScale(sectionRef: React.RefObject<HTMLElement | null>) 
 
     let raf = 0;
     let lastScale = 1.05;
+    let visible = false;
 
     const update = () => {
+      if (!visible) return;
       const rect = el.getBoundingClientRect();
       const vh = getStableViewportHeight();
       const total = rect.height + vh;
@@ -42,16 +44,26 @@ function useSectionScrollScale(sectionRef: React.RefObject<HTMLElement | null>) 
     };
 
     const schedule = () => {
+      if (!visible) return;
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(update);
     };
 
-    schedule();
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        visible = !!entry?.isIntersecting;
+        if (visible) schedule();
+      },
+      { root: null, rootMargin: "30% 0px", threshold: 0 }
+    );
+    io.observe(el);
+
     window.addEventListener("scroll", schedule, { passive: true });
     // no resize: mobile chrome height changes must not retarget scale while idle
 
     return () => {
       cancelAnimationFrame(raf);
+      io.disconnect();
       window.removeEventListener("scroll", schedule);
     };
   }, [sectionRef]);

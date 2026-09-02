@@ -152,6 +152,36 @@
     <priority>0.75</priority>
   </url>
   <url>
+    <loc>https://www.tivonix.tech/projects/neo-terminal</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/neo-terminal" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/neo-terminal" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/neo-terminal" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/neo-terminal" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/neo-terminal" />
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/en/projects/neo-terminal</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/neo-terminal" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/neo-terminal" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/neo-terminal" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/neo-terminal" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/neo-terminal" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.tivonix.tech/zh/projects/neo-terminal</loc>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/neo-terminal" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/neo-terminal" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/projects/neo-terminal" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/projects/neo-terminal" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/projects/neo-terminal" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.tivonix.tech/projects/spliton</loc>
     <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/projects/spliton" />
     <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/projects/spliton" />
@@ -280,46 +310,6 @@
     <loc>https://www.tivonix.tech/avtomatizaciya-biznesa</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/mileseal</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/mileseal" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/mileseal" />
-    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/mileseal" />
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/mileseal" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/mileseal" />
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/en/mileseal</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/mileseal" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/mileseal" />
-    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/mileseal" />
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/mileseal" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/mileseal" />
-    <changefreq>weekly</changefreq>
-    <priority>0.75</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/mileseal/cases/content-migration</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/mileseal/cases/content-migration" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/mileseal/cases/content-migration" />
-    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/mileseal/cases/content-migration" />
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/mileseal/cases/content-migration" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/mileseal/cases/content-migration" />
-    <changefreq>weekly</changefreq>
-    <priority>0.75</priority>
-  </url>
-  <url>
-    <loc>https://www.tivonix.tech/en/mileseal/cases/content-migration</loc>
-    <xhtml:link rel="alternate" hreflang="ru" href="https://www.tivonix.tech/mileseal/cases/content-migration" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.tivonix.tech/en/mileseal/cases/content-migration" />
-    <xhtml:link rel="alternate" hreflang="zh" href="https://www.tivonix.tech/zh/mileseal/cases/content-migration" />
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.tivonix.tech/zh/mileseal/cases/content-migration" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.tivonix.tech/mileseal/cases/content-migration" />
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.tivonix.tech/partners</loc>

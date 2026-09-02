@@ -6,21 +6,28 @@ export const FORM_VIDEO_DESKTOP = "/images/form-bg.mp4";
 export const FORM_VIDEO_MOBILE = "/images/form-bg-mobile.mp4";
 export const FORM_POSTER = "/images/form-bg-poster.webp";
 
-export function pickLoopSrc(desktop: string, mobile: string): string {
-  if (typeof window === "undefined") return desktop;
+function prefersLightLoop(): boolean {
+  if (typeof window === "undefined") return false;
 
   try {
-    const conn = (navigator as Navigator & {
+    const nav = navigator as Navigator & {
+      deviceMemory?: number;
       connection?: { saveData?: boolean; effectiveType?: string };
-    }).connection;
-    if (conn?.saveData) return mobile;
-    const type = conn?.effectiveType;
-    if (type === "slow-2g" || type === "2g" || type === "3g") return mobile;
+    };
+    if (nav.connection?.saveData) return true;
+    const type = nav.connection?.effectiveType;
+    if (type === "slow-2g" || type === "2g" || type === "3g") return true;
+    if (typeof nav.deviceMemory === "number" && nav.deviceMemory <= 4) return true;
   } catch {
     /* ignore */
   }
 
-  if (window.matchMedia("(max-width: 900px)").matches) return mobile;
+  return window.matchMedia("(max-width: 900px)").matches;
+}
+
+export function pickLoopSrc(desktop: string, mobile: string): string {
+  if (typeof window === "undefined") return desktop;
+  if (prefersLightLoop()) return mobile;
   return desktop;
 }
 

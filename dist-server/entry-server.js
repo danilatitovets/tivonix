@@ -2,7 +2,7 @@ import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import { renderToString } from "react-dom/server";
 import { useLocation, useNavigate, Link, useParams, Navigate, useSearchParams, Routes, Route, MemoryRouter } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
-import React, { createContext, useState, useEffect, useMemo, useContext, useId, useRef, useCallback, useSyncExternalStore, useLayoutEffect, lazy, Suspense, useReducer } from "react";
+import React, { createContext, useState, useEffect, useMemo, useContext, useRef, useId, useCallback, useSyncExternalStore, useLayoutEffect, lazy, Suspense, useReducer } from "react";
 import { createPortal } from "react-dom";
 import { Check, ArrowUpRight, ChevronDown, Mail, Bot, Zap, LayoutDashboard, Users, TrendingUp, ShieldCheck, ChevronLeft, ChevronRight, FolderOpen, Plus, Minus, X, MessageSquareText, FileText, User, Building2, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import { SiTelegram, SiGmail, SiHubspot, SiGooglesheets, SiWhatsapp, SiNotion, SiGooglecalendar, SiClickup, SiStripe, SiGoogledocs, SiGoogleanalytics, SiZapier } from "react-icons/si";
@@ -703,9 +703,6 @@ function trackLeadFormAbandon(source) {
 function trackTelegramDirectClick() {
   trackEvent("telegram_direct_click");
 }
-function trackTelegramBotClick() {
-  trackEvent("telegram_bot_click");
-}
 function trackEmailClick() {
   trackEvent("email_click");
 }
@@ -784,6 +781,7 @@ const COPY_RU$4 = {
   privacyHref: "/doc/Политика_обработки_ПД_Tivonix_RU.pdf",
   send: "Получить предварительную оценку",
   sending: "Отправляю…",
+  sent: "Отправлено",
   close: "Закрыть",
   cancel: "Отмена",
   errors: {
@@ -805,6 +803,7 @@ const COPY_RU$4 = {
   sticky: "Получить оценку",
   ctaDiscuss: "Оценить проект",
   ctaEstimate: "Получить оценку проекта",
+  ctaSimilarProject: "Предложить такой же проект",
   ctaProjects: "Есть похожая задача? Обсудить проект",
   selectedPlan: "Выбранный план",
   clearPlan: "Без плана",
@@ -829,6 +828,7 @@ const COPY_EN$4 = {
   privacyHref: "/doc/Privacy_Policy_Tivonix_EN.pdf",
   send: "Get a preliminary estimate",
   sending: "Sending…",
+  sent: "Sent",
   close: "Close",
   cancel: "Cancel",
   errors: {
@@ -850,6 +850,7 @@ const COPY_EN$4 = {
   sticky: "Get an estimate",
   ctaDiscuss: "Estimate project",
   ctaEstimate: "Get a project estimate",
+  ctaSimilarProject: "Propose a similar project",
   ctaProjects: "Have a similar task? Let’s discuss",
   selectedPlan: "Selected plan",
   clearPlan: "No plan",
@@ -874,6 +875,7 @@ const COPY_ZH$4 = {
   privacyHref: "/doc/Privacy_Policy_Tivonix_EN.pdf",
   send: "获取初步评估",
   sending: "提交中…",
+  sent: "已发送",
   close: "关闭",
   cancel: "取消",
   errors: {
@@ -895,6 +897,7 @@ const COPY_ZH$4 = {
   sticky: "获取评估",
   ctaDiscuss: "评估项目",
   ctaEstimate: "获取项目评估",
+  ctaSimilarProject: "提交类似项目",
   ctaProjects: "有类似需求？一起来谈",
   selectedPlan: "已选方案",
   clearPlan: "不选方案",
@@ -1069,7 +1072,7 @@ const PLAN_CATALOG = {
     },
     telegramPayload: "plan_start",
     adminSource: "Start (/plans)",
-    ctaAction: "telegram"
+    ctaAction: "modal"
   },
   growth: {
     id: "growth",
@@ -1081,7 +1084,7 @@ const PLAN_CATALOG = {
     },
     telegramPayload: "plan_growth",
     adminSource: "Growth (/plans)",
-    ctaAction: "telegram"
+    ctaAction: "modal"
   },
   product: {
     id: "product",
@@ -1093,7 +1096,7 @@ const PLAN_CATALOG = {
     },
     telegramPayload: "plan_product",
     adminSource: "Product (/plans)",
-    ctaAction: "telegram"
+    ctaAction: "modal"
   },
   custom: {
     id: "custom",
@@ -1105,7 +1108,7 @@ const PLAN_CATALOG = {
     },
     telegramPayload: "plan_custom",
     adminSource: "Custom (/plans)",
-    ctaAction: "telegram"
+    ctaAction: "modal"
   },
   help: {
     id: "help",
@@ -1117,7 +1120,7 @@ const PLAN_CATALOG = {
     },
     telegramPayload: "plan_help",
     adminSource: "Help (/plans)",
-    ctaAction: "telegram"
+    ctaAction: "modal"
   }
 };
 ({
@@ -1127,7 +1130,6 @@ const PLAN_CATALOG = {
   custom: PLAN_CATALOG.custom.telegramPayload
 });
 PLAN_CATALOG.help.telegramPayload;
-const PARTNER_AGENCY_TELEGRAM_PAYLOAD = "partner_agency";
 function getPlanCtaAction(planId) {
   return PLAN_CATALOG[planId].ctaAction;
 }
@@ -1136,14 +1138,6 @@ function getPlanCtaAction(planId) {
     Object.values(PLAN_CATALOG).map((entry) => [entry.telegramPayload, entry.adminSource])
   )
 });
-const TG_BOT_BASE_URL = "https://t.me/tivonixtech_leads_bot";
-const TG_CHANNEL_URL = "https://t.me/TIVONIX";
-const TG_BOT_URL = buildTelegramBotUrl("calc");
-function buildTelegramBotUrl(startPayload) {
-  if (!startPayload) return TG_BOT_BASE_URL;
-  return `${TG_BOT_BASE_URL}?start=${encodeURIComponent(startPayload)}`;
-}
-const PARTNER_AGENCY_TELEGRAM_URL = buildTelegramBotUrl(PARTNER_AGENCY_TELEGRAM_PAYLOAD);
 const PLAN_IDS = ["start", "growth", "product", "custom"];
 const COMPARISON_GROUPS = [
   {
@@ -1429,7 +1423,7 @@ const COPY_RU$3 = {
     valueLead: "Сначала запускаем то, что помогает получать и обрабатывать заявки. Когда бизнесу становится тесно — добавляем CRM, кабинет, оплату, интеграции или автоматизацию.",
     helpTitle: "Не уверены, какой план выбрать?",
     helpLead: "Опишите задачу своими словами — подскажем, с чего лучше начать: Start, Growth, Product или Custom.",
-    helpCta: "Написать в Telegram",
+    helpCta: "Оставить заявку",
     helpModalCta: "Оставить заявку",
     planScopeCaption: "Объём запуска по планам",
     chips: {
@@ -1499,7 +1493,7 @@ const COPY_EN$3 = {
         "domain launch"
       ],
       cta: "Discuss launch",
-      ctaHint: "Opens our Telegram bot — takes about 2 minutes.",
+      ctaHint: "Opens a short form. The Start plan will already be selected.",
       compactCta: "Discuss Start"
     },
     growth: {
@@ -1558,7 +1552,7 @@ const COPY_EN$3 = {
         "support and evolution"
       ],
       cta: "Request a plan",
-      ctaHint: "Opens our Telegram bot to discuss a non-standard task.",
+      ctaHint: "Opens a short form to discuss a non-standard task.",
       compactCta: "Discuss Custom"
     }
   },
@@ -1647,7 +1641,7 @@ const COPY_EN$3 = {
     valueLead: "We launch what helps you capture and process leads first. When the business outgrows it — we add CRM, client area, payments, integrations or automation.",
     helpTitle: "Not sure which plan to pick?",
     helpLead: "Describe your task in your own words — we’ll suggest whether to start with Start, Growth, Product or Custom.",
-    helpCta: "Message on Telegram",
+    helpCta: "Send a request",
     helpModalCta: "Submit request",
     planScopeCaption: "Launch scope by plan",
     chips: {
@@ -1717,7 +1711,7 @@ const COPY_ZH$3 = {
         "域名上线"
       ],
       cta: "沟通启动",
-      ctaHint: "打开我们的 Telegram 机器人 — 约 2 分钟。",
+      ctaHint: "打开简短表单，Start 方案已预选。",
       compactCta: "沟通 Start"
     },
     growth: {
@@ -1776,7 +1770,7 @@ const COPY_ZH$3 = {
         "支持与持续迭代"
       ],
       cta: "申请方案",
-      ctaHint: "打开我们的 Telegram 机器人讨论非标需求。",
+      ctaHint: "打开表单，讨论非标需求。",
       compactCta: "沟通 Custom"
     }
   },
@@ -1865,7 +1859,7 @@ const COPY_ZH$3 = {
     valueLead: "我们先交付帮助获客与处理线索的部分。业务成长后再加 CRM、客户后台、支付、集成或自动化。",
     helpTitle: "不确定选哪个方案？",
     helpLead: "用自己的话描述需求 — 我们建议从 Start、Growth、Product 还是 Custom 开始。",
-    helpCta: "通过 Telegram 联系",
+    helpCta: "提交需求",
     helpModalCta: "提交需求",
     planScopeCaption: "按方案划分的启动范围",
     chips: {
@@ -1885,6 +1879,188 @@ const COPY_ZH$3 = {
 function pricingCopy(lang) {
   if (lang === "zh") return COPY_ZH$3;
   return lang === "ru" ? COPY_RU$3 : COPY_EN$3;
+}
+function useKeepVideoPlaying(videoRef) {
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const arm = () => {
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
+      video.loop = true;
+      video.controls = false;
+      video.setAttribute("muted", "");
+      video.setAttribute("playsinline", "");
+      video.setAttribute("webkit-playsinline", "");
+      video.setAttribute("autoplay", "");
+      video.removeAttribute("controls");
+      video.disableRemotePlayback = true;
+    };
+    arm();
+    const play = () => {
+      arm();
+      if (document.visibilityState === "hidden") return;
+      if (!video.paused && !video.ended) return;
+      void video.play().catch(() => {
+      });
+    };
+    try {
+      if (video.readyState < 2) video.load();
+    } catch {
+    }
+    play();
+    const onReady = () => play();
+    const onEnded = () => {
+      try {
+        video.currentTime = 0;
+      } catch {
+      }
+      play();
+    };
+    const onPause = () => {
+      if (document.visibilityState === "visible") {
+        requestAnimationFrame(play);
+      }
+    };
+    const onVis = () => {
+      if (document.visibilityState === "visible") play();
+    };
+    const onPageShow = () => play();
+    const unlock = () => play();
+    video.addEventListener("loadeddata", onReady);
+    video.addEventListener("canplay", onReady);
+    video.addEventListener("canplaythrough", onReady);
+    video.addEventListener("ended", onEnded);
+    video.addEventListener("pause", onPause);
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("pageshow", onPageShow);
+    window.addEventListener("touchstart", unlock, { passive: true, once: true });
+    window.addEventListener("touchend", unlock, { passive: true, once: true });
+    window.addEventListener("pointerdown", unlock, { passive: true, once: true });
+    window.addEventListener("scroll", unlock, { passive: true, once: true });
+    const watchdog = window.setInterval(() => {
+      if (document.visibilityState === "visible" && (video.paused || video.ended)) {
+        play();
+      }
+    }, 700);
+    return () => {
+      window.clearInterval(watchdog);
+      video.removeEventListener("loadeddata", onReady);
+      video.removeEventListener("canplay", onReady);
+      video.removeEventListener("canplaythrough", onReady);
+      video.removeEventListener("ended", onEnded);
+      video.removeEventListener("pause", onPause);
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("pageshow", onPageShow);
+      window.removeEventListener("touchstart", unlock);
+      window.removeEventListener("touchend", unlock);
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("scroll", unlock);
+    };
+  }, [videoRef]);
+}
+const HERO_VIDEO_DESKTOP = "/images/hero-bg.mp4";
+const HERO_VIDEO_MOBILE = "/images/hero-bg-mobile.mp4";
+const HERO_POSTER = "/images/hero-bg-poster.webp";
+const FORM_VIDEO_DESKTOP = "/images/form-bg.mp4";
+const FORM_VIDEO_MOBILE = "/images/form-bg-mobile.mp4";
+const FORM_POSTER = "/images/form-bg-poster.webp";
+function pickLoopSrc(desktop, mobile) {
+  if (typeof window === "undefined") return desktop;
+  try {
+    const conn = navigator.connection;
+    if (conn?.saveData) return mobile;
+    const type = conn?.effectiveType;
+    if (type === "slow-2g" || type === "2g" || type === "3g") return mobile;
+  } catch {
+  }
+  if (window.matchMedia("(max-width: 900px)").matches) return mobile;
+  return desktop;
+}
+function pickHeroVideoSrc() {
+  return pickLoopSrc(HERO_VIDEO_DESKTOP, HERO_VIDEO_MOBILE);
+}
+function pickFormVideoSrc() {
+  return pickLoopSrc(FORM_VIDEO_DESKTOP, FORM_VIDEO_MOBILE);
+}
+function cx$m(...a) {
+  return a.filter(Boolean).join(" ");
+}
+function BgLoopVideo({
+  className,
+  style,
+  poster,
+  src: srcProp,
+  variant = "hero"
+}) {
+  const videoRef = useRef(null);
+  const posterSrc = poster ?? (variant === "form" ? FORM_POSTER : HERO_POSTER);
+  const [src, setSrc] = useState(srcProp ?? HERO_VIDEO_DESKTOP);
+  const [playing, setPlaying] = useState(false);
+  useEffect(() => {
+    setSrc(srcProp ?? (variant === "form" ? pickFormVideoSrc() : pickHeroVideoSrc()));
+  }, [srcProp, variant]);
+  useEffect(() => {
+    setPlaying(false);
+    const video = videoRef.current;
+    if (!video) return;
+    try {
+      video.load();
+    } catch {
+    }
+  }, [src]);
+  useKeepVideoPlaying(videoRef);
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: cx$m(
+        "hero-bg-video-wrap pointer-events-none overflow-hidden",
+        className ?? "absolute inset-0"
+      ),
+      style,
+      "aria-hidden": true,
+      children: [
+        /* @__PURE__ */ jsx(
+          "video",
+          {
+            ref: videoRef,
+            className: "hero-bg-video",
+            src,
+            poster: posterSrc,
+            autoPlay: true,
+            muted: true,
+            loop: true,
+            playsInline: true,
+            preload: "auto",
+            controls: false,
+            controlsList: "nodownload nofullscreen noremoteplayback",
+            disablePictureInPicture: true,
+            disableRemotePlayback: true,
+            onPlaying: () => setPlaying(true),
+            onPause: () => setPlaying(false),
+            onWaiting: () => setPlaying(false),
+            onEmptied: () => setPlaying(false),
+            onStalled: () => setPlaying(false)
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "img",
+          {
+            src: posterSrc,
+            alt: "",
+            draggable: false,
+            decoding: "async",
+            fetchPriority: "high",
+            className: cx$m(
+              "hero-bg-video__poster transition-opacity duration-300",
+              playing ? "opacity-0" : "opacity-100"
+            )
+          }
+        )
+      ]
+    }
+  );
 }
 function cx$l(...a) {
   return a.filter(Boolean).join(" ");
@@ -1928,6 +2104,8 @@ function LeadFormModal({
     null
   );
   const [serverError, setServerError] = useState(false);
+  const [showSuccessDetails, setShowSuccessDetails] = useState(false);
+  const expandVideo = status === "loading" || status === "success";
   const planName = activePlanId ? pricing.plans[activePlanId].name : null;
   const planPrice = activePlanId ? planPagePrice(lang, activePlanId) : null;
   useEffect(() => {
@@ -1937,6 +2115,7 @@ function LeadFormModal({
       setFieldError("");
       setErrorField(null);
       setServerError(false);
+      setShowSuccessDetails(false);
       startedRef.current = false;
       successRef.current = false;
       setActivePlanId(planId);
@@ -1956,6 +2135,15 @@ function LeadFormModal({
       return () => window.clearTimeout(t);
     }
   }, [open, planId]);
+  useEffect(() => {
+    if (status !== "success") {
+      setShowSuccessDetails(false);
+      return;
+    }
+    const reduced = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const t = window.setTimeout(() => setShowSuccessDetails(true), reduced ? 0 : 1400);
+    return () => window.clearTimeout(t);
+  }, [status]);
   useEffect(() => {
     if (!open || status === "success") return;
     saveLeadDraft(form);
@@ -2078,8 +2266,8 @@ function LeadFormModal({
   const budgetOptions = copy.budgets.filter((b) => b.id !== "");
   const inputBase = cx$l(
     "w-full h-12 rounded-xl px-4",
-    "border-0 bg-white/[0.08] text-white placeholder:text-white/40",
-    "outline-none focus:bg-white/[0.12]",
+    "border-0 bg-white/[0.10] text-white placeholder:text-white/40",
+    "outline-none focus:bg-white/[0.14]",
     "text-[14px] font-medium transition",
     HOTJAR_MASK_CLASS
   );
@@ -2088,9 +2276,9 @@ function LeadFormModal({
     "div",
     {
       className: cx$l(
-        "fixed inset-0 z-[220]",
+        "fixed inset-0 z-[115]",
         "flex items-end justify-center sm:items-center",
-        "px-0 sm:px-5 py-0 sm:py-5"
+        "px-0 sm:px-5 py-0 sm:pt-[calc(var(--tivonix-header-spacer)+0.5rem)] sm:pb-5"
       ),
       "aria-hidden": !open,
       children: [
@@ -2110,6 +2298,19 @@ function LeadFormModal({
         .lead-modal-scroll::-webkit-scrollbar-thumb {
           background: linear-gradient(180deg, #FFD7B0, #FF9A3D, #FF6A1A);
           border-radius: 999px;
+        }
+        .lead-sent-word {
+          animation: lead-sent-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .lead-sent-details {
+          animation: lead-sent-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        @keyframes lead-sent-in {
+          from { opacity: 0; transform: translateY(10px) scale(0.94); filter: blur(8px); }
+          to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .lead-sent-word, .lead-sent-details { animation: none; }
         }
       ` }),
         /* @__PURE__ */ jsx(
@@ -2144,358 +2345,412 @@ function LeadFormModal({
                 children: /* @__PURE__ */ jsxs(
                   "div",
                   {
-                    className: "relative flex max-h-[min(94dvh,780px)] flex-col overflow-hidden rounded-t-[27px] bg-black/50 backdrop-blur-2xl sm:rounded-[27px]",
+                    className: "relative flex min-h-[min(72dvh,620px)] max-h-[min(94dvh,780px)] flex-col overflow-hidden rounded-t-[27px] bg-[#0b0b0d] sm:rounded-[27px]",
                     children: [
-                      /* @__PURE__ */ jsx(
+                      /* @__PURE__ */ jsxs(
                         "div",
                         {
                           "aria-hidden": true,
-                          className: "pointer-events-none absolute inset-0 opacity-80",
-                          style: {
-                            backgroundImage: "url(/images/121.webp)",
-                            backgroundSize: "cover",
-                            backgroundPosition: "center",
-                            filter: "blur(22px)",
-                            transform: "scale(1.08)"
-                          }
-                        }
-                      ),
-                      /* @__PURE__ */ jsx(
-                        "div",
-                        {
-                          "aria-hidden": true,
-                          className: "pointer-events-none absolute inset-0",
-                          style: {
-                            backgroundImage: "radial-gradient(720px 380px at 16% 0%, rgba(255,154,61,0.20), transparent 58%),radial-gradient(640px 420px at 92% 28%, rgba(143,168,200,0.16), transparent 60%),radial-gradient(520px 360px at 50% 110%, rgba(255,106,26,0.12), transparent 55%)"
-                          }
-                        }
-                      ),
-                      /* @__PURE__ */ jsx(
-                        "div",
-                        {
-                          "aria-hidden": true,
-                          className: "pointer-events-none absolute inset-0 opacity-[0.18]",
-                          style: {
-                            backgroundImage: "radial-gradient(rgba(255,255,255,0.22) 1px, transparent 1px)",
-                            backgroundSize: "18px 18px",
-                            maskImage: "radial-gradient(closest-side at 50% 35%, black, transparent 80%)",
-                            WebkitMaskImage: "radial-gradient(closest-side at 50% 35%, black, transparent 80%)"
-                          }
-                        }
-                      ),
-                      /* @__PURE__ */ jsxs("div", { className: "relative z-10 shrink-0 px-5 pt-4 sm:px-7 sm:pt-5", children: [
-                        /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between gap-3", children: [
-                          /* @__PURE__ */ jsxs("div", { className: "flex min-w-0 items-center gap-3", children: [
-                            /* @__PURE__ */ jsx("div", { className: "grid h-10 w-10 place-items-center overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-white/12 backdrop-blur-xl sm:hidden", children: /* @__PURE__ */ jsx(
-                              "img",
-                              {
-                                src: "/images/tivonix-logo-icon.webp",
-                                alt: "",
-                                className: "h-6 w-6 opacity-90",
-                                draggable: false
-                              }
-                            ) }),
+                          className: cx$l(
+                            "pointer-events-none absolute inset-x-0 top-0 z-0 overflow-hidden",
+                            "transition-[height] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                            expandVideo ? "h-full" : "h-[8.75rem] sm:h-[9.5rem]"
+                          ),
+                          children: [
+                            /* @__PURE__ */ jsx(BgLoopVideo, { variant: "form" }),
                             /* @__PURE__ */ jsx(
-                              "img",
+                              "div",
                               {
-                                src: "/images/tivonix-logo-lockup.webp",
-                                alt: "TIVONIX",
-                                draggable: false,
-                                className: "hidden h-9 w-auto opacity-90 sm:block"
+                                className: cx$l(
+                                  "absolute inset-0 transition-colors duration-500",
+                                  expandVideo ? "bg-black/72" : "bg-gradient-to-b from-black/28 via-black/40 to-[#0b0b0d]"
+                                )
                               }
                             ),
-                            /* @__PURE__ */ jsxs("div", { className: "min-w-0 sm:ml-1", children: [
-                              /* @__PURE__ */ jsx(
-                                "h2",
-                                {
-                                  id: titleId,
-                                  className: "truncate text-[17px] font-extrabold tracking-tight text-white sm:text-[19px]",
-                                  children: copy.title
+                            !expandVideo ? /* @__PURE__ */ jsx(
+                              "div",
+                              {
+                                className: "absolute inset-x-0 bottom-0 h-[96px]",
+                                style: {
+                                  backdropFilter: "blur(22px)",
+                                  WebkitBackdropFilter: "blur(22px)",
+                                  maskImage: "linear-gradient(180deg, transparent 0%, black 58%, black 100%)",
+                                  WebkitMaskImage: "linear-gradient(180deg, transparent 0%, black 58%, black 100%)"
                                 }
-                              ),
-                              /* @__PURE__ */ jsx("p", { id: descId, className: "mt-0.5 truncate text-[12px] text-white/55 sm:text-[12.5px]", children: copy.subtitle })
-                            ] })
-                          ] }),
-                          /* @__PURE__ */ jsx(
-                            "button",
+                              }
+                            ) : null
+                          ]
+                        }
+                      ),
+                      /* @__PURE__ */ jsx(
+                        "button",
+                        {
+                          type: "button",
+                          onClick: handleClose,
+                          disabled: status === "loading",
+                          className: "group absolute right-4 top-4 z-30 grid h-9 w-9 place-items-center rounded-full bg-black/45 text-white/80 ring-1 ring-white/12 transition hover:bg-black/60 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/40 disabled:opacity-50 sm:right-5 sm:top-5",
+                          "aria-label": copy.close,
+                          children: /* @__PURE__ */ jsxs(
+                            "svg",
                             {
-                              type: "button",
-                              onClick: handleClose,
-                              disabled: status === "loading",
-                              className: "group grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.08] text-white/80 transition hover:bg-white/[0.14] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/40 disabled:opacity-50",
-                              "aria-label": copy.close,
-                              children: /* @__PURE__ */ jsxs(
-                                "svg",
-                                {
-                                  width: "15",
-                                  height: "15",
-                                  viewBox: "0 0 24 24",
-                                  fill: "none",
-                                  className: "transition-transform duration-200 group-hover:rotate-90",
-                                  "aria-hidden": true,
-                                  children: [
-                                    /* @__PURE__ */ jsx("path", { d: "M6 6L18 18", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round" }),
-                                    /* @__PURE__ */ jsx("path", { d: "M18 6L6 18", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round" })
-                                  ]
-                                }
-                              )
+                              width: "15",
+                              height: "15",
+                              viewBox: "0 0 24 24",
+                              fill: "none",
+                              className: "transition-transform duration-200 group-hover:rotate-90",
+                              "aria-hidden": true,
+                              children: [
+                                /* @__PURE__ */ jsx("path", { d: "M6 6L18 18", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round" }),
+                                /* @__PURE__ */ jsx("path", { d: "M18 6L6 18", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round" })
+                              ]
                             }
                           )
-                        ] }),
-                        /* @__PURE__ */ jsxs("div", { className: "pointer-events-none mt-4 h-4", children: [
-                          /* @__PURE__ */ jsx("div", { className: "mx-auto h-[2px] w-full rounded-full opacity-95", style: { background: ORANGE_LINE } }),
-                          /* @__PURE__ */ jsx("div", { className: "mx-auto mt-[-2px] h-5 w-full opacity-35 blur-xl", style: { background: ORANGE_LINE } })
-                        ] })
-                      ] }),
-                      /* @__PURE__ */ jsx("div", { className: "lead-modal-scroll relative z-10 min-h-0 flex-1 px-5 pb-2 pt-1 sm:px-7", children: status === "success" ? /* @__PURE__ */ jsxs(
+                        }
+                      ),
+                      expandVideo ? /* @__PURE__ */ jsxs(
                         "div",
                         {
-                          className: "flex min-h-[280px] flex-col items-center justify-center gap-4 py-10 text-center",
+                          className: "absolute inset-0 z-20 flex flex-col items-center justify-center px-6 py-16 text-center",
                           role: "status",
                           "aria-live": "polite",
                           children: [
                             /* @__PURE__ */ jsx(
                               "div",
                               {
-                                className: "grid h-14 w-14 place-items-center rounded-full",
+                                "aria-hidden": true,
+                                className: "pointer-events-none absolute inset-0",
                                 style: {
-                                  background: "linear-gradient(145deg, rgba(255,215,176,0.25), rgba(255,106,26,0.2))",
-                                  boxShadow: "0 0 40px rgba(255,154,61,0.25)"
-                                },
-                                children: /* @__PURE__ */ jsx("svg", { width: "26", height: "26", viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: /* @__PURE__ */ jsx(
-                                  "path",
-                                  {
-                                    d: "M5.5 12.6c2 1.6 3.3 3.2 4.2 5.1 2.6-4.8 5.8-8.2 10-11.2",
-                                    stroke: "#FF9A3D",
-                                    strokeWidth: "2.4",
-                                    strokeLinecap: "round",
-                                    strokeLinejoin: "round"
-                                  }
-                                ) })
+                                  background: "radial-gradient(ellipse 72% 48% at 50% 48%, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.28) 58%, transparent 78%)"
+                                }
                               }
                             ),
-                            /* @__PURE__ */ jsx("h3", { className: "font-hero text-[1.35rem] font-semibold tracking-[-0.02em] text-white", children: copy.successTitle }),
-                            /* @__PURE__ */ jsx("p", { className: "max-w-[36ch] text-[15px] leading-relaxed text-white/75 sm:text-[16px]", children: copy.success }),
-                            /* @__PURE__ */ jsxs("div", { className: "mt-2 flex flex-col items-center gap-2.5 sm:flex-row", children: [
+                            status === "success" && showSuccessDetails ? /* @__PURE__ */ jsxs("div", { className: "lead-sent-details relative flex flex-col items-center gap-4", children: [
                               /* @__PURE__ */ jsx(
-                                "a",
+                                "div",
                                 {
-                                  href: pathForLang("/projects/spliton", lang),
-                                  className: "inline-flex h-11 items-center justify-center rounded-full border border-white/15 px-5 text-[13.5px] font-medium text-white/85 transition hover:border-white/30 hover:text-white",
-                                  onClick: onClose,
-                                  children: copy.successCase
+                                  className: "grid h-14 w-14 place-items-center rounded-full",
+                                  style: {
+                                    background: "linear-gradient(145deg, rgba(255,215,176,0.25), rgba(255,106,26,0.2))",
+                                    boxShadow: "0 0 40px rgba(255,154,61,0.25)"
+                                  },
+                                  children: /* @__PURE__ */ jsx("svg", { width: "26", height: "26", viewBox: "0 0 24 24", fill: "none", "aria-hidden": true, children: /* @__PURE__ */ jsx(
+                                    "path",
+                                    {
+                                      d: "M5.5 12.6c2 1.6 3.3 3.2 4.2 5.1 2.6-4.8 5.8-8.2 10-11.2",
+                                      stroke: "#FF9A3D",
+                                      strokeWidth: "2.4",
+                                      strokeLinecap: "round",
+                                      strokeLinejoin: "round"
+                                    }
+                                  ) })
                                 }
                               ),
-                              /* @__PURE__ */ jsx(
-                                "a",
-                                {
-                                  href: lang === "en" ? "/en" : lang === "zh" ? "/zh" : "/",
-                                  className: "inline-flex h-11 items-center justify-center rounded-full bg-white px-5 text-[13.5px] font-bold text-black transition hover:bg-white/92",
-                                  onClick: onClose,
-                                  children: copy.successHome
-                                }
-                              )
-                            ] })
-                          ]
-                        }
-                      ) : /* @__PURE__ */ jsxs("form", { id: "lead-form", onSubmit, noValidate: true, className: "space-y-3.5 pb-2", children: [
-                        /* @__PURE__ */ jsxs("div", { className: "absolute -left-[9999px] top-auto h-0 w-0 overflow-hidden", "aria-hidden": true, children: [
-                          /* @__PURE__ */ jsx("label", { htmlFor: "lead-company-fax", children: "Company fax" }),
-                          /* @__PURE__ */ jsx(
-                            "input",
-                            {
-                              id: "lead-company-fax",
-                              name: "company_fax_url",
-                              type: "text",
-                              tabIndex: -1,
-                              autoComplete: "off",
-                              value: form.company_fax_url,
-                              onChange: (e) => update("company_fax_url", e.target.value)
-                            }
-                          )
-                        ] }),
-                        activePlanId && planName ? /* @__PURE__ */ jsxs("div", { className: "flex items-start justify-between gap-3 rounded-xl bg-white/[0.06] px-3.5 py-3", children: [
-                          /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-                            /* @__PURE__ */ jsx("p", { className: "text-[10.5px] font-medium uppercase tracking-[0.12em] text-white/55", children: copy.selectedPlan }),
-                            /* @__PURE__ */ jsxs("p", { className: "mt-1 text-[15px] font-semibold tracking-tight text-white", children: [
-                              planName,
-                              planPrice ? /* @__PURE__ */ jsx("span", { className: "ml-2 text-[13px] font-medium text-white/55", children: planPrice }) : null
-                            ] })
-                          ] }),
-                          /* @__PURE__ */ jsx(
-                            "button",
-                            {
-                              type: "button",
-                              onClick: () => setActivePlanId(null),
-                              className: "shrink-0 text-[12px] font-medium text-white/45 transition hover:text-white/75",
-                              children: copy.clearPlan
-                            }
-                          )
-                        ] }) : null,
-                        /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 gap-3.5 sm:grid-cols-2", children: [
-                          /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-                            /* @__PURE__ */ jsxs("label", { htmlFor: "lead-name", className: labelClass2, children: [
-                              copy.name,
-                              " ",
-                              /* @__PURE__ */ jsxs("span", { className: "font-normal text-white/45", children: [
-                                "(",
-                                copy.nameOptional,
-                                ")"
-                              ] })
-                            ] }),
-                            /* @__PURE__ */ jsx(
-                              "input",
-                              {
-                                id: "lead-name",
-                                name: "name",
-                                type: "text",
-                                autoComplete: "name",
-                                className: inputBase,
-                                value: form.name,
-                                onChange: (e) => update("name", e.target.value),
-                                disabled: status === "loading",
-                                ...HOTJAR_SUPPRESS_ATTR
-                              }
-                            )
-                          ] }),
-                          /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-                            /* @__PURE__ */ jsxs("label", { htmlFor: "lead-contact", className: labelClass2, children: [
-                              copy.contact,
-                              " *"
-                            ] }),
-                            /* @__PURE__ */ jsx(
-                              "input",
-                              {
-                                ref: contactRef,
-                                id: "lead-contact",
-                                name: "contact",
-                                type: "text",
-                                required: true,
-                                autoComplete: "email",
-                                inputMode: "email",
-                                placeholder: copy.contactPh,
-                                className: cx$l(
-                                  inputBase,
-                                  errorField === "contact" && "bg-[#FF9A3D]/12 focus:bg-[#FF9A3D]/16"
-                                ),
-                                value: form.contact,
-                                onChange: (e) => update("contact", e.target.value),
-                                disabled: status === "loading",
-                                "aria-invalid": errorField === "contact",
-                                "aria-describedby": fieldError ? "lead-field-error" : void 0,
-                                ...HOTJAR_SUPPRESS_ATTR
-                              }
-                            )
-                          ] })
-                        ] }),
-                        /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-                          /* @__PURE__ */ jsxs("label", { htmlFor: "lead-task", className: labelClass2, children: [
-                            copy.task,
-                            " *"
-                          ] }),
-                          /* @__PURE__ */ jsx(
-                            "textarea",
-                            {
-                              ref: taskRef,
-                              id: "lead-task",
-                              name: "task",
-                              required: true,
-                              rows: 4,
-                              placeholder: activePlanId && planName ? lang === "ru" ? `Что важно по плану ${planName}? Сроки, примеры, пожелания…` : `What matters for the ${planName} plan? Timeline, examples, notes…` : copy.taskPh,
-                              className: cx$l(
-                                "min-h-[108px] w-full resize-none rounded-xl px-4 py-3 text-[14px] font-medium",
-                                "border-0 bg-white/[0.08] text-white placeholder:text-white/40",
-                                "outline-none focus:bg-white/[0.12] transition",
-                                HOTJAR_MASK_CLASS,
-                                errorField === "task" && "bg-[#FF9A3D]/12 focus:bg-[#FF9A3D]/16"
-                              ),
-                              value: form.task,
-                              onChange: (e) => update("task", e.target.value),
-                              disabled: status === "loading",
-                              "aria-invalid": errorField === "task",
-                              ...HOTJAR_SUPPRESS_ATTR
-                            }
-                          )
-                        ] }),
-                        /* @__PURE__ */ jsxs("div", { children: [
-                          /* @__PURE__ */ jsxs("div", { className: labelClass2, children: [
-                            copy.budget,
-                            " ",
-                            /* @__PURE__ */ jsxs("span", { className: "font-normal text-white/45", children: [
-                              "(",
-                              copy.budgetOptional,
-                              ")"
-                            ] })
-                          ] }),
-                          /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-2", role: "group", "aria-label": copy.budget, children: budgetOptions.map((b) => {
-                            const active = form.budget === b.id;
-                            return /* @__PURE__ */ jsx(
-                              "button",
-                              {
-                                type: "button",
-                                disabled: status === "loading",
-                                onClick: () => update("budget", active ? "" : b.id),
-                                className: cx$l(
-                                  "h-9 rounded-full px-3.5 text-[12px] font-medium transition",
-                                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40",
-                                  active ? "bg-white text-black" : "bg-white/[0.08] text-white/75 hover:bg-white/[0.12] hover:text-white"
-                                ),
-                                children: b.label
-                              },
-                              b.id
-                            );
-                          }) })
-                        ] }),
-                        /* @__PURE__ */ jsxs("label", { className: "flex cursor-pointer items-start gap-2.5 px-0.5 py-1", children: [
-                          /* @__PURE__ */ jsx(
-                            "input",
-                            {
-                              ref: consentRef,
-                              type: "checkbox",
-                              checked: form.consent,
-                              onChange: (e) => update("consent", e.target.checked),
-                              disabled: status === "loading",
-                              className: cx$l(
-                                "mt-0.5 h-4 w-4 shrink-0 accent-[#FF9A3D]",
-                                errorField === "consent" && "outline outline-2 outline-[#FF9A3D]/60 outline-offset-2"
-                              ),
-                              "aria-required": "true"
-                            }
-                          ),
-                          /* @__PURE__ */ jsxs("span", { className: "text-[13px] leading-snug text-white/70", children: [
-                            copy.consent,
-                            " ",
-                            /* @__PURE__ */ jsx(
-                              "a",
-                              {
-                                href: copy.privacyHref,
-                                target: "_blank",
-                                rel: "noopener noreferrer",
-                                className: "font-medium text-[#FFB36A] underline decoration-[#FF9A3D]/30 underline-offset-2 hover:text-[#FFD7B0]",
-                                children: copy.privacyLabel
-                              }
-                            )
-                          ] })
-                        ] }),
-                        fieldError ? /* @__PURE__ */ jsx("p", { id: "lead-field-error", role: "alert", className: "text-[12.5px] text-[#FFB36A]", children: fieldError }) : null,
-                        serverError ? /* @__PURE__ */ jsxs(
-                          "div",
-                          {
-                            role: "alert",
-                            className: "rounded-xl bg-[#FF9A3D]/10 px-4 py-3.5 text-[12.5px] text-white/88",
-                            children: [
-                              /* @__PURE__ */ jsx("p", { className: "font-semibold", children: copy.errorTitle }),
-                              /* @__PURE__ */ jsx("p", { className: "mt-1 text-white/60", children: copy.errorBody }),
-                              /* @__PURE__ */ jsxs("div", { className: "mt-3 flex flex-col gap-2 sm:flex-row", children: [
+                              /* @__PURE__ */ jsx("h3", { className: "font-hero text-[1.35rem] font-semibold tracking-[-0.02em] text-white", children: copy.successTitle }),
+                              /* @__PURE__ */ jsx("p", { className: "max-w-[36ch] text-[15px] leading-relaxed text-white/80 sm:text-[16px]", children: copy.success }),
+                              /* @__PURE__ */ jsxs("div", { className: "mt-2 flex flex-col items-center gap-2.5 sm:flex-row", children: [
                                 /* @__PURE__ */ jsx(
                                   "a",
                                   {
-                                    href: `mailto:${CONTACT_EMAIL}`,
-                                    onClick: () => trackEmailClick(),
-                                    className: "inline-flex h-10 items-center justify-center rounded-full bg-white px-4 text-[13px] font-bold text-black",
-                                    children: copy.fallbackEmail
+                                    href: pathForLang("/projects/spliton", lang),
+                                    className: "inline-flex h-11 items-center justify-center rounded-full border border-white/15 bg-black/25 px-5 text-[13.5px] font-medium text-white/90 backdrop-blur-md transition hover:border-white/30 hover:text-white",
+                                    onClick: onClose,
+                                    children: copy.successCase
                                   }
                                 ),
+                                /* @__PURE__ */ jsx(
+                                  "a",
+                                  {
+                                    href: lang === "en" ? "/en" : lang === "zh" ? "/zh" : "/",
+                                    className: "inline-flex h-11 items-center justify-center rounded-full bg-white px-5 text-[13.5px] font-bold text-black transition hover:bg-white/92",
+                                    onClick: onClose,
+                                    children: copy.successHome
+                                  }
+                                )
+                              ] })
+                            ] }) : /* @__PURE__ */ jsx("p", { className: "lead-sent-word relative font-hero text-[clamp(1.85rem,6.5vw,3.5rem)] font-normal uppercase leading-none tracking-[0.14em] text-white", children: /* @__PURE__ */ jsx(
+                              "span",
+                              {
+                                className: "inline-block rounded-full px-8 py-3.5 sm:px-10",
+                                style: {
+                                  background: "rgba(6,6,8,0.92)",
+                                  boxShadow: "0 16px 48px rgba(0,0,0,0.55)",
+                                  textShadow: "0 2px 10px rgba(0,0,0,0.7)"
+                                },
+                                children: status === "success" ? copy.sent : copy.sending
+                              }
+                            ) })
+                          ]
+                        }
+                      ) : null,
+                      /* @__PURE__ */ jsxs(
+                        "div",
+                        {
+                          className: cx$l(
+                            "relative z-10 flex min-h-0 flex-1 flex-col transition-opacity duration-300",
+                            expandVideo && "pointer-events-none select-none opacity-0"
+                          ),
+                          "aria-hidden": expandVideo,
+                          children: [
+                            /* @__PURE__ */ jsxs("div", { className: "relative isolate shrink-0 overflow-hidden px-5 pt-5 pr-14 sm:px-7 sm:pt-6 sm:pr-16", children: [
+                              /* @__PURE__ */ jsxs("div", { className: "relative min-w-0 pr-2", children: [
+                                /* @__PURE__ */ jsx(
+                                  "h2",
+                                  {
+                                    id: titleId,
+                                    className: "text-[17px] font-extrabold tracking-tight text-white sm:text-[19px]",
+                                    children: copy.title
+                                  }
+                                ),
+                                /* @__PURE__ */ jsx("p", { id: descId, className: "mt-1 max-w-[46ch] text-[12px] leading-snug text-white/70 sm:text-[12.5px]", children: copy.subtitle })
+                              ] }),
+                              /* @__PURE__ */ jsxs("div", { className: "pointer-events-none relative mt-5 h-4", children: [
+                                /* @__PURE__ */ jsx("div", { className: "mx-auto h-[2px] w-full rounded-full opacity-95", style: { background: ORANGE_LINE } }),
+                                /* @__PURE__ */ jsx("div", { className: "mx-auto mt-[-2px] h-5 w-full opacity-35 blur-xl", style: { background: ORANGE_LINE } })
+                              ] })
+                            ] }),
+                            /* @__PURE__ */ jsx("div", { className: "lead-modal-scroll relative z-10 min-h-0 flex-1 bg-[#0b0b0d] px-5 pb-2 pt-1 sm:px-7", children: /* @__PURE__ */ jsxs("form", { id: "lead-form", onSubmit, noValidate: true, className: "space-y-3.5 pb-2", children: [
+                              /* @__PURE__ */ jsxs("div", { className: "absolute -left-[9999px] top-auto h-0 w-0 overflow-hidden", "aria-hidden": true, children: [
+                                /* @__PURE__ */ jsx("label", { htmlFor: "lead-company-fax", children: "Company fax" }),
+                                /* @__PURE__ */ jsx(
+                                  "input",
+                                  {
+                                    id: "lead-company-fax",
+                                    name: "company_fax_url",
+                                    type: "text",
+                                    tabIndex: -1,
+                                    autoComplete: "off",
+                                    value: form.company_fax_url,
+                                    onChange: (e) => update("company_fax_url", e.target.value)
+                                  }
+                                )
+                              ] }),
+                              activePlanId && planName ? /* @__PURE__ */ jsxs("div", { className: "flex items-start justify-between gap-3 rounded-xl bg-white/[0.06] px-3.5 py-3", children: [
+                                /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+                                  /* @__PURE__ */ jsx("p", { className: "text-[10.5px] font-medium uppercase tracking-[0.12em] text-white/55", children: copy.selectedPlan }),
+                                  /* @__PURE__ */ jsxs("p", { className: "mt-1 text-[15px] font-semibold tracking-tight text-white", children: [
+                                    planName,
+                                    planPrice ? /* @__PURE__ */ jsx("span", { className: "ml-2 text-[13px] font-medium text-white/55", children: planPrice }) : null
+                                  ] })
+                                ] }),
+                                /* @__PURE__ */ jsx(
+                                  "button",
+                                  {
+                                    type: "button",
+                                    onClick: () => setActivePlanId(null),
+                                    className: "shrink-0 text-[12px] font-medium text-white/45 transition hover:text-white/75",
+                                    children: copy.clearPlan
+                                  }
+                                )
+                              ] }) : null,
+                              /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 gap-3.5 sm:grid-cols-2", children: [
+                                /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+                                  /* @__PURE__ */ jsxs("label", { htmlFor: "lead-name", className: labelClass2, children: [
+                                    copy.name,
+                                    " ",
+                                    /* @__PURE__ */ jsxs("span", { className: "font-normal text-white/45", children: [
+                                      "(",
+                                      copy.nameOptional,
+                                      ")"
+                                    ] })
+                                  ] }),
+                                  /* @__PURE__ */ jsx(
+                                    "input",
+                                    {
+                                      id: "lead-name",
+                                      name: "name",
+                                      type: "text",
+                                      autoComplete: "name",
+                                      className: inputBase,
+                                      value: form.name,
+                                      onChange: (e) => update("name", e.target.value),
+                                      disabled: status === "loading",
+                                      ...HOTJAR_SUPPRESS_ATTR
+                                    }
+                                  )
+                                ] }),
+                                /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+                                  /* @__PURE__ */ jsxs("label", { htmlFor: "lead-contact", className: labelClass2, children: [
+                                    copy.contact,
+                                    " *"
+                                  ] }),
+                                  /* @__PURE__ */ jsx(
+                                    "input",
+                                    {
+                                      ref: contactRef,
+                                      id: "lead-contact",
+                                      name: "contact",
+                                      type: "text",
+                                      required: true,
+                                      autoComplete: "email",
+                                      inputMode: "email",
+                                      placeholder: copy.contactPh,
+                                      className: cx$l(
+                                        inputBase,
+                                        errorField === "contact" && "bg-[#FF9A3D]/12 focus:bg-[#FF9A3D]/16"
+                                      ),
+                                      value: form.contact,
+                                      onChange: (e) => update("contact", e.target.value),
+                                      disabled: status === "loading",
+                                      "aria-invalid": errorField === "contact",
+                                      "aria-describedby": fieldError ? "lead-field-error" : void 0,
+                                      ...HOTJAR_SUPPRESS_ATTR
+                                    }
+                                  )
+                                ] })
+                              ] }),
+                              /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+                                /* @__PURE__ */ jsxs("label", { htmlFor: "lead-task", className: labelClass2, children: [
+                                  copy.task,
+                                  " *"
+                                ] }),
+                                /* @__PURE__ */ jsx(
+                                  "textarea",
+                                  {
+                                    ref: taskRef,
+                                    id: "lead-task",
+                                    name: "task",
+                                    required: true,
+                                    rows: 4,
+                                    placeholder: activePlanId && planName ? lang === "ru" ? `Что важно по плану ${planName}? Сроки, примеры, пожелания…` : `What matters for the ${planName} plan? Timeline, examples, notes…` : copy.taskPh,
+                                    className: cx$l(
+                                      "min-h-[108px] w-full resize-none rounded-xl px-4 py-3 text-[14px] font-medium",
+                                      "border-0 bg-white/[0.10] text-white placeholder:text-white/40",
+                                      "outline-none focus:bg-white/[0.14] transition",
+                                      HOTJAR_MASK_CLASS,
+                                      errorField === "task" && "bg-[#FF9A3D]/12 focus:bg-[#FF9A3D]/16"
+                                    ),
+                                    value: form.task,
+                                    onChange: (e) => update("task", e.target.value),
+                                    disabled: status === "loading",
+                                    "aria-invalid": errorField === "task",
+                                    ...HOTJAR_SUPPRESS_ATTR
+                                  }
+                                )
+                              ] }),
+                              /* @__PURE__ */ jsxs("div", { children: [
+                                /* @__PURE__ */ jsxs("div", { className: labelClass2, children: [
+                                  copy.budget,
+                                  " ",
+                                  /* @__PURE__ */ jsxs("span", { className: "font-normal text-white/45", children: [
+                                    "(",
+                                    copy.budgetOptional,
+                                    ")"
+                                  ] })
+                                ] }),
+                                /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-2", role: "group", "aria-label": copy.budget, children: budgetOptions.map((b) => {
+                                  const active = form.budget === b.id;
+                                  return /* @__PURE__ */ jsx(
+                                    "button",
+                                    {
+                                      type: "button",
+                                      disabled: status === "loading",
+                                      onClick: () => update("budget", active ? "" : b.id),
+                                      className: cx$l(
+                                        "h-9 rounded-full px-3.5 text-[12px] font-medium transition",
+                                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40",
+                                        active ? "bg-white text-black" : "bg-white/[0.08] text-white/75 hover:bg-white/[0.12] hover:text-white"
+                                      ),
+                                      children: b.label
+                                    },
+                                    b.id
+                                  );
+                                }) })
+                              ] }),
+                              /* @__PURE__ */ jsxs("label", { className: "flex cursor-pointer items-start gap-2.5 px-0.5 py-1", children: [
+                                /* @__PURE__ */ jsx(
+                                  "input",
+                                  {
+                                    ref: consentRef,
+                                    type: "checkbox",
+                                    checked: form.consent,
+                                    onChange: (e) => update("consent", e.target.checked),
+                                    disabled: status === "loading",
+                                    className: cx$l(
+                                      "mt-0.5 h-4 w-4 shrink-0 accent-[#FF9A3D]",
+                                      errorField === "consent" && "outline outline-2 outline-[#FF9A3D]/60 outline-offset-2"
+                                    ),
+                                    "aria-required": "true"
+                                  }
+                                ),
+                                /* @__PURE__ */ jsxs("span", { className: "text-[13px] leading-snug text-white/70", children: [
+                                  copy.consent,
+                                  " ",
+                                  /* @__PURE__ */ jsx(
+                                    "a",
+                                    {
+                                      href: copy.privacyHref,
+                                      target: "_blank",
+                                      rel: "noopener noreferrer",
+                                      className: "font-medium text-[#FFB36A] underline decoration-[#FF9A3D]/30 underline-offset-2 hover:text-[#FFD7B0]",
+                                      children: copy.privacyLabel
+                                    }
+                                  )
+                                ] })
+                              ] }),
+                              fieldError ? /* @__PURE__ */ jsx("p", { id: "lead-field-error", role: "alert", className: "text-[12.5px] text-[#FFB36A]", children: fieldError }) : null,
+                              serverError ? /* @__PURE__ */ jsxs(
+                                "div",
+                                {
+                                  role: "alert",
+                                  className: "rounded-xl bg-[#FF9A3D]/10 px-4 py-3.5 text-[12.5px] text-white/88",
+                                  children: [
+                                    /* @__PURE__ */ jsx("p", { className: "font-semibold", children: copy.errorTitle }),
+                                    /* @__PURE__ */ jsx("p", { className: "mt-1 text-white/60", children: copy.errorBody }),
+                                    /* @__PURE__ */ jsxs("div", { className: "mt-3 flex flex-col gap-2 sm:flex-row", children: [
+                                      /* @__PURE__ */ jsx(
+                                        "a",
+                                        {
+                                          href: `mailto:${CONTACT_EMAIL}`,
+                                          onClick: () => trackEmailClick(),
+                                          className: "inline-flex h-10 items-center justify-center rounded-full bg-white px-4 text-[13px] font-bold text-black",
+                                          children: copy.fallbackEmail
+                                        }
+                                      ),
+                                      /* @__PURE__ */ jsx(
+                                        "a",
+                                        {
+                                          href: TELEGRAM_DIRECT_URL,
+                                          target: "_blank",
+                                          rel: "noopener noreferrer",
+                                          onClick: () => trackTelegramDirectClick(),
+                                          className: "inline-flex h-10 items-center justify-center rounded-full bg-white/[0.08] px-4 text-[13px] font-medium text-white",
+                                          children: copy.fallbackTelegram
+                                        }
+                                      )
+                                    ] })
+                                  ]
+                                }
+                              ) : null
+                            ] }) }),
+                            /* @__PURE__ */ jsxs("div", { className: "relative z-10 shrink-0 bg-[#0b0b0d] px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-5", children: [
+                              /* @__PURE__ */ jsx(
+                                "div",
+                                {
+                                  "aria-hidden": true,
+                                  className: "mb-3 h-px w-full opacity-60",
+                                  style: {
+                                    background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent)"
+                                  }
+                                }
+                              ),
+                              /* @__PURE__ */ jsx(
+                                "button",
+                                {
+                                  type: "submit",
+                                  form: "lead-form",
+                                  disabled: status === "loading",
+                                  className: cx$l(
+                                    "flex h-12 w-full items-center justify-center rounded-full text-[15px] font-bold text-black",
+                                    "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
+                                    "hover:brightness-[1.04] active:brightness-[0.96]",
+                                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50",
+                                    status === "loading" && "cursor-not-allowed opacity-70"
+                                  ),
+                                  style: { background: BRAND_CTA },
+                                  children: status === "loading" ? copy.sending : copy.send
+                                }
+                              ),
+                              /* @__PURE__ */ jsxs("div", { className: "mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-[11.5px] text-white/40", children: [
                                 /* @__PURE__ */ jsx(
                                   "a",
                                   {
@@ -2503,79 +2758,25 @@ function LeadFormModal({
                                     target: "_blank",
                                     rel: "noopener noreferrer",
                                     onClick: () => trackTelegramDirectClick(),
-                                    className: "inline-flex h-10 items-center justify-center rounded-full bg-white/[0.08] px-4 text-[13px] font-medium text-white",
-                                    children: copy.fallbackTelegram
+                                    className: "transition hover:text-white/75",
+                                    children: "@TIVONIX"
+                                  }
+                                ),
+                                /* @__PURE__ */ jsx("span", { "aria-hidden": true, className: "text-white/18", children: "·" }),
+                                /* @__PURE__ */ jsx(
+                                  "a",
+                                  {
+                                    href: `mailto:${CONTACT_EMAIL}`,
+                                    onClick: () => trackEmailClick(),
+                                    className: "transition hover:text-white/75",
+                                    children: CONTACT_EMAIL
                                   }
                                 )
                               ] })
-                            ]
-                          }
-                        ) : null
-                      ] }) }),
-                      status !== "success" ? /* @__PURE__ */ jsxs("div", { className: "relative z-10 shrink-0 bg-black/35 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl sm:px-7 sm:pb-5", children: [
-                        /* @__PURE__ */ jsx(
-                          "div",
-                          {
-                            "aria-hidden": true,
-                            className: "mb-3 h-px w-full opacity-60",
-                            style: {
-                              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent)"
-                            }
-                          }
-                        ),
-                        /* @__PURE__ */ jsx(
-                          "button",
-                          {
-                            type: "submit",
-                            form: "lead-form",
-                            disabled: status === "loading",
-                            className: cx$l(
-                              "flex h-12 w-full items-center justify-center rounded-full text-[15px] font-bold text-black",
-                              "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
-                              "hover:brightness-[1.04] active:brightness-[0.96]",
-                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50",
-                              status === "loading" && "cursor-not-allowed opacity-70"
-                            ),
-                            style: { background: BRAND_CTA },
-                            children: status === "loading" ? copy.sending : copy.send
-                          }
-                        ),
-                        /* @__PURE__ */ jsxs("div", { className: "mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-[11.5px] text-white/40", children: [
-                          /* @__PURE__ */ jsx(
-                            "a",
-                            {
-                              href: TELEGRAM_DIRECT_URL,
-                              target: "_blank",
-                              rel: "noopener noreferrer",
-                              onClick: () => trackTelegramDirectClick(),
-                              className: "transition hover:text-white/75",
-                              children: "@TIVONIX"
-                            }
-                          ),
-                          /* @__PURE__ */ jsx("span", { "aria-hidden": true, className: "text-white/18", children: "·" }),
-                          /* @__PURE__ */ jsx(
-                            "a",
-                            {
-                              href: TG_BOT_URL,
-                              target: "_blank",
-                              rel: "noopener noreferrer",
-                              onClick: () => trackTelegramBotClick(),
-                              className: "transition hover:text-white/75",
-                              children: copy.altBot
-                            }
-                          ),
-                          /* @__PURE__ */ jsx("span", { "aria-hidden": true, className: "text-white/18", children: "·" }),
-                          /* @__PURE__ */ jsx(
-                            "a",
-                            {
-                              href: `mailto:${CONTACT_EMAIL}`,
-                              onClick: () => trackEmailClick(),
-                              className: "transition hover:text-white/75",
-                              children: CONTACT_EMAIL
-                            }
-                          )
-                        ] })
-                      ] }) : null
+                            ] })
+                          ]
+                        }
+                      )
                     ]
                   }
                 )
@@ -2590,9 +2791,13 @@ function LeadFormModal({
 }
 const LeadFormContext = createContext(null);
 function LeadFormProvider({ children }) {
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [source, setSource] = useState("unknown");
   const [planId, setPlanId] = useState(null);
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
   const openLeadForm = useCallback((ctaSource, options) => {
     trackCtaPrimaryClick(ctaSource);
     trackLeadFormOpen(ctaSource);
@@ -2959,7 +3164,7 @@ function partnerPanelRegisterUrl(type) {
 function cx$k(...a) {
   return a.filter(Boolean).join(" ");
 }
-function ctaClass$1(variant, size, className) {
+function ctaClass(variant, size, className) {
   const isSquare = variant === "plain";
   return cx$k(
     "inline-flex items-center justify-center font-sans font-medium tracking-normal transition duration-200",
@@ -2987,18 +3192,20 @@ function LeadCTAButton({
   size = "md",
   className,
   "aria-label": ariaLabel,
-  onClick
+  onClick,
+  tabIndex
 }) {
   const { openLeadForm } = useLeadForm();
   return /* @__PURE__ */ jsx(
     "button",
     {
       type: "button",
+      tabIndex,
       onClick: () => {
         onClick?.();
         openLeadForm(source);
       },
-      className: ctaClass$1(variant, size, className),
+      className: ctaClass(variant, size, className),
       "aria-label": ariaLabel,
       children
     }
@@ -3266,6 +3473,7 @@ function Header() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { isOpen: leadFormOpen, closeLeadForm } = useLeadForm();
   const reducedMotion = usePrefersReducedMotion$1();
   const isMobile = useIsMobile();
   const heroInView = useHomeHeroInView(location.pathname);
@@ -3283,7 +3491,7 @@ function Header() {
     mo.observe(el, { attributes: true, attributeFilter: ["data-partners-caps"] });
     return () => mo.disconnect();
   }, [location.pathname]);
-  const hideHeader = (footerInView || partnersCapsLock && !isMobile) && !open;
+  const hideHeader = (footerInView || partnersCapsLock && !isMobile) && !open && !leadFormOpen;
   const isPartners = isPartnersPath(location.pathname);
   const logoSrc = isPartners ? LOGO_BLACK : heroInView ? LOGO_WHITE : LOGO_DEFAULT;
   const isHome = location.pathname === "/" || location.pathname === "/en";
@@ -3399,6 +3607,7 @@ function Header() {
   );
   const onNav = (to, hash) => (e) => {
     setOpen(false);
+    closeLeadForm();
     if (hash) {
       e.preventDefault();
       const go = () => {
@@ -3421,6 +3630,7 @@ function Header() {
   };
   const goHome = () => {
     setOpen(false);
+    closeLeadForm();
     if (location.pathname !== homePath) navigate(homePath);
     window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
   };
@@ -3631,7 +3841,7 @@ function Header() {
       "header",
       {
         className: cx$i(
-          "pointer-events-none fixed inset-x-0 top-0 z-[120] transition-[transform,opacity]",
+          "pointer-events-none fixed inset-x-0 top-0 z-[130] transition-[transform,opacity]",
           // Float via transform (not `top`) so chrome/scroll never fights a top tween (~12–20px jumps)
           hideHeader ? "-translate-y-full opacity-0" : heroInView && !isMobile ? "translate-y-3 opacity-100 sm:translate-y-4" : "translate-y-0 opacity-100"
         ),
@@ -4244,7 +4454,7 @@ const COPY_RU$1 = {
     title: "Расскажите, что нужно запустить",
     subtitle: "Опишите задачу своими словами. Мы разберём её и отправим предварительный план, срок и диапазон стоимости.",
     ctaPrimary: "Получить оценку",
-    ctaSecondary: "Написать в Telegram",
+    ctaSecondary: "Посмотреть проекты",
     micro: "Ответим в течение рабочего дня. Созвон не обязателен. Контакты не передаём третьим лицам."
   },
   packages: {
@@ -4713,7 +4923,7 @@ const COPY_EN$1 = {
     title: "Tell us what you need to launch",
     subtitle: "Describe the task in your own words. We’ll review it and send a preliminary plan, timeline and cost range.",
     ctaPrimary: "Get an estimate",
-    ctaSecondary: "Message on Telegram",
+    ctaSecondary: "See projects",
     micro: "We reply within a business day. A call is optional. We don’t share contacts with third parties."
   },
   packages: {
@@ -5182,7 +5392,7 @@ const COPY_ZH$1 = {
     title: "告诉我们您要启动什么",
     subtitle: "用自己的话描述需求。我们会梳理并发送初步方案、周期与费用区间。",
     ctaPrimary: "获取评估",
-    ctaSecondary: "通过 Telegram 联系",
+    ctaSecondary: "查看项目",
     micro: "工作日内回复。通话非必须。联系方式不提供给第三方。"
   },
   packages: {
@@ -5242,68 +5452,6 @@ function isTelegramWebView() {
   if (/Telegram/i.test(ua)) return true;
   return false;
 }
-function useKeepVideoPlaying(videoRef) {
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.muted = true;
-    video.defaultMuted = true;
-    video.playsInline = true;
-    video.loop = true;
-    video.setAttribute("muted", "");
-    video.setAttribute("playsinline", "");
-    video.setAttribute("webkit-playsinline", "");
-    video.disableRemotePlayback = true;
-    const play = () => {
-      if (document.visibilityState === "hidden") return;
-      if (!video.paused && !video.ended) return;
-      void video.play().catch(() => {
-      });
-    };
-    play();
-    const onReady = () => play();
-    const onEnded = () => {
-      video.currentTime = 0;
-      play();
-    };
-    const onPause = () => {
-      if (document.visibilityState === "visible") {
-        requestAnimationFrame(play);
-      }
-    };
-    const onVis = () => {
-      if (document.visibilityState === "visible") play();
-    };
-    const onPageShow = () => play();
-    const unlock = () => play();
-    video.addEventListener("loadeddata", onReady);
-    video.addEventListener("canplay", onReady);
-    video.addEventListener("canplaythrough", onReady);
-    video.addEventListener("ended", onEnded);
-    video.addEventListener("pause", onPause);
-    document.addEventListener("visibilitychange", onVis);
-    window.addEventListener("pageshow", onPageShow);
-    window.addEventListener("touchstart", unlock, { passive: true, once: true });
-    window.addEventListener("pointerdown", unlock, { passive: true, once: true });
-    const watchdog = window.setInterval(() => {
-      if (document.visibilityState === "visible" && (video.paused || video.ended)) {
-        play();
-      }
-    }, 700);
-    return () => {
-      window.clearInterval(watchdog);
-      video.removeEventListener("loadeddata", onReady);
-      video.removeEventListener("canplay", onReady);
-      video.removeEventListener("canplaythrough", onReady);
-      video.removeEventListener("ended", onEnded);
-      video.removeEventListener("pause", onPause);
-      document.removeEventListener("visibilitychange", onVis);
-      window.removeEventListener("pageshow", onPageShow);
-      window.removeEventListener("touchstart", unlock);
-      window.removeEventListener("pointerdown", unlock);
-    };
-  }, [videoRef]);
-}
 let frozenH = 0;
 function readNow() {
   frozenH = window.innerHeight || frozenH || 800;
@@ -5313,8 +5461,6 @@ function getStableViewportHeight() {
   if (!frozenH) readNow();
   return frozenH;
 }
-const HERO_VIDEO$5 = "/images/hero-bg.mp4";
-const HERO_POSTER$5 = "/images/hero-bg-poster.webp";
 const SCROLL_TRACK_VH = 240;
 function cx$h(...a) {
   return a.filter(Boolean).join(" ");
@@ -5404,8 +5550,6 @@ function HeroCard({
   const { lang } = useLang();
   const textOpacity = useMemo(() => textOpacities(progress), [progress]);
   const activeStage = textOpacity[2] > 0.5 ? 2 : textOpacity[1] > 0.5 ? 1 : 0;
-  const videoRef = useRef(null);
-  useKeepVideoPlaying(videoRef);
   return /* @__PURE__ */ jsxs(
     "div",
     {
@@ -5414,23 +5558,7 @@ function HeroCard({
       ),
       children: [
         /* @__PURE__ */ jsxs("div", { className: "pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] bg-black", children: [
-          /* @__PURE__ */ jsx(
-            "video",
-            {
-              ref: videoRef,
-              className: "pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center",
-              src: HERO_VIDEO$5,
-              poster: HERO_POSTER$5,
-              autoPlay: true,
-              muted: true,
-              loop: true,
-              playsInline: true,
-              preload: "auto",
-              controls: false,
-              disablePictureInPicture: true,
-              "aria-hidden": true
-            }
-          ),
+          /* @__PURE__ */ jsx(BgLoopVideo, {}),
           /* @__PURE__ */ jsx(
             "div",
             {
@@ -5634,6 +5762,21 @@ const COPY_RU = {
     next: "Следующий кейс",
     items: [
       {
+        id: "neo-terminal",
+        type: "AI Commerce · RetailTech",
+        problem: "Розничные данные живут в разных местах: каталоги, ERP, сообщения, склады и таблицы. Клиенты ждут ответа, пока команда вручную сшивает одну и ту же информацию по каналам.",
+        solution: "Собрали единый коммерческий слой: загрузка каталога, склад, продажи с AI, Smart City, B2B-закупки, омниканальные диалоги, checkout, доставка и операции мерчанта.",
+        result: "Одна операционная система коммерции, где товары, остатки, диалоги, заказы и бизнес-процессы живут на одном слое данных.",
+        modules: [
+          "AI Seller",
+          "Smart Inventory",
+          "B2B",
+          "Smart City",
+          "Omnichannel",
+          "Merchant OS"
+        ]
+      },
+      {
         id: "spliton",
         type: "Веб-продукт · FinTech",
         problem: "Нужна была финтех-платформа для долей в музыке — не лендинг, а полноценный продукт с деньгами, ролями и комплаенсом.",
@@ -5662,14 +5805,6 @@ const COPY_RU = {
           "Telegram",
           "bePaid"
         ]
-      },
-      {
-        id: "logovo",
-        type: "Локальный бизнес",
-        problem: "Клиент с дороги не находил филиал и запись — адреса и CTA прятались, заявка терялась.",
-        solution: "Собрали сайт сети: филиалы, услуги, цены, карта и короткий путь до заявки или звонка.",
-        result: "Сайт сети шиномонтажей с филиалами, услугами, ценами и маршрутом до заявки.",
-        modules: ["Филиалы", "Услуги", "Цены", "Карта", "Запись", "B2B"]
       }
     ]
   },
@@ -5863,6 +5998,21 @@ const COPY_EN = {
     next: "Next case",
     items: [
       {
+        id: "neo-terminal",
+        type: "AI Commerce · RetailTech",
+        problem: "Retail data lives in different places: product catalogs, ERP systems, messages, warehouses and spreadsheets. Customers wait for answers while teams manually reconnect the same information across channels.",
+        solution: "We built a unified commerce layer with catalog ingestion, inventory, AI-assisted selling, Smart City discovery, B2B procurement, omnichannel conversations, checkout, delivery and merchant operations.",
+        result: "One commerce operating system where products, stock, conversations, orders and business workflows share the same data layer.",
+        modules: [
+          "AI Seller",
+          "Smart Inventory",
+          "B2B",
+          "Smart City",
+          "Omnichannel",
+          "Merchant OS"
+        ]
+      },
+      {
         id: "spliton",
         type: "Web product · FinTech",
         problem: "Needed a fintech platform for music shares — a full product with money flows, roles and compliance, not a landing page.",
@@ -5891,14 +6041,6 @@ const COPY_EN = {
           "Telegram",
           "bePaid"
         ]
-      },
-      {
-        id: "logovo",
-        type: "Local business",
-        problem: "Drivers couldn’t find a branch or booking path — addresses and CTAs were buried, leads were lost.",
-        solution: "Built a network site: branches, services, prices, map and a short path to book or call.",
-        result: "Tire-service network site with branches, services, prices and a clear path to a lead.",
-        modules: ["Branches", "Services", "Prices", "Map", "Booking", "B2B"]
       }
     ]
   },
@@ -6092,6 +6234,21 @@ const COPY_ZH = {
     next: "下一个案例",
     items: [
       {
+        id: "neo-terminal",
+        type: "AI Commerce · RetailTech",
+        problem: "零售数据分散在目录、ERP、消息、仓库和表格里。客户在等回复，团队却在各渠道手工拼接同一份信息。",
+        solution: "我们构建了统一的商业层：目录接入、库存、AI 辅助销售、Smart City、B2B 采购、全渠道对话、结算、配送与商家运营。",
+        result: "一套商业操作系统：商品、库存、对话、订单与业务流程共享同一数据层。",
+        modules: [
+          "AI Seller",
+          "Smart Inventory",
+          "B2B",
+          "Smart City",
+          "Omnichannel",
+          "Merchant OS"
+        ]
+      },
+      {
         id: "spliton",
         type: "Web 产品 · 金融科技",
         problem: "需要音乐份额金融科技平台 — 含资金流、角色与合规的完整产品，不是落地页。",
@@ -6120,14 +6277,6 @@ const COPY_ZH = {
           "Telegram",
           "bePaid"
         ]
-      },
-      {
-        id: "logovo",
-        type: "本地生意",
-        problem: "司机找不到门店或预约路径 — 地址与 CTA 被埋没，线索流失。",
-        solution: "交付网络站：门店、服务、价格、地图与短路径预约/拨打。",
-        result: "轮胎服务网络站：门店、服务、价格与清晰获客路径。",
-        modules: ["门店", "服务", "价格", "地图", "预约", "企业对企业"]
       }
     ]
   },
@@ -6308,8 +6457,10 @@ const LOGOVO_DOMAIN = "https://www.logovo24.by/";
 const HEADMIND_DOMAIN = "https://headmind.ru/";
 const SLOTTY_DOMAIN = "https://slotty.of.by/book";
 const SPLITON_DOMAIN = "https://www.spliton.io/";
+const NEO_TERMINAL_DOMAIN = "https://neo-terminal-web.onrender.com/";
 const TIVONIXPANEL_DOMAIN = "https://tivonixpanel-production.up.railway.app/login";
 const PUBLIC_PROJECT_IDS = [
+  "neo-terminal",
   "spliton",
   "slotty",
   "headmind",
@@ -6381,18 +6532,18 @@ function buildAllProjects(isRu) {
     {
       id: "logovo",
       title: "LOGOVO",
-      subtitleRu: "Сайт сети шиномонтажа LOGOVO в Минске: Figma → Next.js, 4 филиала, запись, карта, B2B — под ключ за 1 600 BYN, команда TIVONIX.",
-      subtitleEn: "Website for LOGOVO tire network in Minsk: Figma → Next.js, 4 branches, booking, map, B2B — turnkey for 1,600 BYN by TIVONIX.",
-      subtitleZh: "明斯克 LOGOVO 轮胎网络网站：Figma → Next.js，4 个分支机构，预订，地图，B2B — TIVONIX 交钥匙工程 1,600 BYN。",
-      detailsRu: "Зачем это\nШиномонтаж выбирают не в кресле — **с дороги, одной рукой, пока мигает индикатор**. Если адрес, часы и «записаться» прячутся на трёх экранах — клиент уедет к тому, кто ответил быстрее.\n\nЗаказчик — **ООО «Логово»** (сеть шиномонтажа в Минске, УНП 193616584): **4 филиала**, два работают **24/7**, безнал для автопарков и такси, полный контур услуг — от шиномонтажа и правки дисков до хранения и кондиционера. Бюджет проекта — **1 600 BYN** ([[≈ 42 800 ₽]] / [[≈ 560 $]]). Сайт собрала **команда TIVONIX** под ключ — не шаблон и не «отдали архив».\n\nКак работает\nЧеловек с телефона открывает **logovo24.by** → услуга → филиал на карте / режим → **записаться** или **позвонить**. Автопарк идёт в B2B: безнал, единый прайс, документы на четырёх точках — без переписки «пришлите счёт».\n\nЧто внутри\nВесь продукт сделали мы: **дизайн в Figma** (структура, mobile-first, CTA «с дороги»), потом разработка на **Next.js 16 + TypeScript + Tailwind v4** — статический экспорт под shared-хостинг. Не конструктор: ручная вёрстка, Leaflet-карта с геолокацией «найти меня», калькулятор «комплекс 4 колёса», до/после, отзывы, скидки, кейсы, FAQ, SEO (schema AutoRepair, sitemap, OG).\n\n**11 услуг** с отдельными страницами и прайсом: шиномонтаж, грузовой, правка и покраска дисков, аргон, прокол, вулканизация, балансировка, проточка, хранение, кондиционер. **4 адреса** (Лещинского и Логойский тракт — 24/7; Гурского и Дзержинского — дневной режим). B2B-блок: такси / логистика / флоты, бейдж **75+ клиентов**. Запись: форма → mailto на сеть. Sticky-бар на мобиле: позвонить / записаться.\n\nВизуал — светлая система **LOGOVO × Awesomic**: canvas `#f4f4f5`, ember-оранжевый `#ff5a00` только на CTA и бейджах 24/7, тёмные obsidian-блоки для контраста, крупные pill-кнопки, radius карточек 36px. Mobile-first — основной трафик с дороги.\n\nЗапуск под ключ\nПомогли с **доменом logovo24.by**, **сами** подняли хостинг (**hoster.by** / cPanel), выгрузили статику `out/`, настроили прод. Полный цикл: идея → Figma → код → деплой.\n\nИтог\nНе «сайт за тысячу». **Рабочий инструмент сети LOGOVO** за [[≈ 560 $]]: запись, карта, B2B, дизайн и прод на **logovo24.by** — сделала команда TIVONIX.\n",
-      detailsEn: "Why it matters\nTire service isn’t chosen from a couch — it’s chosen **from the road, one-handed, while a warning light blinks**. If address, hours and “book” hide across three screens, the client drives to whoever answers faster.\n\nClient — **LOGOVO LLC** (Minsk tire network, UNP 193616584): **4 branches**, two open **24/7**, fleet billing for taxi and logistics, full service loop — fitting, wheel repair/paint, storage, A/C and more. Project budget — **1,600 BYN** ([[≈ 42,800 ₽]] / [[≈ $560]]). Built **turnkey by the TIVONIX team** — not a template, not “here’s a zip”.\n\nHow it works\nSomeone opens **logovo24.by** on a phone → service → branch on the map / hours → **book** or **call**. Fleets go to B2B: invoices, unified pricing, docs across four locations — no “send the contract” threads.\n\nWhat’s inside\nWe built the whole product: **Figma design** (structure, mobile-first, on-the-road CTAs), then **Next.js 16 + TypeScript + Tailwind v4** — static export for shared hosting. No page builder: handmade layout, Leaflet map with “find me” geolocation, “4 wheels package” calculator, before/after, reviews, discounts, cases, FAQ, SEO (AutoRepair schema, sitemap, OG).\n\n**11 services** with dedicated pages and pricing: fitting, commercial, wheel repair/paint, argon, puncture, vulcanizing, balancing, brake disc machining, storage, A/C. **4 addresses** (Leshchinskogo and Logoyskiy trakt — 24/7; Gurskogo and Dzerzhinskogo — daytime). B2B block: taxi / logistics / fleets, **75+ clients** badge. Booking: form → mailto to the network. Sticky mobile bar: call / book.\n\nVisual system — light **LOGOVO × Awesomic**: canvas `#f4f4f5`, ember orange `#ff5a00` only on CTAs and 24/7 badges, dark obsidian blocks for contrast, large pill buttons, 36px card radius. Mobile-first — most traffic comes from the road.\n\nTurnkey launch\nWe helped with the **logovo24.by** domain, **set up hosting ourselves** (**hoster.by** / cPanel), shipped the `out/` static build, wired production. Full cycle: idea → Figma → code → deploy.\n\nOutcome\nNot a “thousand-buck site”. A **working tool for the LOGOVO network** for [[≈ $560]]: booking, map, B2B, design and prod on **logovo24.by** — by the TIVONIX team.\n",
-      detailsZh: "为什么这很重要\n轮胎保养不是在沙发上选择的，而是**在路上单手选择，同时警告灯闪烁**。如果地址、营业时间和“预订”隐藏在三个屏幕上，客户就会开车去找谁回答得更快。\n\n客户 — **LOGOVO LLC**（明斯克轮胎网络，UNP 193616584）：**4 个分支机构**，两个开放 **24/7**，出租车和物流车队计费，全方位服务循环 - 装配、车轮维修/喷漆、存储、空调等。项目预算 — **1,600 BYN** ([[≈ 42,800 ₽]] / [[≈ $560]])。 **由 TIVONIX 团队构建** — 不是模板，也不是“这是一个 zip”。\n\n它是如何运作的\n有人在电话上打开 **logovo24.by** → 服务 → 地图/时间上的分支 → **预订** 或 **致电**。车队转向 B2B：发票、统一定价、跨四个地点的文档 — 没有“发送合同”线程。\n\n里面有什么\n我们构建了整个产品：**Figma 设计**（结构、移动优先、路上 CTA），然后是**Next.js 16 + TypeScript + Tailwind v4** - 用于共享托管的静态导出。无页面构建器：手工布局、带有“找到我”地理位置的传单地图、“4 轮套餐”计算器、之前/之后、评论、折扣、案例、常见问题解答、SEO（自动修复架构、站点地图、OG）。\n\n**11 项服务** 与 ded所示页面和定价：装配、商业、车轮维修/喷漆、氩气、穿刺、硫化、平衡、制动盘加工、存储、空调。 **4 个地址**（Leshchinskogo 和 Logoyskiy trakt — 24/7；Gurskogo 和 Dzerzhinskogo — 白天）。 B2B 区块：出租车/物流/车队，**75+ 客户**徽章。预订：表格→邮寄至网络。粘性移动栏：通话/预订。\n\n视觉系统 - 浅 **LOGOVO × Awesomic**：画布“#f4f4f5”，仅在 CTA 和 24/7 徽章上使用琥珀橙色“#ff5a00”，深色黑曜石块用于对比，大药丸按钮，36px 卡片半径。移动优先——大部分流量来自道路。\n\n交钥匙启动\n我们帮助 **logovo24.by** 域，**设置我们自己的托管**（**hoster.by** / cPanel），运送 `out/` 静态构建、有线生产。完整周期：想法→Figma→代码→部署。\n\n结果\n不是“千元网站”。 **LOGOVO 网络的工作工具**，售价 [[≈ 560 美元]]：在 **logovo24.by** 上进行预订、地图、B2B、设计和产品 — 由 TIVONIX 团队提供。",
+      subtitleRu: "Сайт сети шиномонтажа LOGOVO в Минске: Figma → Next.js, 4 филиала, запись, карта, B2B — под ключ, команда TIVONIX.",
+      subtitleEn: "Website for LOGOVO tire network in Minsk: Figma → Next.js, 4 branches, booking, map, B2B — turnkey by TIVONIX.",
+      subtitleZh: "明斯克 LOGOVO 轮胎网络网站：Figma → Next.js，4 个分支机构，预订，地图，B2B — TIVONIX 交钥匙工程。",
+      detailsRu: "Зачем это\nШиномонтаж выбирают не в кресле — **с дороги, одной рукой, пока мигает индикатор**. Если адрес, часы и «записаться» прячутся на трёх экранах — клиент уедет к тому, кто ответил быстрее.\n\nЗаказчик — **ООО «Логово»** (сеть шиномонтажа в Минске, УНП 193616584): **4 филиала**, два работают **24/7**, безнал для автопарков и такси, полный контур услуг — от шиномонтажа и правки дисков до хранения и кондиционера. Сайт собрала **команда TIVONIX** под ключ — не шаблон и не «отдали архив».\n\nКак работает\nЧеловек с телефона открывает **logovo24.by** → услуга → филиал на карте / режим → **записаться** или **позвонить**. Автопарк идёт в B2B: безнал, единый прайс, документы на четырёх точках — без переписки «пришлите счёт».\n\nЧто внутри\nВесь продукт сделали мы: **дизайн в Figma** (структура, mobile-first, CTA «с дороги»), потом разработка на **Next.js 16 + TypeScript + Tailwind v4** — статический экспорт под shared-хостинг. Не конструктор: ручная вёрстка, Leaflet-карта с геолокацией «найти меня», калькулятор «комплекс 4 колёса», до/после, отзывы, скидки, кейсы, FAQ, SEO (schema AutoRepair, sitemap, OG).\n\n**11 услуг** с отдельными страницами и прайсом: шиномонтаж, грузовой, правка и покраска дисков, аргон, прокол, вулканизация, балансировка, проточка, хранение, кондиционер. **4 адреса** (Лещинского и Логойский тракт — 24/7; Гурского и Дзержинского — дневной режим). B2B-блок: такси / логистика / флоты, бейдж **75+ клиентов**. Запись: форма → mailto на сеть. Sticky-бар на мобиле: позвонить / записаться.\n\nВизуал — светлая система **LOGOVO × Awesomic**: canvas `#f4f4f5`, ember-оранжевый `#ff5a00` только на CTA и бейджах 24/7, тёмные obsidian-блоки для контраста, крупные pill-кнопки, radius карточек 36px. Mobile-first — основной трафик с дороги.\n\nЗапуск под ключ\nПомогли с **доменом logovo24.by**, **сами** подняли хостинг (**hoster.by** / cPanel), выгрузили статику `out/`, настроили прод. Полный цикл: идея → Figma → код → деплой.\n\nИтог\nНе «сайт за тысячу». **Рабочий инструмент сети LOGOVO**: запись, карта, B2B, дизайн и прод на **logovo24.by** — сделала команда TIVONIX.\n",
+      detailsEn: "Why it matters\nTire service isn’t chosen from a couch — it’s chosen **from the road, one-handed, while a warning light blinks**. If address, hours and “book” hide across three screens, the client drives to whoever answers faster.\n\nClient — **LOGOVO LLC** (Minsk tire network, UNP 193616584): **4 branches**, two open **24/7**, fleet billing for taxi and logistics, full service loop — fitting, wheel repair/paint, storage, A/C and more. Built **turnkey by the TIVONIX team** — not a template, not “here’s a zip”.\n\nHow it works\nSomeone opens **logovo24.by** on a phone → service → branch on the map / hours → **book** or **call**. Fleets go to B2B: invoices, unified pricing, docs across four locations — no “send the contract” threads.\n\nWhat’s inside\nWe built the whole product: **Figma design** (structure, mobile-first, on-the-road CTAs), then **Next.js 16 + TypeScript + Tailwind v4** — static export for shared hosting. No page builder: handmade layout, Leaflet map with “find me” geolocation, “4 wheels package” calculator, before/after, reviews, discounts, cases, FAQ, SEO (AutoRepair schema, sitemap, OG).\n\n**11 services** with dedicated pages and pricing: fitting, commercial, wheel repair/paint, argon, puncture, vulcanizing, balancing, brake disc machining, storage, A/C. **4 addresses** (Leshchinskogo and Logoyskiy trakt — 24/7; Gurskogo and Dzerzhinskogo — daytime). B2B block: taxi / logistics / fleets, **75+ clients** badge. Booking: form → mailto to the network. Sticky mobile bar: call / book.\n\nVisual system — light **LOGOVO × Awesomic**: canvas `#f4f4f5`, ember orange `#ff5a00` only on CTAs and 24/7 badges, dark obsidian blocks for contrast, large pill buttons, 36px card radius. Mobile-first — most traffic comes from the road.\n\nTurnkey launch\nWe helped with the **logovo24.by** domain, **set up hosting ourselves** (**hoster.by** / cPanel), shipped the `out/` static build, wired production. Full cycle: idea → Figma → code → deploy.\n\nOutcome\nNot a “thousand-buck site”. A **working tool for the LOGOVO network**: booking, map, B2B, design and prod on **logovo24.by** — by the TIVONIX team.\n",
+      detailsZh: "为什么这很重要\n轮胎保养不是在沙发上选择的，而是**在路上单手选择，同时警告灯闪烁**。如果地址、营业时间和“预订”隐藏在三个屏幕上，客户就会开车去找谁回答得更快。\n\n客户 — **LOGOVO LLC**（明斯克轮胎网络，UNP 193616584）：**4 个分支机构**，两个开放 **24/7**，出租车和物流车队计费，全方位服务循环 - 装配、车轮维修/喷漆、存储、空调等。 **由 TIVONIX 团队构建** — 不是模板，也不是“这是一个 zip”。\n\n它是如何运作的\n有人在电话上打开 **logovo24.by** → 服务 → 地图/时间上的分支 → **预订** 或 **致电**。车队转向 B2B：发票、统一定价、跨四个地点的文档 — 没有“发送合同”线程。\n\n里面有什么\n我们构建了整个产品：**Figma 设计**（结构、移动优先、路上 CTA），然后是**Next.js 16 + TypeScript + Tailwind v4** - 用于共享托管的静态导出。无页面构建器：手工布局、带有“找到我”地理位置的传单地图、“4 轮套餐”计算器、之前/之后、评论、折扣、案例、常见问题解答、SEO（自动修复架构、站点地图、OG）。\n\n**11 项服务** 与 ded所示页面和定价：装配、商业、车轮维修/喷漆、氩气、穿刺、硫化、平衡、制动盘加工、存储、空调。 **4 个地址**（Leshchinskogo 和 Logoyskiy trakt — 24/7；Gurskogo 和 Dzerzhinskogo — 白天）。 B2B 区块：出租车/物流/车队，**75+ 客户**徽章。预订：表格→邮寄至网络。粘性移动栏：通话/预订。\n\n视觉系统 - 浅 **LOGOVO × Awesomic**：画布“#f4f4f5”，仅在 CTA 和 24/7 徽章上使用琥珀橙色“#ff5a00”，深色黑曜石块用于对比，大药丸按钮，36px 卡片半径。移动优先——大部分流量来自道路。\n\n交钥匙启动\n我们帮助 **logovo24.by** 域，**设置我们自己的托管**（**hoster.by** / cPanel），运送 `out/` 静态构建、有线生产。完整周期：想法→Figma→代码→部署。\n\n结果\n不是“千元网站”。 **LOGOVO 网络的工作工具**：在 **logovo24.by** 上进行预订、地图、B2B、设计和产品 — 由 TIVONIX 团队提供。",
       domain: LOGOVO_DOMAIN,
       status: "live",
       tags: ["Website", "Next.js", "Local Business", "Booking", "B2B", "Figma"],
       cover: "/images/project-priew/logovo.webp",
       outcomes: [
-        isRu ? "Бюджет **1 600 BYN** ([[≈ 42 800 ₽]] / [[≈ 560 $]])" : "Budget **1,600 BYN** ([[≈ 42,800 ₽]] / [[≈ $560]])",
+        isRu ? "Рабочий сайт сети на **logovo24.by**" : "Live network site on **logovo24.by**",
         isRu ? "**TIVONIX** под ключ: Figma → Next.js → hoster.by" : "**TIVONIX** turnkey: Figma → Next.js → hoster.by",
         isRu ? "**4 филиала** · два **24/7** · 11 услуг · B2B" : "**4 branches** · two **24/7** · 11 services · B2B",
         isRu ? "Карта Leaflet · запись · калькулятор · SEO" : "Leaflet map · booking · calculator · SEO"
@@ -6463,18 +6614,18 @@ function buildAllProjects(isRu) {
     {
       id: "headmind",
       title: "Headmind",
-      subtitleRu: "Корпоративный сайт ООО «Хэдмайнд»: Figma → WordPress + Elementor, хостинг и домен headmind.ru — бюджет 100 000 ₽.",
-      subtitleEn: "Corporate site for Headmind: Figma → WordPress + Elementor, hosting and domain headmind.ru — budget 100,000 ₽.",
-      subtitleZh: "Headmind 的公司网站：Figma → WordPress + Elementor，托管和域名 headmind.ru — 预算 100,000 ₽。",
-      detailsRu: "Зачем это\nООО «Хэдмайнд» — консалтинг по трансформации бизнеса: стратегия, цифровизация, оргдизайн, производство, контракты. В B2B часто **теряют сделку на первом касании**, если сайт говорит «обо всём и ни о чём». Нужен был сайт, который спокойно шлют в первом сообщении.\n\nЗаказчик — **Евгений Беликов**, основатель и генеральный директор ООО «Хэдмайнд» (соучредитель — Виталий Петровский). Бюджет — **100 000 ₽** ([[≈ 1 280 $]]). Прод: **headmind.ru**.\n\nКак работает\nПосетитель проходит короткий маршрут: **услуги** → **подход / экспертиза** → **команда** → **контакт / заявка**. На каждом шаге понятно, кто вы и чем сильны. CTA стоит там, где человек уже готов написать.\n\nЧто внутри\nСначала **макеты в Figma**: несколько визуальных вариантов на выбор — пока заказчику не «зашло». Потом дизайн и сборка на **WordPress + Elementor**: услуги (трансформация, цифровизация, HR, производство, контракты, продажи), команда, доверие, формы заявки.\n\nПод ключ: подобрали и подключили **хостинг**, купили/привязали **домен headmind.ru**, выкатили в прод, настроили админку WordPress, чтобы контент правили сами. Стек не «с нуля на React» — осознанный выбор: быстрый запуск, удобное редактирование, спокойный B2B-сайт.\n\nЧто сделали\nFigma (выборка вариантов) → дизайн → WordPress/Elementor → хостинг + домен → живой **headmind.ru**. Упаковали экспертизу в маршрут до заявки.\n\nИтог\nНе шаблон «поставьте логотип». **Корпоративный сайт под ключ** для Евгения Беликова / ООО «Хэдмайнд»: 100 000 ₽, Figma → WP, домен и хостинг — можно открыть и проверить самому.\n",
-      detailsEn: "Why it matters\nHeadmind is a business-transformation consultancy: strategy, digitalization, org design, production, contracts. In B2B you often **lose the deal on first contact** if the site says everything and nothing. They needed a site you can send in the first message.\n\nClient — **Evgeniy Belikov**, founder and CEO of Headmind (co-founder — Vitaliy Petrovsky). Budget — **100,000 ₽** ([[≈ $1,280]]). Live: **headmind.ru**.\n\nHow it works\nA visitor follows a short path: **services** → **approach / expertise** → **team** → **contact / lead**. At every step it’s clear who you are and why you’re strong. CTAs sit where people are already ready to write.\n\nWhat’s inside\nFirst **Figma mockups**: several visual directions until the client picked a favourite. Then design and build on **WordPress + Elementor**: services (transformation, digitalization, HR, production, contracts, sales), team, trust, lead forms.\n\nTurnkey: hosting set up, **domain headmind.ru** connected, shipped to production, WordPress admin ready so they can edit content themselves. Not a custom React build on purpose — fast launch, easy editing, a calm B2B site.\n\nWhat we delivered\nFigma (variant selection) → design → WordPress/Elementor → hosting + domain → live **headmind.ru**. Expertise packaged into a path to a lead.\n\nOutcome\nNot a “drop your logo” template. A **turnkey corporate site** for Evgeniy Belikov / Headmind: 100,000 ₽, Figma → WP, domain and hosting — open it and check yourself.\n",
-      detailsZh: "为什么这很重要\nHeadadmind 是一家业务转型咨询公司：战略、数字化、组织设计、生产、合同。在 B2B 中，如果网站什么都说了，但什么也没说，你常常**在第一次接触时就失去了交易**。他们需要一个您可以在第一条消息中发送的网站。\n\n客户 — **Evgeniy Belikov**，Headmind 创始人兼首席执行官（联合创始人 — Vitaliy Petrovsky）。预算 — **100,000 ₽** ([[≈ $1,280]])。直播：**headmind.ru**。\n\n它是如何运作的\n访客遵循一条简短的路径：**服务**→**方法/专业知识**→**团队**→**联系人/领导**。每一步都清楚你是谁以及你为何强大。 CTA 位于人们已经准备好写作的地方。\n\n里面有什么\n首先**Figma 模型**：几个视觉方向，直到客户选择了最喜欢的。然后在 **WordPress + Elementor** 上进行设计和构建：服务（转型、数字化、人力资源、生产、合同、销售）、团队、信任、潜在客户表单。\n\n统包：托管设置、**域名 headmind.ru** 连接、交付生产、WordPress 管理员准备就绪，以便他们可以自己编辑内容。不是专门定制的 React 构建——快速启动、轻松编辑、平静的 B2B 网站。\n\n我们交付了什么\nFigma（变体选择）→设计→WordPress/Elementor → 托管 + 域名 → 直播 **headmind.ru**。专业知识融入了通往潜在客户的道路。\n\n结果\n不是“放弃您的徽标”模板。 Evgeniy Belikov / Headadmind 的 **交钥匙企业网站**：100,000 ₽，Figma → WP、域名和托管 - 打开它并自行检查。",
+      subtitleRu: "Корпоративный сайт ООО «Хэдмайнд»: Figma → WordPress + Elementor, хостинг и домен headmind.ru.",
+      subtitleEn: "Corporate site for Headmind: Figma → WordPress + Elementor, hosting and domain headmind.ru.",
+      subtitleZh: "Headmind 的公司网站：Figma → WordPress + Elementor，托管和域名 headmind.ru。",
+      detailsRu: "Зачем это\nООО «Хэдмайнд» — консалтинг по трансформации бизнеса: стратегия, цифровизация, оргдизайн, производство, контракты. В B2B часто **теряют сделку на первом касании**, если сайт говорит «обо всём и ни о чём». Нужен был сайт, который спокойно шлют в первом сообщении.\n\nЗаказчик — **Евгений Беликов**, основатель и генеральный директор ООО «Хэдмайнд» (соучредитель — Виталий Петровский). Прод: **headmind.ru**.\n\nКак работает\nПосетитель проходит короткий маршрут: **услуги** → **подход / экспертиза** → **команда** → **контакт / заявка**. На каждом шаге понятно, кто вы и чем сильны. CTA стоит там, где человек уже готов написать.\n\nЧто внутри\nСначала **макеты в Figma**: несколько визуальных вариантов на выбор — пока заказчику не «зашло». Потом дизайн и сборка на **WordPress + Elementor**: услуги (трансформация, цифровизация, HR, производство, контракты, продажи), команда, доверие, формы заявки.\n\nПод ключ: подобрали и подключили **хостинг**, купили/привязали **домен headmind.ru**, выкатили в прод, настроили админку WordPress, чтобы контент правили сами. Стек не «с нуля на React» — осознанный выбор: быстрый запуск, удобное редактирование, спокойный B2B-сайт.\n\nЧто сделали\nFigma (выборка вариантов) → дизайн → WordPress/Elementor → хостинг + домен → живой **headmind.ru**. Упаковали экспертизу в маршрут до заявки.\n\nИтог\nНе шаблон «поставьте логотип». **Корпоративный сайт под ключ** для Евгения Беликова / ООО «Хэдмайнд»: Figma → WP, домен и хостинг — можно открыть и проверить самому.\n",
+      detailsEn: "Why it matters\nHeadmind is a business-transformation consultancy: strategy, digitalization, org design, production, contracts. In B2B you often **lose the deal on first contact** if the site says everything and nothing. They needed a site you can send in the first message.\n\nClient — **Evgeniy Belikov**, founder and CEO of Headmind (co-founder — Vitaliy Petrovsky). Live: **headmind.ru**.\n\nHow it works\nA visitor follows a short path: **services** → **approach / expertise** → **team** → **contact / lead**. At every step it’s clear who you are and why you’re strong. CTAs sit where people are already ready to write.\n\nWhat’s inside\nFirst **Figma mockups**: several visual directions until the client picked a favourite. Then design and build on **WordPress + Elementor**: services (transformation, digitalization, HR, production, contracts, sales), team, trust, lead forms.\n\nTurnkey: hosting set up, **domain headmind.ru** connected, shipped to production, WordPress admin ready so they can edit content themselves. Not a custom React build on purpose — fast launch, easy editing, a calm B2B site.\n\nWhat we delivered\nFigma (variant selection) → design → WordPress/Elementor → hosting + domain → live **headmind.ru**. Expertise packaged into a path to a lead.\n\nOutcome\nNot a “drop your logo” template. A **turnkey corporate site** for Evgeniy Belikov / Headmind: Figma → WP, domain and hosting — open it and check yourself.\n",
+      detailsZh: "为什么这很重要\nHeadadmind 是一家业务转型咨询公司：战略、数字化、组织设计、生产、合同。在 B2B 中，如果网站什么都说了，但什么也没说，你常常**在第一次接触时就失去了交易**。他们需要一个您可以在第一条消息中发送的网站。\n\n客户 — **Evgeniy Belikov**，Headmind 创始人兼首席执行官（联合创始人 — Vitaliy Petrovsky）。直播：**headmind.ru**。\n\n它是如何运作的\n访客遵循一条简短的路径：**服务**→**方法/专业知识**→**团队**→**联系人/领导**。每一步都清楚你是谁以及你为何强大。 CTA 位于人们已经准备好写作的地方。\n\n里面有什么\n首先**Figma 模型**：几个视觉方向，直到客户选择了最喜欢的。然后在 **WordPress + Elementor** 上进行设计和构建：服务（转型、数字化、人力资源、生产、合同、销售）、团队、信任、潜在客户表单。\n\n统包：托管设置、**域名 headmind.ru** 连接、交付生产、WordPress 管理员准备就绪，以便他们可以自己编辑内容。不是专门定制的 React 构建——快速启动、轻松编辑、平静的 B2B 网站。\n\n我们交付了什么\nFigma（变体选择）→设计→WordPress/Elementor → 托管 + 域名 → 直播 **headmind.ru**。专业知识融入了通往潜在客户的道路。\n\n结果\n不是“放弃您的徽标”模板。 Evgeniy Belikov / Headadmind 的 **交钥匙企业网站**：Figma → WP、域名和托管 - 打开它并自行检查。",
       domain: HEADMIND_DOMAIN,
       status: "live",
       tags: ["B2B", "WordPress", "Elementor", "Figma", "Corporate"],
       cover: "/images/project-priew/headmind.webp",
       outcomes: [
-        isRu ? "Заказчик **Евгений Беликов** · бюджет [[≈ 1 280 $]]" : "Client **Evgeniy Belikov** · budget [[≈ $1,280]]",
+        isRu ? "Заказчик **Евгений Беликов** · Figma → WordPress" : "Client **Evgeniy Belikov** · Figma → WordPress",
         isRu ? "**Figma** (варианты) → **WordPress + Elementor**" : "**Figma** (variants) → **WordPress + Elementor**",
         isRu ? "Хостинг + домен **headmind.ru** под ключ" : "Hosting + domain **headmind.ru** turnkey",
         isRu ? "Маршрут услуг → команда → **заявка**" : "Path: services → team → **lead**"
@@ -6493,9 +6644,9 @@ function buildAllProjects(isRu) {
       subtitleRu: "Полный маркетплейс записи к мастерам: каталог с фильтрами и картой, Telegram Mini App, кабинет мастера (SaaS Free/Pro), platform-admin, bePaid — на Railway, домен slotty.of.by.",
       subtitleEn: "Full booking marketplace for masters: filtered catalog + map, Telegram Mini App, master SaaS cabinet (Free/Pro), platform admin, bePaid — on Railway, domain slotty.of.by.",
       subtitleZh: "大师的完整预订市场：过滤目录 + 地图、Telegram Mini App、大师 SaaS 柜（免费/专业版）、平台管理、bePaid — on Railway、域名 slotty.of.by。",
-      detailsRu: "Зачем это\nЗапись к мастеру до сих пор часто живёт в **Direct и WhatsApp**: «есть на завтра?», «а через час?», «ой, забыла напомнить». Клиент устаёт писать. Мастер устаёт отвечать. Слоты пропадают в тишине чата.\n\nНужен был не черновик и не «кнопка записаться», а **полный маркетплейс**: каталог с жёсткой фильтрацией, карта, путь клиента, SaaS-кабинет мастера, роли, platform-admin, оплаты, уведомления и прод. Заказчик — **Виктория Д.** Бюджет — 230 000 ₽ ([[≈ 2 940 $]]). Срок — **3 недели**.\n\nКак работает\nКлиент открывает **slotty.of.by** (сайт или Telegram Mini App) → каталог → фильтры / карта → мастер → услуга → **свободный слот** → подтверждение. Код записи, напоминания в Telegram и email — без звонков.\nМастер в кабинете ведёт профиль, портфолио, адрес, услуги, акции, расписание, заявки и клиентов; тариф Free или Pro.\nPlatform-admin модерирует мастеров, записи, биллинг, платежи bePaid, рассылки и журнал — платформой можно рулить уже сейчас.\n\nЧто внутри\nЭто **крупная разработка**, не лендинг с формой. Фронт: React + TypeScript + Vite + Tailwind. Бэкенд: Express API, PostgreSQL (**88 миграций**), JWT-сессии. Прод: **два сервиса на Railway** (web + api), домен **slotty.of.by** — подсказали, где купить домен, подняли хостинг, привязали DNS и выкатили в бой. Плюс Telegram Bot / Mini App, Google Auth, email (Resend), карты (Leaflet / OSM, опционально Яндекс), платежи **bePaid** (BYN), Sentry, SEO-prerender.\n\nМаркетплейс для клиента: **6 категорий** (маникюр, барберы, брови/ресницы, массаж, фитнес, тату). Каталог — не «список карточек», а полноценный поиск: все / популярные / акции / новинки, текстовый поиск, **карта с геосортировкой**.\n\nФильтры: сортировка (рекомендации, популярность, ближайший слот, расстояние, рейтинг, цена ↑↓, отзывы); дата (сегодня / завтра / неделя / выходные / точный день); время суток и слайдер часов; визит в салоне или на дому; длительность; цена в BYN; рейтинг от 4.5 / 4.7 / 4.9; число отзывов; только верифицированные; только с акциями; только с онлайн-записью. Запись: дата → слот → комментарий → референс-фото → успех с кодом **SL-…**. Профиль клиента: записи, избранное, уведомления, настройки, отзыв после визита.\n\nКабинет мастера — отдельный SaaS: сегодня / заявки / расписание / услуги (каталог, цены, пакеты, акции) / профиль и портфолио / клиенты / репутация / биллинг / уведомления (десятки типов событий). Онбординг в **8 шагов**: категории → профиль → адрес на карте → услуги → доверие → превью → тариф. Тарифы: Free (лимиты) / Pro / trial 7 дней — оплата bePaid или ручной перевод.\n\nPlatform-admin: обзор, заявки (категории, удаления, спонсорство, жалобы), поддержка, статус системы, пользователи, мастера, услуги, записи (в т.ч. проблемные отмены), биллинг и промокоды, платежи bePaid, рассылки, аудит. Роли: **client / master / platform_admin**. Auth: email, Google, Telegram — с телефона и с компьютера.\n\nСложные куски, которые обычно «ломают» сроки: concurrent booking и слоты, pending expiry, auto-complete, споры по записи; entitlements Free/Pro; очередь уведомлений; multi-identity auth; серверный каталог с 20+ параметрами фильтра и Pro-boost в рекомендациях.\n\nЧто сделали\nДизайн + разработка под ключ: маркетплейс, кабинеты, админка, интеграции, домен и хостинг. Продукт на **slotty.of.by** — **скоро запуск к настоящим клиентам и мастерам**.\n\nИтог\nНе демо «посмотрите идею». **Полный маркетплейс записи** с фильтрами, картой, Mini App, SaaS мастера и platform-admin. Виктория Д., [[≈ 2 940 $]], 3 недели — и живой прод, куда можно зайти и проверить самому.\n",
-      detailsEn: "Why it matters\nBooking a master still often lives in **DMs and WhatsApp**: “free tomorrow?”, “in an hour?”, “oops, forgot to remind”. Clients get tired of typing. Masters get tired of answering. Slots vanish into chat silence.\n\nThis wasn’t a draft or a “book now” button. It needed a **full marketplace**: filtered catalog, map, client path, master SaaS cabinet, roles, platform admin, payments, notifications and production. Client — **Victoria D.** Budget — 230,000 ₽ ([[≈ $2,940]]). Timeline — **3 weeks**.\n\nHow it works\nClient opens **slotty.of.by** (web or Telegram Mini App) → catalog → filters / map → master → service → **open slot** → confirm. Booking code, Telegram + email reminders — no calls.\nMasters run profile, portfolio, address, services, promos, schedule, requests and clients; Free or Pro plan.\nPlatform admin moderates masters, bookings, billing, bePaid payments, broadcasts and audit — the platform is operable now.\n\nWhat’s inside\nA **large build**, not a landing with a form. Frontend: React + TypeScript + Vite + Tailwind. Backend: Express API, PostgreSQL (**88 migrations**), JWT sessions. Production: **two Railway services** (web + api), domain **slotty.of.by** — we advised where to buy the domain, set up hosting, pointed DNS and shipped live. Plus Telegram Bot / Mini App, Google Auth, email (Resend), maps (Leaflet / OSM, optional Yandex), **bePaid** (BYN), Sentry, SEO prerender.\n\nClient marketplace: **6 categories** (manicure, barbers, brows/lashes, massage, fitness, tattoo). Catalog isn’t a flat card list — full search: all / popular / promos / new, text search, **map with geo sort**.\n\nFilters: sort (recommended, popular, soonest, distance, rating, price ↑↓, reviews); date (today / tomorrow / week / weekend / exact day); time of day + hour slider; studio or at-home; duration; BYN price; rating from 4.5 / 4.7 / 4.9; review count; verified only; promos only; online booking only. Booking: date → slot → comment → reference photos → success with code **SL-…**. Client profile: appointments, favorites, notifications, settings, post-visit review.\n\nMaster cabinet is a separate SaaS: today / requests / schedule / services (catalog, prices, bundles, promos) / profile & portfolio / clients / reputation / billing / notifications (dozens of event types). **8-step** onboarding: categories → profile → map address → services → trust → preview → plan. Plans: Free (limits) / Pro / 7-day trial — bePaid or manual transfer.\n\nPlatform admin: overview, requests (category changes, deletions, sponsorship, reports), support, system status, users, masters, services, bookings (incl. problem cancellations), billing & promo codes, bePaid payments, broadcasts, audit. Roles: **client / master / platform_admin**. Auth: email, Google, Telegram — phone or desktop.\n\nHard pieces that usually blow timelines: concurrent booking & slots, pending expiry, auto-complete, booking disputes; Free/Pro entitlements; notification job queue; multi-identity auth; server catalog with 20+ filter params and Pro boost in recommendations.\n\nWhat we delivered\nDesign + turnkey build: marketplace, cabinets, admin, integrations, domain and hosting. Live on **slotty.of.by** — **soon launching to real clients and masters**.\n\nOutcome\nNot a “look at the idea” demo. A **full booking marketplace** with filters, map, Mini App, master SaaS and platform admin. Victoria D., [[≈ $2,940]], 3 weeks — and a live prod you can open and check yourself.\n",
-      detailsZh: "为什么这很重要\n预订大师仍然经常存在于**DM和WhatsApp**中：“明天有空吗？”，“一个小时后？”，“哎呀，忘了提醒”。客户厌倦了打字。大师们厌倦了回答。老虎机消失在聊天的沉默中。\n\n这不是草稿或“立即预订”按钮。它需要一个**完整的市场**：过滤目录、地图、客户路径、主 SaaS 柜、角色、平台管理、支付、通知和生产。客户 — **Victoria D.** 预算 — 230,000 ₽ ([[≈ $2,940]])。时间表 — **3 周**。\n\n它是如何运作的\n客户端打开**slotty.of.by**（网络或Telegram迷你应用程序）→目录→过滤器/地图→主→服务→**打开插槽**→确认。预订代码、电报 + 电子邮件提醒 — 无需致电。\n大师运行简介、投资组合、地址、服务、促销、时间表、请求和客户；免费或专业计划。\n平台管理员负责管理、预订、计费、bePaid 付款、广播和审计——该平台现已可运行。\n\n里面有什么\n**大型建筑**，而不是带有形式的平台。前端：React + TypeScript + Vite + Tailwind。后端：Express API、PostgreSQL（**88 迁移**）、JWT 会话。生产：**两个铁路服务**（Web + API），域名**slotty.of.by** - 我们建议d 在哪里购买域名、设置托管、指向 DNS 并实时发货。加上 Telegram Bot / Mini App、Google Auth、电子邮件（重新发送）、地图（传单 / OSM、可选 Yandex）、**bePaid** (BYN)、Sentry、SEO 预渲染。\n\n客户市场：**6 个类别**（美甲、理发、眉毛/睫毛、按摩、健身、纹身）。目录不是平面卡片列表 - 完整搜索：所有/流行/促销/新，文本搜索，**带地理排序的地图**。\n\n过滤器：排序（推荐、热门、最快、距离、评分、价格↑↓、评论）；日期（今天/明天/周/周末/确切日期）；一天中的时间+小时滑块；工作室或家里；期间; BYN 价格；评分从 4.5 / 4.7 / 4.9 起；评论计数；仅经过验证；仅促销；仅限网上预订。预订：日期→时段→评论→参考照片→使用代码**SL-…**成功。客户资料：约会、收藏夹、通知、设置、访问后回顾。\n\n主柜是一个单独的 SaaS：今天/请求/时间表/服务（目录、价格、捆绑、促销）/配置文件和投资组合/客户/声誉/计费/通知（数十种事件类型）。 **8步**入职：类别→个人资料→地图地址→服务→信任→预览→计划。计划：免费（限制）/ Pro / 7 天试用 — 付费或手动转账。\n\n平台管理：概述、请求（类别更改、删除、赞助、报告）、支持、系统状态、用户、主、服务、预订（包括问题取消）、计费和促销代码、bePaid 付款、广播、审计。角色：**客户端/主控/平台管理员**。身份验证：电子邮件、Google、Telegram - 手机或桌面。\n\n通常会破坏时间线的困难部分：并发预订和时段、待到期、自动完成、预订争议；免费/专业版权利；通知作业队列；多重身份验证；具有 20 多个过滤器参数和专业增强推荐的服务器目录。\n\n我们交付了什么\n设计+交钥匙构建：市场、橱柜、管理、集成、域名和托管。在 **slotty.of.by** 上直播 — **即将向真正的客户和大师推出**。\n\n结果\n不是“看看这个想法”的演示。 **完整的预订市场**，包含过滤器、地图、迷你应用程序、主 SaaS 和平台管理。 Victoria D.，[[≈ $2,940]]，3 周 — 以及您可以自己打开并检查的实时产品。",
+      detailsRu: "Зачем это\nЗапись к мастеру до сих пор часто живёт в **Direct и WhatsApp**: «есть на завтра?», «а через час?», «ой, забыла напомнить». Клиент устаёт писать. Мастер устаёт отвечать. Слоты пропадают в тишине чата.\n\nНужен был не черновик и не «кнопка записаться», а **полный маркетплейс**: каталог с жёсткой фильтрацией, карта, путь клиента, SaaS-кабинет мастера, роли, platform-admin, оплаты, уведомления и прод. Заказчик — **Виктория Д.** Срок — **3 недели**.\n\nКак работает\nКлиент открывает **slotty.of.by** (сайт или Telegram Mini App) → каталог → фильтры / карта → мастер → услуга → **свободный слот** → подтверждение. Код записи, напоминания в Telegram и email — без звонков.\nМастер в кабинете ведёт профиль, портфолио, адрес, услуги, акции, расписание, заявки и клиентов; тариф Free или Pro.\nPlatform-admin модерирует мастеров, записи, биллинг, платежи bePaid, рассылки и журнал — платформой можно рулить уже сейчас.\n\nЧто внутри\nЭто **крупная разработка**, не лендинг с формой. Фронт: React + TypeScript + Vite + Tailwind. Бэкенд: Express API, PostgreSQL (**88 миграций**), JWT-сессии. Прод: **два сервиса на Railway** (web + api), домен **slotty.of.by** — подсказали, где купить домен, подняли хостинг, привязали DNS и выкатили в бой. Плюс Telegram Bot / Mini App, Google Auth, email (Resend), карты (Leaflet / OSM, опционально Яндекс), платежи **bePaid** (BYN), Sentry, SEO-prerender.\n\nМаркетплейс для клиента: **6 категорий** (маникюр, барберы, брови/ресницы, массаж, фитнес, тату). Каталог — не «список карточек», а полноценный поиск: все / популярные / акции / новинки, текстовый поиск, **карта с геосортировкой**.\n\nФильтры: сортировка (рекомендации, популярность, ближайший слот, расстояние, рейтинг, цена ↑↓, отзывы); дата (сегодня / завтра / неделя / выходные / точный день); время суток и слайдер часов; визит в салоне или на дому; длительность; цена в BYN; рейтинг от 4.5 / 4.7 / 4.9; число отзывов; только верифицированные; только с акциями; только с онлайн-записью. Запись: дата → слот → комментарий → референс-фото → успех с кодом **SL-…**. Профиль клиента: записи, избранное, уведомления, настройки, отзыв после визита.\n\nКабинет мастера — отдельный SaaS: сегодня / заявки / расписание / услуги (каталог, цены, пакеты, акции) / профиль и портфолио / клиенты / репутация / биллинг / уведомления (десятки типов событий). Онбординг в **8 шагов**: категории → профиль → адрес на карте → услуги → доверие → превью → тариф. Тарифы: Free (лимиты) / Pro / trial 7 дней — оплата bePaid или ручной перевод.\n\nPlatform-admin: обзор, заявки (категории, удаления, спонсорство, жалобы), поддержка, статус системы, пользователи, мастера, услуги, записи (в т.ч. проблемные отмены), биллинг и промокоды, платежи bePaid, рассылки, аудит. Роли: **client / master / platform_admin**. Auth: email, Google, Telegram — с телефона и с компьютера.\n\nСложные куски, которые обычно «ломают» сроки: concurrent booking и слоты, pending expiry, auto-complete, споры по записи; entitlements Free/Pro; очередь уведомлений; multi-identity auth; серверный каталог с 20+ параметрами фильтра и Pro-boost в рекомендациях.\n\nЧто сделали\nДизайн + разработка под ключ: маркетплейс, кабинеты, админка, интеграции, домен и хостинг. Продукт на **slotty.of.by** — **скоро запуск к настоящим клиентам и мастерам**.\n\nИтог\nНе демо «посмотрите идею». **Полный маркетплейс записи** с фильтрами, картой, Mini App, SaaS мастера и platform-admin. Виктория Д., 3 недели — и живой прод, куда можно зайти и проверить самому.\n",
+      detailsEn: "Why it matters\nBooking a master still often lives in **DMs and WhatsApp**: “free tomorrow?”, “in an hour?”, “oops, forgot to remind”. Clients get tired of typing. Masters get tired of answering. Slots vanish into chat silence.\n\nThis wasn’t a draft or a “book now” button. It needed a **full marketplace**: filtered catalog, map, client path, master SaaS cabinet, roles, platform admin, payments, notifications and production. Client — **Victoria D.** Timeline — **3 weeks**.\n\nHow it works\nClient opens **slotty.of.by** (web or Telegram Mini App) → catalog → filters / map → master → service → **open slot** → confirm. Booking code, Telegram + email reminders — no calls.\nMasters run profile, portfolio, address, services, promos, schedule, requests and clients; Free or Pro plan.\nPlatform admin moderates masters, bookings, billing, bePaid payments, broadcasts and audit — the platform is operable now.\n\nWhat’s inside\nA **large build**, not a landing with a form. Frontend: React + TypeScript + Vite + Tailwind. Backend: Express API, PostgreSQL (**88 migrations**), JWT sessions. Production: **two Railway services** (web + api), domain **slotty.of.by** — we advised where to buy the domain, set up hosting, pointed DNS and shipped live. Plus Telegram Bot / Mini App, Google Auth, email (Resend), maps (Leaflet / OSM, optional Yandex), **bePaid** (BYN), Sentry, SEO prerender.\n\nClient marketplace: **6 categories** (manicure, barbers, brows/lashes, massage, fitness, tattoo). Catalog isn’t a flat card list — full search: all / popular / promos / new, text search, **map with geo sort**.\n\nFilters: sort (recommended, popular, soonest, distance, rating, price ↑↓, reviews); date (today / tomorrow / week / weekend / exact day); time of day + hour slider; studio or at-home; duration; BYN price; rating from 4.5 / 4.7 / 4.9; review count; verified only; promos only; online booking only. Booking: date → slot → comment → reference photos → success with code **SL-…**. Client profile: appointments, favorites, notifications, settings, post-visit review.\n\nMaster cabinet is a separate SaaS: today / requests / schedule / services (catalog, prices, bundles, promos) / profile & portfolio / clients / reputation / billing / notifications (dozens of event types). **8-step** onboarding: categories → profile → map address → services → trust → preview → plan. Plans: Free (limits) / Pro / 7-day trial — bePaid or manual transfer.\n\nPlatform admin: overview, requests (category changes, deletions, sponsorship, reports), support, system status, users, masters, services, bookings (incl. problem cancellations), billing & promo codes, bePaid payments, broadcasts, audit. Roles: **client / master / platform_admin**. Auth: email, Google, Telegram — phone or desktop.\n\nHard pieces that usually blow timelines: concurrent booking & slots, pending expiry, auto-complete, booking disputes; Free/Pro entitlements; notification job queue; multi-identity auth; server catalog with 20+ filter params and Pro boost in recommendations.\n\nWhat we delivered\nDesign + turnkey build: marketplace, cabinets, admin, integrations, domain and hosting. Live on **slotty.of.by** — **soon launching to real clients and masters**.\n\nOutcome\nNot a “look at the idea” demo. A **full booking marketplace** with filters, map, Mini App, master SaaS and platform admin. Victoria D., 3 weeks — and a live prod you can open and check yourself.\n",
+      detailsZh: "为什么这很重要\n预订大师仍然经常存在于**DM和WhatsApp**中：“明天有空吗？”，“一个小时后？”，“哎呀，忘了提醒”。客户厌倦了打字。大师们厌倦了回答。老虎机消失在聊天的沉默中。\n\n这不是草稿或“立即预订”按钮。它需要一个**完整的市场**：过滤目录、地图、客户路径、主 SaaS 柜、角色、平台管理、支付、通知和生产。客户 — **Victoria D.** 时间表 — **3 周**。\n\n它是如何运作的\n客户端打开**slotty.of.by**（网络或Telegram迷你应用程序）→目录→过滤器/地图→主→服务→**打开插槽**→确认。预订代码、电报 + 电子邮件提醒 — 无需致电。\n大师运行简介、投资组合、地址、服务、促销、时间表、请求和客户；免费或专业计划。\n平台管理员负责管理、预订、计费、bePaid 付款、广播和审计——该平台现已可运行。\n\n里面有什么\n**大型建筑**，而不是带有形式的平台。前端：React + TypeScript + Vite + Tailwind。后端：Express API、PostgreSQL（**88 迁移**）、JWT 会话。生产：**两个铁路服务**（Web + API），域名**slotty.of.by** - 我们建议d 在哪里购买域名、设置托管、指向 DNS 并实时发货。加上 Telegram Bot / Mini App、Google Auth、电子邮件（重新发送）、地图（传单 / OSM、可选 Yandex）、**bePaid** (BYN)、Sentry、SEO 预渲染。\n\n客户市场：**6 个类别**（美甲、理发、眉毛/睫毛、按摩、健身、纹身）。目录不是平面卡片列表 - 完整搜索：所有/流行/促销/新，文本搜索，**带地理排序的地图**。\n\n过滤器：排序（推荐、热门、最快、距离、评分、价格↑↓、评论）；日期（今天/明天/周/周末/确切日期）；一天中的时间+小时滑块；工作室或家里；期间; BYN 价格；评分从 4.5 / 4.7 / 4.9 起；评论计数；仅经过验证；仅促销；仅限网上预订。预订：日期→时段→评论→参考照片→使用代码**SL-…**成功。客户资料：约会、收藏夹、通知、设置、访问后回顾。\n\n主柜是一个单独的 SaaS：今天/请求/时间表/服务（目录、价格、捆绑、促销）/配置文件和投资组合/客户/声誉/计费/通知（数十种事件类型）。 **8步**入职：类别→个人资料→地图地址→服务→信任→预览→计划。计划：免费（限制）/ Pro / 7 天试用 — 付费或手动转账。\n\n平台管理：概述、请求（类别更改、删除、赞助、报告）、支持、系统状态、用户、主、服务、预订（包括问题取消）、计费和促销代码、bePaid 付款、广播、审计。角色：**客户端/主控/平台管理员**。身份验证：电子邮件、Google、Telegram - 手机或桌面。\n\n通常会破坏时间线的困难部分：并发预订和时段、待到期、自动完成、预订争议；免费/专业版权利；通知作业队列；多重身份验证；具有 20 多个过滤器参数和专业增强推荐的服务器目录。\n\n我们交付了什么\n设计+交钥匙构建：市场、橱柜、管理、集成、域名和托管。在 **slotty.of.by** 上直播 — **即将向真正的客户和大师推出**。\n\n结果\n不是“看看这个想法”的演示。 **完整的预订市场**，包含过滤器、地图、迷你应用程序、主 SaaS 和平台管理。 Victoria D.，3 周 — 以及您可以自己打开并检查的实时产品。",
       domain: SLOTTY_DOMAIN,
       status: "live",
       tags: ["Marketplace", "Booking", "Beauty", "SaaS", "Telegram", "Admin Panel"],
@@ -6505,7 +6656,7 @@ function buildAllProjects(isRu) {
         isRu ? "**Полный маркетплейс** за 3 недели — не MVP" : "**Full marketplace** in 3 weeks — not an MVP",
         isRu ? "Каталог с **фильтрами + карта** · Mini App · Free/Pro" : "Catalog with **filters + map** · Mini App · Free/Pro",
         isRu ? "Домен **slotty.of.by** · хостинг Railway (web + api)" : "Domain **slotty.of.by** · Railway hosting (web + api)",
-        isRu ? "Виктория Д. · [[≈ 2 940 $]] · скоро запуск к живым клиентам" : "Victoria D. · [[≈ $2,940]] · soon launching to live clients"
+        isRu ? "Виктория Д. · скоро запуск к живым клиентам" : "Victoria D. · soon launching to live clients"
       ],
       stack: [
         "React",
@@ -6526,7 +6677,70 @@ function buildAllProjects(isRu) {
         text: isRu ? "Мне нужен был нормальный маркетплейс: фильтры, кабинет мастера, админка. Не демо. За три недели собрали на нашем домене, уже можно звать реальных клиентов." : "I needed a real marketplace: filters, master cabinet, admin. Not a demo. In three weeks it was on our domain and ready for real clients."
       }
     },
-    // 8) SPLITON — финтех-платформа для музыкальных активов
+    // 8) NEO TERMINAL — AI commerce operating system
+    {
+      id: "neo-terminal",
+      title: "Neo Terminal",
+      category: "AI Commerce · RetailTech",
+      subtitleRu: "AI-платформа коммерции, которая связывает каталоги, склад, диалоги с клиентами, B2B-закупки, checkout, доставку и операционку бизнеса в одну систему.",
+      subtitleEn: "AI commerce platform that connects product catalogs, inventory, customer conversations, B2B procurement, checkout, delivery and business automation in one operating system.",
+      subtitleZh: "AI 商业平台：将商品目录、库存、客户对话、B2B 采购、结算、配送与业务运营连成一套操作系统。",
+      detailsRu: "Зачем это\nСовременная коммерция редко ломается из‑за отсутствия сайта. Она ломается **между системами**.\n\nКаталог живёт в одном месте. Остатки — в другом. Клиент пишет в мессенджер. B2B-закупщик присылает Excel. Менеджер руками сверяет наличие. Маркетинг работает с третьим набором данных. Доставка стартует только после того, как кто‑то снова копирует заказ.\n\nКаждый разрыв добавляет задержку и ещё одну точку, где сделка может оборваться.\n\nNeo Terminal собран как операционный слой на всю эту цепочку. Вместо ещё одного изолированного интерфейса мы связали товарные данные, склад, клиентские касания, транзакции и операции вокруг **одной коммерческой модели**.\n\nКак работает\nМерчант подключает или импортирует каталог из YML, XLSX, CSV, CommerceML или доступного ERP-коннектора.\n\nNeo Terminal нормализует товары, варианты, SKU, цены, медиа и остатки в одну коммерческую модель.\n\nДальше те же данные питают поиск для клиента, продажи с поддержкой AI, операции мерчанта, складские сценарии и B2B-закупки.\n\nКлиент может найти товар, задать вопросы, сравнить варианты, добавить позиции в корзину и перейти к оплате.\n\nБизнес-закупщик может отправить потребность или структурированный файл, сопоставить SKU и альтернативы, получить коммерческое предложение и пройти согласование с заказом.\n\nКоманды мерчанта работают из той же системы: каталог, склад, заказы, диалоги, аналитика, каналы и операционные инструменты.\n\nАрхитектура устроена так, чтобы внешние провайдеры оставались адаптерами вокруг коммерческого ядра, а не источником правды.\n\nЧто внутри\n**Merchant OS.** Центральный кабинет операций: обзор, товары, склад, заказы, клиенты, диалоги, интеграции, каналы, аналитика, команда и настройки.\n\n**Catalog & Data Hub.** Neo Terminal принимает коммерческие данные из нескольких форматов и коннекторов. Товарная информация нормализуется вокруг products, variants, SKU, цен, медиа и остатков — а не остаётся привязанной к одному внешнему фиду.\n\n**Smart Inventory.** Складские сценарии связывают состояние остатков, приход и корректировки с разбором документов и файлов. Изменения идут через проверку: извлечённые данные можно сверить до того, как они изменят реальный сток.\n\n**AI Seller.** Слой интеллекта работает с каталогом и коммерческим контекстом: помогает в поиске, сравнении и диалогах с клиентом. Ответ модели считается недоверенным, а действия ограничены серверными правами и бизнес-правилами.\n\n**Smart City.** Клиентский слой коммерции для поиска по участвующим мерчантам, а не по одному изолированному каталогу. В контуре — товары, витрины мерчантов, корзины, сетевые корзины, архитектура checkout, заказы, аккаунт и адреса.\n\n**B2B Procurement.** Закупщики работают со структурированным циклом: данные компании, потребность, сопоставление SKU, альтернативы, КП, согласования, заказ и история.\n\n**Omnichannel.** Слой диалогов собран вокруг единого инбокса и адаптеров провайдеров: команда видит клиентский контекст, не переписывая коммерческую логику под каждый мессенджер.\n\n**Terminal Pay.** Checkout и оркестрация платежей отделены от конкретной реализации провайдера. Цены, проверка остатков и состояние заказа остаются авторитетными на бэкенде, а платёжные провайдеры работают на контролируемой границе.\n\n**Delivery & Courier OS.** Доставка связывается с состоянием исполнения заказа. Инструменты курьера закрывают рабочие смены, историю, профиль и начисления; внешние службы доставки при необходимости изолированы адаптерами.\n\n**Business Director.** Управленческий слой собирает операционные и коммерческие данные для рекомендаций и решений — аналитика здесь не набор оторванных графиков.\n\n**Marketing OS & Content Factory.** Коммерческие данные могут уходить в кампании и контент-процессы, чтобы товары и контекст мерчанта не отрывались от маркетинга.\n\n**Terminal Ads.** Рекламный слой вводит площадки, экраны, креативы, доступность и бронирование, оставляя внешнюю DOOH-доставку за границей провайдера.\n\n**Edge и физическая коммерция.** В продукте есть программный фундамент для устройств: регистрация, конфигурация, синхронизация и отзыв доступа. Это путь к киоскам, локальным терминалам и железу без смешивания device-security с обычными браузерными сессиями.\n\n**Platform Administration.** Отдельный платформенный слой: организации, пользователи, провайдеры, очереди, операции, аудит и безопасность.\n\nNeo Terminal — не набор разрозненных прототипов. Клиент на **React и TypeScript**, API на **NestJS**, состояние коммерции в **PostgreSQL через Prisma**, асинхронные сценарии на **Redis и BullMQ**, семантический поиск там, где нужен **pgvector**.\n\nИнтеграции провайдеров изолированы адаптерами, чтобы коммерческое ядро не зависело от одной ERP, мессенджера, платёжки или AI-вендора. Критическое поведение проверяется на реальном Postgres и Redis: интеграционные тесты и Playwright E2E с живым бэкендом.\n\nВнутренняя поверхность продукта прошла полный runtime-прогон по маршрутам, контролам и формам: E2E на реальном бэкенде, интеграция, безопасность, mobile, чистый деплой и recovery. Внешние границы провайдеров проверяются отдельно, когда есть боевые ключи и окружения третьей стороны.\n\nЧто сделали\nTIVONIX спроектировали и собрали Neo Terminal целиком: архитектура продукта, UX/UI, фронтенд, бэкенд, модель данных, коммерческое ядро, границы AI-оркестрации, архитектура интеграций, инструменты мерчанта, клиентские интерфейсы, B2B-сценарии, тестирование и инфраструктура деплоя.\n\nЭто не лендинг с AI сверху. Это модульная коммерческая платформа вокруг одного слоя транзакций и товарных данных: внешние системы подключаются вокруг ядра, а не управляют им.\n\nИтог\nПилот-готовая AI-операционная система коммерции, которая связывает полный коммерческий путь в одной архитектуре: загрузка каталога, склад, discovery, диалоги, B2B, корзина, checkout, фулфилмент и операционка бизнеса.\n\nВнутренняя платформа прошла полный runtime-приём по тестируемой поверхности продукта. Внешние платежи, мессенджеры, ERP, AI и физические устройства остаются явными границами интеграций и включаются с проверкой в реальных окружениях провайдера на этапе внедрения.\n",
+      detailsEn: "Why it matters\nModern commerce rarely fails because a business has no website. It fails **between systems**.\n\nThe catalog is in one place. Stock is in another. A customer writes in a messenger. A B2B buyer sends an Excel file. A manager checks availability by hand. Marketing works from another dataset. Delivery starts only after somebody copies the order again.\n\nEvery disconnected step adds delay and creates another place where the transaction can break.\n\nNeo Terminal was built as an operating layer for that entire chain. Instead of adding another isolated interface, we connected product data, inventory, customer interactions, transactions and operations around **one shared commerce model**.\n\nHow it works\nA merchant connects or imports a catalog from YML, XLSX, CSV, CommerceML or an available ERP connector.\n\nNeo Terminal normalizes products, variants, SKUs, prices, media and inventory into one commerce model.\n\nFrom there the same data powers customer discovery, AI-assisted conversations, merchant operations, inventory workflows and B2B procurement.\n\nA customer can discover a product, ask questions, compare options, add items to a cart and move into checkout.\n\nA business buyer can submit a product requirement or structured file, match SKUs and alternatives, receive a quote and continue into an approval and ordering workflow.\n\nMerchant teams work from the same system: catalog, inventory, orders, conversations, analytics, channels and operational tools.\n\nThe architecture is designed so external providers remain adapters around the commerce core instead of becoming the source of truth.\n\nWhat's inside\n**Merchant OS.** A central workspace for merchant operations: overview, products, inventory, orders, customers, conversations, integrations, channels, analytics, team and settings.\n\n**Catalog & Data Hub.** Neo Terminal accepts commerce data from multiple formats and connector sources. Product information is normalized around products, variants, SKUs, prices, media and inventory rather than remaining tied to one external feed format.\n\n**Smart Inventory.** Warehouse workflows combine inventory state, receipt and adjustment operations with assisted document and file processing. Changes are review-first: extracted information can be checked before it mutates actual stock.\n\n**AI Seller.** The intelligence layer can work with catalog and commerce context to assist product discovery, comparisons and customer conversations. AI output is treated as untrusted and actions remain constrained by server-side permissions and business rules.\n\n**Smart City.** A customer-facing commerce layer designed for discovery across participating merchants instead of limiting the customer to a single isolated catalog. The system includes products, merchant surfaces, carts, network cart flows, checkout architecture, orders, account and address workflows.\n\n**B2B Procurement.** Business buyers can work with structured purchasing flows: company data, product requirements, SKU matching, alternatives, quotes, approvals, ordering and history.\n\n**Omnichannel.** The conversation layer is designed around a unified inbox and provider adapters so merchant teams can work with customer context without rebuilding commerce logic for every messaging channel.\n\n**Terminal Pay.** Checkout and payment orchestration are separated from provider-specific implementation. Pricing, inventory checks and order state remain authoritative on the backend while payment providers operate at a controlled boundary.\n\n**Delivery & Courier OS.** Delivery workflows connect orders with fulfillment state. Courier tooling covers operational job flows, history, profile and earnings, with external delivery providers isolated behind adapters where required.\n\n**Business Director.** The management layer brings operational and commerce data together for recommendations and decision support instead of treating analytics as disconnected charts.\n\n**Marketing OS & Content Factory.** Commerce data can flow into campaign and content workflows, allowing products and merchant context to remain connected to marketing operations.\n\n**Terminal Ads.** The advertising layer introduces venues, screens, creatives, availability and booking workflows while keeping external DOOH delivery behind a provider boundary.\n\n**Edge and physical commerce.** Neo Terminal also includes the software foundation for enrolled devices, configuration, synchronization and revocation, providing a path toward kiosks, local terminals and physical commerce hardware without mixing device security into normal browser sessions.\n\n**Platform Administration.** A separate platform layer provides organization, user, provider, queue, operational, audit and security administration.\n\nNeo Terminal is not a collection of disconnected prototypes. The product uses a modular application architecture with **React and TypeScript** on the client, **NestJS** on the API layer, **PostgreSQL through Prisma** for persistent commerce state, **Redis and BullMQ** for asynchronous workflows, and **pgvector** where semantic retrieval is required.\n\nProvider integrations are isolated behind adapters so the core commerce model does not depend on one ERP, messenger, payment provider or AI vendor. Critical application behavior is validated against a real Postgres and Redis runtime using integration tests and Playwright real-backend E2E.\n\nThe internal product surface was taken through a complete runtime verification pass across routes, controls and forms, including real-backend E2E, integration, security, mobile, clean-deployment and recovery checks. External provider boundaries are validated separately when production credentials and third-party environments are available.\n\nWhat we delivered\nTIVONIX designed and developed Neo Terminal end-to-end: product architecture, UX/UI, frontend, backend, database model, commerce core, AI orchestration boundaries, integrations architecture, merchant tools, customer interfaces, B2B workflows, testing and deployment infrastructure.\n\nThe result is not a landing page with AI added on top. It is a modular commerce platform built around one shared transaction and product-data layer, with external systems connected around the core rather than controlling it.\n\nOutcome\nA pilot-ready AI commerce operating system that connects the full commercial path in one architecture: product ingestion, inventory, discovery, conversations, B2B, cart, checkout, fulfillment and business operations.\n\nThe internal platform has passed complete runtime acceptance across the testable product surface. External payment, messaging, ERP, AI and physical-device providers remain explicit integration boundaries and are activated and verified with real provider environments during deployment.\n",
+      detailsZh: "为什么重要\n现代商业很少因为没有网站而失败。它失败在**系统之间**。\n\n目录在一处，库存在另一处。客户在即时通讯里提问。B2B 采购发来 Excel。经理手工核对库存。市场部用另一套数据。配送要等有人再次复制订单才开始。\n\n每一处断裂都会增加延迟，并多出一个交易可能中断的点。\n\nNeo Terminal 被设计成整条链路的操作层。我们没有再加一个孤立界面，而是把商品数据、库存、客户互动、交易与运营连到**同一套商业模型**上。\n\n如何运作\n商家从 YML、XLSX、CSV、CommerceML 或可用的 ERP 连接器导入目录。Neo Terminal 将商品、规格、SKU、价格、媒体与库存规范化为同一模型，并驱动发现、AI 辅助对话、商家运营、仓储与 B2B 采购。外部服务保持为适配器，而不是事实来源。\n\n里面有什么\n**Merchant OS、Catalog & Data Hub、Smart Inventory、AI Seller、Smart City、B2B、Omnichannel、Terminal Pay、Delivery、分析与平台管理** — 一套模块化商业平台，而不是互不相连的原型。客户端 React + TypeScript，API 层 NestJS，PostgreSQL / Prisma，Redis 与 BullMQ，需要语义检索时使用 pgvector。\n\n内部产品表面已完成可测试范围的运行时验收。外部支付、消息、ERP、AI 与设备提供商仍是明确的集成边界，在部署阶段用真实环境启用并验证。\n\n我们交付了什么\nTIVONIX 端到端设计并开发 Neo Terminal：产品架构、UX/UI、前后端、数据模型、商业核心、AI 边界、集成架构、商家工具、客户界面、B2B 流程、测试与部署。\n\n结果\n一套试点就绪的 AI 商业操作系统，把从目录到履约的完整商业路径放进同一架构。\n",
+      domain: NEO_TERMINAL_DOMAIN,
+      status: "pilot",
+      tags: [
+        "AI",
+        "Commerce",
+        "SaaS",
+        "RetailTech",
+        "B2B",
+        "Marketplace",
+        "Omnichannel",
+        "React",
+        "NestJS",
+        "PostgreSQL",
+        "UI/UX",
+        "Admin Panel"
+      ],
+      cover: "/images/project-priew/neo-terminal.webp",
+      roleRu: "Продуктовый дизайн и разработка под ключ",
+      roleEn: "End-to-end product design and development",
+      seoTitleRu: "Neo Terminal — AI-операционная система коммерции | TIVONIX",
+      seoTitleEn: "Neo Terminal — AI Commerce Operating System | TIVONIX",
+      seoDescriptionRu: "Neo Terminal — AI-платформа коммерции, которую собрала TIVONIX: каталог и склад, Smart City, продажи с AI, B2B-закупки, омниканал, checkout, доставка и инструменты мерчанта.",
+      seoDescriptionEn: "Neo Terminal is an AI commerce platform built by TIVONIX: catalog and inventory infrastructure, Smart City, AI-assisted sales, B2B procurement, omnichannel operations, checkout, delivery and merchant tools.",
+      outcomes: [
+        isRu ? "Одна коммерческая модель от каталога до заказа" : "One commerce model from catalog to order",
+        isRu ? "Merchant OS + клиентский Smart City" : "Merchant OS + customer Smart City",
+        isRu ? "AI Seller + Smart Inventory" : "AI Seller + Smart Inventory",
+        isRu ? "Архитектура YML, XLSX, CSV, CommerceML и коннекторов" : "YML, XLSX, CSV, CommerceML and connector architecture",
+        isRu ? "B2B-закупки и сценарии коммерческих предложений" : "B2B procurement and quote workflows",
+        isRu ? "Омниканал, доставка и Courier OS" : "Omnichannel, delivery and Courier OS",
+        isRu ? "Платформенная админка, аналитика, автоматизация и проверенная runtime-поверхность" : "Platform admin, analytics, automation and a runtime-verified internal product surface"
+      ],
+      stack: [
+        "React",
+        "TypeScript",
+        "Vite",
+        "NestJS",
+        "PostgreSQL",
+        "Prisma",
+        "Redis",
+        "BullMQ",
+        "pgvector",
+        "Playwright",
+        "Docker"
+      ],
+      testimonial: {
+        name: isRu ? "Дмитрий Валериевич" : "Dmitry",
+        role: isRu ? "Сооснователь, Neo Terminal" : "Co-founder, Neo Terminal",
+        text: isRu ? "Neo Terminal — большой продукт, а не сайт и не обёртка над AI. Нужно было связать каталоги, склад, AI, B2B, заказы, клиентские сценарии и платформенные операции в одну систему. TIVONIX взяли продукт целиком, глубоко вошли в бизнес-логику и доводили платформу, пока ключевые сценарии не заработали как единый продукт. Для меня важно, что команда не останавливается на красивом интерфейсе — они заходят в архитектуру, тесты и те детали, от которых зависит, можно ли системой пользоваться в бизнесе." : "Neo Terminal is a big product, not a website or a simple AI wrapper. The team had to connect catalogs, inventory, AI, B2B, orders, customer flows and platform operations into one system. TIVONIX took responsibility for the product end to end, went deep into the business logic and kept pushing the platform until the core flows worked as one product. What I value most is that the team does not stop at a good-looking interface — they go into architecture, testing and the details that actually decide whether the system can be used in business.",
+        draft: true
+      }
+    },
+    // 9) SPLITON — финтех-платформа для музыкальных активов
     {
       id: "spliton",
       title: "Spliton",
@@ -6589,7 +6803,10 @@ function buildProjects(isRu) {
   );
 }
 function projectsWithTestimonials(isRu) {
-  return buildAllProjects(isRu).filter((p) => Boolean(p.testimonial));
+  return buildAllProjects(isRu).filter((p) => Boolean(p.testimonial) && !p.testimonial?.draft);
+}
+function isProjectSiteOpen(p) {
+  return Boolean(p.domain) && p.status !== "wip";
 }
 function isPublicProjectId(id) {
   return PUBLIC_PROJECT_IDS.includes(id);
@@ -6654,6 +6871,7 @@ function FeaturedCaseSlide({
               alt: project.title,
               loading: active ? "eager" : "lazy",
               decoding: "async",
+              fetchPriority: active ? "high" : void 0,
               className: "case-split__img",
               width: 960,
               height: 640
@@ -6697,24 +6915,54 @@ function FeaturedCaseSlide({
               ] })
             ] }),
             /* @__PURE__ */ jsx("div", { className: "case-split__chips mt-5", children: item.modules.map((m) => /* @__PURE__ */ jsx("span", { className: "case-split__chip", children: m }, m)) }),
-            project.domain ? /* @__PURE__ */ jsxs(
-              "a",
-              {
-                href: project.domain,
-                target: "_blank",
-                rel: "noopener noreferrer",
-                tabIndex: active ? 0 : -1,
-                onClick: () => trackEvent("project_live_open", {
-                  project: project.id,
-                  source: "featured"
-                }),
-                className: "mt-6 inline-flex text-[13px] font-medium text-[#FF9A3D] transition-colors hover:text-[#FFB06A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/70",
-                children: [
-                  copy.featured.openLive,
-                  " →"
-                ]
-              }
-            ) : null
+            /* @__PURE__ */ jsxs("div", { className: "mt-6 flex flex-col items-start gap-2", children: [
+              isProjectSiteOpen(project) && project.domain ? /* @__PURE__ */ jsxs(
+                "a",
+                {
+                  href: project.domain,
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  tabIndex: active ? 0 : -1,
+                  onClick: () => trackEvent("project_live_open", {
+                    project: project.id,
+                    source: "featured"
+                  }),
+                  className: "inline-flex text-[13px] font-medium text-[#FF9A3D] transition-colors hover:text-[#FFB06A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/70",
+                  children: [
+                    copy.featured.openLive,
+                    " →"
+                  ]
+                }
+              ) : /* @__PURE__ */ jsxs(
+                Link,
+                {
+                  to: href,
+                  tabIndex: active ? 0 : -1,
+                  onClick: () => trackEvent("project_open", {
+                    project: project.id,
+                    source: "featured_cta"
+                  }),
+                  className: "inline-flex text-[13px] font-medium text-[#FF9A3D] transition-colors hover:text-[#FFB06A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/70",
+                  children: [
+                    copy.featured.openLive,
+                    " →"
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsxs(
+                LeadCTAButton,
+                {
+                  source: "cases",
+                  variant: "plain",
+                  tabIndex: active ? 0 : -1,
+                  className: "!h-auto !justify-start !px-0 !py-0 !text-[13px] !font-medium !text-white/55 hover:!bg-transparent hover:!text-white/80 active:!scale-100",
+                  children: [
+                    leadFormCopy(lang).ctaSimilarProject,
+                    " →"
+                  ]
+                }
+              )
+            ] })
           ] })
         ] })
       ]
@@ -8852,34 +9100,154 @@ function ComparisonSection() {
     }
   );
 }
-const PLANS_IMG$2 = `/images/${encodeURIComponent("планы")}`;
+function assets(n) {
+  return {
+    desktop: `/images/plans/plan-${n}.mp4`,
+    mobile: `/images/plans/plan-${n}-mobile.mp4`,
+    poster: `/images/plans/plan-${n}-poster.webp`
+  };
+}
+const PLAN_VIDEO = {
+  start: assets(1),
+  growth: assets(2),
+  product: assets(3),
+  custom: assets(4),
+  enterprise: assets(5)
+};
+function pickPlanVideoSrc(id) {
+  const media = PLAN_VIDEO[id];
+  return pickLoopSrc(media.desktop, media.mobile);
+}
+function shouldSkipPlanVideo() {
+  if (typeof window === "undefined") return true;
+  try {
+    const conn = navigator.connection;
+    if (conn?.saveData) return true;
+  } catch {
+  }
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+function PlanBgVideo({ plan, className }) {
+  const wrapRef = useRef(null);
+  const videoRef = useRef(null);
+  const poster = PLAN_VIDEO[plan].poster;
+  const [src, setSrc] = useState(null);
+  const [inView, setInView] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    if (!("IntersectionObserver" in window)) {
+      setInView(true);
+      if (!shouldSkipPlanVideo()) setSrc(pickPlanVideoSrc(plan));
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        const visible = !!entry?.isIntersecting;
+        setInView(visible);
+        if (visible && !shouldSkipPlanVideo()) {
+          setSrc(pickPlanVideoSrc(plan));
+        }
+      },
+      { root: null, rootMargin: "220px 0px", threshold: 0.08 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [plan]);
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !src) return;
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.loop = true;
+    if (!inView) {
+      try {
+        video.pause();
+      } catch {
+      }
+      return;
+    }
+    const play = () => {
+      video.muted = true;
+      void video.play().catch(() => {
+      });
+    };
+    play();
+    const onVis = () => {
+      if (document.visibilityState === "visible" && inView) play();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [src, inView]);
+  return /* @__PURE__ */ jsxs("div", { ref: wrapRef, className: "absolute inset-0 overflow-hidden", "aria-hidden": true, children: [
+    src ? /* @__PURE__ */ jsx(
+      "video",
+      {
+        ref: videoRef,
+        className,
+        src,
+        poster,
+        muted: true,
+        loop: true,
+        playsInline: true,
+        autoPlay: true,
+        preload: "metadata",
+        controls: false,
+        controlsList: "nodownload nofullscreen noremoteplayback",
+        disablePictureInPicture: true,
+        disableRemotePlayback: true,
+        onPlaying: () => setPlaying(true),
+        onPause: () => setPlaying(false),
+        onWaiting: () => setPlaying(false),
+        onEmptied: () => setPlaying(false)
+      }
+    ) : null,
+    /* @__PURE__ */ jsx(
+      "img",
+      {
+        src: poster,
+        alt: "",
+        className,
+        decoding: "async",
+        loading: "lazy",
+        draggable: false,
+        style: {
+          zIndex: 1,
+          opacity: src && playing ? 0 : 1,
+          transition: "opacity 280ms ease"
+        }
+      }
+    )
+  ] });
+}
 const GRID_PLANS = [
   {
     id: "start",
-    img: `${PLANS_IMG$2}/1.webp`,
+    video: "start",
     footRu: "Быстрый старт под рекламу",
     footEn: "Fast launch for ads"
   },
   {
     id: "growth",
-    img: `${PLANS_IMG$2}/2.webp`,
+    video: "growth",
     footRu: "Чаще всего выбирают",
     footEn: "Most chosen plan"
   },
   {
     id: "product",
-    img: `${PLANS_IMG$2}/3.webp`,
+    video: "product",
     footRu: "Для веб-сервиса",
     footEn: "For a web service"
   },
   {
     id: "custom",
-    img: `${PLANS_IMG$2}/4.webp`,
+    video: "custom",
     footRu: "Под вашу логику",
     footEn: "Built around your logic"
   }
 ];
-const ENTERPRISE_IMG = `${PLANS_IMG$2}/5.webp`;
 const PLAN_TAGS = {
   start: { ru: "Заявки", en: "Leads" },
   growth: { ru: "Система", en: "System" },
@@ -8970,7 +9338,7 @@ function HomePricingSection() {
           /* @__PURE__ */ jsx("h2", { className: "font-hero text-[clamp(1.65rem,3.8vw,2.4rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white text-balance", children: extra.homePricing.title }),
           /* @__PURE__ */ jsx("p", { className: "mx-auto mt-3 max-w-[38rem] font-sans text-[14.5px] font-medium leading-[1.55] text-white/62", children: extra.homePricing.note })
         ] }),
-        /* @__PURE__ */ jsx("div", { className: "home-plan-grid mt-10", children: GRID_PLANS.map(({ id, img, footRu, footEn }, i) => {
+        /* @__PURE__ */ jsx("div", { className: "home-plan-grid mt-10", children: GRID_PLANS.map(({ id, video, footRu, footEn }, i) => {
           const plan = pricing.plans[id];
           const popular = id === "growth";
           const tag = PLAN_TAGS[id][lang];
@@ -8983,16 +9351,7 @@ function HomePricingSection() {
                 popular ? "home-plan-card--popular" : ""
               ].join(" "),
               children: [
-                /* @__PURE__ */ jsx("div", { className: "home-plan-card__media", "aria-hidden": true, children: /* @__PURE__ */ jsx(
-                  "img",
-                  {
-                    src: img,
-                    alt: "",
-                    className: "home-plan-card__bg",
-                    loading: "lazy",
-                    decoding: "async"
-                  }
-                ) }),
+                /* @__PURE__ */ jsx("div", { className: "home-plan-card__media", "aria-hidden": true, children: /* @__PURE__ */ jsx(PlanBgVideo, { plan: video, className: "home-plan-card__bg" }) }),
                 /* @__PURE__ */ jsx("div", { className: "home-plan-card__veil", "aria-hidden": true }),
                 /* @__PURE__ */ jsxs("div", { className: "home-plan-card__body", children: [
                   /* @__PURE__ */ jsxs("div", { className: "home-plan-card__main", children: [
@@ -9062,16 +9421,7 @@ function HomePricingSection() {
           ) }, id);
         }) }),
         /* @__PURE__ */ jsx(Reveal$1, { delay: 200, className: "mt-3", children: /* @__PURE__ */ jsxs("article", { className: "home-plan-enterprise", children: [
-          /* @__PURE__ */ jsx("div", { className: "home-plan-enterprise__media", "aria-hidden": true, children: /* @__PURE__ */ jsx(
-            "img",
-            {
-              src: ENTERPRISE_IMG,
-              alt: "",
-              className: "home-plan-enterprise__bg",
-              loading: "lazy",
-              decoding: "async"
-            }
-          ) }),
+          /* @__PURE__ */ jsx("div", { className: "home-plan-enterprise__media", "aria-hidden": true, children: /* @__PURE__ */ jsx(PlanBgVideo, { plan: "enterprise", className: "home-plan-enterprise__bg" }) }),
           /* @__PURE__ */ jsx("div", { className: "home-plan-card__veil home-plan-card__veil--wide", "aria-hidden": true }),
           /* @__PURE__ */ jsxs("div", { className: "home-plan-enterprise__inner", children: [
             /* @__PURE__ */ jsxs("div", { className: "home-plan-enterprise__copy", children: [
@@ -9315,8 +9665,8 @@ function FounderSection() {
     }
   );
 }
-const PLANS_IMG$1 = `/images/${encodeURIComponent("планы")}`;
-const PLAN_PHOTOS = [1, 2, 3, 4, 5].map((n) => `${PLANS_IMG$1}/${n}.png`);
+const PLANS_IMG = `/images/${encodeURIComponent("планы")}`;
+const PLAN_PHOTOS = [1, 2, 3, 4, 5].map((n) => `${PLANS_IMG}/${n}.png`);
 const SPEED_PX_PER_SEC = 38;
 function initialsFromName(name) {
   const parts = name.replace(/[«»""]/g, "").split(/\s+/).filter(Boolean);
@@ -9647,47 +9997,6 @@ function FAQSection() {
     }
   );
 }
-function cx$d(...a) {
-  return a.filter(Boolean).join(" ");
-}
-function TelegramLink({
-  variant = "primary",
-  size = "md",
-  className,
-  children,
-  href = TG_BOT_URL,
-  onClick
-}) {
-  return /* @__PURE__ */ jsx(
-    "a",
-    {
-      href,
-      target: "_blank",
-      rel: "noopener noreferrer",
-      className: ctaClass(variant, size, className),
-      onClick,
-      children
-    }
-  );
-}
-function ctaClass(variant, size, className) {
-  const isSquare = variant === "plain";
-  return cx$d(
-    "inline-flex items-center justify-center font-sans font-medium tracking-normal transition duration-200",
-    isSquare ? "rounded-none shadow-none" : "rounded-full",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-    "active:scale-[0.98]",
-    size === "lg" ? "h-12 px-8 text-[15px] sm:h-[52px] sm:px-9 sm:text-[16px]" : "h-11 px-7 text-[14px] sm:px-8",
-    (variant === "primary" || variant === "cream") && "tivonix-cta-primary",
-    variant === "secondary" && "tivonix-cta-secondary",
-    variant === "ghost" && "text-white/75 hover:text-white",
-    variant === "plain" && "border-0 bg-transparent font-medium text-white/88 hover:bg-white/[0.04] hover:text-white",
-    variant === "white" && "border-0 bg-white font-medium text-[#070607] shadow-none hover:bg-white/92",
-    className
-  );
-}
-const FINAL_CTA_VIDEO = "/images/hero-bg.mp4";
-const FINAL_CTA_POSTER = "/images/hero-bg-poster.webp";
 function clamp01(v) {
   return Math.min(1, Math.max(0, v));
 }
@@ -9731,12 +10040,10 @@ function FinalCTASection() {
   const { lang } = useLang();
   const copy = landingCopy(lang);
   const cardRef = useRef(null);
-  const videoRef = useRef(null);
   const bgScale = useSectionScrollScale(cardRef);
   const bgStyle = {
     transform: `translate3d(-50%, -50%, 0) scale(${bgScale})`
   };
-  useKeepVideoPlaying(videoRef);
   return /* @__PURE__ */ jsx(
     Section,
     {
@@ -9749,23 +10056,7 @@ function FinalCTASection() {
           className: "final-cta-card relative overflow-hidden rounded-[28px] px-6 py-12 text-center sm:rounded-[40px] sm:px-10 sm:py-14 lg:px-16 lg:py-16",
           children: [
             /* @__PURE__ */ jsxs("div", { className: "final-cta-card__bg", "aria-hidden": true, children: [
-              /* @__PURE__ */ jsx(
-                "video",
-                {
-                  ref: videoRef,
-                  className: "final-cta-card__bg-img pointer-events-none",
-                  style: bgStyle,
-                  src: FINAL_CTA_VIDEO,
-                  poster: FINAL_CTA_POSTER,
-                  autoPlay: true,
-                  muted: true,
-                  loop: true,
-                  playsInline: true,
-                  preload: "auto",
-                  controls: false,
-                  disablePictureInPicture: true
-                }
-              ),
+              /* @__PURE__ */ jsx(BgLoopVideo, { variant: "form", className: "final-cta-card__bg-img pointer-events-none", style: bgStyle }),
               /* @__PURE__ */ jsx("div", { className: "final-cta-card__bg-overlay" })
             ] }),
             /* @__PURE__ */ jsx("h2", { className: "relative z-[1] mx-auto max-w-[22ch] font-hero text-[clamp(1.75rem,4.5vw,2.85rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white text-balance", children: copy.finalCta.title }),
@@ -9782,13 +10073,10 @@ function FinalCTASection() {
                 }
               ),
               /* @__PURE__ */ jsx(
-                TelegramLink,
+                Link,
                 {
-                  variant: "white",
-                  size: "lg",
-                  href: TG_CHANNEL_URL,
-                  className: "final-cta-btn final-cta-btn--black",
-                  onClick: () => trackTelegramDirectClick(),
+                  to: pathForLang("/projects", lang),
+                  className: "final-cta-btn final-cta-btn--black inline-flex items-center justify-center rounded-full font-sans text-[15px] font-medium sm:text-[16px]",
                   children: copy.finalCta.ctaSecondary
                 }
               )
@@ -9799,7 +10087,8 @@ function FinalCTASection() {
     }
   );
 }
-function cx$c(...a) {
+const TG_CHANNEL_URL = "https://t.me/TIVONIX";
+function cx$d(...a) {
   return a.filter(Boolean).join(" ");
 }
 const LOGO_LOCKUP_PNG = "/images/tivonix-logo-lockup.webp";
@@ -9888,7 +10177,7 @@ function ExternalLink({
       target: openInNewTab ? "_blank" : void 0,
       rel: openInNewTab ? "noopener noreferrer" : void 0,
       "aria-label": ariaLabel,
-      className: cx$c("site-footer__link", className),
+      className: cx$d("site-footer__link", className),
       children
     }
   );
@@ -9917,7 +10206,7 @@ function SocialIconLink({
       target: openInNewTab ? "_blank" : void 0,
       rel: openInNewTab ? "noopener noreferrer" : void 0,
       "aria-label": label,
-      className: cx$c("site-footer__social-link", className),
+      className: cx$d("site-footer__social-link", className),
       children
     }
   );
@@ -10397,6 +10686,42 @@ function LandingPage() {
     /* @__PURE__ */ jsx(Footer, {})
   ] });
 }
+function cx$c(...a) {
+  return a.filter(Boolean).join(" ");
+}
+function SoftImg({
+  className,
+  fade = true,
+  onLoad,
+  loading = "lazy",
+  decoding = "async",
+  ...rest
+}) {
+  const ref = useRef(null);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (el?.complete && el.naturalWidth > 0) setReady(true);
+  }, [rest.src]);
+  return /* @__PURE__ */ jsx(
+    "img",
+    {
+      ...rest,
+      ref,
+      loading,
+      decoding,
+      className: cx$c(
+        className,
+        fade && "transition-opacity duration-300 ease-out",
+        fade && (ready ? "opacity-100" : "opacity-0")
+      ),
+      onLoad: (e) => {
+        setReady(true);
+        onLoad?.(e);
+      }
+    }
+  );
+}
 const HERO_IMG = "/images/hero.webp";
 function cx$b(...a) {
   return a.filter(Boolean).join(" ");
@@ -10443,7 +10768,7 @@ function ProjectPreviewFrame({
         }
       },
       children: /* @__PURE__ */ jsx(
-        "img",
+        SoftImg,
         {
           src,
           alt: "",
@@ -10830,14 +11155,15 @@ function ProjectGalleryStrip({
                     "aria-label": `${openLabel} ${i + 1}`,
                     onClick: () => setActive(i),
                     children: /* @__PURE__ */ jsx("div", { className: "relative aspect-video w-full overflow-hidden rounded-xl bg-[#1c1c1f] ring-1 ring-white/[0.06] sm:rounded-2xl", children: /* @__PURE__ */ jsx(
-                      "img",
+                      SoftImg,
                       {
                         src,
                         alt: "",
                         className: "absolute inset-0 h-full w-full object-cover object-top",
                         draggable: false,
-                        loading: "lazy",
-                        decoding: "async"
+                        loading: i < 2 ? "eager" : "lazy",
+                        decoding: "async",
+                        fetchPriority: i === 0 ? "high" : void 0
                       }
                     ) })
                   }
@@ -10905,10 +11231,12 @@ const filterPillClass = (active) => cx$b(
 );
 function ProjectGridCard({ p, isRu, lang }) {
   const wip = p.status === "wip";
+  const pilot = p.status === "pilot";
+  const siteOpen = isProjectSiteOpen(p);
   const domainClean = p.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "");
-  const productType = p.tags[0] ?? (isRu ? "Проект" : "Project");
+  const productType = p.category ?? p.tags[0] ?? (isRu ? "Проект" : "Project");
   const subtitle = projectSubtitle(p, lang);
-  const role = isRu ? "Роль TIVONIX: дизайн и разработка" : "TIVONIX role: design & development";
+  const role = isRu ? `Роль TIVONIX: ${p.roleRu ?? "дизайн и разработка"}` : `TIVONIX role: ${p.roleEn ?? "design & development"}`;
   const href = pathForLang(`/projects/${p.id}`, lang);
   return /* @__PURE__ */ jsxs("article", { className: "group min-w-0", children: [
     /* @__PURE__ */ jsx(
@@ -10934,9 +11262,30 @@ function ProjectGridCard({ p, isRu, lang }) {
         /* @__PURE__ */ jsx("p", { className: "mt-1.5 line-clamp-2 text-[12.5px] leading-snug text-white/52", children: subtitle }),
         /* @__PURE__ */ jsx("p", { className: "mt-1.5 text-[11.5px] text-white/38", children: role }),
         p.stack?.length ? /* @__PURE__ */ jsx("p", { className: "mt-1.5 truncate text-[11px] text-white/35", children: (p.stack ?? []).slice(0, 4).join(" · ") }) : null,
-        domainClean && !wip ? /* @__PURE__ */ jsx("p", { className: "mt-1 truncate text-[12px] text-white/40", children: domainClean }) : /* @__PURE__ */ jsx("p", { className: "mt-1 text-[12px] text-white/40", children: isRu ? "В разработке" : "In progress" })
+        domainClean && siteOpen ? /* @__PURE__ */ jsx(
+          "a",
+          {
+            href: p.domain,
+            target: "_blank",
+            rel: "noopener noreferrer",
+            className: "mt-1 block truncate text-[12px] text-white/40 transition hover:text-white/70",
+            children: domainClean
+          }
+        ) : domainClean && pilot ? /* @__PURE__ */ jsx("p", { className: "mt-1 truncate text-[12px] text-white/40", children: domainClean }) : /* @__PURE__ */ jsx("p", { className: "mt-1 text-[12px] text-white/40", children: isRu ? "В разработке" : "In progress" }),
+        /* @__PURE__ */ jsxs(
+          LeadCTAButton,
+          {
+            source: "projects",
+            variant: "plain",
+            className: "mt-2 !h-auto !justify-start !px-0 !py-0 !text-[12.5px] !font-medium !text-[#FF9A3D] hover:!bg-transparent hover:!text-[#FFB06A] active:!scale-100",
+            children: [
+              leadFormCopy(lang).ctaSimilarProject,
+              " →"
+            ]
+          }
+        )
       ] }),
-      wip ? /* @__PURE__ */ jsx("span", { className: "shrink-0 rounded-full bg-[#1c1c1f] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-white/48", children: "WIP" }) : p.domain ? /* @__PURE__ */ jsx(
+      wip ? /* @__PURE__ */ jsx("span", { className: "shrink-0 rounded-full bg-[#1c1c1f] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-white/48", children: "WIP" }) : pilot ? /* @__PURE__ */ jsx("span", { className: "shrink-0 rounded-full bg-[#1c1c1f] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-white/48", children: "Pilot" }) : p.domain ? /* @__PURE__ */ jsx(
         "a",
         {
           href: p.domain,
@@ -11033,6 +11382,79 @@ function ProjectsPage() {
   ] });
 }
 const PROJECT_CASE_SYSTEM = {
+  "neo-terminal": {
+    moodRu: "AI-операционная система коммерции — от каталога до сделки",
+    moodEn: "AI commerce operating system — from catalog to transaction",
+    storyRu: "Коммерция ломается, когда каталог говорит одно, склад — другое, клиент пишет в мессенджер, а менеджер вручную сшивает всё это вместе.\n\nNeo Terminal собран вокруг другой модели: товарные данные, остатки, клиенты, диалоги, заказы и операции живут на **одном коммерческом слое**.\n\nЭто не ещё одна витрина и не чат-бот, прикрученный к каталогу. Neo Terminal объединяет Merchant OS, клиентский Smart City, продажи с поддержкой AI, склад, B2B-закупки, омниканальные диалоги, checkout, доставку, аналитику и операционную автоматизацию в одном продукте.\n\nСистема принимает коммерческие данные из YML, XLSX, CSV, CommerceML и коннекторов, нормализует их в одну товарную модель и отдаёт те же данные в поиск, AI-сценарии, склад и инструменты мерчанта.\n\nПлатформа собрана так, чтобы закрывать полный путь: **каталог → discovery → диалог → решение → корзина → транзакция → фулфилмент → аналитика**.",
+    storyEn: "Commerce breaks when the catalog says one thing, the warehouse says another, a customer asks a question in a messenger, and the manager has to connect everything manually.\n\nNeo Terminal was designed around a different model: product data, stock, customers, conversations, orders and operations live on **one commerce layer**.\n\nIt is not another storefront and not a chatbot attached to a catalog. Neo Terminal combines a Merchant OS, customer-facing Smart City, AI-assisted sales, inventory workflows, B2B procurement, omnichannel conversations, checkout, delivery, analytics and operational automation in one product.\n\nThe system can ingest commerce data from YML, XLSX, CSV, CommerceML and connector-based sources, normalize it into one product model and make the same data available to customer search, AI workflows, warehouse operations and merchant tools.\n\nThe result is a platform designed to connect the full path: **catalog → discovery → conversation → decision → cart → transaction → fulfillment → analytics**.",
+    logo: "/images/project-logos/neo-terminal.webp",
+    logoFit: "contain",
+    palette: [
+      {
+        name: "Terminal Orange",
+        hex: "#ff5a00",
+        group: "brand",
+        roleRu: "Основной акцент Neo Terminal: активные состояния, выбранная навигация, интеллектуальные действия и ключевые сигналы продукта.",
+        roleEn: "Primary Neo Terminal accent for active states, selected navigation, intelligent actions and key product signals."
+      },
+      {
+        name: "Terminal Paper",
+        hex: "#ffffff",
+        group: "neutral",
+        roleRu: "Основная поверхность интерфейса и холст контента.",
+        roleEn: "Primary interface surface and content canvas."
+      },
+      {
+        name: "Cloud",
+        hex: "#f5f5f5",
+        group: "neutral",
+        roleRu: "Фон приложения и вторичные области страниц.",
+        roleEn: "Application background and secondary page areas."
+      },
+      {
+        name: "Soft Surface",
+        hex: "#fafafa",
+        group: "neutral",
+        roleRu: "Тихие панели, группы контролов и мягкое отделение контента.",
+        roleEn: "Quiet panels, grouped controls and subtle content separation."
+      },
+      {
+        name: "Terminal Ink",
+        hex: "#0a0a0a",
+        group: "neutral",
+        roleRu: "Основная типографика, навигация и главные действия.",
+        roleEn: "Primary typography, navigation and main actions."
+      },
+      {
+        name: "Muted Graphite",
+        hex: "#737373",
+        group: "neutral",
+        roleRu: "Вторичные подписи, метаданные и вспомогательная информация.",
+        roleEn: "Secondary labels, metadata and supporting information."
+      },
+      {
+        name: "Hairline",
+        hex: "#e5e5e5",
+        group: "neutral",
+        roleRu: "Тонкие разделители и границы интерфейса.",
+        roleEn: "Subtle separators and interface boundaries."
+      },
+      {
+        name: "Signal Soft",
+        hex: "#fff1e8",
+        group: "neutral",
+        roleRu: "Мягкий оранжевый контекст для выбранных и интеллектуальных состояний.",
+        roleEn: "Soft orange context for selected and intelligent states."
+      },
+      {
+        name: "Danger",
+        hex: "#e7000b",
+        group: "neutral",
+        roleRu: "Деструктивные действия и критические ошибки.",
+        roleEn: "Destructive actions and critical error states."
+      }
+    ]
+  },
   tivonixpanel: {
     moodRu: "Партнёрский кабинет без хаоса в чатах",
     moodEn: "Partner cabinet without chat chaos",
@@ -11152,8 +11574,8 @@ const PROJECT_CASE_SYSTEM = {
   slotty: {
     moodRu: "Полный маркетплейс записи — фильтры, карта, SaaS мастера",
     moodEn: "Full booking marketplace — filters, map, master SaaS",
-    storyRu: "Не «кнопка записаться». **Маркетплейс**: каталог с жёсткими фильтрами и картой, Telegram Mini App, кабинет мастера Free/Pro, platform-admin, bePaid.\n\nЗаказчик — **Виктория Д.** Бюджет — 230 000 ₽ ([[≈ 2 940 $]]). Срок — **3 недели**. React + Express + PostgreSQL, прод на **Railway**, домен **slotty.of.by** — подсказали, где купить, подняли хостинг, выкатили.\n\nСкоро запуск к **настоящим клиентам и мастерам**. Зайти и проверить можно самому: слот видно сразу, без Direct.",
-    storyEn: "Not a “book now” button. A **marketplace**: filtered catalog + map, Telegram Mini App, master Free/Pro cabinet, platform admin, bePaid.\n\nClient — **Victoria D.** Budget — 230,000 ₽ ([[≈ $2,940]]). Timeline — **3 weeks**. React + Express + PostgreSQL, production on **Railway**, domain **slotty.of.by** — we advised where to buy, set up hosting, shipped live.\n\nSoon launching to **real clients and masters**. You can open it yourself: the slot is visible right away — no DMs.",
+    storyRu: "Не «кнопка записаться». **Маркетплейс**: каталог с жёсткими фильтрами и картой, Telegram Mini App, кабинет мастера Free/Pro, platform-admin, bePaid.\n\nЗаказчик — **Виктория Д.** Срок — **3 недели**. React + Express + PostgreSQL, прод на **Railway**, домен **slotty.of.by** — подсказали, где купить, подняли хостинг, выкатили.\n\nСкоро запуск к **настоящим клиентам и мастерам**. Зайти и проверить можно самому: слот видно сразу, без Direct.",
+    storyEn: "Not a “book now” button. A **marketplace**: filtered catalog + map, Telegram Mini App, master Free/Pro cabinet, platform admin, bePaid.\n\nClient — **Victoria D.** Timeline — **3 weeks**. React + Express + PostgreSQL, production on **Railway**, domain **slotty.of.by** — we advised where to buy, set up hosting, shipped live.\n\nSoon launching to **real clients and masters**. You can open it yourself: the slot is visible right away — no DMs.",
     logo: "/images/project-logos/slotty.png",
     palette: [
       {
@@ -11210,8 +11632,8 @@ const PROJECT_CASE_SYSTEM = {
   headmind: {
     moodRu: "Корпоративный сайт — Figma → WordPress под ключ",
     moodEn: "Corporate site — Figma → WordPress turnkey",
-    storyRu: "Заказчик — **Евгений Беликов**, основатель и гендиректор ООО «Хэдмайнд». Бюджет — **100 000 ₽** ([[≈ 1 280 $]]).\n\nСначала макеты в **Figma** (несколько вариантов на выбор), потом сборка на **WordPress + Elementor**, хостинг и домен **headmind.ru**. Сайт, который спокойно шлют в первом B2B-сообщении.",
-    storyEn: "Client — **Evgeniy Belikov**, founder and CEO of Headmind. Budget — **100,000 ₽** ([[≈ $1,280]]).\n\nFirst **Figma** mockups (several options), then **WordPress + Elementor**, hosting and domain **headmind.ru**. A site you can send in the first B2B message.",
+    storyRu: "Заказчик — **Евгений Беликов**, основатель и гендиректор ООО «Хэдмайнд».\n\nСначала макеты в **Figma** (несколько вариантов на выбор), потом сборка на **WordPress + Elementor**, хостинг и домен **headmind.ru**. Сайт, который спокойно шлют в первом B2B-сообщении.",
+    storyEn: "Client — **Evgeniy Belikov**, founder and CEO of Headmind.\n\nFirst **Figma** mockups (several options), then **WordPress + Elementor**, hosting and domain **headmind.ru**. A site you can send in the first B2B message.",
     logo: "/images/project-logos/headmind.png",
     palette: [
       {
@@ -11266,10 +11688,10 @@ const PROJECT_CASE_SYSTEM = {
     ]
   },
   logovo: {
-    moodRu: "Сеть шиномонтажа LOGOVO — сайт под ключ за 1 600 BYN",
-    moodEn: "LOGOVO tire network — turnkey site for 1,600 BYN",
-    storyRu: "Заказчик — **ООО «Логово»**, Минск: **4 филиала**, два **24/7**. Бюджет — **1 600 BYN** ([[≈ 42 800 ₽]] / [[≈ 560 $]]).\n\nСобрала **команда TIVONIX**: Figma → Next.js → домен и hoster.by. Светлый Awesomic-canvas, ember `#ff5a00` на CTA — запись с дороги за минуту.",
-    storyEn: "Client — **LOGOVO LLC**, Minsk: **4 branches**, two **24/7**. Budget — **1,600 BYN** ([[≈ 42,800 ₽]] / [[≈ $560]]).\n\nBuilt by the **TIVONIX team**: Figma → Next.js → domain and hoster.by. Light Awesomic canvas, ember `#ff5a00` on CTAs — book from the road in a minute.",
+    moodRu: "Сеть шиномонтажа LOGOVO — сайт под ключ",
+    moodEn: "LOGOVO tire network — turnkey site",
+    storyRu: "Заказчик — **ООО «Логово»**, Минск: **4 филиала**, два **24/7**.\n\nСобрала **команда TIVONIX**: Figma → Next.js → домен и hoster.by. Светлый Awesomic-canvas, ember `#ff5a00` на CTA — запись с дороги за минуту.",
+    storyEn: "Client — **LOGOVO LLC**, Minsk: **4 branches**, two **24/7**.\n\nBuilt by the **TIVONIX team**: Figma → Next.js → domain and hoster.by. Light Awesomic canvas, ember `#ff5a00` on CTAs — book from the road in a minute.",
     logo: "/images/project-logos/logovo.png",
     logoFit: "contain",
     palette: [
@@ -11916,25 +12338,39 @@ function MoreLikeThis({
 function MoreProjectCard({ project, lang }) {
   const cover = projectPreviewSrc(project);
   const subtitle = projectSubtitle(project, lang);
-  return /* @__PURE__ */ jsxs(Link, { to: pathForLang(`/projects/${project.id}`, lang), className: "group block min-w-0 outline-none", children: [
-    /* @__PURE__ */ jsx("div", { className: "relative aspect-[16/10] w-full overflow-hidden rounded-[12px] bg-[#141416]", children: /* @__PURE__ */ jsx(
-      "img",
-      {
-        src: cover,
-        alt: "",
-        className: "absolute inset-0 h-full w-full object-cover object-center transition duration-500 ease-out group-hover:scale-[1.03]",
-        loading: "lazy",
-        decoding: "async",
-        draggable: false
-      }
-    ) }),
-    /* @__PURE__ */ jsxs("div", { className: "mt-4 flex items-start gap-3", children: [
-      /* @__PURE__ */ jsx("div", { className: "mt-0.5 grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-[#1c1c1f]", children: /* @__PURE__ */ jsx("img", { src: cover, alt: "", className: "h-full w-full object-cover", draggable: false }) }),
-      /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-        /* @__PURE__ */ jsx("p", { className: "text-[15px] font-medium tracking-normal text-[#ededf3] transition group-hover:text-white", children: project.title }),
-        /* @__PURE__ */ jsx("p", { className: "mt-1 line-clamp-2 text-[13px] leading-[1.45] tracking-normal text-[#8a8a8e]", children: subtitle })
+  return /* @__PURE__ */ jsxs("article", { className: "min-w-0", children: [
+    /* @__PURE__ */ jsxs(Link, { to: pathForLang(`/projects/${project.id}`, lang), className: "group block min-w-0 outline-none", children: [
+      /* @__PURE__ */ jsx("div", { className: "relative aspect-[16/10] w-full overflow-hidden rounded-[12px] bg-[#141416]", children: /* @__PURE__ */ jsx(
+        "img",
+        {
+          src: cover,
+          alt: "",
+          className: "absolute inset-0 h-full w-full object-cover object-center transition duration-500 ease-out group-hover:scale-[1.03]",
+          loading: "lazy",
+          decoding: "async",
+          draggable: false
+        }
+      ) }),
+      /* @__PURE__ */ jsxs("div", { className: "mt-4 flex items-start gap-3", children: [
+        /* @__PURE__ */ jsx("div", { className: "mt-0.5 grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-[#1c1c1f]", children: /* @__PURE__ */ jsx("img", { src: cover, alt: "", className: "h-full w-full object-cover", draggable: false }) }),
+        /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+          /* @__PURE__ */ jsx("p", { className: "text-[15px] font-medium tracking-normal text-[#ededf3] transition group-hover:text-white", children: project.title }),
+          /* @__PURE__ */ jsx("p", { className: "mt-1 line-clamp-2 text-[13px] leading-[1.45] tracking-normal text-[#8a8a8e]", children: subtitle })
+        ] })
       ] })
-    ] })
+    ] }),
+    /* @__PURE__ */ jsxs(
+      LeadCTAButton,
+      {
+        source: "project_page",
+        variant: "plain",
+        className: "mt-3 !h-auto !justify-start !px-0 !py-0 !text-[13px] !font-medium !text-[#FF9A3D] hover:!bg-transparent hover:!text-[#FFB06A] active:!scale-100",
+        children: [
+          leadFormCopy(lang).ctaSimilarProject,
+          " →"
+        ]
+      }
+    )
   ] });
 }
 function ProjectDetailPage() {
@@ -11953,13 +12389,14 @@ function ProjectDetailPage() {
   const tagsLabel = t3(lang, "Теги", "Tags", "标签");
   const liveLabel = t3(lang, "В продакшене", "Live", "已上线");
   const wipLabel = t3(lang, "В разработке", "In progress", "开发中");
+  const pilotLabel = t3(lang, "Готов к пилоту", "Pilot-ready", "试点就绪");
   const openSiteLabel = t3(lang, "Открыть сайт", "Open website", "打开网站");
   const websiteSoonLabel = t3(lang, "Сайт скоро", "Website soon", "网站即将上线");
   const roleLabel = t3(lang, "Роль TIVONIX", "TIVONIX role", "TIVONIX 角色");
   const roleValue = t3(
     lang,
-    "Дизайн и разработка под ключ",
-    "End-to-end design and development",
+    project?.roleRu ?? "Дизайн и разработка под ключ",
+    project?.roleEn ?? "End-to-end design and development",
     "端到端设计与开发"
   );
   const detailsLabel = t3(lang, "Подробнее", "Details", "详情");
@@ -11968,9 +12405,9 @@ function ProjectDetailPage() {
   const subtitle = projectSubtitle(project, lang);
   const details = projectDetails(project, lang);
   const mood = caseSystem ? isRu ? caseSystem.moodRu : caseSystem.moodEn : null;
-  const seoTitle = `${project.title} — ${t3(lang, "кейс TIVONIX", "TIVONIX case study", "TIVONIX 案例")}`;
+  const seoTitle = (isRu ? project.seoTitleRu : project.seoTitleEn) ?? `${project.title} — ${t3(lang, "кейс TIVONIX", "TIVONIX case study", "TIVONIX 案例")}`;
   const seoDescription = clipMetaDescription(
-    subtitle + t3(
+    (isRu ? project.seoDescriptionRu : project.seoDescriptionEn) ?? subtitle + t3(
       lang,
       " Студия TIVONIX: веб-разработка, лендинги, продукты и MVP.",
       " TIVONIX studio: web development, landings, products and MVPs.",
@@ -11978,6 +12415,9 @@ function ProjectDetailPage() {
     )
   );
   const wip = project.status === "wip";
+  const pilot = project.status === "pilot";
+  const siteOpen = isProjectSiteOpen(project);
+  const statusText = wip ? wipLabel : pilot ? pilotLabel : liveLabel;
   const domainClean = project.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "") ?? "";
   const coverSrc = projectPreviewSrc(project);
   const coverAbsolute = absoluteAssetUrl(coverSrc);
@@ -11986,7 +12426,7 @@ function ProjectDetailPage() {
     title: project.title,
     description: seoDescription,
     coverUrl: coverAbsolute,
-    domain: project.domain,
+    domain: siteOpen ? project.domain : void 0,
     tags: project.tags,
     stack: project.stack,
     lang
@@ -12044,14 +12484,16 @@ function ProjectDetailPage() {
             /* @__PURE__ */ jsxs("div", { className: "mt-6 grid grid-cols-1 items-start gap-8 sm:mt-8 sm:gap-10 lg:mt-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.88fr)] lg:gap-14 xl:gap-16", children: [
               /* @__PURE__ */ jsxs("div", { className: "order-1 min-w-0", children: [
                 /* @__PURE__ */ jsx("figure", { className: "relative w-full overflow-hidden rounded-[12px] bg-[#141416]", children: /* @__PURE__ */ jsx("div", { className: "relative aspect-[16/10] w-full", children: /* @__PURE__ */ jsx(
-                  "img",
+                  SoftImg,
                   {
                     src: coverSrc,
                     alt: `${project.title} — ${isRu ? "обложка кейса" : "case cover"}`,
                     className: "absolute inset-0 h-full w-full object-cover object-top",
                     draggable: false,
                     decoding: "async",
-                    fetchPriority: "high"
+                    loading: "eager",
+                    fetchPriority: "high",
+                    fade: true
                   }
                 ) }) }),
                 project.gallery?.length ? /* @__PURE__ */ jsx("div", { className: "mt-5 sm:mt-8", children: /* @__PURE__ */ jsx(ProjectGalleryStrip, { images: project.gallery, isRu }) }) : null
@@ -12063,7 +12505,7 @@ function ProjectDetailPage() {
                   mood ? /* @__PURE__ */ jsx("p", { className: "max-w-[40ch] text-[13px] leading-relaxed text-[#8a8a8e] sm:text-[14px]", children: subtitle }) : null
                 ] }),
                 /* @__PURE__ */ jsxs("dl", { className: "mt-6 sm:mt-8", children: [
-                  /* @__PURE__ */ jsx(SpecRow, { label: domainLabel, children: project.domain && !wip ? /* @__PURE__ */ jsxs(
+                  /* @__PURE__ */ jsx(SpecRow, { label: domainLabel, children: siteOpen ? /* @__PURE__ */ jsxs(
                     "a",
                     {
                       href: project.domain,
@@ -12075,25 +12517,25 @@ function ProjectDetailPage() {
                         /* @__PURE__ */ jsx(ExternalIcon, { className: "shrink-0 text-[#8a8a8e]" })
                       ]
                     }
-                  ) : /* @__PURE__ */ jsx("span", { className: "text-[#8a8a8e]", children: websiteSoonLabel }) }),
+                  ) : domainClean ? /* @__PURE__ */ jsx("span", { className: "text-[#8a8a8e]", children: formatDomainLabel(domainClean) }) : /* @__PURE__ */ jsx("span", { className: "text-[#8a8a8e]", children: websiteSoonLabel }) }),
                   /* @__PURE__ */ jsx(SpecRow, { label: statusLabel, children: /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-2", children: [
                     /* @__PURE__ */ jsx(
                       "span",
                       {
                         className: cx$b(
                           "h-1.5 w-1.5 shrink-0 rounded-full",
-                          wip ? "bg-amber-400/90" : "bg-emerald-400/90"
+                          wip || pilot ? "bg-amber-400/90" : "bg-emerald-400/90"
                         )
                       }
                     ),
-                    wip ? wipLabel : liveLabel
+                    statusText
                   ] }) }),
                   /* @__PURE__ */ jsx(SpecRow, { label: roleLabel, children: roleValue }),
                   /* @__PURE__ */ jsx(SpecRow, { label: tagsLabel, children: /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-1.5 sm:gap-2", children: project.tags.map((tag) => /* @__PURE__ */ jsx(Pill, { children: tag }, tag)) }) }),
                   project.stack?.length ? /* @__PURE__ */ jsx(SpecRow, { label: stackLabel, children: /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-1.5 sm:gap-2", children: project.stack.map((tech) => /* @__PURE__ */ jsx(Pill, { children: tech }, tech)) }) }) : null
                 ] }),
                 /* @__PURE__ */ jsxs("div", { className: "mt-8 flex flex-col gap-3 sm:mt-10 sm:gap-4", children: [
-                  project.domain && !wip ? /* @__PURE__ */ jsx(
+                  siteOpen ? /* @__PURE__ */ jsx(
                     "a",
                     {
                       href: project.domain,
@@ -12109,7 +12551,7 @@ function ProjectDetailPage() {
                       source: "project_page",
                       variant: "plain",
                       className: "!h-12 w-full !rounded-full !border !border-white/15 !bg-transparent !px-6 !text-[15px] !font-medium !tracking-normal !text-[#ededf3] hover:!border-white/25 hover:!bg-white/[0.03] hover:!text-white sm:!h-auto sm:!min-h-0 sm:!rounded-none sm:!border-0 sm:!px-0 sm:!py-1 sm:hover:!bg-transparent sm:hover:!text-white/75",
-                      children: leadFormCopy(lang).ctaDiscuss
+                      children: leadFormCopy(lang).ctaSimilarProject
                     }
                   ),
                   /* @__PURE__ */ jsx("p", { className: "text-left text-[12px] leading-relaxed tracking-normal text-[#8a8a8e] sm:text-[13px]", children: isRu ? /* @__PURE__ */ jsxs(Fragment, { children: [
@@ -12156,7 +12598,7 @@ function ProjectDetailPage() {
                       logoFit: caseSystem.logoFit,
                       domain: project.domain,
                       domainClean,
-                      wip
+                      wip: !siteOpen
                     }
                   ) : /* @__PURE__ */ jsxs(Fragment, { children: [
                     /* @__PURE__ */ jsx("h2", { className: H2, children: detailsLabel }),
@@ -12387,7 +12829,6 @@ function SunContacts({ size }) {
   });
   const title = isRu ? "Контакты" : "Contacts";
   const leadCopy = leadFormCopy(lang);
-  const botCta = isRu ? "Telegram-бот" : "Telegram bot";
   const contactRowClass = cx$a(
     "group inline-flex w-full items-center gap-3.5 rounded-xl px-4 py-2.5",
     "bg-white/[0.055] hover:bg-white/[0.085] transition duration-200",
@@ -12446,32 +12887,15 @@ function SunContacts({ size }) {
             }
           )
         ] }),
-        /* @__PURE__ */ jsxs("div", { className: "mt-3 relative z-20 pointer-events-auto space-y-2", children: [
-          /* @__PURE__ */ jsx(
-            LeadCTAButton,
-            {
-              source: "contacts",
-              variant: "primary",
-              className: "!h-10 w-full !rounded-xl !text-[13.5px] !font-[800]",
-              children: leadCopy.ctaDiscuss
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            "a",
-            {
-              href: TG_BOT_URL,
-              target: "_blank",
-              rel: "noopener noreferrer",
-              className: cx$a(
-                "inline-flex h-10 w-full items-center justify-center rounded-xl px-5",
-                "text-[13px] font-[700] text-white/80 whitespace-nowrap",
-                "border border-white/15 bg-white/[0.05] hover:bg-white/[0.09] transition duration-200",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/35"
-              ),
-              children: botCta
-            }
-          )
-        ] })
+        /* @__PURE__ */ jsx("div", { className: "mt-3 relative z-20 pointer-events-auto", children: /* @__PURE__ */ jsx(
+          LeadCTAButton,
+          {
+            source: "contacts",
+            variant: "primary",
+            className: "!h-10 w-full !rounded-xl !text-[13.5px] !font-[800]",
+            children: leadCopy.ctaDiscuss
+          }
+        ) })
       ] })
     ] }) }),
     /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-0 [box-shadow:inset_0_0_140px_rgba(0,0,0,0.55)]" })
@@ -12486,7 +12910,7 @@ function ContactsPage() {
   pathname.startsWith("/zh");
   const { headerH, side, sun, r1, r2, r3 } = useSolarLayoutNoScroll();
   const seoTitle = isRu ? "Контакты TIVONIX — заказать сайт или веб-сервис" : "TIVONIX contacts — order a website or web service";
-  const seoDescription = isRu ? "Свяжитесь с TIVONIX, чтобы обсудить создание сайта, лендинга, веб-сервиса, MVP, админки или Telegram-бота." : "Contact TIVONIX to discuss creating a website, landing page, web service, MVP, admin panel, or Telegram bot.";
+  const seoDescription = isRu ? "Свяжитесь с TIVONIX, чтобы обсудить создание сайта, лендинга, веб-сервиса, MVP или админки." : "Contact TIVONIX to discuss creating a website, landing page, web service, MVP, or admin panel.";
   const ring1 = useMemo(
     () => [
       { label: "React", sub: "UI", glow: 14 },
@@ -12593,20 +13017,7 @@ function WebsiteCreationPage() {
       /* @__PURE__ */ jsx(Section, { className: "pt-8 sm:pt-10 pb-8", children: /* @__PURE__ */ jsxs(Container, { children: [
         /* @__PURE__ */ jsx("h1", { className: "text-[32px] sm:text-[46px] font-[850] tracking-[-0.03em] text-white leading-[1.08]", children: isRu ? "Создание сайтов под ключ для бизнеса" : "Turnkey website development for business" }),
         /* @__PURE__ */ jsx("p", { className: "mt-5 max-w-3xl text-[16px] leading-7 text-white/72", children: isRu ? "Проектируем, дизайним, разрабатываем и запускаем сайты в одном процессе: без хаоса и с понятным результатом для заявок и продаж." : "We design, develop and launch websites in one clear process focused on leads and sales." }),
-        /* @__PURE__ */ jsxs("div", { className: "mt-7 flex flex-wrap gap-3", children: [
-          /* @__PURE__ */ jsx(LeadCTAButton, { source: "service_websites", variant: "primary", size: "lg", children: isRu ? "Оставить заявку" : "Send a brief" }),
-          /* @__PURE__ */ jsx(
-            "a",
-            {
-              href: "https://t.me/TIVONIX",
-              target: "_blank",
-              rel: "noopener noreferrer",
-              onClick: () => trackTelegramDirectClick(),
-              className: "inline-flex h-12 items-center justify-center rounded-full bg-white/[0.08] px-7 text-[14px] font-bold text-white/90 ring-1 ring-white/12 transition hover:bg-white/[0.12]",
-              children: "Telegram"
-            }
-          )
-        ] })
+        /* @__PURE__ */ jsx("div", { className: "mt-7 flex flex-wrap gap-3", children: /* @__PURE__ */ jsx(LeadCTAButton, { source: "service_websites", variant: "primary", size: "lg", children: isRu ? "Оставить заявку" : "Send a brief" }) })
       ] }) }),
       /* @__PURE__ */ jsx(Section, { className: "py-8", children: /* @__PURE__ */ jsxs(Container, { children: [
         /* @__PURE__ */ jsx("h2", { className: "text-[24px] sm:text-[32px] font-[800] tracking-tight text-white", children: "Что делаем" }),
@@ -12636,17 +13047,6 @@ function WebsiteCreationPage() {
               href: "/contacts",
               className: "inline-flex h-11 items-center justify-center rounded-xl px-6 text-[14px] font-[650] text-white border border-white/15 bg-white/[0.04]",
               children: isRu ? "Контакты" : "Contacts"
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            "a",
-            {
-              href: "https://t.me/TIVONIX",
-              target: "_blank",
-              rel: "noopener noreferrer",
-              onClick: () => trackTelegramDirectClick(),
-              className: "inline-flex h-11 items-center justify-center rounded-xl px-6 text-[14px] font-[650] text-white/80 border border-white/10 bg-transparent",
-              children: "Telegram"
             }
           )
         ] })
@@ -14231,18 +14631,7 @@ function AutomationHero({ t }) {
             type: "button",
             onClick: () => openLeadForm("service_automation"),
             className: "inline-flex h-9 min-w-0 shrink-0 items-center justify-center rounded-full bg-white px-4 text-[13px] font-semibold tracking-tight text-neutral-900 shadow-sm transition hover:bg-white/92 active:translate-y-px sm:px-5 sm:text-[14px]",
-            children: t.hero.microCtaTelegram
-          }
-        ),
-        /* @__PURE__ */ jsx(
-          "a",
-          {
-            href: TG_BOT_URL,
-            target: "_blank",
-            rel: "noopener noreferrer",
-            onClick: () => trackTelegramBotClick(),
-            className: "inline-flex h-9 min-w-0 shrink-0 items-center justify-center rounded-full bg-white/[0.12] px-4 text-[13px] font-semibold tracking-tight text-white/90 ring-1 ring-white/15 transition hover:bg-white/[0.18] active:translate-y-px sm:px-5 sm:text-[14px]",
-            children: "Telegram"
+            children: t.hero.ctaDiscuss
           }
         ),
         /* @__PURE__ */ jsx(
@@ -14753,28 +15142,15 @@ function AutomationCTA({ t }) {
       ),
       /* @__PURE__ */ jsx("h2", { className: `mt-5 ${automationTypo.h2}`, children: t.ctaBlock.title }),
       /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-[78ch] text-[15px] leading-[1.75] text-white/72 sm:text-[16.5px]", children: t.ctaBlock.body }),
-      /* @__PURE__ */ jsxs("div", { className: "mt-8 flex flex-wrap gap-3", children: [
-        /* @__PURE__ */ jsx(
-          "button",
-          {
-            type: "button",
-            onClick: () => openLeadForm("service_automation"),
-            className: "inline-flex h-[54px] items-center justify-center rounded-2xl bg-[#FF8A1E] px-6 text-[15px] font-[780] tracking-[-0.01em] text-black shadow-[0_18px_70px_rgba(0,0,0,.55)] transition hover:opacity-95 active:translate-y-px sm:h-[58px] sm:px-8 sm:text-[16px]",
-            children: t.ctaBlock.primary
-          }
-        ),
-        /* @__PURE__ */ jsx(
-          "a",
-          {
-            href: "https://t.me/TIVONIX",
-            target: "_blank",
-            rel: "noopener noreferrer",
-            onClick: () => trackTelegramDirectClick(),
-            className: "inline-flex h-[54px] items-center justify-center rounded-2xl bg-white/[0.08] px-6 text-[15px] font-[780] text-white/90 transition hover:bg-white/[0.13] active:translate-y-px sm:h-[58px] sm:px-7 sm:text-[16px]",
-            children: t.ctaBlock.secondary
-          }
-        )
-      ] }),
+      /* @__PURE__ */ jsx("div", { className: "mt-8 flex flex-wrap gap-3", children: /* @__PURE__ */ jsx(
+        "button",
+        {
+          type: "button",
+          onClick: () => openLeadForm("service_automation"),
+          className: "inline-flex h-[54px] items-center justify-center rounded-2xl bg-[#FF8A1E] px-6 text-[15px] font-[780] tracking-[-0.01em] text-black shadow-[0_18px_70px_rgba(0,0,0,.55)] transition hover:opacity-95 active:translate-y-px sm:h-[58px] sm:px-8 sm:text-[16px]",
+          children: t.ctaBlock.primary
+        }
+      ) }),
       /* @__PURE__ */ jsx("p", { className: "mt-4 text-[13px] leading-[1.65] text-white/58 sm:text-[13.5px]", children: t.ctaBlock.footnote })
     ] })
   ] }) }) });
@@ -14976,13 +15352,6 @@ function PricingPlanScopeGrid({ onPlanAction }) {
 }
 const COMPARE_LOGO = "/images/tivonix-logo-white.webp";
 const EMBER = "#fc5000";
-const PLANS_IMG = `/images/${encodeURIComponent("планы")}`;
-const PLAN_IMAGES = {
-  start: `${PLANS_IMG}/1.webp`,
-  growth: `${PLANS_IMG}/2.webp`,
-  product: `${PLANS_IMG}/3.webp`,
-  custom: `${PLANS_IMG}/4.webp`
-};
 function cx$7(...parts) {
   return parts.filter(Boolean).join(" ");
 }
@@ -14998,7 +15367,7 @@ function PlanCtaButton({
     {
       type: "button",
       onClick,
-      className: ctaClass$1(
+      className: ctaClass(
         featured ? "primary" : "white",
         compact ? "md" : "md",
         cx$7("w-full", compact && "h-9 text-[12px] sm:h-10 sm:text-[13px]", className)
@@ -15142,16 +15511,7 @@ function PlanCard({
         planId === "product" && "pricing-plan-card--product"
       ),
       children: [
-        /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__media", "aria-hidden": true, children: /* @__PURE__ */ jsx(
-          "img",
-          {
-            src: PLAN_IMAGES[planId],
-            alt: "",
-            className: "pricing-plan-card__bg",
-            loading: "lazy",
-            decoding: "async"
-          }
-        ) }),
+        /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__media", "aria-hidden": true, children: /* @__PURE__ */ jsx(PlanBgVideo, { plan: planId, className: "pricing-plan-card__bg" }) }),
         /* @__PURE__ */ jsx("div", { className: "pricing-plan-card__veil", "aria-hidden": true }),
         /* @__PURE__ */ jsxs("div", { className: "pricing-plan-card__body", children: [
           /* @__PURE__ */ jsxs("div", { className: "pricing-plan-card__head", children: [
@@ -15402,17 +15762,27 @@ function PricingPlansSection({ className }) {
               ),
               open ? /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile-rows", children: group.rows.map((row) => /* @__PURE__ */ jsxs("div", { className: "pricing-compare__mobile-row", children: [
                 /* @__PURE__ */ jsx("p", { className: "pricing-compare__mobile-feature", children: copy.features[row.id] }),
-                /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile-values", children: PLAN_IDS.map((planId) => /* @__PURE__ */ jsxs("div", { className: "pricing-compare__mobile-value", children: [
-                  /* @__PURE__ */ jsx("p", { className: "pricing-compare__mobile-plan-label", children: copy.plans[planId].name }),
-                  /* @__PURE__ */ jsx(
-                    ComparisonValue,
-                    {
-                      cell: row.values[planId],
-                      labels: copy.cell,
-                      textLabels: copy.cellText
-                    }
-                  )
-                ] }, planId)) })
+                /* @__PURE__ */ jsx("div", { className: "pricing-compare__mobile-values", children: PLAN_IDS.map((planId) => /* @__PURE__ */ jsxs(
+                  "div",
+                  {
+                    className: cx$7(
+                      "pricing-compare__mobile-value",
+                      planId === "growth" && "pricing-compare__mobile-value--growth"
+                    ),
+                    children: [
+                      /* @__PURE__ */ jsx("p", { className: "pricing-compare__mobile-plan-label", children: copy.plans[planId].name }),
+                      /* @__PURE__ */ jsx(
+                        ComparisonValue,
+                        {
+                          cell: row.values[planId],
+                          labels: copy.cell,
+                          textLabels: copy.cellText
+                        }
+                      )
+                    ]
+                  },
+                  planId
+                )) })
               ] }, row.id)) }) : null
             ] }, group.id);
           }) })
@@ -16234,7 +16604,7 @@ const RU = {
   },
   discuss: {
     label: "Задать вопрос",
-    ask: "Telegram — только вопрос, регистрация в панели"
+    ask: "Опишите задачу в форме — регистрация в панели отдельно"
   },
   ui: {
     client: "Клиент",
@@ -16494,7 +16864,7 @@ const EN = {
   },
   discuss: {
     label: "Ask a question",
-    ask: "Telegram for questions — registration is in the panel"
+    ask: "Describe the task in the form — panel registration is separate"
   },
   ui: {
     client: "Client",
@@ -16754,7 +17124,7 @@ const ZH = {
   },
   discuss: {
     label: "提问",
-    ask: "问题走 Telegram — 注册在面板完成"
+    ask: "在表单中描述需求 — 面板注册另行完成"
   },
   ui: {
     client: "客户",
@@ -16876,7 +17246,7 @@ function Reveal({ children, className }) {
 }
 function DarkPill({
   children,
-  href = PARTNER_AGENCY_TELEGRAM_URL,
+  href,
   sameTab = false,
   onClick
 }) {
@@ -17384,21 +17754,18 @@ function CapabilitiesBanner() {
 function DiscussPanel() {
   const { lang } = useLang();
   const copy = getPartnersCopy(lang);
+  const { openLeadForm } = useLeadForm();
   return /* @__PURE__ */ jsxs("div", { className: "partners-bento__discuss", children: [
     /* @__PURE__ */ jsx("p", { className: "partners-bento__discuss-label", children: copy.discuss.label }),
     /* @__PURE__ */ jsxs("div", { className: "partners-bento__discuss-btns", children: [
-      /* @__PURE__ */ jsxs(
-        "a",
+      /* @__PURE__ */ jsx(
+        "button",
         {
-          href: PARTNER_AGENCY_TELEGRAM_URL,
-          target: "_blank",
-          rel: "noopener noreferrer",
+          type: "button",
+          onClick: () => openLeadForm("partners"),
           className: "partners-bento__discuss-btn partners-bento__discuss-btn--tg",
           "aria-label": copy.discuss.ask,
-          children: [
-            /* @__PURE__ */ jsx("svg", { width: "15", height: "15", viewBox: "0 0 24 24", fill: "currentColor", "aria-hidden": true, children: /* @__PURE__ */ jsx("path", { d: "M21.5 3.6 2.9 11.1c-1.3.5-1.3 1.3-.2 1.6l4.7 1.5 1.8 5.5c.2.7.1.9.8.9.5 0 .7-.2 1-.5l2.4-2.3 5 3.7c.9.5 1.6.2 1.8-.9L22.9 5c.3-1.2-.4-1.8-1.4-1.4ZM9.2 14.5l-.3 3.3 1.3-1.7 8-7.6-9 5.9Z" }) }),
-            "Telegram"
-          ]
+          children: copy.discuss.label
         }
       ),
       /* @__PURE__ */ jsxs(
@@ -17579,6 +17946,7 @@ function PartnersFooter() {
   const line = copy.footer.marquee;
   const docs = PARTNERS_DOCS[lang];
   const loginUrl = partnerPanelLoginUrl();
+  const { openLeadForm } = useLeadForm();
   return /* @__PURE__ */ jsxs("footer", { id: "site-footer", className: "partners-footer", children: [
     /* @__PURE__ */ jsx("div", { className: "partners-footer__scene", "aria-hidden": true, children: /* @__PURE__ */ jsxs("div", { className: "partners-footer__tow", children: [
       /* @__PURE__ */ jsx("div", { className: "partners-footer__pill", children: /* @__PURE__ */ jsx("span", { className: "partners-footer__phrase", children: line }) }),
@@ -17604,11 +17972,10 @@ function PartnersFooter() {
           /* @__PURE__ */ jsx(Link, { to: pathForLang("/projects", lang), children: copy.footer.projects }),
           /* @__PURE__ */ jsx(Link, { to: pathForLang("/contacts", lang), children: copy.footer.contacts }),
           /* @__PURE__ */ jsx(
-            "a",
+            "button",
             {
-              href: PARTNER_AGENCY_TELEGRAM_URL,
-              target: "_blank",
-              rel: "noopener noreferrer",
+              type: "button",
+              onClick: () => openLeadForm("partners"),
               children: copy.footer.askTelegram
             }
           ),
@@ -18175,16 +18542,22 @@ function PartnersPage() {
             flex-wrap: wrap;
             gap: 0.35rem 1.15rem;
           }
-          .partners-footer__nav a {
+          .partners-footer__nav a,
+          .partners-footer__nav button {
             color: #1a1a1a;
             font-family: Inter, ui-sans-serif, system-ui, sans-serif;
             font-size: 14px;
             font-weight: 600;
             letter-spacing: -0.01em;
             text-decoration: none;
+            background: none;
+            border: 0;
+            padding: 0;
+            cursor: pointer;
             transition: color 0.2s ease;
           }
-          .partners-footer__nav a:hover {
+          .partners-footer__nav a:hover,
+          .partners-footer__nav button:hover {
             color: #ff6b2c;
           }
           .partners-footer__note {
@@ -19436,16 +19809,20 @@ function PartnersPage() {
             z-index: 1;
             display: inline-flex;
             min-height: 2.5rem;
+            width: 100%;
             align-items: center;
             justify-content: center;
             gap: 0.35rem;
+            border: 0;
             border-radius: 999px;
             padding: 0.45rem 0.65rem;
+            font-family: inherit;
             font-size: 13px;
             font-weight: 600;
             letter-spacing: -0.01em;
             text-decoration: none;
             pointer-events: auto;
+            cursor: pointer;
             transition: filter 0.2s ease, background 0.2s ease;
           }
           .partners-bento__discuss-btn--tg {
@@ -21218,11 +21595,13 @@ function PartnersPage() {
     /* @__PURE__ */ jsx(PartnersFooter, {})
   ] });
 }
-const HERO_VIDEO$4 = "/images/hero-bg.mp4";
-const HERO_POSTER$4 = "/images/hero-bg-poster.webp";
 function Video404Mark() {
   const videoRef = useRef(null);
+  const [src, setSrc] = useState(HERO_VIDEO_DESKTOP);
   useKeepVideoPlaying(videoRef);
+  useEffect(() => {
+    setSrc(pickHeroVideoSrc());
+  }, []);
   return /* @__PURE__ */ jsxs("div", { className: "relative mx-auto w-full max-w-[56rem] select-none", "aria-hidden": true, children: [
     /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-[6%] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(255,122,40,0.24),transparent_68%)] blur-2xl" }),
     /* @__PURE__ */ jsxs("div", { className: "nf404-stage relative isolate grid place-items-center overflow-hidden rounded-[4px] bg-black", children: [
@@ -21236,7 +21615,7 @@ function Video404Mark() {
       /* @__PURE__ */ jsx(
         "img",
         {
-          src: HERO_POSTER$4,
+          src: HERO_POSTER,
           alt: "",
           draggable: false,
           className: "col-start-1 row-start-1 h-[clamp(7.5rem,28vw,17rem)] w-full object-cover object-center"
@@ -21246,9 +21625,9 @@ function Video404Mark() {
         "video",
         {
           ref: videoRef,
-          className: "nf404-video col-start-1 row-start-1 h-[clamp(7.5rem,28vw,17rem)] w-full max-w-none object-cover object-center",
-          src: HERO_VIDEO$4,
-          poster: HERO_POSTER$4,
+          className: "hero-bg-video nf404-video col-start-1 row-start-1 h-[clamp(7.5rem,28vw,17rem)] w-full max-w-none object-cover object-center",
+          src,
+          poster: HERO_POSTER,
           autoPlay: true,
           muted: true,
           loop: true,
@@ -21435,8 +21814,6 @@ function milesealCommercialCopy() {
     }
   };
 }
-const HERO_VIDEO$3 = "/images/hero-bg.mp4";
-const HERO_POSTER$3 = "/images/hero-bg-poster.webp";
 function MilesealCommercialLanding({
   caseStudyPath,
   onRequestReview,
@@ -21444,8 +21821,6 @@ function MilesealCommercialLanding({
   reviewOpenerRef
 }) {
   const copy = milesealCommercialCopy();
-  const videoRef = useRef(null);
-  useKeepVideoPlaying(videoRef);
   const openReview = () => {
     trackLeadFormOpen("mileseal_scope_review");
     onRequestReview();
@@ -21453,22 +21828,7 @@ function MilesealCommercialLanding({
   return /* @__PURE__ */ jsxs("div", { className: "bg-black text-white", children: [
     /* @__PURE__ */ jsxs("section", { className: "relative isolate min-h-[min(92svh,920px)] overflow-hidden pt-[calc(var(--tivonix-header-spacer)+0.5rem)] pb-12 sm:pb-16", children: [
       /* @__PURE__ */ jsxs("div", { className: "pointer-events-none absolute inset-0 overflow-hidden bg-black", "aria-hidden": true, children: [
-        /* @__PURE__ */ jsx(
-          "video",
-          {
-            ref: videoRef,
-            className: "pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center",
-            src: HERO_VIDEO$3,
-            poster: HERO_POSTER$3,
-            autoPlay: true,
-            muted: true,
-            loop: true,
-            playsInline: true,
-            preload: "auto",
-            controls: false,
-            disablePictureInPicture: true
-          }
-        ),
+        /* @__PURE__ */ jsx(BgLoopVideo, {}),
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-black" }),
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(252,80,0,0.18)_0%,transparent_62%)]" })
       ] }),
@@ -21484,11 +21844,11 @@ function MilesealCommercialLanding({
               ref: reviewOpenerRef,
               "data-testid": "mileseal-hero-review-cta",
               onClick: openReview,
-              className: ctaClass$1("primary", "lg"),
+              className: ctaClass("primary", "lg"),
               children: copy.hero.reviewCta
             }
           ),
-          /* @__PURE__ */ jsx(Link, { to: caseStudyPath, className: ctaClass$1("secondary", "lg"), children: copy.hero.caseCta })
+          /* @__PURE__ */ jsx(Link, { to: caseStudyPath, className: ctaClass("secondary", "lg"), children: copy.hero.caseCta })
         ] })
       ] }) })
     ] }),
@@ -21531,7 +21891,7 @@ function MilesealCommercialLanding({
                       trackLeadFormOpen("mileseal_scope_leakage_audit");
                       onRequestAudit();
                     } : tier.id === "review" ? openReview : void 0,
-                    className: tier.featured ? ctaClass$1("primary", "md") + " mt-6 w-full" : ctaClass$1("secondary", "md") + " mt-6 w-full",
+                    className: tier.featured ? ctaClass("primary", "md") + " mt-6 w-full" : ctaClass("secondary", "md") + " mt-6 w-full",
                     children: tier.cta
                   }
                 ) : null
@@ -22971,7 +23331,7 @@ function AutoGrowTextarea({
     return () => window.removeEventListener("resize", onWin);
   }, [resize]);
   const toneClass = tone === "light" ? cx$4(
-    "border-0 bg-[#f4f3f1] text-[#141414] placeholder:text-[#141414]/4",
+    "border-0 bg-[#f4f3f1] text-[#141414] placeholder:text-[#141414]/55",
     "outline-none focus:bg-[#efeeec] focus-visible:ring-2 focus-visible:ring-[#fc5000]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
   ) : cx$4(
     "border-0 bg-[#141414] text-white placeholder:text-white/35",
@@ -23073,8 +23433,6 @@ async function submitMilesealLead(input, fetchImpl = fetch) {
     return { ok: false, error: "network_error", fallback: true };
   }
 }
-const HERO_VIDEO$2 = "/images/hero-bg.mp4";
-const HERO_POSTER$2 = "/images/hero-bg-poster.webp";
 function cx$3(...a) {
   return a.filter(Boolean).join(" ");
 }
@@ -23091,8 +23449,6 @@ function MilesealManualReviewPanel({
   const isAudit = variant === "audit";
   const ctaSource = isAudit ? "mileseal_scope_leakage_audit" : "mileseal_scope_review";
   const formId = useId();
-  const videoRef = useRef(null);
-  useKeepVideoPlaying(videoRef);
   const closePanel = useCallback(() => {
     onClose();
     requestAnimationFrame(() => returnFocusRef?.current?.focus({ preventScroll: true }));
@@ -23172,12 +23528,12 @@ function MilesealManualReviewPanel({
   };
   const inputClass2 = cx$3(
     "w-full min-h-12 rounded-2xl px-4 py-3",
-    "border-0 bg-[#f4f3f1] text-[#141414] placeholder:text-[#141414]/35",
+    "border-0 bg-[#f4f3f1] text-[#141414] placeholder:text-[#141414]/55",
     "outline-none transition",
     "focus-visible:ring-2 focus-visible:ring-[#fc5000]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
     "font-sans text-[14px] font-medium"
   );
-  const labelClass2 = "mb-1.5 flex items-center gap-2 text-[12px] font-semibold tracking-[0.04em] text-[#141414]/55";
+  const labelClass2 = "mb-1.5 flex items-center gap-2 text-[12px] font-semibold tracking-[0.04em] text-[#141414]/75";
   const primaryBtn2 = cx$3(
     "inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5",
     "bg-[#fc5000] text-[14px] font-semibold text-white transition",
@@ -23303,22 +23659,7 @@ function MilesealManualReviewPanel({
             ),
             children: [
               /* @__PURE__ */ jsxs("div", { className: "relative h-[148px] shrink-0 overflow-hidden sm:h-[168px]", children: [
-                /* @__PURE__ */ jsx(
-                  "video",
-                  {
-                    ref: videoRef,
-                    className: "pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover",
-                    src: HERO_VIDEO$2,
-                    poster: HERO_POSTER$2,
-                    autoPlay: true,
-                    muted: true,
-                    loop: true,
-                    playsInline: true,
-                    preload: "metadata",
-                    controls: false,
-                    disablePictureInPicture: true
-                  }
-                ),
+                /* @__PURE__ */ jsx(BgLoopVideo, {}),
                 /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-b from-black/35 via-black/45 to-[#0a0a0a]/88" }),
                 /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(252,80,0,0.22)_0%,transparent_60%)]" }),
                 /* @__PURE__ */ jsx(
@@ -23413,38 +23754,46 @@ function MilesealManualReviewPanel({
                   ] }) : null
                 ] }),
                 /* @__PURE__ */ jsxs("div", { className: "mt-4 space-y-3", children: [
-                  step === "request" ? /* @__PURE__ */ jsx(
-                    AutoGrowTextarea,
-                    {
-                      id: `${formId}-request`,
-                      name: "client_request",
-                      required: true,
-                      minRows: 4,
-                      maxRows: 10,
-                      tone: "light",
-                      value: clientRequest,
-                      onChange: (e) => setClientRequest(e.target.value),
-                      disabled: status === "loading",
-                      className: inputClass2,
-                      placeholder: cta.clientRequest
-                    }
-                  ) : null,
-                  step === "scope" ? /* @__PURE__ */ jsx(
-                    AutoGrowTextarea,
-                    {
-                      id: `${formId}-scope`,
-                      name: "agreed_scope",
-                      required: true,
-                      minRows: 4,
-                      maxRows: 10,
-                      tone: "light",
-                      value: agreedScope,
-                      onChange: (e) => setAgreedScope(e.target.value),
-                      disabled: status === "loading",
-                      className: inputClass2,
-                      placeholder: cta.agreedScope
-                    }
-                  ) : null,
+                  step === "request" ? /* @__PURE__ */ jsxs("div", { children: [
+                    /* @__PURE__ */ jsx("label", { htmlFor: `${formId}-request`, className: labelClass2, children: cta.clientRequest }),
+                    /* @__PURE__ */ jsx(
+                      AutoGrowTextarea,
+                      {
+                        id: `${formId}-request`,
+                        name: "client_request",
+                        required: true,
+                        minRows: 4,
+                        maxRows: 10,
+                        tone: "light",
+                        value: clientRequest,
+                        onChange: (e) => setClientRequest(e.target.value),
+                        disabled: status === "loading",
+                        className: inputClass2,
+                        "aria-label": cta.clientRequest,
+                        placeholder: ask.qRequestHint
+                      }
+                    )
+                  ] }) : null,
+                  step === "scope" ? /* @__PURE__ */ jsxs("div", { children: [
+                    /* @__PURE__ */ jsx("label", { htmlFor: `${formId}-scope`, className: labelClass2, children: cta.agreedScope }),
+                    /* @__PURE__ */ jsx(
+                      AutoGrowTextarea,
+                      {
+                        id: `${formId}-scope`,
+                        name: "agreed_scope",
+                        required: true,
+                        minRows: 4,
+                        maxRows: 10,
+                        tone: "light",
+                        value: agreedScope,
+                        onChange: (e) => setAgreedScope(e.target.value),
+                        disabled: status === "loading",
+                        className: inputClass2,
+                        "aria-label": cta.agreedScope,
+                        placeholder: ask.qScopeHint
+                      }
+                    )
+                  ] }) : null,
                   step === "contact" ? /* @__PURE__ */ jsxs("div", { className: "space-y-3", children: [
                     /* @__PURE__ */ jsxs("div", { children: [
                       /* @__PURE__ */ jsxs("label", { htmlFor: `${formId}-email`, className: labelClass2, children: [
@@ -23871,8 +24220,6 @@ async function savePdfWithTextLayer(doc, plainText, lang, fileName) {
   await appendSearchableTextLayer(doc, plainText, lang);
   doc.save(fileName);
 }
-const HERO_VIDEO$1 = "/images/hero-bg.mp4";
-const HERO_POSTER$1 = "/images/hero-bg-poster.webp";
 function cx$1(...a) {
   return a.filter(Boolean).join(" ");
 }
@@ -24024,7 +24371,11 @@ function MilesealWorkspace({
   const artifactVideoRef = useRef(null);
   const analyzeTimersRef = useRef([]);
   const langRef = useRef(lang);
+  const [heroVideoSrc, setHeroVideoSrc] = useState(HERO_VIDEO_DESKTOP);
   useKeepVideoPlaying(artifactVideoRef);
+  useEffect(() => {
+    setHeroVideoSrc(pickHeroVideoSrc());
+  }, []);
   const isPreset = state.mode === "preset";
   const showResult = isPreset && state.result !== null;
   const crText = state.result ? appendWorkStartDecisionToText(
@@ -24434,11 +24785,11 @@ function MilesealWorkspace({
             {
               ref: artifactVideoRef,
               className: cx$1(
-                "pointer-events-none absolute object-cover",
+                "hero-bg-video pointer-events-none absolute object-cover",
                 state.analyzing ? "inset-0 h-full w-full scale-105 blur-[6px] brightness-[0.7] saturate-[1.2]" : "-inset-[18%] h-[136%] w-[136%] max-w-none scale-110 blur-[10px] brightness-[0.85] saturate-[1.15]"
               ),
-              src: HERO_VIDEO$1,
-              poster: HERO_POSTER$1,
+              src: heroVideoSrc,
+              poster: HERO_POSTER,
               autoPlay: true,
               muted: true,
               loop: true,
@@ -26149,8 +26500,6 @@ function caseDemoReducer(state, action) {
       return state;
   }
 }
-const HERO_VIDEO = "/images/hero-bg.mp4";
-const HERO_POSTER = "/images/hero-bg-poster.webp";
 function cx(...a) {
   return a.filter(Boolean).join(" ");
 }
@@ -26505,10 +26854,6 @@ function MilesealCaseStudy() {
   const hashBootstrapped = useRef(false);
   const analysisTimers = useRef([]);
   const analyseBtnRef = useRef(null);
-  const heroVideoRef = useRef(null);
-  const ctaVideoRef = useRef(null);
-  useKeepVideoPlaying(heroVideoRef);
-  useKeepVideoPlaying(ctaVideoRef);
   const [state, dispatch] = useReducer(
     caseDemoReducer,
     void 0,
@@ -26656,22 +27001,7 @@ function MilesealCaseStudy() {
   return /* @__PURE__ */ jsxs(Fragment, { children: [
     /* @__PURE__ */ jsxs("section", { className: "relative isolate overflow-hidden bg-[#0a0a0a] pt-[calc(var(--tivonix-header-spacer)+0.75rem)] pb-10 sm:pb-12", children: [
       /* @__PURE__ */ jsxs("div", { className: "pointer-events-none absolute inset-0 overflow-hidden", "aria-hidden": true, children: [
-        /* @__PURE__ */ jsx(
-          "video",
-          {
-            ref: heroVideoRef,
-            className: "pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center",
-            src: HERO_VIDEO,
-            poster: HERO_POSTER,
-            autoPlay: true,
-            muted: true,
-            loop: true,
-            playsInline: true,
-            preload: "auto",
-            controls: false,
-            disablePictureInPicture: true
-          }
-        ),
+        /* @__PURE__ */ jsx(BgLoopVideo, {}),
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-b from-black/70 via-black/55 to-[#0a0a0a]" }),
         /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(10,10,10,0.55)_78%)]" })
       ] }),
@@ -26686,7 +27016,7 @@ function MilesealCaseStudy() {
               type: "button",
               onClick: handleRunExample,
               disabled: analyzing,
-              className: ctaClass$1("primary", "md", "disabled:opacity-50"),
+              className: ctaClass("primary", "md", "disabled:opacity-50"),
               children: copy.hero.runExample
             }
           ),
@@ -26811,7 +27141,7 @@ function MilesealCaseStudy() {
                     type: "button",
                     onClick: runAnalysis,
                     disabled: analyzing,
-                    className: ctaClass$1("primary", "md", "min-w-[11rem] disabled:opacity-50"),
+                    className: ctaClass("primary", "md", "min-w-[11rem] disabled:opacity-50"),
                     children: analyzing ? copy.workspace.analyzing : copy.workspace.analyse
                   }
                 ),
@@ -27046,22 +27376,7 @@ function MilesealCaseStudy() {
       ] }),
       /* @__PURE__ */ jsxs("div", { className: "relative overflow-hidden", children: [
         /* @__PURE__ */ jsxs("div", { className: "pointer-events-none absolute inset-0 overflow-hidden", "aria-hidden": true, children: [
-          /* @__PURE__ */ jsx(
-            "video",
-            {
-              ref: ctaVideoRef,
-              className: "pointer-events-none absolute -inset-[2px] h-[calc(100%+4px)] w-[calc(100%+4px)] max-w-none object-cover object-center",
-              src: HERO_VIDEO,
-              poster: HERO_POSTER,
-              autoPlay: true,
-              muted: true,
-              loop: true,
-              playsInline: true,
-              preload: "metadata",
-              controls: false,
-              disablePictureInPicture: true
-            }
-          ),
+          /* @__PURE__ */ jsx(BgLoopVideo, {}),
           /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/70 to-black/60" }),
           /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 top-0 h-[48%] bg-gradient-to-b from-[#0a0a0a] via-[rgba(252,80,0,0.12)] to-transparent" }),
           /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(252,80,0,0.14)_0%,transparent_55%)]" })

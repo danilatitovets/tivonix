@@ -7,7 +7,7 @@ import Header from "../components/landing/Header";
 import Footer from "../components/landing/Footer";
 import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
-import { buildProjects, projectSubtitle, type Project } from "../data/projectsCatalog";
+import { buildProjects, projectSubtitle, isProjectSiteOpen, type Project } from "../data/projectsCatalog";
 import { cx, projectPreviewSrc, ProjectPreviewFrame } from "./projectBlocks";
 import { LeadCTAButton } from "../components/leads/LeadCTAButton";
 import { leadFormCopy } from "../i18n/leadFormCopy";
@@ -57,10 +57,14 @@ const filterPillClass = (active: boolean) =>
 
 function ProjectGridCard({ p, isRu, lang }: { p: Project; isRu: boolean; lang: Lang }) {
   const wip = p.status === "wip";
+  const pilot = p.status === "pilot";
+  const siteOpen = isProjectSiteOpen(p);
   const domainClean = p.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "");
-  const productType = p.tags[0] ?? (isRu ? "Проект" : "Project");
+  const productType = p.category ?? p.tags[0] ?? (isRu ? "Проект" : "Project");
   const subtitle = projectSubtitle(p, lang);
-  const role = isRu ? "Роль TIVONIX: дизайн и разработка" : "TIVONIX role: design & development";
+  const role = isRu
+    ? `Роль TIVONIX: ${p.roleRu ?? "дизайн и разработка"}`
+    : `TIVONIX role: ${p.roleEn ?? "design & development"}`;
   const href = pathForLang(`/projects/${p.id}`, lang);
 
   return (
@@ -95,18 +99,38 @@ function ProjectGridCard({ p, isRu, lang }: { p: Project; isRu: boolean; lang: L
               {(p.stack ?? []).slice(0, 4).join(" · ")}
             </p>
           ) : null}
-          {domainClean && !wip ? (
+          {domainClean && siteOpen ? (
+            <a
+              href={p.domain}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 block truncate text-[12px] text-white/40 transition hover:text-white/70"
+            >
+              {domainClean}
+            </a>
+          ) : domainClean && pilot ? (
             <p className="mt-1 truncate text-[12px] text-white/40">{domainClean}</p>
           ) : (
             <p className="mt-1 text-[12px] text-white/40">
               {isRu ? "В разработке" : "In progress"}
             </p>
           )}
+          <LeadCTAButton
+            source="projects"
+            variant="plain"
+            className="mt-2 !h-auto !justify-start !px-0 !py-0 !text-[12.5px] !font-medium !text-[#FF9A3D] hover:!bg-transparent hover:!text-[#FFB06A] active:!scale-100"
+          >
+            {leadFormCopy(lang).ctaSimilarProject} →
+          </LeadCTAButton>
         </div>
 
         {wip ? (
           <span className="shrink-0 rounded-full bg-[#1c1c1f] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-white/48">
             WIP
+          </span>
+        ) : pilot ? (
+          <span className="shrink-0 rounded-full bg-[#1c1c1f] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-white/48">
+            Pilot
           </span>
         ) : p.domain ? (
           <a

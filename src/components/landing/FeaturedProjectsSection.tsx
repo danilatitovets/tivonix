@@ -5,11 +5,13 @@ import Section from "../ui/Section";
 import Reveal from "../ui/Reveal";
 import { useLang } from "../../i18n/LangProvider";
 import { homeExtraCopy } from "../../i18n/homeExtraCopy";
-import { findProjectBySlug, projectSubtitle } from "../../data/projectsCatalog";
+import { findProjectBySlug, isProjectSiteOpen, projectSubtitle } from "../../data/projectsCatalog";
 import { trackEvent } from "../../lib/analytics";
 import { useInView } from "../../hooks/useInView";
 import { pathForLang } from "../../lib/localePaths";
 import type { Lang } from "../../i18n/LangProvider";
+import { LeadCTAButton } from "../leads/LeadCTAButton";
+import { leadFormCopy } from "../../i18n/leadFormCopy";
 
 const AUTO_MS = 5500;
 
@@ -110,7 +112,8 @@ function FeaturedCaseSlide({
             ))}
           </div>
 
-          {project.domain ? (
+          <div className="mt-6 flex flex-col items-start gap-2">
+          {isProjectSiteOpen(project) && project.domain ? (
             <a
               href={project.domain}
               target="_blank"
@@ -122,11 +125,34 @@ function FeaturedCaseSlide({
                   source: "featured",
                 })
               }
-              className="mt-6 inline-flex text-[13px] font-medium text-[#FF9A3D] transition-colors hover:text-[#FFB06A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/70"
+              className="inline-flex text-[13px] font-medium text-[#FF9A3D] transition-colors hover:text-[#FFB06A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/70"
             >
               {copy.featured.openLive} →
             </a>
-          ) : null}
+          ) : (
+            <Link
+              to={href}
+              tabIndex={active ? 0 : -1}
+              onClick={() =>
+                trackEvent("project_open", {
+                  project: project.id,
+                  source: "featured_cta",
+                })
+              }
+              className="inline-flex text-[13px] font-medium text-[#FF9A3D] transition-colors hover:text-[#FFB06A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/70"
+            >
+              {copy.featured.openLive} →
+            </Link>
+          )}
+          <LeadCTAButton
+            source="cases"
+            variant="plain"
+            tabIndex={active ? 0 : -1}
+            className="!h-auto !justify-start !px-0 !py-0 !text-[13px] !font-medium !text-white/55 hover:!bg-transparent hover:!text-white/80 active:!scale-100"
+          >
+            {leadFormCopy(lang).ctaSimilarProject} →
+          </LeadCTAButton>
+          </div>
         </div>
       </div>
     </article>

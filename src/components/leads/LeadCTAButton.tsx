@@ -10,6 +10,7 @@ type Props = {
   className?: string;
   "aria-label"?: string;
   onClick?: () => void;
+  tabIndex?: number;
 };
 
 export function LeadCTAButton({
@@ -20,12 +21,14 @@ export function LeadCTAButton({
   className,
   "aria-label": ariaLabel,
   onClick,
+  tabIndex,
 }: Props) {
   const { openLeadForm } = useLeadForm();
 
   return (
     <button
       type="button"
+      tabIndex={tabIndex}
       onClick={() => {
         onClick?.();
         openLeadForm(source);

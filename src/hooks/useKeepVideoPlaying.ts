@@ -1,7 +1,10 @@
 import { useEffect, type RefObject } from "react";
 
-/** Keep a muted background video playing — no idle pause, no loop freeze. */
-export function useKeepVideoPlaying(videoRef: RefObject<HTMLVideoElement | null>) {
+/** Keep a muted background video playing while `active` — no idle pause, no loop freeze. */
+export function useKeepVideoPlaying(
+  videoRef: RefObject<HTMLVideoElement | null>,
+  active = true
+) {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -20,16 +23,30 @@ export function useKeepVideoPlaying(videoRef: RefObject<HTMLVideoElement | null>
       video.disableRemotePlayback = true;
     };
 
-    arm();
-
     const play = () => {
       arm();
+      if (!active) return;
       if (document.visibilityState === "hidden") return;
       if (!video.paused && !video.ended) return;
       void video.play().catch(() => {
         /* autoplay policies / low-power mode — unlock handlers below */
       });
     };
+
+    const pause = () => {
+      try {
+        video.pause();
+      } catch {
+        /* ignore */
+      }
+    };
+
+    arm();
+
+    if (!active) {
+      pause();
+      return;
+    }
 
     // iOS often won't buffer until play(); kick both load + play early.
     try {
@@ -49,12 +66,13 @@ export function useKeepVideoPlaying(videoRef: RefObject<HTMLVideoElement | null>
       play();
     };
     const onPause = () => {
-      if (document.visibilityState === "visible") {
+      if (active && document.visibilityState === "visible") {
         requestAnimationFrame(play);
       }
     };
     const onVis = () => {
       if (document.visibilityState === "visible") play();
+      else pause();
     };
     const onPageShow = () => play();
 
@@ -93,5 +111,5 @@ export function useKeepVideoPlaying(videoRef: RefObject<HTMLVideoElement | null>
       window.removeEventListener("pointerdown", unlock);
       window.removeEventListener("scroll", unlock);
     };
-  }, [videoRef]);
+  }, [videoRef, active]);
 }
