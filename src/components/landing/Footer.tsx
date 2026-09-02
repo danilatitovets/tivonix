@@ -5,8 +5,9 @@ import { Link } from "react-router-dom";
 import Container from "../ui/Container";
 import { useLang } from "../../i18n/LangProvider";
 import { buildProjects } from "../../data/projectsCatalog";
-import { TG_CHANNEL_URL } from "../../constants/links";
+import { TELEGRAM_URL, INSTAGRAM_URL } from "../../config/siteConfig";
 import { CONTACT_EMAIL } from "../../lib/leads";
+import { servicePagePath, type ServicePageId } from "../../i18n/servicePagesCopy";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
 import { pathForLang } from "../../lib/localePaths";
 import { t3 } from "../../i18n/pick";
@@ -26,19 +27,20 @@ const FOOTER_PAGES = [
   { to: "/contacts", label: { ru: "Контакты", en: "Contacts", zh: "联系方式" } },
 ] as const;
 
-const FOOTER_SERVICES = [
-  { to: "/sozdanie-sajtov", label: { ru: "Создание сайтов", en: "Website development", zh: "网站开发" } },
-  { to: "/avtomatizaciya-biznesa", label: { ru: "Автоматизация", en: "Automation", zh: "业务自动化" } },
-  { to: "/#ai", label: { ru: "AI в продуктах", en: "AI in products", zh: "产品中的 AI" } },
-  { to: "/#process", label: { ru: "Как мы работаем", en: "How we work", zh: "我们如何协作" } },
-] as const;
+const FOOTER_SERVICES: { id: ServicePageId; label: { ru: string; en: string; zh: string } }[] = [
+  { id: "websites", label: { ru: "Создание сайтов", en: "Website development", zh: "网站开发" } },
+  { id: "mvp", label: { ru: "Разработка MVP", en: "MVP development", zh: "MVP 开发" } },
+  { id: "automation", label: { ru: "Автоматизация", en: "Business automation", zh: "业务自动化" } },
+  { id: "portal", label: { ru: "Личный кабинет", en: "Client portal", zh: "客户门户" } },
+  { id: "telegram", label: { ru: "Telegram-боты", en: "Telegram bots", zh: "Telegram 机器人" } },
+];
 
 const FOOTER_MAILTO_URL = `mailto:${CONTACT_EMAIL}`;
 
 const FOOTER_CONNECT = [
-  { href: TG_CHANNEL_URL, label: "Telegram", kind: "tg" as const },
-  { href: "https://www.instagram.com/tivonix.tech/", label: "Instagram", kind: "ig" as const },
-  { href: FOOTER_MAILTO_URL, label: "Gmail", kind: "mail" as const },
+  { href: TELEGRAM_URL, label: "Telegram", kind: "tg" as const },
+  { href: INSTAGRAM_URL, label: "Instagram", kind: "ig" as const },
+  { href: FOOTER_MAILTO_URL, label: "Email", kind: "mail" as const },
 ] as const;
 
 const DOCS = {
@@ -299,7 +301,7 @@ function Footer() {
                 </a>
 
                 <a
-                  href={TG_CHANNEL_URL}
+                  href={TELEGRAM_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="site-footer__touch-row"
@@ -348,18 +350,17 @@ function Footer() {
 
                 <ColNav id="footer-services" title={t3(lang, "Услуги", "Services", "服务")}>
                   {FOOTER_SERVICES.map((i) => (
-                    <li key={i.to}>
-                      <FooterLink
-                        to={
-                          i.to.startsWith("/#")
-                            ? `${lang === "en" ? "/en" : lang === "zh" ? "/zh" : "/"}${i.to.slice(1)}`
-                            : pathForLang(i.to, lang)
-                        }
-                      >
+                    <li key={i.id}>
+                      <FooterLink to={pathForLang(servicePagePath(i.id, lang), lang)}>
                         {t(i.label)}
                       </FooterLink>
                     </li>
                   ))}
+                  <li>
+                    <FooterLink to={`${pathForLang("/", lang)}#process`}>
+                      {t3(lang, "Как мы работаем", "How we work", "我们如何协作")}
+                    </FooterLink>
+                  </li>
                 </ColNav>
 
                 <ColNav id="footer-work" title={t3(lang, "Кейсы", "Cases", "案例")}>

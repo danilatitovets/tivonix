@@ -3,7 +3,7 @@
  * Set VITE_PARTNER_PANEL_URL in env (no trailing slash).
  */
 
-const DEFAULT_PANEL_ORIGIN = "https://tivonixpanel-production.up.railway.app";
+const DEFAULT_PANEL_ORIGIN = "https://tivonixpanel-web.onrender.com";
 
 export type PartnerRegisterType = "referral" | "white_label";
 

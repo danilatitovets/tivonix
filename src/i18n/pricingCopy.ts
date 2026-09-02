@@ -1,8 +1,6 @@
 import type { Lang } from "./LangProvider";
 import { COMPARISON_GROUPS, type PlanId } from "../lib/pricingData";
 
-export const LAUNCH_DISCOUNT_PERCENT = 10;
-
 export const PLAN_PRICE_USD = {
   start: 400,
   growth: 900,
@@ -12,22 +10,22 @@ export const PLAN_PRICE_USD = {
 export type PricedPlanId = keyof typeof PLAN_PRICE_USD;
 
 function planPriceStrings(fromLabel: string, usd: number) {
-  const discounted = Math.round(usd * (1 - LAUNCH_DISCOUNT_PERCENT / 100));
   return {
-    price: `${fromLabel} $${discounted}`,
-    priceOriginal: `${fromLabel} $${usd}`,
+    price: `${fromLabel} $${usd}`,
   };
 }
 
 /** Строка с ценой для Telegram-бота и других коротких CTA */
 export function formatPlanPriceLine(planId: PricedPlanId, lang: Lang = "ru"): string {
   const usd = PLAN_PRICE_USD[planId];
-  const discounted = Math.round(usd * (1 - LAUNCH_DISCOUNT_PERCENT / 100));
-  const fromLabel = lang === "ru" ? "от" : "from";
+  const fromLabel = lang === "ru" ? "от" : lang === "zh" ? "起" : "from";
   if (lang === "ru") {
-    return `💰 Стоимость: ${fromLabel} $${discounted} (скидка ${LAUNCH_DISCOUNT_PERCENT}% на запуск, обычно ${fromLabel} $${usd}). Итог зависит от объёма.`;
+    return `💰 Стоимость: ${fromLabel} $${usd}. Итог зависит от объёма после письменного разбора задачи.`;
   }
-  return `💰 Price: ${fromLabel} $${discounted} (${LAUNCH_DISCOUNT_PERCENT}% launch discount, usually ${fromLabel} $${usd}). Final scope may vary.`;
+  if (lang === "zh") {
+    return `💰 费用：${fromLabel} $${usd}。最终费用在书面范围确认后确定。`;
+  }
+  return `💰 Price: ${fromLabel} $${usd}. Final cost confirmed after a written scope review.`;
 }
 
 const PLAN_GROUP_EMOJI: Record<string, string> = {
@@ -104,9 +102,8 @@ export function formatPlansOverviewForTelegram(lang: Lang = "ru"): string {
         ? (lang === "ru" ? "индивидуально" : lang === "zh" ? "定制" : "custom")
         : (() => {
             const usd = PLAN_PRICE_USD[id];
-            const discounted = Math.round(usd * (1 - LAUNCH_DISCOUNT_PERCENT / 100));
             const fromLabel = lang === "ru" ? "от" : lang === "zh" ? "起" : "from";
-            return `${fromLabel} $${discounted}`;
+            return `${fromLabel} $${usd}`;
           })();
     return `▸ <b>${plan.name}</b> — ${price}\n   ${chips}`;
   });
@@ -124,10 +121,6 @@ const COPY_RU = {
   title: "Планы запуска",
   subtitle: "Понятные тарифы под вашу задачу — от первых заявок до полноценного веб-сервиса",
   includesLabel: "Что входит",
-  launchDiscount: {
-    percent: "10%",
-    note: "* Скидка на запуск: первые проекты ведём по сниженной цене от базового прайса.",
-  },
   afterSelect: {
     title: "Что будет после выбора плана",
     steps: [
@@ -137,7 +130,7 @@ const COPY_RU = {
       "После согласования начинаем работу",
     ],
     note:
-      "Цены указаны «от», потому что итог зависит от экранов, логики, интеграций и сроков. Оплата происходит после обсуждения и согласования задачи.",
+      "Цены указаны «от». Итоговая стоимость фиксируется после письменного разбора задачи. Дополнительные модули и интеграции оцениваются отдельно. Оплата — после согласования объёма.",
   },
   compareTitle: "Сравнение тарифов",
   expandAll: "Развернуть всё",
@@ -156,12 +149,12 @@ const COPY_RU = {
   },
   badges: {
     popular: "Чаще выбирают",
-    product: "Для веб-сервиса",
+    product: "Для MVP",
   },
   plans: {
     start: {
       name: "Start",
-      tagline: "Для быстрого запуска заявок",
+      tagline: "Страница для запуска заявок",
       ...planPriceStrings("от", PLAN_PRICE_USD.start),
       desc: "Когда нужно быстро запустить страницу под рекламу, Instagram или Telegram и начать собирать заявки в одном месте.",
       includes: [
@@ -179,7 +172,7 @@ const COPY_RU = {
     },
     growth: {
       name: "Growth",
-      tagline: "Система заявок для бизнеса",
+      tagline: "Сайт и система обработки заявок",
       ...planPriceStrings("от", PLAN_PRICE_USD.growth),
       desc: "Когда заявок становится больше, они приходят из разных каналов и команде нужен порядок: статусы, ответственные, таблица или mini-CRM.",
       includes: [
@@ -197,9 +190,9 @@ const COPY_RU = {
     },
     product: {
       name: "Product",
-      tagline: "Веб-сервис и MVP",
+      tagline: "Основа MVP с одним главным сценарием",
       ...planPriceStrings("от", PLAN_PRICE_USD.product),
-      desc: "Когда нужен не просто сайт, а рабочий веб-сервис: пользователи, личные кабинеты, роли, база данных и админ-панель. Сложный SaaS целиком в этот тариф не входит.",
+      desc: "Когда нужен MVP с одним главным пользовательским сценарием: авторизация, роли, база данных и админ-панель. Сложный SaaS, маркетплейс, FinTech или крупная CRM — это Custom. Дополнительные модули и интеграции оцениваются отдельно.",
       includes: [
         "личный кабинет",
         "авторизация",
@@ -215,9 +208,9 @@ const COPY_RU = {
     },
     custom: {
       name: "Custom",
-      tagline: "Сложная логика и масштаб",
+      tagline: "Сложный продукт или автоматизация",
       price: "индивидуально",
-      desc: "Когда задача не помещается в готовый тариф: несколько ролей, платежи, интеграции, аналитика и масштабирование.",
+      desc: "Для сложного SaaS, маркетплейсов, FinTech, крупных CRM, AI-автоматизации и внутренних систем. Стоимость фиксируется после письменного разбора задачи; дополнения — отдельной сметой.",
       includes: [
         "сложная бизнес-логика",
         "несколько ролей",
@@ -237,7 +230,6 @@ const COPY_RU = {
       name: string;
       tagline: string;
       price: string;
-      priceOriginal?: string;
       desc: string;
       includes: string[];
       cta: string;
@@ -251,7 +243,7 @@ const COPY_RU = {
       {
         id: "price-from",
         q: "Что значит цена «от»?",
-        a: "Это минимальная стоимость запуска. Итог зависит от количества экранов, логики, интеграций, личного кабинета, CRM и сроков.",
+        a: "Это минимальная стоимость запуска. Итоговая цена фиксируется после письменного разбора задачи и зависит от экранов, логики, интеграций и сроков. Дополнения оцениваются отдельно.",
       },
       {
         id: "pay-now",
@@ -276,12 +268,12 @@ const COPY_RU = {
       {
         id: "when-product",
         q: "Когда нужен Product?",
-        a: "Product нужен, если это уже не просто сайт, а веб-сервис: пользователи, личные кабинеты, роли, база данных, оплата, админ-панель.",
+        a: "Product подходит для MVP с одним главным сценарием: пользователи, личный кабинет, роли, база данных и админ-панель. Сложный SaaS, маркетплейс, FinTech или крупная CRM — это Custom.",
       },
       {
         id: "when-custom",
         q: "Когда выбирать Custom?",
-        a: "Custom подходит для нестандартных задач: AI-боты, сложные CRM, автоматизация документов, интеграции, внутренние панели и процессы под вашу команду.",
+        a: "Custom — для сложного SaaS, маркетплейсов, FinTech, крупных CRM, AI-автоматизации и внутренних систем. Стоимость — после письменного разбора; дополнительные модули — отдельной сметой.",
       },
     ],
   },
@@ -344,7 +336,7 @@ const COPY_RU = {
     shortDesc: {
       start: "Быстрый запуск страницы и заявок",
       growth: "Система заявок для команды",
-      product: "Полноценный веб-сервис",
+      product: "Основа MVP с одним сценарием",
       custom: "Индивидуальная автоматизация",
     },
   },
@@ -354,10 +346,6 @@ const COPY_EN = {
   title: "Launch plans",
   subtitle: "Clear plans for your task — from first leads to a full web service",
   includesLabel: "What’s included",
-  launchDiscount: {
-    percent: "10%",
-    note: "* Launch discount: early projects ship at a reduced rate from the base price.",
-  },
   afterSelect: {
     title: "What happens after you choose a plan",
     steps: [
@@ -367,7 +355,7 @@ const COPY_EN = {
       "After agreement, we start work",
     ],
     note:
-      "Prices are shown “from” because the final cost depends on screens, logic, integrations and timeline. Payment happens after we discuss and agree on the scope.",
+      "Prices are shown “from”. Final cost is confirmed after a written scope review. Extra modules and integrations are quoted separately. Payment happens after scope agreement.",
   },
   compareTitle: "Compare plans",
   expandAll: "Expand all",
@@ -391,7 +379,7 @@ const COPY_EN = {
   plans: {
     start: {
       name: "Start",
-      tagline: "Fast lead capture launch",
+      tagline: "Launch page",
       ...planPriceStrings("from", PLAN_PRICE_USD.start),
       desc: "When you need a page for ads, Instagram or Telegram — and want to collect inquiries in one place quickly.",
       includes: [
@@ -409,7 +397,7 @@ const COPY_EN = {
     },
     growth: {
       name: "Growth",
-      tagline: "Lead system for business",
+      tagline: "Website + lead workflow",
       ...planPriceStrings("from", PLAN_PRICE_USD.growth),
       desc: "When leads grow and come from multiple channels — your team needs order: statuses, owners, a sheet or mini-CRM.",
       includes: [
@@ -428,11 +416,11 @@ const COPY_EN = {
     },
     product: {
       name: "Product",
-      tagline: "Full web service",
+      tagline: "Focused MVP foundation",
       ...planPriceStrings("from", PLAN_PRICE_USD.product),
-      desc: "When you need more than a website — a working web service with users, client areas, roles, a database and admin panel.",
+      desc: "When you need an MVP built around one main user scenario: auth, roles, a database and admin panel. Complex SaaS, marketplaces, FinTech or large CRM work belongs in Custom. Extra modules and integrations are quoted separately.",
       includes: [
-        "client area",
+        "client portal",
         "admin panel",
         "sign-up and auth",
         "user roles",
@@ -449,9 +437,9 @@ const COPY_EN = {
     },
     custom: {
       name: "Custom",
-      tagline: "Automation & AI",
+      tagline: "Complex product development",
       price: "custom",
-      desc: "When the task doesn’t fit a ready plan: AI bots, complex CRM, document automation, integrations or an internal system.",
+      desc: "For complex SaaS, marketplaces, FinTech, large CRM builds, AI automation and internal systems. Cost is fixed after a written scope review; add-ons are quoted separately.",
       includes: [
         "AI bots and assistants",
         "lead automation",
@@ -473,7 +461,7 @@ const COPY_EN = {
       {
         id: "price-from",
         q: "What does “from” mean?",
-        a: "It’s the minimum launch cost. The final price depends on screens, logic, integrations, client area, CRM and timeline.",
+        a: "It’s the minimum launch cost. Final price is confirmed after a written scope review and depends on screens, logic, integrations and timeline. Add-ons are quoted separately.",
       },
       {
         id: "pay-now",
@@ -498,12 +486,12 @@ const COPY_EN = {
       {
         id: "when-product",
         q: "When do I need Product?",
-        a: "Product is for a real web service: users, client areas, roles, database, payments and admin panel.",
+        a: "Product fits an MVP with one main user scenario: users, client portal, roles, database and admin panel. Complex SaaS, marketplaces, FinTech or large CRM work belongs in Custom.",
       },
       {
         id: "when-custom",
         q: "When to choose Custom?",
-        a: "Custom fits non-standard work: AI bots, complex CRM, document automation, integrations and internal tools for your team.",
+        a: "Custom is for complex SaaS, marketplaces, FinTech, large CRM, AI automation and internal systems. Cost comes after a written scope review; extra modules are quoted separately.",
       },
     ],
   },
@@ -527,7 +515,7 @@ const COPY_EN = {
     statuses: "Lead statuses",
     history: "Processing history",
     roles: "Staff roles",
-    cabinet: "Client area",
+    cabinet: "Client portal",
     admin: "Admin panel",
     auth: "Authentication",
     database: "Database",
@@ -560,13 +548,13 @@ const COPY_EN = {
     chips: {
       start: ["Landing", "Form", "Telegram"],
       growth: ["Mini-CRM", "Statuses", "Admin"],
-      product: ["Client area", "Payments", "Roles"],
+      product: ["Client portal", "Payments", "Roles"],
       custom: ["AI bots", "Integrations", "CRM"],
     },
     shortDesc: {
       start: "Fast page and lead launch",
       growth: "Lead system for your team",
-      product: "Full web service",
+      product: "Focused MVP foundation",
       custom: "Custom automation",
     },
   },
@@ -576,10 +564,6 @@ const COPY_ZH = {
   title: "启动方案",
   subtitle: "对应需求的清晰方案 — 从首批线索到完整 Web 服务",
   includesLabel: "包含内容",
-  launchDiscount: {
-    percent: "10%",
-    note: "* 启动优惠：早期项目按基础价折扣交付。",
-  },
   afterSelect: {
     title: "选定方案后会发生什么",
     steps: [
@@ -589,7 +573,7 @@ const COPY_ZH = {
       "确认后开工",
     ],
     note:
-      "价格显示为「起」是因为最终费用取决于页面、逻辑、集成与周期。讨论并确认范围后再付款。",
+      "价格显示为「起」。最终费用在书面范围确认后确定。额外模块与集成单独报价。确认范围后再付款。",
   },
   compareTitle: "对比方案",
   expandAll: "全部展开",
@@ -613,7 +597,7 @@ const COPY_ZH = {
   plans: {
     start: {
       name: "Start",
-      tagline: "快速启动获客",
+      tagline: "启动获客的落地页",
       ...planPriceStrings("起", PLAN_PRICE_USD.start),
       desc: "当您需要广告、Instagram 或 Telegram 页面 — 并希望快速把咨询汇入一处。",
       includes: [
@@ -631,7 +615,7 @@ const COPY_ZH = {
     },
     growth: {
       name: "Growth",
-      tagline: "面向业务的线索系统",
+      tagline: "网站与线索处理系统",
       ...planPriceStrings("起", PLAN_PRICE_USD.growth),
       desc: "当线索增长且来自多渠道 — 团队需要秩序：状态、负责人、表格或迷你 CRM。",
       includes: [
@@ -650,18 +634,18 @@ const COPY_ZH = {
     },
     product: {
       name: "Product",
-      tagline: "完整 Web 服务",
+      tagline: "聚焦单一核心场景的 MVP 基础",
       ...planPriceStrings("起", PLAN_PRICE_USD.product),
-      desc: "当您需要的不只是网站 — 而是带用户、客户后台、角色、数据库与管理后台的 Web 服务。",
+      desc: "当您需要一个围绕单一主要用户场景构建的 MVP：认证、角色、数据库与管理后台。复杂 SaaS、市场平台、金融科技或大型 CRM 属于 Custom。额外模块与集成单独报价。",
       includes: [
         "客户后台",
         "管理后台",
         "注册和授权",
         "用户角色",
         "线索、状态、通知",
-        "database",
+        "数据库",
         "集成",
-        "payments",
+        "支付",
         "响应式 UI",
         "上线准备",
       ],
@@ -671,9 +655,9 @@ const COPY_ZH = {
     },
     custom: {
       name: "Custom",
-      tagline: "自动化与 AI",
+      tagline: "复杂产品开发",
       price: "custom",
-      desc: "当需求不适合现成方案：AI 机器人、复杂 CRM、文档自动化、集成或内部系统。",
+      desc: "面向复杂 SaaS、市场平台、金融科技、大型 CRM、AI 自动化与内部系统。费用在书面范围确认后确定；附加模块单独报价。",
       includes: [
         "AI 机器人与助手",
         "线索自动化",
@@ -695,7 +679,7 @@ const COPY_ZH = {
       {
         id: "price-from",
         q: "“起”是什么意思？",
-        a: "这是最低启动成本。最终价格取决于页面、逻辑、集成、客户后台、CRM 与周期。",
+        a: "这是最低启动成本。最终价格在书面范围确认后确定，取决于页面、逻辑、集成与周期。附加功能单独报价。",
       },
       {
         id: "pay-now",
@@ -720,12 +704,12 @@ const COPY_ZH = {
       {
         id: "when-product",
         q: "何时需要 Product？",
-        a: "Product 面向真正的 Web 服务：用户、客户后台、角色、数据库、支付与管理后台。",
+        a: "Product 适合围绕一个主要用户场景构建的 MVP：用户、客户门户、角色、数据库与管理后台。复杂 SaaS、市场平台、金融科技或大型 CRM 属于 Custom。",
       },
       {
         id: "when-custom",
         q: "何时选择 Custom？",
-        a: "Custom 适合非标需求：AI 机器人、复杂 CRM、文档自动化、集成与团队内部工具。",
+        a: "Custom 面向复杂 SaaS、市场平台、金融科技、大型 CRM、AI 自动化与内部系统。费用在书面范围确认后给出；额外模块单独报价。",
       },
     ],
   },
@@ -749,12 +733,12 @@ const COPY_ZH = {
     statuses: "线索状态",
     history: "处理记录",
     roles: "员工角色",
-    cabinet: "客户后台",
+    cabinet: "客户门户",
     admin: "管理后台",
     auth: "身份认证",
-    database: "Database",
+    database: "数据库",
     booking: "在线预约",
-    payments: "Payments",
+    payments: "支付",
     autoNotify: "自动通知",
     integrations: "集成",
     aiBot: "AI 机器人",
@@ -782,13 +766,13 @@ const COPY_ZH = {
     chips: {
       start: ["落地页", "表单", "Telegram"],
       growth: ["迷你 CRM", "状态", "管理"],
-      product: ["客户后台", "Payments", "角色"],
+      product: ["客户门户", "支付", "角色"],
       custom: ["AI 机器人", "集成", "CRM"],
     },
     shortDesc: {
       start: "快速上线页面与线索",
       growth: "团队可用的线索系统",
-      product: "完整 Web 服务",
+      product: "聚焦单一核心场景的 MVP",
       custom: "定制自动化",
     },
   },

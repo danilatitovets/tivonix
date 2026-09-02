@@ -5,12 +5,15 @@ function cx(...a: Array<string | false | null | undefined>) {
 export function ctaClass(
   variant: "primary" | "secondary" | "ghost" | "plain" | "white" | "cream" | undefined,
   size: "md" | "lg" | undefined,
-  className?: string
+  className?: string,
+  pillIcon?: boolean
 ) {
   const isSquare = variant === "plain";
 
   return cx(
-    "inline-flex items-center justify-center font-sans font-medium tracking-normal transition duration-200",
+    "inline-flex items-center font-sans font-medium tracking-normal",
+    !pillIcon && "transition duration-200",
+    pillIcon ? "justify-between text-left" : "justify-center",
     isSquare ? "rounded-none shadow-none" : "rounded-full",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc5000]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
     "active:scale-[0.98]",
@@ -18,6 +21,8 @@ export function ctaClass(
       ? "h-12 px-8 text-[15px] sm:h-[52px] sm:px-9 sm:text-[16px]"
       : "h-11 px-7 text-[14px] sm:px-8",
     (variant === "primary" || variant === "cream") && "tivonix-cta-primary",
+    pillIcon && (variant === "primary" || variant === "cream") && "tivonix-cta-primary--pill-icon",
+    pillIcon && size === "lg" && "tivonix-cta-primary--pill-icon-lg",
     variant === "secondary" && "tivonix-cta-secondary",
     variant === "ghost" && "text-white/75 hover:text-white",
     variant === "plain" &&

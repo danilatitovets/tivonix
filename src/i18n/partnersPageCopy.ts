@@ -244,10 +244,18 @@ const RU: PartnersCopy = {
     view: "Смотреть проект",
     all: "Все проекты",
     texts: {
+      "neo-terminal":
+        "AI-платформа коммерции: каталог, склад, AI-продажи, B2B-закупки, checkout, доставка и операционка мерчанта в одной системе.",
       spliton:
-        "Финтех-платформа для музыкальных активов: каталог релизов, покупка долей, кошелёк, вторичный рынок, выплаты и административная система.",
+        "Финтех-платформа для музыкальных активов: каталог релизов, покупка долей, кошелёк, вторичный рынок, выплаты и operator portal.",
       slotty:
-        "Система онлайн-записи: услуги, расписание, бронирование, напоминания, портфолио, подписки и личный кабинет.",
+        "Маркетплейс онлайн-записи: каталог с картой, Telegram Mini App, кабинет исполнителя, platform-admin и оплаты.",
+      logovo:
+        "Сайт сети шиномонтажа под ключ: 4 филиала, карта, запись, B2B для автопарков, 11 услуг — live на logovo24.by.",
+      headmind:
+        "Корпоративный сайт консалтинговой компании: Figma → WordPress, услуги, команда, формы заявок — live на headmind.ru.",
+      tivonixpanel:
+        "Партнёрская панель: сделки, передача клиентов, статусы проектов, комиссии и выплаты — тот же кабинет, что получаете после одобрения.",
     },
   },
   examples: {
@@ -511,10 +519,18 @@ const EN: PartnersCopy = {
     view: "View project",
     all: "All projects",
     texts: {
+      "neo-terminal":
+        "AI commerce platform: catalog, inventory, AI-assisted sales, B2B procurement, checkout, delivery and merchant ops in one system.",
       spliton:
-        "Fintech platform for music assets: release catalog, fractional purchases, wallet, secondary market, payouts, and admin system.",
+        "Fintech platform for music assets: release catalog, fractional purchases, wallet, secondary market, payouts, and operator portal.",
       slotty:
-        "Online booking system: services, schedule, reservations, reminders, portfolio, subscriptions, and client portal.",
+        "Booking marketplace for service providers: catalog with map, Telegram Mini App, provider portal, platform admin, and payments.",
+      logovo:
+        "Turnkey website for a tire-service network: 4 branches, map, booking, fleet B2B billing, 11 service pages — live on logovo24.by.",
+      headmind:
+        "Corporate site for a business transformation consultancy: Figma → WordPress, services, team, lead forms — live on headmind.ru.",
+      tivonixpanel:
+        "Partner panel: deals, client handoffs, project statuses, commissions and payouts — the same dashboard you get after approval.",
     },
   },
   examples: {
@@ -778,10 +794,18 @@ const ZH: PartnersCopy = {
     view: "查看项目",
     all: "全部项目",
     texts: {
+      "neo-terminal":
+        "AI 商业平台：目录、库存、AI 辅助销售、B2B 采购、结算、配送与商家运营一体化。",
       spliton:
-        "音乐资产金融科技平台：发行目录、份额购买、钱包、二级市场、结算与管理系统。",
+        "音乐资产金融科技平台：发行目录、份额购买、钱包、二级市场、结算与 operator portal。",
       slotty:
-        "在线预约系统：服务、排班、预约、提醒、作品集、订阅与客户门户。",
+        "服务预约市场：带地图的目录、Telegram Mini App、服务商门户、平台管理与支付。",
+      logovo:
+        "轮胎服务网络交钥匙网站：4 个网点、地图、预约、车队 B2B、11 项服务 — 已在 logovo24.by 上线。",
+      headmind:
+        "商业转型咨询公司官网：Figma → WordPress，服务、团队、询盘表单 — 已在 headmind.ru 上线。",
+      tivonixpanel:
+        "合作伙伴面板：交易、客户转交、项目状态、佣金与付款 — 审核通过后使用的同一套后台。",
     },
   },
   examples: {

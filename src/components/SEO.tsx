@@ -1,8 +1,8 @@
 // src/components/SEO.tsx
 import { Helmet } from "react-helmet-async";
+import { CANONICAL_ORIGIN } from "../config/siteConfig";
 import { hreflangPair } from "../lib/localePaths";
 
-const CANONICAL_ORIGIN = "https://tivonix.tech";
 export const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN}/images/og-social.jpg`;
 const OG_IMAGE_WIDTH = "1200";
 const OG_IMAGE_HEIGHT = "630";

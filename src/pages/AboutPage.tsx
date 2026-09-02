@@ -8,6 +8,7 @@ import { useLang } from "../i18n/LangProvider";
 import { aboutCopy } from "../i18n/aboutCopy";
 import { LeadCTAButton } from "../components/leads/LeadCTAButton";
 import { trackEvent } from "../lib/analytics";
+import { canonicalPathForLang } from "../lib/localePaths";
 
 const LOGO = "/images/tivonix-logo-white.webp";
 const JOIN_BG = "/images/1.png";
@@ -243,8 +244,8 @@ export default function AboutPage() {
       <SEO
         title={copy.seo.title}
         description={copy.seo.description}
-        canonicalPath={lang === "en" ? "/en/about" : "/about"}
-        ogLocalePrimary={lang === "en" ? "en_US" : "ru_RU"}
+        canonicalPath={canonicalPathForLang("/about", lang)}
+        ogLocalePrimary={lang === "zh" ? "zh_CN" : lang === "en" ? "en_US" : "ru_RU"}
         hreflang
       />
 

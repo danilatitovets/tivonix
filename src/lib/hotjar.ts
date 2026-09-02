@@ -31,9 +31,7 @@ declare global {
 const LOADED_FLAG = "__tivonix_hotjar_loaded";
 
 function hotjarId(): number | null {
-  const raw =
-    (import.meta.env.VITE_HOTJAR_ID as string | undefined) ||
-    (import.meta.env.VITE_NEXT_PUBLIC_HOTJAR_ID as string | undefined);
+  const raw = import.meta.env.VITE_HOTJAR_ID as string | undefined;
   if (!raw || !String(raw).trim()) return null;
   const n = Number(String(raw).trim());
   return Number.isFinite(n) && n > 0 ? n : null;

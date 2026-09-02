@@ -32,12 +32,14 @@ function TestimonialCard({
   viewCase,
   ownProduct,
   lang,
+  ariaHidden,
 }: {
   project: Project;
   photo: string;
   viewCase: string;
   ownProduct: string;
   lang: Lang;
+  ariaHidden?: boolean;
 }) {
   const t = project.testimonial!;
   const showCase = isPublicProjectId(project.id);
@@ -45,7 +47,7 @@ function TestimonialCard({
   const cardStyle = { "--card-photo": `url("${photo}")` } as CSSProperties;
 
   return (
-    <article className="home-testimonials__card" style={cardStyle}>
+    <article className="home-testimonials__card" style={cardStyle} aria-hidden={ariaHidden || undefined}>
       <div className="home-testimonials__card-bg" aria-hidden />
       <div className="home-testimonials__card-veil" aria-hidden />
       <div className="home-testimonials__card-body">
@@ -206,6 +208,7 @@ export default function HomeTestimonialsSection() {
               viewCase={copy.testimonials.viewCase}
               ownProduct={copy.testimonials.ownProduct}
               lang={lang}
+              ariaHidden={i >= items.length}
             />
           ))}
         </div>

@@ -6,7 +6,7 @@ import Section from "../ui/Section";
 import Reveal from "../ui/Reveal";
 import { useLang } from "../../i18n/LangProvider";
 import { homeExtraCopy } from "../../i18n/homeExtraCopy";
-import { pricingCopy, LAUNCH_DISCOUNT_PERCENT } from "../../i18n/pricingCopy";
+import { pricingCopy } from "../../i18n/pricingCopy";
 import type { PlanId } from "../../lib/pricingData";
 import { useLeadForm } from "../leads/useLeadForm";
 import { trackEvent } from "../../lib/analytics";
@@ -102,21 +102,14 @@ function FeatureIcon() {
   return <Check className="home-plan-card__check h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />;
 }
 
-function HomePlanPrice({ price, priceOriginal }: { price: string; priceOriginal?: string }) {
-  const match = price.match(/^(от|from)\s+(.+)$/i);
+function HomePlanPrice({ price }: { price: string }) {
+  const match = price.match(/^(от|from|起)\s+(.+)$/i);
   const from = match?.[1];
   const amount = match?.[2];
-  const hasOriginal = Boolean(priceOriginal);
 
   return (
     <div className="home-plan-card__price-block">
       <div className="home-plan-card__price">
-        <p
-          className={["home-plan-card__price-old", hasOriginal ? "" : "is-empty"].filter(Boolean).join(" ")}
-          aria-hidden={!hasOriginal}
-        >
-          {priceOriginal ?? "\u00A0"}
-        </p>
         {from && amount ? (
           <>
             <span className="home-plan-card__price-from">{from}</span>
@@ -196,7 +189,7 @@ export default function HomePricingSection() {
                         </div>
                         <h3 className="home-plan-card__name">{plan.name}</h3>
 
-                        <HomePlanPrice price={plan.price} priceOriginal={plan.priceOriginal} />
+                        <HomePlanPrice price={plan.price} />
                         <p className="home-plan-card__unit">{plan.tagline}</p>
                       </div>
 
@@ -217,15 +210,15 @@ export default function HomePricingSection() {
                             aria-hidden
                           />
                         </Link>
-                        <p className="home-plan-card__fine">
-                          {isCustom
-                            ? isRu
+                        {isCustom ? (
+                          <p className="home-plan-card__fine">
+                            {isRu
                               ? "Оценка после брифа"
-                              : "Quote after a brief"
-                            : isRu
-                              ? `Скидка ${LAUNCH_DISCOUNT_PERCENT}% на запуск`
-                              : `${LAUNCH_DISCOUNT_PERCENT}% launch discount`}
-                        </p>
+                              : lang === "zh"
+                                ? "简报后报价"
+                                : "Quote after a brief"}
+                          </p>
+                        ) : null}
                         <button
                           type="button"
                           className="home-plan-card__process"

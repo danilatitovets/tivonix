@@ -10,12 +10,16 @@ const COPY_RU = {
   trust: {
     ariaLabel: "Почему можно доверять",
     items: [
-      "Поддержка после запуска",
+      "Договор и фиксация объёма до старта",
+      "Поэтапная оплата по частям работы",
+      "Передача исходного кода и доступов",
+      "Гарантийные исправления ошибок после запуска",
+      "Письменные отчёты о прогрессе",
     ],
   },
   featured: {
     eyebrow: "Проекты",
-    title: "Три живых результата",
+    title: "Три кейса из портфолио",
     subtitle: "Разные типы задач — от финтех-платформы до локального бизнеса.",
     viewCase: "Посмотреть кейс",
     openLive: "Открыть проект",
@@ -51,7 +55,7 @@ const COPY_RU = {
         solution:
           "Собрали каталог релизов, кабинеты, KYC, платежи, вторичный рынок и портал оператора.",
         result:
-          "Финтех-платформа в продакшене: кабинеты, роли, KYC, платежи и вторичный рынок.",
+          "Финтех-платформа: кабинеты, роли, KYC, платежи и вторичный рынок. Поддерживается TIVONIX.",
         modules: [
           "Кабинеты",
           "KYC",
@@ -69,7 +73,7 @@ const COPY_RU = {
         solution:
           "Собрали каталог с фильтрами и картой, Telegram Mini App, кабинет Free/Pro, админку и bePaid.",
         result:
-          "Маркетплейс на slotty.of.by: запись без звонков, кабинеты и платежи в одной системе.",
+          "Платформа на slotty.of.by: запись без звонков, кабинеты и платежи в одной системе.",
         modules: [
           "Каталог",
           "Карта",
@@ -242,7 +246,6 @@ const COPY_RU = {
     foot: "Сайты, Telegram, CRM, кабинеты и MVP в одной связке. Фиксируем объём, сроки и передаём код с доступами.",
     stats: [
       { value: "7+", label: "Проектов в продакшене" },
-      { value: "1 нед.", label: "Быстрый запуск панели" },
       { value: "100%", label: "Код и доступы у вас" },
       { value: "BY · RU", label: "География запусков" },
     ],
@@ -256,12 +259,16 @@ const COPY_EN = {
   trust: {
     ariaLabel: "Why you can trust us",
     items: [
-      "Support after launch",
+      "Contract and scope fixed before kickoff",
+      "Staged payment by work milestones",
+      "Source code and access handover",
+      "Warranty bug fixes after launch",
+      "Written progress reports",
     ],
   },
   featured: {
     eyebrow: "Projects",
-    title: "Three live results",
+    title: "Three portfolio case studies",
     subtitle: "Different project types — from a fintech platform to local business.",
     viewCase: "View case",
     openLive: "Open live",
@@ -297,7 +304,7 @@ const COPY_EN = {
         solution:
           "Built release catalog, portals, KYC, payments, secondary market and an operator portal.",
         result:
-          "Fintech platform in production: portals, roles, KYC, payments and a secondary market.",
+          "Fintech platform: portals, roles, KYC, payments and a secondary market. Supported by TIVONIX.",
         modules: [
           "Portals",
           "KYC",
@@ -311,16 +318,16 @@ const COPY_EN = {
         id: "slotty",
         type: "Marketplace · booking",
         problem:
-          "Needed more than a “book now” landing — a booking marketplace with catalog, slots, master cabinet and payments.",
+          "Needed more than a “book now” landing — a booking platform with catalog, slots, service provider portal and payments.",
         solution:
-          "Built filtered catalog + map, Telegram Mini App, Free/Pro master cabinet, admin and bePaid.",
+          "Built filtered catalog + map, Telegram Mini App, Free/Pro service provider portal, admin and bePaid.",
         result:
-          "Marketplace on slotty.of.by: book without calls, cabinets and payments in one system.",
+          "Platform on slotty.of.by: book without calls, portals and payments in one system.",
         modules: [
           "Catalog",
           "Map",
           "Slots",
-          "Master cabinet",
+          "Service provider portal",
           "Telegram",
           "bePaid",
         ],
@@ -488,7 +495,6 @@ const COPY_EN = {
     foot: "Sites, Telegram, CRM, portals and MVPs in one loop. We lock scope and timelines, then hand over code and access.",
     stats: [
       { value: "7+", label: "Projects in production" },
-      { value: "1 wk", label: "Fastest panel launch" },
       { value: "100%", label: "Code and access yours" },
       { value: "BY · RU", label: "Where we ship" },
     ],
@@ -502,7 +508,11 @@ const COPY_ZH = {
   trust: {
     ariaLabel: "为什么可以信任我们",
     items: [
-      "上线后支持",
+      "合同与范围在开工前锁定",
+      "按阶段付款",
+      "移交源代码与权限",
+      "上线后保修修复",
+      "书面进度报告",
     ],
   },
   featured: {
@@ -734,7 +744,6 @@ const COPY_ZH = {
     foot: "网站、Telegram、CRM、门户与 MVP 在同一闭环。锁定范围与周期，再移交代码与权限。",
     stats: [
       { value: "7+", label: "已上线项目" },
-      { value: "1周", label: "最快面板上线" },
       { value: "100%", label: "代码与权限归您" },
       { value: "BY · RU", label: "交付地区" },
     ],

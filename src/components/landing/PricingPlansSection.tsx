@@ -403,17 +403,9 @@ export default function PricingPlansSection({ className }: { className?: string 
           <h1 className="font-hero text-[clamp(2rem,5vw,3.25rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white text-balance">
             {copy.title}
           </h1>
-          <div className="mx-auto mt-4 flex flex-wrap items-baseline justify-center gap-x-2.5 gap-y-1 sm:mt-5">
-            <span
-              className="font-hero shrink-0 text-[clamp(1.85rem,3.8vw,2.5rem)] font-normal uppercase leading-none tracking-[0.02em]"
-              style={{ color: EMBER }}
-            >
-              {copy.launchDiscount.percent}
-            </span>
-            <span className="max-w-[42ch] text-center font-sans text-[12px] font-medium leading-snug text-[var(--color-ember)]/75 sm:text-left sm:text-[13px]">
-              {copy.launchDiscount.note}
-            </span>
-          </div>
+          <p className="mx-auto mt-4 max-w-[42ch] text-center font-sans text-[12px] font-medium leading-snug text-white/62 sm:mt-5 sm:text-[13px]">
+            {copy.afterSelect.note}
+          </p>
         </Reveal>
 
         <Reveal delay={80} className="pricing-plans-grid mt-10 sm:mt-12">

@@ -586,6 +586,63 @@ function homePageSeoFromDict(dict) {
     description: "We build landing pages, Telegram bots, CRMs, client portals, SaaS and MVPs — and connect them into one lead process from first inquiry to payment."
   };
 }
+const __vite_import_meta_env__ = {};
+const env = __vite_import_meta_env__;
+const CANONICAL_ORIGIN$1 = env.VITE_SITE_URL?.replace(/\/+$/, "") || "https://www.tivonix.tech";
+const CONTACT_EMAIL = "tivoonix@gmail.com";
+env.VITE_HELLO_EMAIL?.trim() || "";
+const TELEGRAM_URL = "https://t.me/TIVONIX";
+const INSTAGRAM_URL = "https://www.instagram.com/tivonix.tech/";
+const LINKEDIN_URL = env.VITE_LINKEDIN_URL?.trim() || "";
+({
+  companyName: env.VITE_LEGAL_COMPANY_NAME?.trim() || "",
+  unp: env.VITE_LEGAL_UNP?.trim() || "",
+  address: env.VITE_LEGAL_ADDRESS?.trim() || "",
+  phone: env.VITE_LEGAL_PHONE?.trim() || ""
+});
+const ANALYTICS = {
+  gaMeasurementId: env.VITE_GA_MEASUREMENT_ID?.trim() || "",
+  hotjarId: env.VITE_HOTJAR_ID?.trim() || "",
+  hotjarSv: env.VITE_HOTJAR_SV?.trim() || "6",
+  googleSiteVerification: env.VITE_GOOGLE_SITE_VERIFICATION?.trim() || "",
+  googleAdsId: env.VITE_GOOGLE_ADS_ID?.trim() || "",
+  googleAdsConversionLabel: env.VITE_GOOGLE_ADS_CONVERSION_LABEL?.trim() || ""
+};
+function hasAnalyticsConfigured() {
+  return Boolean(
+    ANALYTICS.gaMeasurementId || ANALYTICS.hotjarId || ANALYTICS.googleAdsId && ANALYTICS.googleAdsConversionLabel
+  );
+}
+function socialSameAs() {
+  const out = [TELEGRAM_URL, INSTAGRAM_URL];
+  if (LINKEDIN_URL) out.push(LINKEDIN_URL);
+  return out;
+}
+const CONSENT_KEY = "tivonix_analytics_consent";
+function getAnalyticsConsent() {
+  if (typeof window === "undefined") return "pending";
+  try {
+    const v = localStorage.getItem(CONSENT_KEY);
+    if (v === "accepted" || v === "rejected") return v;
+  } catch {
+  }
+  return "pending";
+}
+function setAnalyticsConsent(state) {
+  try {
+    localStorage.setItem(CONSENT_KEY, state);
+  } catch {
+  }
+  window.dispatchEvent(new CustomEvent("tivonix-consent", { detail: state }));
+}
+function onConsentChange(cb) {
+  const handler = (e) => {
+    const detail = e.detail;
+    cb(detail);
+  };
+  window.addEventListener("tivonix-consent", handler);
+  return () => window.removeEventListener("tivonix-consent", handler);
+}
 const LOADED_FLAG = "__tivonix_hotjar_loaded";
 function hotjarId() {
   return null;
@@ -634,10 +691,95 @@ function trackHotjarEvent(name) {
 }
 const HOTJAR_MASK_CLASS = "hj-masked";
 const HOTJAR_SUPPRESS_ATTR = { "data-hj-suppress": "" };
-function trackPartnersEvent(eventName, params) {
-  if (typeof window === "undefined" || typeof window.gtag !== "function") return;
-  if (!eventName) return;
-  window.gtag("event", eventName, params ?? {});
+let initialized = false;
+function canTrack() {
+  if (typeof window === "undefined") return false;
+  return getAnalyticsConsent() === "accepted";
+}
+function gaConfigured() {
+  return Boolean(ANALYTICS.gaMeasurementId);
+}
+function adsConfigured() {
+  return Boolean(ANALYTICS.googleAdsId && ANALYTICS.googleAdsConversionLabel);
+}
+function injectScript(src) {
+  if (typeof document === "undefined") return;
+  if (document.querySelector(`script[src="${src}"]`)) return;
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = src;
+  document.head.appendChild(script);
+}
+function initAnalyticsAfterConsent() {
+  if (!canTrack() || initialized) return;
+  if (!hasAnalyticsConfigured()) return;
+  initialized = true;
+  if (gaConfigured() || adsConfigured()) {
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = window.gtag || function gtag(...args) {
+      window.dataLayer.push(args);
+    };
+    window.gtag("js", /* @__PURE__ */ new Date());
+    if (gaConfigured()) {
+      window.gtag("config", ANALYTICS.gaMeasurementId, { send_page_view: false });
+      injectScript(
+        `https://www.googletagmanager.com/gtag/js?id=${ANALYTICS.gaMeasurementId}`
+      );
+    } else if (adsConfigured()) {
+      injectScript(
+        `https://www.googletagmanager.com/gtag/js?id=${ANALYTICS.googleAdsId}`
+      );
+      window.gtag("config", ANALYTICS.googleAdsId);
+    }
+  }
+  initHotjar();
+}
+function scrub$1(props) {
+  if (!props) return void 0;
+  const out = {};
+  for (const [k, v] of Object.entries(props)) {
+    const key = k.toLowerCase();
+    if (key.includes("email") || key.includes("phone") || key.includes("telegram") || key.includes("name") || key.includes("task") || key.includes("contact") || key.includes("message")) {
+      continue;
+    }
+    if (typeof v === "string" && v.length > 120) continue;
+    out[k] = v;
+  }
+  return out;
+}
+function gtagEvent(name, params) {
+  if (!canTrack()) return;
+  try {
+    if (typeof window.gtag === "function") {
+      window.gtag("event", name, params ?? {});
+    }
+  } catch {
+  }
+}
+function trackAnalyticsEvent(name, props) {
+  const safe = scrub$1(props);
+  trackHotjarEvent(name);
+  gtagEvent(name, safe);
+}
+function trackPageView(path, locale) {
+  trackAnalyticsEvent("page_view", { page_path: path, locale });
+}
+function trackAdsFormConversion(callback) {
+  if (!canTrack() || !adsConfigured()) {
+    return;
+  }
+  try {
+    if (typeof window.gtag !== "function") {
+      callback?.();
+      return;
+    }
+    const payload = {
+      send_to: `${ANALYTICS.googleAdsId}/${ANALYTICS.googleAdsConversionLabel}`
+    };
+    if (callback) ;
+    window.gtag("event", "conversion", payload);
+  } catch {
+  }
 }
 const CTA_SOURCE_KEY = "tivonix_cta_source";
 function setCtaSource(source) {
@@ -654,6 +796,36 @@ function getCtaSource() {
   }
   return "unknown";
 }
+const milesealOnceKeys = /* @__PURE__ */ new Set();
+function readLocale() {
+  if (typeof document === "undefined") return "ru";
+  return document.documentElement.lang || "ru";
+}
+function readPath() {
+  if (typeof window === "undefined") return "/";
+  return window.location.pathname;
+}
+function readUtm$1() {
+  if (typeof window === "undefined") return {};
+  try {
+    const p = new URL(window.location.href).searchParams;
+    return {
+      utm_source: p.get("utm_source") || void 0,
+      utm_medium: p.get("utm_medium") || void 0,
+      utm_campaign: p.get("utm_campaign") || void 0
+    };
+  } catch {
+    return {};
+  }
+}
+function baseProps(extra) {
+  return {
+    locale: readLocale(),
+    page_path: readPath(),
+    ...readUtm$1(),
+    ...extra
+  };
+}
 function scrub(props) {
   if (!props) return void 0;
   const out = {};
@@ -667,41 +839,39 @@ function scrub(props) {
   }
   return out;
 }
-const milesealOnceKeys = /* @__PURE__ */ new Set();
 function trackEvent(name, props) {
-  const safe = scrub(props);
-  trackHotjarEvent(name);
-  trackPartnersEvent(name, safe);
+  const safe = scrub(baseProps(props));
+  trackAnalyticsEvent(name, safe);
 }
 function trackCtaPrimaryClick(source) {
   setCtaSource(source);
-  trackEvent("cta_primary_click", { source });
-  if (source === "hero") trackEvent("hero_primary_cta_click", { source });
+  trackEvent("cta_click", { cta_source: source });
 }
 function trackLeadFormOpen(source) {
   setCtaSource(source);
-  trackEvent("lead_form_open", { source });
+  trackEvent("form_open", { cta_source: source });
 }
 function trackLeadFormStart() {
-  trackEvent("lead_form_start");
+  trackEvent("form_start", { cta_source: getCtaSource() });
 }
 function trackLeadFormValidationError(field) {
-  trackEvent("lead_form_validation_error", field ? { field } : void 0);
+  trackEvent("form_validation_error", field ? { field } : void 0);
 }
 function trackLeadFormSubmit(source) {
-  trackEvent("lead_form_submit", { source });
+  trackEvent("form_submit_success", { cta_source: source });
+  trackAdsFormConversion();
 }
 function trackLeadFormSuccess(source) {
-  trackEvent("lead_form_success", { source });
+  trackEvent("form_submit_success", { cta_source: source });
 }
 function trackLeadFormServerError() {
-  trackEvent("lead_form_server_error");
+  trackEvent("form_submit_error");
 }
 function trackLeadFormAbandon(source) {
-  trackEvent("lead_form_abandon", { source });
+  trackEvent("form_submit_error", { cta_source: source, reason: "abandon" });
 }
 function trackTelegramDirectClick() {
-  trackEvent("telegram_direct_click");
+  trackEvent("telegram_click");
 }
 function trackEmailClick() {
   trackEvent("email_click");
@@ -927,7 +1097,7 @@ function pathForLang(pathname, lang) {
   if (clean === "/partners" || clean === "/ru/partners" || clean === "/en/partners" || clean === "/zh/partners") {
     if (lang === "en") return "/en/partners";
     if (lang === "zh") return "/zh/partners";
-    return "/ru/partners";
+    return "/partners";
   }
   const mRu = clean.match(/^\/projects\/([^/]+)$/);
   if (mRu) return withPrefix(lang, `/projects/${mRu[1]}`);
@@ -946,8 +1116,14 @@ function pathForLang(pathname, lang) {
   if (lang === "zh" && clean.startsWith("/zh")) return clean;
   return base;
 }
+function canonicalPathForLang(basePath, lang) {
+  const base = basePath.replace(/\/+$/, "") || "/";
+  if (lang === "en") return base === "/" ? "/en" : `/en${base}`;
+  if (lang === "zh") return base === "/" ? "/zh" : `/zh${base}`;
+  return base;
+}
 function hreflangPair(canonicalPath) {
-  const origin = "https://tivonix.tech";
+  const origin = CANONICAL_ORIGIN$1;
   const clean = canonicalPath.replace(/\/+$/, "") || "/";
   const base = stripLangPrefix(clean.startsWith("http") ? new URL(clean).pathname : clean);
   const ru2 = base === "/" ? `${origin}/` : `${origin}${base}`;
@@ -1059,7 +1235,6 @@ async function submitLead(body, signal) {
     return { ok: false, error: "network_error", fallback: true };
   }
 }
-const CONTACT_EMAIL = "tivoonix@gmail.com";
 const TELEGRAM_DIRECT_URL = "https://t.me/TIVONIX";
 const PLAN_CATALOG = {
   start: {
@@ -1209,17 +1384,14 @@ const PLANS = [
   { id: "product", badgeKey: "product", ctaAction: getPlanCtaAction("product") },
   { id: "custom", ctaAction: getPlanCtaAction("custom") }
 ];
-const LAUNCH_DISCOUNT_PERCENT = 10;
 const PLAN_PRICE_USD = {
   start: 400,
   growth: 900,
   product: 2e3
 };
 function planPriceStrings(fromLabel, usd) {
-  const discounted = Math.round(usd * (1 - LAUNCH_DISCOUNT_PERCENT / 100));
   return {
-    price: `${fromLabel} $${discounted}`,
-    priceOriginal: `${fromLabel} $${usd}`
+    price: `${fromLabel} $${usd}`
   };
 }
 function planPagePrice(lang, planId) {
@@ -1231,10 +1403,6 @@ const COPY_RU$3 = {
   title: "Планы запуска",
   subtitle: "Понятные тарифы под вашу задачу — от первых заявок до полноценного веб-сервиса",
   includesLabel: "Что входит",
-  launchDiscount: {
-    percent: "10%",
-    note: "* Скидка на запуск: первые проекты ведём по сниженной цене от базового прайса."
-  },
   afterSelect: {
     title: "Что будет после выбора плана",
     steps: [
@@ -1243,7 +1411,7 @@ const COPY_RU$3 = {
       "Предлагаем понятный вариант запуска",
       "После согласования начинаем работу"
     ],
-    note: "Цены указаны «от», потому что итог зависит от экранов, логики, интеграций и сроков. Оплата происходит после обсуждения и согласования задачи."
+    note: "Цены указаны «от». Итоговая стоимость фиксируется после письменного разбора задачи. Дополнительные модули и интеграции оцениваются отдельно. Оплата — после согласования объёма."
   },
   compareTitle: "Сравнение тарифов",
   expandAll: "Развернуть всё",
@@ -1262,12 +1430,12 @@ const COPY_RU$3 = {
   },
   badges: {
     popular: "Чаще выбирают",
-    product: "Для веб-сервиса"
+    product: "Для MVP"
   },
   plans: {
     start: {
       name: "Start",
-      tagline: "Для быстрого запуска заявок",
+      tagline: "Страница для запуска заявок",
       ...planPriceStrings("от", PLAN_PRICE_USD.start),
       desc: "Когда нужно быстро запустить страницу под рекламу, Instagram или Telegram и начать собирать заявки в одном месте.",
       includes: [
@@ -1285,7 +1453,7 @@ const COPY_RU$3 = {
     },
     growth: {
       name: "Growth",
-      tagline: "Система заявок для бизнеса",
+      tagline: "Сайт и система обработки заявок",
       ...planPriceStrings("от", PLAN_PRICE_USD.growth),
       desc: "Когда заявок становится больше, они приходят из разных каналов и команде нужен порядок: статусы, ответственные, таблица или mini-CRM.",
       includes: [
@@ -1303,9 +1471,9 @@ const COPY_RU$3 = {
     },
     product: {
       name: "Product",
-      tagline: "Веб-сервис и MVP",
+      tagline: "Основа MVP с одним главным сценарием",
       ...planPriceStrings("от", PLAN_PRICE_USD.product),
-      desc: "Когда нужен не просто сайт, а рабочий веб-сервис: пользователи, личные кабинеты, роли, база данных и админ-панель. Сложный SaaS целиком в этот тариф не входит.",
+      desc: "Когда нужен MVP с одним главным пользовательским сценарием: авторизация, роли, база данных и админ-панель. Сложный SaaS, маркетплейс, FinTech или крупная CRM — это Custom. Дополнительные модули и интеграции оцениваются отдельно.",
       includes: [
         "личный кабинет",
         "авторизация",
@@ -1321,9 +1489,9 @@ const COPY_RU$3 = {
     },
     custom: {
       name: "Custom",
-      tagline: "Сложная логика и масштаб",
+      tagline: "Сложный продукт или автоматизация",
       price: "индивидуально",
-      desc: "Когда задача не помещается в готовый тариф: несколько ролей, платежи, интеграции, аналитика и масштабирование.",
+      desc: "Для сложного SaaS, маркетплейсов, FinTech, крупных CRM, AI-автоматизации и внутренних систем. Стоимость фиксируется после письменного разбора задачи; дополнения — отдельной сметой.",
       includes: [
         "сложная бизнес-логика",
         "несколько ролей",
@@ -1344,7 +1512,7 @@ const COPY_RU$3 = {
       {
         id: "price-from",
         q: "Что значит цена «от»?",
-        a: "Это минимальная стоимость запуска. Итог зависит от количества экранов, логики, интеграций, личного кабинета, CRM и сроков."
+        a: "Это минимальная стоимость запуска. Итоговая цена фиксируется после письменного разбора задачи и зависит от экранов, логики, интеграций и сроков. Дополнения оцениваются отдельно."
       },
       {
         id: "pay-now",
@@ -1369,12 +1537,12 @@ const COPY_RU$3 = {
       {
         id: "when-product",
         q: "Когда нужен Product?",
-        a: "Product нужен, если это уже не просто сайт, а веб-сервис: пользователи, личные кабинеты, роли, база данных, оплата, админ-панель."
+        a: "Product подходит для MVP с одним главным сценарием: пользователи, личный кабинет, роли, база данных и админ-панель. Сложный SaaS, маркетплейс, FinTech или крупная CRM — это Custom."
       },
       {
         id: "when-custom",
         q: "Когда выбирать Custom?",
-        a: "Custom подходит для нестандартных задач: AI-боты, сложные CRM, автоматизация документов, интеграции, внутренние панели и процессы под вашу команду."
+        a: "Custom — для сложного SaaS, маркетплейсов, FinTech, крупных CRM, AI-автоматизации и внутренних систем. Стоимость — после письменного разбора; дополнительные модули — отдельной сметой."
       }
     ]
   },
@@ -1435,7 +1603,7 @@ const COPY_RU$3 = {
     shortDesc: {
       start: "Быстрый запуск страницы и заявок",
       growth: "Система заявок для команды",
-      product: "Полноценный веб-сервис",
+      product: "Основа MVP с одним сценарием",
       custom: "Индивидуальная автоматизация"
     }
   }
@@ -1444,10 +1612,6 @@ const COPY_EN$3 = {
   title: "Launch plans",
   subtitle: "Clear plans for your task — from first leads to a full web service",
   includesLabel: "What’s included",
-  launchDiscount: {
-    percent: "10%",
-    note: "* Launch discount: early projects ship at a reduced rate from the base price."
-  },
   afterSelect: {
     title: "What happens after you choose a plan",
     steps: [
@@ -1456,7 +1620,7 @@ const COPY_EN$3 = {
       "We propose a clear launch option",
       "After agreement, we start work"
     ],
-    note: "Prices are shown “from” because the final cost depends on screens, logic, integrations and timeline. Payment happens after we discuss and agree on the scope."
+    note: "Prices are shown “from”. Final cost is confirmed after a written scope review. Extra modules and integrations are quoted separately. Payment happens after scope agreement."
   },
   compareTitle: "Compare plans",
   expandAll: "Expand all",
@@ -1480,7 +1644,7 @@ const COPY_EN$3 = {
   plans: {
     start: {
       name: "Start",
-      tagline: "Fast lead capture launch",
+      tagline: "Launch page",
       ...planPriceStrings("from", PLAN_PRICE_USD.start),
       desc: "When you need a page for ads, Instagram or Telegram — and want to collect inquiries in one place quickly.",
       includes: [
@@ -1498,7 +1662,7 @@ const COPY_EN$3 = {
     },
     growth: {
       name: "Growth",
-      tagline: "Lead system for business",
+      tagline: "Website + lead workflow",
       ...planPriceStrings("from", PLAN_PRICE_USD.growth),
       desc: "When leads grow and come from multiple channels — your team needs order: statuses, owners, a sheet or mini-CRM.",
       includes: [
@@ -1517,11 +1681,11 @@ const COPY_EN$3 = {
     },
     product: {
       name: "Product",
-      tagline: "Full web service",
+      tagline: "Focused MVP foundation",
       ...planPriceStrings("from", PLAN_PRICE_USD.product),
-      desc: "When you need more than a website — a working web service with users, client areas, roles, a database and admin panel.",
+      desc: "When you need an MVP built around one main user scenario: auth, roles, a database and admin panel. Complex SaaS, marketplaces, FinTech or large CRM work belongs in Custom. Extra modules and integrations are quoted separately.",
       includes: [
-        "client area",
+        "client portal",
         "admin panel",
         "sign-up and auth",
         "user roles",
@@ -1538,9 +1702,9 @@ const COPY_EN$3 = {
     },
     custom: {
       name: "Custom",
-      tagline: "Automation & AI",
+      tagline: "Complex product development",
       price: "custom",
-      desc: "When the task doesn’t fit a ready plan: AI bots, complex CRM, document automation, integrations or an internal system.",
+      desc: "For complex SaaS, marketplaces, FinTech, large CRM builds, AI automation and internal systems. Cost is fixed after a written scope review; add-ons are quoted separately.",
       includes: [
         "AI bots and assistants",
         "lead automation",
@@ -1562,7 +1726,7 @@ const COPY_EN$3 = {
       {
         id: "price-from",
         q: "What does “from” mean?",
-        a: "It’s the minimum launch cost. The final price depends on screens, logic, integrations, client area, CRM and timeline."
+        a: "It’s the minimum launch cost. Final price is confirmed after a written scope review and depends on screens, logic, integrations and timeline. Add-ons are quoted separately."
       },
       {
         id: "pay-now",
@@ -1587,12 +1751,12 @@ const COPY_EN$3 = {
       {
         id: "when-product",
         q: "When do I need Product?",
-        a: "Product is for a real web service: users, client areas, roles, database, payments and admin panel."
+        a: "Product fits an MVP with one main user scenario: users, client portal, roles, database and admin panel. Complex SaaS, marketplaces, FinTech or large CRM work belongs in Custom."
       },
       {
         id: "when-custom",
         q: "When to choose Custom?",
-        a: "Custom fits non-standard work: AI bots, complex CRM, document automation, integrations and internal tools for your team."
+        a: "Custom is for complex SaaS, marketplaces, FinTech, large CRM, AI automation and internal systems. Cost comes after a written scope review; extra modules are quoted separately."
       }
     ]
   },
@@ -1616,7 +1780,7 @@ const COPY_EN$3 = {
     statuses: "Lead statuses",
     history: "Processing history",
     roles: "Staff roles",
-    cabinet: "Client area",
+    cabinet: "Client portal",
     admin: "Admin panel",
     auth: "Authentication",
     database: "Database",
@@ -1647,13 +1811,13 @@ const COPY_EN$3 = {
     chips: {
       start: ["Landing", "Form", "Telegram"],
       growth: ["Mini-CRM", "Statuses", "Admin"],
-      product: ["Client area", "Payments", "Roles"],
+      product: ["Client portal", "Payments", "Roles"],
       custom: ["AI bots", "Integrations", "CRM"]
     },
     shortDesc: {
       start: "Fast page and lead launch",
       growth: "Lead system for your team",
-      product: "Full web service",
+      product: "Focused MVP foundation",
       custom: "Custom automation"
     }
   }
@@ -1662,10 +1826,6 @@ const COPY_ZH$3 = {
   title: "启动方案",
   subtitle: "对应需求的清晰方案 — 从首批线索到完整 Web 服务",
   includesLabel: "包含内容",
-  launchDiscount: {
-    percent: "10%",
-    note: "* 启动优惠：早期项目按基础价折扣交付。"
-  },
   afterSelect: {
     title: "选定方案后会发生什么",
     steps: [
@@ -1674,7 +1834,7 @@ const COPY_ZH$3 = {
       "给出清晰的启动方案",
       "确认后开工"
     ],
-    note: "价格显示为「起」是因为最终费用取决于页面、逻辑、集成与周期。讨论并确认范围后再付款。"
+    note: "价格显示为「起」。最终费用在书面范围确认后确定。额外模块与集成单独报价。确认范围后再付款。"
   },
   compareTitle: "对比方案",
   expandAll: "全部展开",
@@ -1698,7 +1858,7 @@ const COPY_ZH$3 = {
   plans: {
     start: {
       name: "Start",
-      tagline: "快速启动获客",
+      tagline: "启动获客的落地页",
       ...planPriceStrings("起", PLAN_PRICE_USD.start),
       desc: "当您需要广告、Instagram 或 Telegram 页面 — 并希望快速把咨询汇入一处。",
       includes: [
@@ -1716,7 +1876,7 @@ const COPY_ZH$3 = {
     },
     growth: {
       name: "Growth",
-      tagline: "面向业务的线索系统",
+      tagline: "网站与线索处理系统",
       ...planPriceStrings("起", PLAN_PRICE_USD.growth),
       desc: "当线索增长且来自多渠道 — 团队需要秩序：状态、负责人、表格或迷你 CRM。",
       includes: [
@@ -1735,18 +1895,18 @@ const COPY_ZH$3 = {
     },
     product: {
       name: "Product",
-      tagline: "完整 Web 服务",
+      tagline: "聚焦单一核心场景的 MVP 基础",
       ...planPriceStrings("起", PLAN_PRICE_USD.product),
-      desc: "当您需要的不只是网站 — 而是带用户、客户后台、角色、数据库与管理后台的 Web 服务。",
+      desc: "当您需要一个围绕单一主要用户场景构建的 MVP：认证、角色、数据库与管理后台。复杂 SaaS、市场平台、金融科技或大型 CRM 属于 Custom。额外模块与集成单独报价。",
       includes: [
         "客户后台",
         "管理后台",
         "注册和授权",
         "用户角色",
         "线索、状态、通知",
-        "database",
+        "数据库",
         "集成",
-        "payments",
+        "支付",
         "响应式 UI",
         "上线准备"
       ],
@@ -1756,9 +1916,9 @@ const COPY_ZH$3 = {
     },
     custom: {
       name: "Custom",
-      tagline: "自动化与 AI",
+      tagline: "复杂产品开发",
       price: "custom",
-      desc: "当需求不适合现成方案：AI 机器人、复杂 CRM、文档自动化、集成或内部系统。",
+      desc: "面向复杂 SaaS、市场平台、金融科技、大型 CRM、AI 自动化与内部系统。费用在书面范围确认后确定；附加模块单独报价。",
       includes: [
         "AI 机器人与助手",
         "线索自动化",
@@ -1780,7 +1940,7 @@ const COPY_ZH$3 = {
       {
         id: "price-from",
         q: "“起”是什么意思？",
-        a: "这是最低启动成本。最终价格取决于页面、逻辑、集成、客户后台、CRM 与周期。"
+        a: "这是最低启动成本。最终价格在书面范围确认后确定，取决于页面、逻辑、集成与周期。附加功能单独报价。"
       },
       {
         id: "pay-now",
@@ -1805,12 +1965,12 @@ const COPY_ZH$3 = {
       {
         id: "when-product",
         q: "何时需要 Product？",
-        a: "Product 面向真正的 Web 服务：用户、客户后台、角色、数据库、支付与管理后台。"
+        a: "Product 适合围绕一个主要用户场景构建的 MVP：用户、客户门户、角色、数据库与管理后台。复杂 SaaS、市场平台、金融科技或大型 CRM 属于 Custom。"
       },
       {
         id: "when-custom",
         q: "何时选择 Custom？",
-        a: "Custom 适合非标需求：AI 机器人、复杂 CRM、文档自动化、集成与团队内部工具。"
+        a: "Custom 面向复杂 SaaS、市场平台、金融科技、大型 CRM、AI 自动化与内部系统。费用在书面范围确认后给出；额外模块单独报价。"
       }
     ]
   },
@@ -1834,12 +1994,12 @@ const COPY_ZH$3 = {
     statuses: "线索状态",
     history: "处理记录",
     roles: "员工角色",
-    cabinet: "客户后台",
+    cabinet: "客户门户",
     admin: "管理后台",
     auth: "身份认证",
-    database: "Database",
+    database: "数据库",
     booking: "在线预约",
-    payments: "Payments",
+    payments: "支付",
     autoNotify: "自动通知",
     integrations: "集成",
     aiBot: "AI 机器人",
@@ -1865,13 +2025,13 @@ const COPY_ZH$3 = {
     chips: {
       start: ["落地页", "表单", "Telegram"],
       growth: ["迷你 CRM", "状态", "管理"],
-      product: ["客户后台", "Payments", "角色"],
+      product: ["客户门户", "支付", "角色"],
       custom: ["AI 机器人", "集成", "CRM"]
     },
     shortDesc: {
       start: "快速上线页面与线索",
       growth: "团队可用的线索系统",
-      product: "完整 Web 服务",
+      product: "聚焦单一核心场景的 MVP",
       custom: "定制自动化"
     }
   }
@@ -1880,7 +2040,7 @@ function pricingCopy(lang) {
   if (lang === "zh") return COPY_ZH$3;
   return lang === "ru" ? COPY_RU$3 : COPY_EN$3;
 }
-function useKeepVideoPlaying(videoRef) {
+function useKeepVideoPlaying(videoRef, active = true) {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -1897,14 +2057,25 @@ function useKeepVideoPlaying(videoRef) {
       video.removeAttribute("controls");
       video.disableRemotePlayback = true;
     };
-    arm();
     const play = () => {
       arm();
+      if (!active) return;
       if (document.visibilityState === "hidden") return;
       if (!video.paused && !video.ended) return;
       void video.play().catch(() => {
       });
     };
+    const pause = () => {
+      try {
+        video.pause();
+      } catch {
+      }
+    };
+    arm();
+    if (!active) {
+      pause();
+      return;
+    }
     try {
       if (video.readyState < 2) video.load();
     } catch {
@@ -1919,12 +2090,13 @@ function useKeepVideoPlaying(videoRef) {
       play();
     };
     const onPause = () => {
-      if (document.visibilityState === "visible") {
+      if (active && document.visibilityState === "visible") {
         requestAnimationFrame(play);
       }
     };
     const onVis = () => {
       if (document.visibilityState === "visible") play();
+      else pause();
     };
     const onPageShow = () => play();
     const unlock = () => play();
@@ -1958,7 +2130,7 @@ function useKeepVideoPlaying(videoRef) {
       window.removeEventListener("pointerdown", unlock);
       window.removeEventListener("scroll", unlock);
     };
-  }, [videoRef]);
+  }, [videoRef, active]);
 }
 const HERO_VIDEO_DESKTOP = "/images/hero-bg.mp4";
 const HERO_VIDEO_MOBILE = "/images/hero-bg-mobile.mp4";
@@ -1966,16 +2138,21 @@ const HERO_POSTER = "/images/hero-bg-poster.webp";
 const FORM_VIDEO_DESKTOP = "/images/form-bg.mp4";
 const FORM_VIDEO_MOBILE = "/images/form-bg-mobile.mp4";
 const FORM_POSTER = "/images/form-bg-poster.webp";
-function pickLoopSrc(desktop, mobile) {
-  if (typeof window === "undefined") return desktop;
+function prefersLightLoop() {
+  if (typeof window === "undefined") return false;
   try {
-    const conn = navigator.connection;
-    if (conn?.saveData) return mobile;
-    const type = conn?.effectiveType;
-    if (type === "slow-2g" || type === "2g" || type === "3g") return mobile;
+    const nav = navigator;
+    if (nav.connection?.saveData) return true;
+    const type = nav.connection?.effectiveType;
+    if (type === "slow-2g" || type === "2g" || type === "3g") return true;
+    if (typeof nav.deviceMemory === "number" && nav.deviceMemory <= 4) return true;
   } catch {
   }
-  if (window.matchMedia("(max-width: 900px)").matches) return mobile;
+  return window.matchMedia("(max-width: 900px)").matches;
+}
+function pickLoopSrc(desktop, mobile) {
+  if (typeof window === "undefined") return desktop;
+  if (prefersLightLoop()) return mobile;
   return desktop;
 }
 function pickHeroVideoSrc() {
@@ -1994,26 +2171,72 @@ function BgLoopVideo({
   src: srcProp,
   variant = "hero"
 }) {
+  const wrapRef = useRef(null);
   const videoRef = useRef(null);
   const posterSrc = poster ?? (variant === "form" ? FORM_POSTER : HERO_POSTER);
-  const [src, setSrc] = useState(srcProp ?? HERO_VIDEO_DESKTOP);
+  const [src, setSrc] = useState(srcProp ?? (variant === "hero" ? HERO_VIDEO_DESKTOP : void 0));
   const [playing, setPlaying] = useState(false);
+  const [inView, setInView] = useState(variant === "hero");
+  const [reducedMotion, setReducedMotion] = useState(false);
   useEffect(() => {
-    setSrc(srcProp ?? (variant === "form" ? pickFormVideoSrc() : pickHeroVideoSrc()));
-  }, [srcProp, variant]);
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReducedMotion(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        const visible = !!entry?.isIntersecting;
+        if (variant === "hero" && !visible && (entry?.boundingClientRect.height ?? 0) < 8) {
+          return;
+        }
+        setInView(visible);
+      },
+      {
+        root: null,
+        rootMargin: variant === "hero" ? "40px 0px" : "180px 0px",
+        threshold: 0
+      }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [variant]);
+  useEffect(() => {
+    if (srcProp) {
+      setSrc(srcProp);
+      return;
+    }
+    if (reducedMotion) {
+      setSrc(void 0);
+      return;
+    }
+    if (variant === "form" && !inView) return;
+    setSrc(variant === "form" ? pickFormVideoSrc() : pickHeroVideoSrc());
+  }, [srcProp, variant, inView, reducedMotion]);
   useEffect(() => {
     setPlaying(false);
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || !src) return;
     try {
       video.load();
     } catch {
     }
   }, [src]);
-  useKeepVideoPlaying(videoRef);
+  const active = Boolean(src) && inView && !reducedMotion;
+  useKeepVideoPlaying(videoRef, active);
   return /* @__PURE__ */ jsxs(
     "div",
     {
+      ref: wrapRef,
       className: cx$m(
         "hero-bg-video-wrap pointer-events-none overflow-hidden",
         className ?? "absolute inset-0"
@@ -2021,18 +2244,18 @@ function BgLoopVideo({
       style,
       "aria-hidden": true,
       children: [
-        /* @__PURE__ */ jsx(
+        src ? /* @__PURE__ */ jsx(
           "video",
           {
             ref: videoRef,
             className: "hero-bg-video",
             src,
             poster: posterSrc,
-            autoPlay: true,
+            autoPlay: active,
             muted: true,
             loop: true,
             playsInline: true,
-            preload: "auto",
+            preload: variant === "hero" ? "auto" : inView ? "metadata" : "none",
             controls: false,
             controlsList: "nodownload nofullscreen noremoteplayback",
             disablePictureInPicture: true,
@@ -2043,7 +2266,7 @@ function BgLoopVideo({
             onEmptied: () => setPlaying(false),
             onStalled: () => setPlaying(false)
           }
-        ),
+        ) : null,
         /* @__PURE__ */ jsx(
           "img",
           {
@@ -2051,7 +2274,7 @@ function BgLoopVideo({
             alt: "",
             draggable: false,
             decoding: "async",
-            fetchPriority: "high",
+            fetchPriority: variant === "hero" ? "high" : "low",
             className: cx$m(
               "hero-bg-video__poster transition-opacity duration-300",
               playing ? "opacity-0" : "opacity-100"
@@ -2834,7 +3057,8 @@ function Container({
 }) {
   return /* @__PURE__ */ jsx("div", { className: [LANDING_SHELL_CLASS, className].filter(Boolean).join(" "), children });
 }
-const PARTNERS_PATH_RU = "/ru/partners";
+const PARTNERS_PATH_RU = "/partners";
+const PARTNERS_PATH_RU_LEGACY = "/ru/partners";
 const PARTNERS_PATH_EN = "/en/partners";
 const PARTNERS_PATH_ZH = "/zh/partners";
 const PARTNERS_PATH_LEGACY = "/partners";
@@ -2847,7 +3071,7 @@ function isPartnersPath(pathname) {
   const p = pathname.replace(/\/+$/, "") || "/";
   return p === PARTNERS_PATH_LEGACY || p === PARTNERS_PATH_RU || p === PARTNERS_PATH_EN || p === PARTNERS_PATH_ZH;
 }
-const PARTNERS_ORIGIN = "https://tivonix.tech";
+const PARTNERS_ORIGIN = CANONICAL_ORIGIN$1;
 function partnersCanonicalUrl(lang, pathname) {
   const p = (pathname ?? "").replace(/\/+$/, "") || "";
   if (p === PARTNERS_PATH_LEGACY) {
@@ -3160,6 +3384,11 @@ function partnerPanelRegisterUrl(type) {
   const url = new URL(`${partnerPanelOrigin()}/register`);
   url.searchParams.set("type", type);
   return url.toString();
+}
+function trackPartnersEvent(eventName, params) {
+  if (typeof window === "undefined" || typeof window.gtag !== "function") return;
+  if (!eventName) return;
+  window.gtag("event", eventName, params ?? {});
 }
 function cx$k(...a) {
   return a.filter(Boolean).join(" ");
@@ -4040,39 +4269,39 @@ function landingCopy(lang) {
 }
 const COPY_RU$1 = {
   hero: {
-    eyebrow: "САЙТЫ · CRM · БОТЫ · ВЕБ-СЕРВИСЫ",
-    titleLines: ["Собираем сайты и системы,", "в которых заявки не теряются"],
-    titleHighlight: "заявки не теряются",
+    eyebrow: "САЙТЫ И АВТОМАТИЗАЦИЯ ДЛЯ БИЗНЕСА",
+    titleLines: ["ЗАПУСКАЕМ САЙТЫ И СИСТЕМЫ,", "КОТОРЫЕ ДОВОДЯТ ЗАЯВКУ ДО РЕЗУЛЬТАТА"],
+    titleHighlight: "ДОВОДЯТ ЗАЯВКУ ДО РЕЗУЛЬТАТА",
     scrollStages: [
       {
-        headline: "Собираем сайты и системы, в которых заявки не теряются",
-        headlineLines: ["Собираем сайты и системы,", "в которых заявки не теряются"],
-        headlineBefore: "Собираем сайты и системы,",
-        headlineAccent: "в которых заявки не теряются",
+        headline: "Запускаем сайты и системы, которые доводят заявку до результата",
+        headlineLines: ["Запускаем сайты и системы,", "которые доводят заявку до результата"],
+        headlineBefore: "Запускаем сайты и системы,",
+        headlineAccent: "которые доводят заявку до результата",
         headlineAfter: "",
-        lead: "Разрабатываем лендинги, Telegram-ботов, CRM, личные кабинеты и MVP — и связываем их в единый процесс: от первого обращения до оплаты и результата."
+        lead: "Разрабатываем сайты, ботов, CRM и автоматизацию — и связываем их в один процесс: от первой заявки до оплаты и результата."
       },
       {
-        headline: "Форма отправлена. А что происходит дальше?",
-        headlineLines: ["Форма отправлена.", "А что происходит дальше?"],
-        headlineBefore: "Форма отправлена.",
-        headlineAccent: "А что происходит дальше?",
+        headline: "Форма отправлена — и дальше тишина?",
+        headlineLines: ["Форма отправлена —", "и дальше тишина?"],
+        headlineBefore: "Форма отправлена —",
+        headlineAccent: "и дальше тишина?",
         headlineAfter: "",
-        lead: "Когда обращения остаются в чатах, почте и таблицах, команда отвечает поздно, забывает клиентов и не понимает следующий шаг."
+        lead: "Заявки в чатах и таблицах теряются: команда отвечает поздно и не видит следующий шаг."
       },
       {
-        headline: "Одна заявка. Один понятный процесс",
-        headlineLines: ["Одна заявка.", "Один понятный процесс"],
-        headlineBefore: "Одна заявка.",
-        headlineAccent: "Один понятный процесс",
+        headline: "Один процесс — от заявки до результата",
+        headlineLines: ["Один процесс —", "от заявки до результата"],
+        headlineBefore: "Один процесс —",
+        headlineAccent: "от заявки до результата",
         headlineAfter: "",
-        lead: "Связываем сайт, Telegram, CRM, таблицы и внутренние сервисы так, чтобы команда сразу видела клиента, статус и следующий шаг."
+        lead: "Сайт, Telegram, CRM и уведомления работают вместе — статус и ответственный всегда на месте."
       }
     ],
-    subtitle: "Разрабатываем лендинги, Telegram-ботов, CRM, личные кабинеты и MVP — и связываем их в единый процесс: от первого обращения до оплаты и результата.",
-    ctaPrimary: "Получить оценку проекта",
-    ctaSecondary: "Посмотреть живые проекты",
-    micro: "Ответим в течение рабочего дня · Работаем по этапам · Передаём исходники и доступы",
+    subtitle: "Разрабатываем сайты, ботов, CRM и автоматизацию — и связываем их в один процесс: от первой заявки до оплаты и результата.",
+    ctaPrimary: "Получить письменную оценку",
+    ctaSecondary: "Посмотреть подтверждённые кейсы",
+    micro: "Ответим в течение рабочего дня · Зафиксируем объём и стоимость · Передадим код и доступы",
     flowNodes: ["Заявка", "Обработка", "Telegram", "CRM"],
     flowNodeHints: ["С сайта", "Автообработка", "Уведомление", "В CRM"],
     flowTelegramBot: "TIVONIX Bot",
@@ -4509,48 +4738,48 @@ const COPY_RU$1 = {
 };
 const COPY_EN$1 = {
   hero: {
-    eyebrow: "WEBSITES · CRM · BOTS · WEB APPS",
-    titleLines: ["We build sites and systems", "where leads do not get lost"],
-    titleHighlight: "leads do not get lost",
+    eyebrow: "FOUNDER-LED PRODUCT STUDIO",
+    titleLines: ["SAAS PRODUCTS AND INTERNAL SYSTEMS", "— BUILT FOR LAUNCH"],
+    titleHighlight: "BUILT FOR LAUNCH",
     scrollStages: [
       {
-        headline: "We build sites and systems where leads do not get lost",
-        headlineLines: ["We build sites and systems", "where leads do not get lost"],
-        headlineBefore: "We build sites and systems",
-        headlineAccent: "where leads do not get lost",
+        headline: "SaaS products and internal systems — built for launch",
+        headlineLines: ["SaaS products and internal systems", "— built for launch"],
+        headlineBefore: "SaaS products and internal systems",
+        headlineAccent: "— built for launch",
         headlineAfter: "",
-        lead: "We develop landing pages, Telegram bots, CRMs, client portals and MVPs — and connect them into one process: from first inquiry to payment and result."
+        lead: "We design and build MVPs, client portals, dashboards and automations for founders and agencies. Fixed scope, written progress updates and full source-code ownership."
       },
       {
-        headline: "The form was submitted. What happens next?",
-        headlineLines: ["The form was submitted.", "What happens next?"],
-        headlineBefore: "The form was submitted.",
-        headlineAccent: "What happens next?",
+        headline: "Scope drifts. Updates go quiet.",
+        headlineLines: ["Scope drifts.", "Updates go quiet."],
+        headlineBefore: "Scope drifts.",
+        headlineAccent: "Updates go quiet.",
         headlineAfter: "",
-        lead: "When inquiries live in chats, inboxes and spreadsheets, the team replies late, forgets clients and does not know the next step."
+        lead: "Without a fixed scope and written checkpoints, MVPs slip and founders lose visibility."
       },
       {
-        headline: "One lead. One clear process",
-        headlineLines: ["One lead.", "One clear process"],
-        headlineBefore: "One lead.",
-        headlineAccent: "One clear process",
+        headline: "One core scenario — shipped in stages",
+        headlineLines: ["One core scenario —", "shipped in stages"],
+        headlineBefore: "One core scenario —",
+        headlineAccent: "shipped in stages",
         headlineAfter: "",
-        lead: "We connect the site, Telegram, CRM, sheets and internal tools so the team sees the client, status and next step right away."
+        lead: "We lock the main user flow first, deliver working increments, and hand over source code and access."
       }
     ],
-    subtitle: "We develop landing pages, Telegram bots, CRMs, client portals and MVPs — and connect them into one process: from first inquiry to payment and result.",
-    ctaPrimary: "Get a project estimate",
-    ctaSecondary: "See live projects",
-    micro: "We reply within a business day · Phased delivery · Source code and access handed over",
+    subtitle: "We design and build MVPs, client portals, dashboards and automations for founders and agencies. Fixed scope, written progress updates and full source-code ownership.",
+    ctaPrimary: "Get a written scope & estimate",
+    ctaSecondary: "See verified case studies",
+    micro: "Reply within one business day · Scope and price agreed before development · Source code and access included",
     flowNodes: ["Lead", "Processing", "Telegram", "CRM"],
-    flowNodeHints: ["From site", "Auto", "Alert", "In CRM"],
+    flowNodeHints: ["From website", "Auto", "Alert", "In CRM"],
     flowTelegramBot: "TIVONIX Bot",
     flowDisplayChips: ["Landing", "Form", "Telegram"],
     flowAnalysis: {
       headline: "Task reviewed",
       lead: "The landing captures traffic, the form saves contact details, Telegram alerts your team — the lead doesn’t sit in a chat thread.",
       routeLabel: "Route:",
-      routeText: "site → form → Telegram → CRM.",
+      routeText: "website → form → Telegram → CRM.",
       modulesLabel: "Stack:"
     },
     flowTelegramDetail: {
@@ -4592,7 +4821,7 @@ const COPY_EN$1 = {
         }
       },
       {
-        prompt: "Need a site + Telegram alerts",
+        prompt: "Need a website + Telegram alerts",
         chips: ["Landing", "Form", "Telegram", "Alerts"],
         notify: "Notification sent to Telegram",
         result: {
@@ -4672,7 +4901,7 @@ const COPY_EN$1 = {
     title: "Services and products",
     featured: {
       badge: "TIVONIX",
-      title: "Not only landing pages — sites, CRM, bots and web products",
+      title: "Not only landing pages — websites, CRM, bots and web products",
       text: "We build what captures leads and runs users: from an ad page to SaaS with roles and payments.",
       linkText: "Tell us about your task",
       footer: "We lock scope before start — and show results by stage"
@@ -4817,7 +5046,7 @@ const COPY_EN$1 = {
   audience: {
     badge: "TIVONIX",
     title: "Who we help",
-    subtitle: "Businesses that need more than a pretty site — a working system: leads, bookings, statuses, payments or a client area.",
+    subtitle: "Businesses that need more than a pretty website — a working system: leads, bookings, statuses, payments or a client portal.",
     callouts: {
       left: {
         text: "Leads reach the manager in under a minute — not buried in chats or tomorrow’s spreadsheet."
@@ -4865,7 +5094,7 @@ const COPY_EN$1 = {
     items: [
       { title: "Salons, studios and masters", desc: "Booking, leads and reminders without manual chaos" },
       { title: "Auto shops and local services", desc: "Fast lead intake from ads and a clear status for every client" },
-      { title: "Online schools and courses", desc: "Registration, payments, student area and learning statuses" },
+      { title: "Online schools and courses", desc: "Registration, payments, student portal and learning statuses" },
       { title: "Experts and consultants", desc: "Leads from landing straight to Telegram and CRM" },
       { title: "Startups and MVPs", desc: "Fast product launch with the modules you need — nothing extra" },
       { title: "Agencies and teams", desc: "Ad landing pages with a working lead funnel" },
@@ -4944,13 +5173,13 @@ const COPY_EN$1 = {
       ]
     },
     service: {
-      title: "Client area and admin",
+      title: "Client portal and admin",
       subtitle: "Client portal + team panel + payments",
-      forWho: "When you need a full web service: registration, client area, statuses, payments.",
+      forWho: "When you need a full web service: registration, client portal, statuses, payments.",
       cta: "Discuss the service",
       bullets: [
         "Registration",
-        "Client area",
+        "Client portal",
         "Admin panel",
         "User roles",
         "Leads and statuses",
@@ -4978,39 +5207,39 @@ const COPY_EN$1 = {
 };
 const COPY_ZH$1 = {
   hero: {
-    eyebrow: "网站 · CRM · 机器人 · Web 应用",
-    titleLines: ["我们打造网站与系统", "线索不会丢失"],
-    titleHighlight: "线索不会丢失",
+    eyebrow: "创始人主导的产品工作室",
+    titleLines: ["SaaS 产品与内部系统", "— 为上线而构建"],
+    titleHighlight: "为上线而构建",
     scrollStages: [
       {
-        headline: "打造线索不丢失的网站与业务系统",
-        headlineLines: ["我们打造网站与系统", "线索不会丢失"],
-        headlineBefore: "我们打造网站与系统",
-        headlineAccent: "线索不会丢失",
+        headline: "SaaS 产品与内部系统 — 为上线而构建",
+        headlineLines: ["SaaS 产品与内部系统", "— 为上线而构建"],
+        headlineBefore: "SaaS 产品与内部系统",
+        headlineAccent: "— 为上线而构建",
         headlineAfter: "",
-        lead: "我们开发落地页、Telegram 机器人、CRM、客户门户与 MVP — 并连成一体流程：从首次咨询到付款与结果。"
+        lead: "为创始人和代理机构设计并构建 MVP、客户门户、仪表盘与自动化。范围固定、书面进度更新、完整源代码归属。"
       },
       {
-        headline: "表单已提交。接下来会发生什么？",
-        headlineLines: ["表单已提交。", "接下来会发生什么？"],
-        headlineBefore: "表单已提交。",
-        headlineAccent: "接下来会发生什么？",
+        headline: "范围漂移，进度沉默",
+        headlineLines: ["范围漂移，", "进度沉默"],
+        headlineBefore: "范围漂移，",
+        headlineAccent: "进度沉默",
         headlineAfter: "",
-        lead: "当咨询散落在聊天、收件箱与表格中，团队回复慢、忘记客户，也不知道下一步。"
+        lead: "没有固定范围与书面节点，MVP 容易延期，创始人也失去可见性。"
       },
       {
-        headline: "一条线索。一套清晰流程",
-        headlineLines: ["一条线索。", "一套清晰流程"],
-        headlineBefore: "一条线索。",
-        headlineAccent: "一套清晰流程",
+        headline: "一个核心场景 — 分阶段交付",
+        headlineLines: ["一个核心场景 —", "分阶段交付"],
+        headlineBefore: "一个核心场景 —",
+        headlineAccent: "分阶段交付",
         headlineAfter: "",
-        lead: "我们连接网站、Telegram、CRM、表格与内部工具，让团队立刻看到客户、状态与下一步。"
+        lead: "先锁定主要用户流程，按阶段交付可用成果，并移交源代码与访问权限。"
       }
     ],
-    subtitle: "我们开发落地页、Telegram 机器人、CRM、客户门户与 MVP — 并连成一体流程：从首次咨询到付款与结果。",
-    ctaPrimary: "获取项目评估",
-    ctaSecondary: "查看已上线项目",
-    micro: "工作日内回复 · 分阶段交付 · 移交源代码与权限",
+    subtitle: "为创始人和代理机构设计并构建 MVP、客户门户、仪表盘与自动化。范围固定、书面进度更新、完整源代码归属。",
+    ctaPrimary: "获取书面范围与报价",
+    ctaSecondary: "查看已验证案例",
+    micro: "一个工作日内回复 · 开发前确认范围与价格 · 包含源代码与访问权限",
     flowNodes: ["线索", "处理中", "Telegram", "CRM"],
     flowNodeHints: ["来自网站", "自动", "通知", "进入 CRM"],
     flowTelegramBot: "TIVONIX Bot",
@@ -5106,7 +5335,7 @@ const COPY_ZH$1 = {
     visualStatus: [
       { main: "正在搭建您的线索系统…", sub: "落地页、表单、Telegram" },
       { main: "已收到新线索", sub: "通知已发送到 Telegram" },
-      { main: "迷你 CRM 领域的领先者", sub: "状态：进行中" }
+      { main: "线索已进入迷你 CRM", sub: "状态：进行中" }
     ]
   },
   pain: {
@@ -5286,7 +5515,7 @@ const COPY_ZH$1 = {
   audience: {
     badge: "TIVONIX",
     title: "我们服务谁",
-    subtitle: "需要的不只是好看官网，而是能跑通业务的系统：线索、预约、状态、支付或客户后台。白俄罗斯技术团队 TIVONIX，助力进入白俄罗斯与 EAEU 市场。",
+    subtitle: "需要的不只是好看官网，而是能跑通业务的系统：线索、预约、状态、支付或客户门户。",
     callouts: {
       left: {
         text: "线索一分钟内到达经理 — 不会埋在聊天或明天的表格里。"
@@ -5746,12 +5975,16 @@ const COPY_RU = {
   trust: {
     ariaLabel: "Почему можно доверять",
     items: [
-      "Поддержка после запуска"
+      "Договор и фиксация объёма до старта",
+      "Поэтапная оплата по частям работы",
+      "Передача исходного кода и доступов",
+      "Гарантийные исправления ошибок после запуска",
+      "Письменные отчёты о прогрессе"
     ]
   },
   featured: {
     eyebrow: "Проекты",
-    title: "Три живых результата",
+    title: "Три кейса из портфолио",
     subtitle: "Разные типы задач — от финтех-платформы до локального бизнеса.",
     viewCase: "Посмотреть кейс",
     openLive: "Открыть проект",
@@ -5781,7 +6014,7 @@ const COPY_RU = {
         type: "Веб-продукт · FinTech",
         problem: "Нужна была финтех-платформа для долей в музыке — не лендинг, а полноценный продукт с деньгами, ролями и комплаенсом.",
         solution: "Собрали каталог релизов, кабинеты, KYC, платежи, вторичный рынок и портал оператора.",
-        result: "Финтех-платформа в продакшене: кабинеты, роли, KYC, платежи и вторичный рынок.",
+        result: "Финтех-платформа: кабинеты, роли, KYC, платежи и вторичный рынок. Поддерживается TIVONIX.",
         modules: [
           "Кабинеты",
           "KYC",
@@ -5796,7 +6029,7 @@ const COPY_RU = {
         type: "Маркетплейс · запись",
         problem: "Нужен был не лендинг с кнопкой, а маркетплейс записи: каталог, слоты, кабинет мастера и оплата.",
         solution: "Собрали каталог с фильтрами и картой, Telegram Mini App, кабинет Free/Pro, админку и bePaid.",
-        result: "Маркетплейс на slotty.of.by: запись без звонков, кабинеты и платежи в одной системе.",
+        result: "Платформа на slotty.of.by: запись без звонков, кабинеты и платежи в одной системе.",
         modules: [
           "Каталог",
           "Карта",
@@ -5969,7 +6202,6 @@ const COPY_RU = {
     foot: "Сайты, Telegram, CRM, кабинеты и MVP в одной связке. Фиксируем объём, сроки и передаём код с доступами.",
     stats: [
       { value: "7+", label: "Проектов в продакшене" },
-      { value: "1 нед.", label: "Быстрый запуск панели" },
       { value: "100%", label: "Код и доступы у вас" },
       { value: "BY · RU", label: "География запусков" }
     ]
@@ -5982,12 +6214,16 @@ const COPY_EN = {
   trust: {
     ariaLabel: "Why you can trust us",
     items: [
-      "Support after launch"
+      "Contract and scope fixed before kickoff",
+      "Staged payment by work milestones",
+      "Source code and access handover",
+      "Warranty bug fixes after launch",
+      "Written progress reports"
     ]
   },
   featured: {
     eyebrow: "Projects",
-    title: "Three live results",
+    title: "Three portfolio case studies",
     subtitle: "Different project types — from a fintech platform to local business.",
     viewCase: "View case",
     openLive: "Open live",
@@ -6017,7 +6253,7 @@ const COPY_EN = {
         type: "Web product · FinTech",
         problem: "Needed a fintech platform for music shares — a full product with money flows, roles and compliance, not a landing page.",
         solution: "Built release catalog, portals, KYC, payments, secondary market and an operator portal.",
-        result: "Fintech platform in production: portals, roles, KYC, payments and a secondary market.",
+        result: "Fintech platform: portals, roles, KYC, payments and a secondary market. Supported by TIVONIX.",
         modules: [
           "Portals",
           "KYC",
@@ -6030,14 +6266,14 @@ const COPY_EN = {
       {
         id: "slotty",
         type: "Marketplace · booking",
-        problem: "Needed more than a “book now” landing — a booking marketplace with catalog, slots, master cabinet and payments.",
-        solution: "Built filtered catalog + map, Telegram Mini App, Free/Pro master cabinet, admin and bePaid.",
-        result: "Marketplace on slotty.of.by: book without calls, cabinets and payments in one system.",
+        problem: "Needed more than a “book now” landing — a booking platform with catalog, slots, service provider portal and payments.",
+        solution: "Built filtered catalog + map, Telegram Mini App, Free/Pro service provider portal, admin and bePaid.",
+        result: "Platform on slotty.of.by: book without calls, portals and payments in one system.",
         modules: [
           "Catalog",
           "Map",
           "Slots",
-          "Master cabinet",
+          "Service provider portal",
           "Telegram",
           "bePaid"
         ]
@@ -6205,7 +6441,6 @@ const COPY_EN = {
     foot: "Sites, Telegram, CRM, portals and MVPs in one loop. We lock scope and timelines, then hand over code and access.",
     stats: [
       { value: "7+", label: "Projects in production" },
-      { value: "1 wk", label: "Fastest panel launch" },
       { value: "100%", label: "Code and access yours" },
       { value: "BY · RU", label: "Where we ship" }
     ]
@@ -6218,7 +6453,11 @@ const COPY_ZH = {
   trust: {
     ariaLabel: "为什么可以信任我们",
     items: [
-      "上线后支持"
+      "合同与范围在开工前锁定",
+      "按阶段付款",
+      "移交源代码与权限",
+      "上线后保修修复",
+      "书面进度报告"
     ]
   },
   featured: {
@@ -6441,7 +6680,6 @@ const COPY_ZH = {
     foot: "网站、Telegram、CRM、门户与 MVP 在同一闭环。锁定范围与周期，再移交代码与权限。",
     stats: [
       { value: "7+", label: "已上线项目" },
-      { value: "1周", label: "最快面板上线" },
       { value: "100%", label: "代码与权限归您" },
       { value: "BY · RU", label: "交付地区" }
     ]
@@ -6502,12 +6740,7 @@ function buildAllProjects(isRu) {
         isRu ? "Продукт **в продакшене** на Railway" : "Product **live** on Railway",
         isRu ? "Собрали за **1 неделю**" : "Shipped in **1 week**"
       ],
-      stack: ["React", "TypeScript", "Node.js", "PostgreSQL", "Railway"],
-      testimonial: {
-        name: isRu ? "Артём К." : "Artem K.",
-        role: isRu ? "Один из основателей TIVONIX" : "Co-founder, TIVONIX",
-        text: isRu ? "Раньше статусы размазывались по чатам, выплаты сидели в таблицах. С панелью открыл кабинет и сразу понятно, где сделка и что дальше. Без воды, просто работает." : "Statuses used to live in chats, payouts in spreadsheets. With the panel you open the dashboard and know where the deal is. No fluff, it just works."
-      }
+      stack: ["React", "TypeScript", "Node.js", "PostgreSQL", "Railway"]
     },
     // 1) LABEL0S — 3 days
     {
@@ -6617,8 +6850,8 @@ function buildAllProjects(isRu) {
       subtitleRu: "Корпоративный сайт ООО «Хэдмайнд»: Figma → WordPress + Elementor, хостинг и домен headmind.ru.",
       subtitleEn: "Corporate site for Headmind: Figma → WordPress + Elementor, hosting and domain headmind.ru.",
       subtitleZh: "Headmind 的公司网站：Figma → WordPress + Elementor，托管和域名 headmind.ru。",
-      detailsRu: "Зачем это\nООО «Хэдмайнд» — консалтинг по трансформации бизнеса: стратегия, цифровизация, оргдизайн, производство, контракты. В B2B часто **теряют сделку на первом касании**, если сайт говорит «обо всём и ни о чём». Нужен был сайт, который спокойно шлют в первом сообщении.\n\nЗаказчик — **Евгений Беликов**, основатель и генеральный директор ООО «Хэдмайнд» (соучредитель — Виталий Петровский). Прод: **headmind.ru**.\n\nКак работает\nПосетитель проходит короткий маршрут: **услуги** → **подход / экспертиза** → **команда** → **контакт / заявка**. На каждом шаге понятно, кто вы и чем сильны. CTA стоит там, где человек уже готов написать.\n\nЧто внутри\nСначала **макеты в Figma**: несколько визуальных вариантов на выбор — пока заказчику не «зашло». Потом дизайн и сборка на **WordPress + Elementor**: услуги (трансформация, цифровизация, HR, производство, контракты, продажи), команда, доверие, формы заявки.\n\nПод ключ: подобрали и подключили **хостинг**, купили/привязали **домен headmind.ru**, выкатили в прод, настроили админку WordPress, чтобы контент правили сами. Стек не «с нуля на React» — осознанный выбор: быстрый запуск, удобное редактирование, спокойный B2B-сайт.\n\nЧто сделали\nFigma (выборка вариантов) → дизайн → WordPress/Elementor → хостинг + домен → живой **headmind.ru**. Упаковали экспертизу в маршрут до заявки.\n\nИтог\nНе шаблон «поставьте логотип». **Корпоративный сайт под ключ** для Евгения Беликова / ООО «Хэдмайнд»: Figma → WP, домен и хостинг — можно открыть и проверить самому.\n",
-      detailsEn: "Why it matters\nHeadmind is a business-transformation consultancy: strategy, digitalization, org design, production, contracts. In B2B you often **lose the deal on first contact** if the site says everything and nothing. They needed a site you can send in the first message.\n\nClient — **Evgeniy Belikov**, founder and CEO of Headmind (co-founder — Vitaliy Petrovsky). Live: **headmind.ru**.\n\nHow it works\nA visitor follows a short path: **services** → **approach / expertise** → **team** → **contact / lead**. At every step it’s clear who you are and why you’re strong. CTAs sit where people are already ready to write.\n\nWhat’s inside\nFirst **Figma mockups**: several visual directions until the client picked a favourite. Then design and build on **WordPress + Elementor**: services (transformation, digitalization, HR, production, contracts, sales), team, trust, lead forms.\n\nTurnkey: hosting set up, **domain headmind.ru** connected, shipped to production, WordPress admin ready so they can edit content themselves. Not a custom React build on purpose — fast launch, easy editing, a calm B2B site.\n\nWhat we delivered\nFigma (variant selection) → design → WordPress/Elementor → hosting + domain → live **headmind.ru**. Expertise packaged into a path to a lead.\n\nOutcome\nNot a “drop your logo” template. A **turnkey corporate site** for Evgeniy Belikov / Headmind: Figma → WP, domain and hosting — open it and check yourself.\n",
+      detailsRu: "Контекст клиента\nООО «Хэдмайнд» — консалтинг по трансформации бизнеса: стратегия, цифровизация, оргдизайн, производство, контракты. Заказчик — **Евгений Беликов**, основатель и генеральный директор.\n\nЗадача\nВ B2B часто теряют внимание на первом касании, если сайт не объясняет услуги и экспертизу. Нужен корпоративный сайт, который можно спокойно отправить в первом сообщении.\n\nЧто сделала TIVONIX\nМакеты в **Figma** (несколько визуальных вариантов на выбор) → дизайн и сборка на **WordPress + Elementor**: услуги, команда, доверие, формы заявки. Подключили хостинг и домен **headmind.ru**, настроили админку для самостоятельного редактирования контента.\n\nЗона ответственности TIVONIX\nДизайн-направление, WordPress-реализация, хостинг, домен, деплой и передача проекта.\n\nПодтверждённый результат\nКорпоративный сайт с маршрутом **услуги → команда → заявка** на домене headmind.ru.\n\nТехнологии\nFigma, WordPress, Elementor, хостинг, DNS.\n\nТекущий статус\nСдан. Внешний сайт: headmind.ru.\n\nСледующий шаг\nОткройте кейс или перейдите на headmind.ru, чтобы оценить структуру и подачу.\n",
+      detailsEn: "Client context\nHeadmind LLC — business transformation consultancy: strategy, digitalization, org design, production, contracts. Client — **Evgeniy Belikov**, founder and CEO.\n\nChallenge\nIn B2B you lose attention on first contact if the site doesn’t explain services and expertise. They needed a corporate site safe to send in the first message.\n\nWhat TIVONIX delivered\n**Figma** mockups (several visual options) → design and build on **WordPress + Elementor**: services, team, trust blocks, lead forms. Hosting and **headmind.ru** domain connected; WordPress admin set up for self-service content edits.\n\nTIVONIX responsibility\nDesign direction, WordPress implementation, hosting, domain, deployment and project handover.\n\nVerified result\nCorporate site with a clear path **services → team → lead** on headmind.ru.\n\nTechnology\nFigma, WordPress, Elementor, hosting, DNS.\n\nCurrent status\nDelivered. External site: headmind.ru.\n\nNext step\nOpen the case or visit headmind.ru to review structure and presentation.\n",
       detailsZh: "为什么这很重要\nHeadadmind 是一家业务转型咨询公司：战略、数字化、组织设计、生产、合同。在 B2B 中，如果网站什么都说了，但什么也没说，你常常**在第一次接触时就失去了交易**。他们需要一个您可以在第一条消息中发送的网站。\n\n客户 — **Evgeniy Belikov**，Headmind 创始人兼首席执行官（联合创始人 — Vitaliy Petrovsky）。直播：**headmind.ru**。\n\n它是如何运作的\n访客遵循一条简短的路径：**服务**→**方法/专业知识**→**团队**→**联系人/领导**。每一步都清楚你是谁以及你为何强大。 CTA 位于人们已经准备好写作的地方。\n\n里面有什么\n首先**Figma 模型**：几个视觉方向，直到客户选择了最喜欢的。然后在 **WordPress + Elementor** 上进行设计和构建：服务（转型、数字化、人力资源、生产、合同、销售）、团队、信任、潜在客户表单。\n\n统包：托管设置、**域名 headmind.ru** 连接、交付生产、WordPress 管理员准备就绪，以便他们可以自己编辑内容。不是专门定制的 React 构建——快速启动、轻松编辑、平静的 B2B 网站。\n\n我们交付了什么\nFigma（变体选择）→设计→WordPress/Elementor → 托管 + 域名 → 直播 **headmind.ru**。专业知识融入了通往潜在客户的道路。\n\n结果\n不是“放弃您的徽标”模板。 Evgeniy Belikov / Headadmind 的 **交钥匙企业网站**：Figma → WP、域名和托管 - 打开它并自行检查。",
       domain: HEADMIND_DOMAIN,
       status: "live",
@@ -6641,11 +6874,11 @@ function buildAllProjects(isRu) {
     {
       id: "slotty",
       title: "Slotty",
-      subtitleRu: "Полный маркетплейс записи к мастерам: каталог с фильтрами и картой, Telegram Mini App, кабинет мастера (SaaS Free/Pro), platform-admin, bePaid — на Railway, домен slotty.of.by.",
-      subtitleEn: "Full booking marketplace for masters: filtered catalog + map, Telegram Mini App, master SaaS cabinet (Free/Pro), platform admin, bePaid — on Railway, domain slotty.of.by.",
+      subtitleRu: "Маркетплейс онлайн-записи к мастерам: каталог с фильтрами и картой, Telegram Mini App, кабинет мастера (SaaS Free/Pro), platform-admin, bePaid — на Railway, домен slotty.of.by.",
+      subtitleEn: "Booking marketplace for service providers: filtered catalog + map, Telegram Mini App, service provider portal (Free/Pro), platform admin, bePaid — on Railway, domain slotty.of.by.",
       subtitleZh: "大师的完整预订市场：过滤目录 + 地图、Telegram Mini App、大师 SaaS 柜（免费/专业版）、平台管理、bePaid — on Railway、域名 slotty.of.by。",
-      detailsRu: "Зачем это\nЗапись к мастеру до сих пор часто живёт в **Direct и WhatsApp**: «есть на завтра?», «а через час?», «ой, забыла напомнить». Клиент устаёт писать. Мастер устаёт отвечать. Слоты пропадают в тишине чата.\n\nНужен был не черновик и не «кнопка записаться», а **полный маркетплейс**: каталог с жёсткой фильтрацией, карта, путь клиента, SaaS-кабинет мастера, роли, platform-admin, оплаты, уведомления и прод. Заказчик — **Виктория Д.** Срок — **3 недели**.\n\nКак работает\nКлиент открывает **slotty.of.by** (сайт или Telegram Mini App) → каталог → фильтры / карта → мастер → услуга → **свободный слот** → подтверждение. Код записи, напоминания в Telegram и email — без звонков.\nМастер в кабинете ведёт профиль, портфолио, адрес, услуги, акции, расписание, заявки и клиентов; тариф Free или Pro.\nPlatform-admin модерирует мастеров, записи, биллинг, платежи bePaid, рассылки и журнал — платформой можно рулить уже сейчас.\n\nЧто внутри\nЭто **крупная разработка**, не лендинг с формой. Фронт: React + TypeScript + Vite + Tailwind. Бэкенд: Express API, PostgreSQL (**88 миграций**), JWT-сессии. Прод: **два сервиса на Railway** (web + api), домен **slotty.of.by** — подсказали, где купить домен, подняли хостинг, привязали DNS и выкатили в бой. Плюс Telegram Bot / Mini App, Google Auth, email (Resend), карты (Leaflet / OSM, опционально Яндекс), платежи **bePaid** (BYN), Sentry, SEO-prerender.\n\nМаркетплейс для клиента: **6 категорий** (маникюр, барберы, брови/ресницы, массаж, фитнес, тату). Каталог — не «список карточек», а полноценный поиск: все / популярные / акции / новинки, текстовый поиск, **карта с геосортировкой**.\n\nФильтры: сортировка (рекомендации, популярность, ближайший слот, расстояние, рейтинг, цена ↑↓, отзывы); дата (сегодня / завтра / неделя / выходные / точный день); время суток и слайдер часов; визит в салоне или на дому; длительность; цена в BYN; рейтинг от 4.5 / 4.7 / 4.9; число отзывов; только верифицированные; только с акциями; только с онлайн-записью. Запись: дата → слот → комментарий → референс-фото → успех с кодом **SL-…**. Профиль клиента: записи, избранное, уведомления, настройки, отзыв после визита.\n\nКабинет мастера — отдельный SaaS: сегодня / заявки / расписание / услуги (каталог, цены, пакеты, акции) / профиль и портфолио / клиенты / репутация / биллинг / уведомления (десятки типов событий). Онбординг в **8 шагов**: категории → профиль → адрес на карте → услуги → доверие → превью → тариф. Тарифы: Free (лимиты) / Pro / trial 7 дней — оплата bePaid или ручной перевод.\n\nPlatform-admin: обзор, заявки (категории, удаления, спонсорство, жалобы), поддержка, статус системы, пользователи, мастера, услуги, записи (в т.ч. проблемные отмены), биллинг и промокоды, платежи bePaid, рассылки, аудит. Роли: **client / master / platform_admin**. Auth: email, Google, Telegram — с телефона и с компьютера.\n\nСложные куски, которые обычно «ломают» сроки: concurrent booking и слоты, pending expiry, auto-complete, споры по записи; entitlements Free/Pro; очередь уведомлений; multi-identity auth; серверный каталог с 20+ параметрами фильтра и Pro-boost в рекомендациях.\n\nЧто сделали\nДизайн + разработка под ключ: маркетплейс, кабинеты, админка, интеграции, домен и хостинг. Продукт на **slotty.of.by** — **скоро запуск к настоящим клиентам и мастерам**.\n\nИтог\nНе демо «посмотрите идею». **Полный маркетплейс записи** с фильтрами, картой, Mini App, SaaS мастера и platform-admin. Виктория Д., 3 недели — и живой прод, куда можно зайти и проверить самому.\n",
-      detailsEn: "Why it matters\nBooking a master still often lives in **DMs and WhatsApp**: “free tomorrow?”, “in an hour?”, “oops, forgot to remind”. Clients get tired of typing. Masters get tired of answering. Slots vanish into chat silence.\n\nThis wasn’t a draft or a “book now” button. It needed a **full marketplace**: filtered catalog, map, client path, master SaaS cabinet, roles, platform admin, payments, notifications and production. Client — **Victoria D.** Timeline — **3 weeks**.\n\nHow it works\nClient opens **slotty.of.by** (web or Telegram Mini App) → catalog → filters / map → master → service → **open slot** → confirm. Booking code, Telegram + email reminders — no calls.\nMasters run profile, portfolio, address, services, promos, schedule, requests and clients; Free or Pro plan.\nPlatform admin moderates masters, bookings, billing, bePaid payments, broadcasts and audit — the platform is operable now.\n\nWhat’s inside\nA **large build**, not a landing with a form. Frontend: React + TypeScript + Vite + Tailwind. Backend: Express API, PostgreSQL (**88 migrations**), JWT sessions. Production: **two Railway services** (web + api), domain **slotty.of.by** — we advised where to buy the domain, set up hosting, pointed DNS and shipped live. Plus Telegram Bot / Mini App, Google Auth, email (Resend), maps (Leaflet / OSM, optional Yandex), **bePaid** (BYN), Sentry, SEO prerender.\n\nClient marketplace: **6 categories** (manicure, barbers, brows/lashes, massage, fitness, tattoo). Catalog isn’t a flat card list — full search: all / popular / promos / new, text search, **map with geo sort**.\n\nFilters: sort (recommended, popular, soonest, distance, rating, price ↑↓, reviews); date (today / tomorrow / week / weekend / exact day); time of day + hour slider; studio or at-home; duration; BYN price; rating from 4.5 / 4.7 / 4.9; review count; verified only; promos only; online booking only. Booking: date → slot → comment → reference photos → success with code **SL-…**. Client profile: appointments, favorites, notifications, settings, post-visit review.\n\nMaster cabinet is a separate SaaS: today / requests / schedule / services (catalog, prices, bundles, promos) / profile & portfolio / clients / reputation / billing / notifications (dozens of event types). **8-step** onboarding: categories → profile → map address → services → trust → preview → plan. Plans: Free (limits) / Pro / 7-day trial — bePaid or manual transfer.\n\nPlatform admin: overview, requests (category changes, deletions, sponsorship, reports), support, system status, users, masters, services, bookings (incl. problem cancellations), billing & promo codes, bePaid payments, broadcasts, audit. Roles: **client / master / platform_admin**. Auth: email, Google, Telegram — phone or desktop.\n\nHard pieces that usually blow timelines: concurrent booking & slots, pending expiry, auto-complete, booking disputes; Free/Pro entitlements; notification job queue; multi-identity auth; server catalog with 20+ filter params and Pro boost in recommendations.\n\nWhat we delivered\nDesign + turnkey build: marketplace, cabinets, admin, integrations, domain and hosting. Live on **slotty.of.by** — **soon launching to real clients and masters**.\n\nOutcome\nNot a “look at the idea” demo. A **full booking marketplace** with filters, map, Mini App, master SaaS and platform admin. Victoria D., 3 weeks — and a live prod you can open and check yourself.\n",
+      detailsRu: "Контекст клиента\nЗаказчик — **Виктория Д.** Нужна платформа онлайн-записи к мастерам красоты и сервиса, а не лендинг с одной кнопкой.\n\nЗадача\nЗапись часто идёт через Direct и мессенджеры: клиент и мастер теряют время, слоты не видны. Нужны каталог, фильтры, карта, кабинет мастера, роли, platform-admin и оплаты в одной системе.\n\nЧто сделала TIVONIX\nДизайн и разработка под ключ: клиентский каталог с фильтрами и картой, Telegram Mini App, SaaS-кабинет мастера (Free/Pro), platform-admin, интеграция **bePaid**, домен **slotty.of.by**, деплой на **Railway** (web + api).\n\nЗона ответственности TIVONIX\nПродуктовая архитектура, UI/UX, фронтенд и бэкенд, база данных, интеграции, инфраструктура и выкладка на домен заказчика.\n\nПодтверждённый результат\nРабочая платформа на slotty.of.by: каталог, запись по слотам, кабинеты мастера и администратора, Telegram Mini App.\n\nТехнологии\nReact, TypeScript, Vite, Tailwind, Express, PostgreSQL, Railway, Telegram Mini App, Google Auth, bePaid, Leaflet, Resend.\n\nТекущий статус\nСдан. Поддерживается TIVONIX. Публичный запуск к клиентам и мастерам — на стороне заказчика.\n\nСледующий шаг\nОткройте slotty.of.by или кейс, чтобы посмотреть каталог, фильтры и сценарий записи.\n",
+      detailsEn: "Client context\nClient — **Victoria D.** Needed a booking platform for beauty and service providers — not a single-button landing page.\n\nChallenge\nBooking often happens in DMs and messengers: clients and providers lose time, slots stay invisible. The product needed catalog, filters, map, service provider portal, roles, platform admin and payments in one system.\n\nWhat TIVONIX delivered\nTurnkey design and build: client catalog with filters and map, Telegram Mini App, service provider portal (Free/Pro), platform admin, **bePaid** integration, **slotty.of.by** domain, **Railway** deployment (web + api).\n\nTIVONIX responsibility\nProduct architecture, UI/UX, frontend and backend, database, integrations, infrastructure and deployment on the client’s domain.\n\nVerified result\nWorking platform on slotty.of.by: catalog, slot-based booking, provider and admin portals, Telegram Mini App.\n\nTechnology\nReact, TypeScript, Vite, Tailwind, Express, PostgreSQL, Railway, Telegram Mini App, Google Auth, bePaid, Leaflet, Resend.\n\nCurrent status\nDelivered. Supported by TIVONIX. Public rollout to clients and providers is managed by the client.\n\nNext step\nOpen slotty.of.by or the case page to review catalog, filters and the booking flow.\n",
       detailsZh: "为什么这很重要\n预订大师仍然经常存在于**DM和WhatsApp**中：“明天有空吗？”，“一个小时后？”，“哎呀，忘了提醒”。客户厌倦了打字。大师们厌倦了回答。老虎机消失在聊天的沉默中。\n\n这不是草稿或“立即预订”按钮。它需要一个**完整的市场**：过滤目录、地图、客户路径、主 SaaS 柜、角色、平台管理、支付、通知和生产。客户 — **Victoria D.** 时间表 — **3 周**。\n\n它是如何运作的\n客户端打开**slotty.of.by**（网络或Telegram迷你应用程序）→目录→过滤器/地图→主→服务→**打开插槽**→确认。预订代码、电报 + 电子邮件提醒 — 无需致电。\n大师运行简介、投资组合、地址、服务、促销、时间表、请求和客户；免费或专业计划。\n平台管理员负责管理、预订、计费、bePaid 付款、广播和审计——该平台现已可运行。\n\n里面有什么\n**大型建筑**，而不是带有形式的平台。前端：React + TypeScript + Vite + Tailwind。后端：Express API、PostgreSQL（**88 迁移**）、JWT 会话。生产：**两个铁路服务**（Web + API），域名**slotty.of.by** - 我们建议d 在哪里购买域名、设置托管、指向 DNS 并实时发货。加上 Telegram Bot / Mini App、Google Auth、电子邮件（重新发送）、地图（传单 / OSM、可选 Yandex）、**bePaid** (BYN)、Sentry、SEO 预渲染。\n\n客户市场：**6 个类别**（美甲、理发、眉毛/睫毛、按摩、健身、纹身）。目录不是平面卡片列表 - 完整搜索：所有/流行/促销/新，文本搜索，**带地理排序的地图**。\n\n过滤器：排序（推荐、热门、最快、距离、评分、价格↑↓、评论）；日期（今天/明天/周/周末/确切日期）；一天中的时间+小时滑块；工作室或家里；期间; BYN 价格；评分从 4.5 / 4.7 / 4.9 起；评论计数；仅经过验证；仅促销；仅限网上预订。预订：日期→时段→评论→参考照片→使用代码**SL-…**成功。客户资料：约会、收藏夹、通知、设置、访问后回顾。\n\n主柜是一个单独的 SaaS：今天/请求/时间表/服务（目录、价格、捆绑、促销）/配置文件和投资组合/客户/声誉/计费/通知（数十种事件类型）。 **8步**入职：类别→个人资料→地图地址→服务→信任→预览→计划。计划：免费（限制）/ Pro / 7 天试用 — 付费或手动转账。\n\n平台管理：概述、请求（类别更改、删除、赞助、报告）、支持、系统状态、用户、主、服务、预订（包括问题取消）、计费和促销代码、bePaid 付款、广播、审计。角色：**客户端/主控/平台管理员**。身份验证：电子邮件、Google、Telegram - 手机或桌面。\n\n通常会破坏时间线的困难部分：并发预订和时段、待到期、自动完成、预订争议；免费/专业版权利；通知作业队列；多重身份验证；具有 20 多个过滤器参数和专业增强推荐的服务器目录。\n\n我们交付了什么\n设计+交钥匙构建：市场、橱柜、管理、集成、域名和托管。在 **slotty.of.by** 上直播 — **即将向真正的客户和大师推出**。\n\n结果\n不是“看看这个想法”的演示。 **完整的预订市场**，包含过滤器、地图、迷你应用程序、主 SaaS 和平台管理。 Victoria D.，3 周 — 以及您可以自己打开并检查的实时产品。",
       domain: SLOTTY_DOMAIN,
       status: "live",
@@ -6653,10 +6886,10 @@ function buildAllProjects(isRu) {
       cover: "/images/project-priew/slotty.webp",
       gallery: SLOTTY_GALLERY,
       outcomes: [
-        isRu ? "**Полный маркетплейс** за 3 недели — не MVP" : "**Full marketplace** in 3 weeks — not an MVP",
-        isRu ? "Каталог с **фильтрами + карта** · Mini App · Free/Pro" : "Catalog with **filters + map** · Mini App · Free/Pro",
-        isRu ? "Домен **slotty.of.by** · хостинг Railway (web + api)" : "Domain **slotty.of.by** · Railway hosting (web + api)",
-        isRu ? "Виктория Д. · скоро запуск к живым клиентам" : "Victoria D. · soon launching to live clients"
+        isRu ? "Каталог с **фильтрами и картой** · Mini App · Free/Pro" : "Catalog with **filters + map** · Mini App · Free/Pro",
+        isRu ? "Домен **slotty.of.by** · Railway (web + api)" : "Domain **slotty.of.by** · Railway (web + api)",
+        isRu ? "Кабинет мастера и platform-admin" : "Service provider portal and platform admin",
+        isRu ? "**Поддерживается TIVONIX**" : "**Supported by TIVONIX**"
       ],
       stack: [
         "React",
@@ -6674,7 +6907,7 @@ function buildAllProjects(isRu) {
       testimonial: {
         name: isRu ? "Виктория Д." : "Victoria D.",
         role: isRu ? "Заказчик Slotty" : "Slotty client",
-        text: isRu ? "Мне нужен был нормальный маркетплейс: фильтры, кабинет мастера, админка. Не демо. За три недели собрали на нашем домене, уже можно звать реальных клиентов." : "I needed a real marketplace: filters, master cabinet, admin. Not a demo. In three weeks it was on our domain and ready for real clients."
+        text: isRu ? "Нужен был нормальный маркетплейс: фильтры, кабинет мастера, админка. Собрали на нашем домене — уже можно показывать реальным клиентам." : "I needed a real marketplace: filters, service provider portal, admin. They built it on our domain — ready to show real clients."
       }
     },
     // 8) NEO TERMINAL — AI commerce operating system
@@ -6685,8 +6918,8 @@ function buildAllProjects(isRu) {
       subtitleRu: "AI-платформа коммерции, которая связывает каталоги, склад, диалоги с клиентами, B2B-закупки, checkout, доставку и операционку бизнеса в одну систему.",
       subtitleEn: "AI commerce platform that connects product catalogs, inventory, customer conversations, B2B procurement, checkout, delivery and business automation in one operating system.",
       subtitleZh: "AI 商业平台：将商品目录、库存、客户对话、B2B 采购、结算、配送与业务运营连成一套操作系统。",
-      detailsRu: "Зачем это\nСовременная коммерция редко ломается из‑за отсутствия сайта. Она ломается **между системами**.\n\nКаталог живёт в одном месте. Остатки — в другом. Клиент пишет в мессенджер. B2B-закупщик присылает Excel. Менеджер руками сверяет наличие. Маркетинг работает с третьим набором данных. Доставка стартует только после того, как кто‑то снова копирует заказ.\n\nКаждый разрыв добавляет задержку и ещё одну точку, где сделка может оборваться.\n\nNeo Terminal собран как операционный слой на всю эту цепочку. Вместо ещё одного изолированного интерфейса мы связали товарные данные, склад, клиентские касания, транзакции и операции вокруг **одной коммерческой модели**.\n\nКак работает\nМерчант подключает или импортирует каталог из YML, XLSX, CSV, CommerceML или доступного ERP-коннектора.\n\nNeo Terminal нормализует товары, варианты, SKU, цены, медиа и остатки в одну коммерческую модель.\n\nДальше те же данные питают поиск для клиента, продажи с поддержкой AI, операции мерчанта, складские сценарии и B2B-закупки.\n\nКлиент может найти товар, задать вопросы, сравнить варианты, добавить позиции в корзину и перейти к оплате.\n\nБизнес-закупщик может отправить потребность или структурированный файл, сопоставить SKU и альтернативы, получить коммерческое предложение и пройти согласование с заказом.\n\nКоманды мерчанта работают из той же системы: каталог, склад, заказы, диалоги, аналитика, каналы и операционные инструменты.\n\nАрхитектура устроена так, чтобы внешние провайдеры оставались адаптерами вокруг коммерческого ядра, а не источником правды.\n\nЧто внутри\n**Merchant OS.** Центральный кабинет операций: обзор, товары, склад, заказы, клиенты, диалоги, интеграции, каналы, аналитика, команда и настройки.\n\n**Catalog & Data Hub.** Neo Terminal принимает коммерческие данные из нескольких форматов и коннекторов. Товарная информация нормализуется вокруг products, variants, SKU, цен, медиа и остатков — а не остаётся привязанной к одному внешнему фиду.\n\n**Smart Inventory.** Складские сценарии связывают состояние остатков, приход и корректировки с разбором документов и файлов. Изменения идут через проверку: извлечённые данные можно сверить до того, как они изменят реальный сток.\n\n**AI Seller.** Слой интеллекта работает с каталогом и коммерческим контекстом: помогает в поиске, сравнении и диалогах с клиентом. Ответ модели считается недоверенным, а действия ограничены серверными правами и бизнес-правилами.\n\n**Smart City.** Клиентский слой коммерции для поиска по участвующим мерчантам, а не по одному изолированному каталогу. В контуре — товары, витрины мерчантов, корзины, сетевые корзины, архитектура checkout, заказы, аккаунт и адреса.\n\n**B2B Procurement.** Закупщики работают со структурированным циклом: данные компании, потребность, сопоставление SKU, альтернативы, КП, согласования, заказ и история.\n\n**Omnichannel.** Слой диалогов собран вокруг единого инбокса и адаптеров провайдеров: команда видит клиентский контекст, не переписывая коммерческую логику под каждый мессенджер.\n\n**Terminal Pay.** Checkout и оркестрация платежей отделены от конкретной реализации провайдера. Цены, проверка остатков и состояние заказа остаются авторитетными на бэкенде, а платёжные провайдеры работают на контролируемой границе.\n\n**Delivery & Courier OS.** Доставка связывается с состоянием исполнения заказа. Инструменты курьера закрывают рабочие смены, историю, профиль и начисления; внешние службы доставки при необходимости изолированы адаптерами.\n\n**Business Director.** Управленческий слой собирает операционные и коммерческие данные для рекомендаций и решений — аналитика здесь не набор оторванных графиков.\n\n**Marketing OS & Content Factory.** Коммерческие данные могут уходить в кампании и контент-процессы, чтобы товары и контекст мерчанта не отрывались от маркетинга.\n\n**Terminal Ads.** Рекламный слой вводит площадки, экраны, креативы, доступность и бронирование, оставляя внешнюю DOOH-доставку за границей провайдера.\n\n**Edge и физическая коммерция.** В продукте есть программный фундамент для устройств: регистрация, конфигурация, синхронизация и отзыв доступа. Это путь к киоскам, локальным терминалам и железу без смешивания device-security с обычными браузерными сессиями.\n\n**Platform Administration.** Отдельный платформенный слой: организации, пользователи, провайдеры, очереди, операции, аудит и безопасность.\n\nNeo Terminal — не набор разрозненных прототипов. Клиент на **React и TypeScript**, API на **NestJS**, состояние коммерции в **PostgreSQL через Prisma**, асинхронные сценарии на **Redis и BullMQ**, семантический поиск там, где нужен **pgvector**.\n\nИнтеграции провайдеров изолированы адаптерами, чтобы коммерческое ядро не зависело от одной ERP, мессенджера, платёжки или AI-вендора. Критическое поведение проверяется на реальном Postgres и Redis: интеграционные тесты и Playwright E2E с живым бэкендом.\n\nВнутренняя поверхность продукта прошла полный runtime-прогон по маршрутам, контролам и формам: E2E на реальном бэкенде, интеграция, безопасность, mobile, чистый деплой и recovery. Внешние границы провайдеров проверяются отдельно, когда есть боевые ключи и окружения третьей стороны.\n\nЧто сделали\nTIVONIX спроектировали и собрали Neo Terminal целиком: архитектура продукта, UX/UI, фронтенд, бэкенд, модель данных, коммерческое ядро, границы AI-оркестрации, архитектура интеграций, инструменты мерчанта, клиентские интерфейсы, B2B-сценарии, тестирование и инфраструктура деплоя.\n\nЭто не лендинг с AI сверху. Это модульная коммерческая платформа вокруг одного слоя транзакций и товарных данных: внешние системы подключаются вокруг ядра, а не управляют им.\n\nИтог\nПилот-готовая AI-операционная система коммерции, которая связывает полный коммерческий путь в одной архитектуре: загрузка каталога, склад, discovery, диалоги, B2B, корзина, checkout, фулфилмент и операционка бизнеса.\n\nВнутренняя платформа прошла полный runtime-приём по тестируемой поверхности продукта. Внешние платежи, мессенджеры, ERP, AI и физические устройства остаются явными границами интеграций и включаются с проверкой в реальных окружениях провайдера на этапе внедрения.\n",
-      detailsEn: "Why it matters\nModern commerce rarely fails because a business has no website. It fails **between systems**.\n\nThe catalog is in one place. Stock is in another. A customer writes in a messenger. A B2B buyer sends an Excel file. A manager checks availability by hand. Marketing works from another dataset. Delivery starts only after somebody copies the order again.\n\nEvery disconnected step adds delay and creates another place where the transaction can break.\n\nNeo Terminal was built as an operating layer for that entire chain. Instead of adding another isolated interface, we connected product data, inventory, customer interactions, transactions and operations around **one shared commerce model**.\n\nHow it works\nA merchant connects or imports a catalog from YML, XLSX, CSV, CommerceML or an available ERP connector.\n\nNeo Terminal normalizes products, variants, SKUs, prices, media and inventory into one commerce model.\n\nFrom there the same data powers customer discovery, AI-assisted conversations, merchant operations, inventory workflows and B2B procurement.\n\nA customer can discover a product, ask questions, compare options, add items to a cart and move into checkout.\n\nA business buyer can submit a product requirement or structured file, match SKUs and alternatives, receive a quote and continue into an approval and ordering workflow.\n\nMerchant teams work from the same system: catalog, inventory, orders, conversations, analytics, channels and operational tools.\n\nThe architecture is designed so external providers remain adapters around the commerce core instead of becoming the source of truth.\n\nWhat's inside\n**Merchant OS.** A central workspace for merchant operations: overview, products, inventory, orders, customers, conversations, integrations, channels, analytics, team and settings.\n\n**Catalog & Data Hub.** Neo Terminal accepts commerce data from multiple formats and connector sources. Product information is normalized around products, variants, SKUs, prices, media and inventory rather than remaining tied to one external feed format.\n\n**Smart Inventory.** Warehouse workflows combine inventory state, receipt and adjustment operations with assisted document and file processing. Changes are review-first: extracted information can be checked before it mutates actual stock.\n\n**AI Seller.** The intelligence layer can work with catalog and commerce context to assist product discovery, comparisons and customer conversations. AI output is treated as untrusted and actions remain constrained by server-side permissions and business rules.\n\n**Smart City.** A customer-facing commerce layer designed for discovery across participating merchants instead of limiting the customer to a single isolated catalog. The system includes products, merchant surfaces, carts, network cart flows, checkout architecture, orders, account and address workflows.\n\n**B2B Procurement.** Business buyers can work with structured purchasing flows: company data, product requirements, SKU matching, alternatives, quotes, approvals, ordering and history.\n\n**Omnichannel.** The conversation layer is designed around a unified inbox and provider adapters so merchant teams can work with customer context without rebuilding commerce logic for every messaging channel.\n\n**Terminal Pay.** Checkout and payment orchestration are separated from provider-specific implementation. Pricing, inventory checks and order state remain authoritative on the backend while payment providers operate at a controlled boundary.\n\n**Delivery & Courier OS.** Delivery workflows connect orders with fulfillment state. Courier tooling covers operational job flows, history, profile and earnings, with external delivery providers isolated behind adapters where required.\n\n**Business Director.** The management layer brings operational and commerce data together for recommendations and decision support instead of treating analytics as disconnected charts.\n\n**Marketing OS & Content Factory.** Commerce data can flow into campaign and content workflows, allowing products and merchant context to remain connected to marketing operations.\n\n**Terminal Ads.** The advertising layer introduces venues, screens, creatives, availability and booking workflows while keeping external DOOH delivery behind a provider boundary.\n\n**Edge and physical commerce.** Neo Terminal also includes the software foundation for enrolled devices, configuration, synchronization and revocation, providing a path toward kiosks, local terminals and physical commerce hardware without mixing device security into normal browser sessions.\n\n**Platform Administration.** A separate platform layer provides organization, user, provider, queue, operational, audit and security administration.\n\nNeo Terminal is not a collection of disconnected prototypes. The product uses a modular application architecture with **React and TypeScript** on the client, **NestJS** on the API layer, **PostgreSQL through Prisma** for persistent commerce state, **Redis and BullMQ** for asynchronous workflows, and **pgvector** where semantic retrieval is required.\n\nProvider integrations are isolated behind adapters so the core commerce model does not depend on one ERP, messenger, payment provider or AI vendor. Critical application behavior is validated against a real Postgres and Redis runtime using integration tests and Playwright real-backend E2E.\n\nThe internal product surface was taken through a complete runtime verification pass across routes, controls and forms, including real-backend E2E, integration, security, mobile, clean-deployment and recovery checks. External provider boundaries are validated separately when production credentials and third-party environments are available.\n\nWhat we delivered\nTIVONIX designed and developed Neo Terminal end-to-end: product architecture, UX/UI, frontend, backend, database model, commerce core, AI orchestration boundaries, integrations architecture, merchant tools, customer interfaces, B2B workflows, testing and deployment infrastructure.\n\nThe result is not a landing page with AI added on top. It is a modular commerce platform built around one shared transaction and product-data layer, with external systems connected around the core rather than controlling it.\n\nOutcome\nA pilot-ready AI commerce operating system that connects the full commercial path in one architecture: product ingestion, inventory, discovery, conversations, B2B, cart, checkout, fulfillment and business operations.\n\nThe internal platform has passed complete runtime acceptance across the testable product surface. External payment, messaging, ERP, AI and physical-device providers remain explicit integration boundaries and are activated and verified with real provider environments during deployment.\n",
+      detailsRu: "Контекст клиента\nNeo Terminal — AI-платформа коммерции, которую TIVONIX проектирует и разрабатывает как модульный продукт для розницы и B2B.\n\nЗадача\nКоммерция часто ломается между системами: каталог, склад, мессенджеры, B2B-файлы и доставка живут отдельно. Нужен один коммерческий слой вместо разрозненных интерфейсов.\n\nЧто сделала TIVONIX\nMerchant OS, Catalog & Data Hub, Smart Inventory, AI Seller, Smart City, B2B Procurement, Omnichannel, Terminal Pay, Delivery & Courier OS, аналитика и platform admin. Импорт из YML, XLSX, CSV, CommerceML и коннекторов в единую товарную модель.\n\nЗона ответственности TIVONIX\nАрхитектура продукта, UX/UI, фронтенд, бэкенд, модель данных, границы AI-оркестрации, интеграции, тестирование и инфраструктура деплоя.\n\nПодтверждённый результат\nМодульная платформа, где каталог, остатки, диалоги, заказы и операции мерчанта работают на одном слое данных. AI-ответы обрабатываются как недоверенные; действия ограничены серверными правилами.\n\nТехнологии\nReact, TypeScript, NestJS, PostgreSQL, Prisma, Redis, BullMQ, pgvector, Playwright, Docker.\n\nТекущий статус\nКейс / пилот. Внешние провайдеры (платежи, мессенджеры, ERP, AI, устройства) — явные границы интеграций, включаются при внедрении.\n\nСледующий шаг\nОткройте кейс или демо neo-terminal-web.onrender.com, чтобы посмотреть архитектуру и модули.\n",
+      detailsEn: "Client context\nNeo Terminal is an AI commerce platform TIVONIX is designing and building as a modular product for retail and B2B.\n\nChallenge\nCommerce often breaks between systems: catalog, inventory, messengers, B2B files and delivery live separately. The product needed one commerce layer instead of isolated interfaces.\n\nWhat TIVONIX delivered\nMerchant OS, Catalog & Data Hub, Smart Inventory, AI Seller, Smart City, B2B Procurement, Omnichannel, Terminal Pay, Delivery & Courier OS, analytics and platform admin. Ingestion from YML, XLSX, CSV, CommerceML and connectors into one product model.\n\nTIVONIX responsibility\nProduct architecture, UX/UI, frontend, backend, data model, AI orchestration boundaries, integrations, testing and deployment infrastructure.\n\nVerified result\nA modular platform where catalog, stock, conversations, orders and merchant operations share one data layer. AI output is treated as untrusted; actions stay constrained by server-side rules.\n\nTechnology\nReact, TypeScript, NestJS, PostgreSQL, Prisma, Redis, BullMQ, pgvector, Playwright, Docker.\n\nCurrent status\nCase study / pilot. External providers (payments, messengers, ERP, AI, devices) are explicit integration boundaries and are enabled during deployment.\n\nNext step\nOpen the case or the neo-terminal-web.onrender.com demo to review architecture and modules.\n",
       detailsZh: "为什么重要\n现代商业很少因为没有网站而失败。它失败在**系统之间**。\n\n目录在一处，库存在另一处。客户在即时通讯里提问。B2B 采购发来 Excel。经理手工核对库存。市场部用另一套数据。配送要等有人再次复制订单才开始。\n\n每一处断裂都会增加延迟，并多出一个交易可能中断的点。\n\nNeo Terminal 被设计成整条链路的操作层。我们没有再加一个孤立界面，而是把商品数据、库存、客户互动、交易与运营连到**同一套商业模型**上。\n\n如何运作\n商家从 YML、XLSX、CSV、CommerceML 或可用的 ERP 连接器导入目录。Neo Terminal 将商品、规格、SKU、价格、媒体与库存规范化为同一模型，并驱动发现、AI 辅助对话、商家运营、仓储与 B2B 采购。外部服务保持为适配器，而不是事实来源。\n\n里面有什么\n**Merchant OS、Catalog & Data Hub、Smart Inventory、AI Seller、Smart City、B2B、Omnichannel、Terminal Pay、Delivery、分析与平台管理** — 一套模块化商业平台，而不是互不相连的原型。客户端 React + TypeScript，API 层 NestJS，PostgreSQL / Prisma，Redis 与 BullMQ，需要语义检索时使用 pgvector。\n\n内部产品表面已完成可测试范围的运行时验收。外部支付、消息、ERP、AI 与设备提供商仍是明确的集成边界，在部署阶段用真实环境启用并验证。\n\n我们交付了什么\nTIVONIX 端到端设计并开发 Neo Terminal：产品架构、UX/UI、前后端、数据模型、商业核心、AI 边界、集成架构、商家工具、客户界面、B2B 流程、测试与部署。\n\n结果\n一套试点就绪的 AI 商业操作系统，把从目录到履约的完整商业路径放进同一架构。\n",
       domain: NEO_TERMINAL_DOMAIN,
       status: "pilot",
@@ -6718,7 +6951,7 @@ function buildAllProjects(isRu) {
         isRu ? "Архитектура YML, XLSX, CSV, CommerceML и коннекторов" : "YML, XLSX, CSV, CommerceML and connector architecture",
         isRu ? "B2B-закупки и сценарии коммерческих предложений" : "B2B procurement and quote workflows",
         isRu ? "Омниканал, доставка и Courier OS" : "Omnichannel, delivery and Courier OS",
-        isRu ? "Платформенная админка, аналитика, автоматизация и проверенная runtime-поверхность" : "Platform admin, analytics, automation and a runtime-verified internal product surface"
+        isRu ? "Платформенная админка, аналитика и автоматизация" : "Platform admin, analytics and automation"
       ],
       stack: [
         "React",
@@ -6744,11 +6977,11 @@ function buildAllProjects(isRu) {
     {
       id: "spliton",
       title: "Spliton",
-      subtitleRu: "Финтех-платформа для долей в музыке: каталог, первичный и вторичный рынок, кошелёк USDT, ledger, compliance и operator portal — продукт с инвестором и живым сопровождением.",
-      subtitleEn: "Fintech platform for music shares: catalog, primary & secondary market, USDT wallet, ledger, compliance and operator portal — investor-backed product with ongoing support.",
+      subtitleRu: "Финтех-платформа для долей в музыке: каталог, первичный и вторичный рынок, кошелёк USDT, ledger, compliance и operator portal — продукт с сопровождением TIVONIX.",
+      subtitleEn: "Fintech platform for music shares: catalog, primary & secondary market, USDT wallet, ledger, compliance and operator portal — supported by TIVONIX.",
       subtitleZh: "音乐股票的金融科技平台：目录、一级和二级市场、USDT 钱包、账本、合规性和运营商门户——投资者支持的产品，并提供持续支持。",
-      detailsRu: "Зачем это\nМузыкальные активы — не лендинг с кнопкой «купить». Здесь **реальные деньги**, роли, согласия, депозиты и выводы должны сходиться без дыр: confirm → processing → result. Один сбой на выплате или consent — и доверие кончается быстрее любого релиза.\n\nНужна была не «админка на коленке», а **полноценная биржа долей**: кабинет инвестора, operator portal, ledger, treasury, KYC/AML, споры, публичный trust center. Мы собрали это end-to-end — и **до сих пор сопровождаем** продукт в бою.\n\nКак работает\nИнвестор регистрируется, проходит согласия и при необходимости KYC, пополняет баланс в **USDT (TRC20)**.\nДальше: выбирает релиз в каталоге → изучает data room → покупает доли (UNT) на первичке → видит позиции и начисления в кабинете → при желании торгует на **вторичном рынке** (стакан, лимитные заявки) → выводит средства через проверку treasury.\nОператор ведёт депозиты, выводы, compliance, релизы, рефералов, споры и публичный статус системы — всё из admin-портала.\n\nЧто внутри\nЭто **крупный продукт в одном репозитории**, не одностраничный сайт. Клиентская часть на Next.js, сервер на NestJS, база PostgreSQL через Prisma, автотесты на критичные денежные сценарии.\n\nКабинет инвестора: каталог релизов, покупка долей, портфель и метрики, кошелёк (пополнение, вывод, история, выписки), **вторичный рынок со сложным биржевым стаканом** и лимитными заявками, калькулятор, новости, поддержка и центр споров, реферальная и партнёрская программы, VIP.\n\nПубличная часть: лендинг продукта, **центр доверия** (учёт операций, статус сервисов, документы), страница статуса системы, комиссии, юридические тексты, справочный центр.\n\nПортал оператора — отдельная **огромная админ-панель** для команды платформы: не пара экранов, а десятки разделов управления. Главный обзор, задачи операторов, пользователи и роли, треки и раунды, артисты, лейблы, жанры.\n\nФинансы: кошельки, пополнения, **выплаты**, позиции, доход и доход платформы, казначейство, платёжные реквизиты. Рынок: вторичный рынок, сделки, подозрительные операции. Операции: поддержка, споры, комплаенс, KYC, юридические тексты, рефералы и партнёры.\n\nАналитика с **графиками**: финансы, пользователи, треки, рынок, доход, риски, операции. Плюс отчёты и выгрузки, новости, справочный центр, статус системы, уведомления, журнал аудита действий сотрудников. Роли: супер-админ, бухгалтер, контент, поддержка, комплаенс, бизнес-аналитик.\n\nФинансовое ядро: внутренний учёт операций с двойной записью, сверки, комиссии платформы, автоматизация депозитов в сети TRON, политика горячего и холодного кошелька, регламенты инцидентов. Интерфейс на acid lime `#b7f500` — как в живом продукте.\n\nЯзыки: интерфейс полностью на **четырёх языках** — русский, английский, испанский, португальский.\n\nЧто сделали\nСпроектировали и собрали весь контур: дизайн, фронтенд, бэкенд, база, комплаенс, автотесты и продакшен-операции. Продукт запущен, в него зашёл инвестор на [[200 000 $]], платформа в работе — **TIVONIX продолжает поддержку и развитие**.\n\nИтог\nНе демо и не презентация. **Живая финтех-платформа** с кабинетом инвестора, сложной биржей долей и огромной админкой под выплаты, графики и операционное управление. Сопровождаем до сих пор.\n",
-      detailsEn: "Why it matters\nMusic assets aren’t a landing page with a buy button. **Real money**, roles, consents, deposits and withdrawals have to lock without holes: confirm → processing → result. One payout or consent failure — and trust dies faster than any release.\n\nThis wasn’t a “quick admin”. It needed a **full share exchange**: investor cabinet, operator portal, ledger, treasury, KYC/AML, disputes, public trust center. We built it end-to-end — and **still support** it in production.\n\nHow it works\nAn investor signs up, accepts policies, completes KYC when required, and tops up in **USDT (TRC20)**.\nThen: pick a release in the catalog → review the data room → buy shares (UNT) on primary → track positions and accruals → optionally trade on the **secondary market** (order book, limit orders) → withdraw through treasury checks.\nOperators run deposits, withdrawals, compliance, releases, referrals, disputes and public system status — all from the admin portal.\n\nWhat’s inside\nA **large product in one repository**, not a single-page site. Client app on Next.js, server on NestJS, PostgreSQL via Prisma, automated tests on critical money flows.\n\nInvestor cabinet: release catalog, share purchase, portfolio and metrics, wallet (deposit, withdraw, history, statements), **secondary market with a complex order book** and limit orders, calculator, news, support and dispute center, referral and partner programs, VIP.\n\nPublic surface: product landing, **trust center** (operations ledger, service status, documents), system status page, fees, legal pages, help center.\n\nThe operator portal is a **huge admin panel** for the platform team: not a few screens, but dozens of management sections. Executive overview, operator tasks, users and roles, tracks and rounds, artists, labels, genres.\n\nFinance: wallets, deposits, **payouts**, holdings, revenue and platform revenue, treasury, payment requisites. Market: secondary market, trades, suspicious activity. Operations: support, disputes, compliance, KYC, legal texts, referrals and partners.\n\nAnalytics with **charts**: finance, users, tracks, market, revenue, risk, operations. Plus reports and exports, news, help center, system status, notifications, staff audit log. Roles: super admin, accountant, content, support, compliance, business analyst.\n\nFinancial core: internal double-entry operations ledger, reconciliation, platform fees, TRON deposit automation, hot/cold wallet policy, incident runbooks. Interface on acid lime `#b7f500` — matching the live product.\n\nLanguages: the interface is fully localized in **four languages** — Russian, English, Spanish, Portuguese.\n\nWhat we delivered\nDesigned and shipped the full loop: design, frontend, backend, database, compliance, automated tests and production ops. The product is live, backed by an investor at [[$200,000]], and **TIVONIX still supports and evolves** it.\n\nOutcome\nNot a demo and not a deck. A **live fintech platform** with an investor cabinet, a complex share exchange and a huge admin for payouts, charts and day-to-day operations. Still supported.\n",
+      detailsRu: "Контекст клиента\nSpliton — платформа для инвестирования в доли музыкальных релизов. Заказчик — **Виктор Безбородых**, основатель MIN.ECO.\n\nЗадача\nНужен продукт с денежными потоками, ролями, согласиями, KYC и операторским управлением — не лендинг с кнопкой «купить». Сценарии пополнения, покупки долей, вторичного рынка и вывода должны быть прозрачны для пользователя и команды.\n\nЧто сделала TIVONIX\nКабинет инвестора, operator portal, ledger, treasury, KYC/AML, вторичный рынок, публичный trust center, автотесты на критичные денежные сценарии. Дизайн, фронтенд (Next.js), бэкенд (NestJS), база (PostgreSQL/Prisma), деплой и операционные процедуры.\n\nЗона ответственности TIVONIX\nПродуктовая архитектура, UI/UX, разработка, комплаенс-контуры в продукте, тестирование и сопровождение после запуска.\n\nПодтверждённый результат\nПлатформа на spliton.io: каталог релизов, покупка долей, кошелёк USDT (TRC20), вторичный рынок, operator portal с финансовыми и операционными разделами.\n\nТехнологии\nNext.js, React, TypeScript, NestJS, PostgreSQL, Prisma, Supabase, Playwright, i18n (RU, EN, ES, PT).\n\nТекущий статус\nСдан. Поддерживается TIVONIX.\n\nСледующий шаг\nОткройте spliton.io или кейс, чтобы посмотреть публичную часть и структуру продукта.\n",
+      detailsEn: "Client context\nSpliton — a platform for investing in shares of music releases. Client — **Viktor Bezborodykh**, founder of MIN.ECO.\n\nChallenge\nThey needed a product with money flows, roles, consents, KYC and operator tooling — not a landing page with a buy button. Deposit, share purchase, secondary market and withdrawal flows had to be clear for users and the operations team.\n\nWhat TIVONIX delivered\nInvestor portal, operator portal, ledger, treasury, KYC/AML, secondary market, public trust center, automated tests on critical money flows. Design, frontend (Next.js), backend (NestJS), database (PostgreSQL/Prisma), deployment and operational runbooks.\n\nTIVONIX responsibility\nProduct architecture, UI/UX, engineering, compliance flows in the product, testing and post-launch support.\n\nVerified result\nPlatform on spliton.io: release catalog, share purchase, USDT (TRC20) wallet, secondary market, operator portal with finance and operations sections.\n\nTechnology\nNext.js, React, TypeScript, NestJS, PostgreSQL, Prisma, Supabase, Playwright, i18n (RU, EN, ES, PT).\n\nCurrent status\nDelivered. Supported by TIVONIX.\n\nNext step\nOpen spliton.io or the case page to review the public surface and product structure.\n",
       detailsZh: "为什么这很重要\n音乐资产不是带有购买按钮的登陆页面。 **真实货币**，角色、同意、存款和取款必须无漏洞锁定：确认→处理→结果。一旦付款或同意失败，信任就会比任何释放更快地消失。\n\n这不是一个“快速管理”。它需要**完整的股份交换**：投资者内阁、运营商门户、账本、财务、KYC/AML、争议、公共信任中心。我们端到端地构建了它，并且**仍然在生产中支持**它。\n\n它是如何运作的\n投资者注册、接受保单、在需要时完成 KYC，并充值 **USDT (TRC20)**。\n然后：在目录中选择一个版本→审查数据室→在主要市场购买股票（UNT）→跟踪头寸和应计费用→可选择在**二级市场**（订单簿、限价订单）进行交易→通过财务检查提取。\n运营商可以通过管理门户管理存款、取款、合规、发布、推荐、争议和公共系统状态。\n\n里面有什么\n**一个存储库中的大型产品**，而不是单页网站。 Next.js 上的客户端应用程序，NestJS 上的服务器，通过 Prisma 的 PostgreSQL，对关键资金流的自动测试。\n\n投资者柜：发布目录、股份申购、投资tfolio 和指标、钱包（存款、取款、历史记录、报表）、**具有复杂订单簿**和限价订单的二级市场、计算器、新闻、支持和争议中心、推荐和合作伙伴计划、VIP。\n\n公共面：产品登陆、**信任中心**（运营账本、服务状态、文档）、系统状态页面、费用、法律页面、帮助中心。\n\n运营商门户对于平台团队来说是一个**巨大的管理面板**：不是几个屏幕，而是数十个管理部分。执行概述、操作员任务、用户和角色、曲目和回合、艺术家、唱片公司、流派。\n\n金融：钱包、存款、**支出**、持有、收入和平台收入、金库、支付必需品。市场：二级市场、交易、可疑活动。运营：支持、争议、合规、KYC、法律文本、推荐和合作伙伴。\n\n使用**图表**进行分析：财务、用户、轨迹、市场、收入、风险、运营。加上报告和导出、新闻、帮助中心、系统状态、通知、员工审核日志。角色：超级管理员、会计师、内容、支持、合规、业务分析师。\n\n财务核心：内部复式记账操作账本、对账、平台费用、波场充值自动化、热/冷钱包政策、事件操作手册。酸性石灰“#b7f500”上的界面 — 与实时产品匹配。\n\n语言：界面完全本地化为**四种语言**——俄语、英语、西班牙语、葡萄牙语。\n\n我们交付了什么\n设计并交付完整的循环：设计、前端、后端、数据库、合规性、自动化测试和生产操作。该产品已上线，由 [[200,000 美元]] 的投资者支持，**TIVONIX 仍然支持并发展**它。\n\n结果\n不是演示，也不是套牌。一个**实时金融科技平台**，拥有投资者内阁、复杂的股票交易所以及庞大的支付、图表和日常运营管理系统。还是支持的。",
       domain: SPLITON_DOMAIN,
       status: "live",
@@ -6768,13 +7001,11 @@ function buildAllProjects(isRu) {
       cover: "/images/project-priew/spliton.webp",
       gallery: SPLITON_GALLERY,
       outcomes: [
-        isRu ? "Полный финтех-контур: кабинет + биржа долей + портал оператора" : "Full fintech loop: cabinet + share exchange + operator portal",
-        isRu ? "Огромная админка: выплаты, казначейство, графики, комплаенс" : "Huge admin: payouts, treasury, charts, compliance",
+        isRu ? "Кабинет инвестора + вторичный рынок + operator portal" : "Investor portal + secondary market + operator portal",
+        isRu ? "Operator portal: выплаты, казначейство, комплаенс" : "Operator portal: payouts, treasury, compliance",
         isRu ? "Учёт операций, KYC, центр доверия, USDT TRC20" : "Operations ledger, KYC, trust center, USDT TRC20",
-        isRu ? "Инвестор [[200 000 $]] · продукт в продакшене" : "Investor [[$200,000]] · live in production",
-        isRu ? "**TIVONIX сопровождает** платформу до сих пор" : "**TIVONIX still supports** the platform",
-        isRu ? "4 языка: русский, английский, испанский, португальский" : "4 languages: Russian, English, Spanish, Portuguese",
-        isRu ? "Сложный биржевой стакан на вторичном рынке" : "Complex order book on the secondary market"
+        isRu ? "**Поддерживается TIVONIX**" : "**Supported by TIVONIX**",
+        isRu ? "4 языка: русский, английский, испанский, португальский" : "4 languages: Russian, English, Spanish, Portuguese"
       ],
       stack: [
         "Next.js",
@@ -6791,7 +7022,7 @@ function buildAllProjects(isRu) {
       testimonial: {
         name: isRu ? "Виктор Безбородых" : "Viktor Bezborodykh",
         role: isRu ? "Основатель MIN.ECO" : "Founder & CEO, MIN.ECO",
-        text: isRu ? "У Spliton тяжёлая начинка: доли, кошелёк, выплаты, большая админка. Собрали целиком, выкатили в прод и не пропали. С ними спокойно идти дальше." : "Spliton is heavy: shares, wallet, payouts, a big admin. They built the full stack, shipped to production, and stayed around. Easy to keep going with them."
+        text: isRu ? "У Spliton тяжёлая начинка: доли, кошелёк, выплаты, operator portal. Собрали целиком, выкатили и остались на сопровождении." : "Spliton is heavy: shares, wallet, payouts, operator portal. They built the full stack, shipped it and stayed for support."
       }
     }
   ];
@@ -6802,8 +7033,17 @@ function buildProjects(isRu) {
     (p) => Boolean(p)
   );
 }
+function isInternalTestimonial(p) {
+  if (p.id === "tivonixpanel") return true;
+  const t = p.testimonial;
+  if (!t) return false;
+  const role = t.role.toLowerCase();
+  return role.includes("tivonix") && (role.includes("co-founder") || role.includes("основател") || role.includes("соучред"));
+}
 function projectsWithTestimonials(isRu) {
-  return buildAllProjects(isRu).filter((p) => Boolean(p.testimonial) && !p.testimonial?.draft);
+  return buildAllProjects(isRu).filter(
+    (p) => Boolean(p.testimonial) && !p.testimonial?.draft && !isInternalTestimonial(p)
+  );
 }
 function isProjectSiteOpen(p) {
   return Boolean(p.domain) && p.status !== "wip";
@@ -9296,25 +9536,14 @@ function usePlanPhotoScale(sectionRef) {
 function FeatureIcon() {
   return /* @__PURE__ */ jsx(Check, { className: "home-plan-card__check h-3.5 w-3.5", strokeWidth: 2.25, "aria-hidden": true });
 }
-function HomePlanPrice({ price, priceOriginal }) {
-  const match = price.match(/^(от|from)\s+(.+)$/i);
+function HomePlanPrice({ price }) {
+  const match = price.match(/^(от|from|起)\s+(.+)$/i);
   const from = match?.[1];
   const amount = match?.[2];
-  const hasOriginal = Boolean(priceOriginal);
-  return /* @__PURE__ */ jsx("div", { className: "home-plan-card__price-block", children: /* @__PURE__ */ jsxs("div", { className: "home-plan-card__price", children: [
-    /* @__PURE__ */ jsx(
-      "p",
-      {
-        className: ["home-plan-card__price-old", hasOriginal ? "" : "is-empty"].filter(Boolean).join(" "),
-        "aria-hidden": !hasOriginal,
-        children: priceOriginal ?? " "
-      }
-    ),
-    from && amount ? /* @__PURE__ */ jsxs(Fragment, { children: [
-      /* @__PURE__ */ jsx("span", { className: "home-plan-card__price-from", children: from }),
-      /* @__PURE__ */ jsx("span", { className: "home-plan-card__price-amount", children: amount })
-    ] }) : /* @__PURE__ */ jsx("span", { className: "home-plan-card__price-amount home-plan-card__price-amount--solo", children: price })
-  ] }) });
+  return /* @__PURE__ */ jsx("div", { className: "home-plan-card__price-block", children: /* @__PURE__ */ jsx("div", { className: "home-plan-card__price", children: from && amount ? /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx("span", { className: "home-plan-card__price-from", children: from }),
+    /* @__PURE__ */ jsx("span", { className: "home-plan-card__price-amount", children: amount })
+  ] }) : /* @__PURE__ */ jsx("span", { className: "home-plan-card__price-amount home-plan-card__price-amount--solo", children: price }) }) });
 }
 function HomePricingSection() {
   const { lang } = useLang();
@@ -9361,7 +9590,7 @@ function HomePricingSection() {
                         popular ? /* @__PURE__ */ jsx("span", { className: "home-plan-card__new", children: pricing.badges.popular }) : /* @__PURE__ */ jsx("span", { className: "home-plan-card__new is-empty", "aria-hidden": true, children: " " })
                       ] }),
                       /* @__PURE__ */ jsx("h3", { className: "home-plan-card__name", children: plan.name }),
-                      /* @__PURE__ */ jsx(HomePlanPrice, { price: plan.price, priceOriginal: plan.priceOriginal }),
+                      /* @__PURE__ */ jsx(HomePlanPrice, { price: plan.price }),
                       /* @__PURE__ */ jsx("p", { className: "home-plan-card__unit", children: plan.tagline })
                     ] }),
                     /* @__PURE__ */ jsxs("div", { className: "home-plan-card__actions", children: [
@@ -9386,7 +9615,7 @@ function HomePricingSection() {
                           ]
                         }
                       ),
-                      /* @__PURE__ */ jsx("p", { className: "home-plan-card__fine", children: isCustom ? isRu ? "Оценка после брифа" : "Quote after a brief" : isRu ? `Скидка ${LAUNCH_DISCOUNT_PERCENT}% на запуск` : `${LAUNCH_DISCOUNT_PERCENT}% launch discount` }),
+                      isCustom ? /* @__PURE__ */ jsx("p", { className: "home-plan-card__fine", children: isRu ? "Оценка после брифа" : lang === "zh" ? "简报后报价" : "Quote after a brief" }) : null,
                       /* @__PURE__ */ jsx(
                         "button",
                         {
@@ -9679,13 +9908,14 @@ function TestimonialCard({
   photo,
   viewCase,
   ownProduct,
-  lang
+  lang,
+  ariaHidden
 }) {
   const t = project.testimonial;
   const showCase = isPublicProjectId(project.id);
   const isOwn = project.id === "tivonixpanel";
   const cardStyle = { "--card-photo": `url("${photo}")` };
-  return /* @__PURE__ */ jsxs("article", { className: "home-testimonials__card", style: cardStyle, children: [
+  return /* @__PURE__ */ jsxs("article", { className: "home-testimonials__card", style: cardStyle, "aria-hidden": ariaHidden || void 0, children: [
     /* @__PURE__ */ jsx("div", { className: "home-testimonials__card-bg", "aria-hidden": true }),
     /* @__PURE__ */ jsx("div", { className: "home-testimonials__card-veil", "aria-hidden": true }),
     /* @__PURE__ */ jsxs("div", { className: "home-testimonials__card-body", children: [
@@ -9807,7 +10037,8 @@ function HomeTestimonialsSection() {
                 photo: PLAN_PHOTOS[i % PLAN_PHOTOS.length],
                 viewCase: copy.testimonials.viewCase,
                 ownProduct: copy.testimonials.ownProduct,
-                lang
+                lang,
+                ariaHidden: i >= items.length
               },
               `${project.id}-${i}`
             )) })
@@ -10012,7 +10243,9 @@ function useSectionScrollScale(sectionRef) {
     }
     let raf = 0;
     let lastScale = 1.05;
+    let visible = false;
     const update = () => {
+      if (!visible) return;
       const rect = el.getBoundingClientRect();
       const vh = getStableViewportHeight();
       const total = rect.height + vh;
@@ -10024,13 +10257,22 @@ function useSectionScrollScale(sectionRef) {
       setScale(next);
     };
     const schedule = () => {
+      if (!visible) return;
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(update);
     };
-    schedule();
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        visible = !!entry?.isIntersecting;
+        if (visible) schedule();
+      },
+      { root: null, rootMargin: "30% 0px", threshold: 0 }
+    );
+    io.observe(el);
     window.addEventListener("scroll", schedule, { passive: true });
     return () => {
       cancelAnimationFrame(raf);
+      io.disconnect();
       window.removeEventListener("scroll", schedule);
     };
   }, [sectionRef]);
@@ -10087,7 +10329,412 @@ function FinalCTASection() {
     }
   );
 }
-const TG_CHANNEL_URL = "https://t.me/TIVONIX";
+const ROUTES = {
+  websites: { ru: "/sozdanie-sajtov", en: "/en/website-development" },
+  mvp: { ru: "/razrabotka-mvp", en: "/en/mvp-development" },
+  automation: { ru: "/avtomatizaciya-biznesa", en: "/en/business-automation" },
+  crm: { ru: "/razrabotka-crm", en: "/en/client-portal-development" },
+  portal: { ru: "/razrabotka-lichnogo-kabineta", en: "/en/client-portal-development" },
+  telegram: { ru: "/telegram-boty-dlya-biznesa", en: "/en/telegram-bot-development" },
+  "white-label": { ru: "/partners", en: "/en/white-label-development" }
+};
+function servicePagePath(id, lang) {
+  const r = ROUTES[id];
+  if (lang === "en") return r.en;
+  return r.ru;
+}
+function servicePageIdFromPath(pathname) {
+  const p = pathname.replace(/\/+$/, "") || "/";
+  const map = {
+    "/sozdanie-sajtov": "websites",
+    "/en/website-development": "websites",
+    "/razrabotka-mvp": "mvp",
+    "/en/mvp-development": "mvp",
+    "/avtomatizaciya-biznesa": "automation",
+    "/en/business-automation": "automation",
+    "/razrabotka-crm": "crm",
+    "/razrabotka-lichnogo-kabineta": "portal",
+    "/en/client-portal-development": "portal",
+    "/telegram-boty-dlya-biznesa": "telegram",
+    "/en/telegram-bot-development": "telegram",
+    "/en/white-label-development": "white-label"
+  };
+  return map[p] ?? null;
+}
+const COPY$4 = {
+  websites: {
+    ru: {
+      seo: {
+        title: "Создание сайтов для бизнеса — TIVONIX",
+        description: "Разрабатываем сайты под заявки: лендинги, корпоративные страницы и многостраничные сайты с формами, Telegram и базовым SEO."
+      },
+      h1: "Создание сайтов, которые доводят заявку до ответа",
+      lead: "Проектируем структуру, дизайн и разработку под ваш канал трафика. Фиксируем объём и стоимость до старта.",
+      offer: "Лендинги, сайты услуг, корпоративные страницы, формы заявок, интеграции с Telegram и mini-CRM.",
+      process: {
+        title: "Как проходит работа",
+        steps: [
+          "Письменный разбор задачи и оценка",
+          "Структура страниц и тексты",
+          "Дизайн и адаптивная разработка",
+          "Формы, уведомления, базовое SEO",
+          "Деплой и передача доступов"
+        ]
+      },
+      cases: {
+        title: "Подтверждённые кейсы",
+        items: [
+          { name: "LOGOVO", href: "/projects/logovo" },
+          { name: "Headmind", href: "/projects/headmind" }
+        ]
+      },
+      pricing: {
+        title: "Стоимость",
+        body: "Старт от тарифа Start ($400). Итог зависит от числа страниц, форм и интеграций. Фиксируем после письменного разбора."
+      },
+      faq: [
+        {
+          q: "Сколько времени занимает запуск?",
+          a: "Простая страница — от 7 рабочих дней. Многостраничный сайт — от 2 недель. Точный срок после брифа."
+        },
+        {
+          q: "Передаёте ли код?",
+          a: "Да. Исходники и доступы передаются клиенту после согласованного этапа."
+        }
+      ],
+      cta: "Получить письменную оценку"
+    },
+    en: {
+      seo: {
+        title: "Website development for business — TIVONIX",
+        description: "We build lead-focused websites: landing pages, multi-page sites, forms, Telegram alerts and basic SEO."
+      },
+      h1: "Websites that turn inquiries into a clear next step",
+      lead: "We design structure, UI and development for your traffic channel. Scope and price are agreed in writing before work starts.",
+      offer: "Landing pages, service websites, corporate sites, lead forms, Telegram integrations and mini-CRM hooks.",
+      process: {
+        title: "How we work",
+        steps: [
+          "Written scope review and estimate",
+          "Page structure and copy",
+          "Design and responsive development",
+          "Forms, notifications, basic SEO",
+          "Deploy and handover of access"
+        ]
+      },
+      cases: {
+        title: "Verified case studies",
+        items: [
+          { name: "LOGOVO", href: "/en/projects/logovo" },
+          { name: "Headmind", href: "/en/projects/headmind" }
+        ]
+      },
+      pricing: {
+        title: "Pricing",
+        body: "Starts from the Start plan ($400). Final cost depends on pages, forms and integrations. Fixed after a written scope review."
+      },
+      faq: [
+        {
+          q: "How long does a launch take?",
+          a: "A single landing page starts around 7 business days. Multi-page sites from 2 weeks. Exact timeline after the brief."
+        },
+        {
+          q: "Do we get the source code?",
+          a: "Yes. Source code and access are handed over after the agreed milestone."
+        }
+      ],
+      cta: "Get a written scope & estimate"
+    }
+  },
+  mvp: {
+    ru: {
+      seo: {
+        title: "Разработка MVP — TIVONIX",
+        description: "Собираем основу продукта с одним главным сценарием: авторизация, портал, роли и база данных."
+      },
+      h1: "Основа MVP с одним главным пользовательским сценарием",
+      lead: "Фокус на одном рабочем потоке вместо перегруженного «полного SaaS». Сложные продукты оцениваем отдельно.",
+      offer: "Регистрация, личный кабинет или портал, роли, база данных, админ-раздел и одна ключевая интеграция.",
+      process: {
+        title: "Этапы",
+        steps: [
+          "Письменный scope и границы MVP",
+          "Прототип ключевого сценария",
+          "Разработка ядра и админки",
+          "Тестирование и деплой",
+          "Передача кода и документации"
+        ]
+      },
+      cases: {
+        title: "Кейсы",
+        items: [
+          { name: "Spliton", href: "/projects/spliton" },
+          { name: "Slotty", href: "/projects/slotty" }
+        ]
+      },
+      pricing: {
+        title: "Стоимость",
+        body: "Тариф Product от $2000. Маркетплейсы, FinTech и много ролей — индивидуальная оценка."
+      },
+      faq: [
+        {
+          q: "Что входит в MVP?",
+          a: "Один основной пользовательский сценарий, базовая админка и одна внешняя интеграция. Дополнения — отдельно."
+        }
+      ],
+      cta: "Получить письменную оценку"
+    },
+    en: {
+      seo: {
+        title: "MVP development — TIVONIX",
+        description: "Focused MVP foundations with one primary user workflow: auth, portal, roles and database."
+      },
+      h1: "Focused MVP foundation with one primary workflow",
+      lead: "We ship one working path instead of an over-scoped “full SaaS”. Complex products are quoted separately.",
+      offer: "Sign-up, client portal, roles, database, admin area and one key integration.",
+      process: {
+        title: "Process",
+        steps: [
+          "Written scope and MVP boundaries",
+          "Prototype of the core workflow",
+          "Core product and admin build",
+          "Testing and deploy",
+          "Code and access handover"
+        ]
+      },
+      cases: {
+        title: "Case studies",
+        items: [
+          { name: "Spliton", href: "/en/projects/spliton" },
+          { name: "Slotty", href: "/en/projects/slotty" }
+        ]
+      },
+      pricing: {
+        title: "Pricing",
+        body: "Product plan from $2000. Marketplaces, FinTech and multi-role products require a custom quote."
+      },
+      faq: [
+        {
+          q: "What is included?",
+          a: "One primary user workflow, a basic admin area and one external integration. Extras are quoted separately."
+        }
+      ],
+      cta: "Get a written scope & estimate"
+    }
+  },
+  automation: {
+    ru: {
+      seo: {
+        title: "Автоматизация бизнеса — TIVONIX",
+        description: "Связываем сайт, Telegram, таблицы и mini-CRM в один процесс обработки заявок."
+      },
+      h1: "Автоматизация заявок и внутренних процессов",
+      lead: "Убираем ручной перенос между чатами, почтой и таблицами. Показываем статус и следующий шаг.",
+      offer: "Telegram-боты, уведомления, mini-CRM, статусы, интеграции с формами и таблицами.",
+      process: {
+        title: "Этапы",
+        steps: [
+          "Карта текущего процесса",
+          "Проектирование маршрута заявки",
+          "Разработка и интеграции",
+          "Тест на реальных сценариях",
+          "Запуск и инструкция"
+        ]
+      },
+      cases: { title: "Кейсы", items: [{ name: "Headmind", href: "/projects/headmind" }] },
+      pricing: {
+        title: "Стоимость",
+        body: "Growth от $900 для системы заявок. Сложная логика — Custom после письменного разбора."
+      },
+      faq: [
+        {
+          q: "Можно начать с простого?",
+          a: "Да. Часто достаточно формы + Telegram, затем добавляем CRM и статусы."
+        }
+      ],
+      cta: "Получить письменную оценку"
+    },
+    en: {
+      seo: {
+        title: "Business automation — TIVONIX",
+        description: "Connect websites, Telegram, spreadsheets and mini-CRM into one lead workflow."
+      },
+      h1: "Automation for leads and internal workflows",
+      lead: "We remove manual copying between chats, email and spreadsheets. Status and next steps stay visible.",
+      offer: "Telegram bots, alerts, mini-CRM, statuses, form and spreadsheet integrations.",
+      process: {
+        title: "Process",
+        steps: [
+          "Map the current workflow",
+          "Design the lead route",
+          "Build and integrate",
+          "Test on real scenarios",
+          "Launch and handover guide"
+        ]
+      },
+      cases: { title: "Cases", items: [{ name: "Headmind", href: "/en/projects/headmind" }] },
+      pricing: {
+        title: "Pricing",
+        body: "Growth from $900 for a lead system. Complex logic — Custom after written scope review."
+      },
+      faq: [
+        {
+          q: "Can we start simple?",
+          a: "Yes. Often a form + Telegram is enough first, then CRM and statuses."
+        }
+      ],
+      cta: "Get a written scope & estimate"
+    }
+  },
+  crm: {
+    ru: {
+      seo: {
+        title: "Разработка CRM и mini-CRM — TIVONIX",
+        description: "Mini-CRM и таблицы заявок со статусами, ответственными и историей."
+      },
+      h1: "Mini-CRM под ваш процесс продаж",
+      lead: "Не перегружаем коробочной CRM. Делаем то, что команда реально использует каждый день.",
+      offer: "Таблица заявок, статусы, ответственные, фильтры, уведомления, базовые роли.",
+      process: {
+        title: "Этапы",
+        steps: ["Бриф по процессу", "Модель статусов", "UI и разработка", "Интеграции", "Обучение команды"]
+      },
+      cases: { title: "Кейсы", items: [{ name: "Headmind", href: "/projects/headmind" }] },
+      pricing: { title: "Стоимость", body: "Growth от $900. Большая CRM с множеством ролей — Custom." },
+      faq: [{ q: "Это замена amoCRM?", a: "Нет. Это лёгкая система под ваш маршрут. Интеграции с внешними CRM — по задаче." }],
+      cta: "Получить письменную оценку"
+    },
+    en: {
+      seo: {
+        title: "CRM & mini-CRM development — TIVONIX",
+        description: "Lightweight lead tables with statuses, owners and history."
+      },
+      h1: "Mini-CRM shaped around your sales process",
+      lead: "No bloated off-the-shelf CRM. We build what your team uses daily.",
+      offer: "Lead table, statuses, assignees, filters, notifications, basic roles.",
+      process: {
+        title: "Process",
+        steps: ["Process brief", "Status model", "UI and build", "Integrations", "Team onboarding"]
+      },
+      cases: { title: "Cases", items: [{ name: "Headmind", href: "/en/projects/headmind" }] },
+      pricing: { title: "Pricing", body: "Growth from $900. Large multi-role CRM — Custom." },
+      faq: [{ q: "Is this a HubSpot replacement?", a: "No. A lightweight system for your workflow. External CRM integrations on request." }],
+      cta: "Get a written scope & estimate"
+    }
+  },
+  portal: {
+    ru: {
+      seo: {
+        title: "Разработка личного кабинета — TIVONIX",
+        description: "Клиентские порталы и кабинеты с ролями, статусами и документами."
+      },
+      h1: "Личные кабинеты и клиентские порталы",
+      lead: "Кабинет клиента, портал партнёра или внутренний dashboard — с понятными ролями и доступами.",
+      offer: "Авторизация, профиль, статусы, документы, уведомления, админ-раздел.",
+      process: {
+        title: "Этапы",
+        steps: ["Scope ролей", "Прототип", "Разработка", "Безопасность доступов", "Запуск"]
+      },
+      cases: { title: "Кейсы", items: [{ name: "Spliton", href: "/projects/spliton" }] },
+      pricing: { title: "Стоимость", body: "Product от $2000 для основы с одним сценарием." },
+      faq: [{ q: "Сколько ролей?", a: "В Product — базовый набор. Много ролей и сложные права — Custom." }],
+      cta: "Получить письменную оценку"
+    },
+    en: {
+      seo: {
+        title: "Client portal development — TIVONIX",
+        description: "Client portals and dashboards with roles, statuses and documents."
+      },
+      h1: "Client portals and account areas",
+      lead: "Client area, partner portal or internal dashboard — with clear roles and access control.",
+      offer: "Auth, profile, statuses, documents, notifications, admin section.",
+      process: {
+        title: "Process",
+        steps: ["Role scope", "Prototype", "Development", "Access security", "Launch"]
+      },
+      cases: { title: "Cases", items: [{ name: "Spliton", href: "/en/projects/spliton" }] },
+      pricing: { title: "Pricing", body: "Product from $2000 for a foundation with one primary workflow." },
+      faq: [{ q: "How many roles?", a: "Product includes a basic set. Many roles and complex permissions — Custom." }],
+      cta: "Get a written scope & estimate"
+    }
+  },
+  telegram: {
+    ru: {
+      seo: {
+        title: "Telegram-боты для бизнеса — TIVONIX",
+        description: "Боты для заявок, уведомлений и интеграции с сайтом и CRM."
+      },
+      h1: "Telegram-боты для заявок и уведомлений",
+      lead: "Подключаем Telegram к сайту, CRM и внутренним процессам без потери заявок.",
+      offer: "Бот заявок, уведомления менеджерам, Mini App, интеграция с формами.",
+      process: {
+        title: "Этапы",
+        steps: ["Сценарий бота", "Разработка", "Интеграция", "Тест", "Запуск"]
+      },
+      cases: { title: "Кейсы", items: [{ name: "Slotty", href: "/projects/slotty" }] },
+      pricing: { title: "Стоимость", body: "От Start/Growth в зависимости от логики и интеграций." },
+      faq: [{ q: "Нужен ли отдельный сервер?", a: "Помогаем с деплоем и настройкой. Детали — в письменной оценке." }],
+      cta: "Получить письменную оценку"
+    },
+    en: {
+      seo: {
+        title: "Telegram bots for business — TIVONIX",
+        description: "Bots for leads, alerts and integration with your website and CRM."
+      },
+      h1: "Telegram bots for leads and notifications",
+      lead: "We connect Telegram to your website, CRM and internal workflows without losing inquiries.",
+      offer: "Lead bot, manager alerts, Mini App, form integrations.",
+      process: {
+        title: "Process",
+        steps: ["Bot flow", "Development", "Integration", "Testing", "Launch"]
+      },
+      cases: { title: "Cases", items: [{ name: "Slotty", href: "/en/projects/slotty" }] },
+      pricing: { title: "Pricing", body: "From Start/Growth depending on logic and integrations." },
+      faq: [{ q: "Do we need our own server?", a: "We help with deploy and setup. Details in the written estimate." }],
+      cta: "Get a written scope & estimate"
+    }
+  },
+  "white-label": {
+    ru: {
+      seo: {
+        title: "White-label разработка для агентств — TIVONIX",
+        description: "Разработка под брендом агентства: сайты, порталы и автоматизация."
+      },
+      h1: "White-label разработка для агентств",
+      lead: "Берём техническую часть под ваш бренд. Фиксируем scope, сроки и передаём код.",
+      offer: "Сайты, MVP, порталы, автоматизация, партнёрская панель.",
+      process: {
+        title: "Этапы",
+        steps: ["Партнёрский бриф", "Scope", "Разработка", "Отчёты", "Передача клиенту"]
+      },
+      cases: { title: "Кейсы", items: [{ name: "TIVONIX Panel", href: "/partners" }] },
+      pricing: { title: "Стоимость", body: "Индивидуально. Партнёрские условия — на странице Partners." },
+      faq: [{ q: "Как начать?", a: "Оставьте заявку или откройте партнёрскую программу на /partners." }],
+      cta: "Получить письменную оценку"
+    },
+    en: {
+      seo: {
+        title: "White-label development for agencies — TIVONIX",
+        description: "Development under your agency brand: websites, portals and automation."
+      },
+      h1: "White-label development for agencies",
+      lead: "We handle the technical delivery under your brand. Scope, timeline and code handover are agreed in writing.",
+      offer: "Websites, MVPs, portals, automation, partner panel.",
+      process: {
+        title: "Process",
+        steps: ["Partner brief", "Scope", "Build", "Written updates", "Client handover"]
+      },
+      cases: { title: "Cases", items: [{ name: "Partner program", href: "/en/partners" }] },
+      pricing: { title: "Pricing", body: "Custom. Partner terms on the Partners page." },
+      faq: [{ q: "How to start?", a: "Send a brief or open the partner program at /en/partners." }],
+      cta: "Get a written scope & estimate"
+    }
+  }
+};
+function servicePageCopy(id, lang) {
+  const l = lang === "en" ? "en" : "ru";
+  return COPY$4[id][l];
+}
 function cx$d(...a) {
   return a.filter(Boolean).join(" ");
 }
@@ -10101,16 +10748,17 @@ const FOOTER_PAGES = [
   { to: "/contacts", label: { ru: "Контакты", en: "Contacts", zh: "联系方式" } }
 ];
 const FOOTER_SERVICES = [
-  { to: "/sozdanie-sajtov", label: { ru: "Создание сайтов", en: "Website development", zh: "网站开发" } },
-  { to: "/avtomatizaciya-biznesa", label: { ru: "Автоматизация", en: "Automation", zh: "业务自动化" } },
-  { to: "/#ai", label: { ru: "AI в продуктах", en: "AI in products", zh: "产品中的 AI" } },
-  { to: "/#process", label: { ru: "Как мы работаем", en: "How we work", zh: "我们如何协作" } }
+  { id: "websites", label: { ru: "Создание сайтов", en: "Website development", zh: "网站开发" } },
+  { id: "mvp", label: { ru: "Разработка MVP", en: "MVP development", zh: "MVP 开发" } },
+  { id: "automation", label: { ru: "Автоматизация", en: "Business automation", zh: "业务自动化" } },
+  { id: "portal", label: { ru: "Личный кабинет", en: "Client portal", zh: "客户门户" } },
+  { id: "telegram", label: { ru: "Telegram-боты", en: "Telegram bots", zh: "Telegram 机器人" } }
 ];
 const FOOTER_MAILTO_URL = `mailto:${CONTACT_EMAIL}`;
 const FOOTER_CONNECT = [
-  { href: TG_CHANNEL_URL, label: "Telegram", kind: "tg" },
-  { href: "https://www.instagram.com/tivonix.tech/", label: "Instagram", kind: "ig" },
-  { href: FOOTER_MAILTO_URL, label: "Gmail", kind: "mail" }
+  { href: TELEGRAM_URL, label: "Telegram", kind: "tg" },
+  { href: INSTAGRAM_URL, label: "Instagram", kind: "ig" },
+  { href: FOOTER_MAILTO_URL, label: "Email", kind: "mail" }
 ];
 const DOCS = {
   ru: [
@@ -10312,7 +10960,7 @@ function Footer() {
               /* @__PURE__ */ jsxs(
                 "a",
                 {
-                  href: TG_CHANNEL_URL,
+                  href: TELEGRAM_URL,
                   target: "_blank",
                   rel: "noopener noreferrer",
                   className: "site-footer__touch-row",
@@ -10343,13 +10991,10 @@ function Footer() {
             ] }),
             /* @__PURE__ */ jsxs("div", { className: "site-footer__grid", children: [
               /* @__PURE__ */ jsx(ColNav, { id: "footer-pages", title: t3(lang, "Компания", "Company", "公司"), children: FOOTER_PAGES.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: pathForLang(i.to, lang), children: t(i.label) }) }, i.to)) }),
-              /* @__PURE__ */ jsx(ColNav, { id: "footer-services", title: t3(lang, "Услуги", "Services", "服务"), children: FOOTER_SERVICES.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(
-                FooterLink,
-                {
-                  to: i.to.startsWith("/#") ? `${lang === "en" ? "/en" : lang === "zh" ? "/zh" : "/"}${i.to.slice(1)}` : pathForLang(i.to, lang),
-                  children: t(i.label)
-                }
-              ) }, i.to)) }),
+              /* @__PURE__ */ jsxs(ColNav, { id: "footer-services", title: t3(lang, "Услуги", "Services", "服务"), children: [
+                FOOTER_SERVICES.map((i) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: pathForLang(servicePagePath(i.id, lang), lang), children: t(i.label) }) }, i.id)),
+                /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: `${pathForLang("/", lang)}#process`, children: t3(lang, "Как мы работаем", "How we work", "我们如何协作") }) })
+              ] }),
               /* @__PURE__ */ jsxs(ColNav, { id: "footer-work", title: t3(lang, "Кейсы", "Cases", "案例"), children: [
                 /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: pathForLang("/projects", lang), children: t3(lang, "Все проекты", "All projects", "全部项目") }) }),
                 projects.map((p) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(FooterLink, { to: pathForLang(`/projects/${p.id}`, lang), children: p.title }) }, p.id))
@@ -10384,7 +11029,6 @@ function Footer() {
     }
   );
 }
-const CANONICAL_ORIGIN$1 = "https://tivonix.tech";
 const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN$1}/images/og-social.jpg`;
 const OG_IMAGE_WIDTH = "1200";
 const OG_IMAGE_HEIGHT = "630";
@@ -10441,75 +11085,78 @@ function SEO({
     schemaJsonLd != null ? /* @__PURE__ */ jsx("script", { type: "application/ld+json", children: JSON.stringify(schemaJsonLd) }) : null
   ] });
 }
+const ORG_ID = `${CANONICAL_ORIGIN$1}/#org`;
+const WEBSITE_ID = `${CANONICAL_ORIGIN$1}/#website`;
+const FOUNDER_ID = `${CANONICAL_ORIGIN$1}/#danila-titovets`;
 function buildHomePageSchema({ pageTitle, pageDescription }) {
   return {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://tivonix.tech/#org",
+        "@id": ORG_ID,
         name: "TIVONIX",
-        url: "https://tivonix.tech/",
+        url: `${CANONICAL_ORIGIN$1}/`,
         logo: {
           "@type": "ImageObject",
-          url: "https://tivonix.tech/images/tivonix-logo-icon.webp"
+          url: `${CANONICAL_ORIGIN$1}/images/tivonix-logo-icon.webp`
         },
-        image: "https://tivonix.tech/images/ceo.png",
+        image: `${CANONICAL_ORIGIN$1}/images/ceo.png`,
         description: pageDescription,
         contactPoint: [
           {
             "@type": "ContactPoint",
             contactType: "sales",
-            email: "tivoonix@gmail.com",
-            availableLanguage: ["ru", "en"]
+            email: CONTACT_EMAIL,
+            availableLanguage: ["ru", "en", "zh"]
           }
         ],
-        sameAs: ["https://t.me/TIVONIX"],
-        founder: { "@id": "https://tivonix.tech/#danila-titovets" }
+        sameAs: socialSameAs(),
+        founder: { "@id": FOUNDER_ID }
       },
       {
         "@type": "Person",
-        "@id": "https://tivonix.tech/#danila-titovets",
+        "@id": FOUNDER_ID,
         name: "Данила Титовец",
         alternateName: "Danila Titovets",
         jobTitle: "Founder & Full-stack developer",
-        worksFor: { "@id": "https://tivonix.tech/#org" },
+        worksFor: { "@id": ORG_ID },
         address: {
           "@type": "PostalAddress",
           addressCountry: "BY"
         },
-        url: "https://tivonix.tech/",
-        sameAs: ["https://t.me/TIVONIX"],
-        email: "tivoonix@gmail.com",
-        image: "https://tivonix.tech/images/ceo.png"
+        url: `${CANONICAL_ORIGIN$1}/`,
+        sameAs: socialSameAs(),
+        email: CONTACT_EMAIL,
+        image: `${CANONICAL_ORIGIN$1}/images/ceo.png`
       },
       {
         "@type": "ProfessionalService",
-        "@id": "https://tivonix.tech/#service",
+        "@id": `${CANONICAL_ORIGIN$1}/#service`,
         name: "TIVONIX",
-        url: "https://tivonix.tech/",
+        url: `${CANONICAL_ORIGIN$1}/`,
         description: pageDescription,
-        provider: { "@id": "https://tivonix.tech/#danila-titovets" },
+        provider: { "@id": FOUNDER_ID },
         areaServed: "Worldwide",
-        email: "tivoonix@gmail.com"
+        email: CONTACT_EMAIL
       },
       {
         "@type": "WebSite",
-        "@id": "https://tivonix.tech/#website",
-        url: "https://tivonix.tech/",
+        "@id": WEBSITE_ID,
+        url: `${CANONICAL_ORIGIN$1}/`,
         name: "TIVONIX",
-        publisher: { "@id": "https://tivonix.tech/#org" },
-        inLanguage: ["ru", "en"]
+        publisher: { "@id": ORG_ID },
+        inLanguage: ["ru", "en", "zh"]
       },
       {
         "@type": "WebPage",
-        "@id": "https://tivonix.tech/#home",
-        url: "https://tivonix.tech/",
+        "@id": `${CANONICAL_ORIGIN$1}/#home`,
+        url: `${CANONICAL_ORIGIN$1}/`,
         name: pageTitle,
         description: pageDescription,
-        isPartOf: { "@id": "https://tivonix.tech/#website" },
-        about: { "@id": "https://tivonix.tech/#org" },
-        inLanguage: ["ru", "en"]
+        isPartOf: { "@id": WEBSITE_ID },
+        about: { "@id": ORG_ID },
+        inLanguage: ["ru", "en", "zh"]
       }
     ]
   };
@@ -10525,16 +11172,17 @@ function buildProjectCaseSchema({
   lang,
   dateModified
 }) {
-  const pageUrl = `https://tivonix.tech/projects/${id}`;
-  const inLanguage = lang === "ru" ? "ru" : "en";
+  const pagePath = canonicalPathForLang(`/projects/${id}`, lang);
+  const pageUrl = `${CANONICAL_ORIGIN$1}${pagePath}`;
+  const inLanguage = lang === "ru" ? "ru" : lang === "zh" ? "zh-CN" : "en";
   return {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://tivonix.tech/#org",
+        "@id": ORG_ID,
         name: "TIVONIX",
-        url: "https://tivonix.tech/"
+        url: `${CANONICAL_ORIGIN$1}/`
       },
       {
         "@type": "BreadcrumbList",
@@ -10544,13 +11192,13 @@ function buildProjectCaseSchema({
             "@type": "ListItem",
             position: 1,
             name: lang === "ru" ? "Главная" : "Home",
-            item: "https://tivonix.tech/"
+            item: `${CANONICAL_ORIGIN$1}${canonicalPathForLang("/", lang)}`
           },
           {
             "@type": "ListItem",
             position: 2,
-            name: lang === "ru" ? "Проекты" : "Projects",
-            item: "https://tivonix.tech/projects"
+            name: lang === "ru" ? "Проекты" : lang === "zh" ? "项目" : "Projects",
+            item: `${CANONICAL_ORIGIN$1}${canonicalPathForLang("/projects", lang)}`
           },
           {
             "@type": "ListItem",
@@ -10566,7 +11214,7 @@ function buildProjectCaseSchema({
         url: pageUrl,
         name: `${title} — ${lang === "ru" ? "кейс TIVONIX" : "TIVONIX case study"}`,
         description,
-        isPartOf: { "@id": "https://tivonix.tech/#website" },
+        isPartOf: { "@id": WEBSITE_ID },
         about: { "@id": `${pageUrl}#creativework` },
         breadcrumb: { "@id": `${pageUrl}#breadcrumb` },
         inLanguage,
@@ -10582,8 +11230,8 @@ function buildProjectCaseSchema({
         description,
         url: pageUrl,
         image: coverUrl,
-        creator: { "@id": "https://tivonix.tech/#org" },
-        publisher: { "@id": "https://tivonix.tech/#org" },
+        creator: { "@id": ORG_ID },
+        publisher: { "@id": ORG_ID },
         inLanguage,
         keywords: [...tags, ...stack ?? []].join(", "),
         ...domain ? { sameAs: [domain] } : {},
@@ -10598,22 +11246,16 @@ function buildPricingPageSchema({ pageTitle, pageDescription, lang }) {
     const plan = copy.plans[id];
     const usd = PLAN_PRICE_USD[id];
     const hasPrice = typeof usd === "number";
-    const discounted = hasPrice ? Math.round(usd * (1 - LAUNCH_DISCOUNT_PERCENT / 100)) : void 0;
     return {
       "@type": "Offer",
       name: plan.name,
       description: plan.desc,
       ...hasPrice ? {
-        price: discounted,
-        priceCurrency: "USD",
-        priceSpecification: {
-          "@type": "PriceSpecification",
-          minPrice: discounted,
-          priceCurrency: "USD"
-        }
+        price: usd,
+        priceCurrency: "USD"
       } : {},
-      url: "https://tivonix.tech/plans#pricing",
-      seller: { "@id": "https://tivonix.tech/#org" }
+      url: `${CANONICAL_ORIGIN$1}${canonicalPathForLang("/plans", lang)}#pricing`,
+      seller: { "@id": ORG_ID }
     };
   });
   return {
@@ -10621,25 +11263,25 @@ function buildPricingPageSchema({ pageTitle, pageDescription, lang }) {
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://tivonix.tech/#org",
+        "@id": ORG_ID,
         name: "TIVONIX",
-        url: "https://tivonix.tech/"
+        url: `${CANONICAL_ORIGIN$1}/`
       },
       {
         "@type": "WebPage",
-        "@id": "https://tivonix.tech/plans#webpage",
-        url: "https://tivonix.tech/plans",
+        "@id": `${CANONICAL_ORIGIN$1}${canonicalPathForLang("/plans", lang)}#webpage`,
+        url: `${CANONICAL_ORIGIN$1}${canonicalPathForLang("/plans", lang)}`,
         name: pageTitle,
         description: pageDescription,
-        isPartOf: { "@id": "https://tivonix.tech/#website" },
-        inLanguage: lang === "ru" ? "ru" : "en"
+        isPartOf: { "@id": WEBSITE_ID },
+        inLanguage: lang === "ru" ? "ru" : lang === "zh" ? "zh-CN" : "en"
       },
       {
         "@type": "Service",
-        "@id": "https://tivonix.tech/plans#service",
+        "@id": `${CANONICAL_ORIGIN$1}${canonicalPathForLang("/plans", lang)}#service`,
         name: pageTitle,
         description: pageDescription,
-        provider: { "@id": "https://tivonix.tech/#org" },
+        provider: { "@id": ORG_ID },
         areaServed: "Worldwide",
         offers
       }
@@ -11307,8 +11949,8 @@ function ProjectsPage() {
   const { lang } = useLang();
   const { pathname } = useLocation();
   const isRu = lang === "ru";
-  const isEnPath = pathname.startsWith("/en");
-  pathname.startsWith("/zh");
+  pathname.startsWith("/en");
+  const isZhPath = pathname.startsWith("/zh");
   const [activeFilter, setActiveFilter] = useState(ALL_FILTER);
   const leadCopy = leadFormCopy(lang);
   useEffect(() => {
@@ -11331,8 +11973,8 @@ function ProjectsPage() {
       {
         title: seoTitle,
         description: seoDescription,
-        canonicalPath: isEnPath ? "/en/projects" : "/projects",
-        ogLocalePrimary: isRu ? "ru_RU" : "en_US",
+        canonicalPath: canonicalPathForLang("/projects", lang),
+        ogLocalePrimary: isRu ? "ru_RU" : isZhPath ? "zh_CN" : "en_US",
         hreflang: true
       }
     ),
@@ -11514,10 +12156,10 @@ const PROJECT_CASE_SYSTEM = {
     ]
   },
   spliton: {
-    moodRu: "Биржа долей в музыке — полный финтех-контур",
-    moodEn: "Music-share exchange — full fintech loop",
-    storyRu: "Музыкальные активы — не кнопка «купить». Деньги, согласия, пополнения и статусы должны сходиться **без дыр**: подтверждение → обработка → результат. Один сбой на выплате — и доверие кончается быстрее любого релиза.\n\nSpliton — живая **биржа долей**: каталог релизов, покупка на первичном рынке, сложный вторичный рынок со стаканом и лимитными заявками, кошелёк USDT, внутренний учёт операций, KYC, центр доверия и портал оператора. Не слайд «как будет» — продукт, где интерфейс, финансы и комплаенс в одной системе.\n\nИнтерфейс полностью на **четырёх языках**: русский, английский, испанский, португальский. В платформу зашёл инвестор на [[200 000 $]]. Мы собрали продукт целиком — включая **огромную админку** под выплаты, казначейство и аналитику с графиками — и **до сих пор сопровождаем**. Acid lime `#b7f500` на чёрном фоне — как на живом spliton.io.",
-    storyEn: "Music assets aren’t a buy button. Money, consents, deposits and statuses have to lock **without holes**: confirm → processing → result. One payout failure — and trust dies faster than any release.\n\nSpliton is a live **share exchange**: release catalog, primary-market purchase, a complex secondary market with an order book and limit orders, USDT wallet, internal operations ledger, KYC, trust center and operator portal. Not a “how it will look” slide — a product where interface, finance and compliance live in one system.\n\nThe interface is fully localized in **four languages**: Russian, English, Spanish, Portuguese. The platform is backed by an investor at [[$200,000]]. We shipped the full product — including a **huge admin** for payouts, treasury and analytics with charts — and **still support it**. Acid lime `#b7f500` on black — matching live spliton.io.",
+    moodRu: "Биржа долей в музыке — финтех-платформа",
+    moodEn: "Music-share exchange — fintech platform",
+    storyRu: "Музыкальные активы требуют прозрачных денежных сценариев: согласия, пополнения, покупка долей, вторичный рынок и вывод.\n\nSpliton — платформа с кабинетом инвестора, вторичным рынком, кошельком USDT, внутренним учётом операций, KYC, центром доверия и operator portal.\n\nИнтерфейс на **четырёх языках**: русский, английский, испанский, португальский. TIVONIX собрала продукт целиком и **продолжает сопровождение**. Acid lime `#b7f500` на чёрном фоне — как на spliton.io.",
+    storyEn: "Music assets need transparent money flows: consents, deposits, share purchase, secondary market and withdrawal.\n\nSpliton is a platform with an investor portal, secondary market, USDT wallet, internal operations ledger, KYC, trust center and operator portal.\n\nThe interface is localized in **four languages**: Russian, English, Spanish, Portuguese. TIVONIX shipped the full product and **still supports it**. Acid lime `#b7f500` on black — matching spliton.io.",
     logo: "/images/project-logos/spliton.webp",
     palette: [
       {
@@ -11572,10 +12214,10 @@ const PROJECT_CASE_SYSTEM = {
     ]
   },
   slotty: {
-    moodRu: "Полный маркетплейс записи — фильтры, карта, SaaS мастера",
-    moodEn: "Full booking marketplace — filters, map, master SaaS",
-    storyRu: "Не «кнопка записаться». **Маркетплейс**: каталог с жёсткими фильтрами и картой, Telegram Mini App, кабинет мастера Free/Pro, platform-admin, bePaid.\n\nЗаказчик — **Виктория Д.** Срок — **3 недели**. React + Express + PostgreSQL, прод на **Railway**, домен **slotty.of.by** — подсказали, где купить, подняли хостинг, выкатили.\n\nСкоро запуск к **настоящим клиентам и мастерам**. Зайти и проверить можно самому: слот видно сразу, без Direct.",
-    storyEn: "Not a “book now” button. A **marketplace**: filtered catalog + map, Telegram Mini App, master Free/Pro cabinet, platform admin, bePaid.\n\nClient — **Victoria D.** Timeline — **3 weeks**. React + Express + PostgreSQL, production on **Railway**, domain **slotty.of.by** — we advised where to buy, set up hosting, shipped live.\n\nSoon launching to **real clients and masters**. You can open it yourself: the slot is visible right away — no DMs.",
+    moodRu: "Маркетплейс записи — фильтры, карта, SaaS мастера",
+    moodEn: "Booking marketplace — filters, map, provider portal",
+    storyRu: "Платформа записи: каталог с фильтрами и картой, Telegram Mini App, кабинет мастера Free/Pro, platform-admin, bePaid.\n\nЗаказчик — **Виктория Д.** React + Express + PostgreSQL, домен **slotty.of.by**, деплой на **Railway**.\n\nПлатформа сдана; публичный запуск — на стороне заказчика. Можно открыть slotty.of.by и проверить сценарий записи.",
+    storyEn: "A booking platform: filtered catalog + map, Telegram Mini App, service provider portal Free/Pro, platform admin, bePaid.\n\nClient — **Victoria D.** React + Express + PostgreSQL, domain **slotty.of.by**, deployed on **Railway**.\n\nPlatform delivered; public rollout is managed by the client. Open slotty.of.by to review the booking flow.",
     logo: "/images/project-logos/slotty.png",
     palette: [
       {
@@ -12827,8 +13469,10 @@ function SunContacts({ size }) {
   const hazeStyle = s({
     background: "radial-gradient(300px 240px at 35% 30%, rgba(255,215,176,0.22), transparent 62%),radial-gradient(360px 280px at 70% 40%, rgba(255,154,61,0.18), transparent 66%),radial-gradient(420px 320px at 45% 80%, rgba(255,106,26,0.12), transparent 70%)"
   });
-  const title = isRu ? "Контакты" : "Contacts";
+  const title = isRu ? "Контакты" : lang === "zh" ? "联系方式" : "Contacts";
   const leadCopy = leadFormCopy(lang);
+  const mailSubject = isRu ? "Запрос TIVONIX" : lang === "zh" ? "TIVONIX 项目咨询" : "TIVONIX project inquiry";
+  const mailtoHref = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(mailSubject)}`;
   const contactRowClass = cx$a(
     "group inline-flex w-full items-center gap-3.5 rounded-xl px-4 py-2.5",
     "bg-white/[0.055] hover:bg-white/[0.085] transition duration-200",
@@ -12863,9 +13507,7 @@ function SunContacts({ size }) {
           /* @__PURE__ */ jsxs(
             "a",
             {
-              href: "https://mail.google.com/mail/?view=cm&fs=1&to=tivoonix@gmail.com&su=%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82%20(SaaS%2FMVP)",
-              target: "_blank",
-              rel: "noopener noreferrer",
+              href: mailtoHref,
               className: cx$a(contactRowClass, "hidden sm:inline-flex"),
               children: [
                 /* @__PURE__ */ jsx("span", { className: cx$a(iconBoxClass, "text-[#FF9A3D]"), children: /* @__PURE__ */ jsx(IconMail, {}) }),
@@ -12906,8 +13548,8 @@ function ContactsPage() {
   const { lang } = useLang();
   const { pathname } = useLocation();
   const isRu = lang === "ru";
-  const isEnPath = pathname.startsWith("/en");
-  pathname.startsWith("/zh");
+  pathname.startsWith("/en");
+  const isZhPath = pathname.startsWith("/zh");
   const { headerH, side, sun, r1, r2, r3 } = useSolarLayoutNoScroll();
   const seoTitle = isRu ? "Контакты TIVONIX — заказать сайт или веб-сервис" : "TIVONIX contacts — order a website or web service";
   const seoDescription = isRu ? "Свяжитесь с TIVONIX, чтобы обсудить создание сайта, лендинга, веб-сервиса, MVP или админки." : "Contact TIVONIX to discuss creating a website, landing page, web service, MVP, or admin panel.";
@@ -12951,8 +13593,8 @@ function ContactsPage() {
       {
         title: seoTitle,
         description: seoDescription,
-        canonicalPath: isEnPath ? "/en/contacts" : "/contacts",
-        ogLocalePrimary: isRu ? "ru_RU" : "en_US",
+        canonicalPath: canonicalPathForLang("/contacts", lang),
+        ogLocalePrimary: isRu ? "ru_RU" : isZhPath ? "zh_CN" : "en_US",
         hreflang: true
       }
     ),
@@ -12995,64 +13637,6 @@ function ContactsPage() {
       /* @__PURE__ */ jsx(SunContacts, { size: Math.round(sun * 1.25) }),
       /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-0 [mask-image:radial-gradient(circle_at_center,black_62%,transparent_84%)] [-webkit-mask-image:radial-gradient(circle_at_center,black_62%,transparent_84%)]" })
     ] }) }) }) })
-  ] });
-}
-function WebsiteCreationPage() {
-  const { lang } = useLang();
-  const isRu = lang === "ru";
-  const title = isRu ? "Создание сайтов под ключ — TIVONIX" : "Website development turnkey — TIVONIX";
-  const description = isRu ? "Создаём сайты под ключ для бизнеса: лендинги, корпоративные сайты, веб-сервисы и MVP. Дизайн, адаптивная разработка, базовое SEO и запуск." : "We build turnkey websites for business: landing pages, corporate sites, web services and MVPs. Design, responsive development, basic SEO and launch.";
-  return /* @__PURE__ */ jsxs("div", { className: "min-h-screen bg-[var(--bg)]", children: [
-    /* @__PURE__ */ jsx(
-      SEO,
-      {
-        title,
-        description,
-        canonicalPath: "/sozdanie-sajtov",
-        ogLocalePrimary: lang === "zh" ? "zh_CN" : isRu ? "ru_RU" : "en_US"
-      }
-    ),
-    /* @__PURE__ */ jsx(Header, {}),
-    /* @__PURE__ */ jsxs("main", { children: [
-      /* @__PURE__ */ jsx(Section, { className: "pt-8 sm:pt-10 pb-8", children: /* @__PURE__ */ jsxs(Container, { children: [
-        /* @__PURE__ */ jsx("h1", { className: "text-[32px] sm:text-[46px] font-[850] tracking-[-0.03em] text-white leading-[1.08]", children: isRu ? "Создание сайтов под ключ для бизнеса" : "Turnkey website development for business" }),
-        /* @__PURE__ */ jsx("p", { className: "mt-5 max-w-3xl text-[16px] leading-7 text-white/72", children: isRu ? "Проектируем, дизайним, разрабатываем и запускаем сайты в одном процессе: без хаоса и с понятным результатом для заявок и продаж." : "We design, develop and launch websites in one clear process focused on leads and sales." }),
-        /* @__PURE__ */ jsx("div", { className: "mt-7 flex flex-wrap gap-3", children: /* @__PURE__ */ jsx(LeadCTAButton, { source: "service_websites", variant: "primary", size: "lg", children: isRu ? "Оставить заявку" : "Send a brief" }) })
-      ] }) }),
-      /* @__PURE__ */ jsx(Section, { className: "py-8", children: /* @__PURE__ */ jsxs(Container, { children: [
-        /* @__PURE__ */ jsx("h2", { className: "text-[24px] sm:text-[32px] font-[800] tracking-tight text-white", children: "Что делаем" }),
-        /* @__PURE__ */ jsxs("ul", { className: "mt-4 grid gap-3 text-white/74", children: [
-          /* @__PURE__ */ jsx("li", { children: "Лендинги и промо-страницы" }),
-          /* @__PURE__ */ jsx("li", { children: "Корпоративные сайты и сайты услуг" }),
-          /* @__PURE__ */ jsx("li", { children: "Веб-сервисы, MVP и личные кабинеты" }),
-          /* @__PURE__ */ jsx("li", { children: "Интеграции с формами, Telegram и CRM" })
-        ] })
-      ] }) }),
-      /* @__PURE__ */ jsx(Section, { className: "py-8", children: /* @__PURE__ */ jsxs(Container, { children: [
-        /* @__PURE__ */ jsx("h2", { className: "text-[24px] sm:text-[32px] font-[800] tracking-tight text-white", children: "Что входит в работу" }),
-        /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-4xl text-white/74 leading-7", children: "Структура страницы, дизайн, адаптивная разработка на React/TypeScript, формы заявок, базовая SEO-оптимизация (title/description/canonical/og), оптимизация скорости и запуск на домене." })
-      ] }) }),
-      /* @__PURE__ */ jsx(Section, { className: "py-8", children: /* @__PURE__ */ jsxs(Container, { children: [
-        /* @__PURE__ */ jsx("h2", { className: "text-[24px] sm:text-[32px] font-[800] tracking-tight text-white", children: "Этапы, сроки и оценка" }),
-        /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-4xl text-white/74 leading-7", children: "Бриф и структура, дизайн ключевых блоков, разработка, правки, деплой и поддержка. Типовой срок: от нескольких дней для лендинга до нескольких недель для MVP. Первичную оценку даём после короткого брифа или созвона." })
-      ] }) }),
-      /* @__PURE__ */ jsx(Section, { className: "pt-8 pb-14", children: /* @__PURE__ */ jsxs(Container, { children: [
-        /* @__PURE__ */ jsx("h2", { className: "text-[24px] sm:text-[32px] font-[800] tracking-tight text-white", children: "FAQ и следующий шаг" }),
-        /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-4xl text-white/74 leading-7", children: "Частые вопросы по процессу и стоимости уже собраны в разделе FAQ на главной. Оставьте заявку на сайте или перейдите в контакты — ответим с ориентиром по сроку и формату." }),
-        /* @__PURE__ */ jsxs("div", { className: "mt-6 flex flex-wrap gap-3", children: [
-          /* @__PURE__ */ jsx(LeadCTAButton, { source: "service_websites", variant: "primary", size: "lg", children: isRu ? "Оставить заявку" : "Send a brief" }),
-          /* @__PURE__ */ jsx(
-            "a",
-            {
-              href: "/contacts",
-              className: "inline-flex h-11 items-center justify-center rounded-xl px-6 text-[14px] font-[650] text-white border border-white/15 bg-white/[0.04]",
-              children: isRu ? "Контакты" : "Contacts"
-            }
-          )
-        ] })
-      ] }) })
-    ] }),
-    /* @__PURE__ */ jsx(Footer, {})
   ] });
 }
 const automationTypo = {
@@ -15351,7 +15935,6 @@ function PricingPlanScopeGrid({ onPlanAction }) {
   ] });
 }
 const COMPARE_LOGO = "/images/tivonix-logo-white.webp";
-const EMBER = "#fc5000";
 function cx$7(...parts) {
   return parts.filter(Boolean).join(" ");
 }
@@ -15617,17 +16200,7 @@ function PricingPlansSection({ className }) {
       children: /* @__PURE__ */ jsxs(Container, { children: [
         /* @__PURE__ */ jsxs(Reveal$1, { className: "mx-auto max-w-[48rem] text-center", children: [
           /* @__PURE__ */ jsx("h1", { className: "font-hero text-[clamp(2rem,5vw,3.25rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white text-balance", children: copy.title }),
-          /* @__PURE__ */ jsxs("div", { className: "mx-auto mt-4 flex flex-wrap items-baseline justify-center gap-x-2.5 gap-y-1 sm:mt-5", children: [
-            /* @__PURE__ */ jsx(
-              "span",
-              {
-                className: "font-hero shrink-0 text-[clamp(1.85rem,3.8vw,2.5rem)] font-normal uppercase leading-none tracking-[0.02em]",
-                style: { color: EMBER },
-                children: copy.launchDiscount.percent
-              }
-            ),
-            /* @__PURE__ */ jsx("span", { className: "max-w-[42ch] text-center font-sans text-[12px] font-medium leading-snug text-[var(--color-ember)]/75 sm:text-left sm:text-[13px]", children: copy.launchDiscount.note })
-          ] })
+          /* @__PURE__ */ jsx("p", { className: "mx-auto mt-4 max-w-[42ch] text-center font-sans text-[12px] font-medium leading-snug text-white/62 sm:mt-5 sm:text-[13px]", children: copy.afterSelect.note })
         ] }),
         /* @__PURE__ */ jsx(Reveal$1, { delay: 80, className: "pricing-plans-grid mt-10 sm:mt-12", children: PLANS.map((plan) => {
           const planCopy = copy.plans[plan.id];
@@ -16073,8 +16646,8 @@ function AboutPage() {
       {
         title: copy.seo.title,
         description: copy.seo.description,
-        canonicalPath: lang === "en" ? "/en/about" : "/about",
-        ogLocalePrimary: lang === "en" ? "en_US" : "ru_RU",
+        canonicalPath: canonicalPathForLang("/about", lang),
+        ogLocalePrimary: lang === "zh" ? "zh_CN" : lang === "en" ? "en_US" : "ru_RU",
         hreflang: true
       }
     ),
@@ -17979,7 +18552,7 @@ function PartnersFooter() {
               children: copy.footer.askTelegram
             }
           ),
-          /* @__PURE__ */ jsx("a", { href: TG_CHANNEL_URL, target: "_blank", rel: "noopener noreferrer", children: copy.footer.channel }),
+          /* @__PURE__ */ jsx("a", { href: TELEGRAM_URL, target: "_blank", rel: "noopener noreferrer", children: copy.footer.channel }),
           /* @__PURE__ */ jsx("a", { href: docs.privacy, target: "_blank", rel: "noopener noreferrer", "aria-label": copy.footer.privacyAria, children: copy.footer.privacy }),
           /* @__PURE__ */ jsx("a", { href: docs.consent, target: "_blank", rel: "noopener noreferrer", "aria-label": copy.footer.consentAria, children: copy.footer.consent })
         ] })
@@ -27566,6 +28139,64 @@ function MilesealCaseContentMigrationPage() {
     /* @__PURE__ */ jsx(Footer, {})
   ] });
 }
+function ServiceLandingPage({ pageId: pageIdProp }) {
+  const { lang } = useLang();
+  const { pathname } = useLocation();
+  const pageId = pageIdProp ?? servicePageIdFromPath(pathname);
+  if (!pageId) {
+    return null;
+  }
+  const copy = servicePageCopy(pageId, lang);
+  const canonicalPath = pathname.replace(/\/+$/, "") || pathname;
+  return /* @__PURE__ */ jsxs("div", { className: "min-h-screen bg-[var(--bg)]", children: [
+    /* @__PURE__ */ jsx(
+      SEO,
+      {
+        title: copy.seo.title,
+        description: copy.seo.description,
+        canonicalPath,
+        ogLocalePrimary: lang === "zh" ? "zh_CN" : lang === "en" ? "en_US" : "ru_RU",
+        hreflang: pageId === "websites" || pageId === "mvp" || pageId === "automation"
+      }
+    ),
+    /* @__PURE__ */ jsx(Header, {}),
+    /* @__PURE__ */ jsxs("main", { children: [
+      /* @__PURE__ */ jsx(Section, { className: "pt-8 sm:pt-10 pb-8", children: /* @__PURE__ */ jsxs(Container, { children: [
+        /* @__PURE__ */ jsx("h1", { className: "text-[32px] sm:text-[46px] font-[850] tracking-[-0.03em] text-white leading-[1.08]", children: copy.h1 }),
+        /* @__PURE__ */ jsx("p", { className: "mt-5 max-w-3xl text-[16px] leading-7 text-white/72", children: copy.lead }),
+        /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-3xl text-[15px] leading-7 text-white/62", children: copy.offer }),
+        /* @__PURE__ */ jsx("div", { className: "mt-7 flex flex-wrap gap-3", children: /* @__PURE__ */ jsx(LeadCTAButton, { source: "service_websites", variant: "primary", size: "lg", children: copy.cta }) })
+      ] }) }),
+      /* @__PURE__ */ jsx(Section, { className: "py-8", children: /* @__PURE__ */ jsxs(Container, { children: [
+        /* @__PURE__ */ jsx("h2", { className: "text-[24px] sm:text-[32px] font-[800] tracking-tight text-white", children: copy.process.title }),
+        /* @__PURE__ */ jsx("ol", { className: "mt-4 grid gap-2 text-white/74 list-decimal pl-5", children: copy.process.steps.map((step) => /* @__PURE__ */ jsx("li", { children: step }, step)) })
+      ] }) }),
+      /* @__PURE__ */ jsx(Section, { className: "py-8", children: /* @__PURE__ */ jsxs(Container, { children: [
+        /* @__PURE__ */ jsx("h2", { className: "text-[24px] sm:text-[32px] font-[800] tracking-tight text-white", children: copy.cases.title }),
+        /* @__PURE__ */ jsx("ul", { className: "mt-4 flex flex-wrap gap-3", children: copy.cases.items.map((item) => /* @__PURE__ */ jsx("li", { children: /* @__PURE__ */ jsx(
+          Link,
+          {
+            to: lang === "en" && !item.href.startsWith("/en") ? `/en${item.href}` : item.href,
+            className: "inline-flex rounded-full border border-white/15 px-4 py-2 text-[13px] font-semibold text-white/80 hover:border-white/30 hover:text-white",
+            children: item.name
+          }
+        ) }, item.name)) })
+      ] }) }),
+      /* @__PURE__ */ jsx(Section, { className: "py-8", children: /* @__PURE__ */ jsxs(Container, { children: [
+        /* @__PURE__ */ jsx("h2", { className: "text-[24px] sm:text-[32px] font-[800] tracking-tight text-white", children: copy.pricing.title }),
+        /* @__PURE__ */ jsx("p", { className: "mt-4 max-w-3xl text-white/74 leading-7", children: copy.pricing.body })
+      ] }) }),
+      /* @__PURE__ */ jsx(Section, { className: "py-8 pb-14", children: /* @__PURE__ */ jsxs(Container, { children: [
+        /* @__PURE__ */ jsx("h2", { className: "text-[24px] sm:text-[32px] font-[800] tracking-tight text-white", children: "FAQ" }),
+        /* @__PURE__ */ jsx("dl", { className: "mt-4 grid gap-4 max-w-3xl", children: copy.faq.map((item) => /* @__PURE__ */ jsxs("div", { children: [
+          /* @__PURE__ */ jsx("dt", { className: "text-[15px] font-semibold text-white/90", children: item.q }),
+          /* @__PURE__ */ jsx("dd", { className: "mt-1 text-[14px] leading-7 text-white/65", children: item.a })
+        ] }, item.q)) })
+      ] }) })
+    ] }),
+    /* @__PURE__ */ jsx(Footer, {})
+  ] });
+}
 const HEADER_OFFSET = 84;
 function ScrollToHash() {
   const { pathname, hash } = useLocation();
@@ -27607,8 +28238,18 @@ function AppRoutes() {
       /* @__PURE__ */ jsx(Route, { path: "/contacts", element: /* @__PURE__ */ jsx(ContactsPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/en/contacts", element: /* @__PURE__ */ jsx(ContactsPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/zh/contacts", element: /* @__PURE__ */ jsx(ContactsPage, {}) }),
-      /* @__PURE__ */ jsx(Route, { path: "/sozdanie-sajtov", element: /* @__PURE__ */ jsx(WebsiteCreationPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/sozdanie-sajtov", element: /* @__PURE__ */ jsx(ServiceLandingPage, { pageId: "websites" }) }),
+      /* @__PURE__ */ jsx(Route, { path: "/razrabotka-mvp", element: /* @__PURE__ */ jsx(ServiceLandingPage, { pageId: "mvp" }) }),
+      /* @__PURE__ */ jsx(Route, { path: "/razrabotka-crm", element: /* @__PURE__ */ jsx(ServiceLandingPage, { pageId: "crm" }) }),
+      /* @__PURE__ */ jsx(Route, { path: "/razrabotka-lichnogo-kabineta", element: /* @__PURE__ */ jsx(ServiceLandingPage, { pageId: "portal" }) }),
+      /* @__PURE__ */ jsx(Route, { path: "/telegram-boty-dlya-biznesa", element: /* @__PURE__ */ jsx(ServiceLandingPage, { pageId: "telegram" }) }),
       /* @__PURE__ */ jsx(Route, { path: "/avtomatizaciya-biznesa", element: /* @__PURE__ */ jsx(AutomationBusinessPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: "/en/website-development", element: /* @__PURE__ */ jsx(ServiceLandingPage, { pageId: "websites" }) }),
+      /* @__PURE__ */ jsx(Route, { path: "/en/mvp-development", element: /* @__PURE__ */ jsx(ServiceLandingPage, { pageId: "mvp" }) }),
+      /* @__PURE__ */ jsx(Route, { path: "/en/business-automation", element: /* @__PURE__ */ jsx(ServiceLandingPage, { pageId: "automation" }) }),
+      /* @__PURE__ */ jsx(Route, { path: "/en/client-portal-development", element: /* @__PURE__ */ jsx(ServiceLandingPage, { pageId: "portal" }) }),
+      /* @__PURE__ */ jsx(Route, { path: "/en/telegram-bot-development", element: /* @__PURE__ */ jsx(ServiceLandingPage, { pageId: "telegram" }) }),
+      /* @__PURE__ */ jsx(Route, { path: "/en/white-label-development", element: /* @__PURE__ */ jsx(ServiceLandingPage, { pageId: "white-label" }) }),
       /* @__PURE__ */ jsx(Route, { path: "/mileseal", element: /* @__PURE__ */ jsx(MilesealPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/en/mileseal", element: /* @__PURE__ */ jsx(MilesealPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/zh/mileseal", element: /* @__PURE__ */ jsx(MilesealPage, {}) }),
@@ -27633,8 +28274,8 @@ function AppRoutes() {
           element: /* @__PURE__ */ jsx(MilesealCaseContentMigrationPage, {})
         }
       ),
-      /* @__PURE__ */ jsx(Route, { path: "/partners", element: /* @__PURE__ */ jsx(PartnersPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: PARTNERS_PATH_RU, element: /* @__PURE__ */ jsx(PartnersPage, {}) }),
+      /* @__PURE__ */ jsx(Route, { path: PARTNERS_PATH_RU_LEGACY, element: /* @__PURE__ */ jsx(PartnersPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: PARTNERS_PATH_EN, element: /* @__PURE__ */ jsx(PartnersPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: PARTNERS_PATH_ZH, element: /* @__PURE__ */ jsx(PartnersPage, {}) }),
       /* @__PURE__ */ jsx(Route, { path: "/en/*", element: /* @__PURE__ */ jsx(NotFoundPage, {}) }),
@@ -27643,31 +28284,6 @@ function AppRoutes() {
     ] })
   ] });
 }
-const CONSENT_KEY = "tivonix_analytics_consent";
-function getAnalyticsConsent() {
-  if (typeof window === "undefined") return "pending";
-  try {
-    const v = localStorage.getItem(CONSENT_KEY);
-    if (v === "accepted" || v === "rejected") return v;
-  } catch {
-  }
-  return "pending";
-}
-function setAnalyticsConsent(state) {
-  try {
-    localStorage.setItem(CONSENT_KEY, state);
-  } catch {
-  }
-  window.dispatchEvent(new CustomEvent("tivonix-consent", { detail: state }));
-}
-function onConsentChange(cb) {
-  const handler = (e) => {
-    const detail = e.detail;
-    cb(detail);
-  };
-  window.addEventListener("tivonix-consent", handler);
-  return () => window.removeEventListener("tivonix-consent", handler);
-}
 const PRIVACY_RU = "/doc/Политика_обработки_ПД_Tivonix_RU.pdf";
 const PRIVACY_EN = "/doc/Privacy_Policy_Tivonix_EN.pdf";
 function ConsentBanner() {
@@ -27675,22 +28291,26 @@ function ConsentBanner() {
   const { isOpen: leadFormOpen } = useLeadForm();
   const [visible, setVisible] = useState(false);
   useEffect(() => {
+    if (!hasAnalyticsConfigured()) {
+      setVisible(false);
+      return;
+    }
     const sync = () => {
       setVisible(getAnalyticsConsent() === "pending");
     };
     sync();
     if (getAnalyticsConsent() === "accepted") {
-      initHotjar();
+      initAnalyticsAfterConsent();
     }
     return onConsentChange((state) => {
-      if (state === "accepted") initHotjar();
+      if (state === "accepted") initAnalyticsAfterConsent();
       setVisible(state === "pending");
     });
   }, []);
   if (!visible || leadFormOpen) return null;
   const accept = () => {
     setAnalyticsConsent("accepted");
-    initHotjar();
+    initAnalyticsAfterConsent();
     setVisible(false);
   };
   const decline = () => {
@@ -27788,8 +28408,17 @@ function ScrollDepthTracker() {
   }, []);
   return null;
 }
+function PageViewTracker() {
+  const { pathname } = useLocation();
+  const { lang } = useLang();
+  useEffect(() => {
+    trackPageView(pathname, lang);
+  }, [pathname, lang]);
+  return null;
+}
 function AppShell() {
   return /* @__PURE__ */ jsxs(LeadFormProvider, { children: [
+    /* @__PURE__ */ jsx(PageViewTracker, {}),
     /* @__PURE__ */ jsx(AppRoutes, {}),
     /* @__PURE__ */ jsx(ConsentBanner, {}),
     /* @__PURE__ */ jsx(ScrollDepthTracker, {})

@@ -174,16 +174,16 @@ export const PROJECT_CASE_SYSTEM: Record<string, ProjectCaseSystem> = {
     ],
   },
   spliton: {
-    moodRu: "Биржа долей в музыке — полный финтех-контур",
-    moodEn: "Music-share exchange — full fintech loop",
+    moodRu: "Биржа долей в музыке — финтех-платформа",
+    moodEn: "Music-share exchange — fintech platform",
     storyRu:
-      "Музыкальные активы — не кнопка «купить». Деньги, согласия, пополнения и статусы должны сходиться **без дыр**: подтверждение → обработка → результат. Один сбой на выплате — и доверие кончается быстрее любого релиза.\n\n" +
-      "Spliton — живая **биржа долей**: каталог релизов, покупка на первичном рынке, сложный вторичный рынок со стаканом и лимитными заявками, кошелёк USDT, внутренний учёт операций, KYC, центр доверия и портал оператора. Не слайд «как будет» — продукт, где интерфейс, финансы и комплаенс в одной системе.\n\n" +
-      "Интерфейс полностью на **четырёх языках**: русский, английский, испанский, португальский. В платформу зашёл инвестор на [[200 000 $]]. Мы собрали продукт целиком — включая **огромную админку** под выплаты, казначейство и аналитику с графиками — и **до сих пор сопровождаем**. Acid lime `#b7f500` на чёрном фоне — как на живом spliton.io.",
+      "Музыкальные активы требуют прозрачных денежных сценариев: согласия, пополнения, покупка долей, вторичный рынок и вывод.\n\n" +
+      "Spliton — платформа с кабинетом инвестора, вторичным рынком, кошельком USDT, внутренним учётом операций, KYC, центром доверия и operator portal.\n\n" +
+      "Интерфейс на **четырёх языках**: русский, английский, испанский, португальский. TIVONIX собрала продукт целиком и **продолжает сопровождение**. Acid lime `#b7f500` на чёрном фоне — как на spliton.io.",
     storyEn:
-      "Music assets aren’t a buy button. Money, consents, deposits and statuses have to lock **without holes**: confirm → processing → result. One payout failure — and trust dies faster than any release.\n\n" +
-      "Spliton is a live **share exchange**: release catalog, primary-market purchase, a complex secondary market with an order book and limit orders, USDT wallet, internal operations ledger, KYC, trust center and operator portal. Not a “how it will look” slide — a product where interface, finance and compliance live in one system.\n\n" +
-      "The interface is fully localized in **four languages**: Russian, English, Spanish, Portuguese. The platform is backed by an investor at [[$200,000]]. We shipped the full product — including a **huge admin** for payouts, treasury and analytics with charts — and **still support it**. Acid lime `#b7f500` on black — matching live spliton.io.",
+      "Music assets need transparent money flows: consents, deposits, share purchase, secondary market and withdrawal.\n\n" +
+      "Spliton is a platform with an investor portal, secondary market, USDT wallet, internal operations ledger, KYC, trust center and operator portal.\n\n" +
+      "The interface is localized in **four languages**: Russian, English, Spanish, Portuguese. TIVONIX shipped the full product and **still supports it**. Acid lime `#b7f500` on black — matching spliton.io.",
     logo: "/images/project-logos/spliton.webp",
     palette: [
       {
@@ -240,16 +240,16 @@ export const PROJECT_CASE_SYSTEM: Record<string, ProjectCaseSystem> = {
     ],
   },
   slotty: {
-    moodRu: "Полный маркетплейс записи — фильтры, карта, SaaS мастера",
-    moodEn: "Full booking marketplace — filters, map, master SaaS",
+    moodRu: "Маркетплейс записи — фильтры, карта, SaaS мастера",
+    moodEn: "Booking marketplace — filters, map, provider portal",
     storyRu:
-      "Не «кнопка записаться». **Маркетплейс**: каталог с жёсткими фильтрами и картой, Telegram Mini App, кабинет мастера Free/Pro, platform-admin, bePaid.\n\n" +
-      "Заказчик — **Виктория Д.** Срок — **3 недели**. React + Express + PostgreSQL, прод на **Railway**, домен **slotty.of.by** — подсказали, где купить, подняли хостинг, выкатили.\n\n" +
-      "Скоро запуск к **настоящим клиентам и мастерам**. Зайти и проверить можно самому: слот видно сразу, без Direct.",
+      "Платформа записи: каталог с фильтрами и картой, Telegram Mini App, кабинет мастера Free/Pro, platform-admin, bePaid.\n\n" +
+      "Заказчик — **Виктория Д.** React + Express + PostgreSQL, домен **slotty.of.by**, деплой на **Railway**.\n\n" +
+      "Платформа сдана; публичный запуск — на стороне заказчика. Можно открыть slotty.of.by и проверить сценарий записи.",
     storyEn:
-      "Not a “book now” button. A **marketplace**: filtered catalog + map, Telegram Mini App, master Free/Pro cabinet, platform admin, bePaid.\n\n" +
-      "Client — **Victoria D.** Timeline — **3 weeks**. React + Express + PostgreSQL, production on **Railway**, domain **slotty.of.by** — we advised where to buy, set up hosting, shipped live.\n\n" +
-      "Soon launching to **real clients and masters**. You can open it yourself: the slot is visible right away — no DMs.",
+      "A booking platform: filtered catalog + map, Telegram Mini App, service provider portal Free/Pro, platform admin, bePaid.\n\n" +
+      "Client — **Victoria D.** React + Express + PostgreSQL, domain **slotty.of.by**, deployed on **Railway**.\n\n" +
+      "Platform delivered; public rollout is managed by the client. Open slotty.of.by to review the booking flow.",
     logo: "/images/project-logos/slotty.png",
     palette: [
       {

@@ -4,7 +4,8 @@ import {
   onConsentChange,
   setAnalyticsConsent,
 } from "../lib/consent";
-import { initHotjar } from "../lib/hotjar";
+import { hasAnalyticsConfigured } from "../config/siteConfig";
+import { initAnalyticsAfterConsent } from "../lib/analyticsAdapter";
 import { useLang } from "../i18n/LangProvider";
 import { t3 } from "../i18n/pick";
 import { useLeadForm } from "./leads/useLeadForm";
@@ -22,17 +23,22 @@ export default function ConsentBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    if (!hasAnalyticsConfigured()) {
+      setVisible(false);
+      return;
+    }
+
     const sync = () => {
       setVisible(getAnalyticsConsent() === "pending");
     };
 
     sync();
     if (getAnalyticsConsent() === "accepted") {
-      initHotjar();
+      initAnalyticsAfterConsent();
     }
 
     return onConsentChange((state) => {
-      if (state === "accepted") initHotjar();
+      if (state === "accepted") initAnalyticsAfterConsent();
       setVisible(state === "pending");
     });
   }, []);
@@ -41,7 +47,7 @@ export default function ConsentBanner() {
 
   const accept = () => {
     setAnalyticsConsent("accepted");
-    initHotjar();
+    initAnalyticsAfterConsent();
     setVisible(false);
   };
 

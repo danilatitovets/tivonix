@@ -13,7 +13,7 @@ import { LeadCTAButton } from "../components/leads/LeadCTAButton";
 import { leadFormCopy } from "../i18n/leadFormCopy";
 import { trackProjectView } from "../lib/analytics";
 import { useEffect } from "react";
-import { pathForLang } from "../lib/localePaths";
+import { pathForLang, canonicalPathForLang } from "../lib/localePaths";
 import type { Lang } from "../i18n/LangProvider";
 
 const ALL_FILTER = "all";
@@ -189,8 +189,8 @@ export default function ProjectsPage() {
       <SEO
         title={seoTitle}
         description={seoDescription}
-        canonicalPath={isEnPath ? "/en/projects" : "/projects"}
-        ogLocalePrimary={isRu ? "ru_RU" : "en_US"}
+        canonicalPath={canonicalPathForLang("/projects", lang)}
+        ogLocalePrimary={isRu ? "ru_RU" : isZhPath ? "zh_CN" : "en_US"}
         hreflang
       />
       <Header />

@@ -1,10 +1,9 @@
 /**
- * Unified analytics helper — Hotjar + Google Ads/gtag.
+ * Unified analytics helper — routes events through analyticsAdapter.
  * Never send PII (name, email, phone, telegram, task text).
  */
 
-import { trackHotjarEvent, type HotjarEventName } from "./hotjar";
-import { trackAdsConversion, trackPartnersEvent } from "./ads";
+import { trackAnalyticsEvent, trackAdsFormConversion } from "./analyticsAdapter";
 
 export type CtaSource =
   | "hero"
@@ -53,8 +52,44 @@ export function getCtaSource(): CtaSource {
   return "unknown";
 }
 
-/** Safe props only — no form field values. */
 export type AnalyticsProps = Record<string, string | number | boolean | undefined>;
+
+type AnalyticsTestEvent = { name: string; props?: AnalyticsProps };
+let testSink: AnalyticsTestEvent[] | null = null;
+const milesealOnceKeys = new Set<string>();
+
+function readLocale(): string {
+  if (typeof document === "undefined") return "ru";
+  return document.documentElement.lang || "ru";
+}
+
+function readPath(): string {
+  if (typeof window === "undefined") return "/";
+  return window.location.pathname;
+}
+
+function readUtm(): { utm_source?: string; utm_medium?: string; utm_campaign?: string } {
+  if (typeof window === "undefined") return {};
+  try {
+    const p = new URL(window.location.href).searchParams;
+    return {
+      utm_source: p.get("utm_source") || undefined,
+      utm_medium: p.get("utm_medium") || undefined,
+      utm_campaign: p.get("utm_campaign") || undefined,
+    };
+  } catch {
+    return {};
+  }
+}
+
+function baseProps(extra?: AnalyticsProps): AnalyticsProps {
+  return {
+    locale: readLocale(),
+    page_path: readPath(),
+    ...readUtm(),
+    ...extra,
+  };
+}
 
 function scrub(props?: AnalyticsProps): AnalyticsProps | undefined {
   if (!props) return undefined;
@@ -79,23 +114,14 @@ function scrub(props?: AnalyticsProps): AnalyticsProps | undefined {
   return out;
 }
 
-type AnalyticsTestEvent = { name: string; props?: AnalyticsProps };
-let testSink: AnalyticsTestEvent[] | null = null;
-const milesealOnceKeys = new Set<string>();
-
-export function trackEvent(
-  name: HotjarEventName | string,
-  props?: AnalyticsProps
-): void {
-  const safe = scrub(props);
+export function trackEvent(name: string, props?: AnalyticsProps): void {
+  const safe = scrub(baseProps(props));
   if (testSink) {
     testSink.push({ name, props: safe });
   }
-  trackHotjarEvent(name as HotjarEventName);
-  trackPartnersEvent(name, safe);
+  trackAnalyticsEvent(name, safe);
 }
 
-/** Test-only sink for MileSeal analytics assertions. */
 export function __setAnalyticsTestSink(enabled: boolean): void {
   testSink = enabled ? [] : null;
 }
@@ -111,65 +137,71 @@ export function __resetAnalyticsTestSink(): void {
 
 export function trackCtaPrimaryClick(source: CtaSource): void {
   setCtaSource(source);
-  trackEvent("cta_primary_click", { source });
-  if (source === "hero") trackEvent("hero_primary_cta_click", { source });
+  trackEvent("cta_click", { cta_source: source });
 }
 
 export function trackHeroProjectsClick(): void {
-  trackEvent("hero_projects_click");
+  trackEvent("cta_click", { cta_source: "hero_projects" });
 }
 
 export function trackLeadFormOpen(source: CtaSource): void {
   setCtaSource(source);
-  trackEvent("lead_form_open", { source });
+  trackEvent("form_open", { cta_source: source });
 }
 
 export function trackLeadFormStart(): void {
-  trackEvent("lead_form_start");
+  trackEvent("form_start", { cta_source: getCtaSource() });
 }
 
 export function trackLeadFormValidationError(field?: string): void {
-  trackEvent("lead_form_validation_error", field ? { field } : undefined);
+  trackEvent("form_validation_error", field ? { field } : undefined);
 }
 
 export function trackLeadFormSubmit(source: CtaSource): void {
-  trackEvent("lead_form_submit", { source });
-  trackAdsConversion("form_request");
+  trackEvent("form_submit_success", { cta_source: source });
+  trackAdsFormConversion();
 }
 
 export function trackLeadFormSuccess(source: CtaSource): void {
-  trackEvent("lead_form_success", { source });
+  trackEvent("form_submit_success", { cta_source: source });
 }
 
 export function trackLeadFormServerError(): void {
-  trackEvent("lead_form_server_error");
+  trackEvent("form_submit_error");
 }
 
 export function trackLeadFormAbandon(source: CtaSource): void {
-  trackEvent("lead_form_abandon", { source });
+  trackEvent("form_submit_error", { cta_source: source, reason: "abandon" });
 }
 
 export function trackTelegramDirectClick(): void {
-  trackEvent("telegram_direct_click");
+  trackEvent("telegram_click");
 }
 
 export function trackTelegramBotClick(): void {
-  trackEvent("telegram_bot_click");
+  trackEvent("telegram_click", { channel: "bot" });
 }
 
 export function trackEmailClick(): void {
   trackEvent("email_click");
 }
 
+export function trackPartnerCtaClick(type: string): void {
+  trackEvent("partner_cta_click", { partner_type: type });
+}
+
 export function trackProjectView(slug: string): void {
   trackEvent("project_view", { slug: slug.slice(0, 40) });
+}
+
+export function trackExternalProjectClick(slug: string): void {
+  trackEvent("external_project_click", { slug: slug.slice(0, 40) });
 }
 
 export function trackPricingView(): void {
   trackEvent("pricing_view");
 }
 
-/** Fire a MileSeal analytics event at most once per page session. */
 export function trackMilesealOnce(
   key: string,
   name: string,
@@ -203,3 +235,6 @@ export function trackMilesealSampleDownloaded(props?: AnalyticsProps): void {
 export function trackMilesealAuditRequested(props?: AnalyticsProps): void {
   trackEvent("mileseal_audit_requested", props);
 }
+
+/** @deprecated use trackAdsFormConversion from analyticsAdapter */
+export { trackAdsFormConversion as trackAdsConversion } from "./analyticsAdapter";

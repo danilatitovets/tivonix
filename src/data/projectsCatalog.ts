@@ -1,4 +1,5 @@
 import type { Lang } from "../i18n/LangProvider";
+import { partnerPanelLoginUrl } from "../lib/partnerPanel";
 export type ProjectStatus = "live" | "wip" | "pilot";
 
 export type Testimonial = {
@@ -47,7 +48,7 @@ const HEADMIND_DOMAIN = "https://headmind.ru/";
 const SLOTTY_DOMAIN = "https://slotty.of.by/book";
 const SPLITON_DOMAIN = "https://www.spliton.io/";
 const NEO_TERMINAL_DOMAIN = "https://neo-terminal-web.onrender.com/";
-const TIVONIXPANEL_DOMAIN = "https://tivonixpanel-production.up.railway.app/login";
+const TIVONIXPANEL_DOMAIN = partnerPanelLoginUrl();
 
 /** Публичные кейсы на /projects (остальные скрыты, но остаются в каталоге) */
 export const PUBLIC_PROJECT_IDS = [
@@ -140,13 +141,6 @@ function buildAllProjects(isRu: boolean): Project[] {
           isRu ? "Собрали за **1 неделю**" : "Shipped in **1 week**",
         ],
         stack: ["React", "TypeScript", "Node.js", "PostgreSQL", "Railway"],
-        testimonial: {
-          name: isRu ? "Артём К." : "Artem K.",
-          role: isRu ? "Один из основателей TIVONIX" : "Co-founder, TIVONIX",
-          text: isRu
-            ? "Раньше статусы размазывались по чатам, выплаты сидели в таблицах. С панелью открыл кабинет и сразу понятно, где сделка и что дальше. Без воды, просто работает."
-            : "Statuses used to live in chats, payouts in spreadsheets. With the panel you open the dashboard and know where the deal is. No fluff, it just works.",
-        },
       },
 
       // 1) LABEL0S — 3 days
@@ -404,31 +398,39 @@ function buildAllProjects(isRu: boolean): Project[] {
         subtitleZh:
           "Headmind 的公司网站：Figma → WordPress + Elementor，托管和域名 headmind.ru。",
         detailsRu:
-          "Зачем это\n" +
-          "ООО «Хэдмайнд» — консалтинг по трансформации бизнеса: стратегия, цифровизация, оргдизайн, производство, контракты. В B2B часто **теряют сделку на первом касании**, если сайт говорит «обо всём и ни о чём». Нужен был сайт, который спокойно шлют в первом сообщении.\n\n" +
-          "Заказчик — **Евгений Беликов**, основатель и генеральный директор ООО «Хэдмайнд» (соучредитель — Виталий Петровский). Прод: **headmind.ru**.\n\n" +
-          "Как работает\n" +
-          "Посетитель проходит короткий маршрут: **услуги** → **подход / экспертиза** → **команда** → **контакт / заявка**. На каждом шаге понятно, кто вы и чем сильны. CTA стоит там, где человек уже готов написать.\n\n" +
-          "Что внутри\n" +
-          "Сначала **макеты в Figma**: несколько визуальных вариантов на выбор — пока заказчику не «зашло». Потом дизайн и сборка на **WordPress + Elementor**: услуги (трансформация, цифровизация, HR, производство, контракты, продажи), команда, доверие, формы заявки.\n\n" +
-          "Под ключ: подобрали и подключили **хостинг**, купили/привязали **домен headmind.ru**, выкатили в прод, настроили админку WordPress, чтобы контент правили сами. Стек не «с нуля на React» — осознанный выбор: быстрый запуск, удобное редактирование, спокойный B2B-сайт.\n\n" +
-          "Что сделали\n" +
-          "Figma (выборка вариантов) → дизайн → WordPress/Elementor → хостинг + домен → живой **headmind.ru**. Упаковали экспертизу в маршрут до заявки.\n\n" +
-          "Итог\n" +
-          "Не шаблон «поставьте логотип». **Корпоративный сайт под ключ** для Евгения Беликова / ООО «Хэдмайнд»: Figma → WP, домен и хостинг — можно открыть и проверить самому.\n",
+          "Контекст клиента\n" +
+          "ООО «Хэдмайнд» — консалтинг по трансформации бизнеса: стратегия, цифровизация, оргдизайн, производство, контракты. Заказчик — **Евгений Беликов**, основатель и генеральный директор.\n\n" +
+          "Задача\n" +
+          "В B2B часто теряют внимание на первом касании, если сайт не объясняет услуги и экспертизу. Нужен корпоративный сайт, который можно спокойно отправить в первом сообщении.\n\n" +
+          "Что сделала TIVONIX\n" +
+          "Макеты в **Figma** (несколько визуальных вариантов на выбор) → дизайн и сборка на **WordPress + Elementor**: услуги, команда, доверие, формы заявки. Подключили хостинг и домен **headmind.ru**, настроили админку для самостоятельного редактирования контента.\n\n" +
+          "Зона ответственности TIVONIX\n" +
+          "Дизайн-направление, WordPress-реализация, хостинг, домен, деплой и передача проекта.\n\n" +
+          "Подтверждённый результат\n" +
+          "Корпоративный сайт с маршрутом **услуги → команда → заявка** на домене headmind.ru.\n\n" +
+          "Технологии\n" +
+          "Figma, WordPress, Elementor, хостинг, DNS.\n\n" +
+          "Текущий статус\n" +
+          "Сдан. Внешний сайт: headmind.ru.\n\n" +
+          "Следующий шаг\n" +
+          "Откройте кейс или перейдите на headmind.ru, чтобы оценить структуру и подачу.\n",
         detailsEn:
-          "Why it matters\n" +
-          "Headmind is a business-transformation consultancy: strategy, digitalization, org design, production, contracts. In B2B you often **lose the deal on first contact** if the site says everything and nothing. They needed a site you can send in the first message.\n\n" +
-          "Client — **Evgeniy Belikov**, founder and CEO of Headmind (co-founder — Vitaliy Petrovsky). Live: **headmind.ru**.\n\n" +
-          "How it works\n" +
-          "A visitor follows a short path: **services** → **approach / expertise** → **team** → **contact / lead**. At every step it’s clear who you are and why you’re strong. CTAs sit where people are already ready to write.\n\n" +
-          "What’s inside\n" +
-          "First **Figma mockups**: several visual directions until the client picked a favourite. Then design and build on **WordPress + Elementor**: services (transformation, digitalization, HR, production, contracts, sales), team, trust, lead forms.\n\n" +
-          "Turnkey: hosting set up, **domain headmind.ru** connected, shipped to production, WordPress admin ready so they can edit content themselves. Not a custom React build on purpose — fast launch, easy editing, a calm B2B site.\n\n" +
-          "What we delivered\n" +
-          "Figma (variant selection) → design → WordPress/Elementor → hosting + domain → live **headmind.ru**. Expertise packaged into a path to a lead.\n\n" +
-          "Outcome\n" +
-          "Not a “drop your logo” template. A **turnkey corporate site** for Evgeniy Belikov / Headmind: Figma → WP, domain and hosting — open it and check yourself.\n",
+          "Client context\n" +
+          "Headmind LLC — business transformation consultancy: strategy, digitalization, org design, production, contracts. Client — **Evgeniy Belikov**, founder and CEO.\n\n" +
+          "Challenge\n" +
+          "In B2B you lose attention on first contact if the site doesn’t explain services and expertise. They needed a corporate site safe to send in the first message.\n\n" +
+          "What TIVONIX delivered\n" +
+          "**Figma** mockups (several visual options) → design and build on **WordPress + Elementor**: services, team, trust blocks, lead forms. Hosting and **headmind.ru** domain connected; WordPress admin set up for self-service content edits.\n\n" +
+          "TIVONIX responsibility\n" +
+          "Design direction, WordPress implementation, hosting, domain, deployment and project handover.\n\n" +
+          "Verified result\n" +
+          "Corporate site with a clear path **services → team → lead** on headmind.ru.\n\n" +
+          "Technology\n" +
+          "Figma, WordPress, Elementor, hosting, DNS.\n\n" +
+          "Current status\n" +
+          "Delivered. External site: headmind.ru.\n\n" +
+          "Next step\n" +
+          "Open the case or visit headmind.ru to review structure and presentation.\n",
         detailsZh:
           "为什么这很重要\nHeadadmind 是一家业务转型咨询公司：战略、数字化、组织设计、生产、合同。在 B2B 中，如果网站什么都说了，但什么也没说，你常常**在第一次接触时就失去了交易**。他们需要一个您可以在第一条消息中发送的网站。\n\n客户 — **Evgeniy Belikov**，Headmind 创始人兼首席执行官（联合创始人 — Vitaliy Petrovsky）。直播：**headmind.ru**。\n\n它是如何运作的\n访客遵循一条简短的路径：**服务**→**方法/专业知识**→**团队**→**联系人/领导**。每一步都清楚你是谁以及你为何强大。 CTA 位于人们已经准备好写作的地方。\n\n里面有什么\n首先**Figma 模型**：几个视觉方向，直到客户选择了最喜欢的。然后在 **WordPress + Elementor** 上进行设计和构建：服务（转型、数字化、人力资源、生产、合同、销售）、团队、信任、潜在客户表单。\n\n统包：托管设置、**域名 headmind.ru** 连接、交付生产、WordPress 管理员准备就绪，以便他们可以自己编辑内容。不是专门定制的 React 构建——快速启动、轻松编辑、平静的 B2B 网站。\n\n我们交付了什么\nFigma（变体选择）→设计→WordPress/Elementor → 托管 + 域名 → 直播 **headmind.ru**。专业知识融入了通往潜在客户的道路。\n\n结果\n不是“放弃您的徽标”模板。 Evgeniy Belikov / Headadmind 的 **交钥匙企业网站**：Figma → WP、域名和托管 - 打开它并自行检查。",
         domain: HEADMIND_DOMAIN,
@@ -466,49 +468,45 @@ function buildAllProjects(isRu: boolean): Project[] {
         id: "slotty",
         title: "Slotty",
         subtitleRu:
-          "Полный маркетплейс записи к мастерам: каталог с фильтрами и картой, Telegram Mini App, кабинет мастера (SaaS Free/Pro), platform-admin, bePaid — на Railway, домен slotty.of.by.",
+          "Маркетплейс онлайн-записи к мастерам: каталог с фильтрами и картой, Telegram Mini App, кабинет мастера (SaaS Free/Pro), platform-admin, bePaid — на Railway, домен slotty.of.by.",
         subtitleEn:
-          "Full booking marketplace for masters: filtered catalog + map, Telegram Mini App, master SaaS cabinet (Free/Pro), platform admin, bePaid — on Railway, domain slotty.of.by.",
+          "Booking marketplace for service providers: filtered catalog + map, Telegram Mini App, service provider portal (Free/Pro), platform admin, bePaid — on Railway, domain slotty.of.by.",
         subtitleZh:
           "大师的完整预订市场：过滤目录 + 地图、Telegram Mini App、大师 SaaS 柜（免费/专业版）、平台管理、bePaid — on Railway、域名 slotty.of.by。",
         detailsRu:
-          "Зачем это\n" +
-          "Запись к мастеру до сих пор часто живёт в **Direct и WhatsApp**: «есть на завтра?», «а через час?», «ой, забыла напомнить». Клиент устаёт писать. Мастер устаёт отвечать. Слоты пропадают в тишине чата.\n\n" +
-          "Нужен был не черновик и не «кнопка записаться», а **полный маркетплейс**: каталог с жёсткой фильтрацией, карта, путь клиента, SaaS-кабинет мастера, роли, platform-admin, оплаты, уведомления и прод. Заказчик — **Виктория Д.** Срок — **3 недели**.\n\n" +
-          "Как работает\n" +
-          "Клиент открывает **slotty.of.by** (сайт или Telegram Mini App) → каталог → фильтры / карта → мастер → услуга → **свободный слот** → подтверждение. Код записи, напоминания в Telegram и email — без звонков.\n" +
-          "Мастер в кабинете ведёт профиль, портфолио, адрес, услуги, акции, расписание, заявки и клиентов; тариф Free или Pro.\n" +
-          "Platform-admin модерирует мастеров, записи, биллинг, платежи bePaid, рассылки и журнал — платформой можно рулить уже сейчас.\n\n" +
-          "Что внутри\n" +
-          "Это **крупная разработка**, не лендинг с формой. Фронт: React + TypeScript + Vite + Tailwind. Бэкенд: Express API, PostgreSQL (**88 миграций**), JWT-сессии. Прод: **два сервиса на Railway** (web + api), домен **slotty.of.by** — подсказали, где купить домен, подняли хостинг, привязали DNS и выкатили в бой. Плюс Telegram Bot / Mini App, Google Auth, email (Resend), карты (Leaflet / OSM, опционально Яндекс), платежи **bePaid** (BYN), Sentry, SEO-prerender.\n\n" +
-          "Маркетплейс для клиента: **6 категорий** (маникюр, барберы, брови/ресницы, массаж, фитнес, тату). Каталог — не «список карточек», а полноценный поиск: все / популярные / акции / новинки, текстовый поиск, **карта с геосортировкой**.\n\n" +
-          "Фильтры: сортировка (рекомендации, популярность, ближайший слот, расстояние, рейтинг, цена ↑↓, отзывы); дата (сегодня / завтра / неделя / выходные / точный день); время суток и слайдер часов; визит в салоне или на дому; длительность; цена в BYN; рейтинг от 4.5 / 4.7 / 4.9; число отзывов; только верифицированные; только с акциями; только с онлайн-записью. Запись: дата → слот → комментарий → референс-фото → успех с кодом **SL-…**. Профиль клиента: записи, избранное, уведомления, настройки, отзыв после визита.\n\n" +
-          "Кабинет мастера — отдельный SaaS: сегодня / заявки / расписание / услуги (каталог, цены, пакеты, акции) / профиль и портфолио / клиенты / репутация / биллинг / уведомления (десятки типов событий). Онбординг в **8 шагов**: категории → профиль → адрес на карте → услуги → доверие → превью → тариф. Тарифы: Free (лимиты) / Pro / trial 7 дней — оплата bePaid или ручной перевод.\n\n" +
-          "Platform-admin: обзор, заявки (категории, удаления, спонсорство, жалобы), поддержка, статус системы, пользователи, мастера, услуги, записи (в т.ч. проблемные отмены), биллинг и промокоды, платежи bePaid, рассылки, аудит. Роли: **client / master / platform_admin**. Auth: email, Google, Telegram — с телефона и с компьютера.\n\n" +
-          "Сложные куски, которые обычно «ломают» сроки: concurrent booking и слоты, pending expiry, auto-complete, споры по записи; entitlements Free/Pro; очередь уведомлений; multi-identity auth; серверный каталог с 20+ параметрами фильтра и Pro-boost в рекомендациях.\n\n" +
-          "Что сделали\n" +
-          "Дизайн + разработка под ключ: маркетплейс, кабинеты, админка, интеграции, домен и хостинг. Продукт на **slotty.of.by** — **скоро запуск к настоящим клиентам и мастерам**.\n\n" +
-          "Итог\n" +
-          "Не демо «посмотрите идею». **Полный маркетплейс записи** с фильтрами, картой, Mini App, SaaS мастера и platform-admin. Виктория Д., 3 недели — и живой прод, куда можно зайти и проверить самому.\n",
+          "Контекст клиента\n" +
+          "Заказчик — **Виктория Д.** Нужна платформа онлайн-записи к мастерам красоты и сервиса, а не лендинг с одной кнопкой.\n\n" +
+          "Задача\n" +
+          "Запись часто идёт через Direct и мессенджеры: клиент и мастер теряют время, слоты не видны. Нужны каталог, фильтры, карта, кабинет мастера, роли, platform-admin и оплаты в одной системе.\n\n" +
+          "Что сделала TIVONIX\n" +
+          "Дизайн и разработка под ключ: клиентский каталог с фильтрами и картой, Telegram Mini App, SaaS-кабинет мастера (Free/Pro), platform-admin, интеграция **bePaid**, домен **slotty.of.by**, деплой на **Railway** (web + api).\n\n" +
+          "Зона ответственности TIVONIX\n" +
+          "Продуктовая архитектура, UI/UX, фронтенд и бэкенд, база данных, интеграции, инфраструктура и выкладка на домен заказчика.\n\n" +
+          "Подтверждённый результат\n" +
+          "Рабочая платформа на slotty.of.by: каталог, запись по слотам, кабинеты мастера и администратора, Telegram Mini App.\n\n" +
+          "Технологии\n" +
+          "React, TypeScript, Vite, Tailwind, Express, PostgreSQL, Railway, Telegram Mini App, Google Auth, bePaid, Leaflet, Resend.\n\n" +
+          "Текущий статус\n" +
+          "Сдан. Поддерживается TIVONIX. Публичный запуск к клиентам и мастерам — на стороне заказчика.\n\n" +
+          "Следующий шаг\n" +
+          "Откройте slotty.of.by или кейс, чтобы посмотреть каталог, фильтры и сценарий записи.\n",
         detailsEn:
-          "Why it matters\n" +
-          "Booking a master still often lives in **DMs and WhatsApp**: “free tomorrow?”, “in an hour?”, “oops, forgot to remind”. Clients get tired of typing. Masters get tired of answering. Slots vanish into chat silence.\n\n" +
-          "This wasn’t a draft or a “book now” button. It needed a **full marketplace**: filtered catalog, map, client path, master SaaS cabinet, roles, platform admin, payments, notifications and production. Client — **Victoria D.** Timeline — **3 weeks**.\n\n" +
-          "How it works\n" +
-          "Client opens **slotty.of.by** (web or Telegram Mini App) → catalog → filters / map → master → service → **open slot** → confirm. Booking code, Telegram + email reminders — no calls.\n" +
-          "Masters run profile, portfolio, address, services, promos, schedule, requests and clients; Free or Pro plan.\n" +
-          "Platform admin moderates masters, bookings, billing, bePaid payments, broadcasts and audit — the platform is operable now.\n\n" +
-          "What’s inside\n" +
-          "A **large build**, not a landing with a form. Frontend: React + TypeScript + Vite + Tailwind. Backend: Express API, PostgreSQL (**88 migrations**), JWT sessions. Production: **two Railway services** (web + api), domain **slotty.of.by** — we advised where to buy the domain, set up hosting, pointed DNS and shipped live. Plus Telegram Bot / Mini App, Google Auth, email (Resend), maps (Leaflet / OSM, optional Yandex), **bePaid** (BYN), Sentry, SEO prerender.\n\n" +
-          "Client marketplace: **6 categories** (manicure, barbers, brows/lashes, massage, fitness, tattoo). Catalog isn’t a flat card list — full search: all / popular / promos / new, text search, **map with geo sort**.\n\n" +
-          "Filters: sort (recommended, popular, soonest, distance, rating, price ↑↓, reviews); date (today / tomorrow / week / weekend / exact day); time of day + hour slider; studio or at-home; duration; BYN price; rating from 4.5 / 4.7 / 4.9; review count; verified only; promos only; online booking only. Booking: date → slot → comment → reference photos → success with code **SL-…**. Client profile: appointments, favorites, notifications, settings, post-visit review.\n\n" +
-          "Master cabinet is a separate SaaS: today / requests / schedule / services (catalog, prices, bundles, promos) / profile & portfolio / clients / reputation / billing / notifications (dozens of event types). **8-step** onboarding: categories → profile → map address → services → trust → preview → plan. Plans: Free (limits) / Pro / 7-day trial — bePaid or manual transfer.\n\n" +
-          "Platform admin: overview, requests (category changes, deletions, sponsorship, reports), support, system status, users, masters, services, bookings (incl. problem cancellations), billing & promo codes, bePaid payments, broadcasts, audit. Roles: **client / master / platform_admin**. Auth: email, Google, Telegram — phone or desktop.\n\n" +
-          "Hard pieces that usually blow timelines: concurrent booking & slots, pending expiry, auto-complete, booking disputes; Free/Pro entitlements; notification job queue; multi-identity auth; server catalog with 20+ filter params and Pro boost in recommendations.\n\n" +
-          "What we delivered\n" +
-          "Design + turnkey build: marketplace, cabinets, admin, integrations, domain and hosting. Live on **slotty.of.by** — **soon launching to real clients and masters**.\n\n" +
-          "Outcome\n" +
-          "Not a “look at the idea” demo. A **full booking marketplace** with filters, map, Mini App, master SaaS and platform admin. Victoria D., 3 weeks — and a live prod you can open and check yourself.\n",
+          "Client context\n" +
+          "Client — **Victoria D.** Needed a booking platform for beauty and service providers — not a single-button landing page.\n\n" +
+          "Challenge\n" +
+          "Booking often happens in DMs and messengers: clients and providers lose time, slots stay invisible. The product needed catalog, filters, map, service provider portal, roles, platform admin and payments in one system.\n\n" +
+          "What TIVONIX delivered\n" +
+          "Turnkey design and build: client catalog with filters and map, Telegram Mini App, service provider portal (Free/Pro), platform admin, **bePaid** integration, **slotty.of.by** domain, **Railway** deployment (web + api).\n\n" +
+          "TIVONIX responsibility\n" +
+          "Product architecture, UI/UX, frontend and backend, database, integrations, infrastructure and deployment on the client’s domain.\n\n" +
+          "Verified result\n" +
+          "Working platform on slotty.of.by: catalog, slot-based booking, provider and admin portals, Telegram Mini App.\n\n" +
+          "Technology\n" +
+          "React, TypeScript, Vite, Tailwind, Express, PostgreSQL, Railway, Telegram Mini App, Google Auth, bePaid, Leaflet, Resend.\n\n" +
+          "Current status\n" +
+          "Delivered. Supported by TIVONIX. Public rollout to clients and providers is managed by the client.\n\n" +
+          "Next step\n" +
+          "Open slotty.of.by or the case page to review catalog, filters and the booking flow.\n",
         detailsZh:
           "为什么这很重要\n预订大师仍然经常存在于**DM和WhatsApp**中：“明天有空吗？”，“一个小时后？”，“哎呀，忘了提醒”。客户厌倦了打字。大师们厌倦了回答。老虎机消失在聊天的沉默中。\n\n这不是草稿或“立即预订”按钮。它需要一个**完整的市场**：过滤目录、地图、客户路径、主 SaaS 柜、角色、平台管理、支付、通知和生产。客户 — **Victoria D.** 时间表 — **3 周**。\n\n它是如何运作的\n客户端打开**slotty.of.by**（网络或Telegram迷你应用程序）→目录→过滤器/地图→主→服务→**打开插槽**→确认。预订代码、电报 + 电子邮件提醒 — 无需致电。\n大师运行简介、投资组合、地址、服务、促销、时间表、请求和客户；免费或专业计划。\n平台管理员负责管理、预订、计费、bePaid 付款、广播和审计——该平台现已可运行。\n\n里面有什么\n**大型建筑**，而不是带有形式的平台。前端：React + TypeScript + Vite + Tailwind。后端：Express API、PostgreSQL（**88 迁移**）、JWT 会话。生产：**两个铁路服务**（Web + API），域名**slotty.of.by** - 我们建议d 在哪里购买域名、设置托管、指向 DNS 并实时发货。加上 Telegram Bot / Mini App、Google Auth、电子邮件（重新发送）、地图（传单 / OSM、可选 Yandex）、**bePaid** (BYN)、Sentry、SEO 预渲染。\n\n客户市场：**6 个类别**（美甲、理发、眉毛/睫毛、按摩、健身、纹身）。目录不是平面卡片列表 - 完整搜索：所有/流行/促销/新，文本搜索，**带地理排序的地图**。\n\n过滤器：排序（推荐、热门、最快、距离、评分、价格↑↓、评论）；日期（今天/明天/周/周末/确切日期）；一天中的时间+小时滑块；工作室或家里；期间; BYN 价格；评分从 4.5 / 4.7 / 4.9 起；评论计数；仅经过验证；仅促销；仅限网上预订。预订：日期→时段→评论→参考照片→使用代码**SL-…**成功。客户资料：约会、收藏夹、通知、设置、访问后回顾。\n\n主柜是一个单独的 SaaS：今天/请求/时间表/服务（目录、价格、捆绑、促销）/配置文件和投资组合/客户/声誉/计费/通知（数十种事件类型）。 **8步**入职：类别→个人资料→地图地址→服务→信任→预览→计划。计划：免费（限制）/ Pro / 7 天试用 — 付费或手动转账。\n\n平台管理：概述、请求（类别更改、删除、赞助、报告）、支持、系统状态、用户、主、服务、预订（包括问题取消）、计费和促销代码、bePaid 付款、广播、审计。角色：**客户端/主控/平台管理员**。身份验证：电子邮件、Google、Telegram - 手机或桌面。\n\n通常会破坏时间线的困难部分：并发预订和时段、待到期、自动完成、预订争议；免费/专业版权利；通知作业队列；多重身份验证；具有 20 多个过滤器参数和专业增强推荐的服务器目录。\n\n我们交付了什么\n设计+交钥匙构建：市场、橱柜、管理、集成、域名和托管。在 **slotty.of.by** 上直播 — **即将向真正的客户和大师推出**。\n\n结果\n不是“看看这个想法”的演示。 **完整的预订市场**，包含过滤器、地图、迷你应用程序、主 SaaS 和平台管理。 Victoria D.，3 周 — 以及您可以自己打开并检查的实时产品。",
         domain: SLOTTY_DOMAIN,
@@ -518,17 +516,17 @@ function buildAllProjects(isRu: boolean): Project[] {
         gallery: SLOTTY_GALLERY,
         outcomes: [
           isRu
-            ? "**Полный маркетплейс** за 3 недели — не MVP"
-            : "**Full marketplace** in 3 weeks — not an MVP",
-          isRu
-            ? "Каталог с **фильтрами + карта** · Mini App · Free/Pro"
+            ? "Каталог с **фильтрами и картой** · Mini App · Free/Pro"
             : "Catalog with **filters + map** · Mini App · Free/Pro",
           isRu
-            ? "Домен **slotty.of.by** · хостинг Railway (web + api)"
-            : "Domain **slotty.of.by** · Railway hosting (web + api)",
+            ? "Домен **slotty.of.by** · Railway (web + api)"
+            : "Domain **slotty.of.by** · Railway (web + api)",
           isRu
-            ? "Виктория Д. · скоро запуск к живым клиентам"
-            : "Victoria D. · soon launching to live clients",
+            ? "Кабинет мастера и platform-admin"
+            : "Service provider portal and platform admin",
+          isRu
+            ? "**Поддерживается TIVONIX**"
+            : "**Supported by TIVONIX**",
         ],
         stack: [
           "React",
@@ -547,8 +545,8 @@ function buildAllProjects(isRu: boolean): Project[] {
           name: isRu ? "Виктория Д." : "Victoria D.",
           role: isRu ? "Заказчик Slotty" : "Slotty client",
           text: isRu
-            ? "Мне нужен был нормальный маркетплейс: фильтры, кабинет мастера, админка. Не демо. За три недели собрали на нашем домене, уже можно звать реальных клиентов."
-            : "I needed a real marketplace: filters, master cabinet, admin. Not a demo. In three weeks it was on our domain and ready for real clients.",
+            ? "Нужен был нормальный маркетплейс: фильтры, кабинет мастера, админка. Собрали на нашем домене — уже можно показывать реальным клиентам."
+            : "I needed a real marketplace: filters, service provider portal, admin. They built it on our domain — ready to show real clients.",
         },
       },
 
@@ -564,81 +562,39 @@ function buildAllProjects(isRu: boolean): Project[] {
         subtitleZh:
           "AI 商业平台：将商品目录、库存、客户对话、B2B 采购、结算、配送与业务运营连成一套操作系统。",
         detailsRu:
-          "Зачем это\n" +
-          "Современная коммерция редко ломается из‑за отсутствия сайта. Она ломается **между системами**.\n\n" +
-          "Каталог живёт в одном месте. Остатки — в другом. Клиент пишет в мессенджер. B2B-закупщик присылает Excel. Менеджер руками сверяет наличие. Маркетинг работает с третьим набором данных. Доставка стартует только после того, как кто‑то снова копирует заказ.\n\n" +
-          "Каждый разрыв добавляет задержку и ещё одну точку, где сделка может оборваться.\n\n" +
-          "Neo Terminal собран как операционный слой на всю эту цепочку. Вместо ещё одного изолированного интерфейса мы связали товарные данные, склад, клиентские касания, транзакции и операции вокруг **одной коммерческой модели**.\n\n" +
-          "Как работает\n" +
-          "Мерчант подключает или импортирует каталог из YML, XLSX, CSV, CommerceML или доступного ERP-коннектора.\n\n" +
-          "Neo Terminal нормализует товары, варианты, SKU, цены, медиа и остатки в одну коммерческую модель.\n\n" +
-          "Дальше те же данные питают поиск для клиента, продажи с поддержкой AI, операции мерчанта, складские сценарии и B2B-закупки.\n\n" +
-          "Клиент может найти товар, задать вопросы, сравнить варианты, добавить позиции в корзину и перейти к оплате.\n\n" +
-          "Бизнес-закупщик может отправить потребность или структурированный файл, сопоставить SKU и альтернативы, получить коммерческое предложение и пройти согласование с заказом.\n\n" +
-          "Команды мерчанта работают из той же системы: каталог, склад, заказы, диалоги, аналитика, каналы и операционные инструменты.\n\n" +
-          "Архитектура устроена так, чтобы внешние провайдеры оставались адаптерами вокруг коммерческого ядра, а не источником правды.\n\n" +
-          "Что внутри\n" +
-          "**Merchant OS.** Центральный кабинет операций: обзор, товары, склад, заказы, клиенты, диалоги, интеграции, каналы, аналитика, команда и настройки.\n\n" +
-          "**Catalog & Data Hub.** Neo Terminal принимает коммерческие данные из нескольких форматов и коннекторов. Товарная информация нормализуется вокруг products, variants, SKU, цен, медиа и остатков — а не остаётся привязанной к одному внешнему фиду.\n\n" +
-          "**Smart Inventory.** Складские сценарии связывают состояние остатков, приход и корректировки с разбором документов и файлов. Изменения идут через проверку: извлечённые данные можно сверить до того, как они изменят реальный сток.\n\n" +
-          "**AI Seller.** Слой интеллекта работает с каталогом и коммерческим контекстом: помогает в поиске, сравнении и диалогах с клиентом. Ответ модели считается недоверенным, а действия ограничены серверными правами и бизнес-правилами.\n\n" +
-          "**Smart City.** Клиентский слой коммерции для поиска по участвующим мерчантам, а не по одному изолированному каталогу. В контуре — товары, витрины мерчантов, корзины, сетевые корзины, архитектура checkout, заказы, аккаунт и адреса.\n\n" +
-          "**B2B Procurement.** Закупщики работают со структурированным циклом: данные компании, потребность, сопоставление SKU, альтернативы, КП, согласования, заказ и история.\n\n" +
-          "**Omnichannel.** Слой диалогов собран вокруг единого инбокса и адаптеров провайдеров: команда видит клиентский контекст, не переписывая коммерческую логику под каждый мессенджер.\n\n" +
-          "**Terminal Pay.** Checkout и оркестрация платежей отделены от конкретной реализации провайдера. Цены, проверка остатков и состояние заказа остаются авторитетными на бэкенде, а платёжные провайдеры работают на контролируемой границе.\n\n" +
-          "**Delivery & Courier OS.** Доставка связывается с состоянием исполнения заказа. Инструменты курьера закрывают рабочие смены, историю, профиль и начисления; внешние службы доставки при необходимости изолированы адаптерами.\n\n" +
-          "**Business Director.** Управленческий слой собирает операционные и коммерческие данные для рекомендаций и решений — аналитика здесь не набор оторванных графиков.\n\n" +
-          "**Marketing OS & Content Factory.** Коммерческие данные могут уходить в кампании и контент-процессы, чтобы товары и контекст мерчанта не отрывались от маркетинга.\n\n" +
-          "**Terminal Ads.** Рекламный слой вводит площадки, экраны, креативы, доступность и бронирование, оставляя внешнюю DOOH-доставку за границей провайдера.\n\n" +
-          "**Edge и физическая коммерция.** В продукте есть программный фундамент для устройств: регистрация, конфигурация, синхронизация и отзыв доступа. Это путь к киоскам, локальным терминалам и железу без смешивания device-security с обычными браузерными сессиями.\n\n" +
-          "**Platform Administration.** Отдельный платформенный слой: организации, пользователи, провайдеры, очереди, операции, аудит и безопасность.\n\n" +
-          "Neo Terminal — не набор разрозненных прототипов. Клиент на **React и TypeScript**, API на **NestJS**, состояние коммерции в **PostgreSQL через Prisma**, асинхронные сценарии на **Redis и BullMQ**, семантический поиск там, где нужен **pgvector**.\n\n" +
-          "Интеграции провайдеров изолированы адаптерами, чтобы коммерческое ядро не зависело от одной ERP, мессенджера, платёжки или AI-вендора. Критическое поведение проверяется на реальном Postgres и Redis: интеграционные тесты и Playwright E2E с живым бэкендом.\n\n" +
-          "Внутренняя поверхность продукта прошла полный runtime-прогон по маршрутам, контролам и формам: E2E на реальном бэкенде, интеграция, безопасность, mobile, чистый деплой и recovery. Внешние границы провайдеров проверяются отдельно, когда есть боевые ключи и окружения третьей стороны.\n\n" +
-          "Что сделали\n" +
-          "TIVONIX спроектировали и собрали Neo Terminal целиком: архитектура продукта, UX/UI, фронтенд, бэкенд, модель данных, коммерческое ядро, границы AI-оркестрации, архитектура интеграций, инструменты мерчанта, клиентские интерфейсы, B2B-сценарии, тестирование и инфраструктура деплоя.\n\n" +
-          "Это не лендинг с AI сверху. Это модульная коммерческая платформа вокруг одного слоя транзакций и товарных данных: внешние системы подключаются вокруг ядра, а не управляют им.\n\n" +
-          "Итог\n" +
-          "Пилот-готовая AI-операционная система коммерции, которая связывает полный коммерческий путь в одной архитектуре: загрузка каталога, склад, discovery, диалоги, B2B, корзина, checkout, фулфилмент и операционка бизнеса.\n\n" +
-          "Внутренняя платформа прошла полный runtime-приём по тестируемой поверхности продукта. Внешние платежи, мессенджеры, ERP, AI и физические устройства остаются явными границами интеграций и включаются с проверкой в реальных окружениях провайдера на этапе внедрения.\n",
+          "Контекст клиента\n" +
+          "Neo Terminal — AI-платформа коммерции, которую TIVONIX проектирует и разрабатывает как модульный продукт для розницы и B2B.\n\n" +
+          "Задача\n" +
+          "Коммерция часто ломается между системами: каталог, склад, мессенджеры, B2B-файлы и доставка живут отдельно. Нужен один коммерческий слой вместо разрозненных интерфейсов.\n\n" +
+          "Что сделала TIVONIX\n" +
+          "Merchant OS, Catalog & Data Hub, Smart Inventory, AI Seller, Smart City, B2B Procurement, Omnichannel, Terminal Pay, Delivery & Courier OS, аналитика и platform admin. Импорт из YML, XLSX, CSV, CommerceML и коннекторов в единую товарную модель.\n\n" +
+          "Зона ответственности TIVONIX\n" +
+          "Архитектура продукта, UX/UI, фронтенд, бэкенд, модель данных, границы AI-оркестрации, интеграции, тестирование и инфраструктура деплоя.\n\n" +
+          "Подтверждённый результат\n" +
+          "Модульная платформа, где каталог, остатки, диалоги, заказы и операции мерчанта работают на одном слое данных. AI-ответы обрабатываются как недоверенные; действия ограничены серверными правилами.\n\n" +
+          "Технологии\n" +
+          "React, TypeScript, NestJS, PostgreSQL, Prisma, Redis, BullMQ, pgvector, Playwright, Docker.\n\n" +
+          "Текущий статус\n" +
+          "Кейс / пилот. Внешние провайдеры (платежи, мессенджеры, ERP, AI, устройства) — явные границы интеграций, включаются при внедрении.\n\n" +
+          "Следующий шаг\n" +
+          "Откройте кейс или демо neo-terminal-web.onrender.com, чтобы посмотреть архитектуру и модули.\n",
         detailsEn:
-          "Why it matters\n" +
-          "Modern commerce rarely fails because a business has no website. It fails **between systems**.\n\n" +
-          "The catalog is in one place. Stock is in another. A customer writes in a messenger. A B2B buyer sends an Excel file. A manager checks availability by hand. Marketing works from another dataset. Delivery starts only after somebody copies the order again.\n\n" +
-          "Every disconnected step adds delay and creates another place where the transaction can break.\n\n" +
-          "Neo Terminal was built as an operating layer for that entire chain. Instead of adding another isolated interface, we connected product data, inventory, customer interactions, transactions and operations around **one shared commerce model**.\n\n" +
-          "How it works\n" +
-          "A merchant connects or imports a catalog from YML, XLSX, CSV, CommerceML or an available ERP connector.\n\n" +
-          "Neo Terminal normalizes products, variants, SKUs, prices, media and inventory into one commerce model.\n\n" +
-          "From there the same data powers customer discovery, AI-assisted conversations, merchant operations, inventory workflows and B2B procurement.\n\n" +
-          "A customer can discover a product, ask questions, compare options, add items to a cart and move into checkout.\n\n" +
-          "A business buyer can submit a product requirement or structured file, match SKUs and alternatives, receive a quote and continue into an approval and ordering workflow.\n\n" +
-          "Merchant teams work from the same system: catalog, inventory, orders, conversations, analytics, channels and operational tools.\n\n" +
-          "The architecture is designed so external providers remain adapters around the commerce core instead of becoming the source of truth.\n\n" +
-          "What's inside\n" +
-          "**Merchant OS.** A central workspace for merchant operations: overview, products, inventory, orders, customers, conversations, integrations, channels, analytics, team and settings.\n\n" +
-          "**Catalog & Data Hub.** Neo Terminal accepts commerce data from multiple formats and connector sources. Product information is normalized around products, variants, SKUs, prices, media and inventory rather than remaining tied to one external feed format.\n\n" +
-          "**Smart Inventory.** Warehouse workflows combine inventory state, receipt and adjustment operations with assisted document and file processing. Changes are review-first: extracted information can be checked before it mutates actual stock.\n\n" +
-          "**AI Seller.** The intelligence layer can work with catalog and commerce context to assist product discovery, comparisons and customer conversations. AI output is treated as untrusted and actions remain constrained by server-side permissions and business rules.\n\n" +
-          "**Smart City.** A customer-facing commerce layer designed for discovery across participating merchants instead of limiting the customer to a single isolated catalog. The system includes products, merchant surfaces, carts, network cart flows, checkout architecture, orders, account and address workflows.\n\n" +
-          "**B2B Procurement.** Business buyers can work with structured purchasing flows: company data, product requirements, SKU matching, alternatives, quotes, approvals, ordering and history.\n\n" +
-          "**Omnichannel.** The conversation layer is designed around a unified inbox and provider adapters so merchant teams can work with customer context without rebuilding commerce logic for every messaging channel.\n\n" +
-          "**Terminal Pay.** Checkout and payment orchestration are separated from provider-specific implementation. Pricing, inventory checks and order state remain authoritative on the backend while payment providers operate at a controlled boundary.\n\n" +
-          "**Delivery & Courier OS.** Delivery workflows connect orders with fulfillment state. Courier tooling covers operational job flows, history, profile and earnings, with external delivery providers isolated behind adapters where required.\n\n" +
-          "**Business Director.** The management layer brings operational and commerce data together for recommendations and decision support instead of treating analytics as disconnected charts.\n\n" +
-          "**Marketing OS & Content Factory.** Commerce data can flow into campaign and content workflows, allowing products and merchant context to remain connected to marketing operations.\n\n" +
-          "**Terminal Ads.** The advertising layer introduces venues, screens, creatives, availability and booking workflows while keeping external DOOH delivery behind a provider boundary.\n\n" +
-          "**Edge and physical commerce.** Neo Terminal also includes the software foundation for enrolled devices, configuration, synchronization and revocation, providing a path toward kiosks, local terminals and physical commerce hardware without mixing device security into normal browser sessions.\n\n" +
-          "**Platform Administration.** A separate platform layer provides organization, user, provider, queue, operational, audit and security administration.\n\n" +
-          "Neo Terminal is not a collection of disconnected prototypes. The product uses a modular application architecture with **React and TypeScript** on the client, **NestJS** on the API layer, **PostgreSQL through Prisma** for persistent commerce state, **Redis and BullMQ** for asynchronous workflows, and **pgvector** where semantic retrieval is required.\n\n" +
-          "Provider integrations are isolated behind adapters so the core commerce model does not depend on one ERP, messenger, payment provider or AI vendor. Critical application behavior is validated against a real Postgres and Redis runtime using integration tests and Playwright real-backend E2E.\n\n" +
-          "The internal product surface was taken through a complete runtime verification pass across routes, controls and forms, including real-backend E2E, integration, security, mobile, clean-deployment and recovery checks. External provider boundaries are validated separately when production credentials and third-party environments are available.\n\n" +
-          "What we delivered\n" +
-          "TIVONIX designed and developed Neo Terminal end-to-end: product architecture, UX/UI, frontend, backend, database model, commerce core, AI orchestration boundaries, integrations architecture, merchant tools, customer interfaces, B2B workflows, testing and deployment infrastructure.\n\n" +
-          "The result is not a landing page with AI added on top. It is a modular commerce platform built around one shared transaction and product-data layer, with external systems connected around the core rather than controlling it.\n\n" +
-          "Outcome\n" +
-          "A pilot-ready AI commerce operating system that connects the full commercial path in one architecture: product ingestion, inventory, discovery, conversations, B2B, cart, checkout, fulfillment and business operations.\n\n" +
-          "The internal platform has passed complete runtime acceptance across the testable product surface. External payment, messaging, ERP, AI and physical-device providers remain explicit integration boundaries and are activated and verified with real provider environments during deployment.\n",
+          "Client context\n" +
+          "Neo Terminal is an AI commerce platform TIVONIX is designing and building as a modular product for retail and B2B.\n\n" +
+          "Challenge\n" +
+          "Commerce often breaks between systems: catalog, inventory, messengers, B2B files and delivery live separately. The product needed one commerce layer instead of isolated interfaces.\n\n" +
+          "What TIVONIX delivered\n" +
+          "Merchant OS, Catalog & Data Hub, Smart Inventory, AI Seller, Smart City, B2B Procurement, Omnichannel, Terminal Pay, Delivery & Courier OS, analytics and platform admin. Ingestion from YML, XLSX, CSV, CommerceML and connectors into one product model.\n\n" +
+          "TIVONIX responsibility\n" +
+          "Product architecture, UX/UI, frontend, backend, data model, AI orchestration boundaries, integrations, testing and deployment infrastructure.\n\n" +
+          "Verified result\n" +
+          "A modular platform where catalog, stock, conversations, orders and merchant operations share one data layer. AI output is treated as untrusted; actions stay constrained by server-side rules.\n\n" +
+          "Technology\n" +
+          "React, TypeScript, NestJS, PostgreSQL, Prisma, Redis, BullMQ, pgvector, Playwright, Docker.\n\n" +
+          "Current status\n" +
+          "Case study / pilot. External providers (payments, messengers, ERP, AI, devices) are explicit integration boundaries and are enabled during deployment.\n\n" +
+          "Next step\n" +
+          "Open the case or the neo-terminal-web.onrender.com demo to review architecture and modules.\n",
         detailsZh:
           "为什么重要\n" +
           "现代商业很少因为没有网站而失败。它失败在**系统之间**。\n\n" +
@@ -699,8 +655,8 @@ function buildAllProjects(isRu: boolean): Project[] {
             ? "Омниканал, доставка и Courier OS"
             : "Omnichannel, delivery and Courier OS",
           isRu
-            ? "Платформенная админка, аналитика, автоматизация и проверенная runtime-поверхность"
-            : "Platform admin, analytics, automation and a runtime-verified internal product surface",
+            ? "Платформенная админка, аналитика и автоматизация"
+            : "Platform admin, analytics and automation",
         ],
         stack: [
           "React",
@@ -730,53 +686,45 @@ function buildAllProjects(isRu: boolean): Project[] {
         id: "spliton",
         title: "Spliton",
         subtitleRu:
-          "Финтех-платформа для долей в музыке: каталог, первичный и вторичный рынок, кошелёк USDT, ledger, compliance и operator portal — продукт с инвестором и живым сопровождением.",
+          "Финтех-платформа для долей в музыке: каталог, первичный и вторичный рынок, кошелёк USDT, ledger, compliance и operator portal — продукт с сопровождением TIVONIX.",
         subtitleEn:
-          "Fintech platform for music shares: catalog, primary & secondary market, USDT wallet, ledger, compliance and operator portal — investor-backed product with ongoing support.",
+          "Fintech platform for music shares: catalog, primary & secondary market, USDT wallet, ledger, compliance and operator portal — supported by TIVONIX.",
         subtitleZh:
           "音乐股票的金融科技平台：目录、一级和二级市场、USDT 钱包、账本、合规性和运营商门户——投资者支持的产品，并提供持续支持。",
         detailsRu:
-          "Зачем это\n" +
-          "Музыкальные активы — не лендинг с кнопкой «купить». Здесь **реальные деньги**, роли, согласия, депозиты и выводы должны сходиться без дыр: confirm → processing → result. Один сбой на выплате или consent — и доверие кончается быстрее любого релиза.\n\n" +
-          "Нужна была не «админка на коленке», а **полноценная биржа долей**: кабинет инвестора, operator portal, ledger, treasury, KYC/AML, споры, публичный trust center. Мы собрали это end-to-end — и **до сих пор сопровождаем** продукт в бою.\n\n" +
-          "Как работает\n" +
-          "Инвестор регистрируется, проходит согласия и при необходимости KYC, пополняет баланс в **USDT (TRC20)**.\n" +
-          "Дальше: выбирает релиз в каталоге → изучает data room → покупает доли (UNT) на первичке → видит позиции и начисления в кабинете → при желании торгует на **вторичном рынке** (стакан, лимитные заявки) → выводит средства через проверку treasury.\n" +
-          "Оператор ведёт депозиты, выводы, compliance, релизы, рефералов, споры и публичный статус системы — всё из admin-портала.\n\n" +
-          "Что внутри\n" +
-          "Это **крупный продукт в одном репозитории**, не одностраничный сайт. Клиентская часть на Next.js, сервер на NestJS, база PostgreSQL через Prisma, автотесты на критичные денежные сценарии.\n\n" +
-          "Кабинет инвестора: каталог релизов, покупка долей, портфель и метрики, кошелёк (пополнение, вывод, история, выписки), **вторичный рынок со сложным биржевым стаканом** и лимитными заявками, калькулятор, новости, поддержка и центр споров, реферальная и партнёрская программы, VIP.\n\n" +
-          "Публичная часть: лендинг продукта, **центр доверия** (учёт операций, статус сервисов, документы), страница статуса системы, комиссии, юридические тексты, справочный центр.\n\n" +
-          "Портал оператора — отдельная **огромная админ-панель** для команды платформы: не пара экранов, а десятки разделов управления. Главный обзор, задачи операторов, пользователи и роли, треки и раунды, артисты, лейблы, жанры.\n\n" +
-          "Финансы: кошельки, пополнения, **выплаты**, позиции, доход и доход платформы, казначейство, платёжные реквизиты. Рынок: вторичный рынок, сделки, подозрительные операции. Операции: поддержка, споры, комплаенс, KYC, юридические тексты, рефералы и партнёры.\n\n" +
-          "Аналитика с **графиками**: финансы, пользователи, треки, рынок, доход, риски, операции. Плюс отчёты и выгрузки, новости, справочный центр, статус системы, уведомления, журнал аудита действий сотрудников. Роли: супер-админ, бухгалтер, контент, поддержка, комплаенс, бизнес-аналитик.\n\n" +
-          "Финансовое ядро: внутренний учёт операций с двойной записью, сверки, комиссии платформы, автоматизация депозитов в сети TRON, политика горячего и холодного кошелька, регламенты инцидентов. Интерфейс на acid lime `#b7f500` — как в живом продукте.\n\n" +
-          "Языки: интерфейс полностью на **четырёх языках** — русский, английский, испанский, португальский.\n\n" +
-          "Что сделали\n" +
-          "Спроектировали и собрали весь контур: дизайн, фронтенд, бэкенд, база, комплаенс, автотесты и продакшен-операции. Продукт запущен, в него зашёл инвестор на [[200 000 $]], платформа в работе — **TIVONIX продолжает поддержку и развитие**.\n\n" +
-          "Итог\n" +
-          "Не демо и не презентация. **Живая финтех-платформа** с кабинетом инвестора, сложной биржей долей и огромной админкой под выплаты, графики и операционное управление. Сопровождаем до сих пор.\n",
+          "Контекст клиента\n" +
+          "Spliton — платформа для инвестирования в доли музыкальных релизов. Заказчик — **Виктор Безбородых**, основатель MIN.ECO.\n\n" +
+          "Задача\n" +
+          "Нужен продукт с денежными потоками, ролями, согласиями, KYC и операторским управлением — не лендинг с кнопкой «купить». Сценарии пополнения, покупки долей, вторичного рынка и вывода должны быть прозрачны для пользователя и команды.\n\n" +
+          "Что сделала TIVONIX\n" +
+          "Кабинет инвестора, operator portal, ledger, treasury, KYC/AML, вторичный рынок, публичный trust center, автотесты на критичные денежные сценарии. Дизайн, фронтенд (Next.js), бэкенд (NestJS), база (PostgreSQL/Prisma), деплой и операционные процедуры.\n\n" +
+          "Зона ответственности TIVONIX\n" +
+          "Продуктовая архитектура, UI/UX, разработка, комплаенс-контуры в продукте, тестирование и сопровождение после запуска.\n\n" +
+          "Подтверждённый результат\n" +
+          "Платформа на spliton.io: каталог релизов, покупка долей, кошелёк USDT (TRC20), вторичный рынок, operator portal с финансовыми и операционными разделами.\n\n" +
+          "Технологии\n" +
+          "Next.js, React, TypeScript, NestJS, PostgreSQL, Prisma, Supabase, Playwright, i18n (RU, EN, ES, PT).\n\n" +
+          "Текущий статус\n" +
+          "Сдан. Поддерживается TIVONIX.\n\n" +
+          "Следующий шаг\n" +
+          "Откройте spliton.io или кейс, чтобы посмотреть публичную часть и структуру продукта.\n",
         detailsEn:
-          "Why it matters\n" +
-          "Music assets aren’t a landing page with a buy button. **Real money**, roles, consents, deposits and withdrawals have to lock without holes: confirm → processing → result. One payout or consent failure — and trust dies faster than any release.\n\n" +
-          "This wasn’t a “quick admin”. It needed a **full share exchange**: investor cabinet, operator portal, ledger, treasury, KYC/AML, disputes, public trust center. We built it end-to-end — and **still support** it in production.\n\n" +
-          "How it works\n" +
-          "An investor signs up, accepts policies, completes KYC when required, and tops up in **USDT (TRC20)**.\n" +
-          "Then: pick a release in the catalog → review the data room → buy shares (UNT) on primary → track positions and accruals → optionally trade on the **secondary market** (order book, limit orders) → withdraw through treasury checks.\n" +
-          "Operators run deposits, withdrawals, compliance, releases, referrals, disputes and public system status — all from the admin portal.\n\n" +
-          "What’s inside\n" +
-          "A **large product in one repository**, not a single-page site. Client app on Next.js, server on NestJS, PostgreSQL via Prisma, automated tests on critical money flows.\n\n" +
-          "Investor cabinet: release catalog, share purchase, portfolio and metrics, wallet (deposit, withdraw, history, statements), **secondary market with a complex order book** and limit orders, calculator, news, support and dispute center, referral and partner programs, VIP.\n\n" +
-          "Public surface: product landing, **trust center** (operations ledger, service status, documents), system status page, fees, legal pages, help center.\n\n" +
-          "The operator portal is a **huge admin panel** for the platform team: not a few screens, but dozens of management sections. Executive overview, operator tasks, users and roles, tracks and rounds, artists, labels, genres.\n\n" +
-          "Finance: wallets, deposits, **payouts**, holdings, revenue and platform revenue, treasury, payment requisites. Market: secondary market, trades, suspicious activity. Operations: support, disputes, compliance, KYC, legal texts, referrals and partners.\n\n" +
-          "Analytics with **charts**: finance, users, tracks, market, revenue, risk, operations. Plus reports and exports, news, help center, system status, notifications, staff audit log. Roles: super admin, accountant, content, support, compliance, business analyst.\n\n" +
-          "Financial core: internal double-entry operations ledger, reconciliation, platform fees, TRON deposit automation, hot/cold wallet policy, incident runbooks. Interface on acid lime `#b7f500` — matching the live product.\n\n" +
-          "Languages: the interface is fully localized in **four languages** — Russian, English, Spanish, Portuguese.\n\n" +
-          "What we delivered\n" +
-          "Designed and shipped the full loop: design, frontend, backend, database, compliance, automated tests and production ops. The product is live, backed by an investor at [[$200,000]], and **TIVONIX still supports and evolves** it.\n\n" +
-          "Outcome\n" +
-          "Not a demo and not a deck. A **live fintech platform** with an investor cabinet, a complex share exchange and a huge admin for payouts, charts and day-to-day operations. Still supported.\n",
+          "Client context\n" +
+          "Spliton — a platform for investing in shares of music releases. Client — **Viktor Bezborodykh**, founder of MIN.ECO.\n\n" +
+          "Challenge\n" +
+          "They needed a product with money flows, roles, consents, KYC and operator tooling — not a landing page with a buy button. Deposit, share purchase, secondary market and withdrawal flows had to be clear for users and the operations team.\n\n" +
+          "What TIVONIX delivered\n" +
+          "Investor portal, operator portal, ledger, treasury, KYC/AML, secondary market, public trust center, automated tests on critical money flows. Design, frontend (Next.js), backend (NestJS), database (PostgreSQL/Prisma), deployment and operational runbooks.\n\n" +
+          "TIVONIX responsibility\n" +
+          "Product architecture, UI/UX, engineering, compliance flows in the product, testing and post-launch support.\n\n" +
+          "Verified result\n" +
+          "Platform on spliton.io: release catalog, share purchase, USDT (TRC20) wallet, secondary market, operator portal with finance and operations sections.\n\n" +
+          "Technology\n" +
+          "Next.js, React, TypeScript, NestJS, PostgreSQL, Prisma, Supabase, Playwright, i18n (RU, EN, ES, PT).\n\n" +
+          "Current status\n" +
+          "Delivered. Supported by TIVONIX.\n\n" +
+          "Next step\n" +
+          "Open spliton.io or the case page to review the public surface and product structure.\n",
         detailsZh:
           "为什么这很重要\n音乐资产不是带有购买按钮的登陆页面。 **真实货币**，角色、同意、存款和取款必须无漏洞锁定：确认→处理→结果。一旦付款或同意失败，信任就会比任何释放更快地消失。\n\n这不是一个“快速管理”。它需要**完整的股份交换**：投资者内阁、运营商门户、账本、财务、KYC/AML、争议、公共信任中心。我们端到端地构建了它，并且**仍然在生产中支持**它。\n\n它是如何运作的\n投资者注册、接受保单、在需要时完成 KYC，并充值 **USDT (TRC20)**。\n然后：在目录中选择一个版本→审查数据室→在主要市场购买股票（UNT）→跟踪头寸和应计费用→可选择在**二级市场**（订单簿、限价订单）进行交易→通过财务检查提取。\n运营商可以通过管理门户管理存款、取款、合规、发布、推荐、争议和公共系统状态。\n\n里面有什么\n**一个存储库中的大型产品**，而不是单页网站。 Next.js 上的客户端应用程序，NestJS 上的服务器，通过 Prisma 的 PostgreSQL，对关键资金流的自动测试。\n\n投资者柜：发布目录、股份申购、投资tfolio 和指标、钱包（存款、取款、历史记录、报表）、**具有复杂订单簿**和限价订单的二级市场、计算器、新闻、支持和争议中心、推荐和合作伙伴计划、VIP。\n\n公共面：产品登陆、**信任中心**（运营账本、服务状态、文档）、系统状态页面、费用、法律页面、帮助中心。\n\n运营商门户对于平台团队来说是一个**巨大的管理面板**：不是几个屏幕，而是数十个管理部分。执行概述、操作员任务、用户和角色、曲目和回合、艺术家、唱片公司、流派。\n\n金融：钱包、存款、**支出**、持有、收入和平台收入、金库、支付必需品。市场：二级市场、交易、可疑活动。运营：支持、争议、合规、KYC、法律文本、推荐和合作伙伴。\n\n使用**图表**进行分析：财务、用户、轨迹、市场、收入、风险、运营。加上报告和导出、新闻、帮助中心、系统状态、通知、员工审核日志。角色：超级管理员、会计师、内容、支持、合规、业务分析师。\n\n财务核心：内部复式记账操作账本、对账、平台费用、波场充值自动化、热/冷钱包政策、事件操作手册。酸性石灰“#b7f500”上的界面 — 与实时产品匹配。\n\n语言：界面完全本地化为**四种语言**——俄语、英语、西班牙语、葡萄牙语。\n\n我们交付了什么\n设计并交付完整的循环：设计、前端、后端、数据库、合规性、自动化测试和生产操作。该产品已上线，由 [[200,000 美元]] 的投资者支持，**TIVONIX 仍然支持并发展**它。\n\n结果\n不是演示，也不是套牌。一个**实时金融科技平台**，拥有投资者内阁、复杂的股票交易所以及庞大的支付、图表和日常运营管理系统。还是支持的。",
         domain: SPLITON_DOMAIN,
@@ -798,26 +746,20 @@ function buildAllProjects(isRu: boolean): Project[] {
         gallery: SPLITON_GALLERY,
         outcomes: [
           isRu
-            ? "Полный финтех-контур: кабинет + биржа долей + портал оператора"
-            : "Full fintech loop: cabinet + share exchange + operator portal",
+            ? "Кабинет инвестора + вторичный рынок + operator portal"
+            : "Investor portal + secondary market + operator portal",
           isRu
-            ? "Огромная админка: выплаты, казначейство, графики, комплаенс"
-            : "Huge admin: payouts, treasury, charts, compliance",
+            ? "Operator portal: выплаты, казначейство, комплаенс"
+            : "Operator portal: payouts, treasury, compliance",
           isRu
             ? "Учёт операций, KYC, центр доверия, USDT TRC20"
             : "Operations ledger, KYC, trust center, USDT TRC20",
           isRu
-            ? "Инвестор [[200 000 $]] · продукт в продакшене"
-            : "Investor [[$200,000]] · live in production",
-          isRu
-            ? "**TIVONIX сопровождает** платформу до сих пор"
-            : "**TIVONIX still supports** the platform",
+            ? "**Поддерживается TIVONIX**"
+            : "**Supported by TIVONIX**",
           isRu
             ? "4 языка: русский, английский, испанский, португальский"
             : "4 languages: Russian, English, Spanish, Portuguese",
-          isRu
-            ? "Сложный биржевой стакан на вторичном рынке"
-            : "Complex order book on the secondary market",
         ],
         stack: [
           "Next.js",
@@ -835,8 +777,8 @@ function buildAllProjects(isRu: boolean): Project[] {
           name: isRu ? "Виктор Безбородых" : "Viktor Bezborodykh",
           role: isRu ? "Основатель MIN.ECO" : "Founder & CEO, MIN.ECO",
           text: isRu
-            ? "У Spliton тяжёлая начинка: доли, кошелёк, выплаты, большая админка. Собрали целиком, выкатили в прод и не пропали. С ними спокойно идти дальше."
-            : "Spliton is heavy: shares, wallet, payouts, a big admin. They built the full stack, shipped to production, and stayed around. Easy to keep going with them.",
+            ? "У Spliton тяжёлая начинка: доли, кошелёк, выплаты, operator portal. Собрали целиком, выкатили и остались на сопровождении."
+            : "Spliton is heavy: shares, wallet, payouts, operator portal. They built the full stack, shipped it and stayed for support.",
         },
       },
   ];
@@ -849,9 +791,27 @@ export function buildProjects(isRu: boolean): Project[] {
   );
 }
 
+function isInternalTestimonial(p: Project): boolean {
+  if (p.id === "tivonixpanel") return true;
+  const t = p.testimonial;
+  if (!t) return false;
+  const role = t.role.toLowerCase();
+  return (
+    role.includes("tivonix") &&
+    (role.includes("co-founder") ||
+      role.includes("основател") ||
+      role.includes("соучред"))
+  );
+}
+
 /** All catalog projects that have a client testimonial (incl. non-public cases). */
 export function projectsWithTestimonials(isRu: boolean): Project[] {
-  return buildAllProjects(isRu).filter((p) => Boolean(p.testimonial) && !p.testimonial?.draft);
+  return buildAllProjects(isRu).filter(
+    (p) =>
+      Boolean(p.testimonial) &&
+      !p.testimonial?.draft &&
+      !isInternalTestimonial(p)
+  );
 }
 
 export function isProjectSiteOpen(p: Project): boolean {

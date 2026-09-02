@@ -26,6 +26,7 @@ import {
   partnerPanelRegisterUrl,
 } from "../lib/partnerPanel";
 import { pathForLang } from "../lib/localePaths";
+import { PARTNERS_SHOWCASE_CASES } from "../lib/partnersShowcaseCases";
 
 /** Gmail compose — как в Footer/Contacts (mailto перехватывается ads-трекингом) */
 const PARTNERS_GMAIL_URL =
@@ -37,21 +38,6 @@ const TIVONIX_MARK = "/images/tivonix-logo-icon.webp";
 const PARTNERS_EASY_BG = `/images/${encodeURI("как рабоает/пп/4.webp")}`;
 const PARTNERS_REF_BG = `/images/partners/${encodeURIComponent("зеленая.png")}`;
 const PARTNERS_WL_BG = `/images/partners/${encodeURIComponent("оранж.png")}`;
-
-const CASES = [
-  {
-    id: "spliton",
-    title: "Spliton",
-    tags: ["Fintech", "Marketplace", "Payments"],
-    cover: "/images/project-priew/spliton.webp",
-  },
-  {
-    id: "slotty",
-    title: "Slotty",
-    tags: ["Booking", "SaaS", "Telegram"],
-    cover: "/images/project-priew/slotty.webp",
-  },
-] as const;
 
 const CAPABILITY_IDS = ["landing", "bot", "crm", "cabinet", "integrations", "support"] as const;
 
@@ -346,10 +332,13 @@ function CapsMiniVisual({ id }: { id: (typeof CAPABILITY_IDS)[number] }) {
             </div>
             <div className="partners-caps__rows">
               <span className="partners-caps__row is-live">
-                <i /> Spliton · в работе
+                <i /> Neo Terminal · в работе
+              </span>
+              <span className="partners-caps__row is-live">
+                <i /> LOGOVO · live
               </span>
               <span className="partners-caps__row">
-                <i /> Slotty · оценка
+                <i /> Spliton · сопровождение
               </span>
             </div>
             <span className="partners-caps__pay">Подписка · активна</span>
@@ -4581,7 +4570,7 @@ export default function PartnersPage() {
             </Reveal>
 
             <Reveal className="grid gap-5 lg:grid-cols-3 lg:gap-5">
-              {CASES.map((c) => (
+              {PARTNERS_SHOWCASE_CASES.map((c) => (
                 <article
                   key={c.id}
                   className="group flex flex-col overflow-hidden rounded-[20px] bg-partners-white"

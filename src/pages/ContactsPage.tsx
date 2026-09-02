@@ -6,7 +6,9 @@ import { SEO } from "../components/SEO";
 import { useLang } from "../i18n/LangProvider";
 import { LeadCTAButton } from "../components/leads/LeadCTAButton";
 import { leadFormCopy } from "../i18n/leadFormCopy";
+import { CONTACT_EMAIL } from "../lib/leads";
 import { useLocation } from "react-router-dom";
+import { canonicalPathForLang } from "../lib/localePaths";
 
 const ORANGE = "#FF9A3D";
 const ORANGE2 = "#FF6A1A";
@@ -228,8 +230,15 @@ function SunContacts({ size }: { size: number }) {
       "radial-gradient(420px 320px at 45% 80%, rgba(255,106,26,0.12), transparent 70%)",
   });
 
-  const title = isRu ? "Контакты" : "Contacts";
+  const title = isRu ? "Контакты" : lang === "zh" ? "联系方式" : "Contacts";
   const leadCopy = leadFormCopy(lang);
+
+  const mailSubject = isRu
+    ? "Запрос TIVONIX"
+    : lang === "zh"
+      ? "TIVONIX 项目咨询"
+      : "TIVONIX project inquiry";
+  const mailtoHref = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(mailSubject)}`;
 
   const contactRowClass = cx(
     "group inline-flex w-full items-center gap-3.5 rounded-xl px-4 py-2.5",
@@ -284,9 +293,7 @@ function SunContacts({ size }: { size: number }) {
                   </a>
 
                   <a
-                    href="https://mail.google.com/mail/?view=cm&fs=1&to=tivoonix@gmail.com&su=%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82%20(SaaS%2FMVP)"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={mailtoHref}
                     className={cx(contactRowClass, "hidden sm:inline-flex")}
                   >
                     <span className={cx(iconBoxClass, "text-[#FF9A3D]")}>
@@ -392,8 +399,8 @@ export default function ContactsPage() {
       <SEO
         title={seoTitle}
         description={seoDescription}
-        canonicalPath={isEnPath ? "/en/contacts" : "/contacts"}
-        ogLocalePrimary={isRu ? "ru_RU" : "en_US"}
+        canonicalPath={canonicalPathForLang("/contacts", lang)}
+        ogLocalePrimary={isRu ? "ru_RU" : isZhPath ? "zh_CN" : "en_US"}
         hreflang
       />
       <Header />

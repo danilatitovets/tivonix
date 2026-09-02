@@ -1,2 +1,2 @@
-/** Официальный Telegram-контакт (@TIVONIX). Канал @TIVONIXX — не используем в ссылках сайта. */
-export const TG_CHANNEL_URL = "https://t.me/TIVONIX";
+/** Re-export from central config. */
+export { TELEGRAM_URL as TG_CHANNEL_URL } from "../config/siteConfig";

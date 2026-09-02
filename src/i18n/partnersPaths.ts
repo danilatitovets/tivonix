@@ -1,10 +1,13 @@
 import type { Lang } from "./LangProvider";
+import { CANONICAL_ORIGIN } from "../config/siteConfig";
 
-/** Partners page paths with language prefixes */
-export const PARTNERS_PATH_RU = "/ru/partners";
+/** Primary RU partners URL (no /ru prefix). */
+export const PARTNERS_PATH_RU = "/partners";
+/** Legacy duplicate — redirect to PARTNERS_PATH_RU in vercel.json */
+export const PARTNERS_PATH_RU_LEGACY = "/ru/partners";
 export const PARTNERS_PATH_EN = "/en/partners";
 export const PARTNERS_PATH_ZH = "/zh/partners";
-/** Legacy without prefix — same as RU */
+/** Alias for primary RU path */
 export const PARTNERS_PATH_LEGACY = "/partners";
 
 export function partnersPath(lang: Lang): string {
@@ -27,11 +30,11 @@ export function langFromPartnersPath(pathname: string): Lang | null {
   const p = pathname.replace(/\/+$/, "") || "/";
   if (p === PARTNERS_PATH_EN) return "en";
   if (p === PARTNERS_PATH_ZH) return "zh";
-  if (p === PARTNERS_PATH_RU || p === PARTNERS_PATH_LEGACY) return "ru";
+  if (p === PARTNERS_PATH_RU || p === PARTNERS_PATH_RU_LEGACY) return "ru";
   return null;
 }
 
-const PARTNERS_ORIGIN = "https://tivonix.tech";
+const PARTNERS_ORIGIN = CANONICAL_ORIGIN;
 
 /** Canonical for the current partners URL (legacy `/partners` keeps short path). */
 export function partnersCanonicalUrl(lang: Lang, pathname?: string): string {

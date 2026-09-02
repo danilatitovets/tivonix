@@ -72,6 +72,78 @@
     background: #ff5f12 !important;
     color: var(--color-obsidian, #070607) !important;
   }
+  .tivonix-cta-primary--pill-icon {
+    gap: 0.65rem;
+    padding-left: 1.15rem !important;
+    padding-right: 0.28rem !important;
+    transition:
+      background-color 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+      color 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.45s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  .tivonix-cta-primary--pill-icon-lg {
+    padding-left: 1.35rem !important;
+    padding-right: 0.32rem !important;
+  }
+  .tivonix-cta-primary__label {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.15;
+  }
+  .tivonix-cta-primary__icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    background: var(--color-obsidian, #070607);
+    color: var(--color-chalk, #fff);
+    transition:
+      background-color 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+      color 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .tivonix-cta-primary--pill-icon-lg .tivonix-cta-primary__icon {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+  .tivonix-cta-primary__icon-svg {
+    width: 1rem;
+    height: 1rem;
+    stroke-width: 2.5;
+    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .tivonix-cta-primary--pill-icon-lg .tivonix-cta-primary__icon-svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+  .tivonix-cta-primary--pill-icon:hover {
+    background: var(--color-chalk, #fff) !important;
+    color: var(--color-obsidian, #070607) !important;
+  }
+  .tivonix-cta-primary--pill-icon:hover .tivonix-cta-primary__icon {
+    background: var(--color-ember, #fc5000);
+    color: var(--color-chalk, #fff);
+    transform: scale(1.04);
+  }
+  .tivonix-cta-primary--pill-icon:hover .tivonix-cta-primary__icon-svg {
+    transform: rotate(90deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tivonix-cta-primary--pill-icon,
+    .tivonix-cta-primary__icon,
+    .tivonix-cta-primary__icon-svg {
+      transition-duration: 0.01ms !important;
+    }
+    .tivonix-cta-primary--pill-icon:hover .tivonix-cta-primary__icon {
+      transform: none;
+    }
+    .tivonix-cta-primary--pill-icon:hover .tivonix-cta-primary__icon-svg {
+      transform: none;
+    }
+  }
   .tivonix-cta-secondary {
     background: transparent !important;
     color: var(--color-chalk, #fff) !important;
@@ -239,6 +311,31 @@
     max-width: none !important;
     object-fit: cover !important;
     object-position: center !important;
+  }
+
+  /* Hero card — hide sub-pixel gaps at rounded corners on mobile Safari */
+  .hero-card {
+    max-width: 100%;
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  @media (max-width: 767px) {
+    #hero,
+    .hero-scroll-track,
+    .hero-scroll-sticky {
+      max-width: 100%;
+      overflow-x: clip;
+    }
+
+    .hero-card .hero-bg-video,
+    .hero-card .hero-bg-video__poster {
+      inset: -2px !important;
+      width: calc(100% + 4px) !important;
+      height: calc(100% + 4px) !important;
+      transform: translateZ(0);
+    }
   }
 
   .hero-bg-video::-webkit-media-controls,

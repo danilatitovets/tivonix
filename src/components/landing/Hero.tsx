@@ -8,6 +8,7 @@ import { isTelegramWebView } from "../../lib/telegramWebView";
 import { getStableViewportHeight } from "../../lib/stableViewport";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
 import { pathForLang } from "../../lib/localePaths";
+import { trackHeroProjectsClick } from "../../lib/analytics";
 import BgLoopVideo from "../ui/BgLoopVideo";
 
 /** Use svh — dvh resizes mid-scroll in TG / mobile chrome and jumps sticky tracks */
@@ -152,7 +153,7 @@ function HeroCard({
   return (
     <div
       className={cx(
-        "relative isolate h-full min-h-0 flex-1 overflow-visible rounded-[40px] bg-black"
+        "hero-card relative isolate h-full min-h-0 flex-1 overflow-hidden rounded-[40px] bg-black"
       )}
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] bg-black">
@@ -163,7 +164,7 @@ function HeroCard({
           aria-hidden
         />
         <div
-          className="absolute inset-0 shadow-[inset_0_-3px_0_0_#000,inset_-3px_0_0_0_#000]"
+          className="absolute inset-0 max-md:shadow-none shadow-[inset_0_-3px_0_0_#000,inset_-3px_0_0_0_#000]"
           aria-hidden
         />
       </div>
@@ -204,13 +205,15 @@ function HeroCard({
               source="hero"
               variant="primary"
               size="lg"
+              pillIcon="plus"
               className="min-h-[48px] w-full max-w-[20rem] shadow-[0_12px_40px_rgba(255,107,44,0.28)] sm:min-h-[52px] sm:max-w-[22rem]"
             >
               {ctaPrimary}
             </LeadCTAButton>
             <Link
               to={pathForLang("/projects", lang)}
-              className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-white/20 bg-white/[0.04] px-6 text-[13px] font-semibold text-white/82 transition hover:border-white/35 hover:bg-white/[0.08] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/55"
+              onClick={() => trackHeroProjectsClick()}
+              className="text-[13px] font-medium text-white/62 underline decoration-white/25 underline-offset-[0.3em] transition hover:text-white/88 hover:decoration-white/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/55 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent sm:text-[14px]"
             >
               {ctaSecondary}
             </Link>
@@ -253,7 +256,7 @@ export default function Hero() {
       >
         <div
           className={cx(
-            "mx-auto flex h-[calc(100svh-1.25rem)] min-h-0 w-full max-w-none flex-col",
+            "mx-auto flex h-[calc(100svh-1.25rem)] min-h-0 w-full max-w-full min-w-0 flex-col",
             "px-3 pt-2.5 pb-2.5",
             "sm:max-w-[min(98vw,1840px)] sm:px-3",
             "lg:px-4 lg:pt-3 lg:pb-3"
@@ -279,7 +282,7 @@ export default function Hero() {
       >
         <div
           className={cx(
-            "mx-auto flex h-[calc(100svh-1.25rem)] min-h-0 w-full max-w-none flex-col",
+            "mx-auto flex h-[calc(100svh-1.25rem)] min-h-0 w-full max-w-full min-w-0 flex-col",
             "px-3 pt-2.5 pb-2.5",
             "sm:max-w-[min(98vw,1840px)] sm:px-3",
             "lg:px-4 lg:pt-3 lg:pb-3"

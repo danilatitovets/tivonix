@@ -1,4 +1,5 @@
 import type { Lang } from "../i18n/LangProvider";
+import { CANONICAL_ORIGIN } from "../config/siteConfig";
 
 const LOCALIZED_BASES = ["/", "/projects", "/contacts", "/plans", "/about"] as const;
 
@@ -33,7 +34,7 @@ export function pathForLang(pathname: string, lang: Lang): string {
   ) {
     if (lang === "en") return "/en/partners";
     if (lang === "zh") return "/zh/partners";
-    return "/ru/partners";
+    return "/partners";
   }
 
   const mRu = clean.match(/^\/projects\/([^/]+)$/);
@@ -60,13 +61,20 @@ export function pathForLang(pathname: string, lang: Lang): string {
   return base;
 }
 
+export function canonicalPathForLang(basePath: string, lang: Lang): string {
+  const base = basePath.replace(/\/+$/, "") || "/";
+  if (lang === "en") return base === "/" ? "/en" : `/en${base}`;
+  if (lang === "zh") return base === "/" ? "/zh" : `/zh${base}`;
+  return base;
+}
+
 export function hreflangPair(canonicalPath: string): {
   ru: string;
   en: string;
   zh: string;
   xDefault: string;
 } {
-  const origin = "https://tivonix.tech";
+  const origin = CANONICAL_ORIGIN;
   const clean = canonicalPath.replace(/\/+$/, "") || "/";
   const base = stripLangPrefix(clean.startsWith("http") ? new URL(clean).pathname : clean);
 

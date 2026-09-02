@@ -13,7 +13,6 @@ const requiredHtmlFiles = [
   "dist/en/mileseal/index.html",
   "dist/en/mileseal/cases/content-migration/index.html",
   "dist/partners/index.html",
-  "dist/ru/partners/index.html",
   "dist/en/partners/index.html",
   "dist/projects/neo-terminal/index.html",
   "dist/projects/slotty/index.html",
@@ -29,21 +28,16 @@ const checks = [
     phrases: [
       "TIVONIX — сайты, CRM, боты и веб-продукты для бизнеса",
       "Разрабатываем лендинги, Telegram-ботов, CRM, личные кабинеты, SaaS и MVP",
-      "Собираем сайты и системы,",
-      "Услуги и продукты",
-      "живые",
-      "Spliton",
-      "Частые вопросы",
-      "Расскажите, что нужно запустить",
-      "https://tivonix.tech/",
-      'property="og:image" content="https://tivonix.tech/images/og-social.jpg"',
+      "заявку до результата",
+      "https://www.tivonix.tech/",
+      'property="og:image" content="https://www.tivonix.tech/images/og-social.jpg"',
     ],
   },
   {
     file: "dist/sozdanie-sajtov/index.html",
     phrases: [
-      "Создание сайтов под ключ — TIVONIX",
-      "https://tivonix.tech/sozdanie-sajtov",
+      "Создание сайтов для бизнеса — TIVONIX",
+      "https://www.tivonix.tech/sozdanie-sajtov",
       "лендинги",
       "базовое SEO",
     ],
@@ -54,7 +48,7 @@ const checks = [
       "MileSeal",
       "Scope",
       "change request",
-      "https://tivonix.tech/mileseal",
+      "https://www.tivonix.tech/mileseal",
       "/mileseal/cases/content-migration",
     ],
   },
@@ -64,7 +58,7 @@ const checks = [
       "MileSeal",
       "Интерактивное демо MileSeal",
       "56",
-      "https://tivonix.tech/mileseal/cases/content-migration",
+      "https://www.tivonix.tech/mileseal/cases/content-migration",
       "Проанализировать запрос",
       "Входит ли новый запрос клиента в согласованный объём?",
     ],
@@ -80,7 +74,7 @@ const checks = [
       "Request the $350 audit",
       "Founding Installation",
       "MileSeal",
-      "https://tivonix.tech/en/mileseal",
+      "https://www.tivonix.tech/en/mileseal",
       "/en/mileseal/cases/content-migration",
       "images/mileseal/og-mileseal.jpg",
       'hrefLang="en"',
@@ -95,7 +89,7 @@ const checks = [
       "MileSeal interactive demo",
       "Is this client request inside the agreed scope?",
       "56",
-      "https://tivonix.tech/en/mileseal/cases/content-migration",
+      "https://www.tivonix.tech/en/mileseal/cases/content-migration",
       "images/mileseal/og-mileseal-case-content-migration.jpg",
       "Analyse request",
       'hrefLang="en"',
@@ -112,7 +106,7 @@ const checks = [
     phrases: [
       "Neo Terminal",
       "операционная система коммерции",
-      "https://tivonix.tech/projects/neo-terminal",
+      "https://www.tivonix.tech/projects/neo-terminal",
       "neo-terminal-web.onrender.com",
     ],
   },
@@ -121,7 +115,7 @@ const checks = [
     phrases: [
       "Neo Terminal",
       "AI Commerce Operating System",
-      "https://tivonix.tech/en/projects/neo-terminal",
+      "https://www.tivonix.tech/en/projects/neo-terminal",
       "neo-terminal-web.onrender.com",
     ],
   },
@@ -130,7 +124,7 @@ const checks = [
     phrases: [
       "Spliton",
       "долей в музыке",
-      "https://tivonix.tech/projects/spliton",
+      "https://www.tivonix.tech/projects/spliton",
       "spliton.io",
     ],
   },
@@ -138,8 +132,8 @@ const checks = [
     file: "dist/projects/slotty/index.html",
     phrases: [
       "Slotty",
-      "маркетплейс записи к мастерам",
-      "https://tivonix.tech/projects/slotty",
+      "Маркетплейс онлайн-записи",
+      "https://www.tivonix.tech/projects/slotty",
       "slotty.of.by",
     ],
   },
@@ -148,7 +142,7 @@ const checks = [
     phrases: [
       "Headmind",
       "WordPress",
-      "https://tivonix.tech/projects/headmind",
+      "https://www.tivonix.tech/projects/headmind",
       "headmind.ru",
     ],
   },
@@ -157,13 +151,13 @@ const checks = [
     phrases: [
       "LOGOVO",
       "шиномонтажа",
-      "https://tivonix.tech/projects/logovo",
+      "https://www.tivonix.tech/projects/logovo",
       "logovo24.by",
     ],
   },
   {
     file: "dist/plans/index.html",
-    phrases: ["Планы запуска", "Start", "Growth", "Product", "https://tivonix.tech/plans"],
+    phrases: ["Планы запуска", "Start", "Growth", "Product", "https://www.tivonix.tech/plans"],
   },
   {
     file: "dist/contacts/index.html",
@@ -173,21 +167,8 @@ const checks = [
     file: "dist/partners/index.html",
     phrases: [
       "Партнёрская программа TIVONIX — Referral и White-label",
-      "https://tivonix.tech/partners",
+      "https://www.tivonix.tech/partners",
       "partner-formats",
-      "type=referral",
-      "type=white_label",
-    ],
-  },
-  {
-    file: "dist/ru/partners/index.html",
-    phrases: [
-      "Партнёрская программа TIVONIX — Referral и White-label",
-      "Передавайте клиентов или продавайте разработку под своим брендом",
-      "https://tivonix.tech/ru/partners",
-      "partner-formats",
-      "Referral-партнёр",
-      "White-label",
       "type=referral",
       "type=white_label",
     ],
@@ -196,7 +177,7 @@ const checks = [
     file: "dist/en/partners/index.html",
     phrases: [
       "TIVONIX Partner Program — Referral and White-label",
-      "https://tivonix.tech/en/partners",
+      "https://www.tivonix.tech/en/partners",
       "partner-formats",
       "White-label",
       "type=referral",
@@ -208,8 +189,8 @@ const checks = [
     phrases: [
       "Автоматизация бизнеса — TIVONIX",
       "Автоматизация процессов, CRM, личные кабинеты, админ-панели и интеграции под реальные задачи бизнеса.",
-      'href="https://tivonix.tech/avtomatizaciya-biznesa"',
-      'property="og:url" content="https://tivonix.tech/avtomatizaciya-biznesa"',
+      'href="https://www.tivonix.tech/avtomatizaciya-biznesa"',
+      'property="og:url" content="https://www.tivonix.tech/avtomatizaciya-biznesa"',
       "Автоматизируем процессы",
       "вашего бизнеса",
     ],
@@ -219,7 +200,6 @@ const checks = [
 const forbiddenPhrases = [
   "Tivonix Loading",
   "TIVONIX — Сайты, боты и веб-сервисы",
-  "https://www.tivonix.tech/",
   "chrome-headless",
   "playwright",
 ];
@@ -272,15 +252,6 @@ for (const requiredFile of requiredHtmlFiles) {
   }
 
   for (const forbidden of forbiddenPhrases) {
-    // /partners and localized partners use www canonical
-    if (
-      (requiredFile === "dist/partners/index.html" ||
-        requiredFile === "dist/ru/partners/index.html" ||
-        requiredFile === "dist/en/partners/index.html") &&
-      forbidden === "https://www.tivonix.tech/"
-    ) {
-      continue;
-    }
     if (content.includes(forbidden)) {
       console.error(`Forbidden phrase in ${requiredFile}: "${forbidden}"`);
       hasErrors = true;

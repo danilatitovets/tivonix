@@ -4,7 +4,6 @@ import LandingPage from "./pages/LandingPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import ProjectDetailPage from "./pages/ProjectDetailPage";
 import ContactsPage from "./pages/ContactsPage";
-import WebsiteCreationPage from "./pages/WebsiteCreationPage";
 import AutomationBusinessPage from "./pages/AutomationBusinessPage";
 import PricingPage from "./pages/PricingPage";
 import AboutPage from "./pages/AboutPage";
@@ -12,8 +11,14 @@ import PartnersPage from "./pages/PartnersPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import MilesealPage from "./pages/MilesealPage";
 import MilesealCaseContentMigrationPage from "./pages/MilesealCaseContentMigrationPage";
+import ServiceLandingPage from "./pages/ServiceLandingPage";
 import { LangPathSync } from "./i18n/LangProvider";
-import { PARTNERS_PATH_EN, PARTNERS_PATH_RU, PARTNERS_PATH_ZH } from "./i18n/partnersPaths";
+import {
+  PARTNERS_PATH_EN,
+  PARTNERS_PATH_RU,
+  PARTNERS_PATH_RU_LEGACY,
+  PARTNERS_PATH_ZH,
+} from "./i18n/partnersPaths";
 
 const HEADER_OFFSET = 84;
 
@@ -63,8 +68,18 @@ export function AppRoutes() {
         <Route path="/contacts" element={<ContactsPage />} />
         <Route path="/en/contacts" element={<ContactsPage />} />
         <Route path="/zh/contacts" element={<ContactsPage />} />
-        <Route path="/sozdanie-sajtov" element={<WebsiteCreationPage />} />
+        <Route path="/sozdanie-sajtov" element={<ServiceLandingPage pageId="websites" />} />
+        <Route path="/razrabotka-mvp" element={<ServiceLandingPage pageId="mvp" />} />
+        <Route path="/razrabotka-crm" element={<ServiceLandingPage pageId="crm" />} />
+        <Route path="/razrabotka-lichnogo-kabineta" element={<ServiceLandingPage pageId="portal" />} />
+        <Route path="/telegram-boty-dlya-biznesa" element={<ServiceLandingPage pageId="telegram" />} />
         <Route path="/avtomatizaciya-biznesa" element={<AutomationBusinessPage />} />
+        <Route path="/en/website-development" element={<ServiceLandingPage pageId="websites" />} />
+        <Route path="/en/mvp-development" element={<ServiceLandingPage pageId="mvp" />} />
+        <Route path="/en/business-automation" element={<ServiceLandingPage pageId="automation" />} />
+        <Route path="/en/client-portal-development" element={<ServiceLandingPage pageId="portal" />} />
+        <Route path="/en/telegram-bot-development" element={<ServiceLandingPage pageId="telegram" />} />
+        <Route path="/en/white-label-development" element={<ServiceLandingPage pageId="white-label" />} />
         <Route path="/mileseal" element={<MilesealPage />} />
         <Route path="/en/mileseal" element={<MilesealPage />} />
         <Route path="/zh/mileseal" element={<MilesealPage />} />
@@ -80,8 +95,8 @@ export function AppRoutes() {
           path="/zh/mileseal/cases/content-migration"
           element={<MilesealCaseContentMigrationPage />}
         />
-        <Route path="/partners" element={<PartnersPage />} />
         <Route path={PARTNERS_PATH_RU} element={<PartnersPage />} />
+        <Route path={PARTNERS_PATH_RU_LEGACY} element={<PartnersPage />} />
         <Route path={PARTNERS_PATH_EN} element={<PartnersPage />} />
         <Route path={PARTNERS_PATH_ZH} element={<PartnersPage />} />
         <Route path="/en/*" element={<NotFoundPage />} />

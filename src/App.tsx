@@ -1,11 +1,15 @@
 import { useEffect } from "react";
 import { BrowserRouter } from "react-router-dom";
-import { initGoogleAds, trackAdsConversion } from "./lib/ads";
+import {
+  initAnalyticsAfterConsent,
+  trackAdsFormConversion,
+} from "./lib/analyticsAdapter";
 import {
   trackEmailClick,
   trackTelegramBotClick,
   trackTelegramDirectClick,
 } from "./lib/analytics";
+import { getAnalyticsConsent, onConsentChange } from "./lib/consent";
 import { AppShell } from "./AppShell";
 
 function closestAnchor(el: EventTarget | null): HTMLAnchorElement | null {
@@ -39,7 +43,12 @@ function trackContactChannel(href: string) {
 
 export default function App() {
   useEffect(() => {
-    initGoogleAds();
+    if (getAnalyticsConsent() === "accepted") {
+      initAnalyticsAfterConsent();
+    }
+    return onConsentChange((state) => {
+      if (state === "accepted") initAnalyticsAfterConsent();
+    });
   }, []);
 
   useEffect(() => {
@@ -53,12 +62,12 @@ export default function App() {
 
       const newTab = (a.getAttribute("target") ?? "").toLowerCase() === "_blank";
       if (newTab) {
-        trackAdsConversion("contact_click");
+        trackAdsFormConversion();
         return;
       }
 
       e.preventDefault();
-      trackAdsConversion("contact_click", () => {
+      trackAdsFormConversion(() => {
         window.location.href = href;
       });
       setTimeout(() => {
@@ -69,7 +78,6 @@ export default function App() {
     return () => document.removeEventListener("click", handler, true);
   }, []);
 
-  // Учёт визита: один раз за сессию в день вызываем /api/visit
   useEffect(() => {
     const key = "tivonix_visit_date";
     const today = new Date().toISOString().slice(0, 10);

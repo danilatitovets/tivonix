@@ -1,9 +1,18 @@
 // src/lib/schema.ts — Schema.org JSON-LD
 
 import type { Lang } from "../i18n/LangProvider";
-import { LAUNCH_DISCOUNT_PERCENT, PLAN_PRICE_USD, pricingCopy } from "../i18n/pricingCopy";
+import { PLAN_PRICE_USD, pricingCopy } from "../i18n/pricingCopy";
 import { PLAN_IDS, type PlanId } from "./pricingData";
+import {
+  CANONICAL_ORIGIN,
+  CONTACT_EMAIL,
+  socialSameAs,
+} from "../config/siteConfig";
+import { canonicalPathForLang } from "./localePaths";
 
+const ORG_ID = `${CANONICAL_ORIGIN}/#org`;
+const WEBSITE_ID = `${CANONICAL_ORIGIN}/#website`;
+const FOUNDER_ID = `${CANONICAL_ORIGIN}/#danila-titovets`;
 type HomeSchemaInput = {
   pageTitle: string;
   pageDescription: string;
@@ -22,70 +31,67 @@ export function buildHomePageSchema({ pageTitle, pageDescription }: HomeSchemaIn
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://tivonix.tech/#org",
+        "@id": ORG_ID,
         name: "TIVONIX",
-        url: "https://tivonix.tech/",
+        url: `${CANONICAL_ORIGIN}/`,
         logo: {
           "@type": "ImageObject",
-          url: "https://tivonix.tech/images/tivonix-logo-icon.webp",
+          url: `${CANONICAL_ORIGIN}/images/tivonix-logo-icon.webp`,
         },
-        image: "https://tivonix.tech/images/ceo.png",
+        image: `${CANONICAL_ORIGIN}/images/ceo.png`,
         description: pageDescription,
         contactPoint: [
           {
             "@type": "ContactPoint",
             contactType: "sales",
-            email: "tivoonix@gmail.com",
-            availableLanguage: ["ru", "en"],
+            email: CONTACT_EMAIL,
+            availableLanguage: ["ru", "en", "zh"],
           },
         ],
-        sameAs: ["https://t.me/TIVONIX"],
-        founder: { "@id": "https://tivonix.tech/#danila-titovets" },
-      },
+        sameAs: socialSameAs(),
+        founder: { "@id": FOUNDER_ID },      },
       {
         "@type": "Person",
-        "@id": "https://tivonix.tech/#danila-titovets",
+        "@id": FOUNDER_ID,
         name: "Данила Титовец",
         alternateName: "Danila Titovets",
         jobTitle: "Founder & Full-stack developer",
-        worksFor: { "@id": "https://tivonix.tech/#org" },
+        worksFor: { "@id": ORG_ID },
         address: {
           "@type": "PostalAddress",
           addressCountry: "BY",
         },
-        url: "https://tivonix.tech/",
-        sameAs: ["https://t.me/TIVONIX"],
-        email: "tivoonix@gmail.com",
-        image: "https://tivonix.tech/images/ceo.png",
-      },
+        url: `${CANONICAL_ORIGIN}/`,
+        sameAs: socialSameAs(),
+        email: CONTACT_EMAIL,
+        image: `${CANONICAL_ORIGIN}/images/ceo.png`,      },
       {
         "@type": "ProfessionalService",
-        "@id": "https://tivonix.tech/#service",
+        "@id": `${CANONICAL_ORIGIN}/#service`,
         name: "TIVONIX",
-        url: "https://tivonix.tech/",
+        url: `${CANONICAL_ORIGIN}/`,
         description: pageDescription,
-        provider: { "@id": "https://tivonix.tech/#danila-titovets" },
+        provider: { "@id": FOUNDER_ID },
         areaServed: "Worldwide",
-        email: "tivoonix@gmail.com",
+        email: CONTACT_EMAIL,
       },
       {
         "@type": "WebSite",
-        "@id": "https://tivonix.tech/#website",
-        url: "https://tivonix.tech/",
+        "@id": WEBSITE_ID,
+        url: `${CANONICAL_ORIGIN}/`,
         name: "TIVONIX",
-        publisher: { "@id": "https://tivonix.tech/#org" },
-        inLanguage: ["ru", "en"],
+        publisher: { "@id": ORG_ID },
+        inLanguage: ["ru", "en", "zh"],
       },
       {
         "@type": "WebPage",
-        "@id": "https://tivonix.tech/#home",
-        url: "https://tivonix.tech/",
+        "@id": `${CANONICAL_ORIGIN}/#home`,
+        url: `${CANONICAL_ORIGIN}/`,
         name: pageTitle,
         description: pageDescription,
-        isPartOf: { "@id": "https://tivonix.tech/#website" },
-        about: { "@id": "https://tivonix.tech/#org" },
-        inLanguage: ["ru", "en"],
-      },
+        isPartOf: { "@id": WEBSITE_ID },
+        about: { "@id": ORG_ID },
+        inLanguage: ["ru", "en", "zh"],      },
     ],
   };
 }
@@ -114,18 +120,17 @@ export function buildProjectCaseSchema({
   lang,
   dateModified,
 }: ProjectCaseSchemaInput) {
-  const pageUrl = `https://tivonix.tech/projects/${id}`;
-  const inLanguage = lang === "ru" ? "ru" : "en";
-
+  const pagePath = canonicalPathForLang(`/projects/${id}`, lang);
+  const pageUrl = `${CANONICAL_ORIGIN}${pagePath}`;
+  const inLanguage = lang === "ru" ? "ru" : lang === "zh" ? "zh-CN" : "en";
   return {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://tivonix.tech/#org",
+        "@id": ORG_ID,
         name: "TIVONIX",
-        url: "https://tivonix.tech/",
-      },
+        url: `${CANONICAL_ORIGIN}/`,      },
       {
         "@type": "BreadcrumbList",
         "@id": `${pageUrl}#breadcrumb`,
@@ -134,14 +139,13 @@ export function buildProjectCaseSchema({
             "@type": "ListItem",
             position: 1,
             name: lang === "ru" ? "Главная" : "Home",
-            item: "https://tivonix.tech/",
+            item: `${CANONICAL_ORIGIN}${canonicalPathForLang("/", lang)}`,
           },
           {
             "@type": "ListItem",
             position: 2,
-            name: lang === "ru" ? "Проекты" : "Projects",
-            item: "https://tivonix.tech/projects",
-          },
+            name: lang === "ru" ? "Проекты" : lang === "zh" ? "项目" : "Projects",
+            item: `${CANONICAL_ORIGIN}${canonicalPathForLang("/projects", lang)}`,          },
           {
             "@type": "ListItem",
             position: 3,
@@ -156,7 +160,7 @@ export function buildProjectCaseSchema({
         url: pageUrl,
         name: `${title} — ${lang === "ru" ? "кейс TIVONIX" : "TIVONIX case study"}`,
         description,
-        isPartOf: { "@id": "https://tivonix.tech/#website" },
+        isPartOf: { "@id": WEBSITE_ID },
         about: { "@id": `${pageUrl}#creativework` },
         breadcrumb: { "@id": `${pageUrl}#breadcrumb` },
         inLanguage,
@@ -172,9 +176,8 @@ export function buildProjectCaseSchema({
         description,
         url: pageUrl,
         image: coverUrl,
-        creator: { "@id": "https://tivonix.tech/#org" },
-        publisher: { "@id": "https://tivonix.tech/#org" },
-        inLanguage,
+        creator: { "@id": ORG_ID },
+        publisher: { "@id": ORG_ID },        inLanguage,
         keywords: [...tags, ...(stack ?? [])].join(", "),
         ...(domain ? { sameAs: [domain] } : {}),
         ...(dateModified ? { dateModified } : {}),
@@ -190,9 +193,6 @@ export function buildPricingPageSchema({ pageTitle, pageDescription, lang }: Pri
     const plan = copy.plans[id];
     const usd = PLAN_PRICE_USD[id as keyof typeof PLAN_PRICE_USD];
     const hasPrice = typeof usd === "number";
-    const discounted = hasPrice
-      ? Math.round(usd * (1 - LAUNCH_DISCOUNT_PERCENT / 100))
-      : undefined;
 
     return {
       "@type": "Offer",
@@ -200,17 +200,12 @@ export function buildPricingPageSchema({ pageTitle, pageDescription, lang }: Pri
       description: plan.desc,
       ...(hasPrice
         ? {
-            price: discounted,
+            price: usd,
             priceCurrency: "USD",
-            priceSpecification: {
-              "@type": "PriceSpecification",
-              minPrice: discounted,
-              priceCurrency: "USD",
-            },
           }
         : {}),
-      url: "https://tivonix.tech/plans#pricing",
-      seller: { "@id": "https://tivonix.tech/#org" },
+      url: `${CANONICAL_ORIGIN}${canonicalPathForLang("/plans", lang)}#pricing`,
+      seller: { "@id": ORG_ID },
     };
   });
 
@@ -219,25 +214,25 @@ export function buildPricingPageSchema({ pageTitle, pageDescription, lang }: Pri
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://tivonix.tech/#org",
+        "@id": ORG_ID,
         name: "TIVONIX",
-        url: "https://tivonix.tech/",
+        url: `${CANONICAL_ORIGIN}/`,
       },
       {
         "@type": "WebPage",
-        "@id": "https://tivonix.tech/plans#webpage",
-        url: "https://tivonix.tech/plans",
+        "@id": `${CANONICAL_ORIGIN}${canonicalPathForLang("/plans", lang)}#webpage`,
+        url: `${CANONICAL_ORIGIN}${canonicalPathForLang("/plans", lang)}`,
         name: pageTitle,
         description: pageDescription,
-        isPartOf: { "@id": "https://tivonix.tech/#website" },
-        inLanguage: lang === "ru" ? "ru" : "en",
+        isPartOf: { "@id": WEBSITE_ID },
+        inLanguage: lang === "ru" ? "ru" : lang === "zh" ? "zh-CN" : "en",
       },
       {
         "@type": "Service",
-        "@id": "https://tivonix.tech/plans#service",
+        "@id": `${CANONICAL_ORIGIN}${canonicalPathForLang("/plans", lang)}#service`,
         name: pageTitle,
         description: pageDescription,
-        provider: { "@id": "https://tivonix.tech/#org" },
+        provider: { "@id": ORG_ID },
         areaServed: "Worldwide",
         offers,
       },
