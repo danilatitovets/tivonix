@@ -15,7 +15,7 @@ import { leadFormCopy } from "../i18n/leadFormCopy";
 import { trackProjectView } from "../lib/analytics";
 import { buildProjectCaseSchema } from "../lib/schema";
 import { pathForLang } from "../lib/localePaths";
-import { stackIconFor } from "../lib/stackIcons";
+import { cleanTechLabel, splitTechList, stackIconFor } from "../lib/stackIcons";
 import type { Lang } from "../i18n/LangProvider";
 import { t3 } from "../i18n/pick";
 
@@ -111,25 +111,14 @@ function SpecRow({ label, children }: { label: string; children: React.ReactNode
 
 function Pill({
   children,
-  iconSrc,
+  icon,
 }: {
-  children: React.ReactNode;
-  iconSrc?: string | null;
+  children: ReactNode;
+  icon?: ReactNode;
 }) {
   return (
     <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-[#1c1c1f] px-2.5 py-1 text-[11px] font-[500] tracking-normal text-[#c3c3cc] sm:gap-2 sm:px-3.5 sm:py-1.5 sm:text-[12px]">
-      {iconSrc ? (
-        <img
-          src={iconSrc}
-          alt=""
-          width={14}
-          height={14}
-          className="h-3.5 w-3.5 shrink-0 object-contain opacity-95 sm:h-4 sm:w-4"
-          loading="lazy"
-          decoding="async"
-          aria-hidden
-        />
-      ) : null}
+      {icon}
       <span className="min-w-0 truncate">{children}</span>
     </span>
   );
@@ -531,10 +520,12 @@ function CaseDetailBody({
   text,
   isRu,
   palette,
+  stack,
 }: {
   text: string;
   isRu: boolean;
   palette?: CaseSwatch[];
+  stack?: string[];
 }) {
   const blocks = useMemo(() => parseCaseBody(text), [text]);
   const rest = blocks.filter((b) => b.type !== "meta");
@@ -570,11 +561,10 @@ function CaseDetailBody({
       const isTechSection = /^(технолог|technology|tech stack|стек)/i.test(block.title);
       const techFromParagraphs =
         isTechSection && block.paragraphs?.length
-          ? block.paragraphs
-              .flatMap((p) => p.split(/[,،、·•|/]+/))
-              .map((t) => t.replace(/\*\*/g, "").trim())
-              .filter(Boolean)
+          ? block.paragraphs.flatMap((p) => splitTechList(p))
           : [];
+      const techItems =
+        isTechSection && stack?.length ? stack : techFromParagraphs;
 
       nodes.push(
         <section
@@ -582,11 +572,11 @@ function CaseDetailBody({
           className="mb-12 scroll-mt-28 border-t border-white/[0.06] pt-8 sm:mb-[72px] sm:pt-12"
         >
           <h2 className={H2}>{block.title}</h2>
-          {techFromParagraphs.length ? (
+          {techItems.length ? (
             <div className="mt-5 flex flex-wrap gap-1.5 sm:mt-6 sm:gap-2">
-              {techFromParagraphs.map((tech) => (
-                <Pill key={tech} iconSrc={stackIconFor(tech)}>
-                  {tech}
+              {techItems.map((tech) => (
+                <Pill key={tech} icon={stackIconFor(tech)}>
+                  {cleanTechLabel(tech)}
                 </Pill>
               ))}
             </div>
@@ -602,11 +592,14 @@ function CaseDetailBody({
           {block.bullets?.length ? (
             isTechSection ? (
               <div className="mt-5 flex flex-wrap gap-1.5 sm:mt-6 sm:gap-2">
-                {block.bullets.map((tech) => (
-                  <Pill key={tech} iconSrc={stackIconFor(tech.replace(BULLET_RE, "").trim())}>
-                    {tech.replace(BULLET_RE, "").trim()}
-                  </Pill>
-                ))}
+                {block.bullets.map((tech) => {
+                  const label = cleanTechLabel(tech);
+                  return (
+                    <Pill key={tech} icon={stackIconFor(label)}>
+                      {label}
+                    </Pill>
+                  );
+                })}
               </div>
             ) : (
               <FeatureGrid items={block.bullets} />
@@ -919,7 +912,7 @@ export default function ProjectDetailPage() {
                     <SpecRow label={stackLabel}>
                       <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         {project.stack.map((tech) => (
-                          <Pill key={tech} iconSrc={stackIconFor(tech)}>
+                          <Pill key={tech} icon={stackIconFor(tech)}>
                             {tech}
                           </Pill>
                         ))}
@@ -1008,6 +1001,7 @@ export default function ProjectDetailPage() {
                 text={details}
                 isRu={isRu}
                 palette={caseSystem?.palette}
+                stack={project.stack}
               />
 
               {project.outcomes?.length ? (

@@ -184,14 +184,14 @@ export default function WhyUs() {
     () => [
       // public/images/stack — имена файлов как в папке (PNG с заглавной / полным названием)
       { id: "supabase", label: "Supabase", src: "/images/stack/Supabase.webp", category: "Platform" },
-      { id: "react", label: "React", src: "/images/stack/React.webp", category: "Frontend" },
+      { id: "react", label: "React", src: "/images/stack/react.webp", category: "Frontend" },
       { id: "ts", label: "TypeScript", src: "/images/stack/TypeScript.webp", category: "Frontend" },
       { id: "tw", label: "Tailwind", src: "/images/stack/Tailwind.webp", category: "Frontend" },
       { id: "node", label: "Node.js", src: "/images/stack/Node.js.webp", category: "Backend" },
       { id: "ex", label: "Express", src: "/images/stack/Express.webp", category: "Backend" },
       { id: "pg", label: "Postgres", src: "/images/stack/Postgres.webp", category: "Database" },
-      { id: "html", label: "HTML", src: "/images/stack/HTML.webp", category: "Frontend" },
-      { id: "css", label: "CSS", src: "/images/stack/CSS.webp", category: "Frontend" },
+      { id: "html", label: "HTML", src: "/images/stack/html.webp", category: "Frontend" },
+      { id: "css", label: "CSS", src: "/images/stack/css.webp", category: "Frontend" },
       { id: "js", label: "JavaScript", src: "/images/stack/JavaScript.webp", category: "Frontend" },
     ],
     []
