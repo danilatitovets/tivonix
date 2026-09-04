@@ -464,7 +464,7 @@ export function ProjectGalleryStrip({
             <div
               key={src}
               role="listitem"
-              className="w-[min(72vw,16rem)] shrink-0 snap-start sm:w-[13.75rem] lg:w-[15rem]"
+              className="w-[min(78vw,18rem)] shrink-0 snap-start sm:w-[16rem] lg:w-[18rem]"
             >
               <button
                 type="button"
@@ -472,11 +472,11 @@ export function ProjectGalleryStrip({
                 aria-label={`${openLabel} ${i + 1}`}
                 onClick={() => setActive(i)}
               >
-                <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-[#1c1c1f] ring-1 ring-white/[0.06] sm:rounded-2xl">
+                <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-[#121214] ring-1 ring-white/[0.06] sm:rounded-2xl">
                   <SoftImg
                     src={src}
                     alt=""
-                    className="absolute inset-0 h-full w-full object-cover object-top"
+                    className="absolute inset-0 h-full w-full object-contain object-center"
                     draggable={false}
                     loading={i < 2 ? "eager" : "lazy"}
                     decoding="async"
