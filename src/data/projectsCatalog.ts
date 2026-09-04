@@ -47,7 +47,7 @@ const LOGOVO_DOMAIN = "https://www.logovo24.by/";
 const HEADMIND_DOMAIN = "https://headmind.ru/";
 const SLOTTY_DOMAIN = "https://slotty.of.by/book";
 const SPLITON_DOMAIN = "https://www.spliton.io/";
-const NEO_TERMINAL_DOMAIN = "https://neo-terminal-web.onrender.com/";
+const NEO_TERMINAL_DOMAIN = "https://neo-terminal.ru/";
 const TIVONIXPANEL_DOMAIN = partnerPanelLoginUrl();
 
 /** Публичные кейсы на /projects (остальные скрыты, но остаются в каталоге) */
@@ -61,6 +61,10 @@ export const PUBLIC_PROJECT_IDS = [
 
 const SLOTTY_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/slotty/${i + 1}.webp`);
 const SPLITON_GALLERY = Array.from({ length: 9 }, (_, i) => `/images/project-priew/spliton/g${i + 1}.webp`);
+const NEO_TERMINAL_GALLERY = Array.from(
+  { length: 9 },
+  (_, i) => `/images/project-priew/neo-terminal/${i + 1}.webp`
+);
 const TIVONIXPANEL_GALLERY = [
   "/images/project-priew/tivonixpanel/1.webp",
   "/images/project-priew/tivonixpanel/2.webp",
@@ -575,9 +579,9 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Технологии\n" +
           "React, TypeScript, NestJS, PostgreSQL, Prisma, Redis, BullMQ, pgvector, Playwright, Docker.\n\n" +
           "Текущий статус\n" +
-          "Кейс / пилот. Внешние провайдеры (платежи, мессенджеры, ERP, AI, устройства) — явные границы интеграций, включаются при внедрении.\n\n" +
+          "Продукт в продакшене на **neo-terminal.ru**. Внешние провайдеры (платежи, мессенджеры, ERP, AI, устройства) — явные границы интеграций, включаются при внедрении.\n\n" +
           "Следующий шаг\n" +
-          "Откройте кейс или демо neo-terminal-web.onrender.com, чтобы посмотреть архитектуру и модули.\n",
+          "Откройте продукт на **neo-terminal.ru** или кейс TIVONIX, чтобы посмотреть архитектуру и модули.\n",
         detailsEn:
           "Client context\n" +
           "Neo Terminal is an AI commerce platform TIVONIX is designing and building as a modular product for retail and B2B.\n\n" +
@@ -592,9 +596,9 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Technology\n" +
           "React, TypeScript, NestJS, PostgreSQL, Prisma, Redis, BullMQ, pgvector, Playwright, Docker.\n\n" +
           "Current status\n" +
-          "Case study / pilot. External providers (payments, messengers, ERP, AI, devices) are explicit integration boundaries and are enabled during deployment.\n\n" +
+          "Live product on **neo-terminal.ru**. External providers (payments, messengers, ERP, AI, devices) are explicit integration boundaries and are enabled during deployment.\n\n" +
           "Next step\n" +
-          "Open the case or the neo-terminal-web.onrender.com demo to review architecture and modules.\n",
+          "Open the product at **neo-terminal.ru** or the TIVONIX case to review architecture and modules.\n",
         detailsZh:
           "为什么重要\n" +
           "现代商业很少因为没有网站而失败。它失败在**系统之间**。\n\n" +
@@ -611,7 +615,7 @@ function buildAllProjects(isRu: boolean): Project[] {
           "结果\n" +
           "一套试点就绪的 AI 商业操作系统，把从目录到履约的完整商业路径放进同一架构。\n",
         domain: NEO_TERMINAL_DOMAIN,
-        status: "pilot",
+        status: "live",
         tags: [
           "AI",
           "Commerce",
@@ -627,6 +631,7 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Admin Panel",
         ],
         cover: "/images/project-priew/neo-terminal.webp",
+        gallery: NEO_TERMINAL_GALLERY,
         roleRu: "Продуктовый дизайн и разработка под ключ",
         roleEn: "End-to-end product design and development",
         seoTitleRu: "Neo Terminal — AI-операционная система коммерции | TIVONIX",

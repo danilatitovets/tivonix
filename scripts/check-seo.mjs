@@ -107,7 +107,7 @@ const checks = [
       "Neo Terminal",
       "операционная система коммерции",
       "https://www.tivonix.tech/projects/neo-terminal",
-      "neo-terminal-web.onrender.com",
+      "neo-terminal.ru",
     ],
   },
   {
@@ -116,7 +116,7 @@ const checks = [
       "Neo Terminal",
       "AI Commerce Operating System",
       "https://www.tivonix.tech/en/projects/neo-terminal",
-      "neo-terminal-web.onrender.com",
+      "neo-terminal.ru",
     ],
   },
   {
