@@ -201,7 +201,11 @@ const forbiddenPhrases = [
   "Tivonix Loading",
   "TIVONIX — Сайты, боты и веб-сервисы",
   "chrome-headless",
-  "playwright",
+  // Catch prerender/test runner leaks, not the Playwright tech-stack label/icon.
+  'from "playwright"',
+  "from 'playwright'",
+  "node_modules/playwright",
+  "playwright-core",
 ];
 
 function countRegex(re, html) {
