@@ -26,9 +26,10 @@ const checks = [
   {
     file: "dist/index.html",
     phrases: [
-      "TIVONIX — сайты, CRM, боты и веб-продукты для бизнеса",
-      "Разрабатываем лендинги, Telegram-ботов, CRM, личные кабинеты, SaaS и MVP",
-      "заявку до результата",
+      "TIVONIX — Product Engineering: SaaS, FinTech и бизнес-системы",
+      "Проектируем и разрабатываем SaaS, fintech, marketplaces, CRM/ERP",
+      "Программные продукты",
+      "от архитектуры до production",
       "https://www.tivonix.tech/",
       'property="og:image" content="https://www.tivonix.tech/images/og-social.jpg"',
     ],
@@ -301,10 +302,10 @@ try {
     );
     hasErrors = true;
   } else {
-    console.log(`OK ${automationFile}: exactly 1 link rel="canonical"`);
+    console.log(`OK ${automationFile}: exactly 1 link rel="canonical`);
   }
 
-  const homeTitleWrong = "<title>TIVONIX — сайты, CRM, боты и веб-продукты для бизнеса</title>";
+  const homeTitleWrong = "<title>TIVONIX — Product Engineering: SaaS, FinTech и бизнес-системы</title>";
   if (autoHtml.includes(homeTitleWrong)) {
     console.error(`${automationFile}: must not contain home page <title>`);
     hasErrors = true;
