@@ -46,18 +46,40 @@ jobs:
       - name: Lint changed TypeScript
         shell: bash
         run: |
+          mkdir -p artifacts/quality
           git fetch origin main --depth=1
           mapfile -t files < <(git diff --name-only origin/main...HEAD -- '*.ts' '*.tsx')
           if (( ${#files[@]} == 0 )); then
-            echo "No changed TypeScript files"
+            echo "No changed TypeScript files" | tee artifacts/quality/lint-changed.txt
             exit 0
           fi
-          printf 'Linting changed files:\n%s\n' "${files[*]}"
-          npx eslint "${files[@]}"
+          printf 'Linting changed files:\n%s\n' "${files[*]}" | tee artifacts/quality/lint-changed.txt
+          set +e
+          npx eslint "${files[@]}" 2>&1 | tee -a artifacts/quality/lint-changed.txt
+          status=${PIPESTATUS[0]}
+          set -e
+          exit "$status"
 
       - name: Full legacy lint diagnostic
+        if: always()
         continue-on-error: true
-        run: npm run lint
+        shell: bash
+        run: |
+          mkdir -p artifacts/quality
+          set +e
+          npm run lint 2>&1 | tee artifacts/quality/lint-full.txt
+          status=${PIPESTATUS[0]}
+          set -e
+          exit "$status"
+
+      - name: Upload quality diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-diagnostics-${{ github.sha }}
+          path: artifacts/quality
+          if-no-files-found: ignore
+          retention-days: 7
 
   browser-smoke:
     needs: quality
