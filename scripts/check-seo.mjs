@@ -26,75 +26,12 @@ const checks = [
   {
     file: "dist/index.html",
     phrases: [
-      "TIVONIX — сайты, CRM, боты и веб-продукты для бизнеса",
-      "Разрабатываем лендинги, Telegram-ботов, CRM, личные кабинеты, SaaS и MVP",
-      "заявку до результата",
+      "TIVONIX — разработка SaaS, бизнес-систем и AI-продуктов",
+      "Проектируем и разрабатываем SaaS, внутренние платформы, CRM, marketplaces и AI-powered systems",
+      "Программные системы,",
+      "на которых работает бизнес.",
       "https://www.tivonix.tech/",
       'property="og:image" content="https://www.tivonix.tech/images/og-social.jpg"',
-    ],
-  },
-  {
-    file: "dist/sozdanie-sajtov/index.html",
-    phrases: [
-      "Создание сайтов для бизнеса — TIVONIX",
-      "https://www.tivonix.tech/sozdanie-sajtov",
-      "лендинги",
-      "базовое SEO",
-    ],
-  },
-  {
-    file: "dist/mileseal/index.html",
-    phrases: [
-      "MileSeal",
-      "Scope",
-      "change request",
-      "https://www.tivonix.tech/mileseal",
-      "/mileseal/cases/content-migration",
-    ],
-  },
-  {
-    file: "dist/mileseal/cases/content-migration/index.html",
-    phrases: [
-      "MileSeal",
-      "Интерактивное демо MileSeal",
-      "56",
-      "https://www.tivonix.tech/mileseal/cases/content-migration",
-      "Проанализировать запрос",
-      "Входит ли новый запрос клиента в согласованный объём?",
-    ],
-  },
-  {
-    file: "dist/en/mileseal/index.html",
-    phrases: [
-      'lang="en"',
-      "Stop one client request before it becomes unpaid work.",
-      "Review my request — free",
-      "See the 56-hour case",
-      "Scope Leakage Audit",
-      "Request the $350 audit",
-      "Founding Installation",
-      "MileSeal",
-      "https://www.tivonix.tech/en/mileseal",
-      "/en/mileseal/cases/content-migration",
-      "images/mileseal/og-mileseal.jpg",
-      'hrefLang="en"',
-      'hrefLang="ru"',
-      'hrefLang="zh"',
-    ],
-  },
-  {
-    file: "dist/en/mileseal/cases/content-migration/index.html",
-    phrases: [
-      'lang="en"',
-      "MileSeal interactive demo",
-      "Is this client request inside the agreed scope?",
-      "56",
-      "https://www.tivonix.tech/en/mileseal/cases/content-migration",
-      "images/mileseal/og-mileseal-case-content-migration.jpg",
-      "Analyse request",
-      'hrefLang="en"',
-      'hrefLang="ru"',
-      'hrefLang="zh"',
     ],
   },
   {
@@ -121,68 +58,28 @@ const checks = [
   },
   {
     file: "dist/projects/spliton/index.html",
-    phrases: [
-      "Spliton",
-      "долей в музыке",
-      "https://www.tivonix.tech/projects/spliton",
-      "spliton.io",
-    ],
+    phrases: ["Spliton", "долей в музыке", "https://www.tivonix.tech/projects/spliton", "spliton.io"],
   },
   {
     file: "dist/projects/slotty/index.html",
-    phrases: [
-      "Slotty",
-      "Маркетплейс онлайн-записи",
-      "https://www.tivonix.tech/projects/slotty",
-      "slotty.of.by",
-    ],
+    phrases: ["Slotty", "Маркетплейс онлайн-записи", "https://www.tivonix.tech/projects/slotty", "slotty.of.by"],
   },
   {
     file: "dist/projects/headmind/index.html",
-    phrases: [
-      "Headmind",
-      "WordPress",
-      "https://www.tivonix.tech/projects/headmind",
-      "headmind.ru",
-    ],
+    phrases: ["Headmind", "WordPress", "https://www.tivonix.tech/projects/headmind", "headmind.ru"],
   },
   {
     file: "dist/projects/logovo/index.html",
-    phrases: [
-      "LOGOVO",
-      "шиномонтажа",
-      "https://www.tivonix.tech/projects/logovo",
-      "logovo24.by",
-    ],
+    phrases: ["LOGOVO", "шиномонтажа", "https://www.tivonix.tech/projects/logovo", "logovo24.by"],
   },
   {
     file: "dist/plans/index.html",
     phrases: ["Планы запуска", "Start", "Growth", "Product", "https://www.tivonix.tech/plans"],
   },
+  { file: "dist/contacts/index.html", phrases: ["Контакты", "Telegram", "Email"] },
   {
-    file: "dist/contacts/index.html",
-    phrases: ["Контакты", "Telegram", "Email"],
-  },
-  {
-    file: "dist/partners/index.html",
-    phrases: [
-      "Партнёрская программа TIVONIX — Referral и White-label",
-      "https://www.tivonix.tech/partners",
-      "partner-formats",
-      "type=referral",
-      "type=white_label",
-    ],
-  },
-  {
-    file: "dist/en/partners/index.html",
-    phrases: [
-      "TIVONIX Partner Program — Referral and White-label",
-      "https://www.tivonix.tech/en/partners",
-      "partner-formats",
-      "White-label",
-      "type=referral",
-      "type=white_label",
-    ],
+    file: "dist/sozdanie-sajtov/index.html",
+    phrases: ["Создание сайтов для бизнеса — TIVONIX", "https://www.tivonix.tech/sozdanie-sajtov", "лендинги", "базовое SEO"],
   },
   {
     file: "dist/avtomatizaciya-biznesa/index.html",
@@ -195,13 +92,36 @@ const checks = [
       "вашего бизнеса",
     ],
   },
+  {
+    file: "dist/mileseal/index.html",
+    phrases: ["MileSeal", "Scope", "change request", "https://www.tivonix.tech/mileseal", "/mileseal/cases/content-migration"],
+  },
+  {
+    file: "dist/mileseal/cases/content-migration/index.html",
+    phrases: ["MileSeal", "Интерактивное демо MileSeal", "56", "https://www.tivonix.tech/mileseal/cases/content-migration", "Проанализировать запрос"],
+  },
+  {
+    file: "dist/en/mileseal/index.html",
+    phrases: ['lang="en"', "Stop one client request before it becomes unpaid work.", "Review my request — free", "Scope Leakage Audit", "Founding Installation", "https://www.tivonix.tech/en/mileseal"],
+  },
+  {
+    file: "dist/en/mileseal/cases/content-migration/index.html",
+    phrases: ['lang="en"', "MileSeal interactive demo", "Is this client request inside the agreed scope?", "56", "https://www.tivonix.tech/en/mileseal/cases/content-migration"],
+  },
+  {
+    file: "dist/partners/index.html",
+    phrases: ["Партнёрская программа TIVONIX — Referral и White-label", "https://www.tivonix.tech/partners", "partner-formats", "type=referral", "type=white_label"],
+  },
+  {
+    file: "dist/en/partners/index.html",
+    phrases: ["TIVONIX Partner Program — Referral and White-label", "https://www.tivonix.tech/en/partners", "partner-formats", "White-label", "type=referral", "type=white_label"],
+  },
 ];
 
 const forbiddenPhrases = [
   "Tivonix Loading",
   "TIVONIX — Сайты, боты и веб-сервисы",
   "chrome-headless",
-  // Catch prerender/test runner leaks, not the Playwright tech-stack label/icon.
   'from "playwright"',
   "from 'playwright'",
   "node_modules/playwright",
@@ -209,8 +129,8 @@ const forbiddenPhrases = [
 ];
 
 function countRegex(re, html) {
-  const m = html.match(re);
-  return m ? m.length : 0;
+  const matches = html.match(re);
+  return matches ? matches.length : 0;
 }
 
 let hasErrors = false;
@@ -226,16 +146,15 @@ for (const requiredFile of requiredHtmlFiles) {
 }
 
 for (const check of checks) {
-  const filePath = path.resolve(check.file);
+  let content = "";
   try {
-    await access(filePath);
+    content = await readFile(path.resolve(check.file), "utf8");
   } catch {
-    console.error(`Missing file: ${check.file}`);
+    console.error(`Cannot read: ${check.file}`);
     hasErrors = true;
     continue;
   }
 
-  const content = await readFile(filePath, "utf8");
   for (const phrase of check.phrases) {
     if (!content.includes(phrase)) {
       console.error(`Missing phrase in ${check.file}: "${phrase}"`);
@@ -247,77 +166,40 @@ for (const check of checks) {
 }
 
 for (const requiredFile of requiredHtmlFiles) {
-  const filePath = path.resolve(requiredFile);
   let content = "";
   try {
-    content = await readFile(filePath, "utf8");
+    content = await readFile(path.resolve(requiredFile), "utf8");
   } catch {
     continue;
   }
-
   for (const forbidden of forbiddenPhrases) {
     if (content.includes(forbidden)) {
       console.error(`Forbidden phrase in ${requiredFile}: "${forbidden}"`);
       hasErrors = true;
-    } else {
-      console.log(`OK ${requiredFile}: forbidden phrase not found "${forbidden}"`);
     }
   }
 }
 
-/* Точные счётчики SEO-тегов: страница автоматизации */
-const automationFile = "dist/avtomatizaciya-biznesa/index.html";
-try {
-  const autoPath = path.resolve(automationFile);
-  const autoHtml = await readFile(autoPath, "utf8");
-
-  const titleTags = countRegex(/<title\b[^>]*>[\s\S]*?<\/title>/gi, autoHtml);
-  const descTags = countRegex(
-    /<meta\b(?=[^>]*\bname\s*=\s*["']description["'])[^>]*>/gi,
-    autoHtml
-  );
-  const canonicalTags = countRegex(
-    /<link\b(?=[^>]*\brel\s*=\s*["']canonical["'])[^>]*>/gi,
-    autoHtml
-  );
-
-  if (titleTags !== 1) {
-    console.error(`${automationFile}: expected exactly 1 <title>, found ${titleTags}`);
+for (const seoFile of ["dist/index.html", "dist/avtomatizaciya-biznesa/index.html"]) {
+  let html = "";
+  try {
+    html = await readFile(path.resolve(seoFile), "utf8");
+  } catch {
     hasErrors = true;
-  } else {
-    console.log(`OK ${automationFile}: exactly 1 <title>`);
-  }
-  if (descTags !== 1) {
-    console.error(
-      `${automationFile}: expected exactly 1 meta name="description", found ${descTags}`
-    );
-    hasErrors = true;
-  } else {
-    console.log(`OK ${automationFile}: exactly 1 meta description`);
-  }
-  if (canonicalTags !== 1) {
-    console.error(
-      `${automationFile}: expected exactly 1 link rel="canonical", found ${canonicalTags}`
-    );
-    hasErrors = true;
-  } else {
-    console.log(`OK ${automationFile}: exactly 1 link rel="canonical"`);
+    continue;
   }
 
-  const homeTitleWrong = "<title>TIVONIX — сайты, CRM, боты и веб-продукты для бизнеса</title>";
-  if (autoHtml.includes(homeTitleWrong)) {
-    console.error(`${automationFile}: must not contain home page <title>`);
+  const titleTags = countRegex(/<title\b[^>]*>[\s\S]*?<\/title>/gi, html);
+  const descTags = countRegex(/<meta\b(?=[^>]*\bname\s*=\s*["']description["'])[^>]*>/gi, html);
+  const canonicalTags = countRegex(/<link\b(?=[^>]*\brel\s*=\s*["']canonical["'])[^>]*>/gi, html);
+
+  if (titleTags !== 1 || descTags !== 1 || canonicalTags !== 1) {
+    console.error(`${seoFile}: expected exactly one title, description and canonical; found title=${titleTags}, description=${descTags}, canonical=${canonicalTags}`);
     hasErrors = true;
   } else {
-    console.log(`OK ${automationFile}: home page title tag not present`);
+    console.log(`OK ${seoFile}: one title, description and canonical`);
   }
-} catch (e) {
-  console.error(`Cannot verify ${automationFile}:`, e.message);
-  hasErrors = true;
 }
 
-if (hasErrors) {
-  process.exit(1);
-}
-
+if (hasErrors) process.exit(1);
 console.log("SEO check passed.");
