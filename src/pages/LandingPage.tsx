@@ -1,27 +1,31 @@
-// src/pages/LandingPage.tsx
-import Header from "../components/landing/Header";
-import Hero from "../components/landing/Hero";
-import FeaturedProjectsSection from "../components/landing/FeaturedProjectsSection";
-import LandingPainSection from "../components/landing/LandingPainSection";
-import MainOfferSection from "../components/landing/MainOfferSection";
-import AiPremiumSection from "../components/landing/AiPremiumSection";
-import ComparisonSection from "../components/landing/ComparisonSection";
-import HomePricingSection from "../components/landing/HomePricingSection";
-import ProcessTimelineSection from "../components/landing/ProcessTimelineSection";
-import FounderSection from "../components/landing/FounderSection";
-import HomeTestimonialsSection from "../components/landing/HomeTestimonialsSection";
-import FAQ from "../components/landing/FAQ";
-import FinalCTASection from "../components/landing/FinalCTASection";
-import Footer from "../components/landing/Footer";
+import { useLocation } from "react-router-dom";
+import ProductLanding from "../components/home2026/ProductLanding";
 import { SEO } from "../components/SEO";
 import { buildHomePageSchema } from "../lib/schema";
-import { homePageSeoFromDict, useLang } from "../i18n/LangProvider";
-import { useLocation } from "react-router-dom";
+import { useLang } from "../i18n/LangProvider";
+
+const HOME_SEO = {
+  ru: {
+    title: "TIVONIX — разработка SaaS, бизнес-систем и AI-продуктов",
+    description:
+      "Проектируем и разрабатываем SaaS, внутренние платформы, CRM, marketplaces и AI-powered systems — от архитектуры и UX до backend и production.",
+  },
+  en: {
+    title: "TIVONIX — Product Engineering for SaaS, Business Systems & AI",
+    description:
+      "We design and engineer SaaS, internal platforms, marketplaces and AI-powered systems — from product architecture and UX to backend and production.",
+  },
+  zh: {
+    title: "TIVONIX — SaaS、业务系统与 AI 产品工程",
+    description:
+      "我们设计并开发 SaaS、内部平台、marketplaces 和 AI-powered systems，从产品架构与 UX 到 backend 和 production。",
+  },
+} as const;
 
 export default function LandingPage() {
-  const { dict, lang } = useLang();
+  const { lang } = useLang();
   const { pathname } = useLocation();
-  const seo = homePageSeoFromDict(dict);
+  const seo = HOME_SEO[lang];
   const canonicalPath =
     pathname === "/zh" || pathname.startsWith("/zh/")
       ? "/zh"
@@ -34,7 +38,7 @@ export default function LandingPage() {
   });
 
   return (
-    <div className="landing-caldera min-h-screen overflow-x-clip bg-black">
+    <>
       <SEO
         title={seo.title}
         description={seo.description}
@@ -43,38 +47,7 @@ export default function LandingPage() {
         ogLocalePrimary={lang === "zh" ? "zh_CN" : lang === "en" ? "en_US" : "ru_RU"}
         hreflang
       />
-      <div id="top" />
-      <Header />
-
-      <main>
-        <div id="hero">
-          <Hero />
-        </div>
-
-        <FeaturedProjectsSection />
-
-        <LandingPainSection />
-
-        <MainOfferSection />
-
-        <AiPremiumSection />
-
-        <ComparisonSection />
-
-        <HomePricingSection />
-
-        <ProcessTimelineSection />
-
-        <FounderSection />
-
-        <HomeTestimonialsSection />
-
-        <FAQ />
-      </main>
-
-      <FinalCTASection />
-
-      <Footer />
-    </div>
+      <ProductLanding />
+    </>
   );
 }
