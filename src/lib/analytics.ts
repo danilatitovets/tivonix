@@ -157,13 +157,15 @@ export function trackLeadFormValidationError(field?: string): void {
   trackEvent("form_validation_error", field ? { field } : undefined);
 }
 
+/** User submitted a locally valid form; delivery has not succeeded yet. */
 export function trackLeadFormSubmit(source: CtaSource): void {
-  trackEvent("form_submit_success", { cta_source: source });
-  trackAdsFormConversion();
+  trackEvent("form_submit_attempt", { cta_source: source });
 }
 
+/** Count a lead conversion only after the server confirms successful delivery. */
 export function trackLeadFormSuccess(source: CtaSource): void {
   trackEvent("form_submit_success", { cta_source: source });
+  trackAdsFormConversion();
 }
 
 export function trackLeadFormServerError(): void {
@@ -171,7 +173,7 @@ export function trackLeadFormServerError(): void {
 }
 
 export function trackLeadFormAbandon(source: CtaSource): void {
-  trackEvent("form_submit_error", { cta_source: source, reason: "abandon" });
+  trackEvent("form_abandon", { cta_source: source });
 }
 
 export function trackTelegramDirectClick(): void {
