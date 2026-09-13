@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+} from "react";
 import { Link } from "react-router-dom";
 import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
@@ -13,6 +20,7 @@ import BgLoopVideo from "../ui/BgLoopVideo";
 
 /** Use svh — dvh resizes mid-scroll in TG / mobile chrome and jumps sticky tracks */
 const SCROLL_TRACK_VH = 240;
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
 type HeroScrollStage = {
   headline: string;
@@ -59,27 +67,28 @@ function textOpacities(progress: number): [number, number, number] {
   return op;
 }
 
+function subscribeReducedMotion(onChange: () => void) {
+  if (typeof window === "undefined") return () => undefined;
+  const media = window.matchMedia(REDUCED_MOTION_QUERY);
+  media.addEventListener("change", onChange);
+  return () => media.removeEventListener("change", onChange);
+}
+
+function reducedMotionSnapshot() {
+  return typeof window !== "undefined" && window.matchMedia(REDUCED_MOTION_QUERY).matches;
+}
+
+function usePrefersReducedMotion() {
+  return useSyncExternalStore(subscribeReducedMotion, reducedMotionSnapshot, () => false);
+}
+
 function useHeroScrollProgress(trackRef: React.RefObject<HTMLElement | null>) {
   const [progress, setProgress] = useState(0);
-  const [reducedMotion, setReducedMotion] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => setReducedMotion(media.matches);
-    sync();
-    media.addEventListener?.("change", sync);
-    return () => media.removeEventListener?.("change", sync);
-  }, []);
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     const el = trackRef.current;
-    if (!el || typeof window === "undefined") return;
-
-    if (reducedMotion) {
-      setProgress(1);
-      return;
-    }
+    if (!el || typeof window === "undefined" || reducedMotion) return;
 
     let raf = 0;
     let trackTop = 0;
@@ -102,7 +111,7 @@ function useHeroScrollProgress(trackRef: React.RefObject<HTMLElement | null>) {
 
     let lastW = window.innerWidth;
     const onResize = () => {
-      // Ignore mobile chrome height toggles; only react to real layout width changes
+      // Ignore mobile chrome height toggles; only react to real layout width changes.
       if (Math.abs(window.innerWidth - lastW) < 10) return;
       lastW = window.innerWidth;
       measure();
@@ -110,18 +119,19 @@ function useHeroScrollProgress(trackRef: React.RefObject<HTMLElement | null>) {
     };
 
     measure();
-    update();
+    const initialFrame = requestAnimationFrame(update);
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
 
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
+      cancelAnimationFrame(initialFrame);
       if (raf) cancelAnimationFrame(raf);
     };
   }, [trackRef, reducedMotion]);
 
-  return { progress, reducedMotion };
+  return { progress: reducedMotion ? 0 : progress, reducedMotion };
 }
 
 function HeroHeadline({
@@ -251,7 +261,8 @@ export default function Hero() {
   const [tgWebView, setTgWebView] = useState(false);
 
   useEffect(() => {
-    setTgWebView(isTelegramWebView());
+    const frame = requestAnimationFrame(() => setTgWebView(isTelegramWebView()));
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   const cardProps = {
@@ -277,7 +288,7 @@ export default function Hero() {
             "lg:px-4 lg:pt-3 lg:pb-3"
           )}
         >
-          <HeroCard progress={reducedMotion ? 0 : 1} {...cardProps} />
+          <HeroCard progress={tgWebView && !reducedMotion ? 1 : 0} {...cardProps} />
         </div>
       </Section>
     );
