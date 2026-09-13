@@ -1,20 +1,23 @@
 // src/pages/ProjectsPage.tsx
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Container from "../components/ui/Container";
 import Section from "../components/ui/Section";
 import Header from "../components/landing/Header";
 import Footer from "../components/landing/Footer";
 import { SEO } from "../components/SEO";
-import { useLang } from "../i18n/LangProvider";
-import { buildProjects, projectSubtitle, isProjectSiteOpen, type Project } from "../data/projectsCatalog";
+import { useLang, type Lang } from "../i18n/LangProvider";
+import {
+  buildProjects,
+  projectSubtitle,
+  isProjectSiteOpen,
+  type Project,
+} from "../data/projectsCatalog";
 import { cx, projectPreviewSrc, ProjectPreviewFrame } from "./projectBlocks";
 import { LeadCTAButton } from "../components/leads/LeadCTAButton";
 import { leadFormCopy } from "../i18n/leadFormCopy";
 import { trackProjectView } from "../lib/analytics";
-import { useEffect } from "react";
 import { pathForLang, canonicalPathForLang } from "../lib/localePaths";
-import type { Lang } from "../i18n/LangProvider";
 
 const ALL_FILTER = "all";
 
@@ -60,11 +63,11 @@ function ProjectGridCard({ p, isRu, lang }: { p: Project; isRu: boolean; lang: L
   const pilot = p.status === "pilot";
   const siteOpen = isProjectSiteOpen(p);
   const domainClean = p.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "");
-  const productType = p.category ?? p.tags[0] ?? (isRu ? "Проект" : "Project");
+  const productType = p.category ?? p.tags[0] ?? (isRu ? "Продукт" : "Product");
   const subtitle = projectSubtitle(p, lang);
   const role = isRu
-    ? `Роль TIVONIX: ${p.roleRu ?? "дизайн и разработка"}`
-    : `TIVONIX role: ${p.roleEn ?? "design & development"}`;
+    ? `Роль TIVONIX: ${p.roleRu ?? "product engineering"}`
+    : `TIVONIX role: ${p.roleEn ?? "product engineering"}`;
   const href = pathForLang(`/projects/${p.id}`, lang);
 
   return (
@@ -156,7 +159,6 @@ export default function ProjectsPage() {
   const { lang } = useLang();
   const { pathname } = useLocation();
   const isRu = lang === "ru";
-  const isEnPath = pathname.startsWith("/en");
   const isZhPath = pathname.startsWith("/zh");
   const [activeFilter, setActiveFilter] = useState(ALL_FILTER);
   const leadCopy = leadFormCopy(lang);
@@ -174,13 +176,16 @@ export default function ProjectsPage() {
   }, [projects, activeFilter]);
 
   const seoTitle = isRu
-    ? "Проекты и кейсы TIVONIX — сайты, веб-сервисы и MVP"
-    : "TIVONIX projects and case studies — websites, web services and MVP";
+    ? "Проекты TIVONIX — SaaS, FinTech, marketplaces и бизнес-системы"
+    : "TIVONIX projects — SaaS, fintech, marketplaces and business systems";
   const seoDescription = isRu
-    ? "Посмотрите проекты TIVONIX: лендинги, веб-сервисы, личные кабинеты, админки, MVP и Telegram-интеграции для бизнеса."
-    : "Explore TIVONIX projects: landings, web services, client areas, admin panels, MVPs and Telegram integrations for business.";
+    ? "Реальные продукты TIVONIX: fintech, marketplaces, SaaS, кабинеты, admin/operator systems и production-интеграции. Scope, роль, стек и работающие домены."
+    : "Real TIVONIX products across fintech, marketplaces, SaaS, portals and admin/operator systems, with scope, ownership, stack and live product evidence.";
 
-  const heroTitle = isRu ? "Проекты и кейсы" : "Projects and case studies";
+  const heroTitle = isRu ? "Продукты и системы" : "Products and systems";
+  const heroLead = isRu
+    ? "Не галерея экранов. Показываем контекст продукта, бизнес-логику, роль TIVONIX, технический scope и доступные production-доказательства."
+    : "Not a gallery of screens. Each case shows product context, business logic, TIVONIX ownership, technical scope and available production evidence.";
   const allLabel = isRu ? "Все" : "All";
   const emptyLabel = isRu ? "Пока нет проектов в этой категории." : "No projects in this category yet.";
 
@@ -198,10 +203,16 @@ export default function ProjectsPage() {
       <main>
         <Section className="projects-page scroll-mt-[var(--tivonix-header-spacer)] !pb-20 !pt-[calc(var(--tivonix-header-spacer)+1.75rem)] sm:!pt-[calc(var(--tivonix-header-spacer)+2.25rem)]">
           <Container className="max-w-[1180px]">
-            <header className="mx-auto max-w-[720px] text-center">
-              <h1 className="font-hero text-[clamp(1.85rem,4.5vw,2.75rem)] font-normal uppercase leading-[1.02] tracking-[0.02em] text-white">
+            <header className="mx-auto max-w-[760px] text-center">
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#FF9A3D]/80">
+                Product proof
+              </p>
+              <h1 className="mt-3 font-hero text-[clamp(1.85rem,4.5vw,2.75rem)] font-normal uppercase leading-[1.02] tracking-[0.02em] text-white">
                 {heroTitle}
               </h1>
+              <p className="mx-auto mt-4 max-w-[680px] text-[14px] leading-[1.6] text-white/55 sm:text-[15px]">
+                {heroLead}
+              </p>
             </header>
 
             <div className="mt-10 sm:mt-12">
