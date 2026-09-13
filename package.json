@@ -10,13 +10,14 @@
     "build:server": "vite build --ssr src/entry-server.tsx --outDir dist-server",
     "check:seo": "node scripts/check-seo.mjs",
     "check:leads": "node scripts/check-leads.mjs",
+    "check:analytics": "node scripts/check-analytics-contract.mjs",
     "lint": "eslint .",
     "lint:leads": "eslint \"src/components/leads/**/*.{ts,tsx}\" \"src/lib/leads.ts\" \"src/lib/analytics.ts\" \"src/lib/hotjar.ts\" \"src/lib/consent.ts\" \"src/components/ConsentBanner.tsx\" \"src/components/ScrollDepthTracker.tsx\" \"src/pages/NotFoundPage.tsx\" \"api/leads.ts\" \"api/_leadsDelivery.ts\" \"api/_leadsRateLimit.ts\" \"api/_leadsSubject.ts\"",
     "typecheck": "tsc --noEmit",
     "prerender": "node scripts/prerender-node.mjs",
     "preview": "vite preview --host 127.0.0.1 --port 4174",
     "verify:hydration": "node scripts/verify-hydration.mjs",
-    "test": "node scripts/check-leads.mjs && node --experimental-strip-types scripts/check-mileseal-demo-state.mjs && node --experimental-strip-types scripts/check-mileseal-case-demo-state.mjs && node --experimental-strip-types scripts/check-mileseal-leads-meta.mjs && node --experimental-strip-types scripts/check-mileseal-analytics.mjs && node --experimental-strip-types scripts/check-mileseal-leads-integration.mjs",
+    "test": "node scripts/check-leads.mjs && node scripts/check-analytics-contract.mjs && node --experimental-strip-types scripts/check-mileseal-demo-state.mjs && node --experimental-strip-types scripts/check-mileseal-case-demo-state.mjs && node --experimental-strip-types scripts/check-mileseal-leads-meta.mjs && node --experimental-strip-types scripts/check-mileseal-analytics.mjs && node --experimental-strip-types scripts/check-mileseal-leads-integration.mjs",
     "test:mileseal:e2e": "node scripts/capture-mileseal-wave3.mjs && node --experimental-strip-types scripts/check-mileseal-pdf.mjs"
   },
   "dependencies": {
