@@ -2,296 +2,228 @@ import type { Lang } from "./LangProvider";
 
 const COPY_RU = {
   seo: {
-    title: "О компании — TIVONIX",
+    title: "О TIVONIX — founder-led product engineering company",
     description:
-      "TIVONIX — продуктовая команда: сайты, заявки, кабинеты и автоматизация. Зачем мы начали, миссия, ценности и почему с нами работают.",
+      "TIVONIX проектирует и разрабатывает SaaS, fintech, marketplaces и бизнес-системы — от product scope и архитектуры до production и передачи доступов.",
   },
   hero: {
-    title: "Системы, в которых заявки не теряются",
-    titleLines: ["Системы,", "в которых", "заявки не", "теряются"],
-    cta: "Обсудить задачу",
+    title: "Инженерная ответственность от идеи до production",
+    titleLines: ["От идеи", "до production", "с одним", "owner"],
+    cta: "Обсудить продукт",
   },
   story: {
     paragraphs: [
-      "Форма на сайте есть. А дальше часто начинается хаос: письма во входящих, статусы в голове, Excel вручную, и никто не знает, кто взял заявку. Из этой боли и вырос TIVONIX. Не из презентации.",
-      "Мы сами собирали для бизнеса цепочки от сайта до Telegram, CRM и кабинета. Видели, где всё ломается. Поэтому делаем не красивую страницу ради галочки, а рабочую систему.",
-      "Сегодня запускаем лендинги под заявки, mini-CRM, личные кабинеты и MVP. С понятным объёмом, сроками и ответом за результат. Собираем состав под задачу, показываем ход работы и отдаём код с доступами. Система живёт у вас, а не в чужом кабинете.",
+      "TIVONIX вырос не из модели «делаем сайты». Практически в каждом серьёзном проекте интерфейс — только видимая часть системы: за ним роли и права, данные, интеграции, платежи, административные процессы, ошибки и эксплуатация.",
+      "Поэтому мы начинаем не с количества экранов. Сначала фиксируем пользователей, ключевой workflow, границы первой версии и технические риски. Затем проектируем UX и архитектуру как одну систему и доводим её до рабочего production-релиза.",
+      "Ключевые продуктовые и инженерные решения остаются founder-led. Под конкретный scope подключаются необходимые функции. Клиент получает production code, исходники, доступы и систему, которую можно поддерживать и развивать без искусственного vendor lock-in.",
     ],
   },
   mission: {
-    label: "Миссия",
-    title: "Автоматизировать рутину вокруг клиента",
-    text: "Мы помогаем бизнесу убрать ручной перенос заявок и хаос в коммуникациях — чтобы команда занималась продажами и продуктом, а не поиском «кто взял лид».",
+    label: "Принцип",
+    title: "Строить систему, а не набор экранов",
+    text: "Пользовательский продукт, операции, данные и интеграции должны работать как один контур. Мы проектируем связи между ними до того, как они становятся production-проблемами.",
   },
   vision: {
-    label: "Видение",
-    title: "Понятный цифровой контур для любого масштаба",
-    text: "От локального бизнеса до веб-сервиса: один процесс от первого касания до статуса в системе. Без лишней разработки ради галочки — только то, что двигает деньги и скорость ответа.",
+    label: "Фокус",
+    title: "Сложный software должен оставаться управляемым",
+    text: "Наша задача — уменьшить неопределённость, выбрать разумную границу первой версии и заложить решения, которые не придётся выбрасывать сразу после запуска.",
   },
   values: {
-    label: "Ценности",
-    title: "Скорость, ясность и ответственность",
-    text: "Так мы работаем на каждом проекте — от первого сообщения до передачи доступов.",
+    label: "Как работаем",
+    title: "Ownership, ясность и инженерная дисциплина",
+    text: "Не набор абстрактных ценностей, а правила, по которым принимаются решения в проекте.",
     items: [
       {
-        title: "Скорость",
-        text: "Быстрый старт и короткие итерации: промежуточный результат видно уже в первые недели, а не в конце.",
+        title: "Scope до кода",
+        text: "Фиксируем пользователей, критические сценарии, ограничения и границы релиза до того, как разработка начинает создавать sunk cost.",
       },
       {
-        title: "Ясность",
-        text: "Фиксируем объём, сроки и границы до старта. Понятно, что входит в работу и что остаётся на следующий этап.",
+        title: "Production-first",
+        text: "Думаем о данных, ролях, failure modes, миграциях, деплое и поддержке раньше, чем система становится сложной в эксплуатации.",
       },
       {
-        title: "Ответственность",
-        text: "Отвечаем за результат: сценарии заявок, статусы и ключевые пути пользователя проверяем до релиза.",
+        title: "Проверяемые итерации",
+        text: "Двигаемся небольшими релизами, где можно проверить продуктовую логику и технические решения до следующего слоя сложности.",
       },
       {
-        title: "Прозрачность",
-        text: "Передаём код и доступы. Конфиденциальность и контроль над системой остаются у вас.",
+        title: "Контроль у клиента",
+        text: "Передаём исходники и доступы. Архитектура и инфраструктура не должны удерживать клиента искусственным vendor lock-in.",
       },
     ],
   },
   why: {
     title: "Почему TIVONIX",
-    text: "Мы соединяем продукт, интеграции и запуск — чтобы вы росли, а не тонули в спорах «где заявка».",
-    cta: "Обсудить задачу",
+    text: "Мы полезны там, где недостаточно просто сверстать интерфейс — нужно понять продукт, спроектировать систему и отвечать за то, как она работает после релиза.",
+    cta: "Разобрать задачу",
     items: [
       {
         key: "experience",
-        title: "Опыт",
-        text: "Делаем живые проекты: от лендинга с Telegram до fintech и маркетплейсов с кабинетами и оплатой.",
+        title: "Реальные продуктовые контуры",
+        text: "В портфолио есть fintech, marketplaces, кабинеты, operator/admin systems, Telegram Mini Apps, платежи, роли и интеграции — не только marketing pages.",
       },
       {
         key: "expertise",
-        title: "Экспертиза",
-        text: "Умеем упрощать сложное: маршруты заявок, роли, статусы, интеграции — без лишней архитектуры.",
+        title: "Product + engineering в одном контексте",
+        text: "UX, data model, permissions, integrations и delivery decisions принимаются вместе, а не передаются по цепочке между несвязанными подрядчиками.",
       },
       {
         key: "innovation",
-        title: "Технологии",
-        text: "Современный стек, AI там, где он экономит время, и автоматизация рутины вокруг клиента.",
+        title: "AI без декоративного слоя",
+        text: "Используем AI и automation только там, где можно показать конкретный workflow, контроль качества и бизнес-пользу.",
       },
       {
         key: "team",
-        title: "Команда",
-        text: "Дизайн, разработка, QA и запуск в одной связке. Состав под задачу — без безликой «студии на аутсорсе».",
+        title: "Founder-led ownership",
+        text: "Критические решения не уходят в безликий delivery layer. За product scope и техническую связность отвечает senior owner.",
       },
     ],
   },
   people: {
-    title: "Это мы",
-    text: "Роли, которые реально закрывают проект — от идеи до продакшена.",
+    title: "Как устроен delivery",
+    text: "Не публикуем декоративный список команды. Есть подтверждённый founder-led owner, а необходимые функции подключаются под фактический scope проекта.",
     members: [
-      { id: "danila", initials: "ДТ", name: "Данила Т.", role: "Архитектура и full-stack" },
-      { id: "anna", initials: "АК", name: "Анна К.", role: "UI/UX дизайн" },
-      { id: "maxim", initials: "МС", name: "Максим С.", role: "Frontend" },
-      { id: "igor", initials: "ИВ", name: "Игорь В.", role: "Backend" },
-      { id: "elena", initials: "ЕН", name: "Елена Н.", role: "QA и тестирование" },
-      { id: "roman", initials: "РП", name: "Роман П.", role: "Проджект-менеджмент" },
+      { id: "danila", initials: "ДТ", name: "Данила Титовец", role: "Founder · Product architecture · Full-stack" },
+      { id: "product", initials: "01", name: "Product & UX", role: "Flows · interfaces · design system" },
+      { id: "frontend", initials: "02", name: "Frontend engineering", role: "Web · responsive · performance" },
+      { id: "backend", initials: "03", name: "Backend & data", role: "API · data model · integrations" },
+      { id: "quality", initials: "04", name: "Quality & release", role: "QA · tests · deployment checks" },
+      { id: "operations", initials: "05", name: "Production support", role: "Observability · incidents · handover" },
     ],
   },
-  join: {
-    cta: "Начать разговор",
-  },
+  join: { cta: "Обсудить продукт" },
 } as const;
 
 const COPY_EN = {
   seo: {
-    title: "About — TIVONIX",
+    title: "About TIVONIX — founder-led product engineering company",
     description:
-      "TIVONIX is a product team: sites, lead flows, portals and automation. Why we started, our mission, values and how we work.",
+      "TIVONIX designs and builds SaaS, fintech, marketplaces and business systems — from product scope and architecture to production and handover.",
   },
   hero: {
-    title: "Systems where leads don’t get lost",
-    titleLines: ["Systems", "where leads", "don’t get", "lost"],
-    cta: "Discuss your task",
+    title: "Engineering ownership from idea to production",
+    titleLines: ["From idea", "to production", "with one", "owner"],
+    cta: "Discuss your product",
   },
   story: {
     paragraphs: [
-      "The form on the site works. Then chaos often starts: inbox noise, status in someone’s head, Excel by hand, and nobody knows who took the lead. That’s the pain TIVONIX grew from. Not a pitch deck.",
-      "We kept building chains from site to Telegram, CRM and portal for real businesses. We saw where things break. So we don’t ship a pretty page for the checkbox. We ship a system that works.",
-      "Today we launch lead pages, mini-CRM, client portals and MVPs. Clear scope, clear timelines, clear ownership of the result. We assemble the right people for the job, show progress as we go, and hand over code and access. The system lives with you, not in someone else’s account.",
+      "TIVONIX did not grow from a “we build websites” model. In serious products, the interface is only the visible layer. Behind it are roles and permissions, data, integrations, payments, operational workflows, failure modes and production constraints.",
+      "That is why we do not start with a screen count. We first frame the users, the critical workflow, the first-release boundary and the technical risks. UX and architecture are then designed as one system and carried through to a working production release.",
+      "Critical product and engineering decisions remain founder-led. The functions required by the actual scope are brought in around that ownership. The client receives production code, source, access and a system that can be maintained without artificial vendor lock-in.",
     ],
   },
   mission: {
-    label: "Mission",
-    title: "Automate the busywork around the customer",
-    text: "We help teams stop manually moving leads and losing context — so people sell and build product instead of hunting “who took that lead”.",
+    label: "Principle",
+    title: "Build a system, not a collection of screens",
+    text: "The customer product, operations, data and integrations need to work as one contour. We design the connections before they become production problems.",
   },
   vision: {
-    label: "Vision",
-    title: "A clear digital loop at any scale",
-    text: "From local business to a web product: one path from first touch to a status in the system. No vanity scope — only what moves money and response speed.",
+    label: "Focus",
+    title: "Complex software should stay operable",
+    text: "Our job is to reduce uncertainty, choose a sensible first-release boundary and make decisions that do not need to be thrown away immediately after launch.",
   },
   values: {
-    label: "Values",
-    title: "Speed, clarity, accountability",
-    text: "How we work on every project — from the first message to handing over access.",
+    label: "How we work",
+    title: "Ownership, clarity and engineering discipline",
+    text: "Not abstract values. These are the rules behind product and engineering decisions.",
     items: [
-      {
-        title: "Speed",
-        text: "Fast kickoff and short iterations: you see intermediate progress in the first weeks, not only at the end.",
-      },
-      {
-        title: "Clarity",
-        text: "We lock scope, timeline and boundaries before start. What’s in and what’s next is explicit.",
-      },
-      {
-        title: "Accountability",
-        text: "We own the outcome: lead flows, statuses and key user paths are checked before release.",
-      },
-      {
-        title: "Transparency",
-        text: "We hand over code and access. Privacy and control of the system stay with you.",
-      },
+      { title: "Scope before code", text: "We define users, critical flows, constraints and release boundaries before implementation creates expensive sunk cost." },
+      { title: "Production-first", text: "Data, roles, failure modes, migrations, deployment and support are considered before the system becomes difficult to operate." },
+      { title: "Reviewable increments", text: "We ship in small enough slices to validate product logic and technical decisions before adding the next layer of complexity." },
+      { title: "Client control", text: "Source and access are handed over. Architecture and infrastructure should not create artificial vendor lock-in." },
     ],
   },
   why: {
     title: "Why TIVONIX",
-    text: "We connect product, integrations and launch — so you grow instead of arguing “where is the lead”.",
-    cta: "Discuss your task",
+    text: "We are most useful when implementing screens is not enough — the product has to be understood, the system designed and its production behavior owned.",
+    cta: "Review your problem",
     items: [
-      {
-        key: "experience",
-        title: "Experience",
-        text: "Live projects from Telegram lead capture to fintech and marketplaces with portals and payments.",
-      },
-      {
-        key: "expertise",
-        title: "Expertise",
-        text: "We simplify the hard parts: routing, roles, statuses, integrations — without overbuilt architecture.",
-      },
-      {
-        key: "innovation",
-        title: "Technology",
-        text: "Modern stack, AI where it saves time, and automation around the customer journey.",
-      },
-      {
-        key: "team",
-        title: "Team",
-        text: "Design, engineering, QA and launch together. The right mix for the task — not a faceless outsourcing shop.",
-      },
+      { key: "experience", title: "Real product systems", text: "The portfolio includes fintech, marketplaces, portals, operator/admin systems, Telegram Mini Apps, payments, roles and integrations — not only marketing pages." },
+      { key: "expertise", title: "Product + engineering in one context", text: "UX, data models, permissions, integrations and delivery decisions are made together rather than handed across disconnected vendors." },
+      { key: "innovation", title: "AI without theatre", text: "We use AI and automation only where a concrete workflow, quality-control model and business value can be explained." },
+      { key: "team", title: "Founder-led ownership", text: "Critical decisions do not disappear into a faceless delivery layer. A senior owner stays responsible for product scope and technical coherence." },
     ],
   },
   people: {
-    title: "This is us",
-    text: "Roles that actually ship the project — from idea to production.",
+    title: "How delivery is structured",
+    text: "We do not publish a decorative team roster. There is a verified founder-led owner, and the functions required by the actual project scope are added around that responsibility.",
     members: [
-      { id: "danila", initials: "DT", name: "Danila T.", role: "Architecture & full-stack" },
-      { id: "anna", initials: "AK", name: "Anna K.", role: "UI/UX design" },
-      { id: "maxim", initials: "MS", name: "Maxim S.", role: "Frontend" },
-      { id: "igor", initials: "IV", name: "Igor V.", role: "Backend" },
-      { id: "elena", initials: "EN", name: "Elena N.", role: "QA & testing" },
-      { id: "roman", initials: "RP", name: "Roman P.", role: "Project management" },
+      { id: "danila", initials: "DT", name: "Danila Titovets", role: "Founder · Product architecture · Full-stack" },
+      { id: "product", initials: "01", name: "Product & UX", role: "Flows · interfaces · design system" },
+      { id: "frontend", initials: "02", name: "Frontend engineering", role: "Web · responsive · performance" },
+      { id: "backend", initials: "03", name: "Backend & data", role: "API · data model · integrations" },
+      { id: "quality", initials: "04", name: "Quality & release", role: "QA · tests · deployment checks" },
+      { id: "operations", initials: "05", name: "Production support", role: "Observability · incidents · handover" },
     ],
   },
-  join: {
-    cta: "Start the conversation",
-  },
+  join: { cta: "Discuss your product" },
 } as const;
 
 const COPY_ZH = {
   seo: {
-    title: "关于我们 — TIVONIX",
+    title: "关于 TIVONIX — Founder-led Product Engineering",
     description:
-      "TIVONIX 是白俄罗斯产品团队：网站、线索流程、客户后台与自动化。我们如何起步、使命、价值观，以及为何客户选择与我们合作。",
+      "TIVONIX 从产品范围和架构开始，设计并开发 SaaS、金融科技、Marketplace 与业务系统，直到 production 上线与交接。",
   },
   hero: {
-    title: "线索不再丢失的业务系统",
-    titleLines: ["让线索", "不再", "流失的", "系统"],
-    cta: "沟通您的需求",
+    title: "从产品想法到 production 的工程责任",
+    titleLines: ["从产品想法", "到 production", "由一个", "owner 负责"],
+    cta: "讨论您的产品",
   },
   story: {
     paragraphs: [
-      "网站上有表单，但接下来往往是混乱：邮件堆在收件箱、状态只在某个人脑子里、Excel 手工维护，谁也不知道谁接了这条线索。TIVONIX 正是从这种痛点成长起来的——不是从路演 PPT。",
-      "我们为真实业务搭建过从网站到 Telegram、CRM 与客户后台的链路，清楚哪里会断。所以我们不做「好看就交差」的页面，而是交付能跑通的系统。",
-      "如今我们交付获客落地页、mini-CRM、客户后台与 MVP。范围清晰、周期清晰、结果可追责。按任务组队、过程可见，并移交代码与权限。系统留在您这边，而不是锁在别人的账号里。",
+      "TIVONIX 不是从“做网站”的模式成长起来的。对于真正的软件产品，界面只是可见的一层；背后还有权限、数据、集成、支付、运营流程、失败场景与 production 约束。",
+      "因此我们不会从页面数量开始。先明确用户、关键 workflow、第一版边界与技术风险，再把 UX 与架构作为同一套系统设计，并推进到可运行的 production release。",
+      "关键的产品与工程决策保持 founder-led。根据实际 scope 配置所需职能。客户最终获得 production code、源码、访问权限，以及不依赖人为 vendor lock-in 的可维护系统。",
     ],
   },
   mission: {
-    label: "使命",
-    title: "自动化围绕客户的琐碎工作",
-    text: "帮助团队停止手工搬线索、丢失上下文——让人去成交与打磨产品，而不是天天找「谁接了那条线索」。",
+    label: "原则",
+    title: "构建系统，而不是堆叠页面",
+    text: "客户产品、运营、数据与集成需要形成一个整体。我们在它们变成 production 问题之前设计好连接关系。",
   },
   vision: {
-    label: "愿景",
-    title: "任意规模下清晰的数字化闭环",
-    text: "从本地生意到 Web 产品：从第一次触达到系统中的状态，一条路径走通。不做虚荣功能——只做推动成交与响应速度的部分。",
+    label: "重点",
+    title: "复杂软件也必须保持可运营",
+    text: "我们的任务是降低不确定性，选择合理的第一版边界，并避免上线后马上推翻关键技术决策。",
   },
   values: {
-    label: "价值观",
-    title: "速度、清晰、可追责",
-    text: "每个项目都这样推进——从第一条消息到移交权限。",
+    label: "工作方式",
+    title: "Ownership、清晰与工程纪律",
+    text: "这不是抽象口号，而是项目中做决定的规则。",
     items: [
-      {
-        title: "速度",
-        text: "快速启动、短迭代：前几周就能看到中间成果，而不是只在结尾才见结果。",
-      },
-      {
-        title: "清晰",
-        text: "开工前锁定范围、周期与边界。哪些在内、哪些留到下一阶段，写清楚。",
-      },
-      {
-        title: "可追责",
-        text: "对结果负责：线索流程、状态与关键用户路径在上线前完成校验。",
-      },
-      {
-        title: "透明",
-        text: "移交代码与权限。隐私与系统控制权留在您手中。",
-      },
+      { title: "先定 scope", text: "先明确用户、关键流程、约束与发布边界，再进入会产生 sunk cost 的实现阶段。" },
+      { title: "Production-first", text: "在系统变复杂之前考虑数据、权限、failure modes、迁移、部署与支持。" },
+      { title: "可验证迭代", text: "用足够小的 release 验证产品逻辑和技术决策，再增加下一层复杂度。" },
+      { title: "客户掌控", text: "移交源码与访问权限，架构和基础设施不应制造人为 vendor lock-in。" },
     ],
   },
   why: {
     title: "为什么选择 TIVONIX",
-    text: "我们把产品、集成与上线连成一体——让您专注增长，而不是争论「线索去哪了」。",
-    cta: "沟通您的需求",
+    text: "当项目不只是实现界面，而是需要理解产品、设计系统并对 production 行为负责时，我们的价值最明显。",
+    cta: "梳理您的需求",
     items: [
-      {
-        key: "experience",
-        title: "经验",
-        text: "从 Telegram 获客到金融科技与带后台/支付的市场平台——都是已上线项目。",
-      },
-      {
-        key: "expertise",
-        title: "专长",
-        text: "把难点做简单：路由、角色、状态、集成——不做过度架构。",
-      },
-      {
-        key: "innovation",
-        title: "技术",
-        text: "现代技术栈，在真正省时间的地方用 AI，并自动化客户旅程中的琐事。",
-      },
-      {
-        key: "team",
-        title: "团队",
-        text: "设计、工程、QA 与上线一体协作。按任务组队——不是无名外包作坊。",
-      },
+      { key: "experience", title: "真实产品系统", text: "项目覆盖 fintech、marketplace、portal、operator/admin system、Telegram Mini App、支付、权限与集成。" },
+      { key: "expertise", title: "Product + engineering 同一上下文", text: "UX、数据模型、权限、集成与交付决策一起完成，而不是在不同供应商之间反复 handoff。" },
+      { key: "innovation", title: "不做 AI 表演", text: "只有在能说明具体 workflow、质量控制和业务价值时才使用 AI 与 automation。" },
+      { key: "team", title: "Founder-led ownership", text: "关键决策不会消失在匿名 delivery layer 中，senior owner 持续负责 scope 与技术一致性。" },
     ],
   },
   people: {
-    title: "我们是谁",
-    text: "真正把项目从想法推到生产的角色。",
+    title: "Delivery 如何组织",
+    text: "我们不发布装饰性的团队名单。由可确认的 founder-led owner 负责核心决策，再按真实 scope 配置所需职能。",
     members: [
-      { id: "danila", initials: "DT", name: "Danila T.", role: "架构与全栈" },
-      { id: "anna", initials: "AK", name: "Anna K.", role: "UI/UX 设计" },
-      { id: "maxim", initials: "MS", name: "Maxim S.", role: "前端" },
-      { id: "igor", initials: "IV", name: "Igor V.", role: "后端" },
-      { id: "elena", initials: "EN", name: "Elena N.", role: "QA 与测试" },
-      { id: "roman", initials: "RP", name: "Roman P.", role: "项目管理" },
+      { id: "danila", initials: "DT", name: "Danila Titovets", role: "Founder · Product architecture · Full-stack" },
+      { id: "product", initials: "01", name: "Product & UX", role: "Flows · interfaces · design system" },
+      { id: "frontend", initials: "02", name: "Frontend engineering", role: "Web · responsive · performance" },
+      { id: "backend", initials: "03", name: "Backend & data", role: "API · data model · integrations" },
+      { id: "quality", initials: "04", name: "Quality & release", role: "QA · tests · deployment checks" },
+      { id: "operations", initials: "05", name: "Production support", role: "Observability · incidents · handover" },
     ],
   },
-  join: {
-    cta: "开始沟通",
-  },
+  join: { cta: "讨论您的产品" },
 } as const;
 
 export function aboutCopy(lang: Lang) {
   if (lang === "zh") return COPY_ZH;
-  return lang === "en" ? COPY_EN : COPY_RU;
-}
-
-export function aboutPath(lang: Lang) {
-  if (lang === "en") return "/en/about";
-  if (lang === "zh") return "/zh/about";
-  return "/about";
+  return lang === "ru" ? COPY_RU : COPY_EN;
 }
