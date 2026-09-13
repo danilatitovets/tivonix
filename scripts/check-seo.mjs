@@ -100,7 +100,16 @@ const checks = [
   },
   {
     file: "dist/projects/index.html",
-    phrases: ["Проекты", "Neo Terminal", "Slotty", "Spliton", "Headmind", "LOGOVO"],
+    phrases: [
+      "Проекты TIVONIX — SaaS, FinTech, marketplaces и бизнес-системы",
+      "Продукты и системы",
+      "Product proof",
+      "Neo Terminal",
+      "Slotty",
+      "Spliton",
+      "Headmind",
+      "LOGOVO",
+    ],
   },
   {
     file: "dist/projects/neo-terminal/index.html",
