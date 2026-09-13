@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { Link } from "react-router-dom";
 import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
-import { landingCopy } from "../../i18n/landingCopy";
+import { homePositioningCopy } from "../../i18n/homePositioningCopy";
 import { HERO_SCROLL_HEADLINE_CLASS, LANDING_SHELL_CLASS } from "../../lib/landingLayout";
 import { isTelegramWebView } from "../../lib/telegramWebView";
 import { getStableViewportHeight } from "../../lib/stableViewport";
@@ -61,10 +61,25 @@ function textOpacities(progress: number): [number, number, number] {
 
 function useHeroScrollProgress(trackRef: React.RefObject<HTMLElement | null>) {
   const [progress, setProgress] = useState(0);
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReducedMotion(media.matches);
+    sync();
+    media.addEventListener?.("change", sync);
+    return () => media.removeEventListener?.("change", sync);
+  }, []);
 
   useEffect(() => {
     const el = trackRef.current;
     if (!el || typeof window === "undefined") return;
+
+    if (reducedMotion) {
+      setProgress(1);
+      return;
+    }
 
     let raf = 0;
     let trackTop = 0;
@@ -104,9 +119,9 @@ function useHeroScrollProgress(trackRef: React.RefObject<HTMLElement | null>) {
       window.removeEventListener("resize", onResize);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [trackRef]);
+  }, [trackRef, reducedMotion]);
 
-  return progress;
+  return { progress, reducedMotion };
 }
 
 function HeroHeadline({
@@ -192,7 +207,7 @@ function HeroCard({
                   aria-hidden={i !== activeStage}
                 >
                   <HeroHeadline stage={stage} as={i === 0 ? "h1" : "h2"} />
-                  <p className="pointer-events-none mt-4 max-w-[38rem] px-2 text-[14px] font-medium leading-[1.55] text-white/72 sm:mt-5 sm:text-[15px]">
+                  <p className="pointer-events-none mt-4 max-w-[42rem] px-2 text-[14px] font-medium leading-[1.55] text-white/72 sm:mt-5 sm:text-[15px]">
                     {stage.lead}
                   </p>
                 </div>
@@ -217,7 +232,7 @@ function HeroCard({
             >
               {ctaSecondary}
             </Link>
-            <p className="max-w-[34rem] text-center text-[11px] font-medium leading-snug text-white/45 sm:text-[12px]">
+            <p className="max-w-[36rem] text-center text-[11px] font-medium leading-snug text-white/45 sm:text-[12px]">
               {micro}
             </p>
           </div>
@@ -229,9 +244,9 @@ function HeroCard({
 
 export default function Hero() {
   const trackRef = useRef<HTMLDivElement>(null);
-  const progress = useHeroScrollProgress(trackRef);
+  const { progress, reducedMotion } = useHeroScrollProgress(trackRef);
   const { lang } = useLang();
-  const copy = landingCopy(lang);
+  const copy = homePositioningCopy(lang);
   const stages = copy.hero.scrollStages as ReadonlyArray<HeroScrollStage>;
   const [tgWebView, setTgWebView] = useState(false);
 
@@ -246,7 +261,7 @@ export default function Hero() {
     micro: copy.hero.micro,
   };
 
-  if (tgWebView) {
+  if (tgWebView || reducedMotion) {
     return (
       <Section
         className={cx(
@@ -262,7 +277,7 @@ export default function Hero() {
             "lg:px-4 lg:pt-3 lg:pb-3"
           )}
         >
-          <HeroCard progress={1} {...cardProps} />
+          <HeroCard progress={reducedMotion ? 0 : 1} {...cardProps} />
         </div>
       </Section>
     );
