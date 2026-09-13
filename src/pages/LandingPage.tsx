@@ -15,13 +15,14 @@ import FinalCTASection from "../components/landing/FinalCTASection";
 import Footer from "../components/landing/Footer";
 import { SEO } from "../components/SEO";
 import { buildHomePageSchema } from "../lib/schema";
-import { homePageSeoFromDict, useLang } from "../i18n/LangProvider";
+import { useLang } from "../i18n/LangProvider";
+import { homePositioningCopy } from "../i18n/homePositioningCopy";
 import { useLocation } from "react-router-dom";
 
 export default function LandingPage() {
-  const { dict, lang } = useLang();
+  const { lang } = useLang();
   const { pathname } = useLocation();
-  const seo = homePageSeoFromDict(dict);
+  const seo = homePositioningCopy(lang).seo;
   const canonicalPath =
     pathname === "/zh" || pathname.startsWith("/zh/")
       ? "/zh"
