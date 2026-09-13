@@ -1,0 +1,119 @@
+name: Evolution quality
+
+on:
+  push:
+    branches:
+      - "audit/evolution-2026-09-14"
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: evolution-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm run test
+
+      - name: Production build + prerender + SEO checks
+        run: npm run build
+
+      - name: Lint changed TypeScript
+        shell: bash
+        run: |
+          git fetch origin main --depth=1
+          mapfile -t files < <(git diff --name-only origin/main...HEAD -- '*.ts' '*.tsx')
+          if (( ${#files[@]} == 0 )); then
+            echo "No changed TypeScript files"
+            exit 0
+          fi
+          printf 'Linting changed files:\n%s\n' "${files[*]}"
+          npx eslint "${files[@]}"
+
+      - name: Full legacy lint diagnostic
+        continue-on-error: true
+        run: npm run lint
+
+  browser-smoke:
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Production build
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start prerender preview
+        run: |
+          npm run preview > /tmp/tivonix-preview.log 2>&1 &
+          echo $! > /tmp/tivonix-preview.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4174/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/tivonix-preview.log
+          exit 1
+
+      - name: Hydration verification
+        env:
+          PREVIEW_URL: http://127.0.0.1:4174
+        run: npm run verify:hydration
+
+      - name: Responsive route smoke
+        env:
+          SMOKE_BASE_URL: http://127.0.0.1:4174
+        run: node scripts/smoke-responsive.mjs
+
+      - name: Upload responsive screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: responsive-smoke-${{ github.sha }}
+          path: artifacts/responsive-smoke
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Preview log
+        if: failure()
+        run: cat /tmp/tivonix-preview.log || true
