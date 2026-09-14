@@ -81,7 +81,7 @@ const COPY: Record<ServicePageId, Record<"ru" | "en", ServicePageCopy>> = {
         title: "Подтверждённые кейсы",
         items: [
           { name: "LOGOVO", href: "/projects/logovo" },
-          { name: "Headmind", href: "/projects/headmind" },
+          { name: "TIVONIX Panel", href: "/projects/tivonixpanel" },
         ],
       },
       pricing: {
@@ -123,7 +123,7 @@ const COPY: Record<ServicePageId, Record<"ru" | "en", ServicePageCopy>> = {
         title: "Verified case studies",
         items: [
           { name: "LOGOVO", href: "/en/projects/logovo" },
-          { name: "Headmind", href: "/en/projects/headmind" },
+          { name: "TIVONIX Panel", href: "/en/projects/tivonixpanel" },
         ],
       },
       pricing: {
@@ -240,7 +240,7 @@ const COPY: Record<ServicePageId, Record<"ru" | "en", ServicePageCopy>> = {
           "Запуск и инструкция",
         ],
       },
-      cases: { title: "Кейсы", items: [{ name: "Headmind", href: "/projects/headmind" }] },
+      cases: { title: "Кейсы", items: [{ name: "TIVONIX Panel", href: "/projects/tivonixpanel" }] },
       pricing: {
         title: "Стоимость",
         body: "Growth от $900 для системы заявок. Сложная логика — индивидуальная оценка после письменного разбора.",
@@ -271,7 +271,7 @@ const COPY: Record<ServicePageId, Record<"ru" | "en", ServicePageCopy>> = {
           "Launch and handover guide",
         ],
       },
-      cases: { title: "Cases", items: [{ name: "Headmind", href: "/en/projects/headmind" }] },
+      cases: { title: "Cases", items: [{ name: "TIVONIX Panel", href: "/en/projects/tivonixpanel" }] },
       pricing: {
         title: "Pricing",
         body: "Growth from $900 for a lead system. Complex logic — Custom after written scope review.",
@@ -298,7 +298,7 @@ const COPY: Record<ServicePageId, Record<"ru" | "en", ServicePageCopy>> = {
         title: "Этапы",
         steps: ["Бриф по процессу", "Модель статусов", "Интерфейс и разработка", "Интеграции", "Обучение команды"],
       },
-      cases: { title: "Кейсы", items: [{ name: "Headmind", href: "/projects/headmind" }] },
+      cases: { title: "Кейсы", items: [{ name: "TIVONIX Panel", href: "/projects/tivonixpanel" }] },
       pricing: { title: "Стоимость", body: "Growth от $900. Большая CRM с множеством ролей — индивидуально." },
       faq: [{ q: "Это замена amoCRM?", a: "Нет. Это лёгкая система под ваш маршрут. Интеграции с внешними CRM — по задаче." }],
       cta: "Получить письменную оценку",
@@ -315,7 +315,7 @@ const COPY: Record<ServicePageId, Record<"ru" | "en", ServicePageCopy>> = {
         title: "Process",
         steps: ["Process brief", "Status model", "UI and build", "Integrations", "Team onboarding"],
       },
-      cases: { title: "Cases", items: [{ name: "Headmind", href: "/en/projects/headmind" }] },
+      cases: { title: "Cases", items: [{ name: "TIVONIX Panel", href: "/en/projects/tivonixpanel" }] },
       pricing: { title: "Pricing", body: "Growth from $900. Large multi-role CRM — Custom." },
       faq: [{ q: "Is this a HubSpot replacement?", a: "No. A lightweight system for your workflow. External CRM integrations on request." }],
       cta: "Get a written scope & estimate",

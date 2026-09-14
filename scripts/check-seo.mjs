@@ -17,7 +17,7 @@ const requiredHtmlFiles = [
   "dist/projects/neo-terminal/index.html",
   "dist/projects/slotty/index.html",
   "dist/projects/spliton/index.html",
-  "dist/projects/headmind/index.html",
+  "dist/projects/tivonixpanel/index.html",
   "dist/projects/logovo/index.html",
   "dist/en/projects/neo-terminal/index.html",
 ];
@@ -99,7 +99,7 @@ const checks = [
   },
   {
     file: "dist/projects/index.html",
-    phrases: ["Работающие продукты", "Neo Terminal", "Slotty", "Spliton", "Headmind", "LOGOVO"],
+    phrases: ["Работающие продукты", "Neo Terminal", "Slotty", "Spliton", "Tivonix Panel", "LOGOVO"],
   },
   {
     file: "dist/projects/neo-terminal/index.html",
@@ -138,12 +138,12 @@ const checks = [
     ],
   },
   {
-    file: "dist/projects/headmind/index.html",
+    file: "dist/projects/tivonixpanel/index.html",
     phrases: [
-      "Headmind",
-      "WordPress",
-      "https://www.tivonix.tech/projects/headmind",
-      "headmind.ru",
+      "Tivonix Panel",
+      "Партнёрская панель",
+      "https://www.tivonix.tech/projects/tivonixpanel",
+      "tivonixpanel.of.by",
     ],
   },
   {

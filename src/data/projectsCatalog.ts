@@ -55,7 +55,7 @@ export const PUBLIC_PROJECT_IDS = [
   "neo-terminal",
   "spliton",
   "slotty",
-  "headmind",
+  "tivonixpanel",
   "logovo",
 ] as const;
 

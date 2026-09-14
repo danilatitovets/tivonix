@@ -32,12 +32,6 @@ export const PARTNERS_SHOWCASE_CASES: PartnersShowcaseCase[] = [
     cover: "/images/project-priew/logovo.webp",
   },
   {
-    id: "headmind",
-    title: "Headmind",
-    tags: ["Website", "B2B", "WordPress"],
-    cover: "/images/project-priew/headmind.webp",
-  },
-  {
     id: "tivonixpanel",
     title: "TIVONIX Panel",
     tags: ["SaaS", "Partners", "Dashboard"],
