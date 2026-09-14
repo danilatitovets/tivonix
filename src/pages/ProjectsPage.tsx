@@ -173,19 +173,19 @@ export default function ProjectsPage() {
   }, [projects, activeFilter]);
 
   const seoTitle = isRu
-    ? "Product proof TIVONIX — SaaS, FinTech, marketplaces и internal systems"
+    ? "Работающие продукты TIVONIX — SaaS, финтех, маркетплейсы и внутренние системы"
     : lang === "zh"
       ? "TIVONIX Product Proof — SaaS、金融科技、市场平台与内部系统"
       : "TIVONIX product proof — SaaS, FinTech, marketplaces and internal systems";
   const seoDescription = isRu
-    ? "Реальные продукты TIVONIX: AI commerce, FinTech, marketplace booking, админки, платежи, Telegram Mini Apps, backend, интеграции и production."
+    ? "Реальные продукты TIVONIX: AI-коммерция, финтех, маркетплейсы с записью, админки, платежи, мини-приложения в Телеграме, серверная часть, интеграции и запуск."
     : lang === "zh"
       ? "TIVONIX 已上线产品证明：AI commerce、金融科技、预约市场平台、管理端、支付、Telegram Mini Apps、后端与集成。"
       : "Real TIVONIX product proof: AI commerce, FinTech, booking marketplace, admin panels, payments, Telegram Mini Apps, backend, integrations and production.";
 
-  const heroTitle = isRu ? "Product proof" : lang === "zh" ? "Product proof" : "Product proof";
+  const heroTitle = isRu ? "Работающие продукты" : lang === "zh" ? "Product proof" : "Product proof";
   const heroSubtitle = isRu
-    ? "Не портфолио картинок, а рабочие системы: роли, workflow, backend, интеграции и production-ответственность."
+    ? "Не портфолио картинок, а рабочие системы: роли, процессы, серверная часть, интеграции и ответственность за запуск."
     : lang === "zh"
       ? "不是图片作品集，而是可运行系统：角色、流程、后端、集成与 production 责任。"
       : "Not a gallery of screenshots: working systems with roles, workflows, backend, integrations and production ownership.";

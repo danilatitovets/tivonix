@@ -98,7 +98,7 @@ const FAQ_ITEMS: FaqItem[] = [
       zh: "可以在现有项目上继续吗？",
     },
     a: {
-      ru: "Да. Можем доработать сайт, подключить Telegram, CRM, статусы, кабинет или автоматизацию к уже запущенному продукту.",
+      ru: "Да. Можем доработать сайт, подключить Телеграм, CRM, статусы, кабинет или автоматизацию к уже запущенному продукту.",
       en: "Yes. We can extend a site, connect Telegram, CRM, statuses, a portal or automation to a product already live.",
       zh: "可以。我们能在已上线产品上扩展网站、对接 Telegram、CRM、状态、客户后台或自动化。",
     },

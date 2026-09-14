@@ -26,7 +26,7 @@ export const PLAN_CATALOG: Record<PlanLeadId, PlanCatalogEntry> = {
     id: "start",
     name: "Start",
     tagline: {
-      ru: "Лендинг + заявки + Telegram",
+      ru: "Лендинг + заявки + Телеграм",
       en: "Landing page + leads + Telegram",
       zh: "落地页 + 线索 + Telegram",
     },
@@ -38,7 +38,7 @@ export const PLAN_CATALOG: Record<PlanLeadId, PlanCatalogEntry> = {
     id: "growth",
     name: "Growth",
     tagline: {
-      ru: "Система заявок + Telegram + мини-CRM",
+      ru: "Система заявок + Телеграм + мини-CRM",
       en: "Lead system + Telegram + mini-CRM",
       zh: "线索系统 + Telegram + 迷你 CRM",
     },

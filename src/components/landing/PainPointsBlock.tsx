@@ -21,7 +21,7 @@ type PainPointsBlockProps = {
 const defaultPainPoints: PainPointItem[] = [
   {
     title: "Заявки теряются между каналами",
-    text: "Клиенты пишут в Telegram, WhatsApp, почту и формы, а команда не всегда видит всё вовремя.",
+    text: "Клиенты пишут в Телеграм, WhatsApp, почту и формы, а команда не всегда видит всё вовремя.",
     image: "1.webp",
   },
   {

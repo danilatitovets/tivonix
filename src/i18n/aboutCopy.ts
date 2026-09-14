@@ -4,24 +4,24 @@ const COPY_RU = {
   seo: {
     title: "О компании — TIVONIX",
     description:
-      "TIVONIX — founder-led product engineering company: SaaS, FinTech, marketplaces, internal platforms, AI automation и запуск production-систем.",
+      "TIVONIX — продуктовая инженерия под руководством основателя: SaaS, финтех, маркетплейсы, внутренние платформы, AI-автоматизация и запуск боевых систем.",
   },
   hero: {
-    title: "Founder-led product engineering",
-    titleLines: ["Founder-led", "product", "engineering"],
+    title: "Продуктовая инженерия от основателя",
+    titleLines: ["Продуктовая", "инженерия", "от основателя"],
     cta: "Обсудить продукт",
   },
   story: {
     paragraphs: [
-      "TIVONIX вырос из простой проблемы: бизнесу часто продают отдельные куски — дизайн, frontend, backend, бота, админку — а за рабочий результат между ними никто не отвечает.",
-      "Founder-led модель оставляет ownership в одном месте. Данила Титовец отвечает за product framing, архитектуру, разработку, интеграции, QA, запуск и передачу системы.",
-      "TIVONIX строит SaaS, fintech, marketplaces, CRM/ERP-like системы, client portals, Telegram products и AI automation. Сначала scope и риски, потом код. После запуска — исходники, доступы и понятный handover у клиента.",
+      "TIVONIX вырос из простой проблемы: бизнесу часто продают отдельные куски — дизайн, клиентскую часть, серверную часть, бота, админку — а за рабочий результат между ними никто не отвечает.",
+      "Работа под руководством основателя оставляет ответственность в одном месте. Данила Титовец отвечает за формулировку продукта, архитектуру, разработку, интеграции, тестирование, запуск и передачу системы.",
+      "TIVONIX строит SaaS, финтех, маркетплейсы, системы уровня CRM/ERP, кабинеты клиентов, продукты в Телеграме и AI-автоматизацию. Сначала объём и риски, потом код. После запуска исходники, доступы и понятная передача остаются у клиента.",
     ],
   },
   mission: {
     label: "Миссия",
-    title: "Запускать рабочие software systems",
-    text: "Помогаем компаниям превращать сложную задачу в понятный продукт: пользователи, роли, данные, integrations, production и handover в одном процессе.",
+    title: "Запускать системы, которые работают",
+    text: "Помогаем компаниям превращать сложную задачу в понятный продукт: пользователи, роли, данные, интеграции, запуск и передача в одном процессе.",
   },
   vision: {
     label: "Видение",
@@ -53,18 +53,18 @@ const COPY_RU = {
   },
   why: {
     title: "Почему TIVONIX",
-    text: "TIVONIX соединяет продукт, UX, backend, интеграции и release в один контур ответственности.",
+    text: "TIVONIX соединяет продукт, UX, серверную часть, интеграции и релиз в один контур ответственности.",
     cta: "Обсудить продукт",
     items: [
       {
         key: "experience",
         title: "Опыт",
-        text: "Делаем живые проекты: fintech, marketplaces, AI commerce, client portals, админки, платежи и Telegram Mini Apps.",
+        text: "Делаем живые проекты: финтех, маркетплейсы, AI-коммерция, кабинеты клиентов, админки, платежи и мини-приложения в Телеграме.",
       },
       {
         key: "expertise",
         title: "Экспертиза",
-        text: "Умеем упрощать сложное: роли, workflow, статусы, data model, интеграции и production-граничные случаи.",
+        text: "Умеем упрощать сложное: роли, процессы, статусы, модель данных, интеграции и крайние случаи при запуске.",
       },
       {
         key: "innovation",
@@ -73,21 +73,21 @@ const COPY_RU = {
       },
       {
         key: "team",
-        title: "Founder-led ownership",
-        text: "Решения по scope, architecture, release и handover не размазаны по безликой студии.",
+        title: "Ответственность основателя",
+        text: "Решения по объёму, архитектуре, релизу и передаче не размазаны по безликой студии.",
       },
     ],
   },
   people: {
-    title: "Как закрывается delivery",
-    text: "Реальная модель: Данила держит техническое ownership, а внутри проекта закрываются нужные функции delivery.",
+    title: "Как закрываются роли в проекте",
+    text: "Реальная модель: Данила держит техническую ответственность, а внутри проекта закрываются нужные роли.",
     members: [
-      { id: "product", initials: "PX", name: "Product & UX", role: "Фрейминг, сценарии, интерфейсы" },
-      { id: "frontend", initials: "FE", name: "Frontend", role: "React, states, responsive, performance" },
-      { id: "backend", initials: "BE", name: "Backend & data", role: "API, database, roles, integrations" },
-      { id: "quality", initials: "QA", name: "Quality", role: "Сценарии, формы, ошибки, accessibility" },
-      { id: "release", initials: "RL", name: "Release", role: "Deploy, env, SEO, handover" },
-      { id: "support", initials: "PS", name: "Support", role: "Запуск, гарантия, развитие" },
+      { id: "product", initials: "PX", name: "Продукт и UX", role: "Постановка, сценарии, интерфейсы" },
+      { id: "frontend", initials: "FE", name: "Клиентская часть", role: "React, состояния, адаптив, скорость" },
+      { id: "backend", initials: "BE", name: "Серверная часть и данные", role: "API, база, роли, интеграции" },
+      { id: "quality", initials: "QA", name: "Качество", role: "Сценарии, формы, ошибки, доступность" },
+      { id: "release", initials: "RL", name: "Релиз", role: "Развёртывание, окружения, SEO, передача" },
+      { id: "support", initials: "PS", name: "Поддержка", role: "Запуск, гарантия, развитие" },
     ],
   },
   join: {

@@ -462,8 +462,8 @@ export default function StartModal({ open, onClose, selectedPlanId = null }: Pro
         ? "Заполни пару полей — отвечу быстро."
         : "Fill a few fields — I’ll reply fast.",
       name: isRu ? "Имя" : "Name",
-      email: "Email",
-      telegram: isRu ? "Telegram / телефон" : "Telegram / phone",
+      email: isRu ? "Почта" : "Email",
+      telegram: isRu ? "Телеграм / телефон" : "Telegram / phone",
       company: isRu ? "Компания" : "Company",
       projectType: isRu ? "Тип проекта" : "Project type",
       budget: isRu ? "Бюджет" : "Budget",

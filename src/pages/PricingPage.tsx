@@ -20,13 +20,13 @@ export default function PricingPage() {
 
   const title =
     lang === "ru"
-      ? "Product Engineering и Launch Packages — TIVONIX"
+      ? "Разработка продукта и пакеты запуска — TIVONIX"
       : lang === "zh"
         ? "Product Engineering 与 Launch Packages — TIVONIX"
         : "Product Engineering and Launch Packages — TIVONIX";
   const description =
     lang === "ru"
-      ? "Сложные SaaS, FinTech, marketplaces и internal systems оцениваются после brief. Start, Growth и Product остаются launch-пакетами для ограниченного scope."
+      ? "Сложные SaaS, финтех, маркетплейсы и внутренние системы оцениваем после брифа. Start, Growth и Product остаются пакетами запуска для ограниченного объёма."
       : lang === "zh"
         ? "复杂 SaaS、金融科技、市场平台与内部系统在 brief 后评估。Start、Growth 与 Product 保留为有限范围的 launch packages。"
         : "Complex SaaS, FinTech, marketplaces and internal systems are scoped after a brief. Start, Growth and Product remain launch packages for bounded work.";

@@ -32,9 +32,9 @@ export const PROJECT_CASE_SYSTEM: Record<string, ProjectCaseSystem> = {
     storyRu:
       "Коммерция ломается, когда каталог говорит одно, склад — другое, клиент пишет в мессенджер, а менеджер вручную сшивает всё это вместе.\n\n" +
       "Neo Terminal собран вокруг другой модели: товарные данные, остатки, клиенты, диалоги, заказы и операции живут на **одном коммерческом слое**.\n\n" +
-      "Это не ещё одна витрина и не чат-бот, прикрученный к каталогу. Neo Terminal объединяет Merchant OS, клиентский Smart City, продажи с поддержкой AI, склад, B2B-закупки, омниканальные диалоги, checkout, доставку, аналитику и операционную автоматизацию в одном продукте.\n\n" +
-      "Система принимает коммерческие данные из YML, XLSX, CSV, CommerceML и коннекторов, нормализует их в одну товарную модель и отдаёт те же данные в поиск, AI-сценарии, склад и инструменты мерчанта.\n\n" +
-      "Платформа собрана так, чтобы закрывать полный путь: **каталог → discovery → диалог → решение → корзина → транзакция → фулфилмент → аналитика**.",
+      "Это не ещё одна витрина и не чат-бот, прикрученный к каталогу. Neo Terminal объединяет кабинет продавца, клиентский «умный город», продажи с поддержкой AI, склад, B2B-закупки, диалоги во всех каналах, оформление заказа, доставку, аналитику и операционную автоматизацию в одном продукте.\n\n" +
+      "Система принимает коммерческие данные из YML, XLSX, CSV, CommerceML и коннекторов, нормализует их в одну товарную модель и отдаёт те же данные в поиск, AI-сценарии, склад и инструменты продавца.\n\n" +
+      "Платформа собрана так, чтобы закрывать полный путь: **каталог → поиск → диалог → решение → корзина → оплата → доставка → аналитика**.",
     storyEn:
       "Commerce breaks when the catalog says one thing, the warehouse says another, a customer asks a question in a messenger, and the manager has to connect everything manually.\n\n" +
       "Neo Terminal was designed around a different model: product data, stock, customers, conversations, orders and operations live on **one commerce layer**.\n\n" +
@@ -115,7 +115,7 @@ export const PROJECT_CASE_SYSTEM: Record<string, ProjectCaseSystem> = {
     moodRu: "Партнёрский кабинет без хаоса в чатах",
     moodEn: "Partner cabinet without chat chaos",
     storyRu:
-      "Партнёрство сыпется не на оффере — на слепых зонах: где заявка, какой этап, когда выплата. Пока правда в Telegram и Excel — каждый день начинается с «напомни». Мы собрали кабинет, в который заходят сами: статусы, проекты и выплаты на тёмном canvas с одним оранжевым акцентом.",
+      "Партнёрство сыпется не на условиях — на слепых зонах: где заявка, какой этап, когда выплата. Пока правда живёт в Телеграме и Excel, каждый день начинается с «напомни». Мы собрали кабинет, в который заходят сами: статусы, проекты и выплаты на тёмном полотне с одним оранжевым акцентом.",
     storyEn:
       "Partnerships don’t die on the offer — they die on blind spots: where’s the request, what stage, when’s the payout. While truth lives in chats and spreadsheets, every day starts with “remind me”. We built a cabinet people actually open: statuses, projects and payouts on a dark canvas with one orange accent.",
     logo: "/images/project-logos/tivonixpanel.png",
@@ -178,7 +178,7 @@ export const PROJECT_CASE_SYSTEM: Record<string, ProjectCaseSystem> = {
     moodEn: "Music-share exchange — fintech platform",
     storyRu:
       "Музыкальные активы требуют прозрачных денежных сценариев: согласия, пополнения, покупка долей, вторичный рынок и вывод.\n\n" +
-      "Spliton — платформа с кабинетом инвестора, вторичным рынком, кошельком USDT, внутренним учётом операций, KYC, центром доверия и operator portal.\n\n" +
+      "Spliton — платформа с кабинетом инвестора, вторичным рынком, кошельком USDT, внутренним учётом операций, KYC, центром доверия и порталом оператора.\n\n" +
       "Интерфейс на **четырёх языках**: русский, английский, испанский, португальский. TIVONIX собрала продукт целиком и **продолжает сопровождение**. Acid lime `#b7f500` на чёрном фоне — как на spliton.io.",
     storyEn:
       "Music assets need transparent money flows: consents, deposits, share purchase, secondary market and withdrawal.\n\n" +
@@ -240,11 +240,11 @@ export const PROJECT_CASE_SYSTEM: Record<string, ProjectCaseSystem> = {
     ],
   },
   slotty: {
-    moodRu: "Маркетплейс записи — фильтры, карта, SaaS мастера",
+    moodRu: "Маркетплейс записи — фильтры, карта, кабинет мастера",
     moodEn: "Booking marketplace — filters, map, provider portal",
     storyRu:
-      "Платформа записи: каталог с фильтрами и картой, Telegram Mini App, кабинет мастера Free/Pro, platform-admin, bePaid.\n\n" +
-      "Заказчик — **Виктория Д.** React + Express + PostgreSQL, домен **slotty.of.by**, деплой на **Railway**.\n\n" +
+      "Платформа записи: каталог с фильтрами и картой, мини-приложение в Телеграме, кабинет мастера с тарифами Free/Pro, админка платформы, bePaid.\n\n" +
+      "Заказчик — **Виктория Д.** React + Express + PostgreSQL, домен **slotty.of.by**, публикация на **Railway**.\n\n" +
       "Платформа сдана; публичный запуск — на стороне заказчика. Можно открыть slotty.of.by и проверить сценарий записи.",
     storyEn:
       "A booking platform: filtered catalog + map, Telegram Mini App, service provider portal Free/Pro, platform admin, bePaid.\n\n" +
@@ -383,7 +383,7 @@ export const PROJECT_CASE_SYSTEM: Record<string, ProjectCaseSystem> = {
         name: "Ember",
         hex: "#FF5A00",
         group: "brand",
-        roleRu: "Главный акцент продакшена: «Записаться», бейджи 24/7 и CTA с дороги.",
+        roleRu: "Главный акцент запуска: «Записаться», бейджи 24/7 и призывы к действию с дороги.",
         roleEn: "Production primary: Book, 24/7 badges and on-the-road CTAs.",
       },
       {

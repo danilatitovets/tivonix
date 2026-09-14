@@ -294,7 +294,7 @@ function Footer() {
                 <p className="site-footer__touch-lead">
                   {t3(
                     lang,
-                    "Founder-led product engineering для рабочих систем",
+                    "Продуктовая инженерия от основателя — для систем, которые работают",
                     "Founder-led product engineering for working systems",
                     "面向真实系统的 founder-led product engineering"
                   )}

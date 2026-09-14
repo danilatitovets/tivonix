@@ -21,6 +21,53 @@
     /* Header spacer synced with Header.tsx (h-[92px] sm:h-[100px] xl:h-[104px]) */
     --tivonix-header-spacer: 92px;
   }
+
+  /*
+   * Bebas Neue / Anton / Impact poorly support Cyrillic (fallback looks ultra-black).
+   * For RU (and ZH), use DM Sans at a readable weight site-wide.
+   */
+  html[data-lang="ru"],
+  html[lang="ru"],
+  html[data-lang="zh"],
+  html[lang="zh"] {
+    --font-hero: "DM Sans", Manrope, Inter, system-ui, sans-serif;
+    --font-caldera-display: "DM Sans", Manrope, Inter, system-ui, sans-serif;
+  }
+  html[data-lang="ru"] .font-hero,
+  html[lang="ru"] .font-hero,
+  html[data-lang="ru"] .font-display,
+  html[lang="ru"] .font-display,
+  html[data-lang="zh"] .font-hero,
+  html[lang="zh"] .font-hero,
+  html[data-lang="zh"] .font-display,
+  html[lang="zh"] .font-display {
+    font-family: var(--font-dm-sans) !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.02em !important;
+  }
+  html[data-lang="ru"] .font-\[950\],
+  html[data-lang="ru"] .font-\[900\],
+  html[data-lang="ru"] .font-\[850\],
+  html[data-lang="ru"] .font-\[800\],
+  html[data-lang="ru"] .font-\[760\],
+  html[lang="ru"] .font-\[950\],
+  html[lang="ru"] .font-\[900\],
+  html[lang="ru"] .font-\[850\],
+  html[lang="ru"] .font-\[800\],
+  html[lang="ru"] .font-\[760\],
+  html[data-lang="ru"] .font-extrabold,
+  html[lang="ru"] .font-extrabold,
+  html[data-lang="ru"] .font-black,
+  html[lang="ru"] .font-black {
+    font-weight: 600 !important;
+  }
+  html[data-lang="ru"] .landing-caldera .font-hero,
+  html[lang="ru"] .landing-caldera .font-hero,
+  html[data-lang="zh"] .landing-caldera .font-hero,
+  html[lang="zh"] .landing-caldera .font-hero {
+    font-weight: 600 !important;
+    letter-spacing: -0.02em !important;
+  }
   @media (min-width: 640px) {
     :root {
       --tivonix-header-spacer: 100px;

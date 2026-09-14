@@ -121,7 +121,7 @@ export function MilesealReviewForm({
 
     const labels =
       lang === "ru"
-        ? { agency: "Агентство", scope: "Согласованный объём", request: "Запрос клиента", draft: "Черновик change request" }
+        ? { agency: "Агентство", scope: "Согласованный объём", request: "Запрос клиента", draft: "Черновик запроса на изменение" }
         : lang === "zh"
           ? { agency: "代理商", scope: "已约定范围", request: "客户请求", draft: "变更请求草稿" }
           : { agency: "Agency", scope: "Agreed scope", request: "Recent client request", draft: "Demo change request draft" };

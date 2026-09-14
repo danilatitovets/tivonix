@@ -73,7 +73,7 @@ const COPY: Record<Lang, WorkStartDecisionLabels> = {
     title: "Work-Start Decision",
     subtitle: "Зафиксируйте, кто и как разрешил начать работу до старта выполнения.",
     ownerLabel: "Decision Owner",
-    ownerPlaceholder: "Имя или роль (например, Delivery lead)",
+    ownerPlaceholder: "Имя или роль (например, руководитель проекта)",
     decisionLabel: "Decision",
     rationaleLabel: "Rationale",
     rationalePlaceholder: "Почему принято это решение",

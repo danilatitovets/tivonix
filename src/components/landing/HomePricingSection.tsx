@@ -43,10 +43,10 @@ const GRID_PLANS: { id: PlanId; video: PlanVideoId; footRu: string; footEn: stri
 ];
 
 const PLAN_TAGS: Record<PlanId, Record<Lang, string>> = {
-  start: { ru: "Launch", en: "Launch", zh: "启动" },
-  growth: { ru: "Ops", en: "Ops", zh: "运营" },
+  start: { ru: "Запуск", en: "Launch", zh: "启动" },
+  growth: { ru: "Операции", en: "Ops", zh: "运营" },
   product: { ru: "MVP", en: "MVP", zh: "MVP" },
-  custom: { ru: "Product Engineering", en: "Product Engineering", zh: "产品工程" },
+  custom: { ru: "Разработка продукта", en: "Product Engineering", zh: "产品工程" },
 };
 
 function clamp01(v: number) {

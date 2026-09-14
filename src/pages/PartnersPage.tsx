@@ -223,7 +223,7 @@ function CapsMiniVisual({ id }: { id: (typeof CAPABILITY_IDS)[number] }) {
               <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                 <path d="M21.5 3.6 2.9 11.1c-1.3.5-1.3 1.3-.2 1.6l4.7 1.5 1.8 5.5c.2.7.1.9.8.9.5 0 .7-.2 1-.5l2.4-2.3 5 3.7c.9.5 1.6.2 1.8-.9L22.9 5c.3-1.2-.4-1.8-1.4-1.4ZM9.2 14.5l-.3 3.3 1.3-1.7 8-7.6-9 5.9Z" />
               </svg>
-              В Telegram
+              В Телеграм
             </span>
           </div>
         </div>

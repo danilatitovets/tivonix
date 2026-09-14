@@ -30,7 +30,7 @@ export function buildMilesealLeadTask(input: MilesealLeadFormInput): string {
           agency: "Агентство",
           scope: "Согласованный объём",
           request: "Запрос клиента",
-          draft: "Черновик change request",
+          draft: "Черновик запроса на изменение",
         }
       : input.lang === "zh"
         ? {

@@ -733,7 +733,7 @@ export default function ProjectDetailPage() {
   const domainLabel = t3(lang, "Домен", "Domain", "域名");
   const statusLabel = t3(lang, "Статус", "Status", "状态");
   const tagsLabel = t3(lang, "Теги", "Tags", "标签");
-  const liveLabel = t3(lang, "В продакшене", "Live", "已上线");
+  const liveLabel = t3(lang, "Уже онлайн", "Live", "已上线");
   const wipLabel = t3(lang, "В разработке", "In progress", "开发中");
   const pilotLabel = t3(lang, "Готов к пилоту", "Pilot-ready", "试点就绪");
   const openSiteLabel = t3(lang, "Открыть сайт", "Open website", "打开网站");

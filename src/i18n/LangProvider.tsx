@@ -167,11 +167,11 @@ const DICT: Record<Lang, Dictionary> = {
       titleLine3: "которые помогают",
       titleLine4: "получать заявки",
       subtitle:
-        "Разбираем задачу, предлагаем решение и запускаем продукт под ключ: лендинг, Telegram-бот, личный кабинет, CRM или автоматизацию.",
+        "Разбираем задачу, предлагаем решение и запускаем продукт под ключ: лендинг, бот в Телеграме, личный кабинет, CRM или автоматизацию.",
       note: "Ответим в течение дня • Первая консультация — бесплатно",
-      emailPlaceholder: "Рабочий email",
+      emailPlaceholder: "Рабочая почта",
       btnDemo: "Обсудить проект",
-      btnTelegram: "Написать в Telegram",
+      btnTelegram: "Написать в Телеграм",
       btnAutomation: "Посмотреть, что делаем",
       statLabel: "заявок сегодня",
       leadsAria: "Примеры входящих заявок",
@@ -186,10 +186,10 @@ const DICT: Record<Lang, Dictionary> = {
         { title: "Новый контакт", source: "ООО «СтройДом» — оставил заявку в CRM", time: "9 мин", channel: "hubspot" },
         { title: "Бриф проекта", source: "Заполнили бриф в Notion — можно смотреть", time: "11 мин", channel: "notion" },
         { title: "Встреча с клиентом", source: "Завтра в 15:00 · обсуждение MVP", time: "13 мин", channel: "calendar" },
-        { title: "TIVONIX Bot", source: "Заявка с бота: интеграция Telegram и CRM", time: "14 мин", channel: "telegram" },
+        { title: "TIVONIX Bot", source: "Заявка с бота: интеграция Телеграма и CRM", time: "14 мин", channel: "telegram" },
         { title: "studio_pro", source: "Сколько стоит сайт с онлайн-записью?", time: "15 мин", channel: "instagram" },
         { title: "Дмитрий", source: "Хочу онлайн-запись для клиентов в салон", time: "16 мин", channel: "whatsapp" },
-        { title: "Форма на сайте", source: "Новая заявка: лендинг + уведомления в Telegram", time: "18 мин", channel: "website" },
+        { title: "Форма на сайте", source: "Новая заявка: лендинг + уведомления в Телеграм", time: "18 мин", channel: "website" },
       ],
     },
     curtain: {
@@ -203,7 +203,7 @@ const DICT: Record<Lang, Dictionary> = {
         "Разработка: личный кабинет, админ-панели, роли, таблицы, фильтры.",
         "Интеграции: платежи, уведомления, почта, аналитика, CRM.",
         "Качество: тесты, оптимизация, безопасность, чистая архитектура.",
-        "Релиз: деплой, домен/SSL, мониторинг, документация.",
+        "Релиз: публикация, домен и SSL, мониторинг, документация.",
         "После запуска: поддержка, улучшения, рост продукта.",
       ],
     },
@@ -219,18 +219,18 @@ const DICT: Record<Lang, Dictionary> = {
         ts: { label: "TypeScript", sub: "Типы, безопасность, масштабирование" },
         js: { label: "JavaScript", sub: "Логика, анимации, интеграции" },
         node: { label: "Node.js", sub: "API, сервисы, фоновые задачи" },
-        express: { label: "Express", sub: "Маршруты, middleware, auth" },
+        express: { label: "Express", sub: "Маршруты, middleware, авторизация" },
         supabase: { label: "Supabase", sub: "Postgres, RLS, Storage, Auth" },
         postgres: { label: "PostgreSQL", sub: "Схемы, индексы, запросы" },
         tailwind: { label: "Tailwind CSS", sub: "UI-система, токены, скорость верстки" },
         saas: { label: "SaaS UI / UX", sub: "Стекло, сетка, детали, премиум-типографика" },
-        perf: { label: "Performance", sub: "Оптимизация, lazy, UX-скорость" },
+        perf: { label: "Performance", sub: "Оптимизация, ленивая загрузка, скорость интерфейса" },
       },
     },
     newCase: {
       label: "новый кейс",
       title: "NEW",
-      live: "В продакшене",
+      live: "Уже онлайн",
       cta: "Смотреть кейс",
       ctaExternal: "Открыть панель",
     },
@@ -296,7 +296,7 @@ const DICT: Record<Lang, Dictionary> = {
         },
         {
           title: "После релиза",
-          desc: "Деплой, домен/SSL, мониторинг, багфиксы и план улучшений по метрикам.",
+          desc: "Публикация, домен и SSL, мониторинг, исправления и план улучшений по метрикам.",
           badge: "поддержка",
         },
       ],
@@ -730,9 +730,9 @@ export function useLang() {
 export function homePageSeoFromDict(dict: Dictionary): { title: string; description: string } {
   if (dict.header.home === "На главную") {
     return {
-      title: "TIVONIX — founder-led product engineering",
+      title: "TIVONIX — продуктовая инженерия от основателя",
       description:
-        "Проектируем и запускаем SaaS, FinTech, marketplaces, internal platforms, Telegram products и AI automation — от product framing и архитектуры до production.",
+        "Проектируем и запускаем SaaS, финтех, маркетплейсы, внутренние платформы, продукты в Телеграме и AI-автоматизацию — от формулировки продукта и архитектуры до боевого запуска.",
     };
   }
   if (dict.header.home === "返回首页") {

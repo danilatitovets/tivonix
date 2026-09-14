@@ -40,11 +40,11 @@ function ChannelsVisual({ isRu }: { isRu: boolean }) {
   const rows = isRu
     ? [
         { ch: "Instagram", icon: "/images/icons/instagram.svg", count: "20", unit: "заявок", hot: true },
-        { ch: "Telegram", icon: "/images/icons/telegram.svg", count: "8", unit: "непрочит.", hot: true },
+        { ch: "Телеграм", icon: "/images/icons/telegram.svg", count: "8", unit: "непрочит.", hot: true },
         { ch: "WhatsApp", icon: "/images/icons/whatsapp.svg", count: "5", unit: "сообщений", hot: true },
         { ch: "Звонок", icon: "/images/icons/phone.svg", count: "3", unit: "пропущенных", hot: true },
         { ch: "Сайт", icon: "/images/icons/globe.svg", count: "4", unit: "формы", hot: false },
-        { ch: "Email", icon: "/images/icons/gmail.svg", count: "6", unit: "писем", hot: true },
+        { ch: "Почта", icon: "/images/icons/gmail.svg", count: "6", unit: "писем", hot: true },
       ]
     : [
         { ch: "Instagram", icon: "/images/icons/instagram.svg", count: "20", unit: "leads", hot: true },

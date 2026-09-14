@@ -154,7 +154,7 @@ export default function CasesSection() {
                       {isRu ? "Результат:" : "Result:"}
                     </span>{" "}
                     {isRu
-                      ? "Живая финтех-платформа в продакшене: доли, кошелёк, вторичный рынок и админка."
+                      ? "Живая финтех-платформа уже онлайн: доли, кошелёк, вторичный рынок и админка."
                       : "Live fintech platform in production: shares, wallet, secondary market and admin."}
                   </p>
                 </div>

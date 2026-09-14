@@ -256,7 +256,7 @@ const COPY: Record<Lang, MilesealWorkspaceCopy> = {
     manualReviewLabel: "Ручной разбор",
     skipToContent: "Перейти к содержимому",
     seoNavDescription:
-      "MileSeal — рабочее пространство для изменений объёма: сравните согласованный scope с новым запросом клиента и сформируйте change request.",
+      "MileSeal — рабочее пространство для изменений объёма: сравните согласованный объём с новым запросом клиента и сформируйте запрос на изменение.",
     statusOutside: "Вне объёма",
   },
   zh: {

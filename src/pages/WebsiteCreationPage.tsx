@@ -52,7 +52,7 @@ export default function WebsiteCreationPage() {
               <li>Лендинги и промо-страницы</li>
               <li>Корпоративные сайты и сайты услуг</li>
               <li>Веб-сервисы, MVP и личные кабинеты</li>
-              <li>Интеграции с формами, Telegram и CRM</li>
+              <li>Интеграции с формами, Телеграмом и CRM</li>
             </ul>
           </Container>
         </Section>
@@ -71,7 +71,7 @@ export default function WebsiteCreationPage() {
           <Container>
             <h2 className="text-[24px] sm:text-[32px] font-[800] tracking-tight text-white">Этапы, сроки и оценка</h2>
             <p className="mt-4 max-w-4xl text-white/74 leading-7">
-              Бриф и структура, дизайн ключевых блоков, разработка, правки, деплой и поддержка. Типовой срок: от нескольких
+              Бриф и структура, дизайн ключевых блоков, разработка, правки, запуск и поддержка. Типовой срок: от нескольких
               дней для лендинга до нескольких недель для MVP. Первичную оценку даём после короткого брифа или созвона.
             </p>
           </Container>
