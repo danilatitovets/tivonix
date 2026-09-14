@@ -11,11 +11,25 @@ const BUDGET_VALUES = new Set([
   "500_1500",
   "1500_5000",
   "from_5000",
+  "from_20000",
   "unknown",
   "",
 ]);
 
 const PLAN_IDS = new Set(["start", "growth", "product", "custom"]);
+const PRODUCT_TYPE_VALUES = new Set([
+  "saas",
+  "marketplace",
+  "fintech",
+  "internal_system",
+  "crm_erp",
+  "telegram",
+  "ai_automation",
+  "website_funnel",
+  "other",
+  "",
+]);
+const TIMELINE_VALUES = new Set(["asap", "month", "quarter", "flexible", ""]);
 
 function clientIp(req: VercelRequest): string {
   const xf = req.headers["x-forwarded-for"];
@@ -128,7 +142,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const name = str(body.name, 80);
     const contact = str(body.contact, 200);
+    const productTypeRaw = str(body.productType, 40);
+    const users = str(body.users, 500);
     const task = str(body.task, 4000);
+    const integrations = str(body.integrations, 700);
+    const timelineRaw = str(body.timeline, 40);
     const budgetRaw = str(body.budget, 40);
     const lang = str(body.lang, 8) || "ru";
     const consent = body.consent === true || body.consent === "true" || body.consent === 1;
@@ -143,6 +161,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (task.length < 5) {
       return res.status(400).json({ ok: false, error: "invalid_task" });
+    }
+
+    if (!PRODUCT_TYPE_VALUES.has(productTypeRaw)) {
+      return res.status(400).json({ ok: false, error: "invalid_product_type" });
+    }
+
+    if (!TIMELINE_VALUES.has(timelineRaw)) {
+      return res.status(400).json({ ok: false, error: "invalid_timeline" });
     }
 
     if (!BUDGET_VALUES.has(budgetRaw)) {
@@ -172,9 +198,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const lead: LeadPayload = {
       name: name || undefined,
       contact,
+      productType: productTypeRaw || undefined,
+      users: users || undefined,
       task,
+      integrations: integrations || undefined,
+      timeline: timelineRaw || undefined,
       budget: budgetRaw || undefined,
-      lang: lang === "en" ? "en" : "ru",
+      lang: lang === "en" ? "en" : lang === "zh" ? "zh" : "ru",
       planId,
       planName,
       requestId,

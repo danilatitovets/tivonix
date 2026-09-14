@@ -9,7 +9,11 @@ import {
 export type LeadPayload = {
   name?: string;
   contact: string;
+  productType?: string;
+  users?: string;
   task: string;
+  integrations?: string;
+  timeline?: string;
   budget?: string;
   lang: string;
   planId?: string;
@@ -49,7 +53,10 @@ function dash(v: string | undefined | null): string {
 }
 
 function visitorLangLabel(lang: string): string {
-  return String(lang || "").toLowerCase().startsWith("en") ? "английский" : "русский";
+  const normalized = String(lang || "").toLowerCase();
+  if (normalized.startsWith("en")) return "английский";
+  if (normalized.startsWith("zh")) return "китайский";
+  return "русский";
 }
 
 function budgetLabel(budget: string | undefined): string {
@@ -58,9 +65,39 @@ function budgetLabel(budget: string | undefined): string {
     "500_1500": "$500–1500",
     "1500_5000": "$1500–5000",
     from_5000: "от $5000",
+    from_20000: "от $20000",
     unknown: "пока не определили",
   };
   const key = (budget || "").trim();
+  if (!key) return "";
+  return map[key] || key;
+}
+
+function productTypeLabel(type: string | undefined): string {
+  const map: Record<string, string> = {
+    saas: "SaaS / MVP",
+    marketplace: "маркетплейс",
+    fintech: "FinTech / платежи",
+    internal_system: "внутренняя система",
+    crm_erp: "CRM / ERP-like",
+    telegram: "Telegram product",
+    ai_automation: "AI / automation",
+    website_funnel: "сайт + заявки",
+    other: "другое",
+  };
+  const key = (type || "").trim();
+  if (!key) return "";
+  return map[key] || key;
+}
+
+function timelineLabel(timeline: string | undefined): string {
+  const map: Record<string, string> = {
+    asap: "как можно быстрее",
+    month: "в течение месяца",
+    quarter: "1–3 месяца",
+    flexible: "гибко",
+  };
+  const key = (timeline || "").trim();
   if (!key) return "";
   return map[key] || key;
 }
@@ -113,7 +150,9 @@ function formatWhen(iso: string): string {
 
 function formatPlain(lead: LeadPayload): string {
   const plan = (lead.planName || lead.meta.planName || lead.planId || lead.meta.planId || "").trim();
+  const productType = productTypeLabel(lead.productType);
   const budget = budgetLabel(lead.budget);
+  const timeline = timelineLabel(lead.timeline);
   const offer = (lead.meta.offer || "").trim();
   const amount =
     typeof lead.meta.amount === "number" && Number.isFinite(lead.meta.amount)
@@ -125,8 +164,12 @@ function formatPlain(lead: LeadPayload): string {
     "",
     `Имя: ${dash(lead.name)}`,
     `Контакт: ${lead.contact}`,
+    productType ? `Тип продукта: ${productType}` : null,
+    lead.users ? `Пользователи / роли: ${lead.users}` : null,
     plan ? `Тариф: ${plan}` : null,
     budget ? `Бюджет: ${budget}` : null,
+    timeline ? `Срок: ${timeline}` : null,
+    lead.integrations ? `Интеграции: ${lead.integrations}` : null,
     offer ? `Оффер: ${offer}` : null,
     amount != null && currency ? `Сумма: ${amount} ${currency}` : null,
     `Язык посетителя: ${visitorLangLabel(lead.lang)}`,
@@ -152,7 +195,9 @@ function formatPlain(lead: LeadPayload): string {
 
 function formatHtml(lead: LeadPayload): string {
   const plan = (lead.planName || lead.meta.planName || lead.planId || lead.meta.planId || "").trim();
+  const productType = productTypeLabel(lead.productType);
   const budget = budgetLabel(lead.budget);
+  const timeline = timelineLabel(lead.timeline);
   const offer = (lead.meta.offer || "").trim();
   const amount =
     typeof lead.meta.amount === "number" && Number.isFinite(lead.meta.amount)
@@ -175,8 +220,12 @@ function formatHtml(lead: LeadPayload): string {
     </tr>`;
 
   const optionalRows = [
+    productType ? row("Тип продукта", escapeHtml(productType)) : "",
+    lead.users ? row("Пользователи / роли", escapeHtml(lead.users)) : "",
     plan ? row("Тариф", escapeHtml(plan)) : "",
     budget ? row("Бюджет", escapeHtml(budget)) : "",
+    timeline ? row("Срок", escapeHtml(timeline)) : "",
+    lead.integrations ? row("Интеграции", escapeHtml(lead.integrations)) : "",
     offer ? row("Оффер", escapeHtml(offer)) : "",
     amount != null && currency
       ? row("Сумма", escapeHtml(`${amount} ${currency}`))
