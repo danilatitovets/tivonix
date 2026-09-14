@@ -87,14 +87,14 @@ export default function NeoTerminalAiChapter({ lang }: { lang: Lang }) {
         </LeadCTAButton>
       </div>
 
-      {/* Screenshots — plain gallery, open on click */}
+      {/* Screenshots — full-width, click to lightbox */}
       <div className="mt-16 sm:mt-20">
         <h3 className="text-center font-hero text-[clamp(1.2rem,2.2vw,1.55rem)] font-normal uppercase tracking-[0.02em] text-white/90">
           {c.shotsTitle}
         </h3>
 
         <div
-          className="mt-7 grid grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-3 sm:gap-4"
+          className="mt-7 space-y-4 sm:mt-8 sm:space-y-5"
           role="list"
           aria-label={c.shotsTitle}
         >
@@ -103,14 +103,14 @@ export default function NeoTerminalAiChapter({ lang }: { lang: Lang }) {
               key={shot.id}
               type="button"
               role="listitem"
-              className="group block w-full cursor-zoom-in overflow-hidden rounded-[1.1rem] bg-[#f4f4f5] outline-none transition hover:opacity-95 focus-visible:ring-2 focus-visible:ring-white/35 sm:rounded-[1.25rem]"
+              className="group block w-full cursor-zoom-in overflow-hidden rounded-[1.15rem] bg-[#f4f4f5] outline-none transition hover:opacity-95 focus-visible:ring-2 focus-visible:ring-white/35 sm:rounded-[1.5rem]"
               aria-label={`${openLabel}: ${isRu ? shot.altRu : shot.altEn}`}
               onClick={() => setActive(i)}
             >
               <SoftImg
                 src={shot.src}
                 alt={isRu ? shot.altRu : shot.altEn}
-                className="aspect-[16/10] w-full object-cover object-top"
+                className="aspect-[16/9] w-full object-cover object-top sm:aspect-[1024/581]"
                 loading="lazy"
                 decoding="async"
                 fade
