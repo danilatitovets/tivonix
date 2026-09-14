@@ -77,21 +77,24 @@ export default function NeoTerminalAiChapter({ lang }: { lang: Lang }) {
       </div>
 
       <div className="mx-auto mt-8 flex max-w-[44rem] flex-col items-center text-center">
-        {/* Chat-style input → AI Pilot */}
-        <a
-          href={NEO_AI_PILOT_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group flex w-full max-w-[28rem] items-center gap-3 rounded-full border border-white/[0.12] bg-white/[0.06] py-2 pl-5 pr-2 text-left transition hover:border-white/20 hover:bg-white/[0.09]"
-          aria-label={c.ctaPilot}
-        >
-          <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-white/40 transition group-hover:text-white/55">
-            {c.chatPlaceholder}
-          </span>
-          <span className="inline-flex h-9 shrink-0 items-center justify-center rounded-full bg-white px-4 text-[13px] font-medium text-[#070607] transition group-hover:bg-white/92">
-            {c.chatAction}
-          </span>
-        </a>
+        {/* Chat-style input → AI Pilot, northern aurora glow */}
+        <div className="neo-ai-chat-glow w-full max-w-[28rem]">
+          <span className="neo-ai-chat-glow__aurora" aria-hidden />
+          <a
+            href={NEO_AI_PILOT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="neo-ai-chat-glow__field group relative z-[1] flex w-full items-center gap-3 rounded-full py-2 pl-5 pr-2 text-left"
+            aria-label={c.ctaPilot}
+          >
+            <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-white/45 transition group-hover:text-white/65">
+              {c.chatPlaceholder}
+            </span>
+            <span className="neo-ai-chat-glow__btn inline-flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-[13px] font-medium text-[#070607]">
+              {c.chatAction}
+            </span>
+          </a>
+        </div>
 
         <LeadCTAButton
           source="project_page"
