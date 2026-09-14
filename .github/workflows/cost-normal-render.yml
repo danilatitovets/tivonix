@@ -10,25 +10,26 @@ on:
 jobs:
   render:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
-      - name: Install ffmpeg
+      - name: Install system tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg curl
+          sudo apt-get install -y ffmpeg curl git fonts-dejavu-core
+          python3 -m pip install --upgrade pip uv
 
-      - name: Build 1080p documentary first cut
+      - name: Clone MoneyPrinterTurbo
+        run: |
+          git clone --depth 1 https://github.com/harry0703/MoneyPrinterTurbo.git mpt
+          cd mpt
+          cp config.example.toml config.toml
+          uv sync --no-dev
+
+      - name: Download narration and real Pexels footage
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p work/segments
-
-          PEXELS_IDS=(
-            12293711 7154242 7154232 7154229 6963972 6962837 6963478
-            7154241 7154233 7154219 3045064 30340581 37591124 20693179
-            14514795 26220998 11194983 4337977 5915628 5786587 9521384
-            36632256 5972216 6963962 6964253 7154231 26542243 12293711
-          )
+          mkdir -p input/audio input/video output qa
 
           AUDIO_URLS=(
             'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/dd209787-3680-4d9d-84df-4c040e41ed86.mp3'
@@ -61,35 +62,174 @@ jobs:
             'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/95084958-c89a-4c5e-b0a4-66357d3b68a7.mp3'
           )
 
-          : > work/concat.txt
-          for i in $(seq 0 27); do
-            n=$(printf '%02d' $((i+1)))
-            pid="${PEXELS_IDS[$i]}"
-            aurl="${AUDIO_URLS[$i]}"
-            echo "== Scene $n / Pexels $pid =="
-            curl -fL --retry 5 --retry-delay 2 -A 'Mozilla/5.0' "https://www.pexels.com/download/video/${pid}/" -o "work/clip_${n}.mp4"
-            curl -fL --retry 5 --retry-delay 2 "$aurl" -o "work/audio_${n}.mp3"
-            adur=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "work/audio_${n}.mp3")
-            ffmpeg -hide_banner -loglevel error -y \
-              -stream_loop -1 -i "work/clip_${n}.mp4" \
-              -i "work/audio_${n}.mp3" \
-              -t "$adur" \
-              -vf "scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30,setsar=1" \
-              -af "loudnorm=I=-16:LRA=7:TP=-1.5" \
-              -map 0:v:0 -map 1:a:0 \
-              -c:v libx264 -preset medium -crf 19 -profile:v high -level 4.2 -pix_fmt yuv420p \
-              -c:a aac -b:a 192k -ar 48000 \
-              -movflags +faststart \
-              "work/segments/seg_${n}.mp4"
-            printf "file '%s'\n" "$PWD/work/segments/seg_${n}.mp4" >> work/concat.txt
-          done
-          ffmpeg -hide_banner -loglevel error -y -f concat -safe 0 -i work/concat.txt -c copy work/Cost_of_Normal_Monthly_Payment_Trap_FIRST_CUT_1080p.mp4
-          ffprobe -v error -show_entries format=duration,size -show_entries stream=width,height,r_frame_rate,codec_name -of json work/Cost_of_Normal_Monthly_Payment_Trap_FIRST_CUT_1080p.mp4
+          PEXELS_IDS=(
+            12293711 7154242 7154232 7154229 6963972 6962837 6963478
+            7154241 7154233 7154219 3045064 30340581 37591124 20693179
+            14514795 26220998 11194983 4337977 5915628 5786587 9521384
+            36632256 5972216 6963962 6964253 7154231 26542243 12769430
+            5962561
+          )
 
-      - name: Upload first cut
+          for i in "${!AUDIO_URLS[@]}"; do
+            n=$(printf '%02d' $((i+1)))
+            curl -fL --retry 5 --retry-delay 2 "${AUDIO_URLS[$i]}" -o "input/audio/${n}.mp3"
+            ffprobe -v error -show_entries format=duration -of csv=p=0 "input/audio/${n}.mp3"
+          done
+
+          for i in "${!PEXELS_IDS[@]}"; do
+            n=$(printf '%02d' $((i+1)))
+            id="${PEXELS_IDS[$i]}"
+            curl -fL --retry 5 --retry-delay 2 -A 'Mozilla/5.0' "https://www.pexels.com/download/video/${id}/" -o "input/video/${n}_${id}.mp4"
+            ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate -show_entries format=duration -of json "input/video/${n}_${id}.mp4" >> qa/source_probe.jsonl
+          done
+
+      - name: Build documentary with MoneyPrinterTurbo engine
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > build_cost_normal.py <<'PY'
+          from __future__ import annotations
+          import json, os, random, subprocess
+          from pathlib import Path
+          import sys
+
+          ROOT = Path.cwd()
+          MPT = ROOT / 'mpt'
+          sys.path.insert(0, str(MPT))
+          os.chdir(MPT)
+
+          from app.services.video import combine_videos
+          from app.models.schema import VideoAspect, VideoConcatMode, VideoFitMode
+
+          inp = ROOT / 'input'
+          out = ROOT / 'output'
+          qa = ROOT / 'qa'
+          scenes = out / 'scenes'
+          silent = out / 'silent'
+          scenes.mkdir(parents=True, exist_ok=True)
+          silent.mkdir(parents=True, exist_ok=True)
+
+          videos = sorted((inp / 'video').glob('*.mp4'))
+          audios = sorted((inp / 'audio').glob('*.mp3'))
+          assert len(audios) == 28, len(audios)
+          assert len(videos) >= 20, len(videos)
+
+          # Semantic visual pools built from the real stock already selected for this episode.
+          # Each narration segment gets a small pool so MPT can cut 3–5 second shots without
+          # drifting into generic unrelated footage.
+          pools = {
+              'dealer': [1,2,3,7,8,9,14,15,16,17,18,28],
+              'driving': [0,10,11,13,19,20,27],
+              'budget': [4,5,6,21,22,23,24],
+              'service': [8,12,13,25,26],
+              'mixed': [0,1,3,4,8,10,12,14,19,21,25,28],
+          }
+
+          # 28 narration segments: cold open -> market data -> controlled math -> framing ->
+          # affordability -> time/depreciation -> credit tiers -> selling incentives -> counterpoint -> payoff.
+          scene_kinds = [
+              'dealer','driving','dealer','budget','budget','dealer','dealer',
+              'driving','budget','dealer','driving','budget','service','driving',
+              'service','service','driving','budget','dealer','budget','dealer',
+              'dealer','budget','dealer','budget','driving','mixed','dealer'
+          ]
+
+          used = []
+          for idx, audio in enumerate(audios, start=1):
+              kind = scene_kinds[idx-1]
+              pool = pools[kind]
+              # Rotate within each pool so adjacent scenes do not open on the same source.
+              offset = (idx * 2) % len(pool)
+              chosen_idx = (pool[offset:] + pool[:offset])[:min(5, len(pool))]
+              chosen = [str(videos[i % len(videos)]) for i in chosen_idx]
+
+              silent_path = silent / f'scene_{idx:02d}.mp4'
+              random.seed(1000 + idx)
+              combine_videos(
+                  combined_video_path=str(silent_path),
+                  video_paths=chosen,
+                  audio_file=str(audio),
+                  video_aspect=VideoAspect.landscape,
+                  video_concat_mode=VideoConcatMode.random,
+                  video_transition_mode=None,
+                  max_clip_duration=4,
+                  threads=2,
+                  clip_speed=1.0,
+                  video_fit_mode=VideoFitMode.cover,
+              )
+
+              scene_path = scenes / f'scene_{idx:02d}.mp4'
+              cmd = [
+                  'ffmpeg','-hide_banner','-loglevel','error','-y',
+                  '-i',str(silent_path),'-i',str(audio),
+                  '-map','0:v:0','-map','1:a:0','-shortest',
+                  '-c:v','libx264','-preset','medium','-crf','18','-pix_fmt','yuv420p',
+                  '-r','30','-c:a','aac','-b:a','192k','-ar','48000','-movflags','+faststart',
+                  str(scene_path)
+              ]
+              subprocess.run(cmd, check=True)
+              used.append({'scene': idx, 'kind': kind, 'audio': str(audio), 'sources': chosen})
+
+          (qa / 'scene_map.json').write_text(json.dumps(used, indent=2), encoding='utf-8')
+
+          concat = out / 'scenes.txt'
+          concat.write_text(''.join(f"file '{(scenes / f'scene_{i:02d}.mp4').resolve()}'\n" for i in range(1,29)), encoding='utf-8')
+          master = out / 'Cost_of_Normal_The_Monthly_Payment_Trap_MASTER_1080p.mp4'
+          subprocess.run([
+              'ffmpeg','-hide_banner','-loglevel','error','-y','-f','concat','-safe','0','-i',str(concat),
+              '-c:v','libx264','-preset','medium','-crf','18','-pix_fmt','yuv420p','-r','30',
+              '-c:a','aac','-b:a','192k','-ar','48000','-movflags','+faststart',str(master)
+          ], check=True)
+
+          # Add one restrained evidence overlay over the controlled-math section.
+          overlay = out / 'Cost_of_Normal_The_Monthly_Payment_Trap_FINAL_1080p.mp4'
+          vf = (
+              "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
+              "text='SAME $43,610  |  SAME 6.35% APR':fontcolor=white:fontsize=42:"
+              "box=1:boxcolor=black@0.68:boxborderw=22:x=(w-text_w)/2:y=h-150:"
+              "enable='between(t,60,72)',"
+              "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
+              "text='48 mo  $1,031/mo   →   84 mo  $644/mo':fontcolor=white:fontsize=44:"
+              "box=1:boxcolor=black@0.72:boxborderw=24:x=(w-text_w)/2:y=h-160:"
+              "enable='between(t,95,110)'"
+          )
+          subprocess.run([
+              'ffmpeg','-hide_banner','-loglevel','error','-y','-i',str(master),'-vf',vf,
+              '-c:v','libx264','-preset','medium','-crf','18','-pix_fmt','yuv420p',
+              '-c:a','copy','-movflags','+faststart',str(overlay)
+          ], check=True)
+
+          probe = subprocess.check_output([
+              'ffprobe','-v','error','-show_entries','format=duration,size,bit_rate',
+              '-show_entries','stream=index,codec_type,codec_name,width,height,r_frame_rate',
+              '-of','json',str(overlay)
+          ], text=True)
+          (qa / 'final_probe.json').write_text(probe, encoding='utf-8')
+          print(probe)
+          PY
+
+          cd mpt
+          uv run python ../build_cost_normal.py
+
+      - name: Extract visual QA frames
+        run: |
+          VIDEO='output/Cost_of_Normal_The_Monthly_Payment_Trap_FINAL_1080p.mp4'
+          for t in 15 75 150 270 420 520; do
+            ffmpeg -hide_banner -loglevel error -y -ss "$t" -i "$VIDEO" -frames:v 1 -q:v 2 "qa/frame_${t}s.jpg"
+          done
+          ffprobe -v error -show_entries format=duration,size,bit_rate -show_entries stream=codec_name,codec_type,width,height,r_frame_rate -of json "$VIDEO" | tee qa/final_probe_cli.json
+          test $(stat -c%s "$VIDEO") -gt 50000000
+
+      - name: Upload final video and QA package
         uses: actions/upload-artifact@v4
         with:
-          name: cost-of-normal-first-cut-1080p
-          path: work/Cost_of_Normal_Monthly_Payment_Trap_FIRST_CUT_1080p.mp4
-          retention-days: 3
+          name: cost-of-normal-monthly-payment-trap-master
+          path: |
+            output/Cost_of_Normal_The_Monthly_Payment_Trap_FINAL_1080p.mp4
+            qa/final_probe.json
+            qa/final_probe_cli.json
+            qa/scene_map.json
+            qa/source_probe.jsonl
+            qa/frame_*.jpg
+          retention-days: 7
           compression-level: 0
