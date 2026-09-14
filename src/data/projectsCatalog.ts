@@ -695,7 +695,7 @@ function buildAllProjects(isRu: boolean): Project[] {
         subtitleEn:
           "Fintech platform for music shares: catalog, primary & secondary market, USDT wallet, ledger, compliance and operator portal — supported by TIVONIX.",
         subtitleZh:
-          "音乐股票的金融科技平台：目录、一级和二级市场、USDT 钱包、账本、合规性和运营商门户——投资者支持的产品，并提供持续支持。",
+          "音乐份额金融科技平台：目录、一级和二级市场、USDT 钱包、账本、合规与运营门户——由 TIVONIX 持续支持。",
         detailsRu:
           "Контекст клиента\n" +
           "Spliton — платформа для инвестирования в доли музыкальных релизов. Заказчик — **Виктор Безбородых**, основатель MIN.ECO.\n\n" +
@@ -731,7 +731,20 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Next step\n" +
           "Open spliton.io or the case page to review the public surface and product structure.\n",
         detailsZh:
-          "为什么这很重要\n音乐资产不是带有购买按钮的登陆页面。 **真实货币**，角色、同意、存款和取款必须无漏洞锁定：确认→处理→结果。一旦付款或同意失败，信任就会比任何释放更快地消失。\n\n这不是一个“快速管理”。它需要**完整的股份交换**：投资者内阁、运营商门户、账本、财务、KYC/AML、争议、公共信任中心。我们端到端地构建了它，并且**仍然在生产中支持**它。\n\n它是如何运作的\n投资者注册、接受保单、在需要时完成 KYC，并充值 **USDT (TRC20)**。\n然后：在目录中选择一个版本→审查数据室→在主要市场购买股票（UNT）→跟踪头寸和应计费用→可选择在**二级市场**（订单簿、限价订单）进行交易→通过财务检查提取。\n运营商可以通过管理门户管理存款、取款、合规、发布、推荐、争议和公共系统状态。\n\n里面有什么\n**一个存储库中的大型产品**，而不是单页网站。 Next.js 上的客户端应用程序，NestJS 上的服务器，通过 Prisma 的 PostgreSQL，对关键资金流的自动测试。\n\n投资者柜：发布目录、股份申购、投资tfolio 和指标、钱包（存款、取款、历史记录、报表）、**具有复杂订单簿**和限价订单的二级市场、计算器、新闻、支持和争议中心、推荐和合作伙伴计划、VIP。\n\n公共面：产品登陆、**信任中心**（运营账本、服务状态、文档）、系统状态页面、费用、法律页面、帮助中心。\n\n运营商门户对于平台团队来说是一个**巨大的管理面板**：不是几个屏幕，而是数十个管理部分。执行概述、操作员任务、用户和角色、曲目和回合、艺术家、唱片公司、流派。\n\n金融：钱包、存款、**支出**、持有、收入和平台收入、金库、支付必需品。市场：二级市场、交易、可疑活动。运营：支持、争议、合规、KYC、法律文本、推荐和合作伙伴。\n\n使用**图表**进行分析：财务、用户、轨迹、市场、收入、风险、运营。加上报告和导出、新闻、帮助中心、系统状态、通知、员工审核日志。角色：超级管理员、会计师、内容、支持、合规、业务分析师。\n\n财务核心：内部复式记账操作账本、对账、平台费用、波场充值自动化、热/冷钱包政策、事件操作手册。酸性石灰“#b7f500”上的界面 — 与实时产品匹配。\n\n语言：界面完全本地化为**四种语言**——俄语、英语、西班牙语、葡萄牙语。\n\n我们交付了什么\n设计并交付完整的循环：设计、前端、后端、数据库、合规性、自动化测试和生产操作。该产品已上线，由 [[200,000 美元]] 的投资者支持，**TIVONIX 仍然支持并发展**它。\n\n结果\n不是演示，也不是套牌。一个**实时金融科技平台**，拥有投资者内阁、复杂的股票交易所以及庞大的支付、图表和日常运营管理系统。还是支持的。",
+          "客户背景\n" +
+          "Spliton 是一个用于音乐发行份额投资的平台。客户为 **Viktor Bezborodykh**，MIN.ECO 创始人。\n\n" +
+          "挑战\n" +
+          "这里需要的是带资金流、角色、用户同意、KYC 与运营工具的产品，而不是带“购买”按钮的落地页。充值、购买份额、二级市场与提现流程必须让用户和运营团队都看得清楚。\n\n" +
+          "TIVONIX 交付内容\n" +
+          "投资者门户、运营门户、ledger、treasury、KYC/AML、二级市场、公共 trust center，以及关键资金流程的自动化测试。设计、前端（Next.js）、后端（NestJS）、数据库（PostgreSQL/Prisma）、部署与运营说明。\n\n" +
+          "TIVONIX 责任范围\n" +
+          "产品架构、UI/UX、工程实现、产品内合规流程、测试与上线后的支持。\n\n" +
+          "可验证结果\n" +
+          "spliton.io 上的线上平台：发行目录、份额购买、USDT (TRC20) 钱包、二级市场，以及包含财务与运营部分的 operator portal。\n\n" +
+          "技术\n" +
+          "Next.js, React, TypeScript, NestJS, PostgreSQL, Prisma, Supabase, Playwright, i18n (RU, EN, ES, PT)。\n\n" +
+          "当前状态\n" +
+          "已交付。由 TIVONIX 持续支持。\n",
         domain: SPLITON_DOMAIN,
         status: "live",
         tags: [
@@ -749,6 +762,14 @@ function buildAllProjects(isRu: boolean): Project[] {
         ],
         cover: "/images/project-priew/spliton.webp",
         gallery: SPLITON_GALLERY,
+        roleRu: "Продуктовая архитектура, UX/UI, frontend, backend, compliance flows, тестирование и поддержка",
+        roleEn: "Product architecture, UX/UI, frontend, backend, compliance flows, testing and support",
+        seoTitleRu: "Spliton — FinTech-платформа с primary/secondary market | TIVONIX",
+        seoTitleEn: "Spliton — FinTech platform with primary and secondary market | TIVONIX",
+        seoDescriptionRu:
+          "Spliton — FinTech-продукт TIVONIX: каталог музыкальных релизов, покупка долей, USDT wallet, ledger, KYC/AML, secondary market и operator portal.",
+        seoDescriptionEn:
+          "Spliton is a FinTech product built by TIVONIX: music-release catalog, share purchases, USDT wallet, ledger, KYC/AML, secondary market and operator portal.",
         outcomes: [
           isRu
             ? "Кабинет инвестора + вторичный рынок + operator portal"

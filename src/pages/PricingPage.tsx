@@ -20,12 +20,16 @@ export default function PricingPage() {
 
   const title =
     lang === "ru"
-      ? "Планы запуска — TIVONIX"
-      : "Launch plans — TIVONIX";
+      ? "Product Engineering и Launch Packages — TIVONIX"
+      : lang === "zh"
+        ? "Product Engineering 与 Launch Packages — TIVONIX"
+        : "Product Engineering and Launch Packages — TIVONIX";
   const description =
     lang === "ru"
-      ? "Тарифы TIVONIX: Start, Growth, Product и Custom — от лендинга с заявками до веб-сервиса с CRM, оплатой и автоматизацией."
-      : "TIVONIX plans: Start, Growth, Product and Custom — from a lead page to a full web service with CRM, payments and automation.";
+      ? "Сложные SaaS, FinTech, marketplaces и internal systems оцениваются после brief. Start, Growth и Product остаются launch-пакетами для ограниченного scope."
+      : lang === "zh"
+        ? "复杂 SaaS、金融科技、市场平台与内部系统在 brief 后评估。Start、Growth 与 Product 保留为有限范围的 launch packages。"
+        : "Complex SaaS, FinTech, marketplaces and internal systems are scoped after a brief. Start, Growth and Product remain launch packages for bounded work.";
 
   const schemaJsonLd = buildPricingPageSchema({ pageTitle: title, pageDescription: description, lang });
   const canonicalPath = isZhPath ? "/zh/plans" : isEnPath ? "/en/plans" : "/plans";

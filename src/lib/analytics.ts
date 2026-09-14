@@ -158,12 +158,12 @@ export function trackLeadFormValidationError(field?: string): void {
 }
 
 export function trackLeadFormSubmit(source: CtaSource): void {
-  trackEvent("form_submit_success", { cta_source: source });
-  trackAdsFormConversion();
+  trackEvent("form_submit_attempt", { cta_source: source });
 }
 
 export function trackLeadFormSuccess(source: CtaSource): void {
   trackEvent("form_submit_success", { cta_source: source });
+  trackAdsFormConversion();
 }
 
 export function trackLeadFormServerError(): void {
@@ -171,7 +171,7 @@ export function trackLeadFormServerError(): void {
 }
 
 export function trackLeadFormAbandon(source: CtaSource): void {
-  trackEvent("form_submit_error", { cta_source: source, reason: "abandon" });
+  trackEvent("form_abandon", { cta_source: source });
 }
 
 export function trackTelegramDirectClick(): void {

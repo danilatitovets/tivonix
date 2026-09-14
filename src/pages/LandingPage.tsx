@@ -9,7 +9,6 @@ import ComparisonSection from "../components/landing/ComparisonSection";
 import HomePricingSection from "../components/landing/HomePricingSection";
 import ProcessTimelineSection from "../components/landing/ProcessTimelineSection";
 import FounderSection from "../components/landing/FounderSection";
-import HomeTestimonialsSection from "../components/landing/HomeTestimonialsSection";
 import FAQ from "../components/landing/FAQ";
 import FinalCTASection from "../components/landing/FinalCTASection";
 import Footer from "../components/landing/Footer";
@@ -66,8 +65,6 @@ export default function LandingPage() {
         <ProcessTimelineSection />
 
         <FounderSection />
-
-        <HomeTestimonialsSection />
 
         <FAQ />
       </main>

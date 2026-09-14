@@ -34,6 +34,8 @@ import {
   validateLeadFields,
   type BudgetId,
   type LeadFormFields,
+  type ProductTypeId,
+  type TimelineId,
 } from "../../lib/leads";
 import type { PlanId } from "../../lib/pricingData";
 import { planPagePrice, pricingCopy } from "../../i18n/pricingCopy";
@@ -64,7 +66,11 @@ type Props = {
 const emptyForm = (): LeadFormFields => ({
   name: "",
   contact: "",
+  productType: "",
+  users: "",
   task: "",
+  integrations: "",
+  timeline: "",
   budget: "",
   consent: false,
   company_fax_url: "",
@@ -214,7 +220,16 @@ export default function LeadFormModal({
   };
 
   const update = <K extends keyof LeadFormFields>(k: K, v: LeadFormFields[K]) => {
-    if (!startedRef.current && (k === "contact" || k === "task" || k === "name")) {
+    if (
+      !startedRef.current &&
+      (k === "contact" ||
+        k === "task" ||
+        k === "name" ||
+        k === "productType" ||
+        k === "users" ||
+        k === "integrations" ||
+        k === "timeline")
+    ) {
       startedRef.current = true;
       trackLeadFormStart();
     }
@@ -252,7 +267,11 @@ export default function LeadFormModal({
     const result = await submitLead({
       name: form.name.trim(),
       contact: form.contact.trim(),
+      productType: form.productType,
+      users: form.users.trim(),
       task: form.task.trim(),
+      integrations: form.integrations.trim(),
+      timeline: form.timeline,
       budget: form.budget,
       consent: form.consent,
       company_fax_url: form.company_fax_url,
@@ -563,6 +582,39 @@ export default function LeadFormModal({
                     </div>
                   ) : null}
 
+                  <div>
+                    <div className={labelClass}>
+                      {copy.productType}{" "}
+                      <span className="font-normal text-white/45">
+                        ({copy.productTypeOptional})
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2" role="group" aria-label={copy.productType}>
+                      {copy.productTypes.map((type) => {
+                        const active = form.productType === type.id;
+                        return (
+                          <button
+                            key={type.id}
+                            type="button"
+                            disabled={status === "loading"}
+                            onClick={() =>
+                              update("productType", active ? "" : (type.id as ProductTypeId))
+                            }
+                            className={cx(
+                              "h-9 rounded-full px-3.5 text-[12px] font-medium transition",
+                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40",
+                              active
+                                ? "bg-[#FF9A3D] text-black"
+                                : "bg-white/[0.08] text-white/75 hover:bg-white/[0.12] hover:text-white"
+                            )}
+                          >
+                            {type.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                     <div className="min-w-0">
                       <label htmlFor="lead-name" className={labelClass}>
@@ -610,6 +662,24 @@ export default function LeadFormModal({
                   </div>
 
                   <div className="min-w-0">
+                    <label htmlFor="lead-users" className={labelClass}>
+                      {copy.users}
+                    </label>
+                    <input
+                      id="lead-users"
+                      name="users"
+                      type="text"
+                      autoComplete="off"
+                      placeholder={copy.usersPh}
+                      className={inputBase}
+                      value={form.users}
+                      onChange={(e) => update("users", e.target.value)}
+                      disabled={status === "loading"}
+                      {...HOTJAR_SUPPRESS_ATTR}
+                    />
+                  </div>
+
+                  <div className="min-w-0">
                     <label htmlFor="lead-task" className={labelClass}>
                       {copy.task} *
                     </label>
@@ -639,6 +709,52 @@ export default function LeadFormModal({
                       aria-invalid={errorField === "task"}
                       {...HOTJAR_SUPPRESS_ATTR}
                     />
+                  </div>
+
+                  <div className="min-w-0">
+                    <label htmlFor="lead-integrations" className={labelClass}>
+                      {copy.integrations}
+                    </label>
+                    <input
+                      id="lead-integrations"
+                      name="integrations"
+                      type="text"
+                      autoComplete="off"
+                      placeholder={copy.integrationsPh}
+                      className={inputBase}
+                      value={form.integrations}
+                      onChange={(e) => update("integrations", e.target.value)}
+                      disabled={status === "loading"}
+                      {...HOTJAR_SUPPRESS_ATTR}
+                    />
+                  </div>
+
+                  <div>
+                    <div className={labelClass}>{copy.timeline}</div>
+                    <div className="flex flex-wrap gap-2" role="group" aria-label={copy.timeline}>
+                      {copy.timelines.map((timeline) => {
+                        const active = form.timeline === timeline.id;
+                        return (
+                          <button
+                            key={timeline.id}
+                            type="button"
+                            disabled={status === "loading"}
+                            onClick={() =>
+                              update("timeline", active ? "" : (timeline.id as TimelineId))
+                            }
+                            className={cx(
+                              "h-9 rounded-full px-3.5 text-[12px] font-medium transition",
+                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40",
+                              active
+                                ? "bg-white text-black"
+                                : "bg-white/[0.08] text-white/75 hover:bg-white/[0.12] hover:text-white"
+                            )}
+                          >
+                            {timeline.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   <div>

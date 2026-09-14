@@ -4,7 +4,7 @@ import { ArrowUpRight, Check } from "lucide-react";
 import Container from "../ui/Container";
 import Section from "../ui/Section";
 import Reveal from "../ui/Reveal";
-import { useLang } from "../../i18n/LangProvider";
+import { useLang, type Lang } from "../../i18n/LangProvider";
 import { homeExtraCopy } from "../../i18n/homeExtraCopy";
 import { pricingCopy } from "../../i18n/pricingCopy";
 import type { PlanId } from "../../lib/pricingData";
@@ -42,11 +42,11 @@ const GRID_PLANS: { id: PlanId; video: PlanVideoId; footRu: string; footEn: stri
   },
 ];
 
-const PLAN_TAGS: Record<PlanId, { ru: string; en: string }> = {
-  start: { ru: "Заявки", en: "Leads" },
-  growth: { ru: "Система", en: "System" },
-  product: { ru: "Продукт", en: "Product" },
-  custom: { ru: "Масштаб", en: "Scale", zh: "定制" },
+const PLAN_TAGS: Record<PlanId, Record<Lang, string>> = {
+  start: { ru: "Launch", en: "Launch", zh: "启动" },
+  growth: { ru: "Ops", en: "Ops", zh: "运营" },
+  product: { ru: "MVP", en: "MVP", zh: "MVP" },
+  custom: { ru: "Product Engineering", en: "Product Engineering", zh: "产品工程" },
 };
 
 function clamp01(v: number) {
@@ -62,8 +62,8 @@ function usePlanPhotoScale(sectionRef: RefObject<HTMLElement | null>) {
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) {
-      setScale(1.12);
-      return;
+      const id = requestAnimationFrame(() => setScale(1.12));
+      return () => cancelAnimationFrame(id);
     }
 
     let raf = 0;

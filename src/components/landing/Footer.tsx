@@ -292,7 +292,12 @@ function Footer() {
                 </h2>
 
                 <p className="site-footer__touch-lead">
-                  {t3(lang, "Ваш техпартнёр по сайтам, ботам и CRM", "Your tech partner for sites, bots and CRM", "您的网站、机器人与 CRM 技术伙伴")}
+                  {t3(
+                    lang,
+                    "Founder-led product engineering для рабочих систем",
+                    "Founder-led product engineering for working systems",
+                    "面向真实系统的 founder-led product engineering"
+                  )}
                 </p>
 
                 <a href={FOOTER_MAILTO_URL} className="site-footer__touch-row">
@@ -406,7 +411,7 @@ function Footer() {
               }}
             >
               <p className="site-footer__sell-kicker">
-                {t3(lang, "Ваш техпартнёр", "Your tech partner", "您的技术伙伴")}
+                {t3(lang, "Product engineering", "Product engineering", "产品工程")}
               </p>
               <p className="site-footer__sell-word" ref={sellWordRef} aria-label="TIVONIX">
                 tivonix

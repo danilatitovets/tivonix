@@ -22,7 +22,7 @@ import { t3 } from "../i18n/pick";
 const HEADER_H = 72;
 const CANONICAL_ORIGIN = "https://tivonix.tech";
 
-const BULLET_RE = /^[•\-]\s*/;
+const BULLET_RE = /^[•-]\s*/;
 const LEAD_META_RE = /^(Формат|Срок|Format|Timeline|Продукт|Product)\s*:/i;
 
 const BODY =
@@ -675,7 +675,6 @@ function MoreLikeThis({
 }
 
 function MoreProjectCard({ project, lang }: { project: Project; lang: Lang }) {
-  const isRu = lang === "ru";
   const cover = projectPreviewSrc(project);
   const subtitle = projectSubtitle(project, lang);
 
@@ -762,9 +761,9 @@ export default function ProjectDetailPage() {
       subtitle +
         t3(
           lang,
-          " Студия TIVONIX: веб-разработка, лендинги, продукты и MVP.",
-          " TIVONIX studio: web development, landings, products and MVPs.",
-          " 白俄罗斯技术团队 TIVONIX：网站开发、落地页、产品与 MVP。"
+          " TIVONIX: product engineering, backend, integrations, admin panels and production launch.",
+          " TIVONIX: product engineering, backend, integrations, admin panels and production launch.",
+          " TIVONIX：产品工程、后端、集成、管理端与 production launch。"
         )
   );
   const wip = project.status === "wip";

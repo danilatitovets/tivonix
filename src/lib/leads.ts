@@ -6,13 +6,32 @@ export type BudgetId =
   | "500_1500"
   | "1500_5000"
   | "from_5000"
+  | "from_20000"
   | "unknown"
   | "";
+
+export type ProductTypeId =
+  | "saas"
+  | "marketplace"
+  | "fintech"
+  | "internal_system"
+  | "crm_erp"
+  | "telegram"
+  | "ai_automation"
+  | "website_funnel"
+  | "other"
+  | "";
+
+export type TimelineId = "asap" | "month" | "quarter" | "flexible" | "";
 
 export type LeadFormFields = {
   name: string;
   contact: string;
+  productType: ProductTypeId;
+  users: string;
   task: string;
+  integrations: string;
+  timeline: TimelineId;
   budget: BudgetId;
   consent: boolean;
   /** Honeypot — must stay empty (avoid name "website": browsers autofill it) */
@@ -38,7 +57,11 @@ export type LeadMeta = {
 export type LeadSubmitBody = {
   name: string;
   contact: string;
+  productType: ProductTypeId;
+  users: string;
   task: string;
+  integrations: string;
+  timeline: TimelineId;
   budget: BudgetId;
   consent: boolean;
   company_fax_url: string;
@@ -132,7 +155,7 @@ export function suggestedBudgetForPlan(planId: string | null | undefined): Budge
     case "product":
       return "from_5000";
     case "custom":
-      return "unknown";
+      return "from_20000";
     default:
       return "";
   }
