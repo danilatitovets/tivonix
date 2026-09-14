@@ -50,24 +50,39 @@ export default function NeoTerminalAiChapter({ lang }: { lang: Lang }) {
         <p className="mt-5 text-[15px] font-medium leading-[1.65] text-white/55 sm:text-[16px]">
           {c.lead}
         </p>
+      </div>
 
-        <div className="mt-7 flex flex-wrap justify-center gap-2">
-          {c.queryChips.map((q) => (
-            <span
-              key={q}
-              className="rounded-full bg-white/[0.07] px-3.5 py-2 text-[13px] font-medium text-white/75"
-            >
-              {q}
-            </span>
-          ))}
+      {/* Full-bleed query strips: left + right */}
+      <div className="neo-ai-chip-marquee" aria-hidden>
+        <div className="neo-ai-chip-marquee__rows">
+          <div className="neo-ai-chip-marquee__row">
+            <div className="neo-ai-chip-marquee__track neo-ai-chip-marquee__track--left">
+              {[...c.queryChipsRowA, ...c.queryChipsRowA].map((q, i) => (
+                <span key={`a-${i}-${q}`} className="neo-ai-chip-marquee__chip">
+                  {q}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="neo-ai-chip-marquee__row">
+            <div className="neo-ai-chip-marquee__track neo-ai-chip-marquee__track--right">
+              {[...c.queryChipsRowB, ...c.queryChipsRowB].map((q, i) => (
+                <span key={`b-${i}-${q}`} className="neo-ai-chip-marquee__chip">
+                  {q}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
+      </div>
 
+      <div className="mx-auto mt-8 flex max-w-[44rem] flex-col items-center text-center">
         {/* Chat-style input → AI Pilot */}
         <a
           href={NEO_AI_PILOT_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="group mt-8 flex w-full max-w-[28rem] items-center gap-3 rounded-full border border-white/[0.12] bg-white/[0.06] py-2 pl-5 pr-2 text-left transition hover:border-white/20 hover:bg-white/[0.09]"
+          className="group flex w-full max-w-[28rem] items-center gap-3 rounded-full border border-white/[0.12] bg-white/[0.06] py-2 pl-5 pr-2 text-left transition hover:border-white/20 hover:bg-white/[0.09]"
           aria-label={c.ctaPilot}
         >
           <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-white/40 transition group-hover:text-white/55">

@@ -3873,6 +3873,84 @@
   }
 }
 
+/* Neo Terminal AI chapter — edge-to-edge query chip marquees */
+.neo-ai-chip-marquee {
+  position: relative;
+  left: 50%;
+  width: 100vw;
+  max-width: 100vw;
+  margin-top: 1.75rem;
+  transform: translateX(-50%);
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.neo-ai-chip-marquee__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.neo-ai-chip-marquee__row {
+  overflow: hidden;
+}
+
+.neo-ai-chip-marquee__track {
+  display: flex;
+  width: max-content;
+  gap: 0.5rem;
+  will-change: transform;
+}
+
+.neo-ai-chip-marquee__track--left {
+  animation: neo-ai-chip-marquee-left 42s linear infinite;
+}
+
+.neo-ai-chip-marquee__track--right {
+  animation: neo-ai-chip-marquee-right 46s linear infinite;
+}
+
+.neo-ai-chip-marquee:hover .neo-ai-chip-marquee__track {
+  animation-play-state: paused;
+}
+
+.neo-ai-chip-marquee__chip {
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 0.5rem 0.9rem;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  white-space: nowrap;
+}
+
+@keyframes neo-ai-chip-marquee-left {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes neo-ai-chip-marquee-right {
+  from {
+    transform: translate3d(-50%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neo-ai-chip-marquee__track--left,
+  .neo-ai-chip-marquee__track--right {
+    animation: none;
+  }
+}
+
 @media (min-width: 640px) {
   .tivonix-audience__subtitle {
     font-size: 16px;
