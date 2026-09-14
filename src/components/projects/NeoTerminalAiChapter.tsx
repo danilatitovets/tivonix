@@ -26,23 +26,24 @@ export default function NeoTerminalAiChapter({ lang }: { lang: Lang }) {
       aria-labelledby="neo-ai-heading"
     >
       <div className="mx-auto flex max-w-[44rem] flex-col items-center text-center">
-        <img
-          src="/projects/terminal-neo/ai/ai-mark.png"
-          alt=""
-          width={56}
-          height={56}
-          className="h-14 w-14 object-contain"
-          decoding="async"
-          aria-hidden
-        />
-
-        <p className="mt-5 text-[11px] font-medium uppercase tracking-[0.16em] text-white/45">
-          {c.eyebrow}
-        </p>
+        <div className="flex items-center justify-center gap-3 sm:gap-3.5">
+          <img
+            src="/projects/terminal-neo/ai/ai-mark.png"
+            alt=""
+            width={40}
+            height={40}
+            className="h-9 w-9 shrink-0 rounded-full bg-white object-cover sm:h-10 sm:w-10"
+            decoding="async"
+            aria-hidden
+          />
+          <p className="font-hero text-[clamp(1.05rem,2.4vw,1.35rem)] font-normal uppercase leading-none tracking-[0.06em] text-white">
+            {c.eyebrow}
+          </p>
+        </div>
 
         <h2
           id="neo-ai-heading"
-          className="mt-4 font-hero text-[clamp(1.75rem,4vw,2.85rem)] font-normal uppercase leading-[1.02] tracking-[0.02em] text-white text-balance"
+          className="mt-6 font-hero text-[clamp(1.75rem,4vw,2.85rem)] font-normal uppercase leading-[1.02] tracking-[0.02em] text-white text-balance"
         >
           {c.heading}
         </h2>
