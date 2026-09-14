@@ -29,9 +29,9 @@ export default function NeoTerminalAiChapter({ lang }: { lang: Lang }) {
         <img
           src="/projects/terminal-neo/ai/ai-mark.png"
           alt=""
-          width={48}
-          height={48}
-          className="h-12 w-12 rounded-full bg-white object-contain p-1.5"
+          width={56}
+          height={56}
+          className="h-14 w-14 object-contain"
           decoding="async"
           aria-hidden
         />
@@ -120,14 +120,17 @@ export default function NeoTerminalAiChapter({ lang }: { lang: Lang }) {
         </div>
       </div>
 
-      {/* Metrics */}
-      <div className="mt-16 grid grid-cols-2 gap-x-6 gap-y-8 text-center sm:mt-20 sm:grid-cols-4 sm:gap-x-8">
+      {/* Metrics — blocks */}
+      <div className="mt-16 grid grid-cols-2 gap-2.5 sm:mt-20 sm:grid-cols-4 sm:gap-4">
         {c.metrics.map((m) => (
-          <div key={m.label} className="min-w-0">
-            <p className="font-hero text-[clamp(2rem,4.5vw,2.75rem)] font-normal leading-none tracking-[0.02em] text-white">
+          <div
+            key={m.label}
+            className="min-w-0 rounded-[12px] bg-[#1c1c1f] px-4 py-5 text-center sm:px-5 sm:py-6"
+          >
+            <p className="font-hero text-[clamp(1.85rem,3.8vw,2.5rem)] font-normal leading-none tracking-[0.02em] text-white">
               {m.value}
             </p>
-            <p className="mx-auto mt-2.5 max-w-[14rem] text-[12.5px] font-medium leading-snug text-white/42">
+            <p className="mx-auto mt-3 max-w-[12rem] text-[12px] font-medium leading-snug text-white/45 sm:text-[12.5px]">
               {m.label}
             </p>
           </div>
