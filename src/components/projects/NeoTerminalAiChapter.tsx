@@ -120,17 +120,26 @@ export default function NeoTerminalAiChapter({ lang }: { lang: Lang }) {
         </div>
       </div>
 
-      {/* Metrics — blocks */}
-      <div className="mt-16 grid grid-cols-2 gap-2.5 sm:mt-20 sm:grid-cols-4 sm:gap-4">
+      {/* Metrics — long blocks + generated icon top-right */}
+      <div className="mt-16 grid grid-cols-1 gap-3 sm:mt-20 sm:grid-cols-2 sm:gap-4">
         {c.metrics.map((m) => (
           <div
             key={m.label}
-            className="min-w-0 rounded-[12px] bg-[#1c1c1f] px-4 py-5 text-center sm:px-5 sm:py-6"
+            className="relative min-h-[7.5rem] min-w-0 overflow-hidden rounded-[14px] bg-[#1c1c1f] px-5 py-5 pr-20 sm:min-h-[8.25rem] sm:px-6 sm:py-6 sm:pr-24"
           >
-            <p className="font-hero text-[clamp(1.85rem,3.8vw,2.5rem)] font-normal leading-none tracking-[0.02em] text-white">
+            <img
+              src={m.icon}
+              alt=""
+              width={56}
+              height={56}
+              className="pointer-events-none absolute right-3 top-3 h-12 w-12 rounded-[10px] object-cover sm:right-4 sm:top-4 sm:h-14 sm:w-14 sm:rounded-[12px]"
+              decoding="async"
+              aria-hidden
+            />
+            <p className="font-hero text-[clamp(2rem,4vw,2.65rem)] font-normal leading-none tracking-[0.02em] text-white">
               {m.value}
             </p>
-            <p className="mx-auto mt-3 max-w-[12rem] text-[12px] font-medium leading-snug text-white/45 sm:text-[12.5px]">
+            <p className="mt-3 max-w-[18rem] text-[13px] font-medium leading-snug text-white/45 sm:text-[14px]">
               {m.label}
             </p>
           </div>

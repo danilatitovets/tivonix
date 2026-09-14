@@ -65,18 +65,22 @@ export function neoAiCopy(lang: Lang) {
       {
         value: String(NEO_AI_METRICS.catalogSkus),
         label: en ? "SKUs in staging catalog" : "товаров в staging-каталоге",
+        icon: "/projects/terminal-neo/ai/metric-catalog.png",
       },
       {
         value: String(NEO_AI_METRICS.benchmarkScenarios),
         label: en ? "benchmark scenarios" : "benchmark-сценариев",
+        icon: "/projects/terminal-neo/ai/metric-benchmark.png",
       },
       {
         value: String(NEO_AI_METRICS.hallucinatedFacts),
         label: en ? "hallucinated product facts allowed" : "выдуманных фактов о товаре",
+        icon: "/projects/terminal-neo/ai/metric-truth.png",
       },
       {
         value: String(NEO_AI_METRICS.modes),
         label: en ? "modes: Global + Product Expert" : "режима: Global + Product Expert",
+        icon: "/projects/terminal-neo/ai/metric-modes.png",
       },
     ],
     chatPlaceholder: en ? "Ask the AI consultant…" : "Спросить у ИИ…",
