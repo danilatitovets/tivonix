@@ -15,6 +15,7 @@ import { trackProjectView } from "../lib/analytics";
 import { useEffect } from "react";
 import { pathForLang, canonicalPathForLang } from "../lib/localePaths";
 import type { Lang } from "../i18n/LangProvider";
+import { stackIconFor } from "../lib/stackIcons";
 
 const ALL_FILTER = "all";
 
@@ -95,9 +96,19 @@ function ProjectGridCard({ p, isRu, lang }: { p: Project; isRu: boolean; lang: L
           <p className="mt-1.5 line-clamp-2 text-[12.5px] leading-snug text-white/52">{subtitle}</p>
           <p className="mt-1.5 text-[11.5px] text-white/38">{role}</p>
           {p.stack?.length ? (
-            <p className="mt-1.5 truncate text-[11px] text-white/35">
-              {(p.stack ?? []).slice(0, 4).join(" · ")}
-            </p>
+            <ul className="mt-2 flex flex-wrap gap-1.5" aria-label="Stack">
+              {(p.stack ?? []).slice(0, 4).map((tech) => (
+                <li
+                  key={tech}
+                  className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-[#1c1c1f] px-2 py-1 text-[11px] font-medium tracking-normal text-[#c3c3cc]"
+                >
+                  <span className="grid h-3.5 w-3.5 shrink-0 place-items-center text-white/70 [&>svg]:h-3.5 [&>svg]:w-3.5">
+                    {stackIconFor(tech)}
+                  </span>
+                  <span className="min-w-0 truncate">{tech}</span>
+                </li>
+              ))}
+            </ul>
           ) : null}
           {domainClean && siteOpen ? (
             <a
