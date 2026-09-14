@@ -128,10 +128,10 @@ export default function NeoTerminalAiChapter({ lang }: { lang: Lang }) {
               <SoftImg
                 src={shot.src}
                 alt={isRu ? shot.altRu : shot.altEn}
-                className="aspect-[16/9] w-full object-cover object-top sm:aspect-[1024/581]"
+                className="h-auto w-full object-contain object-top"
                 loading="lazy"
                 decoding="async"
-                fade
+                fade={false}
               />
             </button>
           ))}
