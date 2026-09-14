@@ -12,11 +12,11 @@
 
 ## Astra commits
 
-1. `b7a4578` `fix(analytics): count conversions after delivered lead`
-2. `0d65183` `feat(leads): introduce structured product brief`
-3. `c99d607` `feat(positioning): elevate product engineering proof`
-4. `ce32c9c` `perf(mileseal): defer PDF export dependencies`
-5. `a3aed52` `chore(deps): apply safe npm audit updates`
+1. `de05c24ce517cf7e6c3584e191cdaee7f9ac09f4` `fix(analytics): count conversions after delivered lead`
+2. `96c7169aea1a8e895ec67bf802ab72759ff2aef3` `feat(leads): introduce structured product brief`
+3. `17949476e5baba886f0e932e040760ccce59a235` `feat(positioning): elevate product engineering proof`
+4. `b1b265ebb8cf2a77b61e7aa2f4395148b4502677` `perf(mileseal): defer PDF export dependencies`
+5. `4586edbd12be58692dca4be23f1439e334952fb0` `chore(deps): apply safe npm audit updates`
 
 ## What changed
 
