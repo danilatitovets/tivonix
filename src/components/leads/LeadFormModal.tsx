@@ -38,7 +38,7 @@ import {
 import type { PlanId } from "../../lib/pricingData";
 import { planPagePrice, pricingCopy } from "../../i18n/pricingCopy";
 import BgLoopVideo from "../ui/BgLoopVideo";
-import { Plus } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { ctaClass } from "./ctaStyles";
 
 function cx(...a: Array<string | false | null | undefined>) {
@@ -436,7 +436,7 @@ export default function LeadFormModal({
       className={cx(
         "fixed inset-0 z-[115]",
         "flex items-end justify-center sm:items-center",
-        "px-0 sm:px-5 py-0 sm:pt-[calc(var(--tivonix-header-spacer)+0.5rem)] sm:pb-5"
+        "px-0 sm:px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-0 sm:pt-[calc(var(--tivonix-header-spacer)+0.5rem)] sm:pb-5"
       )}
       aria-hidden={!open}
     >
@@ -469,6 +469,9 @@ export default function LeadFormModal({
         }
         @media (prefers-reduced-motion: reduce) {
           .lead-sent-word, .lead-sent-details { animation: none; }
+        }
+        .lead-submit-cta:hover .tivonix-cta-primary__icon-svg {
+          transform: translateX(2px);
         }
       `}</style>
 
@@ -912,7 +915,7 @@ export default function LeadFormModal({
             </div>
 
             {/* footer */}
-              <div className="relative z-10 shrink-0 bg-[#0b0b0d] px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2 sm:px-7 sm:pb-5">
+              <div className="relative z-10 shrink-0 bg-[#0b0b0d] px-5 pb-5 pt-2 sm:px-7 sm:pb-6">
                 <div
                   aria-hidden
                   className="mb-3 h-px w-full opacity-60"
@@ -963,7 +966,7 @@ export default function LeadFormModal({
                     "primary",
                     "lg",
                     cx(
-                      "w-full shadow-[0_12px_40px_rgba(255,107,44,0.28)]",
+                      "lead-submit-cta w-full shadow-[0_12px_40px_rgba(255,107,44,0.28)]",
                       status === "loading" && "cursor-not-allowed opacity-70"
                     ),
                     true
@@ -973,7 +976,7 @@ export default function LeadFormModal({
                     {status === "loading" ? copy.sending : copy.send}
                   </span>
                   <span className="tivonix-cta-primary__icon" aria-hidden="true">
-                    <Plus className="tivonix-cta-primary__icon-svg" />
+                    <ArrowRight className="tivonix-cta-primary__icon-svg" />
                   </span>
                 </button>
               </div>
