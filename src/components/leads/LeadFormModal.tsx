@@ -228,7 +228,9 @@ export default function LeadFormModal({
         k === "productType" ||
         k === "users" ||
         k === "integrations" ||
-        k === "timeline")
+        k === "timeline" ||
+        k === "budget" ||
+        k === "consent")
     ) {
       startedRef.current = true;
       trackLeadFormStart();
@@ -249,12 +251,15 @@ export default function LeadFormModal({
       if (v.messageKey === "contact") {
         setFieldError(copy.errors.contact);
         contactRef.current?.focus();
+        contactRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       } else if (v.messageKey === "task") {
         setFieldError(copy.errors.task);
         taskRef.current?.focus();
+        taskRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       } else {
         setFieldError(copy.errors.consent);
         consentRef.current?.focus();
+        consentRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       }
       return;
     }
@@ -386,7 +391,7 @@ export default function LeadFormModal({
           style={{ background: FRAME }}
         >
           <div
-            className="relative flex min-h-[min(72dvh,620px)] max-h-[min(94dvh,780px)] flex-col overflow-hidden rounded-t-[27px] bg-[#0b0b0d] sm:rounded-[27px]"
+            className="relative flex min-h-[min(78dvh,640px)] max-h-[min(94dvh,820px)] flex-col overflow-hidden rounded-t-[27px] bg-[#0b0b0d] sm:rounded-[27px]"
           >
             <div
               aria-hidden
@@ -526,11 +531,11 @@ export default function LeadFormModal({
               <div className="relative min-w-0 pr-2">
                 <h2
                   id={titleId}
-                  className="text-[17px] font-extrabold tracking-tight text-white sm:text-[19px]"
+                  className="text-[17px] font-semibold tracking-tight text-white sm:text-[19px]"
                 >
                   {copy.title}
                 </h2>
-                <p id={descId} className="mt-1 max-w-[46ch] text-[12px] leading-snug text-white/70 sm:text-[12.5px]">
+                <p id={descId} className="mt-1.5 max-w-[46ch] text-[12.5px] leading-snug text-white/68 sm:text-[13px]">
                   {copy.subtitle}
                 </p>
               </div>
@@ -589,7 +594,11 @@ export default function LeadFormModal({
                         ({copy.productTypeOptional})
                       </span>
                     </div>
-                    <div className="flex flex-wrap gap-2" role="group" aria-label={copy.productType}>
+                    <div
+                      className="flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden"
+                      role="group"
+                      aria-label={copy.productType}
+                    >
                       {copy.productTypes.map((type) => {
                         const active = form.productType === type.id;
                         return (
@@ -601,7 +610,7 @@ export default function LeadFormModal({
                               update("productType", active ? "" : (type.id as ProductTypeId))
                             }
                             className={cx(
-                              "h-9 rounded-full px-3.5 text-[12px] font-medium transition",
+                              "h-8 shrink-0 rounded-full px-3 text-[11.5px] font-medium transition",
                               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40",
                               active
                                 ? "bg-[#FF9A3D] text-black"
@@ -688,16 +697,18 @@ export default function LeadFormModal({
                       id="lead-task"
                       name="task"
                       required
-                      rows={4}
+                      rows={3}
                       placeholder={
                         activePlanId && planName
                           ? lang === "ru"
                             ? `Что важно по плану ${planName}? Сроки, примеры, пожелания…`
-                            : `What matters for the ${planName} plan? Timeline, examples, notes…`
+                            : lang === "zh"
+                              ? `关于 ${planName} 方案，哪些最重要？周期、示例、备注…`
+                              : `What matters for the ${planName} plan? Timeline, examples, notes…`
                           : copy.taskPh
                       }
                       className={cx(
-                        "min-h-[108px] w-full resize-none rounded-xl px-4 py-3 text-[14px] font-medium",
+                        "min-h-[88px] w-full resize-none rounded-xl px-4 py-3 text-[14px] font-medium",
                         "border-0 bg-white/[0.10] text-white placeholder:text-white/40",
                         "outline-none focus:bg-white/[0.14] transition",
                         HOTJAR_MASK_CLASS,
@@ -729,92 +740,68 @@ export default function LeadFormModal({
                     />
                   </div>
 
-                  <div>
-                    <div className={labelClass}>{copy.timeline}</div>
-                    <div className="flex flex-wrap gap-2" role="group" aria-label={copy.timeline}>
-                      {copy.timelines.map((timeline) => {
-                        const active = form.timeline === timeline.id;
-                        return (
-                          <button
-                            key={timeline.id}
-                            type="button"
-                            disabled={status === "loading"}
-                            onClick={() =>
-                              update("timeline", active ? "" : (timeline.id as TimelineId))
-                            }
-                            className={cx(
-                              "h-9 rounded-full px-3.5 text-[12px] font-medium transition",
-                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40",
-                              active
-                                ? "bg-white text-black"
-                                : "bg-white/[0.08] text-white/75 hover:bg-white/[0.12] hover:text-white"
-                            )}
-                          >
-                            {timeline.label}
-                          </button>
-                        );
-                      })}
+                  <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+                    <div>
+                      <div className={labelClass}>{copy.timeline}</div>
+                      <div className="flex flex-wrap gap-1.5" role="group" aria-label={copy.timeline}>
+                        {copy.timelines.map((timeline) => {
+                          const active = form.timeline === timeline.id;
+                          return (
+                            <button
+                              key={timeline.id}
+                              type="button"
+                              disabled={status === "loading"}
+                              onClick={() =>
+                                update("timeline", active ? "" : (timeline.id as TimelineId))
+                              }
+                              className={cx(
+                                "h-8 rounded-full px-3 text-[11.5px] font-medium transition",
+                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40",
+                                active
+                                  ? "bg-white text-black"
+                                  : "bg-white/[0.08] text-white/75 hover:bg-white/[0.12] hover:text-white"
+                              )}
+                            >
+                              {timeline.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className={labelClass}>
+                        {copy.budget}{" "}
+                        <span className="font-normal text-white/45">({copy.budgetOptional})</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5" role="group" aria-label={copy.budget}>
+                        {budgetOptions.map((b) => {
+                          const active = form.budget === b.id;
+                          return (
+                            <button
+                              key={b.id}
+                              type="button"
+                              disabled={status === "loading"}
+                              onClick={() =>
+                                update("budget", active ? "" : (b.id as BudgetId))
+                              }
+                              className={cx(
+                                "h-8 rounded-full px-3 text-[11.5px] font-medium transition",
+                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40",
+                                active
+                                  ? "bg-white text-black"
+                                  : "bg-white/[0.08] text-white/75 hover:bg-white/[0.12] hover:text-white"
+                              )}
+                            >
+                              {b.label}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 
-                  <div>
-                    <div className={labelClass}>
-                      {copy.budget}{" "}
-                      <span className="font-normal text-white/45">({copy.budgetOptional})</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2" role="group" aria-label={copy.budget}>
-                      {budgetOptions.map((b) => {
-                        const active = form.budget === b.id;
-                        return (
-                          <button
-                            key={b.id}
-                            type="button"
-                            disabled={status === "loading"}
-                            onClick={() =>
-                              update("budget", active ? "" : (b.id as BudgetId))
-                            }
-                            className={cx(
-                              "h-9 rounded-full px-3.5 text-[12px] font-medium transition",
-                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40",
-                              active
-                                ? "bg-white text-black"
-                                : "bg-white/[0.08] text-white/75 hover:bg-white/[0.12] hover:text-white"
-                            )}
-                          >
-                            {b.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <label className="flex cursor-pointer items-start gap-2.5 px-0.5 py-1">
-                    <input
-                      ref={consentRef}
-                      type="checkbox"
-                      checked={form.consent}
-                      onChange={(e) => update("consent", e.target.checked)}
-                      disabled={status === "loading"}
-                      className={cx(
-                        "mt-0.5 h-4 w-4 shrink-0 accent-[#FF9A3D]",
-                        errorField === "consent" && "outline outline-2 outline-[#FF9A3D]/60 outline-offset-2"
-                      )}
-                      aria-required="true"
-                    />
-                    <span className="text-[13px] leading-snug text-white/70">
-                      {copy.consent}{" "}
-                      <a
-                        href={copy.privacyHref}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-medium text-[#FFB36A] underline decoration-[#FF9A3D]/30 underline-offset-2 hover:text-[#FFD7B0]"
-                      >
-                        {copy.privacyLabel}
-                      </a>
-                    </span>
-                  </label>
-
-                  {fieldError ? (
+                  {fieldError && errorField !== "consent" ? (
                     <p id="lead-field-error" role="alert" className="text-[12.5px] text-[#FFB36A]">
                       {fieldError}
                     </p>
@@ -851,7 +838,7 @@ export default function LeadFormModal({
             </div>
 
             {/* footer */}
-              <div className="relative z-10 shrink-0 bg-[#0b0b0d] px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-5">
+              <div className="relative z-10 shrink-0 bg-[#0b0b0d] px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2 sm:px-7 sm:pb-5">
                 <div
                   aria-hidden
                   className="mb-3 h-px w-full opacity-60"
@@ -860,6 +847,40 @@ export default function LeadFormModal({
                       "linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent)",
                   }}
                 />
+
+                <label className="mb-3 flex cursor-pointer items-start gap-2.5 px-0.5">
+                  <input
+                    ref={consentRef}
+                    type="checkbox"
+                    checked={form.consent}
+                    onChange={(e) => update("consent", e.target.checked)}
+                    disabled={status === "loading"}
+                    className={cx(
+                      "mt-0.5 h-4 w-4 shrink-0 accent-[#FF9A3D]",
+                      errorField === "consent" && "outline outline-2 outline-[#FF9A3D]/60 outline-offset-2"
+                    )}
+                    aria-required="true"
+                    aria-invalid={errorField === "consent"}
+                  />
+                  <span className="text-[12.5px] leading-snug text-white/70">
+                    {copy.consent}{" "}
+                    <a
+                      href={copy.privacyHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-[#FFB36A] underline decoration-[#FF9A3D]/30 underline-offset-2 hover:text-[#FFD7B0]"
+                    >
+                      {copy.privacyLabel}
+                    </a>
+                  </span>
+                </label>
+
+                {fieldError && errorField === "consent" ? (
+                  <p id="lead-field-error" role="alert" className="mb-2.5 text-[12.5px] text-[#FFB36A]">
+                    {fieldError}
+                  </p>
+                ) : null}
+
                 <button
                   type="submit"
                   form="lead-form"
@@ -876,7 +897,11 @@ export default function LeadFormModal({
                   {status === "loading" ? copy.sending : copy.send}
                 </button>
 
-                <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-[11.5px] text-white/40">
+                <p className="mt-2.5 text-center text-[11px] leading-snug text-white/40">
+                  {copy.formNote}
+                </p>
+
+                <div className="mt-2.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-[11.5px] text-white/40">
                   <a
                     href={TELEGRAM_DIRECT_URL}
                     target="_blank"

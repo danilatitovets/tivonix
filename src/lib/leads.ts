@@ -161,12 +161,26 @@ export function suggestedBudgetForPlan(planId: string | null | undefined): Budge
   }
 }
 
+/** Same rules as api/leads.ts — keep client/server in sync. */
+export function isValidContact(contact: string): boolean {
+  const value = contact.trim();
+  if (value.length < 3 || value.length > 200) return false;
+  // eslint-disable-next-line no-control-regex -- reject control / CRLF in contact
+  if (/[\r\n\u0000-\u001F\u007F]/.test(value)) return false;
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return true;
+  if (/^@?[a-zA-Z0-9_]{4,32}$/.test(value)) return true;
+  if (/^https?:\/\/(t\.me|telegram\.me)\//i.test(value)) return true;
+  if (/^[\d\s+\-().]{6,20}$/.test(value) && (value.match(/\d/g)?.length ?? 0) >= 6) return true;
+  if (/^[\w.@+\-\s]{3,80}$/u.test(value)) return true;
+  return false;
+}
+
 export function validateLeadFields(fields: LeadFormFields): {
   ok: boolean;
   field?: "contact" | "task" | "consent";
   messageKey?: "contact" | "task" | "consent";
 } {
-  if (!fields.contact.trim() || fields.contact.trim().length < 3) {
+  if (!isValidContact(fields.contact)) {
     return { ok: false, field: "contact", messageKey: "contact" };
   }
   if (!fields.task.trim() || fields.task.trim().length < 5) {
