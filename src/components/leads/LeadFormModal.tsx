@@ -437,9 +437,9 @@ export default function LeadFormModal({
       className={cx(
         "fixed inset-0 z-[115]",
         "flex items-end justify-center sm:items-center",
-        "px-0 sm:px-5",
-        "pt-[max(0.35rem,env(safe-area-inset-top))] sm:pt-[calc(var(--tivonix-header-spacer)+0.5rem)]",
-        "pb-[max(0.35rem,env(safe-area-inset-bottom))] sm:pb-5"
+        "box-border px-0 sm:px-5",
+        "pt-[max(0.5rem,env(safe-area-inset-top))] sm:pt-[calc(var(--tivonix-header-spacer)+0.5rem)]",
+        "pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:pb-5"
       )}
       aria-hidden={!open}
     >
@@ -448,6 +448,7 @@ export default function LeadFormModal({
           overflow-y: auto;
           overflow-x: hidden;
           -webkit-overflow-scrolling: touch;
+          overscroll-behavior: contain;
           scrollbar-width: thin;
           scrollbar-color: rgba(255,154,61,.45) rgba(255,255,255,.05);
         }
@@ -486,7 +487,7 @@ export default function LeadFormModal({
       />
 
       <div
-        className="relative flex w-full max-h-full max-w-none flex-col sm:max-w-[640px] lg:max-w-[720px] transition-[transform,opacity] duration-220 ease-out"
+        className="relative flex min-h-0 w-full max-h-full max-w-none flex-col sm:max-w-[640px] lg:max-w-[720px] transition-[transform,opacity] duration-220 ease-out"
         style={
           {
             opacity: open && visible ? 1 : 0,
@@ -504,11 +505,11 @@ export default function LeadFormModal({
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div
-          className="flex min-h-0 flex-1 flex-col rounded-t-[22px] p-[1px] shadow-[0_24px_90px_rgba(0,0,0,0.62)] sm:rounded-[28px]"
+          className="flex min-h-0 max-h-full w-full flex-col overflow-hidden rounded-t-[22px] p-[1px] shadow-[0_24px_90px_rgba(0,0,0,0.62)] sm:rounded-[28px]"
           style={{ background: FRAME }}
         >
           <div
-            className="relative flex min-h-0 max-h-[calc(100dvh-0.7rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-1 flex-col overflow-hidden rounded-t-[21px] bg-[#0b0b0d] sm:min-h-[min(72dvh,600px)] sm:max-h-[min(92dvh,820px)] sm:flex-none sm:rounded-[27px]"
+            className="relative flex min-h-0 max-h-full w-full flex-col overflow-hidden rounded-t-[21px] bg-[#0b0b0d] sm:min-h-[min(68dvh,560px)] sm:max-h-[min(90dvh,820px)] sm:rounded-[27px]"
           >
             <div
               aria-hidden
@@ -638,7 +639,7 @@ export default function LeadFormModal({
 
             <div
               className={cx(
-                "relative z-10 flex min-h-0 flex-1 flex-col transition-opacity duration-300",
+                "relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden transition-opacity duration-300",
                 expandVideo && "pointer-events-none select-none opacity-0"
               )}
               aria-hidden={expandVideo}
@@ -918,7 +919,7 @@ export default function LeadFormModal({
             </div>
 
             {/* footer */}
-              <div className="relative z-10 shrink-0 border-t border-white/[0.06] bg-[#0b0b0d] px-4 pb-3.5 pt-2.5 sm:border-0 sm:px-7 sm:pb-6 sm:pt-2">
+              <div className="relative z-10 shrink-0 border-t border-white/[0.06] bg-[#0b0b0d] px-4 pb-4 pt-2.5 sm:border-0 sm:px-7 sm:pb-6 sm:pt-2">
                 <div
                   aria-hidden
                   className="mb-2.5 hidden h-px w-full opacity-60 sm:mb-3 sm:block"
