@@ -199,7 +199,6 @@ export default function LeadFormModal({
   const copy = leadFormCopy(lang);
   const pricing = pricingCopy(lang);
   const titleId = useId();
-  const descId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const contactRef = useRef<HTMLInputElement | null>(null);
   const taskRef = useRef<HTMLTextAreaElement | null>(null);
@@ -495,7 +494,6 @@ export default function LeadFormModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        aria-describedby={descId}
         ref={dialogRef}
         onMouseDown={(e) => e.stopPropagation()}
       >
@@ -648,9 +646,6 @@ export default function LeadFormModal({
                 >
                   {copy.title}
                 </h2>
-                <p id={descId} className="mt-1.5 max-w-[46ch] text-[12.5px] leading-snug text-white/68 sm:text-[13px]">
-                  {copy.subtitle}
-                </p>
               </div>
 
               <div className="pointer-events-none relative mt-5 h-4">

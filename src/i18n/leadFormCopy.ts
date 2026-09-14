@@ -92,8 +92,6 @@ const TIMELINES_ZH: { id: TimelineId; label: string }[] = [
 
 const COPY_RU = {
   title: "Короткий бриф по продукту",
-  subtitle:
-    "За 1–2 минуты опишите продукт, пользователей и главный сценарий. В ответ пришлём следующий шаг, риски, срок и диапазон стоимости.",
   productType: "Тип продукта",
   productTypeOptional: "можно уточнить позже",
   productTypes: PRODUCT_TYPES_RU,
@@ -147,14 +145,10 @@ const COPY_RU = {
   selectedPlan: "Выбранный план",
   clearPlan: "Без плана",
   planHint: "Заявка по тарифу — можно уточнить детали ниже.",
-  formNote:
-    "Ответим в течение рабочего дня. Созвон не обязателен. Контакты не передаём третьим лицам.",
 };
 
 const COPY_EN = {
   title: "Short product brief",
-  subtitle:
-    "In 1–2 minutes, describe the product, users and main workflow. We\u2019ll reply with the next step, risks, timeline and cost range.",
   productType: "Product type",
   productTypeOptional: "you can refine later",
   productTypes: PRODUCT_TYPES_EN,
@@ -207,14 +201,10 @@ const COPY_EN = {
   selectedPlan: "Selected plan",
   clearPlan: "No plan",
   planHint: "Request for this plan — add details below.",
-  formNote:
-    "We reply within a business day. A call is optional. We don\u2019t share contacts with third parties.",
 };
 
 const COPY_ZH = {
   title: "简短产品 brief",
-  subtitle:
-    "用 1–2 分钟描述产品、用户和核心流程。我们会回复下一步、风险、周期与费用区间。",
   productType: "产品类型",
   productTypeOptional: "之后可再补充",
   productTypes: PRODUCT_TYPES_ZH,
@@ -266,6 +256,4 @@ const COPY_ZH = {
   selectedPlan: "已选方案",
   clearPlan: "不选方案",
   planHint: "按该套餐提交 — 可在下方补充细节。",
-  formNote:
-    "我们会在一个工作日内回复。通话非必须。联系方式不会提供给第三方。",
 };
