@@ -35,15 +35,15 @@ const COPY_RU = {
             problem:
               "Розничные данные живут в разных местах: каталоги, ERP, сообщения, склады и таблицы. Клиенты ждут ответа, пока команда вручную сшивает одну и ту же информацию по каналам.",
             solution:
-              "Собрали единый коммерческий слой: загрузка каталога, склад, продажи с AI, «умный город», B2B-закупки, диалоги во всех каналах, оформление заказа, доставку и операции продавца.",
+              "Собрали единый коммерческий слой: загрузка каталога, склад, продажи с AI, «умный город», B2B-закупки, диалоги во всех каналах, оформление заказа, доставку и операции продавца — плюс AI Commerce консультант поверх каталога.",
             result:
-              "Одна операционная система коммерции, где товары, остатки, диалоги, заказы и бизнес-процессы живут на одном слое данных.",
+              "Одна операционная система коммерции и AI-слой: товары, остатки, диалоги, заказы и natural-language консультант на реальных данных каталога.",
             modules: [
               "AI-продавец",
+              "AI Commerce",
               "Умный склад",
               "B2B",
               "Умный город",
-              "Все каналы",
               "Кабинет продавца",
             ],
           },
@@ -284,15 +284,15 @@ const COPY_EN = {
             problem:
               "Retail data lives in different places: product catalogs, ERP systems, messages, warehouses and spreadsheets. Customers wait for answers while teams manually reconnect the same information across channels.",
             solution:
-              "We built a unified commerce layer with catalog ingestion, inventory, AI-assisted selling, Smart City discovery, B2B procurement, omnichannel conversations, checkout, delivery and merchant operations.",
+              "We built a unified commerce layer with catalog ingestion, inventory, AI-assisted selling, Smart City discovery, B2B procurement, omnichannel conversations, checkout, delivery, merchant operations — plus an AI Commerce consultant on top of the catalog.",
             result:
-              "One commerce operating system where products, stock, conversations, orders and business workflows share the same data layer.",
+              "One commerce operating system and an AI layer: products, stock, conversations, orders, and natural-language consulting on real catalog data.",
             modules: [
               "AI Seller",
+              "AI Commerce",
               "Smart Inventory",
               "B2B",
               "Smart City",
-              "Omnichannel",
               "Merchant OS",
             ],
           },
@@ -533,15 +533,15 @@ const COPY_ZH = {
             problem:
               "零售数据分散在目录、ERP、消息、仓库和表格里。客户在等回复，团队却在各渠道手工拼接同一份信息。",
             solution:
-              "我们构建了统一的商业层：目录接入、库存、AI 辅助销售、Smart City、B2B 采购、全渠道对话、结算、配送与商家运营。",
+              "我们构建了统一的商业层：目录接入、库存、AI 辅助销售、Smart City、B2B 采购、全渠道对话、结算、配送与商家运营，并在目录之上叠加 AI Commerce 顾问。",
             result:
-              "一套商业操作系统：商品、库存、对话、订单与业务流程共享同一数据层。",
+              "一套商业操作系统与 AI 层：商品、库存、对话、订单，以及基于真实目录数据的自然语言咨询。",
             modules: [
               "AI Seller",
+              "AI Commerce",
               "Smart Inventory",
               "B2B",
               "Smart City",
-              "Omnichannel",
               "Merchant OS",
             ],
           },

@@ -560,11 +560,11 @@ function buildAllProjects(isRu: boolean): Project[] {
         title: "Neo Terminal",
         category: "AI Commerce · RetailTech",
         subtitleRu:
-          "AI-платформа коммерции, которая связывает каталоги, склад, диалоги с клиентами, B2B-закупки, оформление заказа, доставку и операционку бизнеса в одну систему.",
+          "Commerce-платформа с каталогом, операционным контуром и AI-консультантом: natural-language поиск, Product Page Expert и commerce actions поверх реальных данных.",
         subtitleEn:
-          "AI commerce platform that connects product catalogs, inventory, customer conversations, B2B procurement, checkout, delivery and business automation in one operating system.",
+          "Commerce platform with catalog, merchant operations, and an AI consultant: natural-language search, Product Page Expert, and commerce actions on real catalog data.",
         subtitleZh:
-          "AI 商业平台：将商品目录、库存、客户对话、B2B 采购、结算、配送与业务运营连成一套操作系统。",
+          "商业平台：目录、运营闭环与 AI 顾问——自然语言搜索、Product Page Expert，以及基于真实目录数据的 commerce actions。",
         detailsRu:
           "Контекст клиента\n" +
           "Neo Terminal — AI-платформа коммерции, которую TIVONIX проектирует и разрабатывает как модульный продукт для розницы и B2B.\n\n" +
@@ -572,16 +572,17 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Коммерция часто ломается между системами: каталог, склад, мессенджеры, B2B-файлы и доставка живут отдельно. Нужен один коммерческий слой вместо разрозненных интерфейсов.\n\n" +
           "Что сделала TIVONIX\n" +
           "Merchant OS, Catalog & Data Hub, Smart Inventory, AI Seller, Smart City, B2B Procurement, Omnichannel, Terminal Pay, Delivery & Courier OS, аналитика и админка платформы. Импорт из YML, XLSX, CSV, CommerceML и коннекторов в единую товарную модель.\n\n" +
+          "Дополнительно разработали универсальный AI Commerce слой: глобальный консультант по каталогу и Product Page Expert с контекстом конкретного товара. Система понимает естественный язык и follow-up запросы, но цены, остатки и характеристики получает только из backend.\n\n" +
           "Зона ответственности TIVONIX\n" +
           "Архитектура продукта, UX/UI, фронтенд, бэкенд, модель данных, границы AI-оркестрации, интеграции, тестирование и инфраструктура запуска.\n\n" +
           "Подтверждённый результат\n" +
-          "Модульная платформа, где каталог, остатки, диалоги, заказы и операции продавца работают на одном слое данных. AI-ответы обрабатываются как недоверенные; действия ограничены серверными правилами.\n\n" +
+          "Модульная платформа, где каталог, остатки, диалоги, заказы и операции продавца работают на одном слое данных. AI-ответы обрабатываются как недоверенные; действия ограничены серверными правилами. Поверх каталога работает отдельный AI Commerce модуль с Global Assistant и Product Page Expert.\n\n" +
           "Технологии\n" +
           "React, TypeScript, NestJS, PostgreSQL, Prisma, Redis, BullMQ, pgvector, Playwright, Docker.\n\n" +
           "Текущий статус\n" +
-          "Продукт уже онлайн на **neo-terminal.ru**. Внешние провайдеры (платежи, мессенджеры, ERP, AI, устройства) — явные границы интеграций, включаются при внедрении.\n\n" +
+          "Продукт уже онлайн на **neo-terminal.ru**. AI pilot: **neo-terminal.ru/ai-pilot**. Внешние провайдеры (платежи, мессенджеры, ERP, AI, устройства) — явные границы интеграций, включаются при внедрении.\n\n" +
           "Следующий шаг\n" +
-          "Откройте продукт на **neo-terminal.ru** или кейс TIVONIX, чтобы посмотреть архитектуру и модули.\n",
+          "Откройте продукт на **neo-terminal.ru**, AI pilot или кейс TIVONIX, чтобы посмотреть архитектуру и модули.\n",
         detailsEn:
           "Client context\n" +
           "Neo Terminal is an AI commerce platform TIVONIX is designing and building as a modular product for retail and B2B.\n\n" +
@@ -589,16 +590,17 @@ function buildAllProjects(isRu: boolean): Project[] {
           "Commerce often breaks between systems: catalog, inventory, messengers, B2B files and delivery live separately. The product needed one commerce layer instead of isolated interfaces.\n\n" +
           "What TIVONIX delivered\n" +
           "Merchant OS, Catalog & Data Hub, Smart Inventory, AI Seller, Smart City, B2B Procurement, Omnichannel, Terminal Pay, Delivery & Courier OS, analytics and platform admin. Ingestion from YML, XLSX, CSV, CommerceML and connectors into one product model.\n\n" +
+          "Additionally, we built a reusable AI Commerce layer: a global catalog consultant and a Product Page Expert scoped to a specific SKU. The system understands natural language and follow-ups, while price, stock and attributes come only from the backend.\n\n" +
           "TIVONIX responsibility\n" +
           "Product architecture, UX/UI, frontend, backend, data model, AI orchestration boundaries, integrations, testing and deployment infrastructure.\n\n" +
           "Verified result\n" +
-          "A modular platform where catalog, stock, conversations, orders and merchant operations share one data layer. AI output is treated as untrusted; actions stay constrained by server-side rules.\n\n" +
+          "A modular platform where catalog, stock, conversations, orders and merchant operations share one data layer. AI output is treated as untrusted; actions stay constrained by server-side rules. On top of the catalog sits a separate AI Commerce module with Global Assistant and Product Page Expert.\n\n" +
           "Technology\n" +
           "React, TypeScript, NestJS, PostgreSQL, Prisma, Redis, BullMQ, pgvector, Playwright, Docker.\n\n" +
           "Current status\n" +
-          "Live product on **neo-terminal.ru**. External providers (payments, messengers, ERP, AI, devices) are explicit integration boundaries and are enabled during deployment.\n\n" +
+          "Live product on **neo-terminal.ru**. AI pilot: **neo-terminal.ru/ai-pilot**. External providers (payments, messengers, ERP, AI, devices) are explicit integration boundaries and are enabled during deployment.\n\n" +
           "Next step\n" +
-          "Open the product at **neo-terminal.ru** or the TIVONIX case to review architecture and modules.\n",
+          "Open the product at **neo-terminal.ru**, the AI pilot, or the TIVONIX case to review architecture and modules.\n",
         detailsZh:
           "为什么重要\n" +
           "现代商业很少因为没有网站而失败。它失败在**系统之间**。\n\n" +
@@ -618,9 +620,11 @@ function buildAllProjects(isRu: boolean): Project[] {
         status: "live",
         tags: [
           "AI",
+          "AI Commerce",
           "Commerce",
           "SaaS",
           "RetailTech",
+          "Semantic Search",
           "B2B",
           "Marketplace",
           "Omnichannel",
@@ -634,12 +638,12 @@ function buildAllProjects(isRu: boolean): Project[] {
         gallery: NEO_TERMINAL_GALLERY,
         roleRu: "Продуктовый дизайн и разработка под ключ",
         roleEn: "End-to-end product design and development",
-        seoTitleRu: "Neo Terminal — AI-операционная система коммерции | TIVONIX",
-        seoTitleEn: "Neo Terminal — AI Commerce Operating System | TIVONIX",
+        seoTitleRu: "Neo Terminal — commerce-платформа и AI-консультант | TIVONIX",
+        seoTitleEn: "Neo Terminal — commerce platform + AI consultant | TIVONIX",
         seoDescriptionRu:
-          "Neo Terminal — AI-платформа коммерции, которую собрала TIVONIX: каталог и склад, Smart City, продажи с AI, B2B-закупки, все каналы связи, оформление заказа, доставка и инструменты продавца.",
+          "Кейс TIVONIX: commerce-платформа Neo Terminal с AI-консультантом по каталогу, natural-language search, Product Page Expert и backend-confirmed commerce actions.",
         seoDescriptionEn:
-          "Neo Terminal is an AI commerce platform built by TIVONIX: catalog and inventory infrastructure, Smart City, AI-assisted sales, B2B procurement, omnichannel operations, checkout, delivery and merchant tools.",
+          "TIVONIX case: Neo Terminal commerce platform with an AI catalog consultant, natural-language search, Product Page Expert, and backend-confirmed commerce actions.",
         outcomes: [
           isRu
             ? "Одна коммерческая модель от каталога до заказа"
@@ -650,6 +654,12 @@ function buildAllProjects(isRu: boolean): Project[] {
           isRu
             ? "AI Seller + Smart Inventory"
             : "AI Seller + Smart Inventory",
+          isRu
+            ? "AI Commerce слой: Global Assistant + Product Page Expert"
+            : "AI Commerce layer: Global Assistant + Product Page Expert",
+          isRu
+            ? "Natural language, контекст и ответы только по evidence"
+            : "Natural language, context, and evidence-bound answers",
           isRu
             ? "Архитектура YML, XLSX, CSV, CommerceML и коннекторов"
             : "YML, XLSX, CSV, CommerceML and connector architecture",

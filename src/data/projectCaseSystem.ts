@@ -27,19 +27,21 @@ export type ProjectCaseSystem = {
 
 export const PROJECT_CASE_SYSTEM: Record<string, ProjectCaseSystem> = {
   "neo-terminal": {
-    moodRu: "AI-операционная система коммерции — от каталога до сделки",
-    moodEn: "AI commerce operating system — from catalog to transaction",
+    moodRu: "AI-операционная система коммерции — от каталога до сделки, с AI Commerce слоем",
+    moodEn: "AI commerce operating system — from catalog to transaction, with an AI Commerce layer",
     storyRu:
       "Коммерция ломается, когда каталог говорит одно, склад — другое, клиент пишет в мессенджер, а менеджер вручную сшивает всё это вместе.\n\n" +
       "Neo Terminal собран вокруг другой модели: товарные данные, остатки, клиенты, диалоги, заказы и операции живут на **одном коммерческом слое**.\n\n" +
       "Это не ещё одна витрина и не чат-бот, прикрученный к каталогу. Neo Terminal объединяет кабинет продавца, клиентский «умный город», продажи с поддержкой AI, склад, B2B-закупки, диалоги во всех каналах, оформление заказа, доставку, аналитику и операционную автоматизацию в одном продукте.\n\n" +
       "Система принимает коммерческие данные из YML, XLSX, CSV, CommerceML и коннекторов, нормализует их в одну товарную модель и отдаёт те же данные в поиск, AI-сценарии, склад и инструменты продавца.\n\n" +
+      "Поверх каталога добавлен отдельный **AI Commerce** слой: Global Catalog Assistant и Product Page Expert — понимание естественного языка и follow-up, при этом цена, остаток и характеристики подтверждаются backend.\n\n" +
       "Платформа собрана так, чтобы закрывать полный путь: **каталог → поиск → диалог → решение → корзина → оплата → доставка → аналитика**.",
     storyEn:
       "Commerce breaks when the catalog says one thing, the warehouse says another, a customer asks a question in a messenger, and the manager has to connect everything manually.\n\n" +
       "Neo Terminal was designed around a different model: product data, stock, customers, conversations, orders and operations live on **one commerce layer**.\n\n" +
       "It is not another storefront and not a chatbot attached to a catalog. Neo Terminal combines a Merchant OS, customer-facing Smart City, AI-assisted sales, inventory workflows, B2B procurement, omnichannel conversations, checkout, delivery, analytics and operational automation in one product.\n\n" +
       "The system can ingest commerce data from YML, XLSX, CSV, CommerceML and connector-based sources, normalize it into one product model and make the same data available to customer search, AI workflows, warehouse operations and merchant tools.\n\n" +
+      "On top of the catalog sits a separate **AI Commerce** layer: Global Catalog Assistant and Product Page Expert — natural language and follow-ups, while price, stock and attributes stay backend-confirmed.\n\n" +
       "The result is a platform designed to connect the full path: **catalog → discovery → conversation → decision → cart → transaction → fulfillment → analytics**.",
     logo: "/images/project-logos/neo-terminal.webp",
     logoFit: "contain",

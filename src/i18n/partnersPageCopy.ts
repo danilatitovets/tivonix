@@ -245,7 +245,7 @@ const RU: PartnersCopy = {
     all: "Все проекты",
     texts: {
       "neo-terminal":
-        "AI-платформа коммерции: каталог, склад, AI-продажи, B2B-закупки, оформление заказа, доставка и операционка продавца в одной системе.",
+        "Commerce-платформа с каталогом, операционным контуром и AI-консультантом: natural-language поиск и Product Page Expert поверх реальных данных.",
       spliton:
         "Финтех-платформа для музыкальных активов: каталог релизов, покупка долей, кошелёк, вторичный рынок, выплаты и портал оператора.",
       slotty:
@@ -520,7 +520,7 @@ const EN: PartnersCopy = {
     all: "All projects",
     texts: {
       "neo-terminal":
-        "AI commerce platform: catalog, inventory, AI-assisted sales, B2B procurement, checkout, delivery and merchant ops in one system.",
+        "Commerce platform with catalog, merchant ops, and an AI consultant: natural-language search and Product Page Expert on real catalog data.",
       spliton:
         "Fintech platform for music assets: release catalog, fractional purchases, wallet, secondary market, payouts, and operator portal.",
       slotty:
@@ -795,7 +795,7 @@ const ZH: PartnersCopy = {
     all: "全部项目",
     texts: {
       "neo-terminal":
-        "AI 商业平台：目录、库存、AI 辅助销售、B2B 采购、结算、配送与商家运营一体化。",
+        "商业平台：目录、运营与 AI 顾问——自然语言搜索与 Product Page Expert，基于真实目录数据。",
       spliton:
         "音乐资产金融科技平台：发行目录、份额购买、钱包、二级市场、结算与 operator portal。",
       slotty:

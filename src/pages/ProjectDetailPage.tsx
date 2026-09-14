@@ -18,6 +18,7 @@ import { pathForLang } from "../lib/localePaths";
 import { cleanTechLabel, splitTechList, stackIconFor } from "../lib/stackIcons";
 import type { Lang } from "../i18n/LangProvider";
 import { t3 } from "../i18n/pick";
+import NeoTerminalAiChapter from "../components/projects/NeoTerminalAiChapter";
 
 const HEADER_H = 72;
 const CANONICAL_ORIGIN = "https://tivonix.tech";
@@ -1002,6 +1003,8 @@ export default function ProjectDetailPage() {
                 palette={caseSystem?.palette}
                 stack={project.stack}
               />
+
+              {project.id === "neo-terminal" ? <NeoTerminalAiChapter lang={lang} /> : null}
 
               {project.outcomes?.length ? (
                 <OutcomesBlock items={project.outcomes} isRu={isRu} />

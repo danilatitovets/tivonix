@@ -106,6 +106,7 @@ const checks = [
     phrases: [
       "Neo Terminal",
       "операционная система коммерции",
+      "AI Commerce",
       "https://www.tivonix.tech/projects/neo-terminal",
       "neo-terminal.ru",
     ],
@@ -114,7 +115,8 @@ const checks = [
     file: "dist/en/projects/neo-terminal/index.html",
     phrases: [
       "Neo Terminal",
-      "AI Commerce Operating System",
+      "AI commerce operating system",
+      "AI Commerce",
       "https://www.tivonix.tech/en/projects/neo-terminal",
       "neo-terminal.ru",
     ],
