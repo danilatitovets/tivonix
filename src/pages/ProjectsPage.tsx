@@ -67,37 +67,73 @@ function ProjectGridCard({ p, isRu, lang }: { p: Project; isRu: boolean; lang: L
     ? `Роль TIVONIX: ${p.roleRu ?? "дизайн и разработка"}`
     : `TIVONIX role: ${p.roleEn ?? "design & development"}`;
   const href = pathForLang(`/projects/${p.id}`, lang);
+  const stack = (p.stack ?? []).slice(0, 4);
+
+  const statusBadge = wip ? (
+    <span className="rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-white/70 ring-1 ring-white/10 backdrop-blur-sm">
+      WIP
+    </span>
+  ) : pilot ? (
+    <span className="rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-white/70 ring-1 ring-white/10 backdrop-blur-sm">
+      Pilot
+    </span>
+  ) : p.domain ? (
+    <a
+      href={p.domain}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={cx(
+        "inline-flex items-center gap-1 rounded-full",
+        "bg-black/55 px-2.5 py-1 text-[11px] font-medium text-white/70 ring-1 ring-white/10 backdrop-blur-sm",
+        "transition hover:bg-black/70 hover:text-white"
+      )}
+      aria-label={isRu ? `Открыть ${p.title}` : `Open ${p.title}`}
+    >
+      <ExternalIcon className="opacity-70" />
+    </a>
+  ) : null;
 
   return (
-    <article className="group min-w-0">
-      <Link
-        to={href}
-        className="block min-w-0 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-        aria-label={isRu ? `Кейс ${p.title}` : `Case study ${p.title}`}
-      >
-        <div className="overflow-hidden rounded-xl bg-[#1c1c1f] transition duration-300 group-hover:bg-[#262626]">
-          <ProjectPreviewFrame src={projectPreviewSrc(p)} variant="grid" />
-        </div>
-      </Link>
+    <article className="group flex h-full min-w-0 flex-col">
+      <div className="relative">
+        <Link
+          to={href}
+          className="block min-w-0 overflow-hidden rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+          aria-label={isRu ? `Кейс ${p.title}` : `Case study ${p.title}`}
+        >
+          <div className="overflow-hidden rounded-xl bg-[#1c1c1f] transition duration-300 group-hover:bg-[#262626]">
+            <ProjectPreviewFrame src={projectPreviewSrc(p)} variant="grid" />
+          </div>
+        </Link>
+        {statusBadge ? (
+          <div className="absolute right-2.5 top-2.5 z-[1]">{statusBadge}</div>
+        ) : null}
+      </div>
 
-      <div className="mt-3 flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-white/40">
-            {productType}
-          </p>
-          <Link
-            to={href}
-            className="block min-w-0 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45"
-          >
-            <h2 className="mt-1 truncate font-sans text-[15px] font-medium tracking-normal text-white/[0.92] transition group-hover:text-white">
-              {p.title}
-            </h2>
-          </Link>
-          <p className="mt-1.5 line-clamp-2 text-[12.5px] leading-snug text-white/52">{subtitle}</p>
-          <p className="mt-1.5 text-[11.5px] text-white/38">{role}</p>
-          {p.stack?.length ? (
-            <ul className="mt-2 flex flex-wrap gap-1.5" aria-label="Stack">
-              {(p.stack ?? []).slice(0, 4).map((tech) => (
+      <div className="mt-3 flex min-h-0 flex-1 flex-col">
+        <p className="truncate text-[11px] font-medium uppercase tracking-[0.12em] text-white/40">
+          {productType}
+        </p>
+        <Link
+          to={href}
+          className="mt-1 block min-w-0 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/45"
+        >
+          <h2 className="truncate font-sans text-[15px] font-medium tracking-normal text-white/[0.92] transition group-hover:text-white">
+            {p.title}
+          </h2>
+        </Link>
+
+        <p className="mt-1.5 line-clamp-2 min-h-[2.6em] text-[12.5px] leading-snug text-white/52">
+          {subtitle}
+        </p>
+        <p className="mt-1.5 line-clamp-2 min-h-[2.4em] text-[11.5px] leading-snug text-white/38">
+          {role}
+        </p>
+
+        <div className="mt-2 min-h-[3.25rem]">
+          {stack.length ? (
+            <ul className="flex flex-wrap gap-1.5" aria-label="Stack">
+              {stack.map((tech) => (
                 <li
                   key={tech}
                   className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-[#1c1c1f] px-2 py-1 text-[11px] font-medium tracking-normal text-[#c3c3cc]"
@@ -110,19 +146,22 @@ function ProjectGridCard({ p, isRu, lang }: { p: Project; isRu: boolean; lang: L
               ))}
             </ul>
           ) : null}
+        </div>
+
+        <div className="mt-auto pt-2">
           {domainClean && siteOpen ? (
             <a
               href={p.domain}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-1 block truncate text-[12px] text-white/40 transition hover:text-white/70"
+              className="block truncate text-[12px] text-white/40 transition hover:text-white/70"
             >
               {domainClean}
             </a>
           ) : domainClean && pilot ? (
-            <p className="mt-1 truncate text-[12px] text-white/40">{domainClean}</p>
+            <p className="truncate text-[12px] text-white/40">{domainClean}</p>
           ) : (
-            <p className="mt-1 text-[12px] text-white/40">
+            <p className="truncate text-[12px] text-white/40">
               {isRu ? "В разработке" : "In progress"}
             </p>
           )}
@@ -134,30 +173,6 @@ function ProjectGridCard({ p, isRu, lang }: { p: Project; isRu: boolean; lang: L
             {leadFormCopy(lang).ctaSimilarProject} →
           </LeadCTAButton>
         </div>
-
-        {wip ? (
-          <span className="shrink-0 rounded-full bg-[#1c1c1f] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-white/48">
-            WIP
-          </span>
-        ) : pilot ? (
-          <span className="shrink-0 rounded-full bg-[#1c1c1f] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-white/48">
-            Pilot
-          </span>
-        ) : p.domain ? (
-          <a
-            href={p.domain}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cx(
-              "shrink-0 inline-flex items-center gap-1 rounded-full",
-              "bg-[#1c1c1f] px-2.5 py-1 text-[11px] font-medium text-white/58",
-              "transition hover:bg-[#262626] hover:text-white/85"
-            )}
-            aria-label={isRu ? `Открыть ${p.title}` : `Open ${p.title}`}
-          >
-            <ExternalIcon className="opacity-70" />
-          </a>
-        ) : null}
       </div>
     </article>
   );
@@ -264,7 +279,7 @@ export default function ProjectsPage() {
             </div>
 
             {filtered.length ? (
-              <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-10 grid grid-cols-1 items-stretch gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
                 {filtered.map((p) => (
                   <ProjectGridCard key={p.id} p={p} isRu={isRu} lang={lang} />
                 ))}
