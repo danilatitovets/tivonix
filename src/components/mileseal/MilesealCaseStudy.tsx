@@ -69,8 +69,6 @@ async function copyText(text: string): Promise<boolean> {
   }
 }
 
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
 import type { Lang } from "../../i18n/LangProvider";
 import { savePdfWithTextLayer } from "../../lib/milesealPdf";
 
@@ -161,6 +159,10 @@ async function downloadChangeRequestPdf(opts: {
     date: string;
   };
 }) {
+  const [{ jsPDF }, { default: html2canvas }] = await Promise.all([
+    import("jspdf"),
+    import("html2canvas"),
+  ]);
   const origin = typeof window !== "undefined" ? window.location.origin : "https://www.tivonix.tech";
   const generatedAt = new Date().toLocaleDateString(opts.dateLocale, {
     year: "numeric",
