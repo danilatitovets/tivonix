@@ -1,9 +1,6 @@
 import { useEffect } from "react";
 import { BrowserRouter } from "react-router-dom";
-import {
-  initAnalyticsAfterConsent,
-  trackAdsFormConversion,
-} from "./lib/analyticsAdapter";
+import { initAnalyticsAfterConsent } from "./lib/analyticsAdapter";
 import {
   trackEmailClick,
   trackTelegramBotClick,
@@ -59,20 +56,6 @@ export default function App() {
       if (!href || !isContactLink(href)) return;
 
       trackContactChannel(href);
-
-      const newTab = (a.getAttribute("target") ?? "").toLowerCase() === "_blank";
-      if (newTab) {
-        trackAdsFormConversion();
-        return;
-      }
-
-      e.preventDefault();
-      trackAdsFormConversion(() => {
-        window.location.href = href;
-      });
-      setTimeout(() => {
-        window.location.href = href;
-      }, 700);
     };
     document.addEventListener("click", handler, true);
     return () => document.removeEventListener("click", handler, true);
