@@ -32,10 +32,8 @@ import {
   suggestedBudgetForPlan,
   TELEGRAM_DIRECT_URL,
   validateLeadFields,
-  type BudgetId,
   type LeadFormFields,
   type ProductTypeId,
-  type TimelineId,
 } from "../../lib/leads";
 import type { PlanId } from "../../lib/pricingData";
 import { planPagePrice, pricingCopy } from "../../i18n/pricingCopy";
@@ -46,13 +44,129 @@ function cx(...a: Array<string | false | null | undefined>) {
 }
 
 const BRAND_CTA =
-  "linear-gradient(90deg, #FFD7B0 0%, #FF9A3D 45%, #FF6A1A 100%)";
+  "linear-gradient(90deg, #FFD7B0 0%, #FF9A3D 48%, #FF7A2E 100%)";
 
 const ORANGE_LINE =
-  "linear-gradient(90deg, rgba(255,160,70,0) 0%, rgba(255,120,40,0.95) 18%, rgba(255,198,120,1) 50%, rgba(255,120,40,0.95) 82%, rgba(255,160,70,0) 100%)";
+  "linear-gradient(90deg, rgba(255,160,70,0) 0%, rgba(255,120,40,0.55) 18%, rgba(255,198,120,0.85) 50%, rgba(255,120,40,0.55) 82%, rgba(255,160,70,0) 100%)";
 
 const FRAME =
-  "linear-gradient(135deg, rgba(255,154,61,0.55), rgba(255,255,255,0.12) 38%, rgba(143,168,200,0.28) 72%, rgba(255,154,61,0.35))";
+  "linear-gradient(135deg, rgba(255,154,61,0.38), rgba(255,255,255,0.1) 38%, rgba(143,168,200,0.2) 72%, rgba(255,154,61,0.28))";
+
+type StepOption<T extends string> = { id: T; label: string };
+
+/** Discrete step slider — reference: ChatGPT-style effort control, TIVONIX orange. */
+function DiscreteStepSlider<T extends string>({
+  fieldLabel,
+  options,
+  value,
+  onChange,
+  disabled,
+}: {
+  fieldLabel: string;
+  options: StepOption<T>[];
+  value: T | "";
+  onChange: (next: T) => void;
+  disabled?: boolean;
+}) {
+  const n = options.length;
+  const idx = Math.max(
+    0,
+    options.findIndex((o) => o.id === value)
+  );
+  const hasValue = value !== "" && options.some((o) => o.id === value);
+  const pct = n <= 1 ? 0 : (idx / (n - 1)) * 100;
+  const currentLabel = hasValue ? options[idx].label : fieldLabel;
+
+  const pickFromClientX = (clientX: number, el: HTMLElement) => {
+    const rect = el.getBoundingClientRect();
+    const x = Math.min(Math.max(clientX - rect.left, 0), rect.width);
+    const next = Math.round((x / Math.max(rect.width, 1)) * (n - 1));
+    onChange(options[next].id);
+  };
+
+  return (
+    <div className="rounded-[22px] bg-white/[0.06] px-4 py-3.5 ring-1 ring-white/[0.06]">
+      <div className="mb-3.5 flex items-center justify-center gap-1.5">
+        <span className="text-[14px] font-medium tracking-[-0.01em] text-white">
+          {currentLabel}
+        </span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden className="opacity-45">
+          <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+
+      <div
+        className={cx(
+          "relative mx-1 h-8 select-none",
+          disabled ? "pointer-events-none opacity-55" : "cursor-pointer"
+        )}
+        role="slider"
+        aria-label={fieldLabel}
+        aria-valuemin={0}
+        aria-valuemax={n - 1}
+        aria-valuenow={hasValue ? idx : undefined}
+        aria-valuetext={hasValue ? currentLabel : undefined}
+        tabIndex={disabled ? -1 : 0}
+        onKeyDown={(e) => {
+          if (disabled) return;
+          if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+            e.preventDefault();
+            onChange(options[Math.min(n - 1, (hasValue ? idx : 0) + 1)].id);
+          } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+            e.preventDefault();
+            onChange(options[Math.max(0, (hasValue ? idx : 0) - 1)].id);
+          }
+        }}
+        onPointerDown={(e) => {
+          if (disabled) return;
+          const track = e.currentTarget;
+          track.setPointerCapture(e.pointerId);
+          pickFromClientX(e.clientX, track);
+        }}
+        onPointerMove={(e) => {
+          if (disabled || !e.currentTarget.hasPointerCapture(e.pointerId)) return;
+          pickFromClientX(e.clientX, e.currentTarget);
+        }}
+      >
+        <div className="absolute inset-x-0 top-1/2 h-[10px] -translate-y-1/2 rounded-full bg-white/[0.1]" />
+        <div
+          className="absolute left-0 top-1/2 h-[10px] -translate-y-1/2 rounded-full"
+          style={{
+            width: hasValue ? `${pct}%` : "10px",
+            background:
+              "linear-gradient(90deg, rgba(255,154,61,0.75) 0%, #FF9A3D 100%)",
+          }}
+        />
+        {options.map((opt, i) => {
+          const left = n <= 1 ? 50 : (i / (n - 1)) * 100;
+          const filled = hasValue && i <= idx;
+          return (
+            <button
+              key={opt.id}
+              type="button"
+              disabled={disabled}
+              aria-label={opt.label}
+              className={cx(
+                "absolute top-1/2 z-[1] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full transition",
+                filled ? "bg-white/70" : "bg-white/25"
+              )}
+              style={{ left: `${left}%` }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onChange(opt.id);
+              }}
+            />
+          );
+        })}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute top-1/2 z-[2] h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_4px_14px_rgba(0,0,0,0.45)] ring-1 ring-black/10 transition-[left] duration-150 ease-out"
+          style={{ left: hasValue ? `${pct}%` : "0%" }}
+        />
+      </div>
+    </div>
+  );
+}
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -309,15 +423,15 @@ export default function LeadFormModal({
 
   const budgetOptions = copy.budgets.filter((b) => b.id !== "");
 
+  const labelClass = "mb-1.5 block min-h-[1.15rem] text-[12px] font-medium leading-none text-white/65";
+
   const inputBase = cx(
     "w-full h-12 rounded-xl px-4",
-    "border-0 bg-white/[0.10] text-white placeholder:text-white/40",
-    "outline-none focus:bg-white/[0.14]",
+    "border-0 bg-white/[0.08] text-white placeholder:text-white/38",
+    "outline-none focus:bg-white/[0.11]",
     "text-[14px] font-medium transition",
     HOTJAR_MASK_CLASS
   );
-
-  const labelClass = "mb-1.5 block min-h-[1.15rem] text-[12px] font-medium leading-none text-white/80";
 
   const node = (
     <div
@@ -334,15 +448,15 @@ export default function LeadFormModal({
           overflow-x: hidden;
           -webkit-overflow-scrolling: touch;
           scrollbar-width: thin;
-          scrollbar-color: rgba(255,154,61,.7) rgba(255,255,255,.06);
+          scrollbar-color: rgba(255,154,61,.45) rgba(255,255,255,.05);
         }
-        .lead-modal-scroll::-webkit-scrollbar { width: 6px; }
+        .lead-modal-scroll::-webkit-scrollbar { width: 5px; }
         .lead-modal-scroll::-webkit-scrollbar-track {
-          background: rgba(255,255,255,.06);
+          background: rgba(255,255,255,.05);
           border-radius: 999px;
         }
         .lead-modal-scroll::-webkit-scrollbar-thumb {
-          background: linear-gradient(180deg, #FFD7B0, #FF9A3D, #FF6A1A);
+          background: linear-gradient(180deg, rgba(255,215,176,.85), rgba(255,154,61,.9));
           border-radius: 999px;
         }
         .lead-sent-word {
@@ -387,7 +501,7 @@ export default function LeadFormModal({
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div
-          className="rounded-t-[28px] p-[1px] shadow-[0_32px_120px_rgba(0,0,0,0.72)] sm:rounded-[28px]"
+          className="rounded-t-[28px] p-[1px] shadow-[0_24px_90px_rgba(0,0,0,0.62)] sm:rounded-[28px]"
           style={{ background: FRAME }}
         >
           <div
@@ -740,33 +854,16 @@ export default function LeadFormModal({
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+                  <div className="space-y-3.5">
                     <div>
                       <div className={labelClass}>{copy.timeline}</div>
-                      <div className="flex flex-wrap gap-1.5" role="group" aria-label={copy.timeline}>
-                        {copy.timelines.map((timeline) => {
-                          const active = form.timeline === timeline.id;
-                          return (
-                            <button
-                              key={timeline.id}
-                              type="button"
-                              disabled={status === "loading"}
-                              onClick={() =>
-                                update("timeline", active ? "" : (timeline.id as TimelineId))
-                              }
-                              className={cx(
-                                "h-8 rounded-full px-3 text-[11.5px] font-medium transition",
-                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40",
-                                active
-                                  ? "bg-white text-black"
-                                  : "bg-white/[0.08] text-white/75 hover:bg-white/[0.12] hover:text-white"
-                              )}
-                            >
-                              {timeline.label}
-                            </button>
-                          );
-                        })}
-                      </div>
+                      <DiscreteStepSlider
+                        fieldLabel={copy.timeline}
+                        options={copy.timelines}
+                        value={form.timeline}
+                        disabled={status === "loading"}
+                        onChange={(id) => update("timeline", id)}
+                      />
                     </div>
 
                     <div>
@@ -774,30 +871,13 @@ export default function LeadFormModal({
                         {copy.budget}{" "}
                         <span className="font-normal text-white/45">({copy.budgetOptional})</span>
                       </div>
-                      <div className="flex flex-wrap gap-1.5" role="group" aria-label={copy.budget}>
-                        {budgetOptions.map((b) => {
-                          const active = form.budget === b.id;
-                          return (
-                            <button
-                              key={b.id}
-                              type="button"
-                              disabled={status === "loading"}
-                              onClick={() =>
-                                update("budget", active ? "" : (b.id as BudgetId))
-                              }
-                              className={cx(
-                                "h-8 rounded-full px-3 text-[11.5px] font-medium transition",
-                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9A3D]/40",
-                                active
-                                  ? "bg-white text-black"
-                                  : "bg-white/[0.08] text-white/75 hover:bg-white/[0.12] hover:text-white"
-                              )}
-                            >
-                              {b.label}
-                            </button>
-                          );
-                        })}
-                      </div>
+                      <DiscreteStepSlider
+                        fieldLabel={copy.budget}
+                        options={budgetOptions}
+                        value={form.budget}
+                        disabled={status === "loading"}
+                        onChange={(id) => update("budget", id)}
+                      />
                     </div>
                   </div>
 
@@ -886,10 +966,10 @@ export default function LeadFormModal({
                   form="lead-form"
                   disabled={status === "loading"}
                   className={cx(
-                    "flex h-12 w-full items-center justify-center rounded-full text-[15px] font-bold text-black",
-                    "shadow-[0_18px_70px_rgba(255,120,40,0.35)]",
-                    "hover:brightness-[1.04] active:brightness-[0.96]",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50",
+                    "flex h-12 w-full items-center justify-center rounded-full text-[15px] font-semibold text-black",
+                    "shadow-[0_10px_36px_rgba(255,120,40,0.22)]",
+                    "hover:brightness-[1.03] active:brightness-[0.97]",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/40",
                     status === "loading" && "cursor-not-allowed opacity-70"
                   )}
                   style={{ background: BRAND_CTA }}
@@ -897,31 +977,9 @@ export default function LeadFormModal({
                   {status === "loading" ? copy.sending : copy.send}
                 </button>
 
-                <p className="mt-2.5 text-center text-[11px] leading-snug text-white/40">
+                <p className="mt-2.5 text-center text-[11px] leading-snug text-white/38">
                   {copy.formNote}
                 </p>
-
-                <div className="mt-2.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-[11.5px] text-white/40">
-                  <a
-                    href={TELEGRAM_DIRECT_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => trackTelegramDirectClick()}
-                    className="transition hover:text-white/75"
-                  >
-                    @TIVONIX
-                  </a>
-                  <span aria-hidden className="text-white/18">
-                    ·
-                  </span>
-                  <a
-                    href={`mailto:${CONTACT_EMAIL}`}
-                    onClick={() => trackEmailClick()}
-                    className="transition hover:text-white/75"
-                  >
-                    {CONTACT_EMAIL}
-                  </a>
-                </div>
               </div>
             </div>
           </div>
