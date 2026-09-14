@@ -84,9 +84,9 @@ function DiscreteStepSlider<T extends string>({
   };
 
   return (
-    <div className="rounded-[22px] bg-white/[0.06] px-4 py-3.5 ring-1 ring-white/[0.06]">
-      <div className="mb-3.5 flex items-center justify-center gap-1.5">
-        <span className="text-[14px] font-medium tracking-[-0.01em] text-white">
+    <div className="rounded-[18px] bg-white/[0.06] px-3 py-2.5 ring-1 ring-white/[0.06] sm:rounded-[22px] sm:px-4 sm:py-3.5">
+      <div className="mb-2.5 flex items-center justify-center gap-1.5 sm:mb-3.5">
+        <span className="text-[13px] font-medium tracking-[-0.01em] text-white sm:text-[14px]">
           {currentLabel}
         </span>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden className="opacity-45">
@@ -96,8 +96,8 @@ function DiscreteStepSlider<T extends string>({
 
       <div
         className={cx(
-          "relative mx-1 h-8 select-none",
-          disabled ? "pointer-events-none opacity-55" : "cursor-pointer"
+          "relative mx-0.5 h-7 select-none sm:mx-1 sm:h-8",
+          disabled ? "pointer-events-none opacity-55" : "cursor-pointer touch-none"
         )}
         role="slider"
         aria-label={fieldLabel}
@@ -421,10 +421,11 @@ export default function LeadFormModal({
 
   const budgetOptions = copy.budgets.filter((b) => b.id !== "");
 
-  const labelClass = "mb-1.5 block min-h-[1.15rem] text-[12px] font-medium leading-none text-white/65";
+  const labelClass =
+    "mb-1 block min-h-[1.05rem] text-[11.5px] font-medium leading-none text-white/65 sm:mb-1.5 sm:min-h-[1.15rem] sm:text-[12px]";
 
   const inputBase = cx(
-    "w-full h-12 rounded-xl px-4",
+    "w-full h-11 rounded-[12px] px-3.5 sm:h-12 sm:rounded-xl sm:px-4",
     "border-0 bg-white/[0.08] text-white placeholder:text-white/38",
     "outline-none focus:bg-white/[0.11]",
     "text-[14px] font-medium transition",
@@ -436,7 +437,9 @@ export default function LeadFormModal({
       className={cx(
         "fixed inset-0 z-[115]",
         "flex items-end justify-center sm:items-center",
-        "px-0 sm:px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-0 sm:pt-[calc(var(--tivonix-header-spacer)+0.5rem)] sm:pb-5"
+        "px-0 sm:px-5",
+        "pt-[max(0.35rem,env(safe-area-inset-top))] sm:pt-[calc(var(--tivonix-header-spacer)+0.5rem)]",
+        "pb-[max(0.35rem,env(safe-area-inset-bottom))] sm:pb-5"
       )}
       aria-hidden={!open}
     >
@@ -483,7 +486,7 @@ export default function LeadFormModal({
       />
 
       <div
-        className="relative w-full max-w-none sm:max-w-[640px] lg:max-w-[720px] transition-[transform,opacity] duration-220 ease-out"
+        className="relative flex w-full max-h-full max-w-none flex-col sm:max-w-[640px] lg:max-w-[720px] transition-[transform,opacity] duration-220 ease-out"
         style={
           {
             opacity: open && visible ? 1 : 0,
@@ -501,18 +504,18 @@ export default function LeadFormModal({
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div
-          className="rounded-t-[28px] p-[1px] shadow-[0_24px_90px_rgba(0,0,0,0.62)] sm:rounded-[28px]"
+          className="flex min-h-0 flex-1 flex-col rounded-t-[22px] p-[1px] shadow-[0_24px_90px_rgba(0,0,0,0.62)] sm:rounded-[28px]"
           style={{ background: FRAME }}
         >
           <div
-            className="relative flex min-h-[min(78dvh,640px)] max-h-[min(94dvh,820px)] flex-col overflow-hidden rounded-t-[27px] bg-[#0b0b0d] sm:rounded-[27px]"
+            className="relative flex min-h-0 max-h-[calc(100dvh-0.7rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-1 flex-col overflow-hidden rounded-t-[21px] bg-[#0b0b0d] sm:min-h-[min(72dvh,600px)] sm:max-h-[min(92dvh,820px)] sm:flex-none sm:rounded-[27px]"
           >
             <div
               aria-hidden
               className={cx(
                 "pointer-events-none absolute inset-x-0 top-0 z-0 overflow-hidden",
                 "transition-[height] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                expandVideo ? "h-full" : "h-[8.75rem] sm:h-[9.5rem]"
+                expandVideo ? "h-full" : "h-[5.25rem] sm:h-[9.5rem]"
               )}
             >
               <BgLoopVideo variant="form" />
@@ -521,15 +524,15 @@ export default function LeadFormModal({
                   "absolute inset-0 transition-colors duration-500",
                   expandVideo
                     ? "bg-black/72"
-                    : "bg-gradient-to-b from-black/28 via-black/40 to-[#0b0b0d]"
+                    : "bg-gradient-to-b from-black/35 via-black/48 to-[#0b0b0d]"
                 )}
               />
               {!expandVideo ? (
                 <div
-                  className="absolute inset-x-0 bottom-0 h-[96px]"
+                  className="absolute inset-x-0 bottom-0 h-[64px] sm:h-[96px]"
                   style={{
-                    backdropFilter: "blur(22px)",
-                    WebkitBackdropFilter: "blur(22px)",
+                    backdropFilter: "blur(18px)",
+                    WebkitBackdropFilter: "blur(18px)",
                     maskImage:
                       "linear-gradient(180deg, transparent 0%, black 58%, black 100%)",
                     WebkitMaskImage:
@@ -543,7 +546,7 @@ export default function LeadFormModal({
               type="button"
               onClick={handleClose}
               disabled={status === "loading"}
-              className="group absolute right-4 top-4 z-30 grid h-9 w-9 place-items-center rounded-full bg-black/45 text-white/80 ring-1 ring-white/12 transition hover:bg-black/60 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/40 disabled:opacity-50 sm:right-5 sm:top-5"
+              className="group absolute right-3 top-3 z-30 grid h-8 w-8 place-items-center rounded-full bg-black/45 text-white/80 ring-1 ring-white/12 transition hover:bg-black/60 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/40 disabled:opacity-50 sm:right-5 sm:top-5 sm:h-9 sm:w-9"
               aria-label={copy.close}
             >
               <svg
@@ -641,25 +644,25 @@ export default function LeadFormModal({
               aria-hidden={expandVideo}
             >
             {/* header */}
-            <div className="relative isolate shrink-0 overflow-hidden px-5 pt-5 pr-14 sm:px-7 sm:pt-6 sm:pr-16">
+            <div className="relative isolate shrink-0 overflow-hidden px-4 pt-3.5 pr-12 sm:px-7 sm:pt-6 sm:pr-16">
               <div className="relative min-w-0 pr-2">
                 <h2
                   id={titleId}
-                  className="text-[17px] font-semibold tracking-tight text-white sm:text-[19px]"
+                  className="text-[15.5px] font-semibold leading-snug tracking-tight text-white sm:text-[19px]"
                 >
                   {copy.title}
                 </h2>
               </div>
 
-              <div className="pointer-events-none relative mt-5 h-4">
+              <div className="pointer-events-none relative mt-3 h-3 sm:mt-5 sm:h-4">
                 <div className="mx-auto h-[2px] w-full rounded-full opacity-95" style={{ background: ORANGE_LINE }} />
-                <div className="mx-auto mt-[-2px] h-5 w-full opacity-35 blur-xl" style={{ background: ORANGE_LINE }} />
+                <div className="mx-auto mt-[-2px] h-4 w-full opacity-30 blur-xl sm:h-5 sm:opacity-35" style={{ background: ORANGE_LINE }} />
               </div>
             </div>
 
             {/* body */}
-            <div className="lead-modal-scroll relative z-10 min-h-0 flex-1 bg-[#0b0b0d] px-5 pb-2 pt-1 sm:px-7">
-                <form id="lead-form" onSubmit={onSubmit} noValidate className="space-y-3.5 pb-2">
+            <div className="lead-modal-scroll relative z-10 min-h-0 flex-1 overscroll-contain bg-[#0b0b0d] px-4 pb-1.5 pt-0.5 sm:px-7 sm:pb-2 sm:pt-1">
+                <form id="lead-form" onSubmit={onSubmit} noValidate className="space-y-3 pb-1 sm:space-y-3.5 sm:pb-2">
                   <div className="absolute -left-[9999px] top-auto h-0 w-0 overflow-hidden" aria-hidden>
                     <label htmlFor="lead-company-fax">Company fax</label>
                     <input
@@ -735,7 +738,7 @@ export default function LeadFormModal({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-3.5">
                     <div className="min-w-0">
                       <label htmlFor="lead-name" className={labelClass}>
                         {copy.name}{" "}
@@ -808,7 +811,7 @@ export default function LeadFormModal({
                       id="lead-task"
                       name="task"
                       required
-                      rows={3}
+                      rows={2}
                       placeholder={
                         activePlanId && planName
                           ? lang === "ru"
@@ -819,9 +822,9 @@ export default function LeadFormModal({
                           : copy.taskPh
                       }
                       className={cx(
-                        "min-h-[88px] w-full resize-none rounded-xl px-4 py-3 text-[14px] font-medium",
-                        "border-0 bg-white/[0.10] text-white placeholder:text-white/40",
-                        "outline-none focus:bg-white/[0.14] transition",
+                        "min-h-[72px] w-full resize-none rounded-[12px] px-3.5 py-2.5 text-[14px] font-medium sm:min-h-[88px] sm:rounded-xl sm:px-4 sm:py-3",
+                        "border-0 bg-white/[0.08] text-white placeholder:text-white/38",
+                        "outline-none focus:bg-white/[0.11] transition",
                         HOTJAR_MASK_CLASS,
                         errorField === "task" && "bg-[#FF9A3D]/12 focus:bg-[#FF9A3D]/16"
                       )}
@@ -915,17 +918,17 @@ export default function LeadFormModal({
             </div>
 
             {/* footer */}
-              <div className="relative z-10 shrink-0 bg-[#0b0b0d] px-5 pb-5 pt-2 sm:px-7 sm:pb-6">
+              <div className="relative z-10 shrink-0 border-t border-white/[0.06] bg-[#0b0b0d] px-4 pb-3.5 pt-2.5 sm:border-0 sm:px-7 sm:pb-6 sm:pt-2">
                 <div
                   aria-hidden
-                  className="mb-3 h-px w-full opacity-60"
+                  className="mb-2.5 hidden h-px w-full opacity-60 sm:mb-3 sm:block"
                   style={{
                     background:
                       "linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent)",
                   }}
                 />
 
-                <label className="mb-3 flex cursor-pointer items-start gap-2.5 px-0.5">
+                <label className="mb-2.5 flex cursor-pointer items-start gap-2 px-0.5 sm:mb-3 sm:gap-2.5">
                   <input
                     ref={consentRef}
                     type="checkbox"
@@ -939,7 +942,7 @@ export default function LeadFormModal({
                     aria-required="true"
                     aria-invalid={errorField === "consent"}
                   />
-                  <span className="text-[12.5px] leading-snug text-white/70">
+                  <span className="text-[12px] leading-snug text-white/70 sm:text-[12.5px]">
                     {copy.consent}{" "}
                     <a
                       href={copy.privacyHref}
@@ -953,7 +956,7 @@ export default function LeadFormModal({
                 </label>
 
                 {fieldError && errorField === "consent" ? (
-                  <p id="lead-field-error" role="alert" className="mb-2.5 text-[12.5px] text-[#FFB36A]">
+                  <p id="lead-field-error" role="alert" className="mb-2 text-[12.5px] text-[#FFB36A] sm:mb-2.5">
                     {fieldError}
                   </p>
                 ) : null}
@@ -966,7 +969,7 @@ export default function LeadFormModal({
                     "primary",
                     "lg",
                     cx(
-                      "lead-submit-cta w-full shadow-[0_12px_40px_rgba(255,107,44,0.28)]",
+                      "lead-submit-cta w-full !h-11 shadow-[0_12px_40px_rgba(255,107,44,0.28)] sm:!h-[52px]",
                       status === "loading" && "cursor-not-allowed opacity-70"
                     ),
                     true
