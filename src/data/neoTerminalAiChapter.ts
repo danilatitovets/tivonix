@@ -79,6 +79,8 @@ export function neoAiCopy(lang: Lang) {
         label: en ? "modes: Global + Product Expert" : "режима: Global + Product Expert",
       },
     ],
+    chatPlaceholder: en ? "Ask the AI consultant…" : "Спросить у ИИ…",
+    chatAction: en ? "Open" : "Открыть",
     ctaPilot: en ? "Open AI Pilot →" : "Открыть AI Pilot →",
     ctaContact: en ? "Request AI demo access" : "Запросить доступ к AI demo",
   };

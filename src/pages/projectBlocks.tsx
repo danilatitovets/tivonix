@@ -87,7 +87,7 @@ export function ProjectPreviewFrame({
   );
 }
 
-function GalleryLightbox({
+export function GalleryLightbox({
   images,
   index,
   isRu,
