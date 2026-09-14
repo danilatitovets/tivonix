@@ -2978,6 +2978,9 @@
   text-transform: uppercase;
   color: #fff;
   text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .home-plan-card__price-block {
@@ -3141,6 +3144,10 @@
   line-height: 1.35;
   color: rgba(255, 255, 255, 0.9);
   text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
+}
+
+.home-plan-card__fine.is-empty {
+  visibility: hidden;
 }
 
 .home-plan-card__process {

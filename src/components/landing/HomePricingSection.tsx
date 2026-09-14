@@ -46,7 +46,7 @@ const PLAN_TAGS: Record<PlanId, Record<Lang, string>> = {
   start: { ru: "Запуск", en: "Launch", zh: "启动" },
   growth: { ru: "Операции", en: "Ops", zh: "运营" },
   product: { ru: "MVP", en: "MVP", zh: "MVP" },
-  custom: { ru: "Разработка продукта", en: "Product Engineering", zh: "产品工程" },
+  custom: { ru: "Кастом", en: "Custom", zh: "定制" },
 };
 
 function clamp01(v: number) {
@@ -218,7 +218,11 @@ export default function HomePricingSection() {
                                 ? "简报后报价"
                                 : "Quote after a brief"}
                           </p>
-                        ) : null}
+                        ) : (
+                          <p className="home-plan-card__fine is-empty" aria-hidden>
+                            &nbsp;
+                          </p>
+                        )}
                         <button
                           type="button"
                           className="home-plan-card__process"

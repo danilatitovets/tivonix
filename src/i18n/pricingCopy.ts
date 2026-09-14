@@ -99,7 +99,7 @@ export function formatPlansOverviewForTelegram(lang: Lang = "ru"): string {
     const chips = copy.footer.chips[id].map((c) => `• ${c}`).join("\n   ");
     const price =
       id === "custom"
-        ? (lang === "ru" ? "индивидуально" : lang === "zh" ? "定制" : "custom")
+        ? (lang === "ru" ? "по запросу" : lang === "zh" ? "定制" : "custom")
         : (() => {
             const usd = PLAN_PRICE_USD[id];
             const fromLabel = lang === "ru" ? "от" : lang === "zh" ? "起" : "from";
@@ -114,7 +114,7 @@ export function formatPlansOverviewForTelegram(lang: Lang = "ru"): string {
 export function planPagePrice(lang: Lang, planId: PlanId): string | undefined {
   const copy = pricingCopy(lang);
   const p = copy.plans[planId];
-  return p.price !== "индивидуально" && p.price !== "custom" ? p.price : undefined;
+  return p.price !== "индивидуально" && p.price !== "по запросу" && p.price !== "on request" && p.price !== "按需报价" && p.price !== "custom" ? p.price : undefined;
 }
 
 const COPY_RU = {
@@ -154,7 +154,7 @@ const COPY_RU = {
   plans: {
     start: {
       name: "Start",
-      tagline: "Пакет запуска: страница и заявки",
+      tagline: "Страница и заявки",
       ...planPriceStrings("от", PLAN_PRICE_USD.start),
       desc: "Когда нужен аккуратный короткий запуск: страница, форма, связь с клиентом и базовая аналитика. Не заменяет сложный продукт.",
       includes: [
@@ -172,7 +172,7 @@ const COPY_RU = {
     },
     growth: {
       name: "Growth",
-      tagline: "Пакет запуска: сайт и работа с заявками",
+      tagline: "Сайт и заявки",
       ...planPriceStrings("от", PLAN_PRICE_USD.growth),
       desc: "Когда нужен не просто сайт, а порядок в обработке: формы, статусы, ответственные, уведомления, таблица или мини-CRM.",
       includes: [
@@ -190,7 +190,7 @@ const COPY_RU = {
     },
     product: {
       name: "Product",
-      tagline: "Пакет запуска: основа MVP",
+      tagline: "Основа MVP",
       ...planPriceStrings("от", PLAN_PRICE_USD.product),
       desc: "Когда нужен MVP с одним главным пользовательским сценарием: вход, роли, база данных и базовая админ-панель. Сложный SaaS, маркетплейс, финтех или крупная CRM — это индивидуальный объём.",
       includes: [
@@ -207,9 +207,9 @@ const COPY_RU = {
       compactCta: "Рассчитать MVP",
     },
     custom: {
-      name: "Разработка продукта",
-      tagline: "Сложный продукт или бизнес-система",
-      price: "индивидуально",
+      name: "Custom",
+      tagline: "Сложная система",
+      price: "по запросу",
       desc: "Для SaaS, финтеха, маркетплейсов, внутренних платформ, систем уровня CRM/ERP, AI-автоматизации и проектов с несколькими ролями, серверной частью, админкой, интеграциями и рисками запуска. Стоимость фиксируется после брифа и согласования объёма.",
       includes: [
         "сложная бизнес-логика",
@@ -220,7 +220,7 @@ const COPY_RU = {
         "масштабирование",
         "оценка по объёму",
       ],
-      cta: "Обсудить разработку продукта",
+      cta: "Обсудить Custom",
       ctaHint: "Откроется форма для обсуждения нестандартной задачи.",
       compactCta: "Обсудить систему",
     },
@@ -337,7 +337,7 @@ const COPY_RU = {
       start: "Быстрый запуск страницы и заявок",
       growth: "Система заявок для команды",
       product: "Основа MVP с одним сценарием",
-      custom: "Разработка продукта с оценкой по объёму",
+      custom: "Custom — оценка по объёму",
     },
   },
 };
@@ -436,9 +436,9 @@ const COPY_EN = {
       compactCta: "Describe product",
     },
     custom: {
-      name: "Product Engineering",
-      tagline: "Complex product or business system",
-      price: "custom",
+      name: "Custom",
+      tagline: "Complex system",
+      price: "on request",
       desc: "For SaaS, FinTech, marketplaces, internal platforms, CRM/ERP-like systems, AI automation and projects with multiple roles, backend, admin, integrations and production risk. Cost is fixed after brief and scope.",
       includes: [
         "AI bots and assistants",
@@ -450,7 +450,7 @@ const COPY_EN = {
         "custom CRM",
         "scope-based estimate",
       ],
-      cta: "Discuss Product Engineering",
+      cta: "Discuss Custom",
       ctaHint: "Opens a short form to discuss a non-standard task.",
       compactCta: "Discuss system",
     },
@@ -654,9 +654,9 @@ const COPY_ZH = {
       compactCta: "描述产品",
     },
     custom: {
-      name: "Product Engineering",
-      tagline: "复杂产品或业务系统",
-      price: "custom",
+      name: "Custom",
+      tagline: "复杂系统",
+      price: "按需报价",
       desc: "适合 SaaS、金融科技、市场平台、内部系统、类 CRM/ERP、AI 自动化，以及包含多角色、后端、管理端、集成与上线风险的项目。费用在 brief 与 scope 后固定。",
       includes: [
         "AI 机器人与助手",
@@ -668,7 +668,7 @@ const COPY_ZH = {
         "定制 CRM",
         "按范围评估",
       ],
-      cta: "沟通 Product Engineering",
+      cta: "沟通 Custom",
       ctaHint: "打开表单，讨论非标需求。",
       compactCta: "沟通系统",
     },
