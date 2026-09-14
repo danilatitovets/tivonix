@@ -26,9 +26,9 @@ const checks = [
   {
     file: "dist/index.html",
     phrases: [
-      "TIVONIX — сайты, CRM, боты и веб-продукты для бизнеса",
-      "Разрабатываем лендинги, Telegram-ботов, CRM, личные кабинеты, SaaS и MVP",
-      "заявку до результата",
+      "TIVONIX — founder-led product engineering",
+      "Проектируем и запускаем SaaS, FinTech, marketplaces, internal platforms",
+      "программные продукты",
       "https://www.tivonix.tech/",
       'property="og:image" content="https://www.tivonix.tech/images/og-social.jpg"',
     ],
@@ -99,7 +99,7 @@ const checks = [
   },
   {
     file: "dist/projects/index.html",
-    phrases: ["Проекты", "Neo Terminal", "Slotty", "Spliton", "Headmind", "LOGOVO"],
+    phrases: ["Product proof", "Neo Terminal", "Slotty", "Spliton", "Headmind", "LOGOVO"],
   },
   {
     file: "dist/projects/neo-terminal/index.html",
@@ -157,7 +157,13 @@ const checks = [
   },
   {
     file: "dist/plans/index.html",
-    phrases: ["Планы запуска", "Start", "Growth", "Product", "https://www.tivonix.tech/plans"],
+    phrases: [
+      "Product Engineering и Launch Packages",
+      "Start",
+      "Growth",
+      "Product",
+      "https://www.tivonix.tech/plans",
+    ],
   },
   {
     file: "dist/contacts/index.html",
@@ -304,7 +310,7 @@ try {
     console.log(`OK ${automationFile}: exactly 1 link rel="canonical"`);
   }
 
-  const homeTitleWrong = "<title>TIVONIX — сайты, CRM, боты и веб-продукты для бизнеса</title>";
+  const homeTitleWrong = "<title>TIVONIX — founder-led product engineering</title>";
   if (autoHtml.includes(homeTitleWrong)) {
     console.error(`${automationFile}: must not contain home page <title>`);
     hasErrors = true;

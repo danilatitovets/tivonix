@@ -212,8 +212,11 @@ export default function FeaturedProjectsSection() {
       <Container>
         <Reveal className="mx-auto mb-8 max-w-[40rem] text-center sm:mb-10">
           <h2 className="mx-auto text-center font-hero text-[clamp(1.85rem,4.2vw,2.85rem)] font-normal uppercase leading-[0.98] tracking-[0.02em] text-white text-balance">
-            {isRu ? "Три живые результата" : "Three live results"}
+            {copy.featured.title}
           </h2>
+          <p className="mx-auto mt-3 max-w-[36rem] text-[14.5px] font-medium leading-[1.55] text-white/52">
+            {copy.featured.subtitle}
+          </p>
         </Reveal>
 
         <Reveal>

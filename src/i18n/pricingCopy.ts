@@ -118,19 +118,19 @@ export function planPagePrice(lang: Lang, planId: PlanId): string | undefined {
 }
 
 const COPY_RU = {
-  title: "Планы запуска",
-  subtitle: "Понятные тарифы под вашу задачу — от первых заявок до полноценного веб-сервиса",
+  title: "Product Engineering и Launch Packages",
+  subtitle: "Сложные системы оцениваются после brief. Небольшие launch-пакеты остаются для задач с ясным объёмом.",
   includesLabel: "Что входит",
   afterSelect: {
     title: "Что будет после выбора плана",
     steps: [
-      "Вы выбираете подходящий план",
-      "Мы уточняем задачу и объём",
-      "Предлагаем понятный вариант запуска",
-      "После согласования начинаем работу",
+      "Вы описываете продукт, пользователей и workflow",
+      "Мы отделяем complex Product Engineering от launch-пакета",
+      "Фиксируем scope, риски, этапы, срок и стоимость",
+      "После согласования запускаем работу",
     ],
     note:
-      "Цены указаны «от». Итоговая стоимость фиксируется после письменного разбора задачи. Дополнительные модули и интеграции оцениваются отдельно. Оплата — после согласования объёма.",
+      "Product Engineering для SaaS, fintech, marketplaces, internal platforms и сложных интеграций оценивается индивидуально. Цены Start/Growth/Product указаны «от» и подходят для ограниченного launch scope. Итоговая стоимость фиксируется после письменного разбора задачи.",
   },
   compareTitle: "Сравнение тарифов",
   expandAll: "Развернуть всё",
@@ -154,9 +154,9 @@ const COPY_RU = {
   plans: {
     start: {
       name: "Start",
-      tagline: "Страница для запуска заявок",
+      tagline: "Launch package: страница и заявки",
       ...planPriceStrings("от", PLAN_PRICE_USD.start),
-      desc: "Когда нужно быстро запустить страницу под рекламу, Instagram или Telegram и начать собирать заявки в одном месте.",
+      desc: "Когда нужен аккуратный короткий запуск: страница, форма, contact flow и базовая аналитика. Не заменяет сложный продукт.",
       includes: [
         "лендинг",
         "адаптивная версия",
@@ -172,9 +172,9 @@ const COPY_RU = {
     },
     growth: {
       name: "Growth",
-      tagline: "Сайт и система обработки заявок",
+      tagline: "Launch package: сайт и lead workflow",
       ...planPriceStrings("от", PLAN_PRICE_USD.growth),
-      desc: "Когда заявок становится больше, они приходят из разных каналов и команде нужен порядок: статусы, ответственные, таблица или mini-CRM.",
+      desc: "Когда нужен не просто сайт, а порядок в обработке: формы, статусы, ответственные, уведомления, таблица или mini-CRM.",
       includes: [
         "многостраничный сайт",
         "формы и интеграции",
@@ -190,9 +190,9 @@ const COPY_RU = {
     },
     product: {
       name: "Product",
-      tagline: "Основа MVP с одним главным сценарием",
+      tagline: "Launch package: основа MVP",
       ...planPriceStrings("от", PLAN_PRICE_USD.product),
-      desc: "Когда нужен MVP с одним главным пользовательским сценарием: авторизация, роли, база данных и админ-панель. Сложный SaaS, маркетплейс, FinTech или крупная CRM — это Custom. Дополнительные модули и интеграции оцениваются отдельно.",
+      desc: "Когда нужен MVP с одним главным пользовательским сценарием: авторизация, роли, база данных и базовая админ-панель. Сложный SaaS, marketplace, FinTech или крупная CRM — это Custom scope.",
       includes: [
         "личный кабинет",
         "авторизация",
@@ -207,10 +207,10 @@ const COPY_RU = {
       compactCta: "Рассчитать MVP",
     },
     custom: {
-      name: "Custom",
-      tagline: "Сложный продукт или автоматизация",
+      name: "Product Engineering",
+      tagline: "Сложный продукт или бизнес-система",
       price: "индивидуально",
-      desc: "Для сложного SaaS, маркетплейсов, FinTech, крупных CRM, AI-автоматизации и внутренних систем. Стоимость фиксируется после письменного разбора задачи; дополнения — отдельной сметой.",
+      desc: "Для SaaS, FinTech, marketplaces, internal platforms, CRM/ERP-like систем, AI automation и проектов с несколькими ролями, backend, admin, интеграциями и production-risk. Стоимость фиксируется после brief и scope.",
       includes: [
         "сложная бизнес-логика",
         "несколько ролей",
@@ -218,11 +218,11 @@ const COPY_RU = {
         "интеграции",
         "аналитика",
         "масштабирование",
-        "индивидуальная оценка",
+        "scope-based оценка",
       ],
-      cta: "Обсудить Custom",
+      cta: "Обсудить Product Engineering",
       ctaHint: "Откроется форма для обсуждения нестандартной задачи.",
-      compactCta: "Обсудить Custom",
+      compactCta: "Обсудить систему",
     },
   } satisfies Record<
     PlanId,
@@ -253,7 +253,7 @@ const COPY_RU = {
       {
         id: "which-plan",
         q: "Какой план выбрать, если я не понимаю?",
-        a: "Можно выбрать Growth или просто написать нам. Мы разберём задачу и подскажем, нужен сайт, бот, CRM, кабинет или кастомная автоматизация.",
+        a: "Опишите задачу в brief. Мы подскажем, это launch package или scope-based Product Engineering.",
       },
       {
         id: "start-expand",
@@ -268,12 +268,12 @@ const COPY_RU = {
       {
         id: "when-product",
         q: "Когда нужен Product?",
-        a: "Product подходит для MVP с одним главным сценарием: пользователи, личный кабинет, роли, база данных и админ-панель. Сложный SaaS, маркетплейс, FinTech или крупная CRM — это Custom.",
+        a: "Product подходит для MVP с одним главным сценарием: пользователи, личный кабинет, роли, база данных и базовая админ-панель. Сложный SaaS, marketplace, FinTech или крупная CRM — это Product Engineering.",
       },
       {
         id: "when-custom",
-        q: "Когда выбирать Custom?",
-        a: "Custom — для сложного SaaS, маркетплейсов, FinTech, крупных CRM, AI-автоматизации и внутренних систем. Стоимость — после письменного разбора; дополнительные модули — отдельной сметой.",
+        q: "Когда нужен Product Engineering?",
+        a: "Когда в системе есть несколько ролей, backend, admin, платежи, интеграции, данные, security или production-risk. Стоимость — после письменного разбора; дополнительные модули — отдельной сметой.",
       },
     ],
   },
@@ -331,31 +331,31 @@ const COPY_RU = {
       start: ["Лендинг", "Форма", "Telegram"],
       growth: ["Мини-CRM", "Статусы", "Админка"],
       product: ["Кабинет", "Оплата", "Роли"],
-      custom: ["AI-боты", "Интеграции", "CRM"],
+      custom: ["SaaS", "FinTech", "Integrations"],
     },
     shortDesc: {
       start: "Быстрый запуск страницы и заявок",
       growth: "Система заявок для команды",
       product: "Основа MVP с одним сценарием",
-      custom: "Индивидуальная автоматизация",
+      custom: "Scope-based product engineering",
     },
   },
 };
 
 const COPY_EN = {
-  title: "Launch plans",
-  subtitle: "Clear plans for your task — from first leads to a full web service",
+  title: "Product Engineering and Launch Packages",
+  subtitle: "Complex systems are estimated after a brief. Smaller launch packages remain for clearly bounded work.",
   includesLabel: "What’s included",
   afterSelect: {
     title: "What happens after you choose a plan",
     steps: [
-      "You pick the plan that fits",
-      "We clarify the task and scope",
-      "We propose a clear launch option",
+      "You describe the product, users and workflow",
+      "We separate complex Product Engineering from a launch package",
+      "We lock scope, risks, stages, timeline and cost",
       "After agreement, we start work",
     ],
     note:
-      "Prices are shown “from”. Final cost is confirmed after a written scope review. Extra modules and integrations are quoted separately. Payment happens after scope agreement.",
+      "Product Engineering for SaaS, fintech, marketplaces, internal platforms and complex integrations is scoped individually. Start/Growth/Product prices are “from” prices for limited launch scope. Final cost is confirmed after a written scope review.",
   },
   compareTitle: "Compare plans",
   expandAll: "Expand all",
@@ -379,9 +379,9 @@ const COPY_EN = {
   plans: {
     start: {
       name: "Start",
-      tagline: "Launch page",
+      tagline: "Launch package: page and leads",
       ...planPriceStrings("from", PLAN_PRICE_USD.start),
-      desc: "When you need a page for ads, Instagram or Telegram — and want to collect inquiries in one place quickly.",
+      desc: "For a clean short launch: page, form, contact flow and basic analytics. It does not replace a complex product.",
       includes: [
         "landing or service page",
         "lead form",
@@ -397,7 +397,7 @@ const COPY_EN = {
     },
     growth: {
       name: "Growth",
-      tagline: "Website + lead workflow",
+      tagline: "Launch package: website and lead workflow",
       ...planPriceStrings("from", PLAN_PRICE_USD.growth),
       desc: "When leads grow and come from multiple channels — your team needs order: statuses, owners, a sheet or mini-CRM.",
       includes: [
@@ -416,9 +416,9 @@ const COPY_EN = {
     },
     product: {
       name: "Product",
-      tagline: "Focused MVP foundation",
+      tagline: "Launch package: focused MVP foundation",
       ...planPriceStrings("from", PLAN_PRICE_USD.product),
-      desc: "When you need an MVP built around one main user scenario: auth, roles, a database and admin panel. Complex SaaS, marketplaces, FinTech or large CRM work belongs in Custom. Extra modules and integrations are quoted separately.",
+      desc: "For an MVP built around one main user scenario: auth, roles, a database and basic admin panel. Complex SaaS, marketplace, FinTech or large CRM work belongs in Product Engineering.",
       includes: [
         "client portal",
         "admin panel",
@@ -436,10 +436,10 @@ const COPY_EN = {
       compactCta: "Describe product",
     },
     custom: {
-      name: "Custom",
-      tagline: "Complex product development",
+      name: "Product Engineering",
+      tagline: "Complex product or business system",
       price: "custom",
-      desc: "For complex SaaS, marketplaces, FinTech, large CRM builds, AI automation and internal systems. Cost is fixed after a written scope review; add-ons are quoted separately.",
+      desc: "For SaaS, FinTech, marketplaces, internal platforms, CRM/ERP-like systems, AI automation and projects with multiple roles, backend, admin, integrations and production risk. Cost is fixed after brief and scope.",
       includes: [
         "AI bots and assistants",
         "lead automation",
@@ -448,11 +448,11 @@ const COPY_EN = {
         "client areas",
         "complex roles and flows",
         "custom CRM",
-        "support and evolution",
+        "scope-based estimate",
       ],
-      cta: "Request a plan",
+      cta: "Discuss Product Engineering",
       ctaHint: "Opens a short form to discuss a non-standard task.",
-      compactCta: "Discuss Custom",
+      compactCta: "Discuss system",
     },
   },
   faq: {
@@ -471,7 +471,7 @@ const COPY_EN = {
       {
         id: "which-plan",
         q: "Which plan if I’m not sure?",
-        a: "Pick Growth or message us. We’ll review your task and tell you if you need a site, bot, CRM, client area or custom automation.",
+        a: "Describe the task in the brief. We’ll tell you whether it is a launch package or scope-based Product Engineering.",
       },
       {
         id: "start-expand",
@@ -486,12 +486,12 @@ const COPY_EN = {
       {
         id: "when-product",
         q: "When do I need Product?",
-        a: "Product fits an MVP with one main user scenario: users, client portal, roles, database and admin panel. Complex SaaS, marketplaces, FinTech or large CRM work belongs in Custom.",
+        a: "Product fits an MVP with one main user scenario: users, client portal, roles, database and basic admin panel. Complex SaaS, marketplace, FinTech or large CRM work belongs in Product Engineering.",
       },
       {
         id: "when-custom",
-        q: "When to choose Custom?",
-        a: "Custom is for complex SaaS, marketplaces, FinTech, large CRM, AI automation and internal systems. Cost comes after a written scope review; extra modules are quoted separately.",
+        q: "When do I need Product Engineering?",
+        a: "When the system has multiple roles, backend, admin, payments, integrations, data, security or production risk. Cost comes after a written scope review; extra modules are quoted separately.",
       },
     ],
   },
@@ -549,31 +549,31 @@ const COPY_EN = {
       start: ["Landing", "Form", "Telegram"],
       growth: ["Mini-CRM", "Statuses", "Admin"],
       product: ["Client portal", "Payments", "Roles"],
-      custom: ["AI bots", "Integrations", "CRM"],
+      custom: ["SaaS", "FinTech", "Integrations"],
     },
     shortDesc: {
       start: "Fast page and lead launch",
       growth: "Lead system for your team",
       product: "Focused MVP foundation",
-      custom: "Custom automation",
+      custom: "Scope-based product engineering",
     },
   },
 };
 
 const COPY_ZH = {
-  title: "启动方案",
-  subtitle: "对应需求的清晰方案 — 从首批线索到完整 Web 服务",
+  title: "Product Engineering 与 Launch Packages",
+  subtitle: "复杂系统在 brief 后评估。小型 launch packages 保留给范围清晰的任务。",
   includesLabel: "包含内容",
   afterSelect: {
     title: "选定方案后会发生什么",
     steps: [
-      "选择适合的方案",
-      "明确需求与范围",
-      "给出清晰的启动方案",
-      "确认后开工",
+      "描述产品、用户与流程",
+      "区分复杂 Product Engineering 与 launch package",
+      "锁定范围、风险、阶段、周期与费用",
+      "确认后开始工作",
     ],
     note:
-      "价格显示为「起」。最终费用在书面范围确认后确定。额外模块与集成单独报价。确认范围后再付款。",
+      "SaaS、金融科技、市场平台、内部系统与复杂集成按范围单独评估。Start/Growth/Product 为有限 launch scope 的起步价格。最终费用在书面范围确认后确定。",
   },
   compareTitle: "对比方案",
   expandAll: "全部展开",
@@ -597,9 +597,9 @@ const COPY_ZH = {
   plans: {
     start: {
       name: "Start",
-      tagline: "启动获客的落地页",
+      tagline: "Launch package：页面与线索",
       ...planPriceStrings("起", PLAN_PRICE_USD.start),
-      desc: "当您需要广告、Instagram 或 Telegram 页面 — 并希望快速把咨询汇入一处。",
+      desc: "适合短启动：页面、表单、联系方式流程与基础分析。它不替代复杂产品。",
       includes: [
         "落地页或服务页",
         "线索表单",
@@ -615,7 +615,7 @@ const COPY_ZH = {
     },
     growth: {
       name: "Growth",
-      tagline: "网站与线索处理系统",
+      tagline: "Launch package：网站与线索流程",
       ...planPriceStrings("起", PLAN_PRICE_USD.growth),
       desc: "当线索增长且来自多渠道 — 团队需要秩序：状态、负责人、表格或迷你 CRM。",
       includes: [
@@ -634,9 +634,9 @@ const COPY_ZH = {
     },
     product: {
       name: "Product",
-      tagline: "聚焦单一核心场景的 MVP 基础",
+      tagline: "Launch package：聚焦 MVP 基础",
       ...planPriceStrings("起", PLAN_PRICE_USD.product),
-      desc: "当您需要一个围绕单一主要用户场景构建的 MVP：认证、角色、数据库与管理后台。复杂 SaaS、市场平台、金融科技或大型 CRM 属于 Custom。额外模块与集成单独报价。",
+      desc: "适合围绕一个主要用户场景的 MVP：认证、角色、数据库和基础管理后台。复杂 SaaS、市场平台、金融科技或大型 CRM 属于 Product Engineering。",
       includes: [
         "客户后台",
         "管理后台",
@@ -654,10 +654,10 @@ const COPY_ZH = {
       compactCta: "描述产品",
     },
     custom: {
-      name: "Custom",
-      tagline: "复杂产品开发",
+      name: "Product Engineering",
+      tagline: "复杂产品或业务系统",
       price: "custom",
-      desc: "面向复杂 SaaS、市场平台、金融科技、大型 CRM、AI 自动化与内部系统。费用在书面范围确认后确定；附加模块单独报价。",
+      desc: "适合 SaaS、金融科技、市场平台、内部系统、类 CRM/ERP、AI 自动化，以及包含多角色、后端、管理端、集成与上线风险的项目。费用在 brief 与 scope 后固定。",
       includes: [
         "AI 机器人与助手",
         "线索自动化",
@@ -666,11 +666,11 @@ const COPY_ZH = {
         "客户后台",
         "复杂角色与流程",
         "定制 CRM",
-        "支持与持续迭代",
+        "按范围评估",
       ],
-      cta: "申请方案",
+      cta: "沟通 Product Engineering",
       ctaHint: "打开表单，讨论非标需求。",
-      compactCta: "沟通 Custom",
+      compactCta: "沟通系统",
     },
   },
   faq: {
@@ -689,7 +689,7 @@ const COPY_ZH = {
       {
         id: "which-plan",
         q: "不确定选哪个方案？",
-        a: "选择 Growth 或留言。我们梳理需求，告诉您需要网站、机器人、CRM、客户后台还是定制自动化。",
+        a: "在 brief 中描述需求。我们会判断它适合 launch package，还是按范围评估的 Product Engineering。",
       },
       {
         id: "start-expand",
@@ -704,12 +704,12 @@ const COPY_ZH = {
       {
         id: "when-product",
         q: "何时需要 Product？",
-        a: "Product 适合围绕一个主要用户场景构建的 MVP：用户、客户门户、角色、数据库与管理后台。复杂 SaaS、市场平台、金融科技或大型 CRM 属于 Custom。",
+        a: "Product 适合围绕一个主要用户场景构建的 MVP：用户、客户门户、角色、数据库与基础管理后台。复杂 SaaS、市场平台、金融科技或大型 CRM 属于 Product Engineering。",
       },
       {
         id: "when-custom",
-        q: "何时选择 Custom？",
-        a: "Custom 面向复杂 SaaS、市场平台、金融科技、大型 CRM、AI 自动化与内部系统。费用在书面范围确认后给出；额外模块单独报价。",
+        q: "何时需要 Product Engineering？",
+        a: "当系统包含多角色、后端、管理端、支付、集成、数据、安全或上线风险时，需要按范围评估。额外模块单独报价。",
       },
     ],
   },
@@ -759,7 +759,7 @@ const COPY_ZH = {
       "我们先交付帮助获客与处理线索的部分。业务成长后再加 CRM、客户后台、支付、集成或自动化。",
     helpTitle: "不确定选哪个方案？",
     helpLead:
-      "用自己的话描述需求 — 我们建议从 Start、Growth、Product 还是 Custom 开始。",
+      "用自己的话描述需求 — 我们判断应从 Start、Growth、Product 还是 Product Engineering 开始。",
     helpCta: "提交需求",
     helpModalCta: "提交需求",
     planScopeCaption: "按方案划分的启动范围",
@@ -767,13 +767,13 @@ const COPY_ZH = {
       start: ["落地页", "表单", "Telegram"],
       growth: ["迷你 CRM", "状态", "管理"],
       product: ["客户门户", "支付", "角色"],
-      custom: ["AI 机器人", "集成", "CRM"],
+      custom: ["SaaS", "FinTech", "集成"],
     },
     shortDesc: {
       start: "快速上线页面与线索",
       growth: "团队可用的线索系统",
       product: "聚焦单一核心场景的 MVP",
-      custom: "定制自动化",
+      custom: "按范围评估的产品工程",
     },
   },
 };

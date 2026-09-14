@@ -660,7 +660,9 @@ export function LangProvider({
     setLangState(l);
     try {
       localStorage.setItem(LANG_STORAGE_KEY, l);
-    } catch (_) {}
+    } catch {
+      /* storage may be blocked */
+    }
     syncHtmlLang(l);
   };
 
@@ -668,7 +670,9 @@ export function LangProvider({
   useEffect(() => {
     try {
       localStorage.setItem(LANG_STORAGE_KEY, lang);
-    } catch (_) {}
+    } catch {
+      /* storage may be blocked */
+    }
     syncHtmlLang(lang);
   }, [lang]);
 
@@ -714,6 +718,7 @@ export function LangPathSync() {
   return null;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useLang() {
   const ctx = useContext(LangContext);
   if (!ctx) throw new Error("useLang must be used within LangProvider");
@@ -721,25 +726,26 @@ export function useLang() {
 }
 
 /** Title и meta description для главной — те же строки, что в Hero (один источник правды). */
+// eslint-disable-next-line react-refresh/only-export-components
 export function homePageSeoFromDict(dict: Dictionary): { title: string; description: string } {
   if (dict.header.home === "На главную") {
     return {
-      title: "TIVONIX — сайты, CRM, боты и веб-продукты для бизнеса",
+      title: "TIVONIX — founder-led product engineering",
       description:
-        "Разрабатываем лендинги, Telegram-ботов, CRM, личные кабинеты, SaaS и MVP — и связываем их в единый процесс: от первого обращения до оплаты.",
+        "Проектируем и запускаем SaaS, FinTech, marketplaces, internal platforms, Telegram products и AI automation — от product framing и архитектуры до production.",
     };
   }
   if (dict.header.home === "返回首页") {
     return {
-      title: "TIVONIX — 面向企业的网站、CRM、机器人与 Web 产品",
+      title: "TIVONIX — founder-led product engineering",
       description:
-        "白俄罗斯技术团队 TIVONIX：落地页、Telegram 机器人、CRM、客户后台、SaaS 与 MVP，打通从首次咨询到成交的完整流程，助力进入白俄罗斯与欧亚经济联盟市场。",
+        "TIVONIX 设计并上线 SaaS、金融科技、市场平台、内部系统、Telegram products 与 AI automation：从产品梳理、架构到 production。",
     };
   }
 
   return {
-    title: "TIVONIX — websites, CRM, bots and web products for business",
+    title: "TIVONIX — founder-led product engineering",
     description:
-      "We build landing pages, Telegram bots, CRMs, client portals, SaaS and MVPs — and connect them into one lead process from first inquiry to payment.",
+      "We design and ship SaaS, FinTech, marketplaces, internal platforms, Telegram products and AI automation — from product framing and architecture to production.",
   };
 }

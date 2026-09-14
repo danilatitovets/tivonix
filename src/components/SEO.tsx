@@ -6,7 +6,7 @@ import { hreflangPair } from "../lib/localePaths";
 export const DEFAULT_OG_IMAGE = `${CANONICAL_ORIGIN}/images/og-social.jpg`;
 const OG_IMAGE_WIDTH = "1200";
 const OG_IMAGE_HEIGHT = "630";
-const OG_IMAGE_ALT = "TIVONIX — websites, bots and automation for business";
+const OG_IMAGE_ALT = "TIVONIX — founder-led product engineering";
 
 export type SEOProps = {
   title: string;

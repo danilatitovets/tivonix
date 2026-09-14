@@ -156,7 +156,6 @@ export default function ProjectsPage() {
   const { lang } = useLang();
   const { pathname } = useLocation();
   const isRu = lang === "ru";
-  const isEnPath = pathname.startsWith("/en");
   const isZhPath = pathname.startsWith("/zh");
   const [activeFilter, setActiveFilter] = useState(ALL_FILTER);
   const leadCopy = leadFormCopy(lang);
@@ -174,15 +173,28 @@ export default function ProjectsPage() {
   }, [projects, activeFilter]);
 
   const seoTitle = isRu
-    ? "Проекты и кейсы TIVONIX — сайты, веб-сервисы и MVP"
-    : "TIVONIX projects and case studies — websites, web services and MVP";
+    ? "Product proof TIVONIX — SaaS, FinTech, marketplaces и internal systems"
+    : lang === "zh"
+      ? "TIVONIX Product Proof — SaaS、金融科技、市场平台与内部系统"
+      : "TIVONIX product proof — SaaS, FinTech, marketplaces and internal systems";
   const seoDescription = isRu
-    ? "Посмотрите проекты TIVONIX: лендинги, веб-сервисы, личные кабинеты, админки, MVP и Telegram-интеграции для бизнеса."
-    : "Explore TIVONIX projects: landings, web services, client areas, admin panels, MVPs and Telegram integrations for business.";
+    ? "Реальные продукты TIVONIX: AI commerce, FinTech, marketplace booking, админки, платежи, Telegram Mini Apps, backend, интеграции и production."
+    : lang === "zh"
+      ? "TIVONIX 已上线产品证明：AI commerce、金融科技、预约市场平台、管理端、支付、Telegram Mini Apps、后端与集成。"
+      : "Real TIVONIX product proof: AI commerce, FinTech, booking marketplace, admin panels, payments, Telegram Mini Apps, backend, integrations and production.";
 
-  const heroTitle = isRu ? "Проекты и кейсы" : "Projects and case studies";
-  const allLabel = isRu ? "Все" : "All";
-  const emptyLabel = isRu ? "Пока нет проектов в этой категории." : "No projects in this category yet.";
+  const heroTitle = isRu ? "Product proof" : lang === "zh" ? "Product proof" : "Product proof";
+  const heroSubtitle = isRu
+    ? "Не портфолио картинок, а рабочие системы: роли, workflow, backend, интеграции и production-ответственность."
+    : lang === "zh"
+      ? "不是图片作品集，而是可运行系统：角色、流程、后端、集成与 production 责任。"
+      : "Not a gallery of screenshots: working systems with roles, workflows, backend, integrations and production ownership.";
+  const allLabel = isRu ? "Все" : lang === "zh" ? "全部" : "All";
+  const emptyLabel = isRu
+    ? "Пока нет проектов в этой категории."
+    : lang === "zh"
+      ? "此类别暂无项目。"
+      : "No projects in this category yet.";
 
   return (
     <div className="min-h-screen overflow-x-clip bg-black">
@@ -202,6 +214,9 @@ export default function ProjectsPage() {
               <h1 className="font-hero text-[clamp(1.85rem,4.5vw,2.75rem)] font-normal uppercase leading-[1.02] tracking-[0.02em] text-white">
                 {heroTitle}
               </h1>
+              <p className="mx-auto mt-4 max-w-[42rem] text-[14.5px] font-medium leading-[1.6] text-white/52">
+                {heroSubtitle}
+              </p>
             </header>
 
             <div className="mt-10 sm:mt-12">
