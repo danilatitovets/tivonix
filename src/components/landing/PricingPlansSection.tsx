@@ -19,7 +19,6 @@ import { ctaClass } from "../leads/ctaStyles";
 import PlanBgVideo from "../ui/PlanBgVideo";
 
 const COMPARE_LOGO = "/images/tivonix-logo-white.webp";
-const EMBER = "#fc5000";
 
 function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
@@ -57,14 +56,41 @@ function ComparisonValue({
   cell,
   labels,
   textLabels,
+  mode = "icon",
 }: {
   cell: ComparisonCell;
   labels: { yes: string; no: string; option: string; basic: string };
   textLabels: Record<string, string>;
+  mode?: "icon" | "badge";
 }) {
+  if (cell.kind === "text" && cell.textKey) {
+    return (
+      <span className={cx("pricing-compare__status", "pricing-compare__status--text", mode === "badge" && "is-badge")}>
+        {textLabels[cell.textKey]}
+      </span>
+    );
+  }
+
+  if (mode === "badge" || cell.kind === "option" || cell.kind === "basic") {
+    const label = labels[cell.kind as "yes" | "no" | "option" | "basic"];
+    return (
+      <span
+        className={cx(
+          "pricing-compare__status is-badge",
+          cell.kind === "yes" && "is-yes",
+          cell.kind === "no" && "is-no",
+          cell.kind === "option" && "is-option",
+          cell.kind === "basic" && "is-basic"
+        )}
+      >
+        {label}
+      </span>
+    );
+  }
+
   if (cell.kind === "yes") {
     return (
-      <span className="inline-flex items-center justify-center text-[var(--color-ember)]" aria-label={labels.yes}>
+      <span className="pricing-compare__status is-yes-icon" aria-label={labels.yes}>
         <Check size={15} strokeWidth={2.25} aria-hidden />
       </span>
     );
@@ -72,19 +98,14 @@ function ComparisonValue({
 
   if (cell.kind === "no") {
     return (
-      <span className="text-white/28" aria-label={labels.no}>
+      <span className="pricing-compare__status is-no-icon" aria-label={labels.no}>
         <Minus size={15} strokeWidth={1.75} aria-hidden />
       </span>
     );
   }
 
-  const label =
-    cell.kind === "text" && cell.textKey
-      ? textLabels[cell.textKey]
-      : labels[cell.kind];
-
   return (
-    <span className="font-sans text-[11px] font-medium text-white/50 sm:text-[12px]">{label}</span>
+    <span className="pricing-compare__status is-badge is-option">{labels.option}</span>
   );
 }
 
@@ -365,8 +386,9 @@ export default function PricingPlansSection({ className }: { className?: string 
   const { lang } = useLang();
   const copy = pricingCopy(lang);
   const { openLeadForm } = useLeadForm();
+  const [activePlan, setActivePlan] = useState<PlanId>("growth");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(COMPARISON_GROUPS.map((g) => [g.id, true]))
+    Object.fromEntries(COMPARISON_GROUPS.map((g, i) => [g.id, i === 0]))
   );
   const allExpanded = useMemo(
     () => COMPARISON_GROUPS.every((g) => openGroups[g.id]),
@@ -389,6 +411,9 @@ export default function PricingPlansSection({ className }: { className?: string 
   const handleHelpCta = () => {
     openLeadForm("pricing_help");
   };
+
+  const activePlanMeta = PLANS.find((p) => p.id === activePlan)!;
+  const activePlanCopy = copy.plans[activePlan];
 
   return (
     <Section
@@ -436,6 +461,7 @@ export default function PricingPlansSection({ className }: { className?: string 
               <h2 className="font-hero text-[clamp(1.5rem,3vw,2.1rem)] font-normal uppercase tracking-[0.02em] text-white">
                 {copy.compareTitle}
               </h2>
+              <p className="pricing-compare__hint lg:hidden">{copy.compareHint}</p>
               <button
                 type="button"
                 onClick={toggleAll}
@@ -445,26 +471,88 @@ export default function PricingPlansSection({ className }: { className?: string 
               </button>
             </div>
 
-            <div className="pricing-compare__mobile-plans lg:hidden">
-              <div className="pricing-compare__mobile-plans-scroll">
+            {/* Mobile: pick one plan, then read a simple checklist */}
+            <div className="pricing-compare__mobile lg:hidden">
+              <div
+                className="pricing-compare__tabs"
+                role="tablist"
+                aria-label={copy.compareTitle}
+              >
                 {PLAN_IDS.map((id) => {
-                  const planCopy = copy.plans[id];
                   const plan = PLANS.find((p) => p.id === id)!;
+                  const selected = activePlan === id;
                   return (
-                    <ComparePlanHead
-                      key={`mobile-head-${id}`}
-                      planId={id}
-                      name={planCopy.name}
-                      price={planCopy.price}
-                      priceOriginal={planCopy.priceOriginal}
-                      cta={planCopy.compactCta}
-                      featured={plan.highlight}
-                      onAction={() => handlePlanCta(id)}
-                      layout="card"
-                    />
+                    <button
+                      key={`tab-${id}`}
+                      type="button"
+                      role="tab"
+                      aria-selected={selected}
+                      className={cx(
+                        "pricing-compare__tab",
+                        selected && "is-active",
+                        plan.highlight && "is-featured"
+                      )}
+                      onClick={() => setActivePlan(id)}
+                    >
+                      {copy.plans[id].name}
+                    </button>
                   );
                 })}
               </div>
+
+              <div className="pricing-compare__active-card">
+                <div className="pricing-compare__active-copy">
+                  <p className="pricing-compare__active-name">{activePlanCopy.name}</p>
+                  <p className="pricing-compare__active-price">{activePlanCopy.price}</p>
+                  <p className="pricing-compare__active-tagline">{activePlanCopy.tagline}</p>
+                </div>
+                <PlanCtaButton
+                  featured={activePlanMeta.highlight}
+                  compact
+                  onClick={() => handlePlanCta(activePlan)}
+                >
+                  {activePlanCopy.compactCta}
+                </PlanCtaButton>
+              </div>
+
+              {COMPARISON_GROUPS.map((group) => {
+                const open = openGroups[group.id];
+                return (
+                  <div key={group.id} className="pricing-compare__mobile-group">
+                    <button
+                      type="button"
+                      onClick={() => toggleGroup(group.id)}
+                      className="pricing-compare__mobile-group-btn"
+                      aria-expanded={open}
+                    >
+                      <span>{copy.groups[group.id as keyof typeof copy.groups]}</span>
+                      <ChevronDown
+                        size={16}
+                        className={cx("text-white/45 transition", open && "rotate-180")}
+                        aria-hidden
+                      />
+                    </button>
+
+                    {open ? (
+                      <div className="pricing-compare__mobile-rows">
+                        {group.rows.map((row) => (
+                          <div key={row.id} className="pricing-compare__mobile-row pricing-compare__mobile-row--simple">
+                            <p className="pricing-compare__mobile-feature">
+                              {copy.features[row.id as keyof typeof copy.features]}
+                            </p>
+                            <ComparisonValue
+                              cell={row.values[activePlan]}
+                              labels={copy.cell}
+                              textLabels={copy.cellText}
+                              mode="badge"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
             </div>
 
             <div className="pricing-compare__desktop hidden lg:block">
@@ -528,60 +616,6 @@ export default function PricingPlansSection({ className }: { className?: string 
                   ))}
                 </div>
               ))}
-            </div>
-
-            <div className="pricing-compare__mobile lg:hidden">
-              {COMPARISON_GROUPS.map((group) => {
-                const open = openGroups[group.id];
-                return (
-                  <div key={group.id} className="pricing-compare__mobile-group">
-                    <button
-                      type="button"
-                      onClick={() => toggleGroup(group.id)}
-                      className="pricing-compare__mobile-group-btn"
-                    >
-                      <span>{copy.groups[group.id as keyof typeof copy.groups]}</span>
-                      <ChevronDown
-                        size={16}
-                        className={cx("text-white/45 transition", open && "rotate-180")}
-                        aria-hidden
-                      />
-                    </button>
-
-                    {open ? (
-                      <div className="pricing-compare__mobile-rows">
-                        {group.rows.map((row) => (
-                          <div key={row.id} className="pricing-compare__mobile-row">
-                            <p className="pricing-compare__mobile-feature">
-                              {copy.features[row.id as keyof typeof copy.features]}
-                            </p>
-                            <div className="pricing-compare__mobile-values">
-                              {PLAN_IDS.map((planId) => (
-                                <div
-                                  key={planId}
-                                  className={cx(
-                                    "pricing-compare__mobile-value",
-                                    planId === "growth" && "pricing-compare__mobile-value--growth"
-                                  )}
-                                >
-                                  <p className="pricing-compare__mobile-plan-label">
-                                    {copy.plans[planId].name}
-                                  </p>
-                                  <ComparisonValue
-                                    cell={row.values[planId]}
-                                    labels={copy.cell}
-                                    textLabels={copy.cellText}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
             </div>
           </div>
         </Reveal>
