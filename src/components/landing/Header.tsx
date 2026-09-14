@@ -464,7 +464,7 @@ export default function Header() {
               <img
                 src={heroInView ? LOGO_WHITE : LOGO_DEFAULT}
                 alt="TIVONIX"
-                className="h-7 w-auto object-contain opacity-95"
+                className="-ml-1 h-7 w-auto object-contain object-left opacity-95"
                 draggable={false}
                 decoding="async"
               />
@@ -637,7 +637,8 @@ export default function Header() {
                       src={logoSrc}
                       alt="TIVONIX"
                       className={cx(
-                        "h-auto w-auto max-w-full object-contain object-left opacity-95 transition-all hover:opacity-100",
+                        // Optical align: lockup webp has a few px of left transparent padding
+                        "-ml-1 h-auto w-auto max-w-full object-contain object-left opacity-95 transition-all hover:opacity-100 sm:-ml-1.5",
                         "max-h-7 min-[390px]:max-h-8 sm:max-h-9 md:max-h-10"
                       )}
                       draggable={false}
