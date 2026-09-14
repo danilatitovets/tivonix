@@ -87,7 +87,9 @@ export default function MilesealManualReviewPanel({
   const privacyHref =
     lang === "ru"
       ? "/doc/Политика_обработки_ПД_Tivonix_RU.pdf"
-      : "/doc/Privacy_Policy_Tivonix_EN.pdf";
+      : lang === "zh"
+        ? "/doc/Privacy_Policy_Tivonix_ZH.pdf"
+        : "/doc/Privacy_Policy_Tivonix_EN.pdf";
 
   const steps: Step[] = ["welcome", "request", "scope", "contact", "review"];
   const stepIndex = steps.indexOf(step);

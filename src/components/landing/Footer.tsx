@@ -70,12 +70,12 @@ const DOCS = {
   ],
   zh: [
     {
-      href: "/doc/Privacy_Policy_Tivonix_EN.pdf",
+      href: "/doc/Privacy_Policy_Tivonix_ZH.pdf",
       label: "隐私政策",
       aria: "隐私政策（PDF）",
     },
     {
-      href: "/doc/Consent_Tivonix_EN.pdf",
+      href: "/doc/Consent_Tivonix_ZH.pdf",
       label: "同意书",
       aria: "个人信息处理同意书（PDF）",
     },

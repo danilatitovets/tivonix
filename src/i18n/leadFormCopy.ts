@@ -226,7 +226,7 @@ const COPY_ZH = {
   budgets: BUDGET_ZH,
   consent: "我同意个人信息处理政策",
   privacyLabel: "隐私政策",
-  privacyHref: "/doc/Privacy_Policy_Tivonix_EN.pdf",
+  privacyHref: "/doc/Privacy_Policy_Tivonix_ZH.pdf",
   send: "发送 brief",
   sending: "提交中…",
   sent: "已发送",

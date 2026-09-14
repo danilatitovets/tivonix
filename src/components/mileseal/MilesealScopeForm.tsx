@@ -89,7 +89,9 @@ export function MilesealReviewForm({
   const privacyHref =
     lang === "ru"
       ? "/doc/Политика_обработки_ПД_Tivonix_RU.pdf"
-      : "/doc/Privacy_Policy_Tivonix_EN.pdf";
+      : lang === "zh"
+        ? "/doc/Privacy_Policy_Tivonix_ZH.pdf"
+        : "/doc/Privacy_Policy_Tivonix_EN.pdf";
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();

@@ -921,7 +921,7 @@ export const PARTNERS_DOCS = {
     consent: "/doc/Consent_Tivonix_EN.pdf",
   },
   zh: {
-    privacy: "/doc/Privacy_Policy_Tivonix_EN.pdf",
-    consent: "/doc/Consent_Tivonix_EN.pdf",
+    privacy: "/doc/Privacy_Policy_Tivonix_ZH.pdf",
+    consent: "/doc/Consent_Tivonix_ZH.pdf",
   },
 } as const;

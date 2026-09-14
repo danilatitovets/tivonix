@@ -6,7 +6,7 @@ import { pathForLang } from "../../lib/localePaths";
 const PRIVACY_HREF: Record<"en" | "ru" | "zh", string> = {
   en: "/doc/Privacy_Policy_Tivonix_EN.pdf",
   ru: "/doc/Политика_обработки_ПД_Tivonix_RU.pdf",
-  zh: "/doc/Privacy_Policy_Tivonix_EN.pdf",
+  zh: "/doc/Privacy_Policy_Tivonix_ZH.pdf",
 };
 
 /** Compact footer for MileSeal case/demo pages only — does not replace site Footer. */

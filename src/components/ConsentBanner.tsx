@@ -12,6 +12,7 @@ import { useLeadForm } from "./leads/useLeadForm";
 
 const PRIVACY_RU = "/doc/Политика_обработки_ПД_Tivonix_RU.pdf";
 const PRIVACY_EN = "/doc/Privacy_Policy_Tivonix_EN.pdf";
+const PRIVACY_ZH = "/doc/Privacy_Policy_Tivonix_ZH.pdf";
 
 /**
  * Floating analytics consent card (Hotjar) — dark, pill buttons.
@@ -56,7 +57,8 @@ export default function ConsentBanner() {
     setVisible(false);
   };
 
-  const privacyHref = lang === "ru" ? PRIVACY_RU : PRIVACY_EN;
+  const privacyHref =
+    lang === "ru" ? PRIVACY_RU : lang === "zh" ? PRIVACY_ZH : PRIVACY_EN;
   const policyLabel = t3(lang, "Политика cookies", "Cookie Policy", "Cookie 政策");
 
   return (
