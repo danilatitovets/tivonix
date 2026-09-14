@@ -38,13 +38,12 @@ import {
 import type { PlanId } from "../../lib/pricingData";
 import { planPagePrice, pricingCopy } from "../../i18n/pricingCopy";
 import BgLoopVideo from "../ui/BgLoopVideo";
+import { Plus } from "lucide-react";
+import { ctaClass } from "./ctaStyles";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
-
-const BRAND_CTA =
-  "linear-gradient(90deg, #FFD7B0 0%, #FF9A3D 48%, #FF7A2E 100%)";
 
 const ORANGE_LINE =
   "linear-gradient(90deg, rgba(255,160,70,0) 0%, rgba(255,120,40,0.55) 18%, rgba(255,198,120,0.85) 50%, rgba(255,120,40,0.55) 82%, rgba(255,160,70,0) 100%)";
@@ -965,21 +964,23 @@ export default function LeadFormModal({
                   type="submit"
                   form="lead-form"
                   disabled={status === "loading"}
-                  className={cx(
-                    "flex h-12 w-full items-center justify-center rounded-full text-[15px] font-semibold text-black",
-                    "shadow-[0_10px_36px_rgba(255,120,40,0.22)]",
-                    "hover:brightness-[1.03] active:brightness-[0.97]",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/40",
-                    status === "loading" && "cursor-not-allowed opacity-70"
+                  className={ctaClass(
+                    "primary",
+                    "lg",
+                    cx(
+                      "w-full shadow-[0_12px_40px_rgba(255,107,44,0.28)]",
+                      status === "loading" && "cursor-not-allowed opacity-70"
+                    ),
+                    true
                   )}
-                  style={{ background: BRAND_CTA }}
                 >
-                  {status === "loading" ? copy.sending : copy.send}
+                  <span className="tivonix-cta-primary__label">
+                    {status === "loading" ? copy.sending : copy.send}
+                  </span>
+                  <span className="tivonix-cta-primary__icon" aria-hidden="true">
+                    <Plus className="tivonix-cta-primary__icon-svg" />
+                  </span>
                 </button>
-
-                <p className="mt-2.5 text-center text-[11px] leading-snug text-white/38">
-                  {copy.formNote}
-                </p>
               </div>
             </div>
           </div>
