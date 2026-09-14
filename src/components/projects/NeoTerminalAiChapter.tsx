@@ -42,7 +42,7 @@ export default function NeoTerminalAiChapter({ lang }: { lang: Lang }) {
         {c.heading}
       </h2>
 
-      <p className="mt-5 max-w-[40rem] text-[15px] font-medium leading-[1.65] text-white/55 sm:text-[16px]">
+      <p className="mt-5 max-w-[56rem] text-[15px] font-medium leading-[1.65] text-white/55 sm:text-[16px]">
         {c.lead}
       </p>
 

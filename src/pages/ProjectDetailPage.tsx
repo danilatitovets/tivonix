@@ -152,7 +152,7 @@ function formatDomainLabel(domainClean: string): string {
 
 function FeatureGrid({ items }: { items: string[] }) {
   return (
-    <ul className="mt-5 grid list-none gap-2.5 sm:mt-7 sm:grid-cols-2 sm:gap-4">
+    <ul className="mt-5 grid list-none gap-2.5 sm:mt-7 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
       {items.map((item, idx) => (
         <li
           key={`${idx}-${item.slice(0, 40)}`}
@@ -234,7 +234,7 @@ function CaseBrandIntro({
 
       {renderLogo("mobile")}
 
-      <div className={cx("max-w-[42rem] space-y-3.5 sm:space-y-4 lg:mt-8", BODY)}>
+      <div className={cx("max-w-[72rem] space-y-3.5 sm:space-y-4 lg:mt-8", BODY)}>
         {storyParas}
       </div>
 
@@ -332,7 +332,7 @@ function PaletteSwatch({
   };
 
   return (
-    <div className={cx("min-w-0", wide && "max-w-xl")}>
+    <div className={cx("min-w-0", wide && "w-full")}>
       <button
         type="button"
         onClick={onCopy}
@@ -543,7 +543,7 @@ function CaseDetailBody({
 
     if (block.type === "prose") {
       nodes.push(
-        <div key={`prose-${contentIndex}`} className="mb-12 max-w-[42rem] space-y-4 last:mb-0 sm:mb-14">
+        <div key={`prose-${contentIndex}`} className="mb-12 max-w-[72rem] space-y-4 last:mb-0 sm:mb-14">
           {block.paragraphs.map((p, idx) => (
             <p key={idx} className={BODY}>
               <RichText text={p} />
@@ -582,7 +582,7 @@ function CaseDetailBody({
               ))}
             </div>
           ) : block.paragraphs?.length ? (
-            <div className={cx("mt-5 max-w-[42rem] space-y-4", isOutcome && "text-[#ededf3]")}>
+            <div className={cx("mt-5 max-w-[72rem] space-y-4", isOutcome && "text-[#ededf3]")}>
               {block.paragraphs.map((p, idx) => (
                 <p key={idx} className={BODY}>
                   <RichText text={p} />
@@ -965,7 +965,7 @@ export default function ProjectDetailPage() {
             </div>
 
             <article
-              className="mt-12 max-w-[52rem] sm:mt-[72px] lg:mt-24"
+              className="mt-12 w-full sm:mt-[72px] lg:mt-24"
               itemScope
               itemType="https://schema.org/CreativeWork"
             >
@@ -988,7 +988,7 @@ export default function ProjectDetailPage() {
                 ) : (
                   <>
                     <h2 className={H2}>{detailsLabel}</h2>
-                    <p className="mt-3 max-w-[40rem] text-[15px] leading-relaxed text-[#8a8a8e]">
+                    <p className="mt-3 max-w-[56rem] text-[15px] leading-relaxed text-[#8a8a8e]">
                       {isRu
                         ? "Как устроен продукт: смысл, сценарии, интерфейс и токены."
                         : "How the product is built: intent, flows, interface and tokens."}
@@ -1011,7 +1011,7 @@ export default function ProjectDetailPage() {
               ) : null}
 
               {project.testimonial ? (
-                <figure className="mt-12 max-w-[42rem] border-t border-white/[0.06] pt-8 sm:mt-[72px] sm:pt-12">
+                <figure className="mt-12 w-full max-w-[72rem] border-t border-white/[0.06] pt-8 sm:mt-[72px] sm:pt-12">
                   <p className="text-[13px] font-[500] tracking-normal text-[#8a8a8e]">
                     {isRu ? "Отзыв · 5 из 5" : "Review · 5 of 5"}
                   </p>
