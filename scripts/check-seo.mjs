@@ -26,8 +26,8 @@ const checks = [
   {
     file: "dist/index.html",
     phrases: [
-      "TIVONIX — founder-led product engineering",
-      "Проектируем и запускаем SaaS, FinTech, marketplaces, internal platforms",
+      "TIVONIX — продуктовая инженерия от основателя",
+      "Проектируем и запускаем SaaS, финтех, маркетплейсы, внутренние платформы",
       "программные продукты",
       "https://www.tivonix.tech/",
       'property="og:image" content="https://www.tivonix.tech/images/og-social.jpg"',
@@ -47,7 +47,7 @@ const checks = [
     phrases: [
       "MileSeal",
       "Scope",
-      "change request",
+      "запрос на изменение",
       "https://www.tivonix.tech/mileseal",
       "/mileseal/cases/content-migration",
     ],
@@ -99,7 +99,7 @@ const checks = [
   },
   {
     file: "dist/projects/index.html",
-    phrases: ["Product proof", "Neo Terminal", "Slotty", "Spliton", "Headmind", "LOGOVO"],
+    phrases: ["Работающие продукты", "Neo Terminal", "Slotty", "Spliton", "Headmind", "LOGOVO"],
   },
   {
     file: "dist/projects/neo-terminal/index.html",
@@ -158,7 +158,7 @@ const checks = [
   {
     file: "dist/plans/index.html",
     phrases: [
-      "Product Engineering и Launch Packages",
+      "Разработка продукта и пакеты запуска",
       "Start",
       "Growth",
       "Product",
@@ -172,7 +172,7 @@ const checks = [
   {
     file: "dist/partners/index.html",
     phrases: [
-      "Партнёрская программа TIVONIX — Referral и White-label",
+      "Партнёрская программа TIVONIX — реферальная модель и работа под вашим брендом",
       "https://www.tivonix.tech/partners",
       "partner-formats",
       "type=referral",
