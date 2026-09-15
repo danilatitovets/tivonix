@@ -8,9 +8,7 @@
         try {
           var ua = navigator.userAgent || "";
           var w = window;
-          var ios = /iPhone|iPad|iPod/i.test(ua);
           var hit =
-            ios ||
             w.TelegramWebviewProxy != null ||
             w.TelegramWebviewProxyProto != null ||
             w.TelegramWebview != null ||
@@ -19,7 +17,7 @@
               ua
             ) ||
             (/Android/i.test(ua) && /; wv\)/i.test(ua)) ||
-            (/AppleWebKit/i.test(ua) && !/Safari\//i.test(ua));
+            (/iPhone|iPad|iPod/i.test(ua) && /AppleWebKit/i.test(ua) && !/Safari\//i.test(ua));
           if (hit) {
             document.documentElement.classList.add("tg-webview", "inapp-webview");
             w.__TIVONIX_INAPP__ = true;

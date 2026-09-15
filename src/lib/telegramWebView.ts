@@ -1,8 +1,7 @@
 /**
  * Messenger / social in-app browsers (Telegram, VK, Viber, IG, FB, …).
- * Sticky + multi-vh scroll-scrub tracks fight collapsing chrome and break scroll.
- *
  * Telegram iOS often uses a Safari-identical UA — rely on injected globals + polling.
+ * Do NOT treat all iPhone Safari as in-app (that killed scroll animations site-wide).
  */
 
 declare global {
@@ -31,7 +30,7 @@ function hasTelegramBridge(): boolean {
 function uaLooksInApp(ua: string): boolean {
   if (INAPP_UA.test(ua)) return true;
   if (/Android/i.test(ua) && /; wv\)/i.test(ua)) return true;
-  // iOS WKWebView shells often omit the Safari token
+  // iOS WKWebView shells that omit Safari token (not real Safari)
   if (/iPhone|iPad|iPod/i.test(ua) && /AppleWebKit/i.test(ua) && !/Safari\//i.test(ua)) {
     return true;
   }
@@ -61,10 +60,7 @@ export function isTelegramWebView(): boolean {
 }
 
 export function markInAppBrowser(): boolean {
-  // iOS: always light-scroll — Telegram/VK WebViews share Safari UA and lag on sticky scrub
-  const ios =
-    typeof navigator !== "undefined" && /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
-  if (!isInAppBrowser() && !ios) return false;
+  if (!isInAppBrowser()) return false;
   document.documentElement.classList.add("tg-webview", "inapp-webview");
   window.__TIVONIX_INAPP__ = true;
   return true;
@@ -75,10 +71,6 @@ export function markTelegramWebView(): boolean {
   return markInAppBrowser();
 }
 
-/**
- * Telegram iOS may inject bridges slightly after first paint.
- * Poll briefly and flip to light-scroll mode when detected.
- */
 export function watchInAppBrowser(onChange: (active: boolean) => void): () => void {
   if (typeof window === "undefined") return () => {};
 
