@@ -2,12 +2,12 @@ import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "re
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Header from "../components/landing/Header";
+import Footer from "../components/landing/Footer";
 import { SEO } from "../components/SEO";
 import ScrollFingerHint from "../components/ui/ScrollFingerHint";
-import { TG_CHANNEL_URL } from "../constants/links";
 import { useLeadForm } from "../components/leads/useLeadForm";
 import { useLang } from "../i18n/LangProvider";
-import { getPartnersCopy, PARTNERS_DOCS, type PartnersCopy } from "../i18n/partnersPageCopy";
+import { getPartnersCopy, type PartnersCopy } from "../i18n/partnersPageCopy";
 import {
   PARTNERS_PATH_EN,
   PARTNERS_PATH_RU,
@@ -39,9 +39,8 @@ const PARTNERS_GMAIL_URL =
   `&to=${encodeURIComponent("tivoonix@gmail.com")}` +
   `&su=${encodeURIComponent("TIVONIX Partners — обсуждение сотрудничества")}`;
 
-const TIVONIX_MARK = "/images/tivonix-logo-icon.webp";
-const PARTNERS_REF_BG = `/images/partners/${encodeURIComponent("зеленая.png")}`;
-const PARTNERS_WL_BG = `/images/partners/${encodeURIComponent("оранж.png")}`;
+const PARTNERS_REF_BG = "/images/partners/partners-example-referral.png";
+const PARTNERS_WL_BG = "/images/partners/partners-example-whitelabel.png";
 
 const CAPABILITY_IDS = ["landing", "bot", "crm", "cabinet", "integrations", "support"] as const;
 
@@ -834,161 +833,61 @@ function ExampleMoneyFlow() {
   );
 }
 
-function ModelExampleReferral() {
-  const { lang } = useLang();
-  const ui = getPartnersCopy(lang).ui;
-  return (
-    <div className="partners-ex partners-ex--ref" aria-hidden>
-      <div className="partners-ex__flow">
-        <div className="partners-ex__step partners-ex__step--1">
-          <span className="partners-ex__who">{ui.client}</span>
-          <strong className="partners-ex__sum">$2500</strong>
-        </div>
-        <span className="partners-ex__arrow partners-ex__arrow--a" />
-        <div className="partners-ex__step partners-ex__step--2">
-          <span className="partners-ex__who">{ui.youPct}</span>
-          <strong className="partners-ex__sum partners-ex__sum--you">+$375</strong>
-        </div>
-        <span className="partners-ex__arrow partners-ex__arrow--b" />
-        <div className="partners-ex__step partners-ex__step--3">
-          <span className="partners-ex__who">TIVONIX</span>
-          <strong className="partners-ex__sum">$2125</strong>
-        </div>
-      </div>
-      <div className="partners-ex__bar">
-        <i className="partners-ex__fill" />
-      </div>
-    </div>
-  );
-}
-
-function ModelExampleWhiteLabel() {
-  const { lang } = useLang();
-  const ui = getPartnersCopy(lang).ui;
-  return (
-    <div className="partners-ex partners-ex--wl" aria-hidden>
-      <div className="partners-ex__stack">
-        <div className="partners-ex__card partners-ex__card--tvx">
-          <span>{ui.estimate}</span>
-          <strong>$1500</strong>
-        </div>
-        <div className="partners-ex__card partners-ex__card--you">
-          <span>{ui.markup}</span>
-          <strong>+$700</strong>
-        </div>
-        <div className="partners-ex__card partners-ex__card--client">
-          <span>{ui.clientPrice}</span>
-          <strong>$2200</strong>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PartnersFooterRunner() {
-  return (
-    <svg viewBox="0 0 64 76" width="48" height="58" fill="none" aria-hidden>
-      {/* Rear arm — holds the pill rope */}
-      <g className="partners-footer__arm partners-footer__arm--back">
-        <path
-          d="M18 28H2"
-          stroke="#1a1a1a"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-        <circle cx="2" cy="28" r="3.2" fill="#ff6b2c" />
-      </g>
-      <g className="partners-footer__body">
-        <rect x="14" y="8" width="36" height="36" rx="10" fill="#1a1a1a" />
-        <circle cx="36" cy="20" r="2.6" fill="#ff6b2c" />
-        <circle cx="44" cy="20" r="2.6" fill="#ff6b2c" />
-        <path
-          d="M35.5 28c2.2 2.6 6.4 2.6 8.6 0"
-          stroke="#ff6b2c"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-        />
-      </g>
-      <g className="partners-footer__arm partners-footer__arm--front">
-        <path
-          d="M50 24c7 2.5 11 10 10.5 17"
-          stroke="#1a1a1a"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-      </g>
-      <g className="partners-footer__leg partners-footer__leg--l">
-        <path d="M26 44v16" stroke="#1a1a1a" strokeWidth="2.8" strokeLinecap="round" />
-        <ellipse cx="29" cy="63" rx="6.2" ry="3.8" fill="#ff6b2c" />
-      </g>
-      <g className="partners-footer__leg partners-footer__leg--r">
-        <path d="M38 44v16" stroke="#1a1a1a" strokeWidth="2.8" strokeLinecap="round" />
-        <ellipse cx="41" cy="63" rx="6.2" ry="3.8" fill="#ff6b2c" />
-      </g>
-    </svg>
-  );
-}
-
-function PartnersFooter() {
-  const { lang } = useLang();
-  const copy = getPartnersCopy(lang);
-  const line = copy.footer.marquee;
-  const docs = PARTNERS_DOCS[lang];
-  const loginUrl = partnerPanelLoginUrl();
-  const { openLeadForm } = useLeadForm();
+function ModelFlipCard({
+  variant,
+  imageSrc,
+  pill,
+  title,
+  text,
+  openLabel,
+  closeLabel,
+}: {
+  variant: "ref" | "wl";
+  imageSrc: string;
+  pill: string;
+  title: string;
+  text: string;
+  openLabel: string;
+  closeLabel: string;
+}) {
+  const [open, setOpen] = useState(false);
 
   return (
-    <footer id="site-footer" className="partners-footer">
-      <div className="partners-footer__scene" aria-hidden>
-        <div className="partners-footer__tow">
-          <div className="partners-footer__pill">
-            <span className="partners-footer__phrase">{line}</span>
+    <article
+      className={`partners-models-split__card partners-models-split__card--${variant}${open ? " is-flipped" : ""}`}
+    >
+      <div className="partners-models-split__flip">
+        <div className="partners-models-split__face partners-models-split__face--front">
+          <div className="partners-models-split__media" aria-hidden>
+            <div className="partners-models-split__zoom">
+              <img src={imageSrc} alt="" width={900} height={700} decoding="async" loading="lazy" />
+            </div>
           </div>
-          <span className="partners-footer__rope" />
-          <div className="partners-footer__runner">
-            <PartnersFooterRunner />
-          </div>
+          <button
+            type="button"
+            className="partners-models-split__plus"
+            aria-expanded={open}
+            aria-label={openLabel}
+            onClick={() => setOpen(true)}
+          >
+            <span aria-hidden>+</span>
+          </button>
+        </div>
+        <div className="partners-models-split__face partners-models-split__face--back" aria-hidden={!open}>
+          <button
+            type="button"
+            className="partners-models-split__plus partners-models-split__plus--close"
+            aria-label={closeLabel}
+            onClick={() => setOpen(false)}
+          >
+            <span aria-hidden>×</span>
+          </button>
+          <p className="partners-models-split__pill">{pill}</p>
+          <h3 className="partners-models-split__title">{title}</h3>
+          <p className="partners-models-split__text">{text}</p>
         </div>
       </div>
-
-      <Shell className="partners-footer__shell">
-        <div className="partners-footer__bar">
-          <Link to={lang === "en" ? "/en" : lang === "zh" ? "/zh" : "/"} className="partners-footer__logo" aria-label={copy.footer.homeAria}>
-            <img src={TIVONIX_MARK} alt="" width={28} height={28} decoding="async" />
-            <span>TIVONIX Partners</span>
-          </Link>
-          <nav className="partners-footer__nav" aria-label={copy.footer.navAria}>
-            <a href="#partner-formats">{copy.footer.formats}</a>
-            <a
-              href={loginUrl}
-              onClick={() => trackPartnersEvent("partners_login_click", { source: "footer" })}
-            >
-              {copy.footer.login}
-            </a>
-            <Link to={pathForLang("/projects", lang)}>{copy.footer.projects}</Link>
-            <Link to={pathForLang("/contacts", lang)}>{copy.footer.contacts}</Link>
-            <button
-              type="button"
-              onClick={() => openLeadForm("partners")}
-            >
-              {copy.footer.askTelegram}
-            </button>
-            <a href={TG_CHANNEL_URL} target="_blank" rel="noopener noreferrer">
-              {copy.footer.channel}
-            </a>
-            <a href={docs.privacy} target="_blank" rel="noopener noreferrer" aria-label={copy.footer.privacyAria}>
-              {copy.footer.privacy}
-            </a>
-            <a href={docs.consent} target="_blank" rel="noopener noreferrer" aria-label={copy.footer.consentAria}>
-              {copy.footer.consent}
-            </a>
-          </nav>
-        </div>
-        <p className="partners-footer__note">
-          {copy.footer.note}
-        </p>
-      </Shell>
-    </footer>
+    </article>
   );
 }
 
@@ -1622,6 +1521,7 @@ export default function PartnersPage() {
             display: flex;
             flex-direction: column;
             gap: 14px;
+            perspective: 1400px;
           }
           @media (min-width: 768px) {
             .partners-models-split {
@@ -1636,10 +1536,10 @@ export default function PartnersPage() {
                 flex 0.45s cubic-bezier(0.22, 1, 0.36, 1),
                 transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
             }
-            .partners-models-split:hover .partners-models-split__card {
+            .partners-models-split:hover .partners-models-split__card:not(.is-flipped) {
               flex: 0.78 1 0;
             }
-            .partners-models-split:hover .partners-models-split__card:hover {
+            .partners-models-split:hover .partners-models-split__card:not(.is-flipped):hover {
               flex: 1.35 1 0;
               transform: translateY(-5px);
             }
@@ -1648,12 +1548,57 @@ export default function PartnersPage() {
             position: relative;
             border: 0;
             border-radius: 24px;
-            padding: 1.6rem 1.4rem 1.45rem;
+            padding: 0;
             box-shadow: none;
             outline: none;
             overflow: hidden;
             color: #fff;
             isolation: isolate;
+            min-height: 340px;
+            background: transparent;
+          }
+          .partners-models-split__card--ref {
+            background: #049a5c;
+          }
+          .partners-models-split__card--wl {
+            background: #e85516;
+          }
+          .partners-models-split__flip {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 340px;
+            transform-style: preserve-3d;
+            transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+          }
+          .partners-models-split__card.is-flipped .partners-models-split__flip {
+            transform: rotateY(180deg);
+          }
+          .partners-models-split__face {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            overflow: hidden;
+          }
+          .partners-models-split__face--front {
+            z-index: 1;
+          }
+          .partners-models-split__face--back {
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            gap: 0.65rem;
+            padding: 1.5rem 1.35rem 1.45rem;
+            transform: rotateY(180deg);
+          }
+          .partners-models-split__card--ref .partners-models-split__face--back {
+            background: linear-gradient(165deg, #047a4a 0%, #035c38 100%);
+          }
+          .partners-models-split__card--wl .partners-models-split__face--back {
+            background: linear-gradient(165deg, #d44810 0%, #b33a0c 100%);
           }
           .partners-models-split__media {
             position: absolute;
@@ -1665,7 +1610,7 @@ export default function PartnersPage() {
           }
           .partners-models-split__zoom {
             position: absolute;
-            inset: -12%;
+            inset: -8%;
             transform: scale(1);
             transform-origin: center center;
             will-change: transform;
@@ -1677,37 +1622,46 @@ export default function PartnersPage() {
             object-fit: cover;
             object-position: center;
           }
-          .partners-models-split__shade {
+          .partners-models-split__plus {
             position: absolute;
-            inset: 0;
-            background:
-              linear-gradient(180deg, rgba(12, 18, 14, 0.28) 0%, rgba(12, 18, 14, 0.5) 100%);
+            top: 0.85rem;
+            right: 0.85rem;
+            z-index: 3;
+            display: grid;
+            place-items: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border: 0;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.92);
+            color: #111;
+            font-size: 1.55rem;
+            font-weight: 500;
+            line-height: 1;
+            cursor: pointer;
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+            transition: transform 0.2s ease, background 0.2s ease;
           }
-          .partners-models-split__card--wl .partners-models-split__shade {
-            background:
-              linear-gradient(180deg, rgba(28, 14, 8, 0.28) 0%, rgba(28, 14, 8, 0.52) 100%);
+          .partners-models-split__plus:hover {
+            transform: scale(1.06);
+            background: #fff;
           }
-          .partners-models-split__body {
-            position: relative;
-            z-index: 1;
+          .partners-models-split__plus--close {
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+            box-shadow: none;
           }
-          .partners-models-split__card--ref {
-            background: #049a5c;
-          }
-          .partners-models-split__card--wl {
-            background: #e85516;
-          }
-          @media (prefers-reduced-motion: reduce) {
-            .partners-models-split__zoom {
-              transform: none !important;
-            }
+          .partners-models-split__plus--close:hover {
+            background: rgba(255, 255, 255, 0.28);
           }
           .partners-models-split__pill {
             display: inline-flex;
             align-items: center;
+            align-self: flex-start;
             border-radius: 999px;
             background: rgba(255, 255, 255, 0.2);
             padding: 0.35rem 0.85rem;
+            margin: 0;
             font-family: Inter, ui-sans-serif, system-ui, sans-serif;
             font-size: 13px;
             font-weight: 700;
@@ -1715,27 +1669,40 @@ export default function PartnersPage() {
             color: #fff;
           }
           .partners-models-split__title {
-            margin: 0.85rem 0 0;
+            margin: 0;
             font-family: "Inter Tight", Inter, ui-sans-serif, system-ui, sans-serif;
-            font-size: clamp(1.55rem, 3vw, 2rem);
+            font-size: clamp(1.35rem, 2.6vw, 1.85rem);
             font-weight: 600;
             letter-spacing: -0.03em;
-            line-height: 1.15;
+            line-height: 1.2;
             color: #fff;
+            max-width: 18ch;
           }
           .partners-models-split__text {
-            margin: 0.85rem 0 0;
-            max-width: 28rem;
+            margin: 0;
+            max-width: 34ch;
             font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-            font-size: clamp(1.05rem, 1.8vw, 1.2rem);
+            font-size: 15px;
             font-weight: 500;
             line-height: 1.45;
             letter-spacing: -0.015em;
             color: rgba(255, 255, 255, 0.92);
           }
-          @media (min-width: 640px) {
-            .partners-models-split__card {
-              padding: 1.9rem 1.7rem 1.7rem;
+          @media (min-width: 768px) {
+            .partners-models-split__card,
+            .partners-models-split__flip {
+              min-height: 420px;
+            }
+            .partners-models-split__zoom {
+              inset: -14%;
+            }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .partners-models-split__zoom {
+              transform: none !important;
+            }
+            .partners-models-split__flip {
+              transition: none;
             }
           }
 
@@ -4667,38 +4634,24 @@ export default function PartnersPage() {
             </h2>
             <div ref={modelsExamplesRef}>
               <Reveal className="partners-models-split">
-                <article className="partners-models-split__card partners-models-split__card--ref">
-                  <div className="partners-models-split__media" aria-hidden>
-                    <div className="partners-models-split__zoom">
-                      <img src={PARTNERS_REF_BG} alt="" width={900} height={700} decoding="async" loading="lazy" />
-                    </div>
-                    <div className="partners-models-split__shade" />
-                  </div>
-                  <div className="partners-models-split__body">
-                    <p className="partners-models-split__pill">{copy.examples.referral.pill}</p>
-                    <h3 className="partners-models-split__title">{copy.examples.referral.title}</h3>
-                    <p className="partners-models-split__text">
-                      {copy.examples.referral.text}
-                    </p>
-                    <ModelExampleReferral />
-                  </div>
-                </article>
-                <article className="partners-models-split__card partners-models-split__card--wl">
-                  <div className="partners-models-split__media" aria-hidden>
-                    <div className="partners-models-split__zoom">
-                      <img src={PARTNERS_WL_BG} alt="" width={900} height={700} decoding="async" loading="lazy" />
-                    </div>
-                    <div className="partners-models-split__shade" />
-                  </div>
-                  <div className="partners-models-split__body">
-                    <p className="partners-models-split__pill">{copy.examples.whiteLabel.pill}</p>
-                    <h3 className="partners-models-split__title">{copy.examples.whiteLabel.title}</h3>
-                    <p className="partners-models-split__text">
-                      {copy.examples.whiteLabel.text}
-                    </p>
-                    <ModelExampleWhiteLabel />
-                  </div>
-                </article>
+                <ModelFlipCard
+                  variant="ref"
+                  imageSrc={PARTNERS_REF_BG}
+                  pill={copy.examples.referral.pill}
+                  title={copy.examples.referral.title}
+                  text={copy.examples.referral.text}
+                  openLabel={copy.examples.referral.title}
+                  closeLabel={copy.examples.referral.pill}
+                />
+                <ModelFlipCard
+                  variant="wl"
+                  imageSrc={PARTNERS_WL_BG}
+                  pill={copy.examples.whiteLabel.pill}
+                  title={copy.examples.whiteLabel.title}
+                  text={copy.examples.whiteLabel.text}
+                  openLabel={copy.examples.whiteLabel.title}
+                  closeLabel={copy.examples.whiteLabel.pill}
+                />
               </Reveal>
             </div>
           </Shell>
@@ -4799,7 +4752,7 @@ export default function PartnersPage() {
         </section>
       </main>
 
-      <PartnersFooter />
+      <Footer />
     </div>
   );
 }
