@@ -4034,9 +4034,11 @@ export default function PartnersPage() {
                   {copy.hero.loginCta}
                 </SandPill>
               </div>
-              <p className="relative z-[3] mx-auto mt-4 max-w-[36rem] font-partners text-[13px] leading-snug tracking-[-0.01em] text-partners-muted sm:text-[14px]">
-                {copy.hero.trust}
-              </p>
+              {copy.hero.trust ? (
+                <p className="relative z-[3] mx-auto mt-4 max-w-[36rem] font-partners text-[13px] leading-snug tracking-[-0.01em] text-partners-muted sm:text-[14px]">
+                  {copy.hero.trust}
+                </p>
+              ) : null}
             </div>
           </Shell>
 
@@ -4753,9 +4755,11 @@ export default function PartnersPage() {
                   >
                     {copy.final.loginLink}
                   </a>
-                  <p className="partners-final__footnote mt-4 font-partners text-[11px] leading-snug sm:mt-5 sm:text-partners-micro">
-                    {copy.final.footnote}
-                  </p>
+                  {copy.final.footnote ? (
+                    <p className="partners-final__footnote mt-4 font-partners text-[11px] leading-snug sm:mt-5 sm:text-partners-micro">
+                      {copy.final.footnote}
+                    </p>
+                  ) : null}
                 </div>
               </div>
             </Reveal>

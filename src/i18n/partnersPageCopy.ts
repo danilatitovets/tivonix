@@ -95,7 +95,7 @@ const RU: PartnersCopy = {
       "Для агентств, фрилансеров и студий: вы находите клиента, TIVONIX оценивает, разрабатывает и запускает. Клиент остаётся вашим — выберите реферальную модель или работу под вашим брендом и зарегистрируйтесь в панели.",
     cta: "Стать партнёром",
     loginCta: "Войти в панель",
-    trust: "Можно начать с одного проекта • Клиент остаётся вашим • NDA",
+    trust: "",
   },
   problem: {
     title: "Не отказывайтесь от заказа, если клиенту понадобилась разработка",
@@ -324,7 +324,7 @@ const RU: PartnersCopy = {
     referralCta: "Выбрать реферальную модель",
     whiteLabelCta: "Работать под своим брендом",
     loginLink: "Уже есть аккаунт? Войти в панель",
-    footnote: "Можно начать с одного проекта • Клиент остаётся вашим • NDA",
+    footnote: "",
   },
   footer: {
     marquee: "ПОД ВАШИМ БРЕНДОМ · РЕФЕРАЛЬНАЯ МОДЕЛЬ · ПАРТНЁРСКАЯ РАЗРАБОТКА · ЗАПУСК ПРОЕКТОВ",
@@ -370,7 +370,7 @@ const EN: PartnersCopy = {
       "For agencies, freelancers, and studios: you find the client; TIVONIX scopes, builds, and launches. The client stays yours — pick Referral or White-label and register in the panel.",
     cta: "Become a partner",
     loginCta: "Log in to the panel",
-    trust: "Start with one project • The client stays yours • NDA",
+    trust: "",
   },
   problem: {
     title: "Don’t turn down a deal just because the client needs development",
@@ -599,7 +599,7 @@ const EN: PartnersCopy = {
     referralCta: "Choose Referral",
     whiteLabelCta: "Choose White-label",
     loginLink: "Already have an account? Log in to the panel",
-    footnote: "Start with one project • The client stays yours • NDA",
+    footnote: "",
   },
   footer: {
     marquee: "WHITE-LABEL · REFERRAL · PARTNERSHIP DEVELOPMENT · UNDER YOUR BRAND",
@@ -645,7 +645,7 @@ const ZH: PartnersCopy = {
       "面向代理、自由职业者与工作室：您找客户；TIVONIX 定范围、构建并上线。客户归您 — 选择 Referral 或 White-label 并在面板注册。",
     cta: "成为合作伙伴",
     loginCta: "登录面板",
-    trust: "从一个项目开始 • 客户归您 • NDA",
+    trust: "",
   },
   problem: {
     title: "不要因为客户需要开发就放弃成交",
@@ -874,7 +874,7 @@ const ZH: PartnersCopy = {
     referralCta: "选择 Referral",
     whiteLabelCta: "选择 White-label",
     loginLink: "已有账户？登录面板",
-    footnote: "从一个项目开始 • 客户归您 • NDA",
+    footnote: "",
   },
   footer: {
     marquee: "WHITE-LABEL · REFERRAL · 伙伴开发 · 以您的品牌",
