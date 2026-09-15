@@ -4,7 +4,7 @@ import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
 import { HERO_SCROLL_HEADLINE_CLASS, LANDING_SHELL_CLASS } from "../../lib/landingLayout";
-import { isInAppBrowser } from "../../lib/telegramWebView";
+import { useLightScrollExperience } from "../../lib/useLightScrollExperience";
 import { getStableViewportHeight } from "../../lib/stableViewport";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
 import { pathForLang } from "../../lib/localePaths";
@@ -59,16 +59,21 @@ function textOpacities(progress: number): [number, number, number] {
   return op;
 }
 
-function useHeroScrollProgress(trackRef: React.RefObject<HTMLElement | null>) {
+function useHeroScrollProgress(trackRef: React.RefObject<HTMLElement | null>, enabled: boolean) {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    if (!enabled) {
+      setProgress(1);
+      return;
+    }
     const el = trackRef.current;
     if (!el || typeof window === "undefined") return;
 
     let raf = 0;
     let trackTop = 0;
     let scrollable = 1;
+    let last = -1;
 
     const measure = () => {
       const rect = el.getBoundingClientRect();
@@ -78,7 +83,11 @@ function useHeroScrollProgress(trackRef: React.RefObject<HTMLElement | null>) {
 
     const update = () => {
       raf = 0;
-      setProgress(clamp01((window.scrollY - trackTop) / scrollable));
+      const next = clamp01((window.scrollY - trackTop) / scrollable);
+      // Avoid React re-render spam in weak WebViews
+      if (Math.abs(next - last) < 0.004) return;
+      last = next;
+      setProgress(next);
     };
 
     const onScroll = () => {
@@ -87,7 +96,6 @@ function useHeroScrollProgress(trackRef: React.RefObject<HTMLElement | null>) {
 
     let lastW = window.innerWidth;
     const onResize = () => {
-      // Ignore mobile chrome height toggles; only react to real layout width changes
       if (Math.abs(window.innerWidth - lastW) < 10) return;
       lastW = window.innerWidth;
       measure();
@@ -104,7 +112,7 @@ function useHeroScrollProgress(trackRef: React.RefObject<HTMLElement | null>) {
       window.removeEventListener("resize", onResize);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [trackRef]);
+  }, [trackRef, enabled]);
 
   return progress;
 }
@@ -229,17 +237,11 @@ function HeroCard({
 
 export default function Hero() {
   const trackRef = useRef<HTMLDivElement>(null);
-  const progress = useHeroScrollProgress(trackRef);
+  const lightScroll = useLightScrollExperience();
+  const progress = useHeroScrollProgress(trackRef, !lightScroll);
   const { lang } = useLang();
   const copy = landingCopy(lang);
   const stages = copy.hero.scrollStages as ReadonlyArray<HeroScrollStage>;
-  const [tgWebView, setTgWebView] = useState(() =>
-    typeof document !== "undefined" ? isInAppBrowser() : false
-  );
-
-  useEffect(() => {
-    setTgWebView(isInAppBrowser());
-  }, []);
 
   const cardProps = {
     stages,
@@ -248,7 +250,7 @@ export default function Hero() {
     micro: copy.hero.micro,
   };
 
-  if (tgWebView) {
+  if (lightScroll) {
     return (
       <Section
         className={cx(

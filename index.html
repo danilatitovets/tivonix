@@ -7,17 +7,38 @@
       (function () {
         try {
           var ua = navigator.userAgent || "";
+          var w = window;
+          var ios = /iPhone|iPad|iPod/i.test(ua);
           var hit =
-            window.TelegramWebviewProxy != null ||
-            (window.Telegram && window.Telegram.WebApp) ||
+            ios ||
+            w.TelegramWebviewProxy != null ||
+            w.TelegramWebviewProxyProto != null ||
+            w.TelegramWebview != null ||
+            (w.Telegram && w.Telegram.WebApp) ||
             /Telegram|VKAndroidApp|vk_app|VKontakte|VKApp|Viber|Instagram|FBAN|FBAV|FB_IAB|FBIOS|WhatsApp|Line\/|Snapchat|BytedanceWebview|TikTok|musical_ly|MicroMessenger/i.test(
               ua
             ) ||
-            (/Android/i.test(ua) && /; wv\)/i.test(ua));
+            (/Android/i.test(ua) && /; wv\)/i.test(ua)) ||
+            (/AppleWebKit/i.test(ua) && !/Safari\//i.test(ua));
           if (hit) {
             document.documentElement.classList.add("tg-webview", "inapp-webview");
-            window.__TIVONIX_INAPP__ = true;
+            w.__TIVONIX_INAPP__ = true;
           }
+          var n = 0;
+          var t = setInterval(function () {
+            n += 1;
+            if (
+              w.TelegramWebviewProxy != null ||
+              w.TelegramWebviewProxyProto != null ||
+              w.TelegramWebview != null
+            ) {
+              document.documentElement.classList.add("tg-webview", "inapp-webview");
+              w.__TIVONIX_INAPP__ = true;
+              clearInterval(t);
+            } else if (n > 40) {
+              clearInterval(t);
+            }
+          }, 100);
         } catch (e) {
           /* ignore */
         }

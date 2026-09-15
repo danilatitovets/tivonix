@@ -20,7 +20,7 @@ import {
   rowPosition,
   rowPositionScrollStrip,
 } from "../../lib/aiModels";
-import { isInAppBrowser } from "../../lib/telegramWebView";
+import { useLightScrollExperience } from "../../lib/useLightScrollExperience";
 import { getStableViewportHeight } from "../../lib/stableViewport";
 import TivonixGlowBorder from "../ui/TivonixGlowBorder";
 import ScrollFingerHint from "../ui/ScrollFingerHint";
@@ -160,14 +160,10 @@ export default function AiPremiumSection() {
   const logoImgRefs = useRef<(HTMLImageElement | null)[]>([]);
 
   const reducedMotionPref = usePrefersReducedMotion();
-  const [tgWebView, setTgWebView] = useState(() =>
-    typeof document !== "undefined" ? isInAppBrowser() : false
-  );
-  useEffect(() => {
-    setTgWebView(isInAppBrowser());
-  }, []);
+  const lightScroll = useLightScrollExperience();
+  const tgWebView = lightScroll;
   // Messenger in-app browsers: same end-state as reduced motion, without multi-vh sticky pin
-  const reducedMotion = reducedMotionPref || tgWebView;
+  const reducedMotion = reducedMotionPref || lightScroll;
   const headline = copy.ai.headline;
   const [showScrollHint, setShowScrollHint] = useState(false);
   const showHintRef = useRef(false);
@@ -549,7 +545,7 @@ export default function AiPremiumSection() {
       window.removeEventListener("resize", onResize);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [reducedMotion, headline, tgWebView]);
+  }, [reducedMotion, headline, tgWebView, lightScroll]);
 
   return (
     <>

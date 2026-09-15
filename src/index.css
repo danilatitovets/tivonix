@@ -92,7 +92,7 @@
   html {
     scroll-padding-top: 6.75rem;
     background: #000000;
-    overscroll-behavior-y: contain;
+    overscroll-behavior-y: auto;
     overflow-anchor: none;
   }
   body {
@@ -101,7 +101,7 @@
     color: rgba(255, 255, 255, 0.92);
     font-family: var(--font-dm-sans);
     font-weight: 500;
-    overscroll-behavior-y: contain;
+    overscroll-behavior-y: auto;
     overflow-anchor: none;
   }
 

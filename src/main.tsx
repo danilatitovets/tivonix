@@ -3,7 +3,7 @@ import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
 import { LangProvider } from "./i18n/LangProvider";
 import { readBootstrapLang } from "./lib/readBootstrapLang";
-import { markInAppBrowser } from "./lib/telegramWebView";
+import { markInAppBrowser, watchInAppBrowser } from "./lib/telegramWebView";
 import { bindStableViewport } from "./lib/stableViewport";
 import "./index.css";
 
@@ -27,8 +27,11 @@ if (root) {
   }
 }
 
-// Mutate <html> only AFTER hydrateRoot so server HTML attributes stay intact
-// during the first client render (lang / data-lang / style.--app-vh).
+// ClassList only — safe before/after hydrate. Poll for late Telegram iOS bridges.
+markInAppBrowser();
+watchInAppBrowser(() => {
+  /* class already applied inside watch */
+});
 queueMicrotask(() => {
   markInAppBrowser();
   bindStableViewport();
