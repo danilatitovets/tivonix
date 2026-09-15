@@ -58,7 +58,7 @@ export default function ServiceLandingPage({ pageId: pageIdProp }: Props) {
       <Header />
       <main>
         {/* Hero */}
-        <section className="relative overflow-hidden pt-[calc(var(--headerH)+1.25rem)] pb-12 sm:pb-16">
+        <section className="relative overflow-hidden pt-[calc(var(--tivonix-header-spacer)+2rem)] pb-12 sm:pt-[calc(var(--tivonix-header-spacer)+2.75rem)] sm:pb-16">
           <div
             className="pointer-events-none absolute inset-0"
             aria-hidden
