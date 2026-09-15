@@ -854,7 +854,7 @@ export default function ProjectDetailPage() {
                     <ProjectGalleryStrip
                       images={project.gallery}
                       isRu={isRu}
-                      cropPreview={project.id === "spliton"}
+                      cropPreview
                     />
                   </div>
                 ) : null}
