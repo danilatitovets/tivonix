@@ -226,36 +226,44 @@
   }
 
   /*
-   * Telegram in-app browser: sticky + vh/dvh tracks fight the collapsing chrome
-   * and cause left/up/down scroll jumps. Stabilize layout + overscroll.
+   * Messenger / social in-app browsers (Telegram, VK, Viber, IG, FB, …):
+   * sticky + multi-vh scroll-scrub fights collapsing chrome → lag / no scroll.
+   * Stabilize layout; kill sticky tracks before React hydrates.
    */
   html.tg-webview,
   html.tg-webview body,
-  html.tg-webview #root {
+  html.tg-webview #root,
+  html.inapp-webview,
+  html.inapp-webview body,
+  html.inapp-webview #root {
     height: auto;
     min-height: 100%;
     overscroll-behavior-y: auto;
     overscroll-behavior-x: none;
     overflow-x: hidden;
-    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
-  html.tg-webview {
-    /* Prefer stable small viewport units when chrome resizes mid-scroll */
+  html.tg-webview,
+  html.inapp-webview {
     --tivonix-tg-stable-vh: 1svh;
   }
 
-  /* Kill sticky scroll-scrub tracks before React hydrates/adapts */
-  html.tg-webview .hero-scroll-track {
+  html.tg-webview .hero-scroll-track,
+  html.inapp-webview .hero-scroll-track {
     height: auto !important;
   }
-  html.tg-webview .hero-scroll-sticky {
+  html.tg-webview .hero-scroll-sticky,
+  html.inapp-webview .hero-scroll-sticky {
     position: relative !important;
   }
   html.tg-webview .ai-premium-pin,
-  html.tg-webview .ai-premium-anim-pin {
+  html.tg-webview .ai-premium-anim-pin,
+  html.inapp-webview .ai-premium-pin,
+  html.inapp-webview .ai-premium-anim-pin {
     height: auto !important;
   }
-  html.tg-webview .ai-premium-section {
+  html.tg-webview .ai-premium-section,
+  html.inapp-webview .ai-premium-section {
     position: relative !important;
     height: auto !important;
     min-height: 100svh;
@@ -6219,11 +6227,13 @@
   }
 }
 
-html.tg-webview .direction-cu__copy {
+html.tg-webview .direction-cu__copy,
+html.inapp-webview .direction-cu__copy {
   position: static;
 }
 
-html.tg-webview .direction-cu__stack {
+html.tg-webview .direction-cu__stack,
+html.inapp-webview .direction-cu__stack {
   padding-bottom: 0;
 }
 

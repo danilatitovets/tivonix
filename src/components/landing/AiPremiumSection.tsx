@@ -20,7 +20,7 @@ import {
   rowPosition,
   rowPositionScrollStrip,
 } from "../../lib/aiModels";
-import { isTelegramWebView } from "../../lib/telegramWebView";
+import { isInAppBrowser } from "../../lib/telegramWebView";
 import { getStableViewportHeight } from "../../lib/stableViewport";
 import TivonixGlowBorder from "../ui/TivonixGlowBorder";
 import ScrollFingerHint from "../ui/ScrollFingerHint";
@@ -160,11 +160,13 @@ export default function AiPremiumSection() {
   const logoImgRefs = useRef<(HTMLImageElement | null)[]>([]);
 
   const reducedMotionPref = usePrefersReducedMotion();
-  const [tgWebView, setTgWebView] = useState(false);
+  const [tgWebView, setTgWebView] = useState(() =>
+    typeof document !== "undefined" ? isInAppBrowser() : false
+  );
   useEffect(() => {
-    setTgWebView(isTelegramWebView());
+    setTgWebView(isInAppBrowser());
   }, []);
-  // Telegram WebView: same end-state as reduced motion, without multi-vh sticky pin
+  // Messenger in-app browsers: same end-state as reduced motion, without multi-vh sticky pin
   const reducedMotion = reducedMotionPref || tgWebView;
   const headline = copy.ai.headline;
   const [showScrollHint, setShowScrollHint] = useState(false);

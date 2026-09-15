@@ -4,7 +4,7 @@ import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
 import { HERO_SCROLL_HEADLINE_CLASS, LANDING_SHELL_CLASS } from "../../lib/landingLayout";
-import { isTelegramWebView } from "../../lib/telegramWebView";
+import { isInAppBrowser } from "../../lib/telegramWebView";
 import { getStableViewportHeight } from "../../lib/stableViewport";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
 import { pathForLang } from "../../lib/localePaths";
@@ -233,10 +233,12 @@ export default function Hero() {
   const { lang } = useLang();
   const copy = landingCopy(lang);
   const stages = copy.hero.scrollStages as ReadonlyArray<HeroScrollStage>;
-  const [tgWebView, setTgWebView] = useState(false);
+  const [tgWebView, setTgWebView] = useState(() =>
+    typeof document !== "undefined" ? isInAppBrowser() : false
+  );
 
   useEffect(() => {
-    setTgWebView(isTelegramWebView());
+    setTgWebView(isInAppBrowser());
   }, []);
 
   const cardProps = {

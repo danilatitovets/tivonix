@@ -3,7 +3,7 @@ import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
 import { LangProvider } from "./i18n/LangProvider";
 import { readBootstrapLang } from "./lib/readBootstrapLang";
-import { markTelegramWebView } from "./lib/telegramWebView";
+import { markInAppBrowser } from "./lib/telegramWebView";
 import { bindStableViewport } from "./lib/stableViewport";
 import "./index.css";
 
@@ -30,6 +30,6 @@ if (root) {
 // Mutate <html> only AFTER hydrateRoot so server HTML attributes stay intact
 // during the first client render (lang / data-lang / style.--app-vh).
 queueMicrotask(() => {
-  markTelegramWebView();
+  markInAppBrowser();
   bindStableViewport();
 });
