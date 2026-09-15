@@ -833,6 +833,20 @@ function ExampleMoneyFlow() {
   );
 }
 
+function PlusIcon({ close = false }: { close?: boolean }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden focusable="false">
+      <path
+        d={close ? "M4.2 4.2 13.8 13.8M13.8 4.2 4.2 13.8" : "M9 3.25v11.5M3.25 9h11.5"}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 function ModelFlipCard({
   variant,
   imageSrc,
@@ -870,7 +884,7 @@ function ModelFlipCard({
             aria-label={openLabel}
             onClick={() => setOpen(true)}
           >
-            <span aria-hidden>+</span>
+            <PlusIcon />
           </button>
         </div>
         <div className="partners-models-split__face partners-models-split__face--back" aria-hidden={!open}>
@@ -880,7 +894,7 @@ function ModelFlipCard({
             aria-label={closeLabel}
             onClick={() => setOpen(false)}
           >
-            <span aria-hidden>×</span>
+            <PlusIcon close />
           </button>
           <p className="partners-models-split__pill">{pill}</p>
           <h3 className="partners-models-split__title">{title}</h3>
@@ -1532,16 +1546,6 @@ export default function PartnersPage() {
             .partners-models-split__card {
               flex: 1 1 0;
               min-width: 0;
-              transition:
-                flex 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-            }
-            .partners-models-split:hover .partners-models-split__card:not(.is-flipped) {
-              flex: 0.78 1 0;
-            }
-            .partners-models-split:hover .partners-models-split__card:not(.is-flipped):hover {
-              flex: 1.35 1 0;
-              transform: translateY(-5px);
             }
           }
           .partners-models-split__card {
@@ -1610,7 +1614,7 @@ export default function PartnersPage() {
           }
           .partners-models-split__zoom {
             position: absolute;
-            inset: -8%;
+            inset: 0;
             transform: scale(1);
             transform-origin: center center;
             will-change: transform;
@@ -1624,35 +1628,62 @@ export default function PartnersPage() {
           }
           .partners-models-split__plus {
             position: absolute;
-            top: 0.85rem;
-            right: 0.85rem;
+            top: 0.9rem;
+            right: 0.9rem;
             z-index: 3;
-            display: grid;
-            place-items: center;
-            width: 2.5rem;
-            height: 2.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.75rem;
+            height: 2.75rem;
+            margin: 0;
+            padding: 0;
             border: 0;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.92);
+            background: #fff;
             color: #111;
-            font-size: 1.55rem;
-            font-weight: 500;
-            line-height: 1;
+            line-height: 0;
             cursor: pointer;
-            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
-            transition: transform 0.2s ease, background 0.2s ease;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+            transform: translateZ(0);
+            transition:
+              transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.28s ease,
+              background 0.2s ease,
+              color 0.2s ease;
+          }
+          .partners-models-split__plus svg {
+            display: block;
+            flex-shrink: 0;
+            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
           }
           .partners-models-split__plus:hover {
-            transform: scale(1.06);
-            background: #fff;
+            transform: scale(1.08) translateZ(0);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.26);
+          }
+          .partners-models-split__plus:hover svg {
+            transform: rotate(90deg);
+          }
+          .partners-models-split__plus:active {
+            transform: scale(0.96) translateZ(0);
+          }
+          .partners-models-split__plus:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 3px;
           }
           .partners-models-split__plus--close {
             background: rgba(255, 255, 255, 0.18);
             color: #fff;
             box-shadow: none;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
           }
           .partners-models-split__plus--close:hover {
             background: rgba(255, 255, 255, 0.28);
+            box-shadow: none;
+          }
+          .partners-models-split__plus--close:hover svg {
+            transform: rotate(90deg);
           }
           .partners-models-split__pill {
             display: inline-flex;
@@ -1693,16 +1724,19 @@ export default function PartnersPage() {
             .partners-models-split__flip {
               min-height: 420px;
             }
-            .partners-models-split__zoom {
-              inset: -14%;
-            }
           }
           @media (prefers-reduced-motion: reduce) {
             .partners-models-split__zoom {
               transform: none !important;
             }
-            .partners-models-split__flip {
+            .partners-models-split__flip,
+            .partners-models-split__plus,
+            .partners-models-split__plus svg {
               transition: none;
+            }
+            .partners-models-split__plus:hover,
+            .partners-models-split__plus:hover svg {
+              transform: none;
             }
           }
 
@@ -1863,10 +1897,6 @@ export default function PartnersPage() {
             .partners-models-split__card {
               transition: none !important;
               transform: none !important;
-            }
-            .partners-models-split:hover .partners-models-split__card,
-            .partners-models-split:hover .partners-models-split__card:hover {
-              flex: 1 1 0 !important;
             }
             .partners-ex__step,
             .partners-ex__card,
