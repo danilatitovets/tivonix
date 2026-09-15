@@ -172,7 +172,7 @@ function PillNav({
       {items.map((it) => {
         const isActive = it.key === activeKey;
         const pad = compact ? "px-3.5 h-10" : "px-5 h-11";
-        const text = compact ? "text-[10.5px]" : "text-[11px]";
+        const text = compact ? "text-[12.5px]" : "text-[13.5px]";
 
         return (
           <Link
@@ -181,7 +181,7 @@ function PillNav({
             onClick={onItemClick(it.to, it.hash)}
             aria-current={isActive ? "page" : undefined}
             className={cx(
-              "relative flex items-center justify-center gap-2 rounded-full border-0 font-bold uppercase tracking-[0.14em] outline-none select-none transition",
+              "relative flex items-center justify-center gap-2 rounded-full border-0 font-sans font-medium normal-case tracking-normal outline-none select-none transition",
               "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
               pad,
               text,
@@ -193,7 +193,7 @@ function PillNav({
               reducedMotion ? undefined : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)
             }
           >
-            <span className="leading-none translate-y-[0.5px]">{it.label}</span>
+            <span className="leading-none">{it.label}</span>
           </Link>
         );
       })}
@@ -302,17 +302,23 @@ export default function Header() {
 
   const navLabel = (key: NavKey) => {
     if (isRu) {
-      if (key === "services") return "услуги";
-      if (key === "projects") return "проекты";
-      if (key === "plans") return "тарифы";
-      if (key === "about") return "о компании";
-      if (key === "partners") return "партнёры";
+      if (key === "services") return "Услуги";
+      if (key === "projects") return "Проекты";
+      if (key === "plans") return "Тарифы";
+      if (key === "about") return "О компании";
+      if (key === "partners") return "Партнёры";
+    } else if (lang === "zh") {
+      if (key === "services") return "服务";
+      if (key === "projects") return "项目";
+      if (key === "plans") return "方案";
+      if (key === "about") return "关于我们";
+      if (key === "partners") return "合作伙伴";
     } else {
-      if (key === "services") return "services";
-      if (key === "projects") return "projects";
-      if (key === "plans") return "pricing";
-      if (key === "about") return "about";
-      if (key === "partners") return "partners";
+      if (key === "services") return "Services";
+      if (key === "projects") return "Projects";
+      if (key === "plans") return "Pricing";
+      if (key === "about") return "About";
+      if (key === "partners") return "Partners";
     }
     return key;
   };
