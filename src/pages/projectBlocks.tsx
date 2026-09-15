@@ -472,16 +472,17 @@ export function ProjectGalleryStrip({
                 aria-label={`${openLabel} ${i + 1}`}
                 onClick={() => setActive(i)}
               >
-                <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-[#121214] ring-1 ring-white/[0.06] sm:rounded-2xl">
+                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-[#121214] ring-1 ring-white/[0.06] sm:rounded-2xl">
                   <SoftImg
                     src={src}
                     alt=""
-                    className="absolute inset-0 h-full w-full object-contain object-center"
+                    className="absolute inset-0 h-full w-full object-cover object-top transition duration-300 group-hover:scale-[1.02]"
                     draggable={false}
                     loading={i < 2 ? "eager" : "lazy"}
                     decoding="async"
                     fetchPriority={i === 0 ? "high" : undefined}
                   />
+                  <span className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/45 to-transparent" aria-hidden />
                 </div>
               </button>
             </div>

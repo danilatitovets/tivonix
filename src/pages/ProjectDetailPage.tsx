@@ -851,7 +851,11 @@ export default function ProjectDetailPage() {
 
                 {project.gallery?.length ? (
                   <div className="mt-5 sm:mt-8">
-                    <ProjectGalleryStrip images={project.gallery} isRu={isRu} />
+                    <ProjectGalleryStrip
+                      images={project.gallery}
+                      isRu={isRu}
+                      cropPreview={project.id === "spliton"}
+                    />
                   </div>
                 ) : null}
               </div>
