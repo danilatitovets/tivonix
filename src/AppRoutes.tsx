@@ -4,7 +4,6 @@ import LandingPage from "./pages/LandingPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import ProjectDetailPage from "./pages/ProjectDetailPage";
 import ContactsPage from "./pages/ContactsPage";
-import AutomationBusinessPage from "./pages/AutomationBusinessPage";
 import PricingPage from "./pages/PricingPage";
 import AboutPage from "./pages/AboutPage";
 import PartnersPage from "./pages/PartnersPage";
@@ -73,7 +72,7 @@ export function AppRoutes() {
         <Route path="/razrabotka-crm" element={<ServiceLandingPage pageId="crm" />} />
         <Route path="/razrabotka-lichnogo-kabineta" element={<ServiceLandingPage pageId="portal" />} />
         <Route path="/telegram-boty-dlya-biznesa" element={<ServiceLandingPage pageId="telegram" />} />
-        <Route path="/avtomatizaciya-biznesa" element={<AutomationBusinessPage />} />
+        <Route path="/avtomatizaciya-biznesa" element={<ServiceLandingPage pageId="automation" />} />
         <Route path="/en/website-development" element={<ServiceLandingPage pageId="websites" />} />
         <Route path="/en/mvp-development" element={<ServiceLandingPage pageId="mvp" />} />
         <Route path="/en/business-automation" element={<ServiceLandingPage pageId="automation" />} />

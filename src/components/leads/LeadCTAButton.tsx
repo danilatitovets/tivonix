@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { ArrowRight, Plus } from "lucide-react";
 import { ctaClass } from "./ctaStyles";
 import type { CtaSource } from "../../lib/analytics";
 import { useLeadForm } from "./useLeadForm";
@@ -9,7 +9,7 @@ type Props = {
   variant?: "primary" | "secondary" | "ghost" | "plain" | "white" | "cream";
   size?: "md" | "lg";
   className?: string;
-  pillIcon?: "plus";
+  pillIcon?: "plus" | "arrow";
   "aria-label"?: string;
   onClick?: () => void;
   tabIndex?: number;
@@ -36,14 +36,28 @@ export function LeadCTAButton({
         onClick?.();
         openLeadForm(source);
       }}
-      className={ctaClass(variant, size, className, Boolean(pillIcon))}
+      className={ctaClass(
+        variant,
+        size,
+        [
+          className,
+          pillIcon === "arrow" ? "tivonix-cta-primary--pill-arrow" : null,
+        ]
+          .filter(Boolean)
+          .join(" ") || undefined,
+        Boolean(pillIcon)
+      )}
       aria-label={ariaLabel}
     >
       {pillIcon ? (
         <>
           <span className="tivonix-cta-primary__label">{children}</span>
           <span className="tivonix-cta-primary__icon" aria-hidden="true">
-            {pillIcon === "plus" ? <Plus className="tivonix-cta-primary__icon-svg" /> : null}
+            {pillIcon === "arrow" ? (
+              <ArrowRight className="tivonix-cta-primary__icon-svg" />
+            ) : (
+              <Plus className="tivonix-cta-primary__icon-svg" />
+            )}
           </span>
         </>
       ) : (

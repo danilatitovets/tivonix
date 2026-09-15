@@ -32,7 +32,6 @@ const FOOTER_SERVICES: { id: ServicePageId; label: { ru: string; en: string; zh:
   { id: "mvp", label: { ru: "Разработка MVP", en: "MVP development", zh: "MVP 开发" } },
   { id: "automation", label: { ru: "Автоматизация", en: "Business automation", zh: "业务自动化" } },
   { id: "portal", label: { ru: "Личный кабинет", en: "Client portal", zh: "客户门户" } },
-  { id: "telegram", label: { ru: "Telegram-боты", en: "Telegram bots", zh: "Telegram 机器人" } },
 ];
 
 const FOOTER_MAILTO_URL = `mailto:${CONTACT_EMAIL}`;

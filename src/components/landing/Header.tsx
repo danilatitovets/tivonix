@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Bot, Globe2, LayoutDashboard, Sparkles } from "lucide-react";
 import Container from "../ui/Container";
 import { useLang } from "../../i18n/LangProvider";
 import { t3 } from "../../i18n/pick";
@@ -14,6 +15,11 @@ import { useLeadForm } from "../leads/useLeadForm";
 import { leadFormCopy } from "../../i18n/leadFormCopy";
 import LangToggle from "./LangToggle";
 import { pathForLang } from "../../lib/localePaths";
+import {
+  servicePageIdFromPath,
+  servicePagePath,
+  type ServicePageId,
+} from "../../i18n/servicePagesCopy";
 
 // Десктоп-режим (бургер скрыт, показывается полоса навигации) с xl (>=1280).
 
@@ -46,6 +52,360 @@ const DESKTOP_MIN_WIDTH = 1280;
 const LOGO_DEFAULT = "/images/tivonix-logo-lockup.webp";
 const LOGO_WHITE = "/images/tivonix-logo-white.webp";
 const LOGO_BLACK = "/images/logo-black.png";
+const SERVICES_MENU_VIDEO = "/images/header/services-menu.mp4";
+const SERVICES_MENU_POSTER = "/images/header/services-menu-poster.webp";
+
+const HEADER_SERVICES: {
+  id: ServicePageId;
+  icon: typeof Globe2;
+  title: { ru: string; en: string; zh: string };
+  text: { ru: string; en: string; zh: string };
+}[] = [
+  {
+    id: "websites",
+    icon: Globe2,
+    title: { ru: "Создание сайтов", en: "Website development", zh: "网站开发" },
+    text: {
+      ru: "Лендинги и сайты под заявки: структура, дизайн, формы и публикация.",
+      en: "Landings and lead sites: structure, design, forms and publish.",
+      zh: "落地页与获客站点：结构、设计、表单与上线。",
+    },
+  },
+  {
+    id: "mvp",
+    icon: Sparkles,
+    title: { ru: "Разработка MVP", en: "MVP development", zh: "MVP 开发" },
+    text: {
+      ru: "Основа продукта с одним главным сценарием, ролями и админкой.",
+      en: "Product foundation with one primary workflow, roles and admin.",
+      zh: "以一个核心流程、角色与管理端为基础的产品。",
+    },
+  },
+  {
+    id: "automation",
+    icon: Bot,
+    title: { ru: "Автоматизация", en: "Business automation", zh: "业务自动化" },
+    text: {
+      ru: "Заявки, Телеграм, статусы и мини-CRM в одном контуре.",
+      en: "Leads, Telegram, statuses and mini-CRM in one flow.",
+      zh: "线索、Telegram、状态与迷你 CRM 打通。",
+    },
+  },
+  {
+    id: "portal",
+    icon: LayoutDashboard,
+    title: { ru: "Личный кабинет", en: "Client portal", zh: "客户门户" },
+    text: {
+      ru: "Кабинеты клиентов и партнёров: роли, статусы, документы и админка.",
+      en: "Client and partner portals: roles, statuses, documents and admin.",
+      zh: "客户/合作方门户：角色、状态、文档与管理端。",
+    },
+  },
+];
+
+type ServicesMenuPos = { top: number; left: number; width: number };
+
+function ServicesMegaMenu({
+  lang,
+  onNavigate,
+  open,
+  pos,
+  onPointerEnter,
+  onPointerLeave,
+}: {
+  lang: "ru" | "en" | "zh";
+  onNavigate: () => void;
+  open: boolean;
+  pos: ServicesMenuPos | null;
+  onPointerEnter: () => void;
+  onPointerLeave: () => void;
+}) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!open || !v) return;
+    v.currentTime = 0;
+    void v.play().catch(() => undefined);
+  }, [open]);
+
+  const label = (v: { ru: string; en: string; zh: string }) =>
+    lang === "en" ? v.en : lang === "zh" ? v.zh : v.ru;
+
+  if (!open || !pos || typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      className="services-mega-root pointer-events-auto fixed z-[140]"
+      style={{
+        top: pos.top,
+        left: pos.left,
+        width: pos.width,
+      }}
+      onMouseEnter={onPointerEnter}
+      onMouseLeave={onPointerLeave}
+    >
+      <div className="services-mega-menu overflow-hidden rounded-[1.35rem] border border-white/[0.08] bg-[#141414] shadow-[0_28px_80px_rgba(0,0,0,0.55)]">
+        <div className="grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.25fr)] gap-0">
+          <div className="relative min-h-[16.5rem] overflow-hidden">
+            <video
+              ref={videoRef}
+              className="absolute inset-0 h-full w-full object-cover object-center"
+              src={SERVICES_MENU_VIDEO}
+              poster={SERVICES_MENU_POSTER}
+              muted
+              playsInline
+              loop
+              autoPlay
+              preload="metadata"
+              aria-hidden
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(7,6,7,0.05) 0%, rgba(7,6,7,0.35) 45%, rgba(7,6,7,0.82) 100%)",
+              }}
+              aria-hidden
+            />
+            <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+              <p className="font-hero text-[1.2rem] uppercase tracking-[0.04em] text-white sm:text-[1.35rem]">
+                TIVONIX
+              </p>
+              <p className="mt-1.5 max-w-[22ch] font-sans text-[12.5px] font-medium leading-snug text-white/68 sm:text-[13px]">
+                {lang === "en"
+                  ? "Sites, MVP, portals and automation — one product stack."
+                  : lang === "zh"
+                    ? "网站、MVP、门户与自动化——同一套产品工程。"
+                    : "Сайты, MVP, кабинеты и автоматизация — один продуктовый контур."}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col justify-center gap-0.5 px-2 py-2.5 sm:px-3 sm:py-3">
+            {HEADER_SERVICES.map((item) => {
+              const Icon = item.icon;
+              const to = pathForLang(servicePagePath(item.id, lang), lang);
+              return (
+                <Link
+                  key={item.id}
+                  to={to}
+                  onClick={onNavigate}
+                  className="group/item flex items-start gap-3 rounded-xl px-2.5 py-2.5 transition hover:bg-white/[0.05] sm:px-3 sm:py-3"
+                >
+                  <Icon
+                    size={18}
+                    strokeWidth={1.85}
+                    className="mt-0.5 shrink-0 text-white/55 transition group-hover/item:text-[#ffb08a]"
+                    aria-hidden
+                  />
+                  <span className="min-w-0">
+                    <span className="block font-sans text-[14px] font-semibold tracking-[-0.015em] text-white">
+                      {label(item.title)}
+                    </span>
+                    <span className="mt-0.5 block font-sans text-[12.5px] font-medium leading-snug text-white/48">
+                      {label(item.text)}
+                    </span>
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+/** Align under header shell; never spill past header left/right edges. */
+function readServicesMenuPos(
+  anchor: HTMLElement | null,
+  bounds: HTMLElement | null
+): ServicesMenuPos | null {
+  if (!anchor) return null;
+  const ar = anchor.getBoundingClientRect();
+  const br = bounds?.getBoundingClientRect();
+  const edgePad = 8;
+  const minLeft = br ? br.left + edgePad : 16;
+  const maxRight = br ? br.right - edgePad : window.innerWidth - 16;
+  const maxWidth = Math.max(280, maxRight - minLeft);
+  const width = Math.min(42 * 16, maxWidth);
+
+  const nav = anchor.closest("nav");
+  const nr = nav?.getBoundingClientRect();
+  let left = nr ? nr.left + nr.width / 2 - width / 2 : ar.left + ar.width / 2 - width / 2;
+  left = Math.min(maxRight - width, Math.max(minLeft, left));
+
+  return {
+    top: ar.bottom + 10,
+    left,
+    width,
+  };
+}
+
+function PillNav({
+  activeKey,
+  items,
+  onItemClick,
+  reducedMotion,
+  compact,
+  lang,
+  boundsRef,
+}: {
+  activeKey: NavKey | null;
+  items: Array<{ key: NavKey; label: string; to: string; hash?: string }>;
+  onItemClick: (to: string, hash?: string) => (e: React.MouseEvent) => void;
+  reducedMotion: boolean;
+  compact?: boolean;
+  lang: "ru" | "en" | "zh";
+  boundsRef: React.RefObject<HTMLElement | null>;
+}) {
+  const dur = 260;
+  const [servicesOpen, setServicesOpen] = useState(false);
+  const [servicesPos, setServicesPos] = useState<ServicesMenuPos | null>(null);
+  const servicesWrapRef = useRef<HTMLDivElement | null>(null);
+  const closeTimer = useRef<number | null>(null);
+
+  const syncPos = () => {
+    setServicesPos(readServicesMenuPos(servicesWrapRef.current, boundsRef.current));
+  };
+
+  const openServices = () => {
+    if (closeTimer.current) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+    syncPos();
+    setServicesOpen(true);
+  };
+
+  const scheduleCloseServices = () => {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => {
+      setServicesOpen(false);
+      setServicesPos(null);
+    }, 160);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!servicesOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setServicesOpen(false);
+        setServicesPos(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("resize", syncPos);
+    window.addEventListener("scroll", syncPos, true);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", syncPos);
+      window.removeEventListener("scroll", syncPos, true);
+    };
+  }, [servicesOpen, boundsRef]);
+
+  return (
+    <nav
+      className={cx(
+        "relative inline-flex items-center gap-0.5 rounded-full border-0 bg-[#141414] p-1"
+      )}
+      aria-label="Header navigation"
+    >
+      {items.map((it) => {
+        const isActive = it.key === activeKey;
+        const pad = compact ? "px-3.5 h-10" : "px-5 h-11";
+        const text = compact ? "text-[12.5px]" : "text-[13.5px]";
+        const isServices = it.key === "services";
+
+        if (isServices) {
+          return (
+            <div
+              key={it.key}
+              ref={servicesWrapRef}
+              className="relative"
+              onMouseEnter={openServices}
+              onMouseLeave={scheduleCloseServices}
+              onFocus={openServices}
+              onBlur={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                  scheduleCloseServices();
+                }
+              }}
+            >
+              <Link
+                to={it.to}
+                onClick={(e) => {
+                  onItemClick(it.to, it.hash)(e);
+                  setServicesOpen(false);
+                  setServicesPos(null);
+                }}
+                aria-current={isActive ? "page" : undefined}
+                aria-expanded={servicesOpen}
+                aria-haspopup="true"
+                className={cx(
+                  "relative flex items-center justify-center gap-2 rounded-full border-0 font-sans font-medium normal-case tracking-normal outline-none select-none transition",
+                  "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
+                  pad,
+                  text,
+                  isActive || servicesOpen
+                    ? "bg-[#2c2c2c] text-white"
+                    : "bg-transparent text-white/55 hover:bg-white/[0.04] hover:text-white/85"
+                )}
+                style={
+                  reducedMotion ? undefined : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)
+                }
+              >
+                <span className="leading-none">{it.label}</span>
+              </Link>
+              <ServicesMegaMenu
+                open={servicesOpen}
+                pos={servicesPos}
+                lang={lang}
+                onNavigate={() => {
+                  setServicesOpen(false);
+                  setServicesPos(null);
+                }}
+                onPointerEnter={openServices}
+                onPointerLeave={scheduleCloseServices}
+              />
+            </div>
+          );
+        }
+
+        return (
+          <Link
+            key={it.key}
+            to={it.to}
+            onClick={onItemClick(it.to, it.hash)}
+            aria-current={isActive ? "page" : undefined}
+            className={cx(
+              "relative flex items-center justify-center gap-2 rounded-full border-0 font-sans font-medium normal-case tracking-normal outline-none select-none transition",
+              "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
+              pad,
+              text,
+              isActive
+                ? "bg-[#2c2c2c] text-white"
+                : "bg-transparent text-white/55 hover:bg-white/[0.04] hover:text-white/85"
+            )}
+            style={
+              reducedMotion ? undefined : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)
+            }
+          >
+            <span className="leading-none">{it.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -147,63 +507,10 @@ function useIsMobile(maxWidth = 899) {
   );
 }
 
-function PillNav({
-  activeKey,
-  items,
-  onItemClick,
-  reducedMotion,
-  compact,
-}: {
-  activeKey: NavKey | null;
-  items: Array<{ key: NavKey; label: string; to: string; hash?: string }>;
-  onItemClick: (to: string, hash?: string) => (e: React.MouseEvent) => void;
-  reducedMotion: boolean;
-  compact?: boolean;
-}) {
-  const dur = 260;
-
-  return (
-    <nav
-      className={cx(
-        "relative inline-flex items-center gap-0.5 rounded-full border-0 bg-[#141414] p-1"
-      )}
-      aria-label="Header navigation"
-    >
-      {items.map((it) => {
-        const isActive = it.key === activeKey;
-        const pad = compact ? "px-3.5 h-10" : "px-5 h-11";
-        const text = compact ? "text-[12.5px]" : "text-[13.5px]";
-
-        return (
-          <Link
-            key={it.key}
-            to={it.to}
-            onClick={onItemClick(it.to, it.hash)}
-            aria-current={isActive ? "page" : undefined}
-            className={cx(
-              "relative flex items-center justify-center gap-2 rounded-full border-0 font-sans font-medium normal-case tracking-normal outline-none select-none transition",
-              "focus-visible:ring-2 focus-visible:ring-orange-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
-              pad,
-              text,
-              isActive
-                ? "bg-[#2c2c2c] text-white"
-                : "bg-transparent text-white/55 hover:bg-white/[0.04] hover:text-white/85"
-            )}
-            style={
-              reducedMotion ? undefined : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)
-            }
-          >
-            <span className="leading-none">{it.label}</span>
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
-
-
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+  const headerBoundsRef = useRef<HTMLDivElement | null>(null);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -229,10 +536,18 @@ export default function Header() {
     (footerInView || (partnersCapsLock && !isMobile)) && !open && !leadFormOpen;
   const isPartners = isPartnersPath(location.pathname);
   const logoSrc = isPartners ? LOGO_BLACK : heroInView ? LOGO_WHITE : LOGO_DEFAULT;
-  const isHome = location.pathname === "/" || location.pathname === "/en";
+  const isHome =
+    location.pathname === "/" ||
+    location.pathname === "/en" ||
+    location.pathname === "/zh";
   const isAbout =
-    location.pathname === "/about" || location.pathname === "/en/about";
-  const needsSpacer = isMobile && !isHome && !isAbout;
+    location.pathname === "/about" ||
+    location.pathname === "/en/about" ||
+    location.pathname === "/zh/about";
+  // Service heroes are full-bleed under the fixed header — a spacer leaves a solid
+  // #070607 band and a hard horizontal seam against the video.
+  const isServicePage = servicePageIdFromPath(location.pathname) != null;
+  const needsSpacer = isMobile && !isHome && !isAbout && !isServicePage;
   const { lang } = useLang();
   const isRu = lang === "ru";
 
@@ -428,8 +743,13 @@ export default function Header() {
 
   const closeMenu = () => {
     setOpen(false);
+    setMobileServicesOpen(false);
     requestAnimationFrame(() => burgerRef.current?.focus({ preventScroll: true }));
   };
+
+  useEffect(() => {
+    if (!open) setMobileServicesOpen(false);
+  }, [open]);
 
   // Portal only after mount — SSR has no document.body target, and rendering the
   // menu on the first client pass (typeof document !== "undefined") caused #418.
@@ -531,26 +851,113 @@ export default function Header() {
 
           <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2 pb-5 sm:px-3">
             <nav className="mt-1 flex flex-col" aria-label={t3(lang, "Навигация", "Navigation", "导航")}>
-              {mobileNavItems.map((item) => (
-                <Link
-                  key={item.key}
-                  to={item.to}
-                  className={cx(
-                    "flex items-center justify-between border-b border-white/[0.08] px-3 py-4 text-[15px] font-medium text-white/92",
-                    "transition-colors hover:bg-white/[0.03] active:bg-white/[0.02]",
-                    activeKey === item.key && "text-[#FFAE66]"
-                  )}
-                  onClick={(e) => {
-                    onNav(item.to, item.hash)(e);
-                    closeMenu();
-                  }}
-                >
-                  <span className="capitalize">{item.label}</span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0 text-white/32" aria-hidden>
-                    <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </Link>
-              ))}
+              {mobileNavItems.map((item) => {
+                if (item.key === "services") {
+                  const serviceLabel = (v: { ru: string; en: string; zh: string }) =>
+                    lang === "en" ? v.en : lang === "zh" ? v.zh : v.ru;
+                  return (
+                    <div key={item.key} className="border-b border-white/[0.08]">
+                      <button
+                        type="button"
+                        aria-expanded={mobileServicesOpen}
+                        className={cx(
+                          "flex w-full items-center justify-between px-3 py-4 text-left text-[15px] font-medium text-white/92",
+                          "transition-colors hover:bg-white/[0.03] active:bg-white/[0.02]",
+                          mobileServicesOpen && "text-[#FFAE66]"
+                        )}
+                        onClick={() => setMobileServicesOpen((v) => !v)}
+                      >
+                        <span className="capitalize">{item.label}</span>
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          className={cx(
+                            "shrink-0 text-white/32 transition-transform duration-250",
+                            mobileServicesOpen && "rotate-90"
+                          )}
+                          aria-hidden
+                        >
+                          <path
+                            d="M9 18l6-6-6-6"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                      <div
+                        className={cx(
+                          "grid transition-[grid-template-rows,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                          mobileServicesOpen
+                            ? "grid-rows-[1fr] opacity-100"
+                            : "grid-rows-[0fr] opacity-0"
+                        )}
+                      >
+                        <div className="overflow-hidden">
+                          <ul className="flex flex-col gap-0.5 pb-3 pl-2 pr-1">
+                            {HEADER_SERVICES.map((svc) => {
+                              const to = pathForLang(servicePagePath(svc.id, lang), lang);
+                              return (
+                                <li key={svc.id}>
+                                  <Link
+                                    to={to}
+                                    onClick={closeMenu}
+                                    className="block rounded-xl px-3 py-3 transition hover:bg-white/[0.04] active:bg-white/[0.03]"
+                                  >
+                                    <span className="block font-sans text-[14px] font-semibold tracking-[-0.015em] text-white">
+                                      {serviceLabel(svc.title)}
+                                    </span>
+                                    <span className="mt-0.5 block font-sans text-[12.5px] font-medium leading-snug text-white/48">
+                                      {serviceLabel(svc.text)}
+                                    </span>
+                                  </Link>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={item.key}
+                    to={item.to}
+                    className={cx(
+                      "flex items-center justify-between border-b border-white/[0.08] px-3 py-4 text-[15px] font-medium text-white/92",
+                      "transition-colors hover:bg-white/[0.03] active:bg-white/[0.02]",
+                      activeKey === item.key && "text-[#FFAE66]"
+                    )}
+                    onClick={(e) => {
+                      onNav(item.to, item.hash)(e);
+                      closeMenu();
+                    }}
+                  >
+                    <span className="capitalize">{item.label}</span>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      className="shrink-0 text-white/32"
+                      aria-hidden
+                    >
+                      <path
+                        d="M9 18l6-6-6-6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </Link>
+                );
+              })}
             </nav>
 
             <div className="mt-auto flex flex-col gap-2 px-2 pt-6 pb-[max(1rem,env(safe-area-inset-bottom))]">
@@ -619,7 +1026,7 @@ export default function Header() {
         style={reducedMotion ? undefined : ({ transitionDuration: `${dur}ms` } as React.CSSProperties)}
       >
         <div className="h-[78px] w-full bg-transparent sm:h-[82px]">
-          <Container className="h-full">
+          <Container ref={headerBoundsRef} className="h-full">
             <div
               className={cx(
                 "relative grid h-full w-full min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-2 sm:gap-x-3 xl:gap-x-4"
@@ -681,6 +1088,8 @@ export default function Header() {
                     items={tabsItems}
                     onItemClick={onNav}
                     compact={false}
+                    lang={lang}
+                    boundsRef={headerBoundsRef}
                   />
                   {!isPartners ? (
                     <LangToggle variant="hero" reducedMotion={reducedMotion} />

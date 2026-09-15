@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 import Section from "../ui/Section";
 import Container from "../ui/Container";
@@ -7,6 +8,9 @@ import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
 import { LANDING_HEADLINE_CLASS } from "../../lib/landingLayout";
 import { useLeadForm } from "../leads/useLeadForm";
+import { pathForLang } from "../../lib/localePaths";
+import { servicePagePath, type ServicePageId } from "../../i18n/servicePagesCopy";
+import { t3 } from "../../i18n/pick";
 
 type Metric = {
   title: string;
@@ -19,6 +23,17 @@ type CardReveal = {
   bg: number;
   text: number;
 };
+
+/** Index in offer.metrics → service landing page */
+const OFFER_METRIC_SERVICE: ServicePageId[] = [
+  "mvp", // SaaS и MVP
+  "mvp", // Финтех
+  "portal", // Маркетплейсы и порталы
+  "portal", // Внутренние платформы
+  "automation", // AI и автоматизация
+];
+
+const OFFER_FEATURED_SERVICE: ServicePageId = "websites";
 
 const OFFER_MOSAIC_BG = `/images/${encodeURI("как рабоает/пп/блоки/ffon.webp")}`;
 /** Native mosaic artboard aspect — keep bg from squashing on mobile strip */
@@ -308,11 +323,15 @@ function MetricCard({
   slice,
   title,
   text,
+  href,
+  moreLabel,
   className,
   bgReveal,
   textReveal,
 }: Metric & {
   slice: OfferSlice;
+  href?: string;
+  moreLabel?: string;
   className?: string;
   bgReveal?: number;
   textReveal?: number;
@@ -324,13 +343,27 @@ function MetricCard({
       textReveal={textReveal}
       className={["min-h-[280px] sm:min-h-[300px] lg:min-h-0", className].filter(Boolean).join(" ")}
     >
-      <div className="flex min-h-0 flex-1 flex-col justify-between gap-5">
-        <h3 className="min-h-[2.6em] font-hero text-[clamp(1.2rem,2.2vw,1.55rem)] font-normal uppercase leading-[1.12] tracking-[0.02em] text-white">
+      <div className="flex min-h-0 flex-1 flex-col gap-4">
+        <h3 className="font-hero text-[clamp(1.15rem,2vw,1.45rem)] font-normal uppercase leading-[1.12] tracking-[0.02em] text-white">
           {title}
         </h3>
-        <p className="min-h-[4.65em] text-pretty text-[14px] font-normal leading-[1.55] tracking-normal text-white/70 sm:min-h-[4.65em] sm:text-[15px]">
+        <p className="text-pretty text-[14px] font-normal leading-[1.55] tracking-normal text-white/70 sm:text-[15px]">
           {text}
         </p>
+        {href && moreLabel ? (
+          <Link
+            to={href}
+            className="group mt-auto inline-flex w-fit items-center gap-1.5 pt-1 font-sans text-[14px] font-medium tracking-normal text-white/85 no-underline transition hover:text-[#FFAE66]"
+          >
+            {moreLabel}
+            <ArrowUpRight
+              size={15}
+              strokeWidth={2.2}
+              className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              aria-hidden
+            />
+          </Link>
+        ) : null}
       </div>
     </OfferBlockCard>
   );
@@ -341,6 +374,8 @@ function FeaturedCard({
   text,
   linkText,
   footer,
+  moreHref,
+  moreLabel,
   className,
   visible,
 }: {
@@ -348,6 +383,8 @@ function FeaturedCard({
   text: string;
   linkText: string;
   footer: string;
+  moreHref?: string;
+  moreLabel?: string;
   className?: string;
   visible: boolean;
 }) {
@@ -371,18 +408,33 @@ function FeaturedCard({
           <p className="mt-3 text-[15px] font-normal leading-[1.55] tracking-normal text-white/72 sm:mt-3.5 sm:text-[16px] sm:leading-[1.6]">
             {text}
           </p>
-          <button
-            type="button"
-            onClick={() => openLeadForm("main_offer")}
-            className="group mt-5 inline-flex min-h-[2.5rem] items-center gap-1.5 text-[14px] font-medium tracking-normal text-white/85 transition hover:text-[#FFAE66]"
-          >
-            {linkText}
-            <ArrowUpRight
-              size={15}
-              className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-              aria-hidden
-            />
-          </button>
+          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
+            <button
+              type="button"
+              onClick={() => openLeadForm("main_offer")}
+              className="group inline-flex min-h-[2.5rem] items-center gap-1.5 text-[14px] font-medium tracking-normal text-white/85 transition hover:text-[#FFAE66]"
+            >
+              {linkText}
+              <ArrowUpRight
+                size={15}
+                className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                aria-hidden
+              />
+            </button>
+            {moreHref && moreLabel ? (
+              <Link
+                to={moreHref}
+                className="group inline-flex min-h-[2.5rem] items-center gap-1.5 text-[14px] font-medium tracking-normal text-white/85 no-underline transition hover:text-[#FFAE66]"
+              >
+                {moreLabel}
+                <ArrowUpRight
+                  size={15}
+                  className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  aria-hidden
+                />
+              </Link>
+            ) : null}
+          </div>
         </div>
 
         <p className="text-[13px] font-normal leading-snug tracking-normal text-white/55 sm:text-[14px]">
@@ -394,7 +446,8 @@ function FeaturedCard({
 }
 
 export default function MainOfferSection() {
-  const copy = landingCopy(useLang().lang);
+  const { lang } = useLang();
+  const copy = landingCopy(lang);
   const mosaicRef = useRef<HTMLDivElement>(null);
   const bottomCardRefs = useRef<(HTMLElement | null)[]>([]);
   useOfferMosaicBackground(mosaicRef);
@@ -405,6 +458,17 @@ export default function MainOfferSection() {
   );
 
   const [topMetric, ...bottomMetrics] = copy.offer.metrics;
+  const moreLabel = t3(lang, "Подробнее", "Learn more", "了解更多");
+
+  const metricHref = (index: number) => {
+    const id = OFFER_METRIC_SERVICE[index] ?? "mvp";
+    return pathForLang(servicePagePath(id, lang), lang);
+  };
+
+  const featuredMoreHref = pathForLang(
+    servicePagePath(OFFER_FEATURED_SERVICE, lang),
+    lang
+  );
 
   return (
     <Section
@@ -434,6 +498,8 @@ export default function MainOfferSection() {
                   text={copy.offer.featured.text}
                   linkText={copy.offer.featured.linkText}
                   footer={copy.offer.featured.footer}
+                  moreHref={featuredMoreHref}
+                  moreLabel={moreLabel}
                   visible={topVisible[0]}
                 />
               </div>
@@ -451,6 +517,8 @@ export default function MainOfferSection() {
                   <MetricCard
                     slice={2}
                     {...topMetric}
+                    href={metricHref(0)}
+                    moreLabel={moreLabel}
                     className="w-full lg:h-full lg:min-h-0"
                   />
                 </div>
@@ -469,6 +537,8 @@ export default function MainOfferSection() {
                   <MetricCard
                     slice={(i + 3) as OfferSlice}
                     {...item}
+                    href={metricHref(i + 1)}
+                    moreLabel={moreLabel}
                     bgReveal={cardReveals[i]?.bg ?? 0}
                     textReveal={cardReveals[i]?.text ?? 0}
                     className="h-full min-h-[21rem] sm:min-h-[21rem] lg:min-h-0"

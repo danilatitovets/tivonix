@@ -2,7 +2,7 @@ import type { Lang } from "./LangProvider";
 import { COMPARISON_GROUPS, type PlanId } from "../lib/pricingData";
 
 export const PLAN_PRICE_USD = {
-  start: 400,
+  start: 500,
   growth: 900,
   product: 2000,
 } as const;

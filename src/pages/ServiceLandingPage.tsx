@@ -3,15 +3,18 @@ import Header from "../components/landing/Header";
 import Footer from "../components/landing/Footer";
 import Container from "../components/ui/Container";
 import Section from "../components/ui/Section";
-import SoftImg from "../components/ui/SoftImg";
 import {
+  AutomationExamplesSection,
+  AutomationPageBg,
+  MvpExamplesSection,
+  PortalExamplesSection,
+  PortalPageBg,
   WebsiteExamplesSection,
-  WebsiteHeroVideoFrame,
   WebsitePageBg,
+  WebsitePricingBg,
 } from "../components/services/WebsiteServiceVisuals";
 import { SEO } from "../components/SEO";
 import { LeadCTAButton } from "../components/leads/LeadCTAButton";
-import { ctaClass } from "../components/leads/ctaStyles";
 import { useLang } from "../i18n/LangProvider";
 import {
   servicePageCopy,
@@ -19,22 +22,9 @@ import {
   type ServicePageId,
 } from "../i18n/servicePagesCopy";
 import { pathForLang } from "../lib/localePaths";
+import type { CtaSource } from "../lib/analytics";
 
 type Props = { pageId?: ServicePageId };
-
-const HERO_VISUAL: Partial<Record<ServicePageId, string>> = {
-  portal: "/images/project-priew/spliton.webp",
-  crm: `/images/${encodeURI("обложки")}/tivonixpanel.webp`,
-  telegram: "/images/project-priew/slotty.webp",
-  mvp: "/images/project-priew/neo-terminal.webp",
-};
-
-function caseHref(href: string, lang: string) {
-  if (lang === "en" && href.startsWith("/") && !href.startsWith("/en")) {
-    return `/en${href}`;
-  }
-  return href;
-}
 
 export default function ServiceLandingPage({ pageId: pageIdProp }: Props) {
   const { lang } = useLang();
@@ -47,103 +37,69 @@ export default function ServiceLandingPage({ pageId: pageIdProp }: Props) {
 
   const copy = servicePageCopy(pageId, lang);
   const canonicalPath = pathname.replace(/\/+$/, "") || pathname;
-  const heroVisual = HERO_VISUAL[pageId];
-  const leadSource = `service_${pageId}`;
+  const leadSource = `service_${pageId}` as CtaSource;
   const isRu = lang !== "en";
   const isWebsites = pageId === "websites";
+  const isMvp = pageId === "mvp";
+  const isAutomation = pageId === "automation";
+  const isPortal = pageId === "portal";
+  const usePageBgVideo = isWebsites || isMvp || isAutomation || isPortal;
 
   return (
-    <div className="min-h-screen bg-[#070607] text-white">
+    <div className="landing-caldera service-landing min-h-screen overflow-x-clip bg-[#070607] font-sans text-white antialiased">
       <SEO
         title={copy.seo.title}
         description={copy.seo.description}
         canonicalPath={canonicalPath}
         ogLocalePrimary={lang === "zh" ? "zh_CN" : lang === "en" ? "en_US" : "ru_RU"}
-        hreflang={pageId === "websites" || pageId === "mvp" || pageId === "automation" || pageId === "portal"}
+        hreflang={
+          pageId === "websites" ||
+          pageId === "mvp" ||
+          pageId === "automation" ||
+          pageId === "portal"
+        }
       />
       <Header />
       <main>
-        {/* Hero */}
-        <section className="relative overflow-hidden pt-[calc(var(--tivonix-header-spacer)+2rem)] pb-12 sm:pt-[calc(var(--tivonix-header-spacer)+2.75rem)] sm:pb-16">
-          {isWebsites ? (
-            <WebsitePageBg />
+        {/* Hero — same centered layout for every service page */}
+        <section className="relative min-h-[min(78vh,46rem)] pb-28 pt-[calc(var(--tivonix-header-spacer)+2rem)] sm:min-h-[min(82vh,52rem)] sm:pb-36 sm:pt-[calc(var(--tivonix-header-spacer)+2.75rem)]">
+          {usePageBgVideo ? (
+            isAutomation ? (
+              <AutomationPageBg />
+            ) : isPortal ? (
+              <PortalPageBg />
+            ) : (
+              <WebsitePageBg />
+            )
           ) : (
             <div
               className="pointer-events-none absolute inset-0"
               aria-hidden
               style={{
                 background:
-                  "radial-gradient(90% 70% at 78% 12%, rgba(252,80,0,0.22) 0%, rgba(252,80,0,0.06) 38%, transparent 68%), linear-gradient(180deg, #070607 0%, #0b0b0c 100%)",
+                  "radial-gradient(90% 70% at 50% 18%, rgba(252,80,0,0.18) 0%, rgba(252,80,0,0.05) 40%, transparent 68%), linear-gradient(180deg, #070607 0%, #0b0b0c 100%)",
               }}
             />
           )}
-          <Container className="relative z-[1]">
-            <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14">
-              <div className="min-w-0">
-                <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-white/45">
-                  TIVONIX · {isRu ? "Услуга" : "Service"}
-                </p>
-                <h1 className="mt-3 max-w-[16ch] font-sans text-[clamp(2rem,5.2vw,3.35rem)] font-[750] leading-[1.05] tracking-[-0.035em] text-balance">
-                  {copy.h1}
-                </h1>
-                <p className="mt-5 max-w-[36rem] text-[16px] leading-7 text-white/78 sm:text-[17px]">
-                  {copy.lead}
-                </p>
-                {!isWebsites ? (
-                  <p className="mt-3 max-w-[36rem] text-[14.5px] leading-7 text-white/55 sm:text-[15px]">
-                    {copy.offer}
-                  </p>
-                ) : null}
-                <div className="mt-8 flex flex-wrap items-center gap-3">
-                  <LeadCTAButton
-                    source={leadSource}
-                    variant="primary"
-                    size="lg"
-                    pillIcon="plus"
-                    className="min-w-[12.5rem] shadow-[0_12px_40px_rgba(255,107,44,0.28)]"
-                  >
-                    {copy.cta}
-                  </LeadCTAButton>
-                  <Link
-                    to={pathForLang(isWebsites ? "/contacts" : "/projects", lang)}
-                    className={
-                      isWebsites
-                        ? ctaClass("secondary", "lg")
-                        : "inline-flex h-12 items-center justify-center rounded-full border border-white/14 bg-white/[0.03] px-6 text-[14px] font-medium text-white/85 transition hover:border-white/28 hover:bg-white/[0.06]"
-                    }
-                  >
-                    {isWebsites
-                      ? isRu
-                        ? "Контакты"
-                        : "Contacts"
-                      : isRu
-                        ? "Смотреть проекты"
-                        : "View projects"}
-                  </Link>
-                </div>
+          <Container className="relative z-[1] flex min-h-[inherit] items-center">
+            <div className="mx-auto flex w-full max-w-[42rem] flex-col items-center py-10 text-center sm:py-14">
+              <h1 className="font-hero text-[clamp(2rem,5.2vw,3.35rem)] leading-[1.05] text-balance">
+                {copy.h1}
+              </h1>
+              <p className="mt-5 font-sans text-[16px] font-medium leading-7 text-white/78 sm:text-[17px]">
+                {copy.lead}
+              </p>
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                <LeadCTAButton
+                  source={leadSource}
+                  variant="primary"
+                  size="lg"
+                  pillIcon="plus"
+                  className="min-w-[12.5rem] shadow-[0_12px_40px_rgba(255,107,44,0.28)]"
+                >
+                  {copy.cta}
+                </LeadCTAButton>
               </div>
-
-              {isWebsites ? (
-                <WebsiteHeroVideoFrame />
-              ) : heroVisual ? (
-                <div className="relative min-w-0">
-                  <div className="absolute -inset-6 rounded-[2rem] bg-[radial-gradient(circle_at_50%_40%,rgba(252,80,0,0.18),transparent_65%)] blur-2xl" aria-hidden />
-                  <figure className="relative overflow-hidden rounded-[1.35rem] ring-1 ring-white/[0.1] shadow-[0_30px_80px_rgba(0,0,0,0.55)]">
-                    <div className="relative aspect-[16/11] w-full bg-[#121214]">
-                      <SoftImg
-                        src={heroVisual}
-                        alt=""
-                        className="absolute inset-0 h-full w-full object-cover object-top"
-                        decoding="async"
-                        loading="eager"
-                        fetchPriority="high"
-                        fade
-                      />
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10" />
-                    </div>
-                  </figure>
-                </div>
-              ) : null}
             </div>
           </Container>
         </section>
@@ -153,35 +109,67 @@ export default function ServiceLandingPage({ pageId: pageIdProp }: Props) {
             title={isRu ? "Примеры лендингов" : "Landing examples"}
             lead={
               isRu
-                ? "Скролл-демо реальных посадочных: структура, ритм блоков и подача оффера — как это выглядит в движении."
-                : "Scroll demos of real landings: structure, block rhythm and offer presentation — how it feels in motion."
+                ? "Реальные посадочные в движении: структура, ритм блоков и подача оффера."
+                : "Real landings in motion: structure, block rhythm, and how the offer is presented."
             }
-            demoLabel={isRu ? "Скролл-демо" : "Scroll demo"}
           />
         ) : null}
 
-        {/* Features */}
-        {copy.features?.length ? (
+        {isMvp ? (
+          <MvpExamplesSection
+            title={isRu ? "Примеры MVP" : "MVP examples"}
+            lead={
+              isRu
+                ? "Рабочие сценарии продукта: вход, кабинет, роли и ключевой путь пользователя."
+                : "Working product flows: auth, portal, roles and the primary user path."
+            }
+          />
+        ) : null}
+
+        {isAutomation ? (
+          <AutomationExamplesSection
+            title={isRu ? "Примеры автоматизации" : "Automation examples"}
+            lead={
+              isRu
+                ? "Демо из MVP и живых проектов: заявки, статусы, кабинеты и рабочий контур."
+                : "Demos from MVP and live projects: leads, statuses, portals and working flows."
+            }
+          />
+        ) : null}
+
+        {isPortal ? (
+          <PortalExamplesSection
+            title={isRu ? "Примеры кабинетов" : "Portal examples"}
+            lead={
+              isRu
+                ? "Демо кабинетов в движении: роли, статусы, документы и рабочий контур."
+                : "Portal demos in motion: roles, statuses, documents and the working flow."
+            }
+          />
+        ) : null}
+
+        {/* Features — borderless rows (same language as process); skipped when demos replace it */}
+        {!isPortal && copy.features?.length ? (
           <Section className="py-12 sm:py-16">
             <Container>
-              <h2 className="text-[clamp(1.45rem,3vw,2.1rem)] font-[700] tracking-[-0.03em]">
+              <h2 className="font-hero text-[clamp(1.45rem,3vw,2.1rem)]">
                 {copy.featuresTitle ?? (isRu ? "Что входит" : "What’s included")}
               </h2>
-              <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {copy.features.map((item, i) => (
-                  <article
+              <ul className="mt-8 space-y-0">
+                {copy.features.map((item) => (
+                  <li
                     key={item.title}
-                    className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 transition hover:border-white/[0.16] hover:bg-white/[0.045] sm:p-6"
+                    className="grid gap-2 py-6 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] sm:gap-10 sm:py-7"
                   >
-                    <div className="mb-4 inline-flex h-8 min-w-8 items-center justify-center rounded-full border border-white/12 bg-white/[0.05] px-2.5 text-[11px] font-bold text-[#ff8a4c]">
-                      {String(i + 1).padStart(2, "0")}
-                    </div>
-                    <h3 className="text-[17px] font-semibold tracking-[-0.02em]">{item.title}</h3>
-                    <p className="mt-2 text-[14px] leading-relaxed text-white/62">{item.text}</p>
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#ff6b2c]/55 to-transparent opacity-0 transition group-hover:opacity-100" />
-                  </article>
+                    <h3 className="font-sans text-[clamp(1.05rem,2vw,1.3rem)] font-semibold leading-snug tracking-[-0.025em] text-white">
+                      {item.title}
+                    </h3>
+                    <p className="font-sans text-[15px] font-medium leading-7 text-white/62 sm:text-[16px]">
+                      {item.text}
+                    </p>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </Container>
           </Section>
         ) : null}
@@ -189,148 +177,185 @@ export default function ServiceLandingPage({ pageId: pageIdProp }: Props) {
         {/* Process */}
         <Section className="py-12 sm:py-16">
           <Container>
-            <h2 className="text-[clamp(1.45rem,3vw,2.1rem)] font-[700] tracking-[-0.03em]">
-              {copy.process.title}
-            </h2>
-            <ol className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              {copy.process.steps.map((step, i) => (
-                <li
-                  key={step}
-                  className="relative rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.05] to-transparent p-4 sm:p-5"
-                >
-                  <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#ff8a4c]">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <p className="mt-3 text-[14.5px] font-medium leading-snug tracking-[-0.015em] text-white/88">
-                    {step}
-                  </p>
-                </li>
-              ))}
-            </ol>
-          </Container>
-        </Section>
-
-        {/* Cases */}
-        <Section className="py-12 sm:py-16">
-          <Container>
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <h2 className="text-[clamp(1.45rem,3vw,2.1rem)] font-[700] tracking-[-0.03em]">
-                {copy.cases.title}
+            <div className="flex flex-wrap items-end justify-between gap-6">
+              <h2 className="font-hero text-[clamp(1.45rem,3vw,2.1rem)]">
+                {copy.process.title}
               </h2>
-              <Link
-                to={pathForLang("/projects", lang)}
-                className="text-[13px] font-medium text-white/55 underline-offset-4 transition hover:text-white hover:underline"
-              >
-                {isRu ? "Все проекты" : "All projects"}
-              </Link>
+              <img
+                src="/images/tivonix-logo-white.webp"
+                alt="TIVONIX"
+                width={148}
+                height={32}
+                className="hidden h-8 w-auto opacity-90 sm:block"
+                decoding="async"
+                loading="lazy"
+              />
             </div>
-            <ul className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {copy.cases.items.map((item) => (
-                <li key={item.name}>
-                  <Link
-                    to={caseHref(item.href, lang)}
-                    className="group block overflow-hidden rounded-2xl border border-white/[0.08] bg-[#101012] transition hover:border-white/[0.18]"
+
+            <ol className="mt-10 flex gap-0 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mt-12">
+              {copy.process.steps.map((step, i) => {
+                const isLast = i === copy.process.steps.length - 1;
+                return (
+                  <li
+                    key={step.title}
+                    className="relative flex min-w-[11.5rem] flex-1 flex-col sm:min-w-0"
                   >
-                    {item.cover ? (
-                      <div className="relative aspect-[16/10] overflow-hidden bg-[#161618]">
-                        <SoftImg
-                          src={item.cover}
-                          alt=""
-                          className="absolute inset-0 h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.03]"
-                          loading="lazy"
-                          decoding="async"
+                    <div className="relative mb-5 flex h-4 items-center" aria-hidden>
+                      <span className="relative z-[1] h-3.5 w-3.5 shrink-0 rounded-full bg-[#fc5000] shadow-[0_0_0_4px_rgba(252,80,0,0.18)]" />
+                      {!isLast ? (
+                        <span
+                          className="absolute left-[1.05rem] right-0 top-1/2 h-px -translate-y-1/2"
+                          style={{
+                            backgroundImage:
+                              "repeating-linear-gradient(90deg, rgba(255,255,255,0.42) 0 5px, transparent 5px 10px)",
+                          }}
                         />
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                      </div>
-                    ) : null}
-                    <div className="p-4 sm:p-5">
-                      <p className="text-[16px] font-semibold tracking-[-0.02em]">{item.name}</p>
-                      {item.blurb ? (
-                        <p className="mt-1.5 text-[13.5px] leading-snug text-white/55">{item.blurb}</p>
                       ) : null}
                     </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+
+                    <h3 className="pr-4 font-sans text-[clamp(0.98rem,1.6vw,1.2rem)] font-semibold leading-snug tracking-[-0.025em] text-white">
+                      {step.title}
+                    </h3>
+                    <p className="mt-2 max-w-[16rem] pr-4 font-sans text-[13.5px] font-medium leading-6 text-white/58 sm:text-[14.5px] sm:leading-7">
+                      {step.text}
+                    </p>
+                  </li>
+                );
+              })}
+            </ol>
+
+            <div className="mt-6 sm:hidden" aria-hidden>
+              <div className="relative mx-auto h-1 w-full max-w-[12rem] overflow-hidden rounded-full bg-white/12">
+                <span className="process-scroll-hint__thumb absolute inset-y-0 left-0 w-[38%] rounded-full bg-white/50" />
+              </div>
+              <p className="mt-2.5 text-center text-[11px] uppercase tracking-[0.14em] text-white/40">
+                {isRu ? "Листайте вбок" : "Swipe sideways"}
+              </p>
+            </div>
           </Container>
         </Section>
 
         {/* Pricing */}
         <Section className="py-12 sm:py-16">
           <Container>
-            <div className="relative overflow-hidden rounded-[1.5rem] border border-white/[0.1] bg-white/[0.035] px-6 py-8 sm:px-10 sm:py-10">
-              <div
-                className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-[#fc5000]/18 blur-3xl"
-                aria-hidden
-              />
-              <h2 className="relative text-[clamp(1.45rem,3vw,2.1rem)] font-[700] tracking-[-0.03em]">
-                {copy.pricing.title}
-              </h2>
-              <p className="relative mt-4 max-w-3xl text-[15px] leading-7 text-white/70 sm:text-[16px]">
-                {copy.pricing.body}
-              </p>
-              <div className="relative mt-7">
-                <LeadCTAButton source={leadSource} variant="primary" size="lg">
-                  {copy.cta}
-                </LeadCTAButton>
+            {copy.pricing.plan ? (
+              <div className="service-price-aurora-frame rounded-[calc(1.5rem+4px)] p-[3px]">
+                <div className="rounded-[calc(1.5rem+1px)] bg-[#070607] p-px">
+                  <div className="relative overflow-hidden rounded-[1.5rem] px-6 py-10 sm:px-10 sm:py-12">
+                    <WebsitePricingBg />
+                    <div className="relative z-[1] flex flex-col gap-10 sm:min-h-[16rem] sm:justify-between">
+                      <div className="max-w-[32rem]">
+                        <p className="font-hero text-[clamp(1.55rem,3.2vw,2.25rem)] text-white">
+                          {copy.pricing.title}
+                        </p>
+                        <div className="mt-5 flex flex-wrap items-end gap-x-3 gap-y-1">
+                          {copy.pricing.plan.priceNote ? (
+                            <span className="pb-2.5 font-sans text-[15px] font-medium text-black">
+                              {copy.pricing.plan.priceNote}
+                            </span>
+                          ) : null}
+                          <span className="font-hero text-[clamp(3.6rem,10vw,5.5rem)] leading-none tracking-[-0.045em] text-black">
+                            {copy.pricing.plan.price}
+                          </span>
+                        </div>
+                        <h2 className="mt-4 font-sans text-[clamp(1.35rem,2.4vw,1.75rem)] font-semibold tracking-[-0.025em] text-black">
+                          {copy.pricing.plan.name}
+                        </h2>
+                        <p className="mt-1 font-sans text-[15px] font-medium text-black/60 sm:text-[16px]">
+                          {copy.pricing.plan.tagline}
+                        </p>
+                        {copy.pricing.plan.includes.length ? (
+                          <ul className="mt-5 space-y-2">
+                            {copy.pricing.plan.includes.map((item) => (
+                              <li
+                                key={item}
+                                className="flex items-start gap-2.5 font-sans text-[14px] font-medium leading-snug text-black sm:text-[15px]"
+                              >
+                                <span
+                                  className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#fc5000]"
+                                  aria-hidden
+                                />
+                                <span>{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-end gap-x-5 gap-y-3">
+                        <Link
+                          to={pathForLang("/plans", lang)}
+                          className="font-sans text-[14px] font-medium text-black/70 underline decoration-black/25 underline-offset-[3px] transition hover:text-black hover:decoration-black/55"
+                        >
+                          {isRu ? "Что входит в тариф" : "What’s included"}
+                        </Link>
+                        <LeadCTAButton
+                          source={leadSource}
+                          variant="primary"
+                          size="lg"
+                          pillIcon="arrow"
+                          className="min-w-[12.5rem] shadow-[0_12px_40px_rgba(255,107,44,0.28)]"
+                        >
+                          {copy.cta}
+                        </LeadCTAButton>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="relative overflow-hidden rounded-[1.5rem] bg-white/[0.03] px-6 py-8 sm:min-h-[14rem] sm:px-10 sm:py-10">
+                <div className="relative z-[1] flex min-h-[inherit] flex-col gap-6">
+                  <div className="max-w-3xl">
+                    <h2 className="font-hero text-[clamp(1.45rem,3vw,2.1rem)]">
+                      {copy.pricing.title}
+                    </h2>
+                    <p className="mt-4 font-sans text-[15px] font-medium leading-7 text-white/70 sm:text-[16px]">
+                      {copy.pricing.body}
+                    </p>
+                  </div>
+                  <div className="mt-auto flex justify-end">
+                    <LeadCTAButton
+                      source={leadSource}
+                      variant="primary"
+                      size="lg"
+                      pillIcon="arrow"
+                      className="min-w-[12.5rem] shadow-[0_12px_40px_rgba(255,107,44,0.28)]"
+                    >
+                      {copy.cta}
+                    </LeadCTAButton>
+                  </div>
+                </div>
+              </div>
+            )}
           </Container>
         </Section>
 
         {/* FAQ */}
         <Section className="py-12 sm:py-16">
           <Container>
-            <h2 className="text-[clamp(1.45rem,3vw,2.1rem)] font-[700] tracking-[-0.03em]">FAQ</h2>
-            <div className="mt-6 max-w-3xl divide-y divide-white/[0.08] border-y border-white/[0.08]">
-              {copy.faq.map((item) => (
-                <details key={item.q} className="group py-4">
-                  <summary className="cursor-pointer list-none text-[15px] font-semibold tracking-[-0.015em] text-white/92 marker:content-none [&::-webkit-details-marker]:hidden">
-                    <span className="flex items-start justify-between gap-4">
-                      {item.q}
-                      <span className="mt-0.5 text-white/35 transition group-open:rotate-45">+</span>
-                    </span>
-                  </summary>
-                  <p className="mt-3 pr-8 text-[14px] leading-7 text-white/60">{item.a}</p>
-                </details>
-              ))}
-            </div>
-          </Container>
-        </Section>
-
-        {/* Final CTA */}
-        <section className="pb-16 pt-4 sm:pb-20">
-          <Container>
-            <div className="relative overflow-hidden rounded-[1.6rem] bg-[#111113] px-6 py-10 text-center ring-1 ring-white/[0.1] sm:px-12 sm:py-14">
-              <div
-                className="pointer-events-none absolute inset-0"
-                aria-hidden
-                style={{
-                  background:
-                    "radial-gradient(70% 80% at 50% 0%, rgba(252,80,0,0.22), transparent 60%)",
-                }}
-              />
-              <h2 className="relative mx-auto max-w-[20ch] text-[clamp(1.5rem,3.4vw,2.35rem)] font-[700] leading-[1.12] tracking-[-0.03em]">
-                {copy.finalTitle ?? copy.h1}
-              </h2>
-              <p className="relative mx-auto mt-4 max-w-[34rem] text-[15px] leading-7 text-white/62">
-                {copy.finalBody ?? copy.lead}
-              </p>
-              <div className="relative mt-8 flex flex-wrap items-center justify-center gap-3">
-                <LeadCTAButton source={leadSource} variant="primary" size="lg">
-                  {copy.cta}
-                </LeadCTAButton>
-                <Link
-                  to={pathForLang("/contacts", lang)}
-                  className="inline-flex h-12 items-center justify-center rounded-full px-6 text-[14px] font-medium text-white/75 underline-offset-4 transition hover:text-white hover:underline"
-                >
-                  {isRu ? "Контакты" : "Contacts"}
-                </Link>
+            <div className="mx-auto max-w-3xl text-center">
+              <h2 className="font-hero text-[clamp(1.45rem,3vw,2.1rem)]">FAQ</h2>
+              <div className="mt-8 divide-y divide-white/[0.08] border-y border-white/[0.08] text-left">
+                {copy.faq.map((item) => (
+                  <details key={item.q} className="group py-4">
+                    <summary className="cursor-pointer list-none font-sans text-[15px] font-semibold tracking-[-0.015em] text-white/92 marker:content-none [&::-webkit-details-marker]:hidden">
+                      <span className="flex items-start justify-between gap-4 text-left">
+                        {item.q}
+                        <span className="mt-0.5 shrink-0 text-white/35 transition group-open:rotate-45">
+                          +
+                        </span>
+                      </span>
+                    </summary>
+                    <p className="mt-3 pr-8 text-left font-sans text-[14px] font-medium leading-7 text-white/60">
+                      {item.a}
+                    </p>
+                  </details>
+                ))}
               </div>
             </div>
           </Container>
-        </section>
+        </Section>
       </main>
       <Footer />
     </div>
