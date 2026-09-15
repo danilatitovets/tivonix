@@ -19,13 +19,10 @@ import {
 import { trackPartnersEvent } from "../lib/ads";
 import { LANDING_SHELL_CLASS } from "../lib/landingLayout";
 import {
-<<<<<<< HEAD
-  PARTNERS_FINAL_BG_POSTER,
-  PARTNERS_FINAL_BG_VIDEO,
-=======
   PARTNERS_EASY_BG_POSTER,
   PARTNERS_EASY_BG_VIDEO,
->>>>>>> 20e7005 (feat(partners): use looping video behind tall all-in-one bento card)
+  PARTNERS_FINAL_BG_POSTER,
+  PARTNERS_FINAL_BG_VIDEO,
   PARTNERS_VIDEO_AVAILABLE,
   PARTNERS_VIDEO_POSTER,
   PARTNERS_VIDEO_SRC,
