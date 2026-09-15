@@ -42,3 +42,7 @@ export const PARTNERS_VIDEO_POSTER = "/images/partners/tivonix-partners-poster.p
  * Missing today — do not render a broken <video>.
  */
 export const PARTNERS_VIDEO_AVAILABLE = false;
+
+/** Final CTA block — full-bleed loop behind the copy. */
+export const PARTNERS_FINAL_BG_VIDEO = "/images/partners/partners-final-bg.mp4";
+export const PARTNERS_FINAL_BG_POSTER = "/images/partners/partners-final-bg-poster.jpg";

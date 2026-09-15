@@ -19,6 +19,8 @@ import {
 import { trackPartnersEvent } from "../lib/ads";
 import { LANDING_SHELL_CLASS } from "../lib/landingLayout";
 import {
+  PARTNERS_FINAL_BG_POSTER,
+  PARTNERS_FINAL_BG_VIDEO,
   PARTNERS_VIDEO_AVAILABLE,
   PARTNERS_VIDEO_POSTER,
   PARTNERS_VIDEO_SRC,
@@ -27,6 +29,7 @@ import {
 } from "../lib/partnerPanel";
 import { pathForLang } from "../lib/localePaths";
 import { PARTNERS_SHOWCASE_CASES } from "../lib/partnersShowcaseCases";
+import BgLoopVideo from "../components/ui/BgLoopVideo";
 
 /** Gmail compose — как в Footer/Contacts (mailto перехватывается ads-трекингом) */
 const PARTNERS_GMAIL_URL =
@@ -1342,7 +1345,11 @@ export default function PartnersPage() {
               transform: scale(1.38);
             }
           }
-          .partners-final__zoom img {
+          .partners-final__zoom img,
+          .partners-final__zoom video,
+          .partners-final__zoom .hero-bg-video-wrap,
+          .partners-final__zoom .hero-bg-video,
+          .partners-final__zoom .hero-bg-video__poster {
             display: block;
             width: 100%;
             height: 100%;
@@ -1359,19 +1366,22 @@ export default function PartnersPage() {
             box-sizing: border-box;
             margin: 0 auto;
             padding: 1.15rem 1rem;
-            border-radius: 16px;
-            background: rgba(8, 10, 12, 0.52);
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
             color: #fff;
+            text-shadow:
+              0 1px 2px rgba(0, 0, 0, 0.55),
+              0 10px 28px rgba(0, 0, 0, 0.4);
             overflow-wrap: anywhere;
           }
           @media (min-width: 640px) {
             .partners-final__copy {
               max-width: 34rem;
               padding: 1.75rem 1.5rem;
-              border-radius: 18px;
+              border-radius: 0;
             }
           }
           .partners-final__copy h2 {
@@ -1385,6 +1395,10 @@ export default function PartnersPage() {
           }
           .partners-final__copy .partners-final__secondary {
             color: #fff;
+          }
+          .partners-final__copy .partners-final__actions a,
+          .partners-final__copy > p:first-child {
+            text-shadow: none;
           }
           .partners-final__actions {
             display: flex;
@@ -4709,14 +4723,11 @@ export default function PartnersPage() {
             <Reveal className="min-w-0">
               <div className="partners-final__media">
                 <div ref={finalZoomRef} className="partners-final__zoom" aria-hidden>
-                  <img
-                    src="/images/partners/foo.webp"
-                    alt=""
-                    width={1680}
-                    height={606}
-                    decoding="async"
-                    loading="lazy"
-                    fetchPriority="low"
+                  <BgLoopVideo
+                    src={PARTNERS_FINAL_BG_VIDEO}
+                    poster={PARTNERS_FINAL_BG_POSTER}
+                    variant="form"
+                    className="absolute inset-0 h-full w-full"
                   />
                 </div>
                 <div className="partners-final__copy">
