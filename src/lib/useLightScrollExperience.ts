@@ -1,28 +1,33 @@
 /**
- * Soft scroll-scrub in messenger WebViews: keep animations, shorten sticky runway.
- * Full sticky scrub stays for normal Safari / Chrome (incl. iPhone Safari).
+ * In messenger WebViews sticky multi-vh scrub paints a black pinned hero
+ * and blocks the rest of the page. Use a safe static layout there.
+ * Real Safari / Chrome keep full scroll animations.
  */
 
 import { useEffect, useState } from "react";
 import { isInAppBrowser, watchInAppBrowser } from "./telegramWebView";
 
-export function useSoftScrollScrub(): boolean {
-  const [soft, setSoft] = useState(() =>
+export function useInAppSafeLayout(): boolean {
+  const [safe, setSafe] = useState(() =>
     typeof document !== "undefined" ? isInAppBrowser() : false
   );
 
   useEffect(() => {
     if (isInAppBrowser()) {
-      setSoft(true);
+      setSafe(true);
       return;
     }
-    return watchInAppBrowser(() => setSoft(true));
+    return watchInAppBrowser(() => setSafe(true));
   }, []);
 
-  return soft;
+  return safe;
 }
 
-/** @deprecated */
+/** @deprecated aliases */
+export function useSoftScrollScrub(): boolean {
+  return useInAppSafeLayout();
+}
+
 export function useLightScrollExperience(): boolean {
-  return useSoftScrollScrub();
+  return useInAppSafeLayout();
 }

@@ -4,7 +4,7 @@ import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
 import { HERO_SCROLL_HEADLINE_CLASS, LANDING_SHELL_CLASS } from "../../lib/landingLayout";
-import { useSoftScrollScrub } from "../../lib/useLightScrollExperience";
+import { useInAppSafeLayout } from "../../lib/useLightScrollExperience";
 import { getStableViewportHeight } from "../../lib/stableViewport";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
 import { pathForLang } from "../../lib/localePaths";
@@ -13,7 +13,6 @@ import BgLoopVideo from "../ui/BgLoopVideo";
 
 /** Use svh — dvh resizes mid-scroll in TG / mobile chrome and jumps sticky tracks */
 const SCROLL_TRACK_VH = 240;
-const SCROLL_TRACK_SOFT_VH = 165;
 
 type HeroScrollStage = {
   headline: string;
@@ -238,12 +237,11 @@ function HeroCard({
 
 export default function Hero() {
   const trackRef = useRef<HTMLDivElement>(null);
-  const softScrub = useSoftScrollScrub();
-  const progress = useHeroScrollProgress(trackRef, true);
+  const inAppSafe = useInAppSafeLayout();
+  const progress = useHeroScrollProgress(trackRef, !inAppSafe);
   const { lang } = useLang();
   const copy = landingCopy(lang);
   const stages = copy.hero.scrollStages as ReadonlyArray<HeroScrollStage>;
-  const trackVh = softScrub ? SCROLL_TRACK_SOFT_VH : SCROLL_TRACK_VH;
 
   const cardProps = {
     stages,
@@ -252,11 +250,34 @@ export default function Hero() {
     micro: copy.hero.micro,
   };
 
+  // Telegram / VK / Viber WebView: no sticky runway — otherwise black void + no scroll
+  if (inAppSafe) {
+    return (
+      <Section
+        className={cx(
+          "relative z-[1] isolate overflow-hidden bg-transparent !py-0",
+          "min-h-[100svh] pb-0"
+        )}
+      >
+        <div
+          className={cx(
+            "mx-auto flex min-h-[calc(100svh-1.25rem)] w-full max-w-full min-w-0 flex-col",
+            "px-3 pt-2.5 pb-2.5",
+            "sm:max-w-[min(98vw,1840px)] sm:px-3",
+            "lg:px-4 lg:pt-3 lg:pb-3"
+          )}
+        >
+          <HeroCard progress={1} {...cardProps} />
+        </div>
+      </Section>
+    );
+  }
+
   return (
     <div
       ref={trackRef}
       className="hero-scroll-track relative"
-      style={{ height: `${trackVh}svh` } as CSSProperties}
+      style={{ height: `${SCROLL_TRACK_VH}svh` } as CSSProperties}
     >
       <Section
         className={cx(

@@ -226,8 +226,8 @@
   }
 
   /*
-   * Messenger in-app: keep sticky scrub (animations), but prefer stable overscroll.
-   * Do not force height:auto — that killed hero/AI scroll animations.
+   * Messenger WebView: sticky multi-vh hero/AI pins a black sheet over the page.
+   * Kill sticky tracks early; React also swaps to a safe static layout.
    */
   html.tg-webview,
   html.tg-webview body,
@@ -245,6 +245,26 @@
   html.tg-webview,
   html.inapp-webview {
     --tivonix-tg-stable-vh: 1svh;
+  }
+  html.tg-webview .hero-scroll-track,
+  html.inapp-webview .hero-scroll-track {
+    height: auto !important;
+  }
+  html.tg-webview .hero-scroll-sticky,
+  html.inapp-webview .hero-scroll-sticky {
+    position: relative !important;
+  }
+  html.tg-webview .ai-premium-pin,
+  html.tg-webview .ai-premium-anim-pin,
+  html.inapp-webview .ai-premium-pin,
+  html.inapp-webview .ai-premium-anim-pin {
+    height: auto !important;
+  }
+  html.tg-webview .ai-premium-section,
+  html.inapp-webview .ai-premium-section {
+    position: relative !important;
+    height: auto !important;
+    min-height: 100svh;
   }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
