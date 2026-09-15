@@ -279,7 +279,7 @@ export default function Hero() {
       >
         <div
           ref={pinRef}
-          className="hero-scroll-sticky relative z-[1] isolate overflow-hidden bg-transparent"
+          className="hero-scroll-pin relative z-[1] isolate overflow-hidden bg-transparent"
         >
           <Section className="!py-0 min-h-[100svh] pb-0">{inner}</Section>
         </div>

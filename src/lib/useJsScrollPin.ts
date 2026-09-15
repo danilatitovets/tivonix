@@ -13,9 +13,22 @@ function viewportHeight() {
   );
 }
 
+function setPin(el: HTMLElement, props: Record<string, string>) {
+  for (const [key, value] of Object.entries(props)) {
+    el.style.setProperty(key, value, "important");
+  }
+}
+
+function clearPin(el: HTMLElement) {
+  for (const key of ["position", "top", "bottom", "left", "right", "width", "height", "z-index"]) {
+    el.style.removeProperty(key);
+  }
+}
+
 /**
  * CSS `position: sticky` breaks in Telegram iOS (and often other WKWebView sheets).
  * Pin with `position: fixed` + scroll progress instead.
+ * Uses !important so tg-webview CSS cannot force relative over the pin.
  */
 export function useJsScrollPin(
   trackRef: RefObject<HTMLElement | null>,
@@ -38,32 +51,10 @@ export function useJsScrollPin(
     let pin: HTMLElement | null = null;
     let tries = 0;
 
-    const clearPinStyles = () => {
-      if (!pin) return;
-      pin.style.position = "";
-      pin.style.top = "";
-      pin.style.bottom = "";
-      pin.style.left = "";
-      pin.style.right = "";
-      pin.style.width = "";
-      pin.style.height = "";
-      pin.style.zIndex = "";
-    };
-
     const measure = () => {
       if (!pin) return;
-      const prev = pin.style.position;
-      pin.style.position = "relative";
-      pin.style.top = "";
-      pin.style.bottom = "";
-      pin.style.left = "";
-      pin.style.right = "";
-      pin.style.width = "";
-      pin.style.height = "";
+      clearPin(pin);
       pinNaturalH = pin.offsetHeight || viewportHeight();
-      if (prev === "fixed" || prev === "absolute") {
-        // update() re-applies
-      }
     };
 
     const update = () => {
@@ -80,29 +71,40 @@ export function useJsScrollPin(
 
       if (rect.top <= 1 && rect.bottom > vh + 1) {
         p = clamp01(-rect.top / scrollable);
-        pin.style.position = "fixed";
-        pin.style.top = "0px";
-        pin.style.bottom = "auto";
-        pin.style.left = "0px";
-        pin.style.right = "0px";
-        pin.style.width = "100%";
-        pin.style.height = `${vh}px`;
-        pin.style.zIndex = "2";
+        setPin(pin, {
+          position: "fixed",
+          top: "0px",
+          bottom: "auto",
+          left: "0px",
+          right: "0px",
+          width: "100%",
+          height: `${vh}px`,
+          "z-index": "2",
+        });
       } else if (rect.top > 1) {
         p = 0;
-        clearPinStyles();
-        pin.style.position = "relative";
-        pin.style.height = `${Math.min(h, vh)}px`;
+        setPin(pin, {
+          position: "relative",
+          top: "auto",
+          bottom: "auto",
+          left: "auto",
+          right: "auto",
+          width: "auto",
+          height: `${Math.min(h, vh)}px`,
+          "z-index": "auto",
+        });
       } else {
         p = 1;
-        pin.style.position = "absolute";
-        pin.style.top = "auto";
-        pin.style.bottom = "0px";
-        pin.style.left = "0px";
-        pin.style.right = "0px";
-        pin.style.width = "100%";
-        pin.style.height = `${Math.min(h, vh)}px`;
-        pin.style.zIndex = "2";
+        setPin(pin, {
+          position: "absolute",
+          top: "auto",
+          bottom: "0px",
+          left: "0px",
+          right: "0px",
+          width: "100%",
+          height: `${Math.min(h, vh)}px`,
+          "z-index": "2",
+        });
       }
 
       if (Math.abs(p - last) >= 0.002) {
@@ -153,7 +155,7 @@ export function useJsScrollPin(
       window.visualViewport?.removeEventListener("resize", onResize);
       window.visualViewport?.removeEventListener("scroll", onScroll);
       if (raf) cancelAnimationFrame(raf);
-      clearPinStyles();
+      if (pin) clearPin(pin);
     };
   }, [enabled, trackRef, pinRef]);
 
