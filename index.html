@@ -8,19 +8,24 @@
         try {
           var ua = navigator.userAgent || "";
           var w = window;
-          var hit =
+          var ios = /iPhone|iPad|iPod/i.test(ua);
+          var inApp =
             w.TelegramWebviewProxy != null ||
             w.TelegramWebviewProxyProto != null ||
             w.TelegramWebview != null ||
+            w.TelegramGameProxy != null ||
             (w.Telegram && w.Telegram.WebApp) ||
             /Telegram|VKAndroidApp|vk_app|VKontakte|VKApp|Viber|Instagram|FBAN|FBAV|FB_IAB|FBIOS|WhatsApp|Line\/|Snapchat|BytedanceWebview|TikTok|musical_ly|MicroMessenger/i.test(
               ua
             ) ||
             (/Android/i.test(ua) && /; wv\)/i.test(ua)) ||
-            (/iPhone|iPad|iPod/i.test(ua) && /AppleWebKit/i.test(ua) && !/Safari\//i.test(ua));
-          if (hit) {
+            (ios && /AppleWebKit/i.test(ua) && !/Safari\//i.test(ua));
+          // iOS always uses JS scrub — Telegram sheet shares Safari UA and breaks sticky
+          if (inApp || ios) {
             document.documentElement.classList.add("tg-webview", "inapp-webview");
-            w.__TIVONIX_INAPP__ = true;
+            document.documentElement.setAttribute("data-scrub", "js");
+            if (inApp) w.__TIVONIX_INAPP__ = true;
+            w.__TIVONIX_JS_SCRUB__ = true;
           }
           var n = 0;
           var t = setInterval(function () {
@@ -28,15 +33,18 @@
             if (
               w.TelegramWebviewProxy != null ||
               w.TelegramWebviewProxyProto != null ||
-              w.TelegramWebview != null
+              w.TelegramWebview != null ||
+              w.TelegramGameProxy != null
             ) {
               document.documentElement.classList.add("tg-webview", "inapp-webview");
+              document.documentElement.setAttribute("data-scrub", "js");
               w.__TIVONIX_INAPP__ = true;
+              w.__TIVONIX_JS_SCRUB__ = true;
               clearInterval(t);
-            } else if (n > 40) {
+            } else if (n > 50) {
               clearInterval(t);
             }
-          }, 100);
+          }, 80);
         } catch (e) {
           /* ignore */
         }

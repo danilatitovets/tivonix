@@ -1,22 +1,24 @@
 /**
- * True inside messenger in-app browsers (Telegram, VK, …).
- * There we use JS scroll-pin scrub instead of CSS sticky.
+ * True when we must use JS scroll-pin (Telegram / iOS) instead of CSS sticky.
  */
 
 import { useEffect, useState } from "react";
-import { isInAppBrowser, watchInAppBrowser } from "./telegramWebView";
+import { needsJsScrollPin, watchInAppBrowser, markInAppBrowser } from "./telegramWebView";
 
 export function useInAppJsScrub(): boolean {
   const [active, setActive] = useState(() =>
-    typeof document !== "undefined" ? isInAppBrowser() : false
+    typeof document !== "undefined" ? needsJsScrollPin() : false
   );
 
   useEffect(() => {
-    if (isInAppBrowser()) {
+    markInAppBrowser();
+    if (needsJsScrollPin()) {
       setActive(true);
       return;
     }
-    return watchInAppBrowser(() => setActive(true));
+    return watchInAppBrowser(() => {
+      if (needsJsScrollPin()) setActive(true);
+    });
   }, []);
 
   return active;
