@@ -2,10 +2,43 @@ import { useEffect, useRef, useState } from "react";
 import BgLoopVideo from "../ui/BgLoopVideo";
 import Container from "../ui/Container";
 import { useKeepVideoPlaying } from "../../hooks/useKeepVideoPlaying";
+import { pickLoopSrc } from "../../lib/heroMedia";
 import { WEBSITE_EXAMPLES } from "../../data/websiteExamples";
 
 function cx(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
+}
+
+const PAGE_BG_DESKTOP = "/images/services/websites/page-bg.mp4";
+const PAGE_BG_MOBILE = "/images/services/websites/page-bg-mobile.mp4";
+const PAGE_BG_POSTER = "/images/services/websites/page-bg-poster.webp";
+
+/** Full-bleed muted loop behind the websites service hero. */
+export function WebsitePageBg() {
+  const [src, setSrc] = useState(PAGE_BG_DESKTOP);
+
+  useEffect(() => {
+    setSrc(pickLoopSrc(PAGE_BG_DESKTOP, PAGE_BG_MOBILE));
+  }, []);
+
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      <BgLoopVideo
+        variant="hero"
+        src={src}
+        poster={PAGE_BG_POSTER}
+        className="absolute inset-0"
+      />
+      {/* Keep copy readable without killing the footage */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(90deg, rgba(7,6,7,0.88) 0%, rgba(7,6,7,0.72) 42%, rgba(7,6,7,0.48) 68%, rgba(7,6,7,0.58) 100%), linear-gradient(180deg, rgba(7,6,7,0.55) 0%, rgba(7,6,7,0.28) 40%, rgba(7,6,7,0.82) 100%)",
+        }}
+      />
+    </div>
+  );
 }
 
 /** Rounded frame with the same loop as the main landing hero. */
@@ -13,10 +46,10 @@ export function WebsiteHeroVideoFrame() {
   return (
     <div className="relative min-w-0">
       <div
-        className="absolute -inset-6 rounded-[2rem] bg-[radial-gradient(circle_at_50%_40%,rgba(252,80,0,0.18),transparent_65%)] blur-2xl"
+        className="absolute -inset-6 rounded-[2rem] bg-[radial-gradient(circle_at_50%_40%,rgba(252,80,0,0.14),transparent_65%)] blur-2xl"
         aria-hidden
       />
-      <figure className="relative overflow-hidden rounded-[1.35rem] border border-white/[0.14] bg-[#0c0c0e] shadow-[0_30px_80px_rgba(0,0,0,0.55)] ring-1 ring-white/[0.06]">
+      <figure className="relative overflow-hidden rounded-[1.35rem] border border-white/[0.16] bg-[#0c0c0e]/70 shadow-[0_30px_80px_rgba(0,0,0,0.55)] ring-1 ring-white/[0.08] backdrop-blur-[2px]">
         <div className="relative aspect-[16/11] w-full">
           <BgLoopVideo variant="hero" className="absolute inset-0" />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/15" />

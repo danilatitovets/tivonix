@@ -7,9 +7,11 @@ import SoftImg from "../components/ui/SoftImg";
 import {
   WebsiteExamplesSection,
   WebsiteHeroVideoFrame,
+  WebsitePageBg,
 } from "../components/services/WebsiteServiceVisuals";
 import { SEO } from "../components/SEO";
 import { LeadCTAButton } from "../components/leads/LeadCTAButton";
+import { ctaClass } from "../components/leads/ctaStyles";
 import { useLang } from "../i18n/LangProvider";
 import {
   servicePageCopy,
@@ -63,38 +65,60 @@ export default function ServiceLandingPage({ pageId: pageIdProp }: Props) {
       <main>
         {/* Hero */}
         <section className="relative overflow-hidden pt-[calc(var(--tivonix-header-spacer)+2rem)] pb-12 sm:pt-[calc(var(--tivonix-header-spacer)+2.75rem)] sm:pb-16">
-          <div
-            className="pointer-events-none absolute inset-0"
-            aria-hidden
-            style={{
-              background:
-                "radial-gradient(90% 70% at 78% 12%, rgba(252,80,0,0.22) 0%, rgba(252,80,0,0.06) 38%, transparent 68%), linear-gradient(180deg, #070607 0%, #0b0b0c 100%)",
-            }}
-          />
+          {isWebsites ? (
+            <WebsitePageBg />
+          ) : (
+            <div
+              className="pointer-events-none absolute inset-0"
+              aria-hidden
+              style={{
+                background:
+                  "radial-gradient(90% 70% at 78% 12%, rgba(252,80,0,0.22) 0%, rgba(252,80,0,0.06) 38%, transparent 68%), linear-gradient(180deg, #070607 0%, #0b0b0c 100%)",
+              }}
+            />
+          )}
           <Container className="relative z-[1]">
             <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14">
               <div className="min-w-0">
-                <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-white/40">
+                <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-white/45">
                   TIVONIX · {isRu ? "Услуга" : "Service"}
                 </p>
                 <h1 className="mt-3 max-w-[16ch] font-sans text-[clamp(2rem,5.2vw,3.35rem)] font-[750] leading-[1.05] tracking-[-0.035em] text-balance">
                   {copy.h1}
                 </h1>
-                <p className="mt-5 max-w-[36rem] text-[16px] leading-7 text-white/72 sm:text-[17px]">
+                <p className="mt-5 max-w-[36rem] text-[16px] leading-7 text-white/78 sm:text-[17px]">
                   {copy.lead}
                 </p>
-                <p className="mt-3 max-w-[36rem] text-[14.5px] leading-7 text-white/55 sm:text-[15px]">
-                  {copy.offer}
-                </p>
+                {!isWebsites ? (
+                  <p className="mt-3 max-w-[36rem] text-[14.5px] leading-7 text-white/55 sm:text-[15px]">
+                    {copy.offer}
+                  </p>
+                ) : null}
                 <div className="mt-8 flex flex-wrap items-center gap-3">
-                  <LeadCTAButton source={leadSource} variant="primary" size="lg">
+                  <LeadCTAButton
+                    source={leadSource}
+                    variant="primary"
+                    size="lg"
+                    pillIcon="plus"
+                    className="min-w-[12.5rem] shadow-[0_12px_40px_rgba(255,107,44,0.28)]"
+                  >
                     {copy.cta}
                   </LeadCTAButton>
                   <Link
-                    to={pathForLang("/projects", lang)}
-                    className="inline-flex h-12 items-center justify-center rounded-full border border-white/14 bg-white/[0.03] px-6 text-[14px] font-medium text-white/85 transition hover:border-white/28 hover:bg-white/[0.06]"
+                    to={pathForLang(isWebsites ? "/contacts" : "/projects", lang)}
+                    className={
+                      isWebsites
+                        ? ctaClass("secondary", "lg")
+                        : "inline-flex h-12 items-center justify-center rounded-full border border-white/14 bg-white/[0.03] px-6 text-[14px] font-medium text-white/85 transition hover:border-white/28 hover:bg-white/[0.06]"
+                    }
                   >
-                    {isRu ? "Смотреть проекты" : "View projects"}
+                    {isWebsites
+                      ? isRu
+                        ? "Контакты"
+                        : "Contacts"
+                      : isRu
+                        ? "Смотреть проекты"
+                        : "View projects"}
                   </Link>
                 </div>
               </div>
