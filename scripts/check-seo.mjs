@@ -30,7 +30,7 @@ const checks = [
       "Проектируем и запускаем SaaS, финтех, маркетплейсы, внутренние платформы",
       "программные продукты",
       "https://www.tivonix.tech/",
-      'property="og:image" content="https://www.tivonix.tech/images/og-social.jpg"',
+      'property="og:image" content="https://www.tivonix.tech/images/og-social.jpg?v=2"',
     ],
   },
   {
@@ -196,11 +196,11 @@ const checks = [
     file: "dist/avtomatizaciya-biznesa/index.html",
     phrases: [
       "Автоматизация бизнеса — TIVONIX",
-      "Автоматизация процессов, CRM, личные кабинеты, админ-панели и интеграции под реальные задачи бизнеса.",
+      "Связываем сайт, Телеграм, таблицы и мини-CRM в один процесс обработки заявок.",
       'href="https://www.tivonix.tech/avtomatizaciya-biznesa"',
       'property="og:url" content="https://www.tivonix.tech/avtomatizaciya-biznesa"',
-      "Автоматизируем процессы",
-      "вашего бизнеса",
+      "Автоматизация заявок и внутренних процессов",
+      "Убираем ручной перенос",
     ],
   },
 ];
