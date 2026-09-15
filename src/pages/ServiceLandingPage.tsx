@@ -4,6 +4,10 @@ import Footer from "../components/landing/Footer";
 import Container from "../components/ui/Container";
 import Section from "../components/ui/Section";
 import SoftImg from "../components/ui/SoftImg";
+import {
+  WebsiteExamplesSection,
+  WebsiteHeroVideoFrame,
+} from "../components/services/WebsiteServiceVisuals";
 import { SEO } from "../components/SEO";
 import { LeadCTAButton } from "../components/leads/LeadCTAButton";
 import { useLang } from "../i18n/LangProvider";
@@ -21,7 +25,6 @@ const HERO_VISUAL: Partial<Record<ServicePageId, string>> = {
   crm: `/images/${encodeURI("обложки")}/tivonixpanel.webp`,
   telegram: "/images/project-priew/slotty.webp",
   mvp: "/images/project-priew/neo-terminal.webp",
-  websites: "/images/project-priew/logovo.webp",
 };
 
 function caseHref(href: string, lang: string) {
@@ -45,6 +48,7 @@ export default function ServiceLandingPage({ pageId: pageIdProp }: Props) {
   const heroVisual = HERO_VISUAL[pageId];
   const leadSource = `service_${pageId}`;
   const isRu = lang !== "en";
+  const isWebsites = pageId === "websites";
 
   return (
     <div className="min-h-screen bg-[#070607] text-white">
@@ -95,7 +99,9 @@ export default function ServiceLandingPage({ pageId: pageIdProp }: Props) {
                 </div>
               </div>
 
-              {heroVisual ? (
+              {isWebsites ? (
+                <WebsiteHeroVideoFrame />
+              ) : heroVisual ? (
                 <div className="relative min-w-0">
                   <div className="absolute -inset-6 rounded-[2rem] bg-[radial-gradient(circle_at_50%_40%,rgba(252,80,0,0.18),transparent_65%)] blur-2xl" aria-hidden />
                   <figure className="relative overflow-hidden rounded-[1.35rem] ring-1 ring-white/[0.1] shadow-[0_30px_80px_rgba(0,0,0,0.55)]">
@@ -117,6 +123,18 @@ export default function ServiceLandingPage({ pageId: pageIdProp }: Props) {
             </div>
           </Container>
         </section>
+
+        {isWebsites ? (
+          <WebsiteExamplesSection
+            title={isRu ? "Примеры лендингов" : "Landing examples"}
+            lead={
+              isRu
+                ? "Скролл-демо реальных посадочных: структура, ритм блоков и подача оффера — как это выглядит в движении."
+                : "Scroll demos of real landings: structure, block rhythm and offer presentation — how it feels in motion."
+            }
+            demoLabel={isRu ? "Скролл-демо" : "Scroll demo"}
+          />
+        ) : null}
 
         {/* Features */}
         {copy.features?.length ? (
