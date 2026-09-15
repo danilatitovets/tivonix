@@ -25,6 +25,7 @@
     "@react-three/postprocessing": "^3.0.4",
     "cobe": "^2.0.1",
     "grammy": "^1.41.0",
+    "gsap": "^3.15.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^0.562.0",
