@@ -436,16 +436,19 @@ export function GalleryLightbox({
 export function ProjectGalleryStrip({
   images,
   isRu,
+  cropPreview = false,
 }: {
   images: string[];
   isRu: boolean;
+  /** Обрезанный превью; полный кадр — в lightbox по клику */
+  cropPreview?: boolean;
 }) {
   const [active, setActive] = useState<number | null>(null);
 
   if (!images.length) return null;
 
   const label = isRu ? "Скриншоты проекта" : "Project screenshots";
-  const openLabel = isRu ? "Открыть скриншот" : "Open screenshot";
+  const openLabel = isRu ? "Открыть скриншот полностью" : "Open full screenshot";
 
   return (
     <div className="mt-4 sm:mt-5">
@@ -476,13 +479,21 @@ export function ProjectGalleryStrip({
                   <SoftImg
                     src={src}
                     alt=""
-                    className="absolute inset-0 h-full w-full object-cover object-top transition duration-300 group-hover:scale-[1.02]"
+                    className={cx(
+                      "absolute inset-0 h-full w-full transition duration-300 group-hover:scale-[1.02]",
+                      cropPreview ? "object-cover object-top" : "object-contain object-center"
+                    )}
                     draggable={false}
                     loading={i < 2 ? "eager" : "lazy"}
                     decoding="async"
                     fetchPriority={i === 0 ? "high" : undefined}
                   />
-                  <span className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/45 to-transparent" aria-hidden />
+                  {cropPreview ? (
+                    <span
+                      className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/45 to-transparent"
+                      aria-hidden
+                    />
+                  ) : null}
                 </div>
               </button>
             </div>
