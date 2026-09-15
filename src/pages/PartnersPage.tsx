@@ -19,8 +19,13 @@ import {
 import { trackPartnersEvent } from "../lib/ads";
 import { LANDING_SHELL_CLASS } from "../lib/landingLayout";
 import {
+<<<<<<< HEAD
   PARTNERS_FINAL_BG_POSTER,
   PARTNERS_FINAL_BG_VIDEO,
+=======
+  PARTNERS_EASY_BG_POSTER,
+  PARTNERS_EASY_BG_VIDEO,
+>>>>>>> 20e7005 (feat(partners): use looping video behind tall all-in-one bento card)
   PARTNERS_VIDEO_AVAILABLE,
   PARTNERS_VIDEO_POSTER,
   PARTNERS_VIDEO_SRC,
@@ -38,7 +43,6 @@ const PARTNERS_GMAIL_URL =
   `&su=${encodeURIComponent("TIVONIX Partners — обсуждение сотрудничества")}`;
 
 const TIVONIX_MARK = "/images/tivonix-logo-icon.webp";
-const PARTNERS_EASY_BG = `/images/${encodeURI("как рабоает/пп/4.webp")}`;
 const PARTNERS_REF_BG = `/images/partners/${encodeURIComponent("зеленая.png")}`;
 const PARTNERS_WL_BG = `/images/partners/${encodeURIComponent("оранж.png")}`;
 
@@ -2481,17 +2485,30 @@ export default function PartnersPage() {
             position: absolute;
             inset: -12%;
             z-index: 0;
-            background: url("${PARTNERS_EASY_BG}") center / cover no-repeat;
+            background: #121212;
             transform: scale(1);
             transform-origin: center center;
             will-change: transform;
             pointer-events: none;
+            overflow: hidden;
+          }
+          .partners-bento__easy-bg .hero-bg-video-wrap,
+          .partners-bento__easy-bg .hero-bg-video,
+          .partners-bento__easy-bg .hero-bg-video__poster {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
           }
           .partners-bento__easy-bg::after {
             content: "";
             position: absolute;
             inset: 0;
+            z-index: 1;
             background: linear-gradient(180deg, rgba(10, 10, 10, 0.35) 0%, rgba(10, 10, 10, 0.72) 100%);
+            pointer-events: none;
           }
           .partners-bento__easy-body {
             position: relative;
@@ -4251,7 +4268,14 @@ export default function PartnersPage() {
               <div ref={bentoRef} className="partners-bento">
               {/* Tall action menu */}
               <article ref={easyCardRef} className="partners-bento__card partners-bento__easy">
-                <div ref={easyBgRef} className="partners-bento__easy-bg" aria-hidden />
+                <div ref={easyBgRef} className="partners-bento__easy-bg" aria-hidden>
+                  <BgLoopVideo
+                    src={PARTNERS_EASY_BG_VIDEO}
+                    poster={PARTNERS_EASY_BG_POSTER}
+                    variant="form"
+                    className="absolute inset-0 h-full w-full"
+                  />
+                </div>
                 <div className="partners-bento__easy-body">
                   <div className="partners-bento__menu" aria-hidden>
                     {copy.models.menu.map((copyItem, index) => ([

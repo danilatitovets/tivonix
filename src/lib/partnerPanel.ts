@@ -46,3 +46,7 @@ export const PARTNERS_VIDEO_AVAILABLE = false;
 /** Final CTA block — full-bleed loop behind the copy. */
 export const PARTNERS_FINAL_BG_VIDEO = "/images/partners/partners-final-bg.mp4";
 export const PARTNERS_FINAL_BG_POSTER = "/images/partners/partners-final-bg-poster.jpg";
+
+/** Tall “all in one” bento card — looping background. */
+export const PARTNERS_EASY_BG_VIDEO = "/images/partners/partners-easy-bg.mp4";
+export const PARTNERS_EASY_BG_POSTER = "/images/partners/partners-easy-bg-poster.jpg";
