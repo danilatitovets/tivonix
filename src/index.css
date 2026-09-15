@@ -229,13 +229,26 @@
     font-weight: 500;
   }
 
-  /* Service pages — same Caldera fonts, no forced uppercase on long titles */
-  .landing-caldera.service-landing .font-hero,
-  .landing-caldera.service-landing h1.font-hero,
-  .landing-caldera.service-landing h2.font-hero,
-  .landing-caldera.service-landing h3.font-hero {
+  /* Service pages: EN keeps Caldera Bebas + uppercase like the home hero.
+     RU/ZH stay sentence-case (Bebas lacks Cyrillic; long titles look harsh in caps). */
+  html[data-lang="ru"] .landing-caldera.service-landing .font-hero,
+  html[lang="ru"] .landing-caldera.service-landing .font-hero,
+  html[data-lang="ru"] .landing-caldera.service-landing h1.font-hero,
+  html[lang="ru"] .landing-caldera.service-landing h1.font-hero,
+  html[data-lang="ru"] .landing-caldera.service-landing h2.font-hero,
+  html[lang="ru"] .landing-caldera.service-landing h2.font-hero,
+  html[data-lang="ru"] .landing-caldera.service-landing h3.font-hero,
+  html[lang="ru"] .landing-caldera.service-landing h3.font-hero,
+  html[data-lang="zh"] .landing-caldera.service-landing .font-hero,
+  html[lang="zh"] .landing-caldera.service-landing .font-hero,
+  html[data-lang="zh"] .landing-caldera.service-landing h1.font-hero,
+  html[lang="zh"] .landing-caldera.service-landing h1.font-hero,
+  html[data-lang="zh"] .landing-caldera.service-landing h2.font-hero,
+  html[lang="zh"] .landing-caldera.service-landing h2.font-hero,
+  html[data-lang="zh"] .landing-caldera.service-landing h3.font-hero,
+  html[lang="zh"] .landing-caldera.service-landing h3.font-hero {
     text-transform: none;
-    letter-spacing: -0.03em !important;
+    letter-spacing: -0.02em !important;
     font-weight: 600 !important;
   }
 
