@@ -15,10 +15,18 @@ type ServicePageCopy = {
   lead: string;
   offer: string;
   process: { title: string; steps: string[] };
-  cases: { title: string; items: { name: string; href: string }[] };
+  cases: {
+    title: string;
+    items: { name: string; href: string; cover?: string; blurb?: string }[];
+  };
   pricing: { title: string; body: string };
   faq: { q: string; a: string }[];
   cta: string;
+  /** Optional module cards under the hero */
+  features?: { title: string; text: string }[];
+  featuresTitle?: string;
+  finalTitle?: string;
+  finalBody?: string;
 };
 
 const ROUTES: Record<ServicePageId, { ru: string; en: string }> = {
@@ -325,36 +333,184 @@ const COPY: Record<ServicePageId, Record<"ru" | "en", ServicePageCopy>> = {
     ru: {
       seo: {
         title: "Разработка личного кабинета — TIVONIX",
-        description: "Клиентские порталы и кабинеты с ролями, статусами и документами.",
+        description:
+          "Клиентские порталы и личные кабинеты под ключ: роли, статусы, документы, уведомления и админ-панель. Фиксируем объём и стоимость до старта.",
       },
-      h1: "Личные кабинеты и клиентские порталы",
-      lead: "Кабинет клиента, портал партнёра или внутренняя панель — с понятными ролями и доступами.",
-      offer: "Вход и регистрация, профиль, статусы, документы, уведомления, админ-раздел.",
+      h1: "Личный кабинет, который держит процесс",
+      lead: "Кабинет клиента, портал партнёра или внутренняя панель — с ролями, статусами и доступом к нужным данным без хаоса в чатах.",
+      offer: "Вход и регистрация, профиль, статусы, документы, уведомления, платежи и админ-раздел в одном контуре.",
+      featuresTitle: "Что обычно входит",
+      features: [
+        {
+          title: "Роли и доступы",
+          text: "Клиент, менеджер, партнёр, админ — каждый видит только своё.",
+        },
+        {
+          title: "Статусы и история",
+          text: "Заявки, заказы и этапы в одном месте — без «где сейчас?» в переписке.",
+        },
+        {
+          title: "Документы и файлы",
+          text: "Договоры, акты, отчёты и вложения с понятным доступом.",
+        },
+        {
+          title: "Уведомления",
+          text: "Почта, Телеграм или внутри кабинета — по ключевым событиям.",
+        },
+        {
+          title: "Платежи и баланс",
+          text: "Оплаты, счета и история операций, если это часть сценария.",
+        },
+        {
+          title: "Админ-панель",
+          text: "Управление пользователями, контентом и операциями для вашей команды.",
+        },
+      ],
       process: {
-        title: "Этапы",
-        steps: ["Объём по ролям", "Прототип", "Разработка", "Безопасность доступов", "Запуск"],
+        title: "Как проходит работа",
+        steps: [
+          "Письменный разбор ролей и сценариев",
+          "Прототип ключевых экранов",
+          "Разработка кабинета и админки",
+          "Права доступа и безопасность",
+          "Запуск, передача кода и доступов",
+        ],
       },
-      cases: { title: "Кейсы", items: [{ name: "Spliton", href: "/projects/spliton" }] },
-      pricing: { title: "Стоимость", body: "Product от $2000 для основы с одним сценарием." },
-      faq: [{ q: "Сколько ролей?", a: "В Product — базовый набор. Много ролей и сложные права — индивидуальная оценка." }],
+      cases: {
+        title: "Кейсы с кабинетами",
+        items: [
+          {
+            name: "Spliton",
+            href: "/projects/spliton",
+            cover: "/images/project-priew/spliton.webp",
+            blurb: "Кабинеты, KYC, кошелёк и вторичный рынок.",
+          },
+          {
+            name: "Slotty",
+            href: "/projects/slotty",
+            cover: "/images/project-priew/slotty.webp",
+            blurb: "Кабинет мастера Free/Pro и админка платформы.",
+          },
+          {
+            name: "TIVONIX Panel",
+            href: "/projects/tivonixpanel",
+            cover: `/images/${encodeURI("обложки")}/tivonixpanel.webp`,
+            blurb: "Партнёрская панель со статусами и выплатами.",
+          },
+        ],
+      },
+      pricing: {
+        title: "Стоимость",
+        body: "Основа с одним основным сценарием — от тарифа Product ($2000). Много ролей, сложные права, платежи и интеграции оцениваем отдельно после письменного разбора.",
+      },
+      faq: [
+        {
+          q: "Это CRM или отдельный кабинет?",
+          a: "Чаще отдельный клиентский/партнёрский кабинет. При необходимости связываем с вашей CRM или строим лёгкий внутренний контур.",
+        },
+        {
+          q: "Сколько ролей можно заложить?",
+          a: "В базовом Product — понятный набор. Сложные матрицы прав и много ролей — в индивидуальной оценке.",
+        },
+        {
+          q: "Передаёте ли исходники?",
+          a: "Да. Код и доступы передаём вам после согласованного этапа.",
+        },
+      ],
       cta: "Получить письменную оценку",
+      finalTitle: "Нужен кабинет без хаоса в чатах?",
+      finalBody: "Опишите роли и сценарий — пришлём объём, сроки и стоимость письменно.",
     },
     en: {
       seo: {
         title: "Client portal development — TIVONIX",
-        description: "Client portals and dashboards with roles, statuses and documents.",
+        description:
+          "Client portals and account areas with roles, statuses, documents and admin. Scope and price agreed in writing before we start.",
       },
-      h1: "Client portals and account areas",
-      lead: "Client area, partner portal or internal dashboard — with clear roles and access control.",
-      offer: "Auth, profile, statuses, documents, notifications, admin section.",
+      h1: "A client portal that keeps the process clear",
+      lead: "Client area, partner portal or internal dashboard — with roles, statuses and access to the right data without chat chaos.",
+      offer: "Auth, profile, statuses, documents, notifications, payments and an admin section in one system.",
+      featuresTitle: "What we usually include",
+      features: [
+        {
+          title: "Roles & access",
+          text: "Client, manager, partner, admin — each person sees only what they need.",
+        },
+        {
+          title: "Statuses & history",
+          text: "Requests, orders and stages in one place — no more “where is this?” threads.",
+        },
+        {
+          title: "Documents & files",
+          text: "Contracts, reports and attachments with clear permissions.",
+        },
+        {
+          title: "Notifications",
+          text: "Email, Telegram or in-app alerts on key events.",
+        },
+        {
+          title: "Payments & balance",
+          text: "Charges, invoices and transaction history when part of the flow.",
+        },
+        {
+          title: "Admin panel",
+          text: "Users, content and operations for your team.",
+        },
+      ],
       process: {
-        title: "Process",
-        steps: ["Role scope", "Prototype", "Development", "Access security", "Launch"],
+        title: "How we work",
+        steps: [
+          "Written role and workflow review",
+          "Prototype of key screens",
+          "Portal and admin development",
+          "Access control and security",
+          "Launch and handover of code/access",
+        ],
       },
-      cases: { title: "Cases", items: [{ name: "Spliton", href: "/en/projects/spliton" }] },
-      pricing: { title: "Pricing", body: "Product from $2000 for a foundation with one primary workflow." },
-      faq: [{ q: "How many roles?", a: "Product includes a basic set. Many roles and complex permissions — Custom." }],
+      cases: {
+        title: "Portal cases",
+        items: [
+          {
+            name: "Spliton",
+            href: "/en/projects/spliton",
+            cover: "/images/project-priew/spliton.webp",
+            blurb: "Portals, KYC, wallet and secondary market.",
+          },
+          {
+            name: "Slotty",
+            href: "/en/projects/slotty",
+            cover: "/images/project-priew/slotty.webp",
+            blurb: "Provider Free/Pro portal and platform admin.",
+          },
+          {
+            name: "TIVONIX Panel",
+            href: "/en/projects/tivonixpanel",
+            cover: `/images/${encodeURI("обложки")}/tivonixpanel.webp`,
+            blurb: "Partner panel with statuses and payouts.",
+          },
+        ],
+      },
+      pricing: {
+        title: "Pricing",
+        body: "A foundation with one primary workflow starts from Product ($2000). Many roles, complex permissions, payments and integrations are scoped separately after a written review.",
+      },
+      faq: [
+        {
+          q: "Is this a CRM or a separate portal?",
+          a: "Usually a dedicated client/partner area. We can connect an external CRM or build a light internal ops layer when needed.",
+        },
+        {
+          q: "How many roles can we include?",
+          a: "Product includes a clear base set. Complex permission matrices are Custom.",
+        },
+        {
+          q: "Do you hand over source code?",
+          a: "Yes. Code and access are transferred after the agreed stage.",
+        },
+      ],
       cta: "Get a written scope & estimate",
+      finalTitle: "Need a portal without chat chaos?",
+      finalBody: "Tell us the roles and main workflow — we’ll send scope, timeline and price in writing.",
     },
   },
   telegram: {
