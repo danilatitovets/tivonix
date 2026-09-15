@@ -4,7 +4,8 @@ import Section from "../ui/Section";
 import { useLang } from "../../i18n/LangProvider";
 import { landingCopy } from "../../i18n/landingCopy";
 import { HERO_SCROLL_HEADLINE_CLASS, LANDING_SHELL_CLASS } from "../../lib/landingLayout";
-import { useInAppSafeLayout } from "../../lib/useLightScrollExperience";
+import { useInAppJsScrub } from "../../lib/useLightScrollExperience";
+import { useJsScrollPin } from "../../lib/useJsScrollPin";
 import { getStableViewportHeight } from "../../lib/stableViewport";
 import { LeadCTAButton } from "../leads/LeadCTAButton";
 import { pathForLang } from "../../lib/localePaths";
@@ -13,6 +14,7 @@ import BgLoopVideo from "../ui/BgLoopVideo";
 
 /** Use svh — dvh resizes mid-scroll in TG / mobile chrome and jumps sticky tracks */
 const SCROLL_TRACK_VH = 240;
+const SCROLL_TRACK_TG_VH = 200;
 
 type HeroScrollStage = {
   headline: string;
@@ -237,11 +239,15 @@ function HeroCard({
 
 export default function Hero() {
   const trackRef = useRef<HTMLDivElement>(null);
-  const inAppSafe = useInAppSafeLayout();
-  const progress = useHeroScrollProgress(trackRef, !inAppSafe);
+  const pinRef = useRef<HTMLDivElement>(null);
+  const inAppJs = useInAppJsScrub();
+  const cssProgress = useHeroScrollProgress(trackRef, !inAppJs);
+  const jsProgress = useJsScrollPin(trackRef, pinRef, inAppJs);
+  const progress = inAppJs ? jsProgress : cssProgress;
   const { lang } = useLang();
   const copy = landingCopy(lang);
   const stages = copy.hero.scrollStages as ReadonlyArray<HeroScrollStage>;
+  const trackVh = inAppJs ? SCROLL_TRACK_TG_VH : SCROLL_TRACK_VH;
 
   const cardProps = {
     stages,
@@ -250,26 +256,34 @@ export default function Hero() {
     micro: copy.hero.micro,
   };
 
-  // Telegram / VK / Viber WebView: no sticky runway — otherwise black void + no scroll
-  if (inAppSafe) {
+  const inner = (
+    <div
+      className={cx(
+        "mx-auto flex h-[calc(100svh-1.25rem)] min-h-0 w-full max-w-full min-w-0 flex-col",
+        "px-3 pt-2.5 pb-2.5",
+        "sm:max-w-[min(98vw,1840px)] sm:px-3",
+        "lg:px-4 lg:pt-3 lg:pb-3"
+      )}
+    >
+      <HeroCard progress={progress} {...cardProps} />
+    </div>
+  );
+
+  // Telegram tab: JS-fixed pin (CSS sticky breaks → black void)
+  if (inAppJs) {
     return (
-      <Section
-        className={cx(
-          "relative z-[1] isolate overflow-hidden bg-transparent !py-0",
-          "min-h-[100svh] pb-0"
-        )}
+      <div
+        ref={trackRef}
+        className="hero-scroll-track relative"
+        style={{ height: `${trackVh}svh` } as CSSProperties}
       >
         <div
-          className={cx(
-            "mx-auto flex min-h-[calc(100svh-1.25rem)] w-full max-w-full min-w-0 flex-col",
-            "px-3 pt-2.5 pb-2.5",
-            "sm:max-w-[min(98vw,1840px)] sm:px-3",
-            "lg:px-4 lg:pt-3 lg:pb-3"
-          )}
+          ref={pinRef}
+          className="hero-scroll-sticky relative z-[1] isolate overflow-hidden bg-transparent"
         >
-          <HeroCard progress={1} {...cardProps} />
+          <Section className="!py-0 min-h-[100svh] pb-0">{inner}</Section>
         </div>
-      </Section>
+      </div>
     );
   }
 
@@ -277,7 +291,7 @@ export default function Hero() {
     <div
       ref={trackRef}
       className="hero-scroll-track relative"
-      style={{ height: `${SCROLL_TRACK_VH}svh` } as CSSProperties}
+      style={{ height: `${trackVh}svh` } as CSSProperties}
     >
       <Section
         className={cx(
@@ -285,16 +299,7 @@ export default function Hero() {
           "min-h-[100svh] pb-0"
         )}
       >
-        <div
-          className={cx(
-            "mx-auto flex h-[calc(100svh-1.25rem)] min-h-0 w-full max-w-full min-w-0 flex-col",
-            "px-3 pt-2.5 pb-2.5",
-            "sm:max-w-[min(98vw,1840px)] sm:px-3",
-            "lg:px-4 lg:pt-3 lg:pb-3"
-          )}
-        >
-          <HeroCard progress={progress} {...cardProps} />
-        </div>
+        {inner}
       </Section>
     </div>
   );

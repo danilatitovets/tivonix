@@ -20,13 +20,16 @@ import {
   rowPosition,
   rowPositionScrollStrip,
 } from "../../lib/aiModels";
-import { useInAppSafeLayout } from "../../lib/useLightScrollExperience";
+import { useInAppJsScrub } from "../../lib/useLightScrollExperience";
+import { useJsScrollPin } from "../../lib/useJsScrollPin";
 import { getStableViewportHeight } from "../../lib/stableViewport";
 import TivonixGlowBorder from "../ui/TivonixGlowBorder";
 import ScrollFingerHint from "../ui/ScrollFingerHint";
 
 const ANIM_PIN_VH = 235;
+const ANIM_PIN_TG_VH = 175;
 const DRIFT_RUNWAY_VH = 32;
+const DRIFT_RUNWAY_TG_VH = 20;
 const TIVONIX_LOGO = "/images/logo-black.webp";
 const AI_SECTION_BG = "/images/foooa.webp";
 const DROP_START = 0.68;
@@ -160,12 +163,17 @@ export default function AiPremiumSection() {
   const logoImgRefs = useRef<(HTMLImageElement | null)[]>([]);
 
   const reducedMotionPref = usePrefersReducedMotion();
-  const inAppSafe = useInAppSafeLayout();
-  // Messenger WebView: end-state without sticky pin (avoids black void)
-  const reducedMotion = reducedMotionPref || inAppSafe;
+  const inAppJs = useInAppJsScrub();
+  // Animations run in Telegram too — only OS reduced-motion skips scrub
+  const reducedMotion = reducedMotionPref;
+  const animPinVh = inAppJs ? ANIM_PIN_TG_VH : ANIM_PIN_VH;
+  const driftVh = inAppJs ? DRIFT_RUNWAY_TG_VH : DRIFT_RUNWAY_VH;
   const headline = copy.ai.headline;
   const [showScrollHint, setShowScrollHint] = useState(false);
   const showHintRef = useRef(false);
+
+  // JS pin the visible AI stage in messenger WebViews (CSS sticky is broken there)
+  useJsScrollPin(animPinRef, sectionRef, inAppJs && !reducedMotionPref);
 
   useEffect(() => {
     const track = pinWrapRef.current;
@@ -206,7 +214,7 @@ export default function AiPremiumSection() {
       trackHeight = track.offsetHeight;
       animScrollable = Math.max(1, animPinHeight - getStableViewportHeight());
       driftScrollable = Math.max(1, trackHeight - animPinHeight);
-      tailPx = (DRIFT_RUNWAY_VH / 100) * getStableViewportHeight();
+      tailPx = (driftVh / 100) * getStableViewportHeight();
       headerSpacer =
         Number.parseFloat(
           getComputedStyle(document.documentElement).getPropertyValue("--tivonix-header-spacer")
@@ -228,7 +236,7 @@ export default function AiPremiumSection() {
       const rectTop = sectionRef.current?.getBoundingClientRect().top ?? trackTop - scrollY;
       const scrollable = Math.max(1, trackHeight - viewport);
       const pinProgress = reducedMotion
-        ? inAppSafe || scrollInTrack > animScrollable * 0.2
+        ? scrollInTrack > animScrollable * 0.2
           ? 1
           : 0
         : clamp01(scrollInTrack / animScrollable);
@@ -544,7 +552,7 @@ export default function AiPremiumSection() {
       window.removeEventListener("resize", onResize);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [reducedMotion, headline, inAppSafe]);
+  }, [reducedMotion, headline, inAppJs, animPinVh, driftVh]);
 
   return (
     <>
@@ -552,21 +560,21 @@ export default function AiPremiumSection() {
         ref={pinWrapRef}
         className="ai-premium-pin relative"
         style={{
-          height: inAppSafe ? "auto" : `calc(${ANIM_PIN_VH}svh + ${DRIFT_RUNWAY_VH}svh)`,
-          ["--ai-expand" as string]: inAppSafe ? "1" : "0",
+          height: `calc(${animPinVh}svh + ${driftVh}svh)`,
+          ["--ai-expand" as string]: "0",
         }}
       >
         <div
           ref={animPinRef}
           className="ai-premium-anim-pin relative"
-          style={{ height: inAppSafe ? "auto" : `${ANIM_PIN_VH}svh` }}
+          style={{ height: `${animPinVh}svh` }}
         >
           <section
             ref={sectionRef}
             id="ai"
             className={
-              inAppSafe
-                ? "ai-premium-section relative z-40 flex min-h-[100svh] flex-col"
+              inAppJs
+                ? "ai-premium-section relative z-40 flex h-[100svh] flex-col"
                 : "ai-premium-section relative sticky top-0 z-40 flex h-[100svh] flex-col"
             }
             aria-label={copy.ai.ariaLabel}
@@ -725,7 +733,7 @@ export default function AiPremiumSection() {
             <div className="pointer-events-none absolute inset-x-0 bottom-[max(1.25rem,env(safe-area-inset-bottom))] z-[60] flex justify-center pb-1 sm:bottom-8">
               <ScrollFingerHint
                 bare
-                visible={showScrollHint && !inAppSafe}
+                visible={showScrollHint && !inAppJs}
                 variant="light"
                 label={isRu ? "Листайте — появится анимация" : "Scroll — the animation plays"}
                 onActivate={() => {

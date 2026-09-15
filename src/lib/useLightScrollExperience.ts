@@ -1,33 +1,36 @@
 /**
- * In messenger WebViews sticky multi-vh scrub paints a black pinned hero
- * and blocks the rest of the page. Use a safe static layout there.
- * Real Safari / Chrome keep full scroll animations.
+ * True inside messenger in-app browsers (Telegram, VK, …).
+ * There we use JS scroll-pin scrub instead of CSS sticky.
  */
 
 import { useEffect, useState } from "react";
 import { isInAppBrowser, watchInAppBrowser } from "./telegramWebView";
 
-export function useInAppSafeLayout(): boolean {
-  const [safe, setSafe] = useState(() =>
+export function useInAppJsScrub(): boolean {
+  const [active, setActive] = useState(() =>
     typeof document !== "undefined" ? isInAppBrowser() : false
   );
 
   useEffect(() => {
     if (isInAppBrowser()) {
-      setSafe(true);
+      setActive(true);
       return;
     }
-    return watchInAppBrowser(() => setSafe(true));
+    return watchInAppBrowser(() => setActive(true));
   }, []);
 
-  return safe;
+  return active;
 }
 
 /** @deprecated aliases */
+export function useInAppSafeLayout(): boolean {
+  return useInAppJsScrub();
+}
+
 export function useSoftScrollScrub(): boolean {
-  return useInAppSafeLayout();
+  return useInAppJsScrub();
 }
 
 export function useLightScrollExperience(): boolean {
-  return useInAppSafeLayout();
+  return useInAppJsScrub();
 }
